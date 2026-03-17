@@ -491,10 +491,13 @@ export default function MapScreen() {
 
   // ── Filtering chains (matching web logic) ──
 
+  // Helsinki metro area filter — exclude items outside Helsinki
+  const isInHelsinki = (lat: number, lng: number) => lat >= 60.1 && lat <= 60.35 && lng >= 24.7 && lng <= 25.2
+
   // 1. Posts: category + search + radius
   const filteredPosts = useMemo(() => {
     if (!showPosts) return []
-    let p = posts
+    let p = posts.filter(x => x.latitude && x.longitude && isInHelsinki(x.latitude, x.longitude))
     if (postFilter) p = p.filter(x => x.type === postFilter)
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); p = p.filter(x => x.title.toLowerCase().includes(q) || x.location?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) p = p.filter(x => x.latitude && x.longitude && haversineKm(userPos[0], userPos[1], x.latitude, x.longitude) <= radiusKm)
@@ -510,10 +513,10 @@ export default function MapScreen() {
     return e
   }, [events, showEvents, eventSource, debouncedSearch, userPos, radiusKm])
 
-  // 3. City events: source + category + search + radius
+  // 3. City events: source + category + search + radius + Helsinki only
   const filteredCityEvents = useMemo(() => {
     if (!showEvents || eventSource === 'community') return []
-    let c = cityEvents
+    let c = cityEvents.filter(x => x.latitude && x.longitude && isInHelsinki(x.latitude!, x.longitude!))
     if (cityEventCategory) c = c.filter(x => x.category === cityEventCategory)
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); c = c.filter(x => x.name_fi.toLowerCase().includes(q) || x.location_name?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) c = c.filter(x => x.latitude && x.longitude && haversineKm(userPos[0], userPos[1], x.latitude!, x.longitude!) <= radiusKm)
