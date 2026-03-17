@@ -53,6 +53,51 @@ const PLACE_ICONS: Record<string, string> = {
   service: '🔧', fast_food: '🍔', pub: '🍻', other: '📍',
 }
 
+// City event category config matching web exactly
+const CITY_EVENT_CATS: Record<string, { color: string; icon: string }> = {
+  culture: { color: '#8E44AD', icon: 'Palette' },
+  music: { color: '#E91E63', icon: 'Music' },
+  sport: { color: '#27AE60', icon: 'Dumbbell' },
+  family: { color: '#FF9800', icon: 'Users' },
+  food: { color: '#E74C3C', icon: 'UtensilsCrossed' },
+  nature: { color: '#4CAF50', icon: 'Leaf' },
+  education: { color: '#2196F3', icon: 'GraduationCap' },
+  theatre: { color: '#9C27B0', icon: 'Drama' },
+  exhibition: { color: '#795548', icon: 'Frame' },
+  festival: { color: '#FF5722', icon: 'PartyPopper' },
+  market: { color: '#FF9800', icon: 'Store' },
+  other: { color: '#607D8B', icon: 'CalendarDays' },
+}
+
+// Lucide SVG paths for markers (white stroke, matching web's MARKER_SVG)
+const MARKER_SVG: Record<string, string> = {
+  HandHelping: '<path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14"/><path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 13 6 6"/>',
+  Gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
+  Heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  Zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  BookOpen: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  CalendarDays: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+  Music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  Dumbbell: '<path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>',
+  Users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  UtensilsCrossed: '<path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/>',
+  Leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 2c1 2 2 4.5 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  GraduationCap: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+  Drama: '<path d="M10 11h.01"/><path d="M14 6h.01"/><path d="M18 6h.01"/><path d="M6.5 13.1h.01"/><path d="M22 5c0 9-4 12-6 12s-6-3-6-12c0-2 2-3 6-3s6 1 6 3"/><path d="M17.4 12.9c-.8 6-2.7 8.1-4.2 9.1-1 .6-2.4-.3-2.6-1.5a43.7 43.7 0 0 1-.4-5.5"/><path d="M2 5c0 9 4 12 6 12s6-3 6-12c0-2-2-3-6-3S2 3 2 5"/>',
+  Frame: '<line x1="22" x2="2" y1="6" y2="6"/><line x1="22" x2="2" y1="18" y2="18"/><line x1="6" x2="6" y1="2" y2="22"/><line x1="18" x2="18" y1="2" y2="22"/>',
+  PartyPopper: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/>',
+  Store: '<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/>',
+  Palette: '<circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+  Coffee: '<path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>',
+  MapPin: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+}
+
+function svgMarker(iconName: string, size: number): string {
+  const paths = MARKER_SVG[iconName]
+  if (paths) return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>`
+}
+
 const PLACE_CATEGORIES = [
   { key: null, label: 'common.all' },
   { key: 'restaurant', label: 'places.restaurant' },
@@ -169,16 +214,18 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
         if (!p.latitude || !p.longitude) return
         const cat = CATEGORIES[p.type as PostType]
         const color = cat?.color ?? '#2D6B5E'
-        const svgIcon = markerSvgHtml(p.type, 16)
+        const catIconName = cat?.icon ?? 'MapPin'
+        const svgIcon = svgMarker(catIconName, 16)
         const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : ''
+        const bdr = isDark ? '#121212' : 'white'
 
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:40px;height:48px;position:relative;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-            <div style="width:36px;height:36px;border-radius:50%;background:${color};border:2.5px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;margin:0 auto;">${svgIcon}</div>
-            <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${color};margin:-1px auto 0;"></div>
+          html: `<div style="position:relative;width:36px;height:44px">
+            <div style="position:absolute;top:0;left:1px;width:34px;height:34px;border-radius:50%;background:${color};border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${svgIcon}</div>
+            <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid ${bdr}"></div>
           </div>`,
-          iconSize: [40, 48], iconAnchor: [20, 48],
+          iconSize: [36, 44], iconAnchor: [18, 44],
         })
         const marker = L.marker([p.latitude, p.longitude], { icon })
         marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;">
@@ -212,12 +259,15 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
         const attendeeBar = e.max_attendees && e.attendee_count != null
           ? `<div style="margin-top:6px;"><div style="display:flex;justify-content:space-between;font-size:10px;color:#6B7280;margin-bottom:2px;"><span>${e.attendee_count}/${e.max_attendees}</span><span>${Math.round((e.attendee_count/e.max_attendees)*100)}%</span></div><div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${Math.min((e.attendee_count/e.max_attendees)*100,100)}%;background:${(e.attendee_count/e.max_attendees)>=0.9?'#dc2626':(e.attendee_count/e.max_attendees)>=0.7?'#d97706':'#2B8A62'};border-radius:2px;"></div></div></div>` : ''
 
+        const calSvg = svgMarker('CalendarDays', 18)
+        const bdr = isDark ? '#121212' : 'white'
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);border:3px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;">
-            <span style="color:white;font-size:14px;font-weight:700;">${day}</span>
+          html: `<div style="position:relative;width:36px;height:44px">
+            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${calSvg}</div>
+            <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
           </div>`,
-          iconSize: [38, 38], iconAnchor: [19, 19],
+          iconSize: [36, 44], iconAnchor: [18, 44],
         })
         L.marker([e.location_lat, e.location_lng], { icon }).addTo(map)
           .bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
@@ -235,16 +285,25 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
           </div>`, { maxWidth: 280 })
       })
 
-      // ── City event markers ──
+      // ── City event markers (clustered) ──
+      const cityCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 45, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(142,68,173,0.9)') }) : L.layerGroup()
       cityEvents.forEach((ce) => {
         if (!ce.latitude || !ce.longitude) return
         const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude)) : ''
+        const catCfg = CITY_EVENT_CATS[ce.category] ?? CITY_EVENT_CATS.other
+        const catColor = catCfg.color
+        const catSvg = svgMarker(catCfg.icon, 16)
+        const bdr = isDark ? '#121212' : 'white'
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3B7DD8,#6366F1);border:2.5px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;font-size:14px;">🎵</div>`,
-          iconSize: [36, 36], iconAnchor: [18, 18],
+          html: `<div style="position:relative;width:36px;height:44px">
+            <div style="width:36px;height:36px;border-radius:14px;background:linear-gradient(135deg,${catColor},${catColor}dd);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${catSvg}</div>
+            <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
+          </div>`,
+          iconSize: [36, 44], iconAnchor: [18, 44],
         })
-        L.marker([ce.latitude, ce.longitude], { icon }).addTo(map)
+        const ceMarker = L.marker([ce.latitude, ce.longitude], { icon })
+        ceMarker
           .bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
             ${ce.image_url ? `<img src="${ce.image_url}" style="width:calc(100%+40px);height:100px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
             <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${ce.name_fi}</div>
@@ -254,7 +313,9 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
             ${ce.is_free ? '<div style="margin-top:4px;"><span style="background:#E8F7EF;color:#2B8A62;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">✓ Ilmainen</span></div>' : ce.price_info ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;">${ce.price_info}</div>` : ''}
             ${ce.info_url ? `<a href="${ce.info_url}" target="_blank" style="display:block;margin-top:10px;background:linear-gradient(135deg,#3B7DD8,#6366F1);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : ''}
           </div>`, { maxWidth: 280 })
+        cityCluster.addLayer(ceMarker)
       })
+      map.addLayer(cityCluster)
 
       // ── Place markers (clustered) ──
       const placeCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 60, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(201,139,46,0.9)') }) : L.layerGroup()
@@ -284,14 +345,16 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       })
       map.addLayer(placeCluster)
 
-      // ── Fit bounds if we have markers ──
+      // ── Fit bounds — restrict to Helsinki metro area ──
+      const isHelsinki = (lat: number, lng: number) => lat >= 60.1 && lat <= 60.35 && lng >= 24.7 && lng <= 25.2
       const allLatLngs: [number, number][] = [
-        ...posts.filter(p => p.latitude && p.longitude).map(p => [p.latitude!, p.longitude!] as [number, number]),
-        ...events.filter(e => e.location_lat && e.location_lng).map(e => [e.location_lat!, e.location_lng!] as [number, number]),
-        ...cityEvents.filter(c => c.latitude && c.longitude).map(c => [c.latitude!, c.longitude!] as [number, number]),
+        ...posts.filter(p => p.latitude && p.longitude && isHelsinki(p.latitude, p.longitude)).map(p => [p.latitude!, p.longitude!] as [number, number]),
+        ...events.filter(e => e.location_lat && e.location_lng && isHelsinki(e.location_lat, e.location_lng)).map(e => [e.location_lat!, e.location_lng!] as [number, number]),
+        ...cityEvents.filter(c => c.latitude && c.longitude && isHelsinki(c.latitude!, c.longitude!)).map(c => [c.latitude!, c.longitude!] as [number, number]),
+        ...places.filter(p => isHelsinki(p.latitude, p.longitude)).slice(0, 50).map(p => [p.latitude, p.longitude] as [number, number]),
       ]
       if (allLatLngs.length > 2) {
-        try { map.fitBounds(L.latLngBounds(allLatLngs), { padding: [40, 40], maxZoom: 15 }) } catch {}
+        try { map.fitBounds(L.latLngBounds(allLatLngs), { padding: [40, 40], maxZoom: 14 }) } catch {}
       }
 
       mapInstanceRef.current = map
