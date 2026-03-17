@@ -122,9 +122,11 @@ function formatDistance(km: number): string {
 }
 
 // ── Leaflet Map (web only) ──
-function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, radiusKm, isDark, t }: {
+function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, radiusKm, flyTo, onMapInteraction, isDark, t }: {
   posts: Post[]; events: Event[]; cityEvents: CityEvent[]; places: LocalPlace[]
   selectedArea: string | null; userPos: [number, number] | null; radiusKm: number | null
+  flyTo: { lat: number; lng: number; zoom: number } | null
+  onMapInteraction?: () => void
   isDark: boolean; t: any
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
@@ -363,11 +365,28 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
     return () => { if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null } }
   }, [posts, events, cityEvents, places, userPos, radiusKm, isDark, t])
 
+  // Fly to selected area
   useEffect(() => {
     if (!selectedArea || !mapInstanceRef.current) return
     const coords = NEIGHBORHOOD_COORDS[selectedArea]
     if (coords) mapInstanceRef.current.flyTo(coords, 15, { duration: 1 })
   }, [selectedArea])
+
+  // Fly to search result
+  useEffect(() => {
+    if (!flyTo || !mapInstanceRef.current) return
+    mapInstanceRef.current.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom, { duration: 1 })
+  }, [flyTo])
+
+  // Collapse filters on map interaction
+  useEffect(() => {
+    if (!mapInstanceRef.current || !onMapInteraction) return
+    const map = mapInstanceRef.current
+    const handler = () => onMapInteraction()
+    map.on('movestart', handler)
+    map.on('zoomstart', handler)
+    return () => { map.off('movestart', handler); map.off('zoomstart', handler) }
+  }, [onMapInteraction])
 
   if (Platform.OS !== 'web') return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text>Kartta vaatii web-ympäristön</Text></View>
   return <div ref={mapRef as any} style={{ width: '100%', height: '100%' }} />
@@ -404,6 +423,8 @@ export default function MapScreen() {
   const [cityEventCategory, setCityEventCategory] = useState<string | null>(null)
   const [savedPlaceIds, setSavedPlaceIds] = useState<Set<string>>(new Set())
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [showAllPlaceCats, setShowAllPlaceCats] = useState(false)
+  const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom: number } | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Debounce search 200ms
@@ -518,7 +539,46 @@ export default function MapScreen() {
 
   const totalVisible = layerCounts.posts + layerCounts.events + layerCounts.places
 
-  // 6. City event category counts
+  // 6. Search results for fly-to (max 8)
+  const searchResults = useMemo(() => {
+    if (!debouncedSearch || debouncedSearch.length < 2) return []
+    const q = debouncedSearch.toLowerCase()
+    const results: { type: string; name: string; lat: number; lng: number; category?: string }[] = []
+    for (const p of filteredPosts) {
+      if (results.length >= 8) break
+      if (p.latitude && p.longitude && (p.title.toLowerCase().includes(q) || p.location?.toLowerCase().includes(q))) {
+        results.push({ type: 'post', name: p.title, lat: p.latitude, lng: p.longitude, category: p.type })
+      }
+    }
+    for (const e of filteredEvents) {
+      if (results.length >= 8) break
+      if (e.location_lat && e.location_lng && (e.title.toLowerCase().includes(q) || e.location_name?.toLowerCase().includes(q))) {
+        results.push({ type: 'event', name: e.title, lat: e.location_lat, lng: e.location_lng })
+      }
+    }
+    for (const ce of filteredCityEvents) {
+      if (results.length >= 8) break
+      if (ce.latitude && ce.longitude && (ce.name_fi.toLowerCase().includes(q) || ce.location_name?.toLowerCase().includes(q))) {
+        results.push({ type: 'city_event', name: ce.name_fi, lat: ce.latitude, lng: ce.longitude, category: ce.category })
+      }
+    }
+    for (const pl of filteredPlaces) {
+      if (results.length >= 8) break
+      if (pl.name.toLowerCase().includes(q) || pl.address?.toLowerCase().includes(q)) {
+        results.push({ type: 'place', name: pl.name, lat: pl.latitude, lng: pl.longitude, category: pl.category })
+      }
+    }
+    return results
+  }, [debouncedSearch, filteredPosts, filteredEvents, filteredCityEvents, filteredPlaces])
+
+  const handleSearchResultClick = useCallback((result: { lat: number; lng: number }) => {
+    setFlyTo({ lat: result.lat, lng: result.lng, zoom: 17 })
+    setShowSearch(false)
+    setSearchQuery('')
+    setFiltersExpanded(false)
+  }, [])
+
+  // 7. City event category counts
   const cityEventCategoryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     const source = eventSource === 'community' ? [] : cityEvents
@@ -533,7 +593,7 @@ export default function MapScreen() {
     <View style={[ms.container, { backgroundColor: colors.background }]}>
       <View style={ms.mapWrap}>
         {loading ? <View style={ms.loadingWrap}><ActivityIndicator size="large" color={colors.primary} /></View> : (
-          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} isDark={isDark} t={t} />
+          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onMapInteraction={() => setFiltersExpanded(false)} isDark={isDark} t={t} />
         )}
       </View>
 
@@ -642,12 +702,28 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* Search */}
+      {/* Search + results dropdown */}
       {showSearch && (
-        <View style={[ms.searchOverlay, { top: insets.top + 52, backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Search size={16} color={colors.mutedForeground} />
-          <TextInput style={[ms.searchInput, { color: colors.foreground }]} value={searchQuery} onChangeText={setSearchQuery} placeholder={t('feed.searchPlaceholder')} placeholderTextColor={colors.mutedForeground} autoFocus />
-          {searchQuery.length > 0 && <Pressable onPress={() => setSearchQuery('')} hitSlop={8}><X size={16} color={colors.mutedForeground} /></Pressable>}
+        <View style={{ position: 'absolute', left: 12, right: 12, top: insets.top + 52, zIndex: 20 }}>
+          <View style={[ms.searchOverlay, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Search size={16} color={colors.mutedForeground} />
+            <TextInput style={[ms.searchInput, { color: colors.foreground }]} value={searchQuery} onChangeText={setSearchQuery} placeholder={t('feed.searchPlaceholder')} placeholderTextColor={colors.mutedForeground} autoFocus />
+            {searchQuery.length > 0 && <Pressable onPress={() => setSearchQuery('')} hitSlop={8}><X size={16} color={colors.mutedForeground} /></Pressable>}
+          </View>
+          {searchResults.length > 0 && (
+            <ScrollView style={[ms.searchResults, { backgroundColor: colors.card, borderColor: colors.border }]} keyboardShouldPersistTaps="handled">
+              {searchResults.map((r, i) => (
+                <Pressable key={i} onPress={() => handleSearchResultClick(r)} style={[ms.searchResultItem, i < searchResults.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}>
+                  <View style={[ms.searchResultBadge, { backgroundColor: r.type === 'post' ? `${colors.primary}20` : r.type === 'event' ? '#2B8A6220' : r.type === 'city_event' ? '#8E44AD20' : '#78716C20' }]}>
+                    <Text style={[ms.searchResultBadgeText, { color: r.type === 'post' ? colors.primary : r.type === 'event' ? '#2B8A62' : r.type === 'city_event' ? '#8E44AD' : '#78716C' }]}>
+                      {r.type === 'post' ? t('map.layerPosts') : r.type === 'event' ? t('map.layerEvents') : r.type === 'city_event' ? 'Helsinki' : t('map.layerPlaces')}
+                    </Text>
+                  </View>
+                  <Text style={[ms.searchResultName, { color: colors.foreground }]} numberOfLines={1}>{r.name}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
         </View>
       )}
 
@@ -656,17 +732,34 @@ export default function MapScreen() {
         {geoLoading ? <Loader2 size={20} color={colors.foreground} /> : <Crosshair size={20} color={userPos ? '#FFF' : colors.foreground} />}
       </Pressable>
 
-      {/* Radius slider (when GPS active) */}
-      {userPos && radiusKm && (
+      {/* Radius panel (when GPS active) */}
+      {userPos && (
         <View style={[ms.radiusBar, { bottom: insets.bottom + 130, backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[ms.radiusText, { color: colors.foreground }]}>{t('map.radius')}: {radiusKm} km</Text>
-          <View style={ms.radiusBtns}>
-            {[0.5, 1, 2, 3, 5].map(r => (
-              <Pressable key={r} onPress={() => setRadiusKm(r)} style={[ms.radiusChip, radiusKm === r ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
-                <Text style={[ms.radiusChipText, { color: radiusKm === r ? '#FFF' : colors.mutedForeground }]}>{r}</Text>
-              </Pressable>
-            ))}
+          <View style={ms.radiusHeader}>
+            <MapPin size={14} color={radiusKm ? colors.primary : colors.mutedForeground} />
+            <Text style={[ms.radiusLabel, { color: colors.foreground }]}>{t('map.radius')}</Text>
+            <Text style={[ms.radiusValue, { color: radiusKm ? colors.primary : colors.mutedForeground }]}>
+              {radiusKm ? `${radiusKm} km` : t('map.radiusOff')}
+            </Text>
+            <Pressable onPress={() => setRadiusKm(radiusKm ? null : 0.5)} style={[ms.radiusToggle, { backgroundColor: radiusKm ? colors.primary : colors.muted }]}>
+              <View style={[ms.radiusToggleThumb, { backgroundColor: '#FFF', transform: [{ translateX: radiusKm ? 14 : 0 }] }]} />
+            </Pressable>
           </View>
+          {radiusKm && (
+            <>
+              <View style={ms.radiusBtns}>
+                {[0.1, 0.5, 1, 2, 3, 5].map(r => (
+                  <Pressable key={r} onPress={() => setRadiusKm(r)} style={[ms.radiusChip, Math.abs(radiusKm - r) < 0.15 ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
+                    <Text style={[ms.radiusChipText, { color: Math.abs(radiusKm - r) < 0.15 ? '#FFF' : colors.mutedForeground }]}>{r}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <View style={[ms.radiusCount, { backgroundColor: `${colors.primary}10` }]}>
+                <MapPin size={12} color={colors.primary} />
+                <Text style={[ms.radiusCountText, { color: colors.primary }]}>{totalVisible} {t('map.visible')}</Text>
+              </View>
+            </>
+          )}
         </View>
       )}
 
@@ -675,6 +768,19 @@ export default function MapScreen() {
         <MapPin size={14} color={colors.mutedForeground} />
         <Text style={[ms.countText, { color: colors.foreground }]}>{totalVisible} {t('map.visible')}</Text>
       </View>
+
+      {/* Empty state */}
+      {!loading && totalVisible === 0 && (
+        <View style={[ms.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+          <Text style={[ms.emptyTitle, { color: colors.foreground }]}>{t('map.noResults')}</Text>
+          <Text style={[ms.emptyHint, { color: colors.mutedForeground }]}>{t('map.resetFiltersHint')}</Text>
+          <Pressable onPress={() => { setShowPosts(true); setShowEvents(true); setShowPlaces(true); setPostFilter(null); setPlaceFilter(null); setEventSource('all'); setCityEventCategory(null); setRadiusKm(null) }}
+            style={[ms.emptyBtn, { backgroundColor: colors.primary }]}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFF' }}>{t('map.resetFilters')}</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   )
 }
@@ -700,14 +806,29 @@ const ms = StyleSheet.create({
   dropdown: { position: 'absolute', left: 12, right: 12, zIndex: 20, borderRadius: 12, borderWidth: 1, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
   dropdownItem: { paddingHorizontal: 16, paddingVertical: 12 },
   dropdownText: { fontSize: 14 },
-  searchOverlay: { position: 'absolute', left: 12, right: 12, zIndex: 20, flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, height: 44, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  searchOverlay: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, height: 44, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
   searchInput: { flex: 1, fontSize: 14 },
+  searchResults: { marginTop: 4, borderRadius: 12, borderWidth: 1, maxHeight: 240, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
+  searchResultItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
+  searchResultBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  searchResultBadgeText: { fontSize: 10, fontWeight: '600' },
+  searchResultName: { fontSize: 14, flex: 1 },
   gpsBtn: { position: 'absolute', right: 12, zIndex: 10, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
-  radiusBar: { position: 'absolute', left: 60, right: 60, zIndex: 10, borderRadius: 12, borderWidth: 1, padding: 10, alignItems: 'center', gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: -1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 },
-  radiusText: { fontSize: 12, fontWeight: '600' },
-  radiusBtns: { flexDirection: 'row', gap: 6 },
-  radiusChip: { width: 32, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  radiusChipText: { fontSize: 11, fontWeight: '600' },
+  radiusBar: { position: 'absolute', left: 16, right: 16, zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 14, gap: 10, shadowColor: '#000', shadowOffset: { width: 0, height: -1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 },
+  radiusHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  radiusLabel: { fontSize: 13, fontWeight: '600', flex: 1 },
+  radiusValue: { fontSize: 13, fontWeight: '600' },
+  radiusToggle: { width: 34, height: 20, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 3 },
+  radiusToggleThumb: { width: 14, height: 14, borderRadius: 7 },
+  radiusBtns: { flexDirection: 'row', gap: 6, justifyContent: 'center' },
+  radiusChip: { width: 40, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  radiusChipText: { fontSize: 12, fontWeight: '600' },
+  radiusCount: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 6, borderRadius: 8 },
+  radiusCountText: { fontSize: 12, fontWeight: '500' },
   countBar: { position: 'absolute', left: 60, right: 60, zIndex: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: -1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 },
   countText: { fontSize: 13, fontWeight: '500' },
+  emptyState: { position: 'absolute', left: 40, right: 40, top: '40%', zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 24, alignItems: 'center', gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
+  emptyTitle: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
+  emptyHint: { fontSize: 13, textAlign: 'center', lineHeight: 18 },
+  emptyBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, marginTop: 4 },
 })
