@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native'
+import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -8,8 +8,12 @@ import { TackBirdLogo } from '@/components/TackBirdLogo'
 
 /**
  * Auth callback screen — handles OAuth redirect from Google/Supabase.
- * Supabase appends ?code=xxx or #access_token=xxx to this URL after OAuth.
- * We exchange the code/token for a session and redirect to home.
+ *
+ * Supabase OAuth returns tokens in two possible ways:
+ * 1. PKCE flow: ?code=xxx in query params
+ * 2. Implicit flow: #access_token=xxx&refresh_token=xxx in URL hash
+ *
+ * We handle both cases.
  */
 export default function AuthCallbackScreen() {
   const { colors } = useTheme()
@@ -18,50 +22,92 @@ export default function AuthCallbackScreen() {
   const params = useLocalSearchParams()
   const supabase = useMemo(() => createClient(), [])
   const [error, setError] = useState<string | null>(null)
+  const [processing, setProcessing] = useState(true)
 
   useEffect(() => {
     async function handleCallback() {
       try {
-        // For Expo web, Supabase may put tokens in the URL hash
-        // The Supabase client auto-detects hash tokens on init
-        // But we also check for ?code= param (PKCE flow)
-        const code = params.code as string | undefined
+        // Check for error from Supabase
         const errorParam = params.error as string | undefined
-
         if (errorParam) {
           setError(params.error_description as string ?? errorParam)
+          setProcessing(false)
           return
         }
 
+        // Method 1: PKCE flow — code in query params
+        const code = params.code as string | undefined
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
           if (exchangeError) {
             setError(exchangeError.message)
+            setProcessing(false)
+            return
+          }
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session) {
+            router.replace('/')
             return
           }
         }
 
-        // Check if we have a session now (from hash tokens or code exchange)
+        // Method 2: Implicit flow — tokens in URL hash fragment
+        // On web, check window.location.hash
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+          const hash = window.location.hash
+          if (hash && hash.includes('access_token')) {
+            // Supabase JS client auto-detects hash tokens when getSession is called
+            // But we need to give it a moment to process
+            await new Promise(resolve => setTimeout(resolve, 500))
+
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session) {
+              // Clear the hash to prevent re-processing
+              window.location.hash = ''
+              router.replace('/')
+              return
+            }
+
+            // Try setting session manually from hash params
+            const hashParams = new URLSearchParams(hash.substring(1))
+            const accessToken = hashParams.get('access_token')
+            const refreshToken = hashParams.get('refresh_token')
+
+            if (accessToken && refreshToken) {
+              const { error: setSessionError } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              })
+              if (!setSessionError) {
+                window.location.hash = ''
+                router.replace('/')
+                return
+              }
+              setError(setSessionError.message)
+              setProcessing(false)
+              return
+            }
+          }
+        }
+
+        // Method 3: Wait and check — sometimes Supabase processes async
+        await new Promise(resolve => setTimeout(resolve, 2000))
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
           router.replace('/')
-        } else {
-          // Wait a moment for Supabase to process hash tokens
-          await new Promise(resolve => setTimeout(resolve, 1500))
-          const { data: { session: retrySession } } = await supabase.auth.getSession()
-          if (retrySession) {
-            router.replace('/')
-          } else {
-            setError(t('auth.loginFailed'))
-          }
+          return
         }
+
+        setError(t('auth.loginFailed'))
+        setProcessing(false)
       } catch (err: any) {
         setError(err.message ?? t('auth.loginFailed'))
+        setProcessing(false)
       }
     }
 
     handleCallback()
-  }, [params, supabase, router, t])
+  }, []) // Run once on mount
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -81,7 +127,9 @@ export default function AuthCallbackScreen() {
       ) : (
         <View style={styles.loadingBox}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+            {t('common.loading')}
+          </Text>
         </View>
       )}
     </View>

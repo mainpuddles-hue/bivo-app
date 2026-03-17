@@ -117,6 +117,10 @@ export default function LoginScreen() {
         provider: 'google',
         options: {
           redirectTo: 'https://dist-two-navy-29.vercel.app/auth/callback',
+          queryParams: {
+            prompt: 'select_account',
+          },
+          skipBrowserRedirect: false,
         },
       })
       if (error) {
