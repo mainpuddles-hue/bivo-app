@@ -507,7 +507,7 @@ export default function MapScreen() {
   // 2. Community events: source + search + radius
   const filteredEvents = useMemo(() => {
     if (!showEvents || eventSource === 'city') return []
-    let e = events
+    let e = events.filter(x => x.location_lat && x.location_lng && isInHelsinki(x.location_lat, x.location_lng))
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); e = e.filter(x => x.title.toLowerCase().includes(q) || x.location_name?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) e = e.filter(x => x.location_lat && x.location_lng && haversineKm(userPos[0], userPos[1], x.location_lat, x.location_lng) <= radiusKm)
     return e
@@ -526,7 +526,7 @@ export default function MapScreen() {
   // 4. Places: category + search + radius
   const filteredPlaces = useMemo(() => {
     if (!showPlaces) return []
-    let p = places
+    let p = places.filter(x => isInHelsinki(x.latitude, x.longitude))
     if (placeFilter) p = p.filter(x => x.category === placeFilter)
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); p = p.filter(x => x.name.toLowerCase().includes(q) || x.address?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) p = p.filter(x => haversineKm(userPos[0], userPos[1], x.latitude, x.longitude) <= radiusKm)
@@ -586,7 +586,8 @@ export default function MapScreen() {
     const counts: Record<string, number> = {}
     const source = eventSource === 'community' ? [] : cityEvents
     for (const ce of source) {
-      if (userPos && radiusKm && ce.latitude && ce.longitude && haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude) > radiusKm) continue
+      if (!ce.latitude || !ce.longitude || !isInHelsinki(ce.latitude, ce.longitude)) continue
+      if (userPos && radiusKm && haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude) > radiusKm) continue
       counts[ce.category] = (counts[ce.category] ?? 0) + 1
     }
     return counts
