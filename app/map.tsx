@@ -15,6 +15,24 @@ import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 const HELSINKI_CENTER: [number, number] = [60.1699, 24.9384]
 const DEFAULT_ZOOM = 13
 
+// Helsinki municipal bounds — must match backend HELSINKI_BOUNDS in geo.ts
+const HKI = { south: 60.14, north: 60.29, west: 24.83, east: 25.22 } as const
+const isInHelsinki = (lat: number, lng: number) =>
+  lat >= HKI.south && lat <= HKI.north && lng >= HKI.west && lng <= HKI.east
+
+/** Escape HTML entities to prevent XSS in Leaflet popup content */
+function esc(str: string | null | undefined): string {
+  if (!str) return ''
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
+
+/** Validate URL scheme — only allow http/https in popup links */
+function safeUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  try { const p = new URL(url); return (p.protocol === 'http:' || p.protocol === 'https:') ? url : null }
+  catch { return null }
+}
+
 const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
   'Kallio': [60.1844, 24.9496], 'Sörnäinen': [60.1870, 24.9700],
   'Vallila': [60.1930, 24.9530], 'Kamppi': [60.1686, 24.9316],
@@ -231,22 +249,22 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
         })
         const marker = L.marker([p.latitude, p.longitude], { icon })
         marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;">
-          ${p.image_url ? `<img src="${p.image_url}" style="width:calc(100%+40px);height:120px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
+          ${p.image_url ? `<img src="${esc(p.image_url)}" style="width:calc(100%+40px);height:120px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
             <span style="width:10px;height:10px;border-radius:5px;background:${color};display:inline-block;"></span>
-            <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${color};">${t(cat?.label ?? '')}</span>
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${color};">${esc(t(cat?.label ?? ''))}</span>
           </div>
-          <div style="font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3;">${p.title}</div>
-          ${p.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.description.slice(0, 100)}</div>` : ''}
-          ${p.location ? `<div style="font-size:11px;color:#9CA3AF;margin-bottom:2px;">📍 ${p.location}</div>` : ''}
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3;">${esc(p.title)}</div>
+          ${p.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.description.slice(0, 100))}</div>` : ''}
+          ${p.location ? `<div style="font-size:11px;color:#9CA3AF;margin-bottom:2px;">📍 ${esc(p.location)}</div>` : ''}
           ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
           ${p.user ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid ${isDark ? '#333' : '#eee'};">
-            ${p.user.avatar_url ? `<img src="${p.user.avatar_url}" style="width:22px;height:22px;border-radius:11px;border:1px solid ${isDark ? '#444' : '#ddd'};" onerror="this.style.display='none'" />` : ''}
-            <span style="font-size:12px;color:#6B7280;">${p.user.name ?? ''}</span>
-            ${p.user.naapurusto ? `<span style="font-size:10px;color:#9CA3AF;margin-left:auto;">${p.user.naapurusto}</span>` : ''}
+            ${p.user.avatar_url ? `<img src="${esc(p.user.avatar_url)}" style="width:22px;height:22px;border-radius:11px;border:1px solid ${isDark ? '#444' : '#ddd'};" onerror="this.style.display='none'" />` : ''}
+            <span style="font-size:12px;color:#6B7280;">${esc(p.user.name ?? '')}</span>
+            ${p.user.naapurusto ? `<span style="font-size:10px;color:#9CA3AF;margin-left:auto;">${esc(p.user.naapurusto)}</span>` : ''}
           </div>` : ''}
           ${p.daily_fee ? `<div style="margin-top:6px;"><span style="background:#FDF6E8;color:#C98B2E;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${p.daily_fee} €/pv</span></div>` : ''}
-          <a href="/post/${p.id}" style="display:block;margin-top:10px;background:${color};color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso ilmoitus →</a>
+          <a href="/post/${esc(p.id)}" style="display:block;margin-top:10px;background:${color};color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso ilmoitus →</a>
         </div>`, { maxWidth: 300, autoPanPadding: [80, 60] })
         postCluster.addLayer(marker)
       })
@@ -277,13 +295,13 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
               <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;">${day}</div>
               <div><div style="font-size:12px;color:#2B8A62;font-weight:500;">${dateStr}</div><div style="font-size:9px;text-transform:uppercase;color:#9CA3AF;">Tapahtuma</div></div>
             </div>
-            <div style="font-size:15px;font-weight:600;margin-bottom:4px;">${e.title}</div>
-            ${e.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${e.description}</div>` : ''}
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px;">${esc(e.title)}</div>
+            ${e.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(e.description)}</div>` : ''}
             <div style="font-size:11px;color:#9CA3AF;">📅 ${dateStr}</div>
-            ${e.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${e.location_name}</div>` : ''}
+            ${e.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(e.location_name)}</div>` : ''}
             ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
             ${attendeeBar}
-            <a href="/events?highlight=${e.id}" style="display:block;margin-top:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
+            <a href="/events?highlight=${esc(e.id)}" style="display:block;margin-top:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
           </div>`, { maxWidth: 280 })
       })
 
@@ -305,15 +323,16 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
           iconSize: [36, 44], iconAnchor: [18, 44],
         })
         const ceMarker = L.marker([ce.latitude, ce.longitude], { icon })
+        const ceInfoUrl = safeUrl(ce.info_url)
         ceMarker
           .bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
-            ${ce.image_url ? `<img src="${ce.image_url}" style="width:calc(100%+40px);height:100px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
-            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${ce.name_fi}</div>
+            ${ce.image_url ? `<img src="${esc(ce.image_url)}" style="width:calc(100%+40px);height:100px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(ce.name_fi)}</div>
             <div style="font-size:12px;color:#3B7DD8;">${new Date(ce.start_time).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-            ${ce.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${ce.location_name}</div>` : ''}
+            ${ce.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(ce.location_name)}</div>` : ''}
             ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-            ${ce.is_free ? '<div style="margin-top:4px;"><span style="background:#E8F7EF;color:#2B8A62;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">✓ Ilmainen</span></div>' : ce.price_info ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;">${ce.price_info}</div>` : ''}
-            ${ce.info_url ? `<a href="${ce.info_url}" target="_blank" style="display:block;margin-top:10px;background:linear-gradient(135deg,#3B7DD8,#6366F1);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : ''}
+            ${ce.is_free ? '<div style="margin-top:4px;"><span style="background:#E8F7EF;color:#2B8A62;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">✓ Ilmainen</span></div>' : ce.price_info ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;">${esc(ce.price_info)}</div>` : ''}
+            ${ceInfoUrl ? `<a href="${esc(ceInfoUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:10px;background:linear-gradient(135deg,#3B7DD8,#6366F1);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : ''}
           </div>`, { maxWidth: 280 })
         cityCluster.addLayer(ceMarker)
       })
@@ -334,26 +353,26 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
           iconSize: [28, 34], iconAnchor: [14, 34],
         })
         const marker = L.marker([pl.latitude, pl.longitude], { icon })
+        const plWebsite = safeUrl(pl.website)
         marker.bindPopup(`<div style="font-family:system-ui;min-width:180px;max-width:220px;">
-          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${pl.name}</div>
-          ${pl.address ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${pl.address}</div>` : ''}
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(pl.name)}</div>
+          ${pl.address ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(pl.address)}</div>` : ''}
           ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-          ${pl.opening_hours ? `<div style="font-size:10px;color:#9CA3AF;margin-top:2px;">🕐 ${pl.opening_hours}</div>` : ''}
-          ${pl.phone ? `<div style="margin-top:4px;"><a href="tel:${pl.phone}" style="color:#3B7DD8;font-size:12px;">📞 ${pl.phone}</a></div>` : ''}
-          ${pl.website ? `<a href="${pl.website}" target="_blank" rel="noopener" style="display:block;margin-top:6px;color:#3B7DD8;font-size:12px;">🌐 Verkkosivut</a>` : ''}
-          <a href="https://www.google.com/maps/dir/?api=1&destination=${pl.latitude},${pl.longitude}" target="_blank" style="display:block;margin-top:8px;background:#78716C;color:white;text-align:center;padding:7px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet →</a>
+          ${pl.opening_hours ? `<div style="font-size:10px;color:#9CA3AF;margin-top:2px;">🕐 ${esc(pl.opening_hours)}</div>` : ''}
+          ${pl.phone ? `<div style="margin-top:4px;"><a href="tel:${esc(pl.phone)}" style="color:#3B7DD8;font-size:12px;">📞 ${esc(pl.phone)}</a></div>` : ''}
+          ${plWebsite ? `<a href="${esc(plWebsite)}" target="_blank" rel="noopener" style="display:block;margin-top:6px;color:#3B7DD8;font-size:12px;">🌐 Verkkosivut</a>` : ''}
+          <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${pl.latitude},${pl.longitude}" target="_blank" rel="noopener" style="display:block;margin-top:8px;background:#78716C;color:white;text-align:center;padding:7px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet →</a>
         </div>`, { maxWidth: 240 })
         placeCluster.addLayer(marker)
       })
       map.addLayer(placeCluster)
 
       // ── Fit bounds — restrict to Helsinki metro area ──
-      const isHelsinki = (lat: number, lng: number) => lat >= 60.1 && lat <= 60.35 && lng >= 24.7 && lng <= 25.2
       const allLatLngs: [number, number][] = [
-        ...posts.filter(p => p.latitude && p.longitude && isHelsinki(p.latitude, p.longitude)).map(p => [p.latitude!, p.longitude!] as [number, number]),
-        ...events.filter(e => e.location_lat && e.location_lng && isHelsinki(e.location_lat, e.location_lng)).map(e => [e.location_lat!, e.location_lng!] as [number, number]),
-        ...cityEvents.filter(c => c.latitude && c.longitude && isHelsinki(c.latitude!, c.longitude!)).map(c => [c.latitude!, c.longitude!] as [number, number]),
-        ...places.filter(p => isHelsinki(p.latitude, p.longitude)).slice(0, 50).map(p => [p.latitude, p.longitude] as [number, number]),
+        ...posts.filter(p => p.latitude && p.longitude && isInHelsinki(p.latitude, p.longitude)).map(p => [p.latitude!, p.longitude!] as [number, number]),
+        ...events.filter(e => e.location_lat && e.location_lng && isInHelsinki(e.location_lat, e.location_lng)).map(e => [e.location_lat!, e.location_lng!] as [number, number]),
+        ...cityEvents.filter(c => c.latitude && c.longitude && isInHelsinki(c.latitude!, c.longitude!)).map(c => [c.latitude!, c.longitude!] as [number, number]),
+        ...places.filter(p => isInHelsinki(p.latitude, p.longitude)).slice(0, 50).map(p => [p.latitude, p.longitude] as [number, number]),
       ]
       if (allLatLngs.length > 2) {
         try { map.fitBounds(L.latLngBounds(allLatLngs), { padding: [40, 40], maxZoom: 14 }) } catch {}
@@ -443,20 +462,25 @@ export default function MapScreen() {
           .select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)')
           .eq('is_active', true)
           .not('latitude', 'is', null)
+          .not('longitude', 'is', null)
           .limit(200),
         supabase.from('events')
           .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
+          .gte('event_date', new Date().toISOString())
+          .not('location_lat', 'is', null)
+          .not('location_lng', 'is', null)
           .limit(200),
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
-          .gte('latitude', 60.14).lte('latitude', 60.29)
-          .gte('longitude', 24.83).lte('longitude', 25.22)
+          .gte('start_time', new Date().toISOString())
+          .gte('latitude', HKI.south).lte('latitude', HKI.north)
+          .gte('longitude', HKI.west).lte('longitude', HKI.east)
           .limit(200),
         supabase.from('local_places')
           .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')
-          .gte('latitude', 60.14).lte('latitude', 60.29)
-          .gte('longitude', 24.83).lte('longitude', 25.22)
+          .gte('latitude', HKI.south).lte('latitude', HKI.north)
+          .gte('longitude', HKI.west).lte('longitude', HKI.east)
           .limit(500),
       ])
 
@@ -494,9 +518,6 @@ export default function MapScreen() {
   }, [geoLoading, userPos])
 
   // ── Filtering chains (matching web logic) ──
-
-  // Helsinki metro area filter — exclude items outside Helsinki
-  const isInHelsinki = (lat: number, lng: number) => lat >= 60.1 && lat <= 60.35 && lng >= 24.7 && lng <= 25.2
 
   // 1. Posts: category + search + radius
   const filteredPosts = useMemo(() => {
