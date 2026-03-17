@@ -140,26 +140,44 @@ function formatDistance(km: number): string {
 }
 
 // ── Leaflet Map (web only) ──
-function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, radiusKm, flyTo, onMapInteraction, isDark, t }: {
+// Split into two effects: (1) map init (once), (2) marker updates (on data change)
+function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, radiusKm, flyTo, onFlyComplete, onMapInteraction, isDark, t }: {
   posts: Post[]; events: Event[]; cityEvents: CityEvent[]; places: LocalPlace[]
   selectedArea: string | null; userPos: [number, number] | null; radiusKm: number | null
   flyTo: { lat: number; lng: number; zoom: number } | null
+  onFlyComplete?: () => void
   onMapInteraction?: () => void
-  isDark: boolean; t: any
+  isDark: boolean; t: (key: string) => string
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
+  const leafletRef = useRef<any>(null)
+  const layersRef = useRef<any[]>([])
+  const userLayerRef = useRef<any>(null)
+  const initialFitDone = useRef(false)
 
+  // Load script with error handling
+  const loadScript = useCallback((src: string) =>
+    new Promise<void>((resolve, reject) => {
+      const s = document.createElement('script')
+      s.src = src
+      s.onload = () => resolve()
+      s.onerror = () => reject(new Error(`Failed to load ${src}`))
+      document.head.appendChild(s)
+    }), [])
+
+  // (1) Map init — runs once
   useEffect(() => {
     if (Platform.OS !== 'web' || !mapRef.current || typeof window === 'undefined') return
+    let cancelled = false
 
+    // CSS
     if (!document.getElementById('leaflet-css')) {
       const link = document.createElement('link')
       link.id = 'leaflet-css'; link.rel = 'stylesheet'
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
       document.head.appendChild(link)
     }
-    // Marker cluster CSS
     if (!document.getElementById('leaflet-cluster-css')) {
       const link2 = document.createElement('link')
       link2.id = 'leaflet-cluster-css'; link2.rel = 'stylesheet'
@@ -170,204 +188,210 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       link3.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css'
       document.head.appendChild(link3)
     }
-
-    const loadScripts = async () => {
-      // Leaflet
-      if (!(window as any).L) {
-        await new Promise<void>(r => { const s = document.createElement('script'); s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; s.onload = () => r(); document.head.appendChild(s) })
-      }
-      // MarkerCluster
-      if (!(window as any).L?.MarkerClusterGroup) {
-        await new Promise<void>(r => { const s = document.createElement('script'); s.src = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js'; s.onload = () => r(); document.head.appendChild(s) })
-      }
-      return (window as any).L
+    if (!document.getElementById('pulse-css')) {
+      const style = document.createElement('style')
+      style.id = 'pulse-css'
+      style.textContent = '@keyframes userPulse{0%{transform:scale(1);opacity:0.6}100%{transform:scale(2.5);opacity:0}}'
+      document.head.appendChild(style)
     }
 
-    loadScripts().then((L: any) => {
-      if (!L || !mapRef.current) return
-      if (mapInstanceRef.current) mapInstanceRef.current.remove()
+    const init = async () => {
+      try {
+        if (!(window as any).L) await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+        if (!(window as any).L?.MarkerClusterGroup) await loadScript('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js')
+      } catch { return } // CDN unavailable — degrade gracefully
+      if (cancelled || !mapRef.current) return
+      const L = (window as any).L
+      leafletRef.current = L
 
       const map = L.map(mapRef.current, { zoomControl: false }).setView(HELSINKI_CENTER, DEFAULT_ZOOM)
       L.tileLayer(isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
       L.control.zoom({ position: 'bottomright' }).addTo(map)
 
-      // ── User position + radius ──
-      if (userPos) {
-        const userIcon = L.divIcon({
-          className: '',
-          html: `<div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
-            <div style="width:18px;height:18px;border-radius:50%;background:#3B82F4;border:3px solid white;box-shadow:0 1px 6px rgba(59,130,244,0.4);"></div>
-            <div style="position:absolute;width:36px;height:36px;border-radius:50%;background:rgba(59,130,244,0.15);animation:userPulse 2.5s ease-out infinite;"></div>
-          </div>`,
-          iconSize: [40, 40], iconAnchor: [20, 20],
-        })
-        L.marker(userPos, { icon: userIcon, interactive: false }).addTo(map)
-        if (radiusKm) {
-          L.circle(userPos, { radius: radiusKm * 1000, color: '#4285F4', weight: 2, dashArray: '6 4', fillColor: '#4285F4', fillOpacity: isDark ? 0.12 : 0.08, interactive: false }).addTo(map)
-        }
-        // Add pulse animation CSS
-        if (!document.getElementById('pulse-css')) {
-          const style = document.createElement('style')
-          style.id = 'pulse-css'
-          style.textContent = '@keyframes userPulse{0%{transform:scale(1);opacity:0.6}100%{transform:scale(2.5);opacity:0}}'
-          document.head.appendChild(style)
-        }
+      if (onMapInteraction) {
+        const handler = () => onMapInteraction()
+        map.on('movestart', handler)
+        map.on('zoomstart', handler)
       }
 
-      // ── Post markers (clustered) ──
-      const createClusterIcon = (color: string) => (cluster: any) => {
-        const count = cluster.getChildCount()
-        const size = count < 10 ? 32 : count < 50 ? 40 : 48
-        const ring = count < 10 ? 4 : count < 50 ? 5 : 6
-        return L.divIcon({
-          className: '',
-          html: `<div style="width:${size+ring*2}px;height:${size+ring*2}px;border-radius:50%;background:${color}33;display:flex;align-items:center;justify-content:center;">
-            <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;border:2px solid ${isDark?'#1E1E1E':'white'};box-shadow:0 2px 6px rgba(0,0,0,0.25);">
-              <span style="color:white;font-size:${count<10?12:count<50?13:14}px;font-weight:700;">${count}</span>
-            </div>
-          </div>`,
-          iconSize: [size+ring*2, size+ring*2], iconAnchor: [(size+ring*2)/2, (size+ring*2)/2],
-        })
-      }
-      const postCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 50, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(45,107,94,0.9)') }) : L.layerGroup()
-      posts.forEach((p) => {
-        if (!p.latitude || !p.longitude) return
-        const cat = CATEGORIES[p.type as PostType]
-        const color = cat?.color ?? '#2D6B5E'
-        const catIconName = cat?.icon ?? 'MapPin'
-        const svgIcon = svgMarker(catIconName, 16)
-        const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : ''
-        const bdr = isDark ? '#121212' : 'white'
+      mapInstanceRef.current = map
+    }
+    init()
 
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="position:relative;width:36px;height:44px">
-            <div style="position:absolute;top:0;left:1px;width:34px;height:34px;border-radius:50%;background:${color};border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${svgIcon}</div>
-            <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid ${bdr}"></div>
-          </div>`,
-          iconSize: [36, 44], iconAnchor: [18, 44],
-        })
-        const marker = L.marker([p.latitude, p.longitude], { icon })
-        marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;">
-          ${p.image_url ? `<img src="${esc(p.image_url)}" style="width:calc(100%+40px);height:120px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-            <span style="width:10px;height:10px;border-radius:5px;background:${color};display:inline-block;"></span>
-            <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${color};">${esc(t(cat?.label ?? ''))}</span>
+    return () => { cancelled = true; if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null; leafletRef.current = null; initialFitDone.current = false } }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDark]) // Only recreate map on theme change
+
+  // (2) Update markers — runs when filtered data changes (does NOT destroy/recreate map)
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    const L = leafletRef.current
+    if (!map || !L) return
+
+    // Clear old marker layers
+    for (const layer of layersRef.current) { map.removeLayer(layer) }
+    layersRef.current = []
+
+    const bdr = isDark ? '#121212' : 'white'
+    const createClusterIcon = (color: string) => (cluster: any) => {
+      const count = cluster.getChildCount()
+      const size = count < 10 ? 32 : count < 50 ? 40 : 48
+      const ring = count < 10 ? 4 : count < 50 ? 5 : 6
+      return L.divIcon({
+        className: '',
+        html: `<div style="width:${size+ring*2}px;height:${size+ring*2}px;border-radius:50%;background:${color}33;display:flex;align-items:center;justify-content:center;">
+          <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;border:2px solid ${bdr};box-shadow:0 2px 6px rgba(0,0,0,0.25);">
+            <span style="color:white;font-size:${count<10?12:count<50?13:14}px;font-weight:700;">${count}</span>
           </div>
-          <div style="font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3;">${esc(p.title)}</div>
-          ${p.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.description.slice(0, 100))}</div>` : ''}
-          ${p.location ? `<div style="font-size:11px;color:#9CA3AF;margin-bottom:2px;">📍 ${esc(p.location)}</div>` : ''}
+        </div>`,
+        iconSize: [size+ring*2, size+ring*2], iconAnchor: [(size+ring*2)/2, (size+ring*2)/2],
+      })
+    }
+
+    // ── Post markers (clustered) ──
+    const postCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 50, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(45,107,94,0.9)') }) : L.layerGroup()
+    posts.forEach((p) => {
+      if (!p.latitude || !p.longitude) return
+      const cat = CATEGORIES[p.type as PostType]
+      const color = cat?.color ?? '#2D6B5E'
+      const svgIcon = svgMarker(cat?.icon ?? 'MapPin', 16)
+      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : ''
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="position:relative;width:36px;height:44px">
+          <div style="position:absolute;top:0;left:1px;width:34px;height:34px;border-radius:50%;background:${color};border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${svgIcon}</div>
+          <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid ${bdr}"></div>
+        </div>`,
+        iconSize: [36, 44], iconAnchor: [18, 44],
+      })
+      const marker = L.marker([p.latitude, p.longitude], { icon })
+      marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;">
+        ${p.image_url ? `<img src="${esc(p.image_url)}" style="width:calc(100%+40px);height:120px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="width:10px;height:10px;border-radius:5px;background:${color};display:inline-block;"></span>
+          <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${color};">${esc(t(cat?.label ?? ''))}</span>
+        </div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3;">${esc(p.title)}</div>
+        ${p.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.description.slice(0, 100))}</div>` : ''}
+        ${p.location ? `<div style="font-size:11px;color:#9CA3AF;margin-bottom:2px;">📍 ${esc(p.location)}</div>` : ''}
+        ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
+        ${p.user ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid ${isDark ? '#333' : '#eee'};">
+          ${p.user.avatar_url ? `<img src="${esc(p.user.avatar_url)}" style="width:22px;height:22px;border-radius:11px;border:1px solid ${isDark ? '#444' : '#ddd'};" onerror="this.style.display='none'" />` : ''}
+          <span style="font-size:12px;color:#6B7280;">${esc(p.user.name ?? '')}</span>
+          ${p.user.naapurusto ? `<span style="font-size:10px;color:#9CA3AF;margin-left:auto;">${esc(p.user.naapurusto)}</span>` : ''}
+        </div>` : ''}
+        ${p.daily_fee ? `<div style="margin-top:6px;"><span style="background:#FDF6E8;color:#C98B2E;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${p.daily_fee} €/pv</span></div>` : ''}
+        <a href="/post/${esc(p.id)}" style="display:block;margin-top:10px;background:${color};color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso ilmoitus →</a>
+      </div>`, { maxWidth: 300, autoPanPadding: [80, 60] })
+      postCluster.addLayer(marker)
+    })
+    map.addLayer(postCluster)
+    layersRef.current.push(postCluster)
+
+    // ── Event markers (clustered) ──
+    const eventCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 45, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(43,138,98,0.9)') }) : L.layerGroup()
+    events.forEach((e) => {
+      if (!e.location_lat || !e.location_lng) return
+      const day = new Date(e.event_date).getDate()
+      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], e.location_lat, e.location_lng)) : ''
+      const dateStr = new Date(e.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
+      const ac = (e as any).attendee_count as number | undefined
+      const attendeeBar = e.max_attendees && ac != null
+        ? `<div style="margin-top:6px;"><div style="display:flex;justify-content:space-between;font-size:10px;color:#6B7280;margin-bottom:2px;"><span>${ac}/${e.max_attendees}</span><span>${Math.round((ac/e.max_attendees)*100)}%</span></div><div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${Math.min((ac/e.max_attendees)*100,100)}%;background:${(ac/e.max_attendees)>=0.9?'#dc2626':(ac/e.max_attendees)>=0.7?'#d97706':'#2B8A62'};border-radius:2px;"></div></div></div>` : ''
+
+      const calSvg = svgMarker('CalendarDays', 18)
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="position:relative;width:36px;height:44px">
+          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${calSvg}</div>
+          <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
+        </div>`,
+        iconSize: [36, 44], iconAnchor: [18, 44],
+      })
+      const evMarker = L.marker([e.location_lat, e.location_lng], { icon })
+      evMarker.bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;">${day}</div>
+            <div><div style="font-size:12px;color:#2B8A62;font-weight:500;">${dateStr}</div><div style="font-size:9px;text-transform:uppercase;color:#9CA3AF;">Tapahtuma</div></div>
+          </div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;">${esc(e.title)}</div>
+          ${e.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(e.description)}</div>` : ''}
+          <div style="font-size:11px;color:#9CA3AF;">📅 ${dateStr}</div>
+          ${e.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(e.location_name)}</div>` : ''}
           ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-          ${p.user ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid ${isDark ? '#333' : '#eee'};">
-            ${p.user.avatar_url ? `<img src="${esc(p.user.avatar_url)}" style="width:22px;height:22px;border-radius:11px;border:1px solid ${isDark ? '#444' : '#ddd'};" onerror="this.style.display='none'" />` : ''}
-            <span style="font-size:12px;color:#6B7280;">${esc(p.user.name ?? '')}</span>
-            ${p.user.naapurusto ? `<span style="font-size:10px;color:#9CA3AF;margin-left:auto;">${esc(p.user.naapurusto)}</span>` : ''}
-          </div>` : ''}
-          ${p.daily_fee ? `<div style="margin-top:6px;"><span style="background:#FDF6E8;color:#C98B2E;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${p.daily_fee} €/pv</span></div>` : ''}
-          <a href="/post/${esc(p.id)}" style="display:block;margin-top:10px;background:${color};color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso ilmoitus →</a>
-        </div>`, { maxWidth: 300, autoPanPadding: [80, 60] })
-        postCluster.addLayer(marker)
+          ${attendeeBar}
+          <a href="/events?highlight=${esc(e.id)}" style="display:block;margin-top:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
+        </div>`, { maxWidth: 280 })
+      eventCluster.addLayer(evMarker)
+    })
+    map.addLayer(eventCluster)
+    layersRef.current.push(eventCluster)
+
+    // ── City event markers (clustered) ──
+    const cityCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 45, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(142,68,173,0.9)') }) : L.layerGroup()
+    cityEvents.forEach((ce) => {
+      if (!ce.latitude || !ce.longitude) return
+      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude)) : ''
+      const catCfg = CITY_EVENT_CATS[ce.category] ?? CITY_EVENT_CATS.other
+      const catColor = catCfg.color
+      const catSvg = svgMarker(catCfg.icon, 16)
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="position:relative;width:36px;height:44px">
+          <div style="width:36px;height:36px;border-radius:14px;background:linear-gradient(135deg,${catColor},${catColor}dd);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${catSvg}</div>
+          <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
+        </div>`,
+        iconSize: [36, 44], iconAnchor: [18, 44],
       })
-      map.addLayer(postCluster)
-
-      // ── Event markers ──
-      events.forEach((e) => {
-        if (!e.location_lat || !e.location_lng) return
-        const day = new Date(e.event_date).getDate()
-        const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], e.location_lat, e.location_lng)) : ''
-        const dateStr = new Date(e.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
-        const attendeeBar = e.max_attendees && e.attendee_count != null
-          ? `<div style="margin-top:6px;"><div style="display:flex;justify-content:space-between;font-size:10px;color:#6B7280;margin-bottom:2px;"><span>${e.attendee_count}/${e.max_attendees}</span><span>${Math.round((e.attendee_count/e.max_attendees)*100)}%</span></div><div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${Math.min((e.attendee_count/e.max_attendees)*100,100)}%;background:${(e.attendee_count/e.max_attendees)>=0.9?'#dc2626':(e.attendee_count/e.max_attendees)>=0.7?'#d97706':'#2B8A62'};border-radius:2px;"></div></div></div>` : ''
-
-        const calSvg = svgMarker('CalendarDays', 18)
-        const bdr = isDark ? '#121212' : 'white'
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="position:relative;width:36px;height:44px">
-            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${calSvg}</div>
-            <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
-          </div>`,
-          iconSize: [36, 44], iconAnchor: [18, 44],
-        })
-        L.marker([e.location_lat, e.location_lng], { icon }).addTo(map)
-          .bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-              <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;">${day}</div>
-              <div><div style="font-size:12px;color:#2B8A62;font-weight:500;">${dateStr}</div><div style="font-size:9px;text-transform:uppercase;color:#9CA3AF;">Tapahtuma</div></div>
-            </div>
-            <div style="font-size:15px;font-weight:600;margin-bottom:4px;">${esc(e.title)}</div>
-            ${e.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(e.description)}</div>` : ''}
-            <div style="font-size:11px;color:#9CA3AF;">📅 ${dateStr}</div>
-            ${e.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(e.location_name)}</div>` : ''}
-            ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-            ${attendeeBar}
-            <a href="/events?highlight=${esc(e.id)}" style="display:block;margin-top:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
-          </div>`, { maxWidth: 280 })
-      })
-
-      // ── City event markers (clustered) ──
-      const cityCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 45, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(142,68,173,0.9)') }) : L.layerGroup()
-      cityEvents.forEach((ce) => {
-        if (!ce.latitude || !ce.longitude) return
-        const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude)) : ''
-        const catCfg = CITY_EVENT_CATS[ce.category] ?? CITY_EVENT_CATS.other
-        const catColor = catCfg.color
-        const catSvg = svgMarker(catCfg.icon, 16)
-        const bdr = isDark ? '#121212' : 'white'
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="position:relative;width:36px;height:44px">
-            <div style="width:36px;height:36px;border-radius:14px;background:linear-gradient(135deg,${catColor},${catColor}dd);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${catSvg}</div>
-            <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
-          </div>`,
-          iconSize: [36, 44], iconAnchor: [18, 44],
-        })
-        const ceMarker = L.marker([ce.latitude, ce.longitude], { icon })
-        const ceInfoUrl = safeUrl(ce.info_url)
-        ceMarker
-          .bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
-            ${ce.image_url ? `<img src="${esc(ce.image_url)}" style="width:calc(100%+40px);height:100px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
-            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(ce.name_fi)}</div>
-            <div style="font-size:12px;color:#3B7DD8;">${new Date(ce.start_time).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-            ${ce.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(ce.location_name)}</div>` : ''}
-            ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-            ${ce.is_free ? '<div style="margin-top:4px;"><span style="background:#E8F7EF;color:#2B8A62;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">✓ Ilmainen</span></div>' : ce.price_info ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;">${esc(ce.price_info)}</div>` : ''}
-            ${ceInfoUrl ? `<a href="${esc(ceInfoUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:10px;background:linear-gradient(135deg,#3B7DD8,#6366F1);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : ''}
-          </div>`, { maxWidth: 280 })
-        cityCluster.addLayer(ceMarker)
-      })
-      map.addLayer(cityCluster)
-
-      // ── Place markers (clustered) ──
-      const placeCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 60, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(201,139,46,0.9)') }) : L.layerGroup()
-      places.forEach((pl) => {
-        if (!pl.latitude || !pl.longitude) return
-        const placeEmoji = PLACE_ICONS[pl.category] ?? '📍'
-        const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : ''
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="width:28px;height:34px;position:relative;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.2));">
-            <div style="width:26px;height:26px;border-radius:6px;background:${isDark?'rgba(120,113,108,0.9)':'rgba(120,113,108,0.85)'};border:2px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:13px;">${placeEmoji}</div>
-            <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid rgba(120,113,108,0.85);margin:-1px auto 0;"></div>
-          </div>`,
-          iconSize: [28, 34], iconAnchor: [14, 34],
-        })
-        const marker = L.marker([pl.latitude, pl.longitude], { icon })
-        const plWebsite = safeUrl(pl.website)
-        marker.bindPopup(`<div style="font-family:system-ui;min-width:180px;max-width:220px;">
-          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(pl.name)}</div>
-          ${pl.address ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(pl.address)}</div>` : ''}
+      const ceMarker = L.marker([ce.latitude, ce.longitude], { icon })
+      const ceInfoUrl = safeUrl(ce.info_url)
+      ceMarker
+        .bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
+          ${ce.image_url ? `<img src="${esc(ce.image_url)}" style="width:calc(100%+40px);height:100px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(ce.name_fi)}</div>
+          <div style="font-size:12px;color:#3B7DD8;">${new Date(ce.start_time).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+          ${ce.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(ce.location_name)}</div>` : ''}
           ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-          ${pl.opening_hours ? `<div style="font-size:10px;color:#9CA3AF;margin-top:2px;">🕐 ${esc(pl.opening_hours)}</div>` : ''}
-          ${pl.phone ? `<div style="margin-top:4px;"><a href="tel:${esc(pl.phone)}" style="color:#3B7DD8;font-size:12px;">📞 ${esc(pl.phone)}</a></div>` : ''}
-          ${plWebsite ? `<a href="${esc(plWebsite)}" target="_blank" rel="noopener" style="display:block;margin-top:6px;color:#3B7DD8;font-size:12px;">🌐 Verkkosivut</a>` : ''}
-          <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${pl.latitude},${pl.longitude}" target="_blank" rel="noopener" style="display:block;margin-top:8px;background:#78716C;color:white;text-align:center;padding:7px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet →</a>
-        </div>`, { maxWidth: 240 })
-        placeCluster.addLayer(marker)
-      })
-      map.addLayer(placeCluster)
+          ${ce.is_free ? '<div style="margin-top:4px;"><span style="background:#E8F7EF;color:#2B8A62;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">✓ Ilmainen</span></div>' : ce.price_info ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;">${esc(ce.price_info)}</div>` : ''}
+          ${ceInfoUrl ? `<a href="${esc(ceInfoUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:10px;background:linear-gradient(135deg,#3B7DD8,#6366F1);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : ''}
+        </div>`, { maxWidth: 280 })
+      cityCluster.addLayer(ceMarker)
+    })
+    map.addLayer(cityCluster)
+    layersRef.current.push(cityCluster)
 
-      // ── Fit bounds — restrict to Helsinki metro area ──
+    // ── Place markers (clustered) ──
+    const placeCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 60, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(201,139,46,0.9)') }) : L.layerGroup()
+    places.forEach((pl) => {
+      if (!pl.latitude || !pl.longitude) return
+      const placeEmoji = PLACE_ICONS[pl.category] ?? '📍'
+      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : ''
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:28px;height:34px;position:relative;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.2));">
+          <div style="width:26px;height:26px;border-radius:6px;background:${isDark?'rgba(120,113,108,0.9)':'rgba(120,113,108,0.85)'};border:2px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:13px;">${placeEmoji}</div>
+          <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid rgba(120,113,108,0.85);margin:-1px auto 0;"></div>
+        </div>`,
+        iconSize: [28, 34], iconAnchor: [14, 34],
+      })
+      const marker = L.marker([pl.latitude, pl.longitude], { icon })
+      const plWebsite = safeUrl(pl.website)
+      marker.bindPopup(`<div style="font-family:system-ui;min-width:180px;max-width:220px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(pl.name)}</div>
+        ${pl.address ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(pl.address)}</div>` : ''}
+        ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
+        ${pl.opening_hours ? `<div style="font-size:10px;color:#9CA3AF;margin-top:2px;">🕐 ${esc(pl.opening_hours)}</div>` : ''}
+        ${pl.phone ? `<div style="margin-top:4px;"><a href="tel:${esc(pl.phone)}" style="color:#3B7DD8;font-size:12px;">📞 ${esc(pl.phone)}</a></div>` : ''}
+        ${plWebsite ? `<a href="${esc(plWebsite)}" target="_blank" rel="noopener" style="display:block;margin-top:6px;color:#3B7DD8;font-size:12px;">🌐 Verkkosivut</a>` : ''}
+        <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${pl.latitude},${pl.longitude}" target="_blank" rel="noopener" style="display:block;margin-top:8px;background:#78716C;color:white;text-align:center;padding:7px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet →</a>
+      </div>`, { maxWidth: 240 })
+      placeCluster.addLayer(marker)
+    })
+    map.addLayer(placeCluster)
+    layersRef.current.push(placeCluster)
+
+    // ── Fit bounds on first data load only ──
+    if (!initialFitDone.current) {
       const allLatLngs: [number, number][] = [
         ...posts.filter(p => p.latitude && p.longitude && isInHelsinki(p.latitude, p.longitude)).map(p => [p.latitude!, p.longitude!] as [number, number]),
         ...events.filter(e => e.location_lat && e.location_lng && isInHelsinki(e.location_lat, e.location_lng)).map(e => [e.location_lat!, e.location_lng!] as [number, number]),
@@ -377,12 +401,34 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       if (allLatLngs.length > 2) {
         try { map.fitBounds(L.latLngBounds(allLatLngs), { padding: [40, 40], maxZoom: 14 }) } catch {}
       }
-
-      mapInstanceRef.current = map
-    })
-
-    return () => { if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null } }
+      initialFitDone.current = true
+    }
   }, [posts, events, cityEvents, places, userPos, radiusKm, isDark, t])
+
+  // (3) User position + radius circle — separate layer so it doesn't flicker
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    const L = leafletRef.current
+    if (!map || !L) return
+    if (userLayerRef.current) { map.removeLayer(userLayerRef.current); userLayerRef.current = null }
+    if (!userPos) return
+
+    const group = L.layerGroup()
+    const userIcon = L.divIcon({
+      className: '',
+      html: `<div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+        <div style="width:18px;height:18px;border-radius:50%;background:#3B82F4;border:3px solid white;box-shadow:0 1px 6px rgba(59,130,244,0.4);"></div>
+        <div style="position:absolute;width:36px;height:36px;border-radius:50%;background:rgba(59,130,244,0.15);animation:userPulse 2.5s ease-out infinite;"></div>
+      </div>`,
+      iconSize: [40, 40], iconAnchor: [20, 20],
+    })
+    L.marker(userPos, { icon: userIcon, interactive: false }).addTo(group)
+    if (radiusKm) {
+      L.circle(userPos, { radius: radiusKm * 1000, color: '#4285F4', weight: 2, dashArray: '6 4', fillColor: '#4285F4', fillOpacity: isDark ? 0.12 : 0.08, interactive: false }).addTo(group)
+    }
+    group.addTo(map)
+    userLayerRef.current = group
+  }, [userPos, radiusKm, isDark])
 
   // Fly to selected area
   useEffect(() => {
@@ -391,21 +437,12 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
     if (coords) mapInstanceRef.current.flyTo(coords, 15, { duration: 1 })
   }, [selectedArea])
 
-  // Fly to search result
+  // Fly to search result, then reset
   useEffect(() => {
     if (!flyTo || !mapInstanceRef.current) return
     mapInstanceRef.current.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom, { duration: 1 })
-  }, [flyTo])
-
-  // Collapse filters on map interaction
-  useEffect(() => {
-    if (!mapInstanceRef.current || !onMapInteraction) return
-    const map = mapInstanceRef.current
-    const handler = () => onMapInteraction()
-    map.on('movestart', handler)
-    map.on('zoomstart', handler)
-    return () => { map.off('movestart', handler); map.off('zoomstart', handler) }
-  }, [onMapInteraction])
+    onFlyComplete?.()
+  }, [flyTo, onFlyComplete])
 
   if (Platform.OS !== 'web') return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text>Kartta vaatii web-ympäristön</Text></View>
   return <div ref={mapRef as any} style={{ width: '100%', height: '100%' }} />
@@ -465,7 +502,7 @@ export default function MapScreen() {
           .not('longitude', 'is', null)
           .limit(200),
         supabase.from('events')
-          .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
+          .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, attendees:event_attendees(count), creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
           .gte('event_date', new Date().toISOString())
           .not('location_lat', 'is', null)
@@ -485,7 +522,13 @@ export default function MapScreen() {
       ])
 
       setPosts(postsRes.status === 'fulfilled' ? (postsRes.value.data ?? []) as unknown as Post[] : [])
-      setEvents(eventsRes.status === 'fulfilled' ? (eventsRes.value.data ?? []) as unknown as Event[] : [])
+      // Normalize attendee count from join result
+      const rawEvents = eventsRes.status === 'fulfilled' ? (eventsRes.value.data ?? []) : []
+      setEvents(rawEvents.map((e: any) => ({
+        ...e,
+        attendee_count: (e.attendees as { count: number }[])?.[0]?.count ?? 0,
+        creator: Array.isArray(e.creator) ? e.creator[0] ?? null : e.creator ?? null,
+      })) as unknown as Event[])
       setCityEvents(cityRes.status === 'fulfilled' ? (cityRes.value.data ?? []) as unknown as CityEvent[] : [])
       setPlaces(placesRes.status === 'fulfilled' ? (placesRes.value.data ?? []) as unknown as LocalPlace[] : [])
 
@@ -638,7 +681,7 @@ export default function MapScreen() {
       {/* ── Map ── */}
       <View style={ms.mapWrap}>
         {loading ? <View style={ms.loadingWrap}><ActivityIndicator size="large" color={colors.primary} /></View> : (
-          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onMapInteraction={() => { setActiveSubFilter(null); setShowAreaPicker(false); setShowSearch(false) }} isDark={isDark} t={t} />
+          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onFlyComplete={() => setFlyTo(null)} onMapInteraction={() => { setActiveSubFilter(null); setShowAreaPicker(false); setShowSearch(false) }} isDark={isDark} t={t} />
         )}
       </View>
 
