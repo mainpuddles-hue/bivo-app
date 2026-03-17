@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Eye, EyeOff, Check, X, Chrome } from 'lucide-react-native'
+import { Eye, EyeOff, Check, X } from 'lucide-react-native'
+import { GoogleLogo } from '@/components/GoogleLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -109,11 +110,24 @@ export default function LoginScreen() {
     } finally { setLoading(false) }
   }
 
-  const handleGoogleOAuth = () => {
-    Alert.alert(
-      'Google-kirjautuminen',
-      'Google OAuth vaatii natiivibuildin (ei saatavilla Expo Go:ssa). Käytä sähköpostia ja salasanaa.',
-    )
+  const handleGoogleOAuth = async () => {
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://dist-two-navy-29.vercel.app/auth/callback',
+        },
+      })
+      if (error) {
+        Alert.alert(t('common.error'), t('auth.googleFailed'))
+        setLoading(false)
+      }
+      // Don't reset loading — browser navigates to Google
+    } catch {
+      Alert.alert(t('common.error'), t('auth.googleFailedNetwork'))
+      setLoading(false)
+    }
   }
 
   return (
@@ -173,9 +187,9 @@ export default function LoginScreen() {
                 onPress={handleGoogleOAuth}
                 style={[styles.googleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
               >
-                <Chrome size={20} color={colors.foreground} />
+                <GoogleLogo size={20} />
                 <Text style={[styles.googleBtnText, { color: colors.foreground }]}>
-                  {t('auth.continueWithGoogle')}
+                  {t('auth.signInWithGoogle')}
                 </Text>
               </Pressable>
             )}
