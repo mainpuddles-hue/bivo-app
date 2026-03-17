@@ -2,18 +2,14 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, Platform, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Image } from 'expo-image'
 import {
-  ArrowLeft, Search, X, MapPin, Navigation, Layers,
-  ChevronDown, Minus, Plus,
-  Newspaper, CalendarDays, Coffee,
-  HandHelping, Gift, Heart, Zap, BookOpen,
+  ArrowLeft, Search, X, MapPin, Navigation, ChevronDown,
+  Newspaper, CalendarDays, Coffee, Crosshair,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
-import { formatTimeAgo } from '@/lib/format'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 
 const HELSINKI_CENTER: [number, number] = [60.1699, 24.9384]
@@ -35,29 +31,28 @@ const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
   'Malmi': [60.2490, 25.0110], 'Oulunkylä': [60.2290, 24.9590],
 }
 
-// Leaflet map rendered via dangerouslySetInnerHTML on web
-function LeafletMap({ posts, events, cityEvents, places, center, zoom, selectedArea, onMarkerClick, colors, isDark, t, locale }: {
-  posts: Post[]
-  events: Event[]
-  cityEvents: CityEvent[]
-  places: LocalPlace[]
-  center: [number, number]
-  zoom: number
-  selectedArea: string | null
-  onMarkerClick: (type: string, id: string) => void
-  colors: any
-  isDark: boolean
-  t: any
-  locale: string
+const CAT_ICONS: Record<string, string> = {
+  tarvitsen: '🤝', tarjoan: '🎁', ilmaista: '💙', nappaa: '⚡', lainaa: '📖', tapahtuma: '📅',
+}
+
+const PLACE_ICONS: Record<string, string> = {
+  restaurant: '🍽️', cafe: '☕', bar: '🍺', shop: '🛒', library: '📚',
+  health: '🏥', sport: '⚽', culture: '🎭', hotel: '🏨', attraction: '⭐',
+  service: '🔧', fast_food: '🍔', pub: '🍺', other: '📍',
+}
+
+// ── Leaflet Map (web only) ──
+function LeafletMap({ posts, events, cityEvents, places, selectedArea, isDark, t }: {
+  posts: Post[]; events: Event[]; cityEvents: CityEvent[]; places: LocalPlace[]
+  selectedArea: string | null; isDark: boolean; t: any
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
 
   useEffect(() => {
-    if (Platform.OS !== 'web' || !mapRef.current) return
-    if (typeof window === 'undefined') return
+    if (Platform.OS !== 'web' || !mapRef.current || typeof window === 'undefined') return
 
-    // Load Leaflet CSS
+    // Load Leaflet CSS + JS
     if (!document.getElementById('leaflet-css')) {
       const link = document.createElement('link')
       link.id = 'leaflet-css'
@@ -66,161 +61,136 @@ function LeafletMap({ posts, events, cityEvents, places, center, zoom, selectedA
       document.head.appendChild(link)
     }
 
-    // Load Leaflet JS
-    const loadLeaflet = () => {
-      return new Promise<void>((resolve) => {
-        if ((window as any).L) { resolve(); return }
-        const script = document.createElement('script')
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-        script.onload = () => resolve()
-        document.head.appendChild(script)
-      })
-    }
+    const loadLeaflet = (): Promise<any> => new Promise((resolve) => {
+      if ((window as any).L) { resolve((window as any).L); return }
+      const s = document.createElement('script')
+      s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+      s.onload = () => resolve((window as any).L)
+      document.head.appendChild(s)
+    })
 
-    loadLeaflet().then(() => {
-      const L = (window as any).L
+    loadLeaflet().then((L) => {
       if (!L || !mapRef.current) return
+      if (mapInstanceRef.current) mapInstanceRef.current.remove()
 
-      // Destroy existing map
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-      }
+      const map = L.map(mapRef.current, { zoomControl: false }).setView(HELSINKI_CENTER, DEFAULT_ZOOM)
 
-      const map = L.map(mapRef.current, {
-        zoomControl: false,
-      }).setView(center, zoom)
+      L.tileLayer(
+        isDark
+          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        { attribution: '&copy; OSM &copy; CARTO', maxZoom: 19 }
+      ).addTo(map)
 
-      // Tile layer — dark/light
-      const tileUrl = isDark
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+      L.control.zoom({ position: 'bottomright' }).addTo(map)
 
-      L.tileLayer(tileUrl, {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        maxZoom: 19,
-      }).addTo(map)
-
-      // Zoom control top-right
-      L.control.zoom({ position: 'topright' }).addTo(map)
-
-      // Post markers
-      posts.forEach((post) => {
-        if (!post.latitude || !post.longitude) return
-        const cat = CATEGORIES[post.type as PostType]
-        const color = cat?.color ?? colors.primary
+      // ── Post markers (large, colorful, with icons) ──
+      posts.forEach((p) => {
+        if (!p.latitude || !p.longitude) return
+        const cat = CATEGORIES[p.type as PostType]
+        const color = cat?.color ?? '#2D6B5E'
+        const emoji = CAT_ICONS[p.type] ?? '📌'
 
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:32px;height:32px;border-radius:50%;background:${color};border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);">
-            <span style="color:white;font-size:14px;font-weight:bold;">${post.type.charAt(0).toUpperCase()}</span>
-          </div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
+          html: `<div style="width:40px;height:40px;border-radius:50%;background:${color};border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:18px;cursor:pointer;">${emoji}</div>`,
+          iconSize: [40, 40], iconAnchor: [20, 20],
         })
 
-        const marker = L.marker([post.latitude, post.longitude], { icon }).addTo(map)
-
-        const popupHtml = `
-          <div style="min-width:200px;font-family:system-ui;">
-            ${post.image_url ? `<img src="${post.image_url}" style="width:100%;height:100px;object-fit:cover;border-radius:8px 8px 0 0;margin:-12px -12px 8px -12px;width:calc(100% + 24px);" />` : ''}
-            <div style="padding:4px 0;">
-              <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
-                <span style="width:8px;height:8px;border-radius:4px;background:${color};"></span>
-                <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:${color};">${t(cat?.label ?? '')}</span>
-              </div>
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${post.title}</div>
-              ${post.location ? `<div style="font-size:11px;color:#9CA3AF;display:flex;align-items:center;gap:3px;">📍 ${post.location}</div>` : ''}
-              ${post.user ? `<div style="font-size:11px;color:#9CA3AF;margin-top:6px;">${post.user.name}</div>` : ''}
+        L.marker([p.latitude, p.longitude], { icon }).addTo(map)
+          .bindPopup(`<div style="font-family:system-ui;min-width:220px;">
+            ${p.image_url ? `<img src="${p.image_url}" style="width:calc(100% + 40px);height:120px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" />` : ''}
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:${color};"></span>
+              <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${color};">${t(cat?.label ?? '')}</span>
             </div>
-          </div>
-        `
-        marker.bindPopup(popupHtml, { maxWidth: 260 })
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px;">${p.title}</div>
+            ${p.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.description.slice(0, 80)}</div>` : ''}
+            ${p.location ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${p.location}</div>` : ''}
+            ${p.user ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #eee;">
+              ${p.user.avatar_url ? `<img src="${p.user.avatar_url}" style="width:22px;height:22px;border-radius:11px;" />` : ''}
+              <span style="font-size:12px;color:#6B7280;">${p.user.name}</span>
+              ${p.user.naapurusto ? `<span style="font-size:10px;color:#9CA3AF;margin-left:auto;">${p.user.naapurusto}</span>` : ''}
+            </div>` : ''}
+          </div>`, { maxWidth: 280 })
       })
 
-      // Event markers
-      events.forEach((event) => {
-        if (!event.location_lat || !event.location_lng) return
-        const day = new Date(event.event_date).getDate()
-
+      // ── Event markers (green rounded squares with day) ──
+      events.forEach((e) => {
+        if (!e.location_lat || !e.location_lng) return
+        const day = new Date(e.event_date).getDate()
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:32px;height:32px;border-radius:8px;background:#2B8A62;border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);">
-            <span style="color:white;font-size:12px;font-weight:bold;">${day}</span>
+          html: `<div style="width:38px;height:38px;border-radius:10px;background:#2B8A62;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;">
+            <span style="color:white;font-size:14px;font-weight:700;">${day}</span>
           </div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
+          iconSize: [38, 38], iconAnchor: [19, 19],
         })
-
-        L.marker([event.location_lat, event.location_lng], { icon })
-          .addTo(map)
-          .bindPopup(`<div style="font-family:system-ui;"><div style="font-size:14px;font-weight:600;">${event.title}</div><div style="font-size:11px;color:#2B8A62;">${new Date(event.event_date).toLocaleDateString()}</div>${event.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${event.location_name}</div>` : ''}</div>`, { maxWidth: 220 })
+        L.marker([e.location_lat, e.location_lng], { icon }).addTo(map)
+          .bindPopup(`<div style="font-family:system-ui;min-width:200px;">
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px;">${e.title}</div>
+            <div style="font-size:12px;color:#2B8A62;font-weight:500;">${new Date(e.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+            ${e.location_name ? `<div style="font-size:11px;color:#9CA3AF;margin-top:4px;">📍 ${e.location_name}</div>` : ''}
+            ${e.attendee_count ? `<div style="font-size:11px;color:#9CA3AF;">👥 ${e.attendee_count} osallistujaa</div>` : ''}
+          </div>`, { maxWidth: 240 })
       })
 
-      // City event markers
+      // ── City event markers (blue gradient with category) ──
       cityEvents.forEach((ce) => {
         if (!ce.latitude || !ce.longitude) return
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:28px;height:28px;border-radius:6px;background:#3B7DD8;border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);">
-            <span style="color:white;font-size:10px;font-weight:bold;">H</span>
+          html: `<div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#3B7DD8,#6366F1);border:2.5px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;">
+            <span style="font-size:14px;">🎵</span>
           </div>`,
-          iconSize: [28, 28],
-          iconAnchor: [14, 14],
+          iconSize: [36, 36], iconAnchor: [18, 18],
         })
-
-        L.marker([ce.latitude, ce.longitude], { icon })
-          .addTo(map)
-          .bindPopup(`<div style="font-family:system-ui;">${ce.image_url ? `<img src="${ce.image_url}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:6px;" />` : ''}<div style="font-size:14px;font-weight:600;">${ce.name_fi}</div><div style="font-size:11px;color:#3B7DD8;">${new Date(ce.start_time).toLocaleDateString()}</div>${ce.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${ce.location_name}</div>` : ''}${ce.is_free ? '<div style="font-size:10px;color:#2B8A62;font-weight:600;margin-top:4px;">Ilmainen</div>' : ''}</div>`, { maxWidth: 240 })
+        L.marker([ce.latitude, ce.longitude], { icon }).addTo(map)
+          .bindPopup(`<div style="font-family:system-ui;min-width:200px;">
+            ${ce.image_url ? `<img src="${ce.image_url}" style="width:calc(100% + 40px);height:100px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" />` : ''}
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${ce.name_fi}</div>
+            <div style="font-size:12px;color:#3B7DD8;">${new Date(ce.start_time).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+            ${ce.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${ce.location_name}</div>` : ''}
+            ${ce.is_free ? '<div style="font-size:11px;color:#2B8A62;font-weight:600;margin-top:4px;">✓ Ilmainen</div>' : ''}
+          </div>`, { maxWidth: 260 })
       })
 
-      // Place markers
-      places.forEach((place) => {
-        if (!place.latitude || !place.longitude) return
+      // ── Place markers (colored rounded squares with category emoji) ──
+      places.forEach((pl) => {
+        if (!pl.latitude || !pl.longitude) return
+        const emoji = PLACE_ICONS[pl.category] ?? '📍'
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:24px;height:24px;border-radius:6px;background:#F59E0B;border:1.5px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.2);">
-            <span style="color:white;font-size:9px;font-weight:bold;">☕</span>
-          </div>`,
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
+          html: `<div style="width:30px;height:30px;border-radius:8px;background:#78716C;border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:pointer;font-size:14px;">${emoji}</div>`,
+          iconSize: [30, 30], iconAnchor: [15, 15],
         })
-
-        L.marker([place.latitude, place.longitude], { icon })
-          .addTo(map)
-          .bindPopup(`<div style="font-family:system-ui;"><div style="font-size:13px;font-weight:600;">${place.name}</div>${place.address ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${place.address}</div>` : ''}${place.opening_hours ? `<div style="font-size:10px;color:#9CA3AF;">🕐 ${place.opening_hours}</div>` : ''}</div>`, { maxWidth: 200 })
+        L.marker([pl.latitude, pl.longitude], { icon }).addTo(map)
+          .bindPopup(`<div style="font-family:system-ui;min-width:180px;">
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${pl.name}</div>
+            ${pl.address ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${pl.address}</div>` : ''}
+            ${pl.opening_hours ? `<div style="font-size:10px;color:#9CA3AF;margin-top:2px;">🕐 ${pl.opening_hours}</div>` : ''}
+            ${pl.phone ? `<div style="font-size:11px;margin-top:4px;"><a href="tel:${pl.phone}" style="color:#3B7DD8;">${pl.phone}</a></div>` : ''}
+          </div>`, { maxWidth: 220 })
       })
 
       mapInstanceRef.current = map
     })
 
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
-    }
-  }, [posts, events, cityEvents, places, center, zoom, isDark, colors, t])
+    return () => { if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null } }
+  }, [posts, events, cityEvents, places, isDark, t])
 
-  // Fly to selected area
+  // Fly to area
   useEffect(() => {
     if (!selectedArea || !mapInstanceRef.current) return
     const coords = NEIGHBORHOOD_COORDS[selectedArea]
-    if (coords) {
-      mapInstanceRef.current.flyTo(coords, 15, { duration: 1 })
-    }
+    if (coords) mapInstanceRef.current.flyTo(coords, 15, { duration: 1 })
   }, [selectedArea])
 
-  if (Platform.OS !== 'web') {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Kartta ei ole saatavilla tässä ympäristössä</Text>
-      </View>
-    )
-  }
-
+  if (Platform.OS !== 'web') return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text>Kartta vaatii web-ympäristön</Text></View>
   return <div ref={mapRef as any} style={{ width: '100%', height: '100%' }} />
 }
 
+// ── Main Screen ──
 export default function MapScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -234,10 +204,9 @@ export default function MapScreen() {
   const [places, setPlaces] = useState<LocalPlace[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Filters
   const [showPosts, setShowPosts] = useState(true)
   const [showEvents, setShowEvents] = useState(true)
-  const [showPlaces, setShowPlaces] = useState(false)
+  const [showPlaces, setShowPlaces] = useState(true) // ON by default like web
   const [postFilter, setPostFilter] = useState<PostType | null>(null)
   const [selectedArea, setSelectedArea] = useState<string | null>(null)
   const [showAreaPicker, setShowAreaPicker] = useState(false)
@@ -249,9 +218,9 @@ export default function MapScreen() {
     async function fetchData() {
       const [postsRes, eventsRes, cityRes, placesRes] = await Promise.all([
         supabase.from('posts').select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user_id, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)').eq('is_active', true).not('latitude', 'is', null).limit(200),
-        supabase.from('events').select('*, creator:profiles!events_creator_id_fkey(id, name, avatar_url)').eq('is_active', true).not('location_lat', 'is', null).gte('event_date', new Date().toISOString()).limit(50),
-        supabase.from('city_events').select('*').not('latitude', 'is', null).gte('start_time', new Date().toISOString()).limit(50),
-        supabase.from('local_places').select('*').limit(200),
+        supabase.from('events').select('*, creator:profiles!events_creator_id_fkey(id, name, avatar_url)').eq('is_active', true).gte('event_date', new Date().toISOString()).limit(100),
+        supabase.from('city_events').select('*').gte('start_time', new Date().toISOString()).limit(100),
+        supabase.from('local_places').select('*').limit(500),
       ])
       setPosts((postsRes.data ?? []) as unknown as Post[])
       setEvents((eventsRes.data ?? []) as unknown as Event[])
@@ -262,239 +231,215 @@ export default function MapScreen() {
     fetchData()
   }, [supabase])
 
-  // Filter data
   const filteredPosts = useMemo(() => {
-    let p = posts
+    let p = showPosts ? posts : []
     if (postFilter) p = p.filter(x => x.type === postFilter)
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      p = p.filter(x => x.title.toLowerCase().includes(q) || x.location?.toLowerCase().includes(q))
-    }
+    if (searchQuery) { const q = searchQuery.toLowerCase(); p = p.filter(x => x.title.toLowerCase().includes(q) || x.location?.toLowerCase().includes(q)) }
     return p
-  }, [posts, postFilter, searchQuery])
+  }, [posts, showPosts, postFilter, searchQuery])
 
   const filteredEvents = useMemo(() => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      return events.filter(e => e.title.toLowerCase().includes(q))
-    }
+    if (!showEvents) return []
+    if (searchQuery) { const q = searchQuery.toLowerCase(); return events.filter(e => e.title.toLowerCase().includes(q)) }
     return events
-  }, [events, searchQuery])
+  }, [events, showEvents, searchQuery])
 
-  const visiblePosts = showPosts ? filteredPosts : []
-  const visibleEvents = showEvents ? filteredEvents : []
   const visibleCityEvents = showEvents ? cityEvents : []
   const visiblePlaces = showPlaces ? places : []
-  const totalVisible = visiblePosts.length + visibleEvents.length + visibleCityEvents.length + visiblePlaces.length
-
-  const handleMarkerClick = useCallback((type: string, id: string) => {
-    if (type === 'post') router.push(`/post/${id}`)
-  }, [router])
+  const totalVisible = filteredPosts.length + filteredEvents.length + visibleCityEvents.length + visiblePlaces.length
 
   return (
-    <View style={[s.container, { backgroundColor: colors.background }]}>
+    <View style={[ms.container, { backgroundColor: colors.background }]}>
       {/* Map */}
-      <View style={s.mapWrap}>
+      <View style={ms.mapWrap}>
         {loading ? (
-          <View style={s.loadingWrap}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
+          <View style={ms.loadingWrap}><ActivityIndicator size="large" color={colors.primary} /></View>
         ) : (
           <LeafletMap
-            posts={visiblePosts}
-            events={visibleEvents}
-            cityEvents={visibleCityEvents}
-            places={visiblePlaces}
-            center={selectedArea && NEIGHBORHOOD_COORDS[selectedArea] ? NEIGHBORHOOD_COORDS[selectedArea] : HELSINKI_CENTER}
-            zoom={DEFAULT_ZOOM}
-            selectedArea={selectedArea}
-            onMarkerClick={handleMarkerClick}
-            colors={colors}
-            isDark={isDark}
-            t={t}
-            locale={locale}
+            posts={filteredPosts} events={filteredEvents}
+            cityEvents={visibleCityEvents} places={visiblePlaces}
+            selectedArea={selectedArea} isDark={isDark} t={t}
           />
         )}
       </View>
 
-      {/* Header overlay */}
-      <View style={[s.headerOverlay, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={() => router.back()} style={[s.overlayBtn, { backgroundColor: colors.card }]}>
+      {/* ── Top bar: Back + Area + Search ── */}
+      <View style={[ms.topBar, { paddingTop: insets.top + 4 }]}>
+        <Pressable onPress={() => router.back()} style={[ms.topBtn, { backgroundColor: colors.card }]}>
           <ArrowLeft size={20} color={colors.foreground} />
         </Pressable>
-
-        {/* Area selector */}
-        <Pressable onPress={() => setShowAreaPicker(!showAreaPicker)} style={[s.areaBtn, { backgroundColor: colors.card }]}>
-          <MapPin size={14} color={colors.primary} />
-          <Text style={[s.areaBtnText, { color: colors.foreground }]} numberOfLines={1}>
-            {selectedArea ?? 'Helsinki'}
+        <Pressable onPress={() => { setShowAreaPicker(!showAreaPicker); setShowSearch(false) }} style={[ms.areaBtn, { backgroundColor: colors.card }]}>
+          <Navigation size={14} color={colors.primary} />
+          <Text style={[ms.areaBtnText, { color: colors.foreground }]} numberOfLines={1}>
+            {selectedArea ?? t('map.allHelsinki')}
           </Text>
           <ChevronDown size={14} color={colors.mutedForeground} />
         </Pressable>
-
-        {/* Search toggle */}
-        <Pressable onPress={() => setShowSearch(!showSearch)} style={[s.overlayBtn, { backgroundColor: colors.card }]}>
+        <Pressable onPress={() => { setShowSearch(!showSearch); setShowAreaPicker(false) }} style={[ms.topBtn, { backgroundColor: colors.card }]}>
           <Search size={20} color={colors.foreground} />
         </Pressable>
       </View>
 
-      {/* Area picker dropdown */}
+      {/* ── Layer toggle pills (below top bar, like web) ── */}
+      <View style={[ms.layerBar, { top: insets.top + 52 }]}>
+        <Pressable onPress={() => setShowPosts(!showPosts)} style={[ms.layerPill, { backgroundColor: showPosts ? colors.primary : colors.card }]}>
+          <Newspaper size={14} color={showPosts ? '#FFFFFF' : colors.mutedForeground} />
+          <Text style={[ms.layerPillText, { color: showPosts ? '#FFFFFF' : colors.mutedForeground }]}>{t('map.layerPosts')}</Text>
+          <View style={[ms.layerBadge, { backgroundColor: showPosts ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
+            <Text style={[ms.layerBadgeText, { color: showPosts ? '#FFFFFF' : colors.mutedForeground }]}>{filteredPosts.length}</Text>
+          </View>
+        </Pressable>
+        <Pressable onPress={() => setShowEvents(!showEvents)} style={[ms.layerPill, { backgroundColor: showEvents ? '#2B8A62' : colors.card }]}>
+          <CalendarDays size={14} color={showEvents ? '#FFFFFF' : colors.mutedForeground} />
+          <Text style={[ms.layerPillText, { color: showEvents ? '#FFFFFF' : colors.mutedForeground }]}>{t('map.layerEvents')}</Text>
+          <View style={[ms.layerBadge, { backgroundColor: showEvents ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
+            <Text style={[ms.layerBadgeText, { color: showEvents ? '#FFFFFF' : colors.mutedForeground }]}>{filteredEvents.length + visibleCityEvents.length}</Text>
+          </View>
+        </Pressable>
+        <Pressable onPress={() => setShowPlaces(!showPlaces)} style={[ms.layerPill, { backgroundColor: showPlaces ? '#78716C' : colors.card }]}>
+          <Coffee size={14} color={showPlaces ? '#FFFFFF' : colors.mutedForeground} />
+          <Text style={[ms.layerPillText, { color: showPlaces ? '#FFFFFF' : colors.mutedForeground }]}>{t('map.layerPlaces')}</Text>
+          <View style={[ms.layerBadge, { backgroundColor: showPlaces ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
+            <Text style={[ms.layerBadgeText, { color: showPlaces ? '#FFFFFF' : colors.mutedForeground }]}>{visiblePlaces.length}</Text>
+          </View>
+        </Pressable>
+      </View>
+
+      {/* ── Area picker dropdown ── */}
       {showAreaPicker && (
-        <View style={[s.dropdown, { top: insets.top + 56, backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[ms.dropdown, { top: insets.top + 52, backgroundColor: colors.card, borderColor: colors.border }]}>
           <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
-            <Pressable onPress={() => { setSelectedArea(null); setShowAreaPicker(false) }} style={s.dropdownItem}>
-              <Text style={[s.dropdownText, { color: colors.foreground, fontWeight: !selectedArea ? '700' : '400' }]}>Helsinki (kaikki)</Text>
+            <Pressable onPress={() => { setSelectedArea(null); setShowAreaPicker(false) }} style={ms.dropdownItem}>
+              <Text style={[ms.dropdownText, { color: colors.foreground, fontWeight: !selectedArea ? '700' : '400' }]}>Helsinki ({t('common.all')})</Text>
             </Pressable>
             {NEIGHBORHOODS.map((nh) => (
-              <Pressable key={nh} onPress={() => { setSelectedArea(nh); setShowAreaPicker(false) }} style={s.dropdownItem}>
-                <Text style={[s.dropdownText, { color: colors.foreground, fontWeight: selectedArea === nh ? '700' : '400' }]}>{nh}</Text>
+              <Pressable key={nh} onPress={() => { setSelectedArea(nh); setShowAreaPicker(false) }} style={ms.dropdownItem}>
+                <Text style={[ms.dropdownText, { color: colors.foreground, fontWeight: selectedArea === nh ? '700' : '400' }]}>{nh}</Text>
               </Pressable>
             ))}
           </ScrollView>
         </View>
       )}
 
-      {/* Search bar */}
+      {/* ── Search overlay ── */}
       {showSearch && (
-        <View style={[s.searchBar, { top: insets.top + 56, backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[ms.searchBar, { top: insets.top + 52, backgroundColor: colors.card, borderColor: colors.border }]}>
           <Search size={16} color={colors.mutedForeground} />
           <TextInput
-            style={[s.searchInput, { color: colors.foreground }]}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={t('feed.searchPlaceholder')}
-            placeholderTextColor={colors.mutedForeground}
+            style={[ms.searchInput, { color: colors.foreground }]}
+            value={searchQuery} onChangeText={setSearchQuery}
+            placeholder={t('feed.searchPlaceholder')} placeholderTextColor={colors.mutedForeground}
             autoFocus
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-              <X size={16} color={colors.mutedForeground} />
-            </Pressable>
+            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}><X size={16} color={colors.mutedForeground} /></Pressable>
           )}
         </View>
       )}
 
-      {/* Filter panel */}
-      <View style={[s.filterPanel, { bottom: insets.bottom + 16, backgroundColor: colors.card, borderColor: colors.border }]}>
-        {/* Layer toggles */}
-        <View style={s.layerRow}>
-          <Pressable onPress={() => setShowPosts(!showPosts)} style={[s.layerBtn, showPosts && { backgroundColor: `${colors.primary}20` }]}>
-            <Newspaper size={16} color={showPosts ? colors.primary : colors.mutedForeground} />
-            <Text style={[s.layerText, { color: showPosts ? colors.primary : colors.mutedForeground }]}>{t('places.posts')}</Text>
-            <View style={[s.layerCount, { backgroundColor: showPosts ? colors.primary : colors.muted }]}>
-              <Text style={[s.layerCountText, { color: showPosts ? '#FFFFFF' : colors.mutedForeground }]}>{visiblePosts.length}</Text>
-            </View>
-          </Pressable>
-          <Pressable onPress={() => setShowEvents(!showEvents)} style={[s.layerBtn, showEvents && { backgroundColor: '#2B8A6220' }]}>
-            <CalendarDays size={16} color={showEvents ? '#2B8A62' : colors.mutedForeground} />
-            <Text style={[s.layerText, { color: showEvents ? '#2B8A62' : colors.mutedForeground }]}>{t('nav.events')}</Text>
-            <View style={[s.layerCount, { backgroundColor: showEvents ? '#2B8A62' : colors.muted }]}>
-              <Text style={[s.layerCountText, { color: showEvents ? '#FFFFFF' : colors.mutedForeground }]}>{visibleEvents.length + visibleCityEvents.length}</Text>
-            </View>
-          </Pressable>
-          <Pressable onPress={() => setShowPlaces(!showPlaces)} style={[s.layerBtn, showPlaces && { backgroundColor: '#F59E0B20' }]}>
-            <Coffee size={16} color={showPlaces ? '#F59E0B' : colors.mutedForeground} />
-            <Text style={[s.layerText, { color: showPlaces ? '#F59E0B' : colors.mutedForeground }]}>{t('places.title')}</Text>
-            <View style={[s.layerCount, { backgroundColor: showPlaces ? '#F59E0B' : colors.muted }]}>
-              <Text style={[s.layerCountText, { color: showPlaces ? '#FFFFFF' : colors.mutedForeground }]}>{visiblePlaces.length}</Text>
-            </View>
-          </Pressable>
-        </View>
+      {/* ── GPS button ── */}
+      <Pressable
+        onPress={() => {
+          if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+              // Fly to user position
+            })
+          }
+        }}
+        style={[ms.gpsBtn, { bottom: insets.bottom + 80, backgroundColor: colors.card }]}
+      >
+        <Crosshair size={20} color={colors.foreground} />
+      </Pressable>
 
-        {/* Expand for sub-filters */}
-        <Pressable onPress={() => setFiltersExpanded(!filtersExpanded)} style={s.expandRow}>
-          <Layers size={14} color={colors.mutedForeground} />
-          <Text style={[s.expandText, { color: colors.mutedForeground }]}>
-            {totalVisible} {t('map.visible')}
-          </Text>
+      {/* ── Bottom count bar ── */}
+      <View style={[ms.countBar, { bottom: insets.bottom + 24, backgroundColor: colors.card, borderColor: colors.border }]}>
+        <MapPin size={14} color={colors.mutedForeground} />
+        <Text style={[ms.countText, { color: colors.foreground }]}>
+          {totalVisible} {t('map.visible')}
+        </Text>
+        <Pressable onPress={() => setFiltersExpanded(!filtersExpanded)}>
           <ChevronDown size={14} color={colors.mutedForeground} style={filtersExpanded ? { transform: [{ rotate: '180deg' }] } : undefined} />
         </Pressable>
+      </View>
 
-        {/* Sub-filters */}
-        {filtersExpanded && showPosts && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.subFilters}>
-            <Pressable
-              onPress={() => setPostFilter(null)}
-              style={[s.subChip, !postFilter ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}
-            >
-              <Text style={[s.subChipText, { color: !postFilter ? '#FFFFFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
+      {/* ── Expanded sub-filters ── */}
+      {filtersExpanded && (
+        <View style={[ms.subPanel, { bottom: insets.bottom + 64, backgroundColor: colors.card, borderColor: colors.border }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.subRow}>
+            <Pressable onPress={() => setPostFilter(null)} style={[ms.subChip, !postFilter ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
+              <Text style={[ms.subChipText, { color: !postFilter ? '#FFFFFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
             </Pressable>
             {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => (
-              <Pressable
-                key={type}
-                onPress={() => setPostFilter(postFilter === type ? null : type)}
-                style={[s.subChip, postFilter === type ? { backgroundColor: cat.color } : { backgroundColor: colors.muted }]}
-              >
-                <Text style={[s.subChipText, { color: postFilter === type ? '#FFFFFF' : colors.mutedForeground }]}>{t(cat.label)}</Text>
+              <Pressable key={type} onPress={() => setPostFilter(postFilter === type ? null : type)} style={[ms.subChip, postFilter === type ? { backgroundColor: cat.color } : { backgroundColor: colors.muted }]}>
+                <Text style={[ms.subChipText, { color: postFilter === type ? '#FFFFFF' : colors.mutedForeground }]}>{t(cat.label)}</Text>
               </Pressable>
             ))}
           </ScrollView>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   )
 }
 
-const s = StyleSheet.create({
+const ms = StyleSheet.create({
   container: { flex: 1 },
   mapWrap: { ...StyleSheet.absoluteFillObject },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  headerOverlay: {
+  topBar: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingBottom: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingBottom: 8,
   },
-  overlayBtn: {
-    width: 40, height: 40, borderRadius: 12,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
+  topBtn: {
+    width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3,
   },
   areaBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
-    height: 40, borderRadius: 12, paddingHorizontal: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, borderRadius: 12, paddingHorizontal: 12,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3,
   },
   areaBtnText: { fontSize: 14, fontWeight: '600', flex: 1 },
+  layerBar: {
+    position: 'absolute', left: 12, right: 12, zIndex: 10,
+    flexDirection: 'row', gap: 6,
+  },
+  layerPill: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+    height: 36, borderRadius: 18,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3,
+  },
+  layerPillText: { fontSize: 11, fontWeight: '600' },
+  layerBadge: { minWidth: 20, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  layerBadgeText: { fontSize: 10, fontWeight: '700' },
   dropdown: {
-    position: 'absolute', left: 16, right: 16, zIndex: 20,
-    borderRadius: 12, borderWidth: 1, overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15, shadowRadius: 8, elevation: 5,
+    position: 'absolute', left: 12, right: 12, zIndex: 20, borderRadius: 12, borderWidth: 1, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5,
   },
   dropdownItem: { paddingHorizontal: 16, paddingVertical: 12 },
   dropdownText: { fontSize: 14 },
   searchBar: {
-    position: 'absolute', left: 16, right: 16, zIndex: 20,
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, height: 44,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
+    position: 'absolute', left: 12, right: 12, zIndex: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, height: 44,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
   },
   searchInput: { flex: 1, fontSize: 14 },
-  filterPanel: {
-    position: 'absolute', left: 16, right: 16, zIndex: 10,
-    borderRadius: 16, borderWidth: 1, padding: 12, gap: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1, shadowRadius: 8, elevation: 5,
+  gpsBtn: {
+    position: 'absolute', right: 12, zIndex: 10,
+    width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3,
   },
-  layerRow: { flexDirection: 'row', gap: 8 },
-  layerBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 8, borderRadius: 10,
-  },
-  layerText: { fontSize: 12, fontWeight: '500' },
-  layerCount: {
-    minWidth: 20, height: 18, borderRadius: 9,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
-  },
-  layerCountText: { fontSize: 9, fontWeight: '700' },
-  expandRow: {
+  countBar: {
+    position: 'absolute', left: 60, right: 60, zIndex: 10,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    height: 36, borderRadius: 18, borderWidth: 1,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3,
   },
-  expandText: { fontSize: 12 },
-  subFilters: { flexDirection: 'row', gap: 6, paddingTop: 4 },
+  countText: { fontSize: 13, fontWeight: '500' },
+  subPanel: {
+    position: 'absolute', left: 12, right: 12, zIndex: 10,
+    borderRadius: 12, borderWidth: 1, padding: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3,
+  },
+  subRow: { flexDirection: 'row', gap: 6 },
   subChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
   subChipText: { fontSize: 11, fontWeight: '500' },
 })
