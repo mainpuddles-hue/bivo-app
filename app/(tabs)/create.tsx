@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -78,6 +78,7 @@ export default function CreateScreen() {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [step, setStep] = useState<'category' | 'form'>('category')
   const [selectedType, setSelectedType] = useState<PostType | null>(null)
   const [title, setTitle] = useState('')
@@ -90,6 +91,14 @@ export default function CreateScreen() {
   const [images, setImages] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
+
+  // Check auth on mount
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsAuthenticated(!!user)
+      if (!user) router.replace('/(auth)/login')
+    })
+  }, [supabase, router])
 
   const handleCategorySelect = (type: PostType) => {
     setSelectedType(type)

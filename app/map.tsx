@@ -363,11 +363,9 @@ export default function MapScreen() {
         supabase.from('events')
           .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
-          .gte('event_date', new Date().toISOString())
           .limit(200),
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
-          .gte('start_time', new Date().toISOString())
           .limit(200),
         supabase.from('local_places')
           .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')

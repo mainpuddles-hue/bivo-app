@@ -320,6 +320,19 @@ export default function EventsScreen() {
         </View>
       </View>
 
+      {/* Hero banner */}
+      <Pressable onPress={() => router.push('/(auth)/login')} style={ev.heroBanner}>
+        <View style={ev.heroContent}>
+          <Text style={ev.heroLabel}>{t('events.heroTitle')}</Text>
+          <Text style={ev.heroTitle}>{t('events.heroSubtitle')}</Text>
+          <Text style={ev.heroDesc}>{t('events.heroDescription')}</Text>
+          <View style={ev.heroCta}>
+            <Text style={ev.heroCtaText}>{t('events.heroCreateCTA')}</Text>
+            <ChevronRight size={16} color={colors.primary} />
+          </View>
+        </View>
+      </Pressable>
+
       {/* Tabs */}
       <View style={[ev.tabRow, { borderBottomColor: colors.border }]}>
         {(['community', 'city', 'activities'] as Tab[]).map((t_) => (
@@ -434,6 +447,20 @@ const ev = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
   headerSub: { fontSize: 13, marginTop: 2 },
+  heroBanner: {
+    marginHorizontal: 16, marginTop: 12, borderRadius: 16, overflow: 'hidden',
+    backgroundColor: '#2D6B5E', padding: 20,
+  },
+  heroContent: { gap: 6 },
+  heroLabel: { fontSize: 10, fontWeight: '500', letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)' },
+  heroTitle: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', lineHeight: 22 },
+  heroDesc: { fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 18 },
+  heroCta: {
+    flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 20,
+    paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'flex-start',
+  },
+  heroCtaText: { fontSize: 14, fontWeight: '600', color: '#2D6B5E' },
   headerActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   viewBtn: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   fabBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },

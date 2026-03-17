@@ -3,7 +3,7 @@ import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet, Act
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, Bookmark, BookmarkCheck } from 'lucide-react-native'
+import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, Bookmark, BookmarkCheck, LayoutGrid, ChevronRight, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -11,6 +11,10 @@ import { createClient } from '@/lib/supabase/client'
 import { POST_SELECT, CATEGORIES } from '@/lib/constants'
 import { PostCard } from '@/components/PostCard'
 import type { Post, PostType } from '@/lib/types'
+
+const CAT_ICON_MAP: Record<string, React.ComponentType<any>> = {
+  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
+}
 
 const HISTORY_KEY = 'tackbird-search-history'
 const MAX_HISTORY = 10
@@ -118,6 +122,15 @@ export default function SearchScreen() {
   // ── Discovery View (no search yet) ──
   const DiscoveryView = () => (
     <ScrollView contentContainerStyle={s.discovery} showsVerticalScrollIndicator={false}>
+      {/* Trending */}
+      <View style={s.section}>
+        <View style={s.sectionHeader}>
+          <TrendingUp size={16} color={colors.mutedForeground} />
+          <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.trending')}</Text>
+        </View>
+        <Text style={[s.hintText, { color: colors.mutedForeground }]}>{t('search.noTrending')}</Text>
+      </View>
+
       {/* Search history */}
       {history.length > 0 && (
         <View style={s.section}>
@@ -139,21 +152,31 @@ export default function SearchScreen() {
         </View>
       )}
 
-      {/* Category shortcuts */}
+      {/* Category cards (2-column grid like web) */}
       <View style={s.section}>
-        <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.browseByCategory')}</Text>
-        <View style={s.categoryGrid}>
-          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => (
-            <Pressable
-              key={type}
-              onPress={() => { setActiveFilter(type); setQuery(t(cat.label)); handleSearch(t(cat.label)) }}
-              style={[s.categoryChip, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}
-            >
-              <View style={[s.categoryDot, { backgroundColor: cat.color }]} />
-              <Text style={[s.categoryChipText, { color: colors.foreground }]}>{t(cat.label)}</Text>
-            </Pressable>
-          ))}
+        <View style={s.sectionHeader}>
+          <LayoutGrid size={16} color={colors.mutedForeground} />
+          <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.browseByCategory')}</Text>
         </View>
+        <View style={s.categoryGrid}>
+          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
+            const CatIcon = CAT_ICON_MAP[cat.icon]
+            return (
+              <Pressable
+                key={type}
+                onPress={() => { setActiveFilter(type); setQuery(t(cat.label)); handleSearch(t(cat.label)) }}
+                style={[s.categoryCard, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}
+              >
+                <View style={[s.categoryIconBox, { backgroundColor: `${cat.color}20` }]}>
+                  {CatIcon && <CatIcon size={22} color={cat.color} />}
+                </View>
+                <Text style={[s.categoryCardText, { color: colors.foreground }]}>{t(cat.label)}</Text>
+                <ChevronRight size={16} color={colors.mutedForeground} style={{ marginLeft: 'auto' }} />
+              </Pressable>
+            )
+          })}
+        </View>
+        <Text style={[s.hintText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 8 }]}>{t('search.initialHint')}</Text>
       </View>
     </ScrollView>
   )
@@ -310,10 +333,17 @@ const s = StyleSheet.create({
   historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   historyText: { fontSize: 14 },
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12 },
-  categoryDot: { width: 8, height: 8, borderRadius: 4 },
-  categoryChipText: { fontSize: 13, fontWeight: '500' },
+  hintText: { fontSize: 14, lineHeight: 20 },
+  categoryGrid: { gap: 8 },
+  categoryCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12,
+  },
+  categoryIconBox: {
+    width: 44, height: 44, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  categoryCardText: { fontSize: 15, fontWeight: '600', flex: 1 },
   empty: { alignItems: 'center', paddingTop: 60, gap: 8, paddingHorizontal: 32 },
   emptyTitle: { fontSize: 16, fontWeight: '600' },
   emptyHint: { fontSize: 14, textAlign: 'center' },
