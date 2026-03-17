@@ -31,8 +31,20 @@ const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
   'Malmi': [60.2490, 25.0110], 'Oulunkylä': [60.2290, 24.9590],
 }
 
-const CAT_ICONS: Record<string, string> = {
-  tarvitsen: '🤝', tarjoan: '🎁', ilmaista: '💙', nappaa: '⚡', lainaa: '📖', tapahtuma: '📅',
+// SVG path icons matching Lucide for markers (white fill, no stroke)
+const CAT_MARKER_SVG: Record<string, string> = {
+  tarvitsen: '<path d="M7 11v8a1 1 0 01-1 1H4a1 1 0 01-1-1v-7a1 1 0 011-1h3m0-1V6a4 4 0 014-4h.5a.5.5 0 01.5.5V6l-1 2h5.5a2 2 0 011.94 2.49l-1.46 6A2 2 0 0115.04 18H7" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  tarjoan: '<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 110-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  ilmaista: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z" fill="white" stroke="white" stroke-width="1.5"/>',
+  nappaa: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white" stroke="white" stroke-width="1.5"/>',
+  lainaa: '<path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  tapahtuma: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="white" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="white" stroke-width="2"/>',
+}
+
+function markerSvgHtml(type: string, size = 14): string {
+  const svg = CAT_MARKER_SVG[type]
+  if (!svg) return `<span style="color:white;font-size:${size}px;font-weight:bold;">${type.charAt(0).toUpperCase()}</span>`
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">${svg}</svg>`
 }
 
 const PLACE_ICONS: Record<string, string> = {
@@ -138,18 +150,35 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       }
 
       // ── Post markers (clustered) ──
-      const postCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 50, spiderfyOnMaxZoom: true }) : L.layerGroup()
+      const createClusterIcon = (color: string) => (cluster: any) => {
+        const count = cluster.getChildCount()
+        const size = count < 10 ? 32 : count < 50 ? 40 : 48
+        const ring = count < 10 ? 4 : count < 50 ? 5 : 6
+        return L.divIcon({
+          className: '',
+          html: `<div style="width:${size+ring*2}px;height:${size+ring*2}px;border-radius:50%;background:${color}33;display:flex;align-items:center;justify-content:center;">
+            <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;border:2px solid ${isDark?'#1E1E1E':'white'};box-shadow:0 2px 6px rgba(0,0,0,0.25);">
+              <span style="color:white;font-size:${count<10?12:count<50?13:14}px;font-weight:700;">${count}</span>
+            </div>
+          </div>`,
+          iconSize: [size+ring*2, size+ring*2], iconAnchor: [(size+ring*2)/2, (size+ring*2)/2],
+        })
+      }
+      const postCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 50, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(45,107,94,0.9)') }) : L.layerGroup()
       posts.forEach((p) => {
         if (!p.latitude || !p.longitude) return
         const cat = CATEGORIES[p.type as PostType]
         const color = cat?.color ?? '#2D6B5E'
-        const emoji = CAT_ICONS[p.type] ?? '📌'
+        const svgIcon = markerSvgHtml(p.type, 16)
         const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : ''
 
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:40px;height:40px;border-radius:50%;background:${color};border:3px solid ${isDark ? '#1E1E1E' : 'white'};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:18px;cursor:pointer;">${emoji}</div>`,
-          iconSize: [40, 40], iconAnchor: [20, 20],
+          html: `<div style="width:40px;height:48px;position:relative;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+            <div style="width:36px;height:36px;border-radius:50%;background:${color};border:2.5px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;margin:0 auto;">${svgIcon}</div>
+            <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${color};margin:-1px auto 0;"></div>
+          </div>`,
+          iconSize: [40, 48], iconAnchor: [20, 48],
         })
         const marker = L.marker([p.latitude, p.longitude], { icon })
         marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;">
@@ -228,15 +257,18 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       })
 
       // ── Place markers (clustered) ──
-      const placeCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 60, spiderfyOnMaxZoom: true }) : L.layerGroup()
+      const placeCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 60, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(201,139,46,0.9)') }) : L.layerGroup()
       places.forEach((pl) => {
         if (!pl.latitude || !pl.longitude) return
-        const emoji = PLACE_ICONS[pl.category] ?? '📍'
+        const placeEmoji = PLACE_ICONS[pl.category] ?? '📍'
         const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : ''
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:30px;height:30px;border-radius:8px;background:${isDark?'rgba(120,113,108,0.9)':'rgba(120,113,108,0.85)'};border:2px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:pointer;font-size:14px;">${emoji}</div>`,
-          iconSize: [30, 30], iconAnchor: [15, 15],
+          html: `<div style="width:28px;height:34px;position:relative;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.2));">
+            <div style="width:26px;height:26px;border-radius:6px;background:${isDark?'rgba(120,113,108,0.9)':'rgba(120,113,108,0.85)'};border:2px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:13px;">${placeEmoji}</div>
+            <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid rgba(120,113,108,0.85);margin:-1px auto 0;"></div>
+          </div>`,
+          iconSize: [28, 34], iconAnchor: [14, 34],
         })
         const marker = L.marker([pl.latitude, pl.longitude], { icon })
         marker.bindPopup(`<div style="font-family:system-ui;min-width:180px;max-width:220px;">
@@ -311,8 +343,8 @@ export default function MapScreen() {
     async function fetchData() {
       const [postsRes, eventsRes, cityRes, placesRes] = await Promise.all([
         supabase.from('posts').select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user_id, is_active, is_pro_listing, tags, updated_at, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)').eq('is_active', true).not('latitude', 'is', null).limit(200),
-        supabase.from('events').select('*, creator:profiles!events_creator_id_fkey(id, name, avatar_url)').eq('is_active', true).gte('event_date', new Date().toISOString()).limit(100),
-        supabase.from('city_events').select('*').gte('start_time', new Date().toISOString()).limit(100),
+        supabase.from('events').select('*, creator:profiles!events_creator_id_fkey(id, name, avatar_url)').eq('is_active', true).limit(200),
+        supabase.from('city_events').select('*').limit(200),
         supabase.from('local_places').select('*').limit(500),
       ])
       setPosts((postsRes.data ?? []) as unknown as Post[])
