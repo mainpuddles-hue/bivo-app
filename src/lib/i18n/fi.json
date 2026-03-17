@@ -1120,7 +1120,9 @@
     "resetFilters": "Tyhjennä",
     "recentSearches": "Viimeisimmät haut",
     "clearHistory": "Tyhjennä",
-    "allResultsShown": "Kaikki tulokset ladattu"
+    "allResultsShown": "Kaikki tulokset ladattu",
+    "browseByCategory": "Selaa kategorioittain",
+    "tryDifferent": "Kokeile eri hakusanaa tai suodatinta"
   },
   "saved": {
     "title": "Tallennetut",
