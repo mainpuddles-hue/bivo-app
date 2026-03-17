@@ -53,7 +53,7 @@ export function Header() {
           <Pressable onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
             <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
-          <Pressable style={styles.iconButton} hitSlop={8}>
+          <Pressable onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
             <Map size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
           <Pressable onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>

@@ -20,6 +20,7 @@ function RootLayoutInner() {
         <Stack.Screen name="post/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="messages/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="auth/callback" options={{ animation: 'fade' }} />
+        <Stack.Screen name="map" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </View>
   )

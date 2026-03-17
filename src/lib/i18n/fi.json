@@ -1238,6 +1238,7 @@
     "radiusSlider": "Säteen säätö",
     "radiusDisable": "Poista säderajaus käytöstä",
     "radiusEnable": "Ota säderajaus käyttöön",
+    "visible": "kohdetta kartalla",
     "items": "kohdetta",
     "itemsNearby": "lähellä",
     "noResults": "Ei tuloksia kartalla",
