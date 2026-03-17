@@ -1,0 +1,266 @@
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import { Image } from 'expo-image'
+import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays } from 'lucide-react-native'
+import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
+import { createClient } from '@/lib/supabase/client'
+import { formatTimeAgo } from '@/lib/format'
+import type { Notification } from '@/lib/types'
+
+const FILTERS = [
+  { key: 'all', label: 'common.all' },
+  { key: 'messages', label: 'nav.messages' },
+  { key: 'reviews', label: 'profile.reviews' },
+  { key: 'rentals', label: 'notifications.prefRentals' },
+  { key: 'system', label: 'settings.notifications' },
+] as const
+
+function getTypeIcon(type: string) {
+  switch (type) {
+    case 'new_message': return MessageCircle
+    case 'review_received': return Star
+    case 'rental_update': case 'rental_request': case 'rental_confirmed':
+    case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return Package
+    case 'new_follower': return UserPlus
+    case 'event_reminder': return CalendarDays
+    default: return Bell
+  }
+}
+
+function getTypeColor(type: string, colors: ReturnType<typeof useTheme>['colors']) {
+  switch (type) {
+    case 'new_message': return colors.primary
+    case 'review_received': return colors.pro
+    case 'rental_update': case 'rental_request': case 'rental_confirmed':
+    case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return '#C98B2E'
+    case 'new_follower': return colors.success
+    case 'event_reminder': return '#2B8A62'
+    default: return colors.info
+  }
+}
+
+function getFilterForType(type: string): string {
+  if (type === 'new_message') return 'messages'
+  if (type.startsWith('review') || type === 'thanks_received') return 'reviews'
+  if (type.startsWith('rental')) return 'rentals'
+  return 'system'
+}
+
+function groupByTime(items: Notification[], t: (k: string) => string) {
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterdayStart = new Date(todayStart.getTime() - 86400000)
+  const weekStart = new Date(todayStart.getTime() - 7 * 86400000)
+
+  const groups: { title: string; data: Notification[] }[] = [
+    { title: t('notifications.today'), data: [] },
+    { title: t('notifications.yesterday'), data: [] },
+    { title: t('notifications.thisWeek'), data: [] },
+    { title: t('notifications.earlier'), data: [] },
+  ]
+
+  for (const n of items) {
+    const d = new Date(n.created_at)
+    if (d >= todayStart) groups[0].data.push(n)
+    else if (d >= yesterdayStart) groups[1].data.push(n)
+    else if (d >= weekStart) groups[2].data.push(n)
+    else groups[3].data.push(n)
+  }
+
+  return groups.filter(g => g.data.length > 0)
+}
+
+export default function NotificationsScreen() {
+  const { colors, isDark } = useTheme()
+  const { t, locale } = useI18n()
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [refreshing, setRefreshing] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [activeFilter, setActiveFilter] = useState('all')
+
+  const fetchNotifications = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+    const { data } = await supabase
+      .from('notifications')
+      .select('*, from_user:profiles!notifications_from_user_id_fkey(id, name, avatar_url)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(100)
+    setNotifications((data ?? []) as unknown as Notification[])
+    setLoading(false)
+    setRefreshing(false)
+  }, [supabase])
+
+  useEffect(() => { fetchNotifications() }, [fetchNotifications])
+
+  const markAllRead = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', user.id).eq('is_read', false)
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+  }, [supabase])
+
+  const handleTap = useCallback(async (item: Notification) => {
+    // Mark as read
+    if (!item.is_read) {
+      await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
+      setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n))
+    }
+    // Navigate
+    if (item.link_type === 'post' && item.link_id) router.push(`/post/${item.link_id}`)
+    else if (item.link_type === 'conversation' && item.link_id) router.push(`/messages/${item.link_id}`)
+  }, [supabase, router])
+
+  const filtered = useMemo(() => {
+    if (activeFilter === 'all') return notifications
+    return notifications.filter(n => getFilterForType(n.type) === activeFilter)
+  }, [notifications, activeFilter])
+
+  const sections = useMemo(() => groupByTime(filtered, t), [filtered, t])
+  const unreadCount = notifications.filter(n => !n.is_read).length
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
+          <ArrowLeft size={24} color={colors.foreground} />
+        </Pressable>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('nav.notifications')}</Text>
+        {unreadCount > 0 && (
+          <View style={[styles.headerBadge, { backgroundColor: colors.accent }]}>
+            <Text style={[styles.headerBadgeText, { color: colors.accentForeground }]}>{unreadCount}</Text>
+          </View>
+        )}
+        <View style={{ flex: 1 }} />
+        {unreadCount > 0 && (
+          <Pressable onPress={markAllRead} hitSlop={8}>
+            <CheckCheck size={20} color={colors.primary} />
+          </Pressable>
+        )}
+      </View>
+
+      {/* Filter tabs */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} contentContainerStyle={styles.filterRow}>
+        {FILTERS.map((f) => (
+          <Pressable
+            key={f.key}
+            onPress={() => setActiveFilter(f.key)}
+            style={[
+              styles.filterChip,
+              activeFilter === f.key
+                ? { backgroundColor: colors.primary }
+                : { backgroundColor: isDark ? colors.card : colors.muted },
+            ]}
+          >
+            <Text style={[
+              styles.filterText,
+              { color: activeFilter === f.key ? colors.primaryForeground : colors.mutedForeground },
+            ]}>
+              {t(f.label)}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {/* Notification list */}
+      <SectionList
+        sections={sections}
+        keyExtractor={item => item.id}
+        stickySectionHeadersEnabled
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchNotifications() }} tintColor={colors.primary} />}
+        renderSectionHeader={({ section }) => (
+          <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{section.title}</Text>
+          </View>
+        )}
+        renderItem={({ item }) => {
+          const TypeIcon = getTypeIcon(item.type)
+          const typeColor = getTypeColor(item.type, colors)
+
+          return (
+            <Pressable onPress={() => handleTap(item)} style={[styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }]}>
+              {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
+              <View style={styles.notifAvatar}>
+                {item.from_user?.avatar_url ? (
+                  <Image source={{ uri: item.from_user.avatar_url }} style={styles.avatar} />
+                ) : (
+                  <View style={[styles.avatar, styles.avatarFb, { backgroundColor: `${typeColor}20` }]}>
+                    <TypeIcon size={18} color={typeColor} />
+                  </View>
+                )}
+                <View style={[styles.typeIconBadge, { backgroundColor: typeColor }]}>
+                  <TypeIcon size={10} color="#FFFFFF" />
+                </View>
+              </View>
+              <View style={styles.notifContent}>
+                <Text style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && { fontWeight: '600' }]} numberOfLines={2}>{item.title}</Text>
+                {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={1}>{item.body}</Text>}
+                <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
+                  {formatTimeAgo(item.created_at, t, locale)}
+                </Text>
+              </View>
+              {!item.is_read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
+            </Pressable>
+          )
+        }}
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.empty}>
+              <Bell size={40} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t('notifications.empty')}</Text>
+            </View>
+          ) : null
+        }
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  header: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerBadge: {
+    minWidth: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
+  },
+  headerBadgeText: { fontSize: 11, fontWeight: '700' },
+  filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
+  filterText: { fontSize: 12, fontWeight: '500' },
+  sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
+  sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase' },
+  notifRow: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 14, position: 'relative',
+  },
+  unreadBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: 1.5 },
+  notifAvatar: { position: 'relative' },
+  avatar: { width: 40, height: 40, borderRadius: 20 },
+  avatarFb: { alignItems: 'center', justifyContent: 'center' },
+  typeIconBadge: {
+    position: 'absolute', bottom: -2, right: -2,
+    width: 18, height: 18, borderRadius: 9,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: '#FFFFFF',
+  },
+  notifContent: { flex: 1, gap: 3 },
+  notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19 },
+  notifBody: { fontSize: 13 },
+  notifTime: { fontSize: 11, marginTop: 2 },
+  unreadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
+  empty: { alignItems: 'center', paddingTop: 80, gap: 12 },
+  emptyText: { fontSize: 14 },
+})
