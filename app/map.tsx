@@ -338,19 +338,53 @@ export default function MapScreen() {
   const [userPos, setUserPos] = useState<[number, number] | null>(null)
   const [radiusKm, setRadiusKm] = useState<number | null>(null)
   const [geoLoading, setGeoLoading] = useState(false)
+  const [cityEventCategory, setCityEventCategory] = useState<string | null>(null)
+  const [savedPlaceIds, setSavedPlaceIds] = useState<Set<string>>(new Set())
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Debounce search 200ms
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedSearch(searchQuery), 200)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [searchQuery])
 
   useEffect(() => {
     async function fetchData() {
-      const [postsRes, eventsRes, cityRes, placesRes] = await Promise.all([
-        supabase.from('posts').select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user_id, is_active, is_pro_listing, tags, updated_at, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)').eq('is_active', true).not('latitude', 'is', null).limit(200),
-        supabase.from('events').select('*, creator:profiles!events_creator_id_fkey(id, name, avatar_url)').eq('is_active', true).limit(200),
-        supabase.from('city_events').select('*').limit(200),
-        supabase.from('local_places').select('*').limit(500),
+      const { data: { user } } = await supabase.auth.getUser()
+
+      const [postsRes, eventsRes, cityRes, placesRes] = await Promise.allSettled([
+        supabase.from('posts')
+          .select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)')
+          .eq('is_active', true)
+          .not('latitude', 'is', null)
+          .limit(200),
+        supabase.from('events')
+          .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
+          .eq('is_active', true)
+          .gte('event_date', new Date().toISOString())
+          .limit(200),
+        supabase.from('city_events')
+          .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
+          .gte('start_time', new Date().toISOString())
+          .limit(200),
+        supabase.from('local_places')
+          .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')
+          .limit(500),
       ])
-      setPosts((postsRes.data ?? []) as unknown as Post[])
-      setEvents((eventsRes.data ?? []) as unknown as Event[])
-      setCityEvents((cityRes.data ?? []) as unknown as CityEvent[])
-      setPlaces((placesRes.data ?? []) as unknown as LocalPlace[])
+
+      setPosts(postsRes.status === 'fulfilled' ? (postsRes.value.data ?? []) as unknown as Post[] : [])
+      setEvents(eventsRes.status === 'fulfilled' ? (eventsRes.value.data ?? []) as unknown as Event[] : [])
+      setCityEvents(cityRes.status === 'fulfilled' ? (cityRes.value.data ?? []) as unknown as CityEvent[] : [])
+      setPlaces(placesRes.status === 'fulfilled' ? (placesRes.value.data ?? []) as unknown as LocalPlace[] : [])
+
+      // Fetch saved places
+      if (user) {
+        const { data: saved } = await supabase.from('saved_places').select('place_id').eq('user_id', user.id)
+        if (saved) setSavedPlaceIds(new Set(saved.map((s: any) => s.place_id)))
+      }
+
       setLoading(false)
     }
     fetchData()
@@ -367,46 +401,72 @@ export default function MapScreen() {
     if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => { setUserPos([pos.coords.latitude, pos.coords.longitude]); setRadiusKm(0.5); setGeoLoading(false) },
-        () => { Alert.alert(t('map.locationFailed')); setGeoLoading(false) },
+        () => { setGeoLoading(false) },
         { enableHighAccuracy: true, timeout: 10000 }
       )
     } else { setGeoLoading(false) }
-  }, [geoLoading, userPos, t])
+  }, [geoLoading, userPos])
 
-  // Filtering
+  // ── Filtering chains (matching web logic) ──
+
+  // 1. Posts: category + search + radius
   const filteredPosts = useMemo(() => {
     if (!showPosts) return []
     let p = posts
     if (postFilter) p = p.filter(x => x.type === postFilter)
-    if (searchQuery) { const q = searchQuery.toLowerCase(); p = p.filter(x => x.title.toLowerCase().includes(q) || x.location?.toLowerCase().includes(q)) }
+    if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); p = p.filter(x => x.title.toLowerCase().includes(q) || x.location?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) p = p.filter(x => x.latitude && x.longitude && haversineKm(userPos[0], userPos[1], x.latitude, x.longitude) <= radiusKm)
     return p
-  }, [posts, showPosts, postFilter, searchQuery, userPos, radiusKm])
+  }, [posts, showPosts, postFilter, debouncedSearch, userPos, radiusKm])
 
+  // 2. Community events: source + search + radius
   const filteredEvents = useMemo(() => {
-    if (!showEvents) return []
-    let e = eventSource === 'city' ? [] : events
-    if (searchQuery) { const q = searchQuery.toLowerCase(); e = e.filter(x => x.title.toLowerCase().includes(q)) }
+    if (!showEvents || eventSource === 'city') return []
+    let e = events
+    if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); e = e.filter(x => x.title.toLowerCase().includes(q) || x.location_name?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) e = e.filter(x => x.location_lat && x.location_lng && haversineKm(userPos[0], userPos[1], x.location_lat, x.location_lng) <= radiusKm)
     return e
-  }, [events, showEvents, eventSource, searchQuery, userPos, radiusKm])
+  }, [events, showEvents, eventSource, debouncedSearch, userPos, radiusKm])
 
+  // 3. City events: source + category + search + radius
   const filteredCityEvents = useMemo(() => {
     if (!showEvents || eventSource === 'community') return []
     let c = cityEvents
+    if (cityEventCategory) c = c.filter(x => x.category === cityEventCategory)
+    if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); c = c.filter(x => x.name_fi.toLowerCase().includes(q) || x.location_name?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) c = c.filter(x => x.latitude && x.longitude && haversineKm(userPos[0], userPos[1], x.latitude!, x.longitude!) <= radiusKm)
     return c
-  }, [cityEvents, showEvents, eventSource, userPos, radiusKm])
+  }, [cityEvents, showEvents, eventSource, cityEventCategory, debouncedSearch, userPos, radiusKm])
 
+  // 4. Places: category + search + radius
   const filteredPlaces = useMemo(() => {
     if (!showPlaces) return []
     let p = places
     if (placeFilter) p = p.filter(x => x.category === placeFilter)
+    if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); p = p.filter(x => x.name.toLowerCase().includes(q) || x.address?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) p = p.filter(x => haversineKm(userPos[0], userPos[1], x.latitude, x.longitude) <= radiusKm)
     return p
-  }, [places, showPlaces, placeFilter, userPos, radiusKm])
+  }, [places, showPlaces, placeFilter, debouncedSearch, userPos, radiusKm])
 
-  const totalVisible = filteredPosts.length + filteredEvents.length + filteredCityEvents.length + filteredPlaces.length
+  // 5. Layer count badges
+  const layerCounts = useMemo(() => ({
+    posts: filteredPosts.length,
+    events: filteredEvents.length + filteredCityEvents.length,
+    places: filteredPlaces.length,
+  }), [filteredPosts.length, filteredEvents.length, filteredCityEvents.length, filteredPlaces.length])
+
+  const totalVisible = layerCounts.posts + layerCounts.events + layerCounts.places
+
+  // 6. City event category counts
+  const cityEventCategoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    const source = eventSource === 'community' ? [] : cityEvents
+    for (const ce of source) {
+      if (userPos && radiusKm && ce.latitude && ce.longitude && haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude) > radiusKm) continue
+      counts[ce.category] = (counts[ce.category] ?? 0) + 1
+    }
+    return counts
+  }, [cityEvents, eventSource, userPos, radiusKm])
 
   return (
     <View style={[ms.container, { backgroundColor: colors.background }]}>
@@ -478,6 +538,19 @@ export default function MapScreen() {
                 </Pressable>
               ))}
             </View>
+          )}
+          {/* City event category filter */}
+          {showEvents && (eventSource === 'all' || eventSource === 'city') && Object.keys(cityEventCategoryCounts).length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[ms.subRow, { marginTop: 8 }]}>
+              <Pressable onPress={() => setCityEventCategory(null)} style={[ms.subChip, !cityEventCategory ? { backgroundColor: '#3B7DD8' } : { backgroundColor: colors.muted }]}>
+                <Text style={[ms.subChipText, { color: !cityEventCategory ? '#FFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
+              </Pressable>
+              {Object.entries(cityEventCategoryCounts).map(([cat, count]) => (
+                <Pressable key={cat} onPress={() => setCityEventCategory(cityEventCategory === cat ? null : cat)} style={[ms.subChip, cityEventCategory === cat ? { backgroundColor: '#3B7DD8' } : { backgroundColor: colors.muted }]}>
+                  <Text style={[ms.subChipText, { color: cityEventCategory === cat ? '#FFF' : colors.mutedForeground }]}>{cat} ({count})</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           )}
           {/* Place category filter */}
           {showPlaces && (
