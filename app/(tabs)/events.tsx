@@ -83,6 +83,8 @@ export default function EventsScreen() {
         .from('city_events')
         .select('*')
         .gte('start_time', new Date().toISOString())
+        .gte('latitude', 60.14).lte('latitude', 60.29)
+        .gte('longitude', 24.83).lte('longitude', 25.22)
         .order('start_time', { ascending: true })
         .limit(30),
       supabase

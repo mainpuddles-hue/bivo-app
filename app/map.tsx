@@ -450,9 +450,13 @@ export default function MapScreen() {
           .limit(200),
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
+          .gte('latitude', 60.14).lte('latitude', 60.29)
+          .gte('longitude', 24.83).lte('longitude', 25.22)
           .limit(200),
         supabase.from('local_places')
           .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')
+          .gte('latitude', 60.14).lte('latitude', 60.29)
+          .gte('longitude', 24.83).lte('longitude', 25.22)
           .limit(500),
       ])
 
