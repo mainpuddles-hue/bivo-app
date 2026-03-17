@@ -593,96 +593,136 @@ export default function MapScreen() {
     return counts
   }, [cityEvents, eventSource, userPos, radiusKm])
 
+  // Track which layer's sub-filter is open (null = none, tap layer pill to toggle)
+  const [activeSubFilter, setActiveSubFilter] = useState<'posts' | 'events' | 'places' | null>(null)
+
+  const toggleLayer = (layer: 'posts' | 'events' | 'places') => {
+    if (layer === 'posts') setShowPosts(!showPosts)
+    else if (layer === 'events') setShowEvents(!showEvents)
+    else setShowPlaces(!showPlaces)
+  }
+
+  const toggleSubFilter = (layer: 'posts' | 'events' | 'places') => {
+    setActiveSubFilter(activeSubFilter === layer ? null : layer)
+    setShowAreaPicker(false)
+    setShowSearch(false)
+  }
+
   return (
     <View style={[ms.container, { backgroundColor: colors.background }]}>
+      {/* ── Map ── */}
       <View style={ms.mapWrap}>
         {loading ? <View style={ms.loadingWrap}><ActivityIndicator size="large" color={colors.primary} /></View> : (
-          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onMapInteraction={() => setFiltersExpanded(false)} isDark={isDark} t={t} />
+          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onMapInteraction={() => { setActiveSubFilter(null); setShowAreaPicker(false); setShowSearch(false) }} isDark={isDark} t={t} />
         )}
       </View>
 
-      {/* Top bar */}
+      {/* ── TOP BAR: Back + Area + Search ── */}
       <View style={[ms.topBar, { paddingTop: insets.top + 4 }]}>
-        <Pressable onPress={() => router.back()} style={[ms.topBtn, { backgroundColor: colors.card }]}><ArrowLeft size={20} color={colors.foreground} /></Pressable>
-        <Pressable onPress={() => { setShowAreaPicker(!showAreaPicker); setShowSearch(false) }} style={[ms.areaBtn, { backgroundColor: colors.card }]}>
+        <Pressable onPress={() => router.back()} style={[ms.pill, { backgroundColor: colors.card }]}>
+          <ArrowLeft size={20} color={colors.foreground} />
+        </Pressable>
+        <Pressable onPress={() => { setShowAreaPicker(!showAreaPicker); setShowSearch(false); setActiveSubFilter(null) }} style={[ms.areaPill, { backgroundColor: colors.card }]}>
           <Navigation size={14} color={colors.primary} />
-          <Text style={[ms.areaBtnText, { color: colors.foreground }]} numberOfLines={1}>{selectedArea ?? t('map.allHelsinki')}</Text>
+          <Text style={[ms.areaPillText, { color: colors.foreground }]} numberOfLines={1}>{selectedArea ?? t('map.allHelsinki')}</Text>
           <ChevronDown size={14} color={colors.mutedForeground} />
         </Pressable>
-        <Pressable onPress={() => { setShowSearch(!showSearch); setShowAreaPicker(false) }} style={[ms.topBtn, { backgroundColor: colors.card }]}><Search size={20} color={colors.foreground} /></Pressable>
+        <Pressable onPress={() => { setShowSearch(!showSearch); setShowAreaPicker(false); setActiveSubFilter(null) }} style={[ms.pill, { backgroundColor: colors.card }]}>
+          <Search size={20} color={colors.foreground} />
+        </Pressable>
       </View>
 
-      {/* Layer pills */}
-      <View style={[ms.layerBar, { top: insets.top + 52 }]}>
-        <Pressable onPress={() => setShowPosts(!showPosts)} style={[ms.layerPill, { backgroundColor: showPosts ? colors.primary : colors.card }]}>
+      {/* ── LAYER PILLS: tap=toggle, long press=sub-filters ── */}
+      <View style={[ms.layerRow, { top: insets.top + 52 }]}>
+        {/* Posts */}
+        <Pressable
+          onPress={() => toggleLayer('posts')}
+          onLongPress={() => toggleSubFilter('posts')}
+          delayLongPress={300}
+          style={[ms.layerPill, { backgroundColor: showPosts ? colors.primary : colors.card }]}
+        >
           <Newspaper size={14} color={showPosts ? '#FFF' : colors.mutedForeground} />
-          <Text style={[ms.layerPillText, { color: showPosts ? '#FFF' : colors.mutedForeground }]}>{t('map.layerPosts')}</Text>
-          <View style={[ms.layerBadge, { backgroundColor: showPosts ? 'rgba(255,255,255,0.3)' : colors.muted }]}><Text style={[ms.layerBadgeText, { color: showPosts ? '#FFF' : colors.mutedForeground }]}>{filteredPosts.length}</Text></View>
+          <Text style={[ms.layerText, { color: showPosts ? '#FFF' : colors.mutedForeground }]}>{t('map.layerPosts')}</Text>
+          <View style={[ms.badge, { backgroundColor: showPosts ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
+            <Text style={[ms.badgeNum, { color: showPosts ? '#FFF' : colors.mutedForeground }]}>{filteredPosts.length}</Text>
+          </View>
         </Pressable>
-        <Pressable onPress={() => setShowEvents(!showEvents)} style={[ms.layerPill, { backgroundColor: showEvents ? '#2B8A62' : colors.card }]}>
+        {/* Events */}
+        <Pressable
+          onPress={() => toggleLayer('events')}
+          onLongPress={() => toggleSubFilter('events')}
+          delayLongPress={300}
+          style={[ms.layerPill, { backgroundColor: showEvents ? '#2B8A62' : colors.card }]}
+        >
           <CalendarDays size={14} color={showEvents ? '#FFF' : colors.mutedForeground} />
-          <Text style={[ms.layerPillText, { color: showEvents ? '#FFF' : colors.mutedForeground }]}>{t('map.layerEvents')}</Text>
-          <View style={[ms.layerBadge, { backgroundColor: showEvents ? 'rgba(255,255,255,0.3)' : colors.muted }]}><Text style={[ms.layerBadgeText, { color: showEvents ? '#FFF' : colors.mutedForeground }]}>{filteredEvents.length + filteredCityEvents.length}</Text></View>
+          <Text style={[ms.layerText, { color: showEvents ? '#FFF' : colors.mutedForeground }]}>{t('map.layerEvents')}</Text>
+          <View style={[ms.badge, { backgroundColor: showEvents ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
+            <Text style={[ms.badgeNum, { color: showEvents ? '#FFF' : colors.mutedForeground }]}>{filteredEvents.length + filteredCityEvents.length}</Text>
+          </View>
         </Pressable>
-        <Pressable onPress={() => setShowPlaces(!showPlaces)} style={[ms.layerPill, { backgroundColor: showPlaces ? '#78716C' : colors.card }]}>
+        {/* Places */}
+        <Pressable
+          onPress={() => toggleLayer('places')}
+          onLongPress={() => toggleSubFilter('places')}
+          delayLongPress={300}
+          style={[ms.layerPill, { backgroundColor: showPlaces ? '#78716C' : colors.card }]}
+        >
           <Coffee size={14} color={showPlaces ? '#FFF' : colors.mutedForeground} />
-          <Text style={[ms.layerPillText, { color: showPlaces ? '#FFF' : colors.mutedForeground }]}>{t('map.layerPlaces')}</Text>
-          <View style={[ms.layerBadge, { backgroundColor: showPlaces ? 'rgba(255,255,255,0.3)' : colors.muted }]}><Text style={[ms.layerBadgeText, { color: showPlaces ? '#FFF' : colors.mutedForeground }]}>{filteredPlaces.length}</Text></View>
+          <Text style={[ms.layerText, { color: showPlaces ? '#FFF' : colors.mutedForeground }]}>{t('map.layerPlaces')}</Text>
+          <View style={[ms.badge, { backgroundColor: showPlaces ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
+            <Text style={[ms.badgeNum, { color: showPlaces ? '#FFF' : colors.mutedForeground }]}>{filteredPlaces.length}</Text>
+          </View>
         </Pressable>
       </View>
 
-      {/* Expand sub-filters */}
-      <Pressable onPress={() => setFiltersExpanded(!filtersExpanded)} style={[ms.expandBtn, { top: insets.top + 92, backgroundColor: colors.card }]}>
-        {filtersExpanded ? <ChevronUp size={14} color={colors.mutedForeground} /> : <ChevronDown size={14} color={colors.mutedForeground} />}
-      </Pressable>
-
-      {/* Sub-filters panel */}
-      {filtersExpanded && (
+      {/* ── SUB-FILTER (slides from under active layer pill) ── */}
+      {activeSubFilter && (
         <View style={[ms.subPanel, { top: insets.top + 92, backgroundColor: colors.card, borderColor: colors.border }]}>
-          {/* Post type filter */}
-          {showPosts && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.subRow}>
-              <Pressable onPress={() => setPostFilter(null)} style={[ms.subChip, !postFilter ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
-                <Text style={[ms.subChipText, { color: !postFilter ? '#FFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
+          {activeSubFilter === 'posts' && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
+              <Pressable onPress={() => setPostFilter(null)} style={[ms.chip, !postFilter ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
+                <Text style={[ms.chipText, { color: !postFilter ? '#FFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
               </Pressable>
               {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => (
-                <Pressable key={type} onPress={() => setPostFilter(postFilter === type ? null : type)} style={[ms.subChip, postFilter === type ? { backgroundColor: cat.color } : { backgroundColor: colors.muted }]}>
-                  <Text style={[ms.subChipText, { color: postFilter === type ? '#FFF' : colors.mutedForeground }]}>{t(cat.label)}</Text>
+                <Pressable key={type} onPress={() => setPostFilter(postFilter === type ? null : type)} style={[ms.chip, postFilter === type ? { backgroundColor: cat.color } : { backgroundColor: colors.muted }]}>
+                  <Text style={[ms.chipText, { color: postFilter === type ? '#FFF' : colors.mutedForeground }]}>{t(cat.label)}</Text>
                 </Pressable>
               ))}
             </ScrollView>
           )}
-          {/* Event source filter */}
-          {showEvents && (
-            <View style={[ms.subRow, { marginTop: 8 }]}>
-              {(['all', 'community', 'city'] as const).map(src => (
-                <Pressable key={src} onPress={() => setEventSource(src)} style={[ms.subChip, eventSource === src ? { backgroundColor: '#2B8A62' } : { backgroundColor: colors.muted }]}>
-                  <Text style={[ms.subChipText, { color: eventSource === src ? '#FFF' : colors.mutedForeground }]}>
-                    {src === 'all' ? t('common.all') : src === 'community' ? t('events.communityTab') : 'Helsinki'}
-                  </Text>
-                </Pressable>
-              ))}
+          {activeSubFilter === 'events' && (
+            <View style={{ gap: 8 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
+                {(['all', 'community', 'city'] as const).map(src => (
+                  <Pressable key={src} onPress={() => setEventSource(src)} style={[ms.chip, eventSource === src ? { backgroundColor: '#2B8A62' } : { backgroundColor: colors.muted }]}>
+                    <Text style={[ms.chipText, { color: eventSource === src ? '#FFF' : colors.mutedForeground }]}>
+                      {src === 'all' ? t('common.all') : src === 'community' ? t('events.communityTab') : 'Helsinki'}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+              {(eventSource === 'all' || eventSource === 'city') && Object.keys(cityEventCategoryCounts).length > 0 && (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
+                  <Pressable onPress={() => setCityEventCategory(null)} style={[ms.chip, !cityEventCategory ? { backgroundColor: '#3B7DD8' } : { backgroundColor: colors.muted }]}>
+                    <Text style={[ms.chipText, { color: !cityEventCategory ? '#FFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
+                  </Pressable>
+                  {Object.entries(cityEventCategoryCounts).map(([cat, count]) => {
+                    const cfg = CITY_EVENT_CATS[cat]
+                    return (
+                      <Pressable key={cat} onPress={() => setCityEventCategory(cityEventCategory === cat ? null : cat)} style={[ms.chip, cityEventCategory === cat ? { backgroundColor: cfg?.color ?? '#3B7DD8' } : { backgroundColor: colors.muted }]}>
+                        <Text style={[ms.chipText, { color: cityEventCategory === cat ? '#FFF' : colors.mutedForeground }]}>{cat} ({count})</Text>
+                      </Pressable>
+                    )
+                  })}
+                </ScrollView>
+              )}
             </View>
           )}
-          {/* City event category filter */}
-          {showEvents && (eventSource === 'all' || eventSource === 'city') && Object.keys(cityEventCategoryCounts).length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[ms.subRow, { marginTop: 8 }]}>
-              <Pressable onPress={() => setCityEventCategory(null)} style={[ms.subChip, !cityEventCategory ? { backgroundColor: '#3B7DD8' } : { backgroundColor: colors.muted }]}>
-                <Text style={[ms.subChipText, { color: !cityEventCategory ? '#FFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
-              </Pressable>
-              {Object.entries(cityEventCategoryCounts).map(([cat, count]) => (
-                <Pressable key={cat} onPress={() => setCityEventCategory(cityEventCategory === cat ? null : cat)} style={[ms.subChip, cityEventCategory === cat ? { backgroundColor: '#3B7DD8' } : { backgroundColor: colors.muted }]}>
-                  <Text style={[ms.subChipText, { color: cityEventCategory === cat ? '#FFF' : colors.mutedForeground }]}>{cat} ({count})</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          )}
-          {/* Place category filter */}
-          {showPlaces && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[ms.subRow, { marginTop: 8 }]}>
+          {activeSubFilter === 'places' && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
               {PLACE_CATEGORIES.map(({ key, label }) => (
-                <Pressable key={key ?? 'all'} onPress={() => setPlaceFilter(key)} style={[ms.subChip, placeFilter === key ? { backgroundColor: '#78716C' } : { backgroundColor: colors.muted }]}>
-                  <Text style={[ms.subChipText, { color: placeFilter === key ? '#FFF' : colors.mutedForeground }]}>{t(label)}</Text>
+                <Pressable key={key ?? 'all'} onPress={() => setPlaceFilter(key)} style={[ms.chip, placeFilter === key ? { backgroundColor: '#78716C' } : { backgroundColor: colors.muted }]}>
+                  <Text style={[ms.chipText, { color: placeFilter === key ? '#FFF' : colors.mutedForeground }]}>{t(label)}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -690,26 +730,26 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* Area picker */}
+      {/* ── AREA PICKER ── */}
       {showAreaPicker && (
-        <View style={[ms.dropdown, { top: insets.top + 52, backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[ms.overlay, { top: insets.top + 52, backgroundColor: colors.card, borderColor: colors.border }]}>
           <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
-            <Pressable onPress={() => { setSelectedArea(null); setShowAreaPicker(false) }} style={ms.dropdownItem}>
-              <Text style={[ms.dropdownText, { color: colors.foreground, fontWeight: !selectedArea ? '700' : '400' }]}>Helsinki ({t('common.all')})</Text>
+            <Pressable onPress={() => { setSelectedArea(null); setShowAreaPicker(false) }} style={ms.overlayItem}>
+              <Text style={[ms.overlayText, { color: colors.foreground, fontWeight: !selectedArea ? '700' : '400' }]}>Helsinki ({t('common.all')})</Text>
             </Pressable>
             {NEIGHBORHOODS.map((nh) => (
-              <Pressable key={nh} onPress={() => { setSelectedArea(nh); setShowAreaPicker(false) }} style={ms.dropdownItem}>
-                <Text style={[ms.dropdownText, { color: colors.foreground, fontWeight: selectedArea === nh ? '700' : '400' }]}>{nh}</Text>
+              <Pressable key={nh} onPress={() => { setSelectedArea(nh); setShowAreaPicker(false) }} style={ms.overlayItem}>
+                <Text style={[ms.overlayText, { color: colors.foreground, fontWeight: selectedArea === nh ? '700' : '400' }]}>{nh}</Text>
               </Pressable>
             ))}
           </ScrollView>
         </View>
       )}
 
-      {/* Search + results dropdown */}
+      {/* ── SEARCH + RESULTS ── */}
       {showSearch && (
         <View style={{ position: 'absolute', left: 12, right: 12, top: insets.top + 52, zIndex: 20 }}>
-          <View style={[ms.searchOverlay, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[ms.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Search size={16} color={colors.mutedForeground} />
             <TextInput style={[ms.searchInput, { color: colors.foreground }]} value={searchQuery} onChangeText={setSearchQuery} placeholder={t('feed.searchPlaceholder')} placeholderTextColor={colors.mutedForeground} autoFocus />
             {searchQuery.length > 0 && <Pressable onPress={() => setSearchQuery('')} hitSlop={8}><X size={16} color={colors.mutedForeground} /></Pressable>}
@@ -717,13 +757,13 @@ export default function MapScreen() {
           {searchResults.length > 0 && (
             <ScrollView style={[ms.searchResults, { backgroundColor: colors.card, borderColor: colors.border }]} keyboardShouldPersistTaps="handled">
               {searchResults.map((r, i) => (
-                <Pressable key={i} onPress={() => handleSearchResultClick(r)} style={[ms.searchResultItem, i < searchResults.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}>
-                  <View style={[ms.searchResultBadge, { backgroundColor: r.type === 'post' ? `${colors.primary}20` : r.type === 'event' ? '#2B8A6220' : r.type === 'city_event' ? '#8E44AD20' : '#78716C20' }]}>
-                    <Text style={[ms.searchResultBadgeText, { color: r.type === 'post' ? colors.primary : r.type === 'event' ? '#2B8A62' : r.type === 'city_event' ? '#8E44AD' : '#78716C' }]}>
+                <Pressable key={i} onPress={() => handleSearchResultClick(r)} style={[ms.searchItem, i < searchResults.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}>
+                  <View style={[ms.searchBadge, { backgroundColor: r.type === 'post' ? `${colors.primary}20` : r.type === 'event' ? '#2B8A6220' : r.type === 'city_event' ? '#8E44AD20' : '#78716C20' }]}>
+                    <Text style={[ms.searchBadgeText, { color: r.type === 'post' ? colors.primary : r.type === 'event' ? '#2B8A62' : r.type === 'city_event' ? '#8E44AD' : '#78716C' }]}>
                       {r.type === 'post' ? t('map.layerPosts') : r.type === 'event' ? t('map.layerEvents') : r.type === 'city_event' ? 'Helsinki' : t('map.layerPlaces')}
                     </Text>
                   </View>
-                  <Text style={[ms.searchResultName, { color: colors.foreground }]} numberOfLines={1}>{r.name}</Text>
+                  <Text style={[ms.searchName, { color: colors.foreground }]} numberOfLines={1}>{r.name}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -731,55 +771,47 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* GPS button */}
-      <Pressable onPress={handleGeolocate} disabled={geoLoading} style={[ms.gpsBtn, { bottom: insets.bottom + 80, backgroundColor: userPos ? colors.primary : colors.card }]}>
+      {/* ── GPS BUTTON (right side) ── */}
+      <Pressable onPress={handleGeolocate} disabled={geoLoading} style={[ms.gpsBtn, { bottom: insets.bottom + (userPos ? 140 : 70), backgroundColor: userPos ? colors.primary : colors.card }]}>
         {geoLoading ? <Loader2 size={20} color={colors.foreground} /> : <Crosshair size={20} color={userPos ? '#FFF' : colors.foreground} />}
       </Pressable>
 
-      {/* Radius panel (when GPS active) */}
+      {/* ── RADIUS PANEL (above count bar, only when GPS active) ── */}
       {userPos && (
-        <View style={[ms.radiusBar, { bottom: insets.bottom + 130, backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={ms.radiusHeader}>
+        <View style={[ms.radiusPanel, { bottom: insets.bottom + 70, backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={ms.radiusRow}>
             <MapPin size={14} color={radiusKm ? colors.primary : colors.mutedForeground} />
             <Text style={[ms.radiusLabel, { color: colors.foreground }]}>{t('map.radius')}</Text>
-            <Text style={[ms.radiusValue, { color: radiusKm ? colors.primary : colors.mutedForeground }]}>
-              {radiusKm ? `${radiusKm} km` : t('map.radiusOff')}
-            </Text>
-            <Pressable onPress={() => setRadiusKm(radiusKm ? null : 0.5)} style={[ms.radiusToggle, { backgroundColor: radiusKm ? colors.primary : colors.muted }]}>
-              <View style={[ms.radiusToggleThumb, { backgroundColor: '#FFF', transform: [{ translateX: radiusKm ? 14 : 0 }] }]} />
+            <Text style={[ms.radiusVal, { color: radiusKm ? colors.primary : colors.mutedForeground }]}>{radiusKm ? `${radiusKm} km` : t('map.radiusOff')}</Text>
+            <Pressable onPress={() => setRadiusKm(radiusKm ? null : 0.5)} style={[ms.toggle, { backgroundColor: radiusKm ? colors.primary : colors.muted }]}>
+              <View style={[ms.toggleThumb, { transform: [{ translateX: radiusKm ? 14 : 0 }] }]} />
             </Pressable>
           </View>
-          {radiusKm && (
-            <>
-              <View style={ms.radiusBtns}>
-                {[0.1, 0.5, 1, 2, 3, 5].map(r => (
-                  <Pressable key={r} onPress={() => setRadiusKm(r)} style={[ms.radiusChip, Math.abs(radiusKm - r) < 0.15 ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
-                    <Text style={[ms.radiusChipText, { color: Math.abs(radiusKm - r) < 0.15 ? '#FFF' : colors.mutedForeground }]}>{r}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <View style={[ms.radiusCount, { backgroundColor: `${colors.primary}10` }]}>
-                <MapPin size={12} color={colors.primary} />
-                <Text style={[ms.radiusCountText, { color: colors.primary }]}>{totalVisible} {t('map.visible')}</Text>
-              </View>
-            </>
+          {radiusKm != null && (
+            <View style={ms.presets}>
+              {[0.1, 0.5, 1, 2, 3, 5].map(r => (
+                <Pressable key={r} onPress={() => setRadiusKm(r)} style={[ms.preset, Math.abs((radiusKm ?? 0) - r) < 0.15 ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
+                  <Text style={[ms.presetText, { color: Math.abs((radiusKm ?? 0) - r) < 0.15 ? '#FFF' : colors.mutedForeground }]}>{r}</Text>
+                </Pressable>
+              ))}
+            </View>
           )}
         </View>
       )}
 
-      {/* Count bar */}
+      {/* ── COUNT BAR (bottom center) ── */}
       <View style={[ms.countBar, { bottom: insets.bottom + 24, backgroundColor: colors.card, borderColor: colors.border }]}>
         <MapPin size={14} color={colors.mutedForeground} />
         <Text style={[ms.countText, { color: colors.foreground }]}>{totalVisible} {t('map.visible')}</Text>
       </View>
 
-      {/* Empty state */}
+      {/* ── EMPTY STATE ── */}
       {!loading && totalVisible === 0 && (
-        <View style={[ms.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[ms.empty, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
           <Text style={[ms.emptyTitle, { color: colors.foreground }]}>{t('map.noResults')}</Text>
           <Text style={[ms.emptyHint, { color: colors.mutedForeground }]}>{t('map.resetFiltersHint')}</Text>
-          <Pressable onPress={() => { setShowPosts(true); setShowEvents(true); setShowPlaces(true); setPostFilter(null); setPlaceFilter(null); setEventSource('all'); setCityEventCategory(null); setRadiusKm(null) }}
+          <Pressable onPress={() => { setShowPosts(true); setShowEvents(true); setShowPlaces(true); setPostFilter(null); setPlaceFilter(null); setEventSource('all'); setCityEventCategory(null); setRadiusKm(null); setActiveSubFilter(null) }}
             style={[ms.emptyBtn, { backgroundColor: colors.primary }]}>
             <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFF' }}>{t('map.resetFilters')}</Text>
           </Pressable>
@@ -789,49 +821,57 @@ export default function MapScreen() {
   )
 }
 
+const shadow = { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 }
+
 const ms = StyleSheet.create({
   container: { flex: 1 },
   mapWrap: { ...StyleSheet.absoluteFillObject },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  // Top bar
   topBar: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingBottom: 8 },
-  topBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
-  areaBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, borderRadius: 12, paddingHorizontal: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
-  areaBtnText: { fontSize: 14, fontWeight: '600', flex: 1 },
-  layerBar: { position: 'absolute', left: 12, right: 12, zIndex: 10, flexDirection: 'row', gap: 6 },
-  layerPill: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, height: 36, borderRadius: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
-  layerPillText: { fontSize: 11, fontWeight: '600' },
-  layerBadge: { minWidth: 20, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  layerBadgeText: { fontSize: 10, fontWeight: '700' },
-  expandBtn: { position: 'absolute', alignSelf: 'center', zIndex: 10, width: 28, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  subPanel: { position: 'absolute', left: 12, right: 12, zIndex: 9, borderRadius: 12, borderWidth: 1, padding: 10, paddingTop: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  subRow: { flexDirection: 'row', gap: 6 },
-  subChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
-  subChipText: { fontSize: 11, fontWeight: '500' },
-  dropdown: { position: 'absolute', left: 12, right: 12, zIndex: 20, borderRadius: 12, borderWidth: 1, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
-  dropdownItem: { paddingHorizontal: 16, paddingVertical: 12 },
-  dropdownText: { fontSize: 14 },
-  searchOverlay: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, height: 44, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  pill: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', ...shadow },
+  areaPill: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, borderRadius: 12, paddingHorizontal: 12, ...shadow },
+  areaPillText: { fontSize: 14, fontWeight: '600', flex: 1 },
+  // Layer row
+  layerRow: { position: 'absolute', left: 12, right: 12, zIndex: 10, flexDirection: 'row', gap: 6 },
+  layerPill: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, height: 36, borderRadius: 18, ...shadow },
+  layerText: { fontSize: 11, fontWeight: '600' },
+  badge: { minWidth: 20, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  badgeNum: { fontSize: 10, fontWeight: '700' },
+  // Sub-filter panel
+  subPanel: { position: 'absolute', left: 12, right: 12, zIndex: 9, borderRadius: 12, borderWidth: 1, padding: 10, ...shadow },
+  chipRow: { flexDirection: 'row', gap: 6 },
+  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
+  chipText: { fontSize: 11, fontWeight: '500' },
+  // Overlay (area picker)
+  overlay: { position: 'absolute', left: 12, right: 12, zIndex: 20, borderRadius: 12, borderWidth: 1, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
+  overlayItem: { paddingHorizontal: 16, paddingVertical: 12 },
+  overlayText: { fontSize: 14 },
+  // Search
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, height: 44, ...shadow },
   searchInput: { flex: 1, fontSize: 14 },
   searchResults: { marginTop: 4, borderRadius: 12, borderWidth: 1, maxHeight: 240, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
-  searchResultItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
-  searchResultBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  searchResultBadgeText: { fontSize: 10, fontWeight: '600' },
-  searchResultName: { fontSize: 14, flex: 1 },
-  gpsBtn: { position: 'absolute', right: 12, zIndex: 10, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
-  radiusBar: { position: 'absolute', left: 16, right: 16, zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 14, gap: 10, shadowColor: '#000', shadowOffset: { width: 0, height: -1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 },
-  radiusHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  searchItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
+  searchBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  searchBadgeText: { fontSize: 10, fontWeight: '600' },
+  searchName: { fontSize: 14, flex: 1 },
+  // GPS
+  gpsBtn: { position: 'absolute', right: 12, zIndex: 10, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', ...shadow },
+  // Radius panel
+  radiusPanel: { position: 'absolute', left: 16, right: 16, zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 14, gap: 10, ...shadow },
+  radiusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   radiusLabel: { fontSize: 13, fontWeight: '600', flex: 1 },
-  radiusValue: { fontSize: 13, fontWeight: '600' },
-  radiusToggle: { width: 34, height: 20, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 3 },
-  radiusToggleThumb: { width: 14, height: 14, borderRadius: 7 },
-  radiusBtns: { flexDirection: 'row', gap: 6, justifyContent: 'center' },
-  radiusChip: { width: 40, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  radiusChipText: { fontSize: 12, fontWeight: '600' },
-  radiusCount: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 6, borderRadius: 8 },
-  radiusCountText: { fontSize: 12, fontWeight: '500' },
-  countBar: { position: 'absolute', left: 60, right: 60, zIndex: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: -1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 },
+  radiusVal: { fontSize: 13, fontWeight: '600' },
+  toggle: { width: 34, height: 20, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 3 },
+  toggleThumb: { width: 14, height: 14, borderRadius: 7, backgroundColor: '#FFF' },
+  presets: { flexDirection: 'row', gap: 6, justifyContent: 'center' },
+  preset: { width: 40, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  presetText: { fontSize: 12, fontWeight: '600' },
+  // Count bar
+  countBar: { position: 'absolute', left: 60, right: 60, zIndex: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18, borderWidth: 1, ...shadow },
   countText: { fontSize: 13, fontWeight: '500' },
-  emptyState: { position: 'absolute', left: 40, right: 40, top: '40%', zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 24, alignItems: 'center', gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
+  // Empty state
+  empty: { position: 'absolute', left: 40, right: 40, top: '40%', zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 24, alignItems: 'center', gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
   emptyTitle: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
   emptyHint: { fontSize: 13, textAlign: 'center', lineHeight: 18 },
   emptyBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, marginTop: 4 },
