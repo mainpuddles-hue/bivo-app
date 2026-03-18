@@ -7,6 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "tackbird",
+    "owner": "tackbird",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -14,7 +15,22 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.tackbird.mobile"
+      "bundleIdentifier": "com.tackbird.mobile",
+      "buildNumber": "1",
+      "usesNonExemptEncryption": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "TackBird tarvitsee kameran ilmoitusten kuvien ottamiseen.",
+        "NSPhotoLibraryUsageDescription": "TackBird tarvitsee pääsyn kuvagalleriaan ilmoitusten kuvien lisäämiseen.",
+        "NSPhotoLibraryAddUsageDescription": "TackBird tallentaa kuvia galleriaasi.",
+        "NSLocationWhenInUseUsageDescription": "TackBird näyttää lähellä olevat ilmoitukset ja paikat kartalla.",
+        "NSUserTrackingUsageDescription": "TackBird ei seuraa sinua. Tätä käytetään vain ilmoitusten toimittamiseen."
+      },
+      "associatedDomains": [
+        "applinks:tackbird-v2.vercel.app"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +40,38 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "com.tackbird.mobile",
-      "predictiveBackGestureEnabled": false
+      "versionCode": 1,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ],
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "tackbird-v2.vercel.app",
+              "pathPrefix": "/post"
+            },
+            {
+              "scheme": "https",
+              "host": "tackbird-v2.vercel.app",
+              "pathPrefix": "/events"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -34,7 +81,48 @@
       "expo-router",
       "expo-image",
       "expo-font",
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "TackBird näyttää lähellä olevat ilmoitukset ja paikat."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#2D6B5E"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "TackBird tarvitsee pääsyn kuvagalleriaan ilmoitusten kuvien lisäämiseen.",
+          "cameraPermission": "TackBird tarvitsee kameran kuvien ottamiseen."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "TackBird tarvitsee kameran kuvien ottamiseen."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "tackbird-mobile"
+      },
+      "privacyPolicyUrl": "https://tackbird-v2.vercel.app/privacy",
+      "termsOfServiceUrl": "https://tackbird-v2.vercel.app/terms",
+      "supportEmail": "tuki@tackbird.fi"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/tackbird-mobile",
+      "fallbackToCacheTimeout": 0
+    }
   }
 }

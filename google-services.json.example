@@ -1,0 +1,25 @@
+{
+  "_comment": "INSTRUCTIONS: Create a Firebase project at https://console.firebase.google.com, add an Android app with package name com.tackbird.mobile, download google-services.json and replace this file.",
+  "project_info": {
+    "project_number": "FIREBASE_PROJECT_NUMBER",
+    "firebase_url": "https://tackbird-mobile.firebaseio.com",
+    "project_id": "tackbird-mobile",
+    "storage_bucket": "tackbird-mobile.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "android_client_info": {
+          "package_name": "com.tackbird.mobile"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "FIREBASE_API_KEY_HERE"
+        }
+      ]
+    }
+  ],
+  "configuration_version": "1"
+}

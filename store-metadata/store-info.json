@@ -1,0 +1,42 @@
+{
+  "category": {
+    "ios": "Social Networking",
+    "android": "Social"
+  },
+  "content_rating": {
+    "ios": "4+",
+    "android": "Everyone"
+  },
+  "pricing": "Free",
+  "in_app_purchases": true,
+  "in_app_purchases_details": "TackBird Pro subscription: 4.99 EUR/month",
+  "privacy_policy_url": "https://tackbird-v2.vercel.app/privacy",
+  "terms_of_service_url": "https://tackbird-v2.vercel.app/terms",
+  "support_email": "tuki@tackbird.fi",
+  "support_url": "https://tackbird-v2.vercel.app",
+  "marketing_url": "https://tackbird-v2.vercel.app",
+  "copyright": "© 2026 TackBird",
+  "primary_locale": "fi-FI",
+  "available_locales": ["fi-FI", "en-US", "sv-SE"],
+  "age_rating_declaration": {
+    "alcohol_tobacco_drugs": "NONE",
+    "contests": "NONE",
+    "gambling": "NONE",
+    "horror_fear": "NONE",
+    "mature_suggestive": "NONE",
+    "medical_treatment": "NONE",
+    "profanity_crude_humor": "NONE",
+    "sexual_content_nudity": "NONE",
+    "violence_cartoon_fantasy": "NONE",
+    "violence_realistic": "NONE",
+    "violence_graphic_extended": "NONE",
+    "unrestricted_web_access": false,
+    "gambling_simulated": false
+  },
+  "screenshots_needed": {
+    "iphone_6_7_inch": "6 screenshots (1290x2796 px)",
+    "iphone_6_5_inch": "6 screenshots (1284x2778 px)",
+    "ipad_12_9_inch": "Optional (2048x2732 px)",
+    "android_phone": "2-8 screenshots (min 320px, max 3840px, 16:9 or 9:16)"
+  }
+}
