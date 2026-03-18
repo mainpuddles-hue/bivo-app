@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, Platform, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, Platform, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
-  ArrowLeft, Search, X, MapPin, Navigation, ChevronDown, ChevronUp,
+  ArrowLeft, Search, X, MapPin, Navigation, ChevronDown,
   Newspaper, CalendarDays, Coffee, Crosshair, Loader2,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -60,22 +60,6 @@ const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
   'Ullanlinna': [60.1570, 24.9480], 'Eira': [60.1550, 24.9380],
   'Munkkiniemi': [60.1970, 24.8770], 'Vuosaari': [60.2090, 25.1450],
   'Malmi': [60.2490, 25.0110], 'Oulunkylä': [60.2290, 24.9590],
-}
-
-// SVG path icons matching Lucide for markers (white fill, no stroke)
-const CAT_MARKER_SVG: Record<string, string> = {
-  tarvitsen: '<path d="M7 11v8a1 1 0 01-1 1H4a1 1 0 01-1-1v-7a1 1 0 011-1h3m0-1V6a4 4 0 014-4h.5a.5.5 0 01.5.5V6l-1 2h5.5a2 2 0 011.94 2.49l-1.46 6A2 2 0 0115.04 18H7" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
-  tarjoan: '<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 110-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
-  ilmaista: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z" fill="white" stroke="white" stroke-width="1.5"/>',
-  nappaa: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white" stroke="white" stroke-width="1.5"/>',
-  lainaa: '<path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
-  tapahtuma: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="white" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="white" stroke-width="2"/>',
-}
-
-function markerSvgHtml(type: string, size = 14): string {
-  const svg = CAT_MARKER_SVG[type]
-  if (!svg) return `<span style="color:white;font-size:${size}px;font-weight:bold;">${type.charAt(0).toUpperCase()}</span>`
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">${svg}</svg>`
 }
 
 const PLACE_ICONS: Record<string, string> = {
@@ -165,9 +149,11 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const leafletRef = useRef<any>(null)
+  const tileLayerRef = useRef<any>(null)
   const layersRef = useRef<any[]>([])
   const userLayerRef = useRef<any>(null)
   const initialFitDone = useRef(false)
+  const [mapReady, setMapReady] = useState(false)
 
   // Load script with error handling
   const loadScript = useCallback((src: string) =>
@@ -218,8 +204,22 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       leafletRef.current = L
 
       const map = L.map(mapRef.current, { zoomControl: false }).setView(HELSINKI_CENTER, DEFAULT_ZOOM)
-      L.tileLayer(isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
+      tileLayerRef.current = L.tileLayer(isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
       L.control.zoom({ position: 'bottomright' }).addTo(map)
+
+      // Listen for popup link clicks — route via Expo Router instead of full navigation
+      map.on('popupopen', () => {
+        setTimeout(() => {
+          const links = document.querySelectorAll('.leaflet-popup-content a[data-route]')
+          links.forEach((a: Element) => {
+            a.addEventListener('click', (ev: globalThis.Event) => {
+              ev.preventDefault()
+              const route = (a as HTMLElement).getAttribute('data-route')
+              if (route) window.dispatchEvent(new CustomEvent('map-navigate', { detail: route }))
+            })
+          })
+        }, 50)
+      })
 
       if (onMapInteraction) {
         const handler = () => onMapInteraction()
@@ -228,18 +228,28 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       }
 
       mapInstanceRef.current = map
+      setMapReady(true)
     }
     init()
 
-    return () => { cancelled = true; if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null; leafletRef.current = null; initialFitDone.current = false } }
+    return () => { cancelled = true; setMapReady(false); if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null; leafletRef.current = null; tileLayerRef.current = null; initialFitDone.current = false } }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDark]) // Only recreate map on theme change
+  }, []) // Init once — tile layer swapped via separate effect
 
-  // (2) Update markers — runs when filtered data changes (does NOT destroy/recreate map)
+  // (1b) Swap tile layer on dark mode change (without destroying map)
   useEffect(() => {
     const map = mapInstanceRef.current
     const L = leafletRef.current
-    if (!map || !L) return
+    if (!map || !L || !tileLayerRef.current) return
+    map.removeLayer(tileLayerRef.current)
+    tileLayerRef.current = L.tileLayer(isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
+  }, [isDark])
+
+  // (2) Update markers — runs when filtered data changes OR map becomes ready
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    const L = leafletRef.current
+    if (!map || !L || !mapReady) return
 
     // Clear old marker layers
     for (const layer of layersRef.current) { map.removeLayer(layer) }
@@ -294,7 +304,7 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
           ${p.user.naapurusto ? `<span style="font-size:10px;color:#9CA3AF;margin-left:auto;">${esc(p.user.naapurusto)}</span>` : ''}
         </div>` : ''}
         ${p.daily_fee ? `<div style="margin-top:6px;"><span style="background:#FDF6E8;color:#C98B2E;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${p.daily_fee} €/pv</span></div>` : ''}
-        <a href="/post/${esc(p.id)}" style="display:block;margin-top:10px;background:${color};color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso ilmoitus →</a>
+        <a href="#" data-route="/post/${esc(p.id)}" style="display:block;margin-top:10px;background:${color};color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso ilmoitus →</a>
       </div>`, { maxWidth: 300, autoPanPadding: [80, 60] })
       postCluster.addLayer(marker)
     })
@@ -333,7 +343,7 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
           ${e.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(e.location_name)}</div>` : ''}
           ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
           ${attendeeBar}
-          <a href="/events?highlight=${esc(e.id)}" style="display:block;margin-top:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
+          <a href="#" data-route="/events" style="display:block;margin-top:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
         </div>`, { maxWidth: 280 })
       eventCluster.addLayer(evMarker)
     })
@@ -416,7 +426,7 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       }
       initialFitDone.current = true
     }
-  }, [posts, events, cityEvents, places, userPos, radiusKm, isDark, t])
+  }, [posts, events, cityEvents, places, userPos, radiusKm, isDark, t, mapReady])
 
   // (3) User position + radius circle — separate layer so it doesn't flicker
   useEffect(() => {
@@ -450,11 +460,14 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
     if (coords) mapInstanceRef.current.flyTo(coords, 15, { duration: 1 })
   }, [selectedArea])
 
-  // Fly to search result, then reset
+  // Fly to search result, then reset after animation
   useEffect(() => {
     if (!flyTo || !mapInstanceRef.current) return
-    mapInstanceRef.current.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom, { duration: 1 })
-    onFlyComplete?.()
+    const map = mapInstanceRef.current
+    map.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom, { duration: 1 })
+    const done = () => { onFlyComplete?.(); map.off('moveend', done) }
+    map.on('moveend', done)
+    return () => { map.off('moveend', done) }
   }, [flyTo, onFlyComplete])
 
   if (Platform.OS !== 'web') return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text>Kartta vaatii web-ympäristön</Text></View>
@@ -485,14 +498,12 @@ export default function MapScreen() {
   const [showAreaPicker, setShowAreaPicker] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
-  const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [userPos, setUserPos] = useState<[number, number] | null>(null)
   const [radiusKm, setRadiusKm] = useState<number | null>(null)
   const [geoLoading, setGeoLoading] = useState(false)
   const [cityEventCategory, setCityEventCategory] = useState<string | null>(null)
-  const [savedPlaceIds, setSavedPlaceIds] = useState<Set<string>>(new Set())
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [showAllPlaceCats, setShowAllPlaceCats] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom: number } | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -539,32 +550,48 @@ export default function MapScreen() {
           .limit(500),
       ])
 
-      setPosts(postsRes.status === 'fulfilled' ? (postsRes.value.data ?? []) as unknown as Post[] : [])
-      // Normalize attendee count from join result
-      const rawEvents = eventsRes.status === 'fulfilled' ? (eventsRes.value.data ?? []) : []
-      setEvents(rawEvents.map((e: any) => ({
+      const pData = postsRes.status === 'fulfilled' ? (postsRes.value.data ?? []) : []
+      const eData = eventsRes.status === 'fulfilled' ? (eventsRes.value.data ?? []) : []
+      const cData = cityRes.status === 'fulfilled' ? (cityRes.value.data ?? []) : []
+      const plData = placesRes.status === 'fulfilled' ? (placesRes.value.data ?? []) : []
+
+      // Show error if ALL queries failed
+      if (!pData.length && !eData.length && !cData.length && !plData.length &&
+          postsRes.status === 'rejected' && eventsRes.status === 'rejected') {
+        setFetchError(true)
+      }
+
+      setPosts(pData as unknown as Post[])
+      setEvents(eData.map((e: any) => ({
         ...e,
         attendee_count: (e.attendees as { count: number }[])?.[0]?.count ?? 0,
         creator: Array.isArray(e.creator) ? e.creator[0] ?? null : e.creator ?? null,
       })) as unknown as Event[])
-      setCityEvents(cityRes.status === 'fulfilled' ? (cityRes.value.data ?? []) as unknown as CityEvent[] : [])
-      setPlaces(placesRes.status === 'fulfilled' ? (placesRes.value.data ?? []) as unknown as LocalPlace[] : [])
-
-      // Fetch saved places
-      if (user) {
-        const { data: saved } = await supabase.from('saved_places').select('place_id').eq('user_id', user.id)
-        if (saved) setSavedPlaceIds(new Set(saved.map((s: any) => s.place_id)))
-      }
+      setCityEvents(cData as unknown as CityEvent[])
+      setPlaces(plData as unknown as LocalPlace[])
 
       setLoading(false)
     }
     fetchData()
   }, [supabase])
 
-  // GPS
+  // Listen for popup link navigation events
+  useEffect(() => {
+    if (Platform.OS !== 'web') return
+    const handler = (e: globalThis.Event) => {
+      const route = (e as CustomEvent).detail as string
+      if (route) router.push(route as any)
+    }
+    window.addEventListener('map-navigate', handler)
+    return () => window.removeEventListener('map-navigate', handler)
+  }, [router])
+
+  // GPS: 1st click = locate + radius, 2nd click = fly to position, 3rd click = toggle radius
   const handleGeolocate = useCallback(() => {
     if (geoLoading) return
     if (userPos) {
+      // Fly to user position + toggle radius
+      setFlyTo({ lat: userPos[0], lng: userPos[1], zoom: 15 })
       setRadiusKm(prev => prev ? null : 0.5)
       return
     }
@@ -664,7 +691,7 @@ export default function MapScreen() {
     setFlyTo({ lat: result.lat, lng: result.lng, zoom: 17 })
     setShowSearch(false)
     setSearchQuery('')
-    setFiltersExpanded(false)
+    setActiveSubFilter(null)
   }, [])
 
   // 7. City event category counts
@@ -891,8 +918,19 @@ export default function MapScreen() {
         <Text style={[ms.countText, { color: colors.foreground }]}>{totalVisible} {t('map.visible')}</Text>
       </View>
 
+      {/* ── ERROR STATE ── */}
+      {fetchError && !loading && (
+        <View style={[ms.empty, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[ms.emptyTitle, { color: colors.foreground }]}>Virhe ladattaessa karttadataa</Text>
+          <Text style={[ms.emptyHint, { color: colors.mutedForeground }]}>Tarkista verkkoyhteys ja yritä uudelleen.</Text>
+          <Pressable onPress={() => { setFetchError(false); setLoading(true); /* re-trigger fetch by changing dep */ }} style={[ms.emptyBtn, { backgroundColor: colors.primary }]}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFF' }}>Yritä uudelleen</Text>
+          </Pressable>
+        </View>
+      )}
+
       {/* ── EMPTY STATE ── */}
-      {!loading && totalVisible === 0 && (
+      {!loading && !fetchError && totalVisible === 0 && (
         <View style={[ms.empty, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
           <Text style={[ms.emptyTitle, { color: colors.foreground }]}>{t('map.noResults')}</Text>
