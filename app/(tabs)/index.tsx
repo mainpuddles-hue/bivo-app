@@ -71,6 +71,28 @@ function PostCardSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['col
   )
 }
 
+function HorizontalSkeleton({ colors, width, height }: { colors: ReturnType<typeof useTheme>['colors']; width: number; height: number }) {
+  const shimmer = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
+      ])
+    )
+    anim.start()
+    return () => anim.stop()
+  }, [shimmer])
+  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 4 }}>
+      {[0, 1, 2].map(i => (
+        <Animated.View key={i} style={{ width, height, borderRadius: 12, backgroundColor: colors.muted, opacity }} />
+      ))}
+    </ScrollView>
+  )
+}
+
 const skelStyles = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden' },
   image: { width: '100%', aspectRatio: 3 / 2, borderRadius: 0 },
@@ -86,7 +108,7 @@ const skelStyles = StyleSheet.create({
 
 export default function FeedScreen() {
   const { colors, isDark } = useTheme()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
@@ -117,6 +139,33 @@ export default function FeedScreen() {
     }
     fetchFollows()
   }, [supabase])
+
+  // Fetch city events and nearby places
+  const fetchExtraContent = useCallback(async () => {
+    setExtraLoading(true)
+    const [eventsRes, placesRes] = await Promise.all([
+      supabase
+        .from('city_events')
+        .select('*')
+        .gte('start_time', new Date().toISOString())
+        .gte('latitude', 60.14).lte('latitude', 60.29)
+        .gte('longitude', 24.83).lte('longitude', 25.22)
+        .order('start_time', { ascending: true })
+        .limit(8),
+      supabase
+        .from('local_places')
+        .select('*')
+        .not('neighborhood', 'is', null)
+        .gte('latitude', 60.14).lte('latitude', 60.29)
+        .gte('longitude', 24.83).lte('longitude', 25.22)
+        .limit(8),
+    ])
+    setCityEvents((eventsRes.data ?? []) as unknown as CityEvent[])
+    setNearbyPlaces((placesRes.data ?? []) as unknown as LocalPlace[])
+    setExtraLoading(false)
+  }, [supabase])
+
+  useEffect(() => { fetchExtraContent() }, [fetchExtraContent])
 
   const fetchPosts = useCallback(async (reset = false) => {
     abortRef.current?.abort()
@@ -194,7 +243,8 @@ export default function FeedScreen() {
     setHasNewPosts(false)
     offsetRef.current = 0
     fetchPosts(true)
-  }, [fetchPosts])
+    fetchExtraContent()
+  }, [fetchPosts, fetchExtraContent])
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore && !error) fetchPosts(false)
@@ -207,6 +257,12 @@ export default function FeedScreen() {
     setHasMore(true)
     setLoading(true)
   }, [])
+
+  const getCityEventName = useCallback((e: CityEvent) => {
+    if (locale === 'en' && e.name_en) return e.name_en
+    if (locale === 'sv' && e.name_sv) return e.name_sv
+    return e.name_fi
+  }, [locale])
 
   const renderPost = useCallback(({ item }: { item: Post }) => <PostCard post={item} />, [])
 
@@ -278,14 +334,21 @@ export default function FeedScreen() {
     )
   }, [loading, colors, t, router])
 
-  // ── All loaded footer ──
+  // ── All loaded footer + extra sections ──
   const FooterComponent = useMemo(() => {
+    const sections: React.ReactNode[] = []
+
+    // Loading indicator for paginated posts
     if (loading && posts.length > 0) {
-      return <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 20 }} />
+      sections.push(
+        <ActivityIndicator key="loader" size="small" color={colors.mutedForeground} style={{ marginVertical: 20 }} />
+      )
     }
+
+    // All loaded divider
     if (!hasMore && posts.length > 0) {
-      return (
-        <View style={styles.allLoadedWrap}>
+      sections.push(
+        <View key="all-loaded" style={styles.allLoadedWrap}>
           <View style={styles.allLoadedRow}>
             <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
             <TackBirdLogo size={14} color={`${colors.mutedForeground}50`} />
@@ -295,8 +358,161 @@ export default function FeedScreen() {
         </View>
       )
     }
-    return null
-  }, [loading, hasMore, posts.length, colors, t])
+
+    // ── City Events Section ──
+    if (extraLoading && cityEvents.length === 0) {
+      sections.push(
+        <View key="events-skel" style={{ marginTop: 24, gap: 12 }}>
+          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
+            <View style={[styles.sectionBar, { backgroundColor: '#3B7DD8' }]} />
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('events.cityEvents')}</Text>
+          </View>
+          <HorizontalSkeleton colors={colors} width={200} height={140} />
+        </View>
+      )
+    } else if (cityEvents.length > 0) {
+      sections.push(
+        <View key="city-events" style={{ marginTop: 24, gap: 12 }}>
+          {/* Section header */}
+          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
+            <View style={[styles.sectionBar, { backgroundColor: '#3B7DD8' }]} />
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('events.cityEvents')}</Text>
+            <Pressable onPress={() => router.push('/(tabs)/events')} hitSlop={8} style={extraStyles.showAllBtn}>
+              <Text style={[extraStyles.showAllText, { color: colors.primary }]}>{t('events.cityTab')}</Text>
+              <ChevronRight size={14} color={colors.primary} />
+            </Pressable>
+          </View>
+
+          {/* Horizontal scroll */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToInterval={212}
+            contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingBottom: 4 }}
+          >
+            {cityEvents.map((event) => {
+              const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
+              return (
+                <Pressable
+                  key={event.id}
+                  onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/(tabs)/events')}
+                  style={[extraStyles.eventCard, { backgroundColor: colors.card }]}
+                >
+                  {/* Category color top border */}
+                  <View style={[extraStyles.eventAccent, { backgroundColor: catColor }]} />
+
+                  {/* Event image or fallback */}
+                  {event.image_url ? (
+                    <Image source={{ uri: event.image_url }} style={extraStyles.eventImage} contentFit="cover" />
+                  ) : (
+                    <View style={[extraStyles.eventImageFallback, { backgroundColor: `${catColor}20` }]}>
+                      <Globe size={24} color={catColor} />
+                    </View>
+                  )}
+
+                  {/* Event info */}
+                  <View style={extraStyles.eventInfo}>
+                    <Text style={[extraStyles.eventName, { color: colors.foreground }]} numberOfLines={2}>
+                      {getCityEventName(event)}
+                    </Text>
+                    <View style={extraStyles.eventMeta}>
+                      <CalendarDays size={11} color={colors.mutedForeground} />
+                      <Text style={[extraStyles.eventDate, { color: colors.primary }]}>
+                        {formatEventDateShort(event.start_time, locale)}
+                      </Text>
+                    </View>
+                    {event.location_name && (
+                      <View style={extraStyles.eventMeta}>
+                        <MapPin size={11} color={colors.mutedForeground} />
+                        <Text style={[extraStyles.eventLocation, { color: colors.mutedForeground }]} numberOfLines={1}>
+                          {event.location_name}
+                        </Text>
+                      </View>
+                    )}
+                    {event.is_free && (
+                      <View style={[extraStyles.freeBadge, { backgroundColor: `${colors.success}20` }]}>
+                        <Text style={[extraStyles.freeText, { color: colors.success }]}>{t('events.free')}</Text>
+                      </View>
+                    )}
+                  </View>
+                </Pressable>
+              )
+            })}
+          </ScrollView>
+        </View>
+      )
+    }
+
+    // ── Nearby Places Section ──
+    if (extraLoading && nearbyPlaces.length === 0) {
+      sections.push(
+        <View key="places-skel" style={{ marginTop: 24, gap: 12 }}>
+          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
+            <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('map.layerPlaces') || 'Paikat lähellä'}</Text>
+          </View>
+          <HorizontalSkeleton colors={colors} width={160} height={120} />
+        </View>
+      )
+    } else if (nearbyPlaces.length > 0) {
+      sections.push(
+        <View key="nearby-places" style={{ marginTop: 24, gap: 12 }}>
+          {/* Section header */}
+          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
+            <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('map.layerPlaces') || 'Paikat lähellä'}</Text>
+            <Pressable onPress={() => router.push('/map')} hitSlop={8} style={extraStyles.showAllBtn}>
+              <Text style={[extraStyles.showAllText, { color: colors.primary }]}>{t('nav.map') || 'Kartta'}</Text>
+              <ChevronRight size={14} color={colors.primary} />
+            </Pressable>
+          </View>
+
+          {/* Horizontal scroll */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToInterval={172}
+            contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingBottom: 4 }}
+          >
+            {nearbyPlaces.map((place) => {
+              const catColor = PLACE_COLORS[place.category] || '#95A5A6'
+              const catLabel = PLACE_LABELS[place.category] || place.category
+              return (
+                <View key={place.id} style={[extraStyles.placeCard, { backgroundColor: colors.card }]}>
+                  {/* Category color circle */}
+                  <View style={[extraStyles.placeCatCircle, { backgroundColor: `${catColor}20` }]}>
+                    <MapPin size={16} color={catColor} />
+                  </View>
+
+                  {/* Place name */}
+                  <Text style={[extraStyles.placeName, { color: colors.foreground }]} numberOfLines={2}>
+                    {place.name}
+                  </Text>
+
+                  {/* Category badge */}
+                  <View style={[extraStyles.placeCatBadge, { backgroundColor: `${catColor}15` }]}>
+                    <Text style={[extraStyles.placeCatText, { color: catColor }]}>{catLabel}</Text>
+                  </View>
+
+                  {/* Address */}
+                  {place.address && (
+                    <Text style={[extraStyles.placeAddress, { color: `${colors.mutedForeground}AA` }]} numberOfLines={1}>
+                      {place.address}
+                    </Text>
+                  )}
+                </View>
+              )
+            })}
+          </ScrollView>
+        </View>
+      )
+    }
+
+    if (sections.length === 0) return null
+    return <View style={{ paddingBottom: 12 }}>{sections}</View>
+  }, [loading, hasMore, posts.length, colors, t, locale, cityEvents, nearbyPlaces, extraLoading, getCityEventName, router])
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -385,4 +601,53 @@ const styles = StyleSheet.create({
   allLoadedRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
   allLoadedLine: { flex: 1, height: 1 },
   allLoadedText: { fontSize: 11, fontWeight: '500' },
+})
+
+const extraStyles = StyleSheet.create({
+  // ── Section header link ──
+  showAllBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 2,
+  },
+  showAllText: { fontSize: 13, fontWeight: '600' },
+
+  // ── City Event Card ──
+  eventCard: {
+    width: 200, borderRadius: 12, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+  },
+  eventAccent: { height: 3 },
+  eventImage: { width: '100%', height: 80 },
+  eventImageFallback: {
+    width: '100%', height: 80,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  eventInfo: { padding: 10, gap: 3 },
+  eventName: { fontSize: 13, fontWeight: '600', lineHeight: 17 },
+  eventMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  eventDate: { fontSize: 11, fontWeight: '500' },
+  eventLocation: { fontSize: 11, flex: 1 },
+  freeBadge: {
+    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+    alignSelf: 'flex-start', marginTop: 2,
+  },
+  freeText: { fontSize: 10, fontWeight: '600' },
+
+  // ── Nearby Place Card ──
+  placeCard: {
+    width: 160, borderRadius: 12, padding: 12, gap: 4,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+  },
+  placeCatCircle: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 4,
+  },
+  placeName: { fontSize: 13, fontWeight: '600', lineHeight: 17 },
+  placeCatBadge: {
+    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  placeCatText: { fontSize: 10, fontWeight: '600' },
+  placeAddress: { fontSize: 10, marginTop: 2 },
 })
