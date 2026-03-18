@@ -124,7 +124,11 @@
     "quickMessage": "Send quick message",
     "quickMessageHint": "Sends a message to the poster",
     "quickMessageTemplate": "Hi! I'm interested in your listing: {title}",
-    "quickMessageSent": "Message sent!"
+    "quickMessageSent": "Message sent!",
+    "comments": "Comments",
+    "addComment": "Add a comment...",
+    "notFound": "Post not found",
+    "cannotMessageSelf": "You cannot message yourself"
   },
   "events": {
     "title": "Events",

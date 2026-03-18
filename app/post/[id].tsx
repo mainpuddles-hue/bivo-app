@@ -263,21 +263,23 @@ export default function PostDetailScreen() {
 
           {/* Author card */}
           <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {user?.avatar_url ? (
-              <Image source={{ uri: user.avatar_url }} style={styles.authorAvatar} />
-            ) : (
-              <View style={[styles.authorAvatar, styles.avatarFb, { backgroundColor: colors.muted }]}>
-                <Text style={[styles.avatarInit, { color: colors.mutedForeground }]}>{user?.name?.charAt(0)?.toUpperCase()}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              {user?.avatar_url ? (
+                <Image source={{ uri: user.avatar_url }} style={styles.authorAvatar} />
+              ) : (
+                <View style={[styles.authorAvatar, styles.avatarFb, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.avatarInit, { color: colors.mutedForeground }]}>{user?.name?.charAt(0)?.toUpperCase()}</Text>
+                </View>
+              )}
+              <View style={{ flex: 1, gap: 2 }}>
+                <View style={styles.authorNameRow}>
+                  <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name}</Text>
+                  {isVerified && <BadgeCheck size={16} color={colors.info} />}
+                </View>
+                {user?.naapurusto && <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>}
               </View>
-            )}
-            <View style={styles.authorInfo}>
-              <View style={styles.authorNameRow}>
-                <Text style={[styles.authorName, { color: colors.foreground }]}>{user?.name}</Text>
-                {isVerified && <BadgeCheck size={16} color={colors.info} />}
-              </View>
-              {user?.naapurusto && <Text style={[styles.authorNh, { color: colors.mutedForeground }]}>{user.naapurusto}</Text>}
             </View>
-            <Pressable onPress={handleMessage} style={[styles.messageBtn, { backgroundColor: colors.primary }]}>
+            <Pressable onPress={handleMessage} style={[styles.messageBtn, { backgroundColor: colors.primary, marginTop: 10 }]}>
               <MessageCircle size={16} color={colors.primaryForeground} />
               <Text style={[styles.messageBtnText, { color: colors.primaryForeground }]}>{t('post.message')}</Text>
             </Pressable>
@@ -370,7 +372,6 @@ const styles = StyleSheet.create({
   engItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   engText: { fontSize: 15, fontWeight: '500' },
   authorCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4,
   },
   authorAvatar: { width: 44, height: 44, borderRadius: 22 },

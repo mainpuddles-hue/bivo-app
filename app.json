@@ -52,7 +52,7 @@
         "VIBRATE",
         "POST_NOTIFICATIONS"
       ],
-      "googleServicesFile": "./google-services.json",
+      "_googleServicesFile_TODO": "./google-services.json",
       "intentFilters": [
         {
           "action": "VIEW",

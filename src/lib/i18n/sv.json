@@ -124,7 +124,11 @@
     "quickMessage": "Skicka snabbmeddelande",
     "quickMessageHint": "Skickar ett meddelande till annonsören",
     "quickMessageTemplate": "Hej! Jag är intresserad av din annons: {title}",
-    "quickMessageSent": "Meddelande skickat!"
+    "quickMessageSent": "Meddelande skickat!",
+    "comments": "Kommentarer",
+    "addComment": "Lägg till en kommentar...",
+    "notFound": "Annonsen hittades inte",
+    "cannotMessageSelf": "Du kan inte skicka meddelanden till dig själv"
   },
   "events": {
     "title": "Evenemang",

@@ -124,7 +124,11 @@
     "quickMessage": "Lähetä pikaviesti",
     "quickMessageHint": "Lähettää viestin ilmoittajalle",
     "quickMessageTemplate": "Hei! Kiinnostuin ilmoituksestasi: {title}",
-    "quickMessageSent": "Viesti lähetetty!"
+    "quickMessageSent": "Viesti lähetetty!",
+    "comments": "Kommentit",
+    "addComment": "Lisää kommentti...",
+    "notFound": "Ilmoitusta ei löytynyt",
+    "cannotMessageSelf": "Et voi lähettää viestiä itsellesi"
   },
   "events": {
     "title": "Tapahtumat",
