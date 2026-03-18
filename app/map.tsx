@@ -533,8 +533,7 @@ export default function MapScreen() {
           .gte('event_date', new Date().toISOString())
           .not('location_lat', 'is', null)
           .not('location_lng', 'is', null)
-          .gte('location_lat', HKI.south).lte('location_lat', HKI.north)
-          .gte('location_lng', HKI.west).lte('location_lng', HKI.east)
+          .order('event_date', { ascending: true })
           .limit(200),
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
