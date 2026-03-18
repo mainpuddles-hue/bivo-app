@@ -120,7 +120,9 @@ export default function LoginScreen() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://dist-two-navy-29.vercel.app/auth/callback',
+          redirectTo: Platform.OS === 'web'
+            ? (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback'
+            : 'tackbird://auth/callback',
           queryParams: {
             prompt: 'select_account',
           },

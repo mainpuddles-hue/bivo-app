@@ -151,27 +151,29 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
 
         {/* User row */}
         <View style={styles.userRow}>
-          <View style={styles.avatarContainer}>
-            {user?.avatar_url ? (
-              <Image source={{ uri: user.avatar_url }} style={[
-                styles.avatar,
-                { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
-              ]} />
-            ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
-                <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
-                  {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                </Text>
-              </View>
-            )}
-            {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
-          </View>
+          <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={styles.avatarContainer}>
+              {user?.avatar_url ? (
+                <Image source={{ uri: user.avatar_url }} style={[
+                  styles.avatar,
+                  { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
+                ]} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
+                  <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
+                    {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
+                  </Text>
+                </View>
+              )}
+              {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
+            </View>
 
-          <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-            {user?.name ?? t('postCard.anonymousUser')}
-          </Text>
+            <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
+              {user?.name ?? t('postCard.anonymousUser')}
+            </Text>
 
-          {isVerified && <BadgeCheck size={14} color={colors.info} />}
+            {isVerified && <BadgeCheck size={14} color={colors.info} />}
+          </Pressable>
 
           {post.created_at && (
             <Text style={[styles.timeAgo, { color: `${colors.mutedForeground}CC` }]}>

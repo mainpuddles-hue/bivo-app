@@ -362,7 +362,7 @@ export default function PostDetailScreen() {
 
           {/* Author card */}
           <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               {user?.avatar_url ? (
                 <Image source={{ uri: user.avatar_url }} style={styles.authorAvatar} />
               ) : (
@@ -377,7 +377,7 @@ export default function PostDetailScreen() {
                 </View>
                 {user?.naapurusto && <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>}
               </View>
-            </View>
+            </Pressable>
             <Pressable onPress={handleMessage} style={[styles.messageBtn, { backgroundColor: colors.primary, marginTop: 10 }]}>
               <MessageCircle size={16} color={colors.primaryForeground} />
               <Text style={[styles.messageBtnText, { color: colors.primaryForeground }]}>{t('post.message')}</Text>

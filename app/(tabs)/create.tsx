@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, Camera, X, Check, Clock } from 'lucide-react-native'
+import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, Camera, X, Check, Clock, MapPin } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -89,6 +89,10 @@ export default function CreateScreen() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [expirationDays, setExpirationDays] = useState(0)
   const [images, setImages] = useState<string[]>([])
+  const [latitude, setLatitude] = useState<number | null>(null)
+  const [longitude, setLongitude] = useState<number | null>(null)
+  const [mapModalVisible, setMapModalVisible] = useState(false)
+  const [tempMapCoords, setTempMapCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
 
@@ -137,6 +141,44 @@ export default function CreateScreen() {
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
+
+  const handleOpenMapPicker = useCallback(() => {
+    setTempMapCoords(latitude && longitude ? { lat: latitude, lng: longitude } : null)
+    setMapModalVisible(true)
+  }, [latitude, longitude])
+
+  const handleConfirmMapLocation = useCallback(async () => {
+    if (!tempMapCoords) return
+    setLatitude(tempMapCoords.lat)
+    setLongitude(tempMapCoords.lng)
+
+    // Try reverse geocoding via Nominatim
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${tempMapCoords.lat}&lon=${tempMapCoords.lng}&zoom=18&addressdetails=1`,
+        { headers: { 'Accept-Language': 'fi', 'User-Agent': 'TackBirdMobile/1.0' } }
+      )
+      const data = await res.json()
+      if (data?.display_name) {
+        // Extract short address: road + house_number, city
+        const addr = data.address
+        const parts: string[] = []
+        if (addr?.road) {
+          parts.push(addr.house_number ? `${addr.road} ${addr.house_number}` : addr.road)
+        }
+        if (addr?.suburb || addr?.neighbourhood) {
+          parts.push(addr.suburb || addr.neighbourhood)
+        }
+        setLocation(parts.length > 0 ? parts.join(', ') : data.display_name.split(',').slice(0, 2).join(','))
+      } else {
+        setLocation(`${tempMapCoords.lat.toFixed(5)}, ${tempMapCoords.lng.toFixed(5)}`)
+      }
+    } catch {
+      setLocation(`${tempMapCoords.lat.toFixed(5)}, ${tempMapCoords.lng.toFixed(5)}`)
+    }
+
+    setMapModalVisible(false)
+  }, [tempMapCoords])
 
   const toggleTag = (tagId: string) => {
     setSelectedTags(prev => {
@@ -214,6 +256,8 @@ export default function CreateScreen() {
         title: title.trim(),
         description: description.trim(),
         location: location.trim() || null,
+        latitude: latitude ?? null,
+        longitude: longitude ?? null,
         daily_fee: selectedType === 'lainaa' && dailyFee ? parseFloat(dailyFee) : null,
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt,
@@ -240,6 +284,8 @@ export default function CreateScreen() {
           description: description.trim(),
           event_date: new Date(eventDate).toISOString(),
           location_name: location.trim() || null,
+          latitude: latitude ?? null,
+          longitude: longitude ?? null,
           icon: 'CalendarDays',
           is_active: true,
         })
@@ -252,7 +298,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, dailyFee, eventDate, selectedTags, expirationDays, images, supabase, router, t])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, selectedTags, expirationDays, images, supabase, router, t])
 
   // ── Category selection step ──
   if (step === 'category') {
@@ -366,13 +412,27 @@ export default function CreateScreen() {
           {/* Location */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.foreground }]}>{t('post.locationLabel')}</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-              value={location}
-              onChangeText={setLocation}
-              placeholder={t('post.locationLabel')}
-              placeholderTextColor={colors.mutedForeground}
-            />
+            <View style={styles.locationRow}>
+              <TextInput
+                style={[styles.input, styles.locationInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                value={location}
+                onChangeText={(text) => { setLocation(text); if (!text.trim()) { setLatitude(null); setLongitude(null) } }}
+                placeholder={t('post.locationLabel')}
+                placeholderTextColor={colors.mutedForeground}
+              />
+              <Pressable
+                onPress={handleOpenMapPicker}
+                style={[styles.mapPickerBtn, { backgroundColor: colors.primary }]}
+              >
+                <MapPin size={16} color={colors.primaryForeground} />
+                <Text style={[styles.mapPickerBtnText, { color: colors.primaryForeground }]}>{t('locationPicker.pickFromMap')}</Text>
+              </Pressable>
+            </View>
+            {latitude !== null && longitude !== null && (
+              <Text style={[styles.coordsText, { color: colors.mutedForeground }]}>
+                {latitude.toFixed(5)}, {longitude.toFixed(5)}
+              </Text>
+            )}
           </View>
 
           {/* Daily fee for lainaa */}
