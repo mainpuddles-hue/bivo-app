@@ -15,10 +15,23 @@ import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 const HELSINKI_CENTER: [number, number] = [60.1699, 24.9384]
 const DEFAULT_ZOOM = 13
 
-// Helsinki municipal bounds — must match backend HELSINKI_BOUNDS in geo.ts
-const HKI = { south: 60.14, north: 60.29, west: 24.83, east: 25.22 } as const
-const isInHelsinki = (lat: number, lng: number) =>
-  lat >= HKI.south && lat <= HKI.north && lng >= HKI.west && lng <= HKI.east
+// Helsinki municipal bounds — tighter than backend HELSINKI_BOUNDS to exclude
+// Espoo/Vantaa border areas that fall inside the rectangle.
+const HKI = { south: 60.14, north: 60.27, west: 24.83, east: 25.20 } as const
+
+/**
+ * Refined Helsinki boundary check with zone-based exclusions.
+ * A simple bounding box includes parts of Vantaa (Myyrmäki 60.26/24.85)
+ * and Espoo (Otaniemi 60.19/24.83). This adds exclusion zones.
+ */
+const isInHelsinki = (lat: number, lng: number): boolean => {
+  if (lat < HKI.south || lat > HKI.north || lng < HKI.west || lng > HKI.east) return false
+  // NW corner: Vantaa (Myyrmäki, Martinlaakso) — above 60.24 & west of 24.88
+  if (lat > 60.24 && lng < 24.88) return false
+  // North-central: Vantaa border — above 60.26 & west of 24.96
+  if (lat > 60.26 && lng < 24.96) return false
+  return true
+}
 
 /** Escape HTML entities to prevent XSS in Leaflet popup content */
 function esc(str: string | null | undefined): string {
@@ -500,6 +513,8 @@ export default function MapScreen() {
           .eq('is_active', true)
           .not('latitude', 'is', null)
           .not('longitude', 'is', null)
+          .gte('latitude', HKI.south).lte('latitude', HKI.north)
+          .gte('longitude', HKI.west).lte('longitude', HKI.east)
           .limit(200),
         supabase.from('events')
           .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, attendees:event_attendees(count), creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
@@ -507,6 +522,8 @@ export default function MapScreen() {
           .gte('event_date', new Date().toISOString())
           .not('location_lat', 'is', null)
           .not('location_lng', 'is', null)
+          .gte('location_lat', HKI.south).lte('location_lat', HKI.north)
+          .gte('location_lng', HKI.west).lte('location_lng', HKI.east)
           .limit(200),
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
@@ -516,6 +533,7 @@ export default function MapScreen() {
           .limit(200),
         supabase.from('local_places')
           .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')
+          .not('neighborhood', 'is', null)
           .gte('latitude', HKI.south).lte('latitude', HKI.north)
           .gte('longitude', HKI.west).lte('longitude', HKI.east)
           .limit(500),
