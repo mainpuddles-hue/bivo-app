@@ -50,12 +50,12 @@ export default function BlockedUsersScreen() {
   const handleUnblock = useCallback(async (blockedUserId: string, name: string | null) => {
     if (!userId) return
     Alert.alert(
-      t('blocked.unblockTitle'),
-      t('blocked.unblockConfirm', { name: name ?? t('common.user') }),
+      t('blocked.removeBlock'),
+      t('blocked.explanation'),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('blocked.unblock'),
+          text: t('blocked.removeBlock'),
           style: 'destructive',
           onPress: async () => {
             setUnblocking(blockedUserId)
@@ -130,7 +130,7 @@ export default function BlockedUsersScreen() {
                     {unblocking === item.blocked_user_id ? (
                       <ActivityIndicator size="small" color="#FFFFFF" />
                     ) : (
-                      <Text style={s.unblockText}>{t('blocked.unblock')}</Text>
+                      <Text style={s.unblockText}>{t('blocked.removeBlock')}</Text>
                     )}
                   </Pressable>
                 </View>
