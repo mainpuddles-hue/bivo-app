@@ -1,18 +1,41 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, Animated } from 'react-native'
+import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Sparkles, RefreshCw, Users, Plus } from 'lucide-react-native'
+import { Image } from 'expo-image'
+import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { POST_SELECT } from '@/lib/constants'
+import { formatEventDateShort } from '@/lib/format'
 import { Header } from '@/components/Header'
 import { FilterBar } from '@/components/FilterBar'
 import { HeroCarousel } from '@/components/HeroCarousel'
 import { PostCard } from '@/components/PostCard'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
-import type { Post, PostType } from '@/lib/types'
+import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
+
+// ── Category color maps ──
+const CITY_EVENT_COLORS: Record<string, string> = {
+  culture: '#8E44AD', music: '#E91E63', sport: '#27AE60', family: '#FF9800',
+  food: '#E74C3C', nature: '#4CAF50', education: '#2196F3', theatre: '#9C27B0',
+  exhibition: '#795548', festival: '#FF5722', market: '#FF9800', other: '#607D8B',
+}
+
+const PLACE_COLORS: Record<string, string> = {
+  restaurant: '#E74C3C', cafe: '#8B5E3C', bar: '#F39C12', pub: '#D4A017',
+  fast_food: '#FF6B35', shop: '#9B59B6', library: '#3498DB', health: '#E91E63',
+  sport: '#27AE60', culture: '#8E44AD', hotel: '#2980B9', attraction: '#F1C40F',
+  service: '#607D8B', other: '#95A5A6',
+}
+
+const PLACE_LABELS: Record<string, string> = {
+  restaurant: 'Ravintola', cafe: 'Kahvila', bar: 'Baari', pub: 'Pubi',
+  fast_food: 'Pikaruoka', shop: 'Kauppa', library: 'Kirjasto', health: 'Terveys',
+  sport: 'Liikunta', culture: 'Kulttuuri', hotel: 'Majoitus', attraction: 'Nähtävyys',
+  service: 'Palvelu', other: 'Muu',
+}
 
 const PAGE_SIZE = 20
 
@@ -77,6 +100,9 @@ export default function FeedScreen() {
   const [error, setError] = useState<string | null>(null)
   const [showFollowing, setShowFollowing] = useState(false)
   const [followedIds, setFollowedIds] = useState<string[]>([])
+  const [cityEvents, setCityEvents] = useState<CityEvent[]>([])
+  const [nearbyPlaces, setNearbyPlaces] = useState<LocalPlace[]>([])
+  const [extraLoading, setExtraLoading] = useState(true)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)

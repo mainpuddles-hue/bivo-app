@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
   HandHelping, Gift, Zap, BookOpen, CalendarDays, BadgeCheck, Send, Flag,
+  MoreHorizontal, X,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -36,6 +37,11 @@ export default function PostDetailScreen() {
   const [comments, setComments] = useState<PostComment[]>([])
   const [commentText, setCommentText] = useState('')
   const [sendingComment, setSendingComment] = useState(false)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editLocation, setEditLocation] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -154,6 +160,90 @@ export default function PostDetailScreen() {
     })
   }
 
+  const isAuthor = userId != null && post?.user_id === userId
+
+  const handleDelete = useCallback(() => {
+    if (!post) return
+    Alert.alert(
+      t('post.delete'),
+      t('post.deleteConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('post.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await supabase
+              .from('posts')
+              .update({ is_active: false })
+              .eq('id', post.id)
+            if (error) {
+              Alert.alert(t('common.error'), t('post.deleteFailed'))
+            } else {
+              Alert.alert(t('post.deleted'))
+              router.back()
+            }
+          },
+        },
+      ],
+    )
+  }, [post, supabase, t, router])
+
+  const openEditModal = useCallback(() => {
+    if (!post) return
+    setEditTitle(post.title)
+    setEditDescription(post.description ?? '')
+    setEditLocation(post.location ?? '')
+    setEditModalVisible(true)
+  }, [post])
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!post || saving) return
+    setSaving(true)
+    const { error } = await supabase
+      .from('posts')
+      .update({ title: editTitle.trim(), description: editDescription.trim(), location: editLocation.trim() || null })
+      .eq('id', post.id)
+    setSaving(false)
+    if (error) {
+      Alert.alert(t('common.error'), t('post.updateFailed'))
+    } else {
+      setPost(prev => prev ? { ...prev, title: editTitle.trim(), description: editDescription.trim(), location: editLocation.trim() || null } : prev)
+      setEditModalVisible(false)
+      Alert.alert(t('post.updated'))
+    }
+  }, [post, editTitle, editDescription, editLocation, saving, supabase, t])
+
+  const handleMorePress = useCallback(() => {
+    if (!post) return
+    if (isAuthor) {
+      Alert.alert(
+        undefined as unknown as string,
+        undefined as unknown as string,
+        [
+          { text: t('post.edit'), onPress: openEditModal },
+          { text: t('post.delete'), style: 'destructive', onPress: handleDelete },
+          { text: t('common.cancel'), style: 'cancel' },
+        ],
+      )
+    }
+  }, [post, isAuthor, t, openEditModal, handleDelete])
+
+  const handleReport = useCallback(async () => {
+    if (!userId) { router.push('/(auth)/login'); return }
+    if (!post) return
+    const { error } = await (supabase.from('reports') as any).insert({
+      reporter_id: userId,
+      post_id: post.id,
+      reason: 'user_report',
+    })
+    if (error) {
+      Alert.alert(t('common.error'), t('post.reportFailed'))
+    } else {
+      Alert.alert(t('post.reportSent'))
+    }
+  }, [userId, post, supabase, t, router])
+
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -191,6 +281,15 @@ export default function PostDetailScreen() {
         <Pressable onPress={handleShare} hitSlop={8}>
           <Share2 size={22} color={colors.mutedForeground} />
         </Pressable>
+        {isAuthor ? (
+          <Pressable onPress={handleMorePress} hitSlop={8}>
+            <MoreHorizontal size={22} color={colors.mutedForeground} />
+          </Pressable>
+        ) : userId ? (
+          <Pressable onPress={handleReport} hitSlop={8}>
+            <Flag size={22} color={colors.mutedForeground} />
+          </Pressable>
+        ) : null}
       </View>
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]} showsVerticalScrollIndicator={false}>
@@ -341,6 +440,59 @@ export default function PostDetailScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Edit Modal */}
+      <Modal visible={editModalVisible} animationType="slide" transparent>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.editPost')}</Text>
+              <Pressable onPress={() => setEditModalVisible(false)} hitSlop={12}>
+                <X size={22} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
+
+            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')}</Text>
+            <TextInput
+              style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={editTitle}
+              onChangeText={setEditTitle}
+              maxLength={100}
+            />
+
+            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.descriptionLabel')}</Text>
+            <TextInput
+              style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={editDescription}
+              onChangeText={setEditDescription}
+              multiline
+              numberOfLines={5}
+              textAlignVertical="top"
+              maxLength={2000}
+            />
+
+            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
+            <TextInput
+              style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={editLocation}
+              onChangeText={setEditLocation}
+              maxLength={100}
+            />
+
+            <Pressable
+              onPress={handleSaveEdit}
+              disabled={saving || !editTitle.trim()}
+              style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }]}
+            >
+              {saving ? (
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
+              ) : (
+                <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.saveChanges')}</Text>
+              )}
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   )
 }
@@ -406,4 +558,27 @@ const styles = StyleSheet.create({
     width: 30, height: 30, borderRadius: 15,
     alignItems: 'center', justifyContent: 'center',
   },
+  modalOverlay: {
+    flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    padding: 20, gap: 8, maxHeight: '85%',
+  },
+  modalHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700' },
+  modalLabel: { fontSize: 13, fontWeight: '600', marginTop: 8 },
+  modalInput: {
+    borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+    fontSize: 15, marginTop: 4,
+  },
+  modalTextArea: { minHeight: 120 },
+  saveBtn: {
+    alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 12, borderRadius: 10, marginTop: 16,
+  },
+  saveBtnText: { fontSize: 15, fontWeight: '600' },
 })
