@@ -9,6 +9,7 @@ import { useI18n, type Locale } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { downloadAsFile } from '@/lib/share'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
+import { useInAppPurchase } from '@/hooks/useInAppPurchase'
 import type { Profile, ProfileVisibility } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -32,6 +33,7 @@ export default function SettingsScreen() {
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const push = usePushNotifications(profile?.id ?? null)
+  const iap = useInAppPurchase(profile?.id ?? null)
   const [notifMessages, setNotifMessages] = useState(true)
   const [notifReviews, setNotifReviews] = useState(true)
   const [notifRentals, setNotifRentals] = useState(true)
@@ -248,12 +250,22 @@ export default function SettingsScreen() {
             <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Pro</Text>
             {profile?.is_pro ? (
               <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
-            ) : (
-              <Pressable onPress={() => Alert.alert('Pro', t('settings.proUpgrade'))} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>{t('profile.upgradeToPro')}</Text>
+            ) : iap.isAvailable ? (
+              <Pressable onPress={iap.purchase} disabled={iap.purchasing} style={[s.upgradeBtn, { backgroundColor: colors.pro, opacity: iap.purchasing ? 0.6 : 1 }]}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>
+                  {iap.purchasing ? '...' : iap.products[0]?.localizedPrice ?? '4,99 €/kk'}
+                </Text>
               </Pressable>
+            ) : (
+              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>4,99 €/kk</Text>
             )}
           </View>
+          {!profile?.is_pro && iap.isAvailable && (
+            <Pressable onPress={iap.restore} style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+              <Text style={{ fontSize: 12, color: colors.primary }}>{t('settings.restorePurchases') ?? 'Palauta aiemmat ostot'}</Text>
+            </Pressable>
+          )}
+          {iap.error && <Text style={{ fontSize: 12, color: colors.destructive, paddingHorizontal: 16, paddingBottom: 12 }}>{iap.error}</Text>}
         </View>
 
         {/* Security */}
