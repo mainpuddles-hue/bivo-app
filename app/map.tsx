@@ -62,10 +62,22 @@ const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
   'Malmi': [60.2490, 25.0110], 'Oulunkylä': [60.2290, 24.9590],
 }
 
-const PLACE_ICONS: Record<string, string> = {
-  restaurant: '🍽️', cafe: '☕', bar: '🍺', shop: '🛒', library: '📚',
-  health: '🏥', sport: '⚽', culture: '🎭', hotel: '🏨', attraction: '⭐',
-  service: '🔧', fast_food: '🍔', pub: '🍻', other: '📍',
+// Place categories with SVG icons + colors (matching web's marker-icons.ts)
+const PLACE_CATS: Record<string, { color: string; icon: string; label: string }> = {
+  restaurant: { color: '#E74C3C', icon: 'UtensilsCrossed', label: 'Ravintola' },
+  cafe: { color: '#8B5E3C', icon: 'Coffee', label: 'Kahvila' },
+  bar: { color: '#9B59B6', icon: 'Coffee', label: 'Baari' },
+  shop: { color: '#3498DB', icon: 'Store', label: 'Kauppa' },
+  library: { color: '#27AE60', icon: 'BookOpen', label: 'Kirjasto' },
+  health: { color: '#E91E63', icon: 'Heart', label: 'Terveys' },
+  sport: { color: '#F39C12', icon: 'Dumbbell', label: 'Urheilu' },
+  culture: { color: '#8E44AD', icon: 'Palette', label: 'Kulttuuri' },
+  hotel: { color: '#2C3E50', icon: 'MapPin', label: 'Hotelli' },
+  attraction: { color: '#F1C40F', icon: 'MapPin', label: 'Nähtävyys' },
+  service: { color: '#607D8B', icon: 'MapPin', label: 'Palvelu' },
+  fast_food: { color: '#FF5722', icon: 'UtensilsCrossed', label: 'Pikaruoka' },
+  pub: { color: '#795548', icon: 'Coffee', label: 'Pubi' },
+  other: { color: '#78716C', icon: 'MapPin', label: 'Muu' },
 }
 
 // City event category config matching web exactly
@@ -190,7 +202,7 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
     if (!document.getElementById('pulse-css')) {
       const style = document.createElement('style')
       style.id = 'pulse-css'
-      style.textContent = '@keyframes userPulse{0%{transform:scale(1);opacity:0.6}100%{transform:scale(2.5);opacity:0}}'
+      style.textContent = '@keyframes userPulse{0%{transform:scale(1);opacity:0.6}100%{transform:scale(2.5);opacity:0}}.leaflet-popup-styled .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}.leaflet-popup-styled .leaflet-popup-content{margin:13px 20px;}.leaflet-popup-styled .leaflet-popup-tip{display:none;}'
       document.head.appendChild(style)
     }
 
@@ -331,20 +343,33 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
         </div>`,
         iconSize: [36, 44], iconAnchor: [18, 44],
       })
+      const evS = isDark
+        ? { bg: '#1E1E1E', text: '#E8E6E0', muted: '#9CA3AF' }
+        : { bg: '#FFFFFF', text: '#1A1A1A', muted: '#9CA3AF' }
       const evMarker = L.marker([e.location_lat, e.location_lng], { icon })
-      evMarker.bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;">${day}</div>
-            <div><div style="font-size:12px;color:#2B8A62;font-weight:500;">${dateStr}</div><div style="font-size:9px;text-transform:uppercase;color:#9CA3AF;">Tapahtuma</div></div>
+      evMarker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;margin:-13px -20px;border-radius:12px;overflow:hidden;background:${evS.bg};">
+          <div style="background:linear-gradient(135deg,#2B8A62,#34D399);padding:10px 14px;display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <span style="color:white;font-size:18px;font-weight:800;line-height:1;">${day}</span>
+            </div>
+            <div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.95);font-weight:600;">${dateStr}</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;">Tapahtuma</div>
+            </div>
           </div>
-          <div style="font-size:15px;font-weight:600;margin-bottom:4px;">${esc(e.title)}</div>
-          ${e.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(e.description)}</div>` : ''}
-          <div style="font-size:11px;color:#9CA3AF;">📅 ${dateStr}</div>
-          ${e.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(e.location_name)}</div>` : ''}
-          ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-          ${attendeeBar}
-          <a href="#" data-route="/events" style="display:block;margin-top:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
-        </div>`, { maxWidth: 280 })
+          <div style="padding:10px 14px 12px;">
+            <div style="font-size:14px;font-weight:600;color:${evS.text};margin-bottom:4px;line-height:1.3;">${esc(e.title)}</div>
+            ${e.creator ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+              ${e.creator.avatar_url ? `<img src="${esc(e.creator.avatar_url)}" style="width:16px;height:16px;border-radius:8px;" onerror="this.style.display='none'" />` : ''}
+              <span style="font-size:11px;color:${evS.muted};">${esc(e.creator.name ?? '')}</span>
+            </div>` : ''}
+            ${e.description ? `<div style="font-size:11px;color:${evS.muted};margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(e.description)}</div>` : ''}
+            ${e.location_name ? `<div style="font-size:11px;color:${evS.muted};">${esc(e.location_name)}</div>` : ''}
+            ${dist ? `<div style="font-size:10px;color:${evS.muted};">${dist}</div>` : ''}
+            ${attendeeBar}
+            <a href="#" data-route="/events" style="display:inline-flex;align-items:center;justify-content:center;margin-top:10px;background:linear-gradient(135deg,#2B8A62,#34D399);color:white;padding:0 18px;min-height:36px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
+          </div>
+        </div>`, { maxWidth: 300, className: 'leaflet-popup-styled' })
       eventCluster.addLayer(evMarker)
     })
     map.addLayer(eventCluster)
@@ -368,16 +393,34 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
       })
       const ceMarker = L.marker([ce.latitude, ce.longitude], { icon })
       const ceInfoUrl = safeUrl(ce.info_url)
+      const ceDate = new Date(ce.start_time)
+      const ceDateStr = ceDate.toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
+      const ceDay = ceDate.getDate()
+      const ceS = isDark
+        ? { bg: '#1E1E1E', text: '#E8E6E0', muted: '#9CA3AF', link: '#6FCF97' }
+        : { bg: '#FFFFFF', text: '#1A1A1A', muted: '#9CA3AF', link: '#2D6B5E' }
       ceMarker
-        .bindPopup(`<div style="font-family:system-ui;min-width:200px;max-width:260px;">
-          ${ce.image_url ? `<img src="${esc(ce.image_url)}" style="width:calc(100%+40px);height:100px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
-          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(ce.name_fi)}</div>
-          <div style="font-size:12px;color:#3B7DD8;">${new Date(ce.start_time).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-          ${ce.location_name ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(ce.location_name)}</div>` : ''}
-          ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-          ${ce.is_free ? '<div style="margin-top:4px;"><span style="background:#E8F7EF;color:#2B8A62;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">✓ Ilmainen</span></div>' : ce.price_info ? `<div style="font-size:11px;color:#6B7280;margin-top:4px;">${esc(ce.price_info)}</div>` : ''}
-          ${ceInfoUrl ? `<a href="${esc(ceInfoUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:10px;background:linear-gradient(135deg,#3B7DD8,#6366F1);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : ''}
-        </div>`, { maxWidth: 280 })
+        .bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;margin:-13px -20px;border-radius:12px;overflow:hidden;background:${ceS.bg};">
+          ${ce.image_url ? `<img src="${esc(ce.image_url)}" style="width:100%;height:100px;object-fit:cover;" onerror="this.style.display='none'" />` : ''}
+          <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:10px 14px;display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:14px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;">
+              <span style="color:white;font-size:18px;font-weight:800;">${ceDay}</span>
+            </div>
+            <div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.95);font-weight:600;">${ceDateStr}</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;">${esc(ce.category)}</div>
+            </div>
+          </div>
+          <div style="padding:10px 14px 12px;">
+            <span style="display:inline-block;border-radius:20px;padding:2px 9px;font-size:9px;font-weight:600;color:white;background:${catColor};text-transform:uppercase;margin-bottom:6px;">${esc(ce.category)}</span>
+            <div style="font-size:14px;font-weight:600;color:${ceS.text};margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(ce.name_fi)}</div>
+            ${ce.description_fi ? `<div style="font-size:11px;color:${ceS.muted};margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(ce.description_fi.slice(0, 120))}</div>` : ''}
+            ${ce.location_name ? `<div style="font-size:11px;color:${ceS.muted};">${esc(ce.location_name)}</div>` : ''}
+            ${dist ? `<div style="font-size:10px;color:${ceS.muted};">${dist}</div>` : ''}
+            ${ce.is_free ? `<div style="margin-top:6px;"><span style="font-size:11px;font-weight:600;color:${isDark?'#34d399':'#2B8A62'};background:${isDark?'rgba(52,211,153,0.15)':'rgba(43,138,98,0.1)'};padding:2px 8px;border-radius:6px;">Ilmainen</span></div>` : ce.price_info ? `<div style="font-size:11px;color:${ceS.muted};margin-top:4px;">${esc(ce.price_info.slice(0, 40))}</div>` : ''}
+            ${ceInfoUrl ? `<a href="${esc(ceInfoUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;background:linear-gradient(135deg,#2D6B5E,#4CAF6A);color:white;padding:0 18px;min-height:36px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : `<a href="https://www.google.com/maps/dir/?api=1&amp;destination=${ce.latitude},${ce.longitude}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;margin-top:10px;background:${catColor};color:white;padding:0 18px;min-height:36px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet →</a>`}
+          </div>
+        </div>`, { maxWidth: 300, className: 'leaflet-popup-styled' })
       cityCluster.addLayer(ceMarker)
     })
     map.addLayer(cityCluster)
@@ -387,27 +430,43 @@ function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, 
     const placeCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 60, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(201,139,46,0.9)') }) : L.layerGroup()
     places.forEach((pl) => {
       if (!pl.latitude || !pl.longitude) return
-      const placeEmoji = PLACE_ICONS[pl.category] ?? '📍'
+      const pCat = PLACE_CATS[pl.category] ?? PLACE_CATS.other
+      const pColor = pCat.color
+      const pSvg = svgMarker(pCat.icon, 13)
       const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : ''
       const icon = L.divIcon({
         className: '',
-        html: `<div style="width:28px;height:34px;position:relative;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.2));">
-          <div style="width:26px;height:26px;border-radius:6px;background:${isDark?'rgba(120,113,108,0.9)':'rgba(120,113,108,0.85)'};border:2px solid ${isDark?'#1E1E1E':'white'};display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:13px;">${placeEmoji}</div>
-          <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid rgba(120,113,108,0.85);margin:-1px auto 0;"></div>
+        html: `<div style="position:relative;width:30px;height:36px;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.2));">
+          <div style="width:26px;height:26px;border-radius:6px;background:${pColor};opacity:${isDark?'0.9':'0.85'};border:2px solid ${bdr};display:flex;align-items:center;justify-content:center;margin:0 auto;">${pSvg}</div>
+          <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid ${pColor};margin:-1px auto 0;opacity:0.85;"></div>
         </div>`,
-        iconSize: [28, 34], iconAnchor: [14, 34],
+        iconSize: [30, 36], iconAnchor: [15, 36],
       })
       const marker = L.marker([pl.latitude, pl.longitude], { icon })
       const plWebsite = safeUrl(pl.website)
-      marker.bindPopup(`<div style="font-family:system-ui;min-width:180px;max-width:220px;">
-        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">${esc(pl.name)}</div>
-        ${pl.address ? `<div style="font-size:11px;color:#9CA3AF;">📍 ${esc(pl.address)}</div>` : ''}
-        ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-        ${pl.opening_hours ? `<div style="font-size:10px;color:#9CA3AF;margin-top:2px;">🕐 ${esc(pl.opening_hours)}</div>` : ''}
-        ${pl.phone ? `<div style="margin-top:4px;"><a href="tel:${esc(pl.phone)}" style="color:#3B7DD8;font-size:12px;">📞 ${esc(pl.phone)}</a></div>` : ''}
-        ${plWebsite ? `<a href="${esc(plWebsite)}" target="_blank" rel="noopener" style="display:block;margin-top:6px;color:#3B7DD8;font-size:12px;">🌐 Verkkosivut</a>` : ''}
-        <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${pl.latitude},${pl.longitude}" target="_blank" rel="noopener" style="display:block;margin-top:8px;background:#78716C;color:white;text-align:center;padding:7px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet →</a>
-      </div>`, { maxWidth: 240 })
+      const s = isDark
+        ? { bg: '#1E1E1E', text: '#E8E6E0', muted: '#9CA3AF', link: '#6FCF97', border: '#2A2A2A' }
+        : { bg: '#FFFFFF', text: '#1A1A1A', muted: '#9CA3AF', link: '#2D6B5E', border: '#E5E7EB' }
+      marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:300px;margin:-13px -20px;border-radius:12px;overflow:hidden;background:${s.bg};">
+        <div style="background:linear-gradient(135deg,${pColor},${pColor}cc);padding:8px 14px;display:flex;align-items:center;gap:8px;">
+          ${svgMarker(pCat.icon, 14)}
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.95);font-weight:600;">${esc(pCat.label)}</div>
+            ${pl.subcategory ? `<div style="font-size:9px;color:rgba(255,255,255,0.7);">${esc(pl.subcategory)}</div>` : ''}
+          </div>
+        </div>
+        <div style="padding:10px 14px 12px;">
+          <div style="font-size:14px;font-weight:600;color:${s.text};margin-bottom:6px;line-height:1.3;">${esc(pl.name)}</div>
+          ${pl.address ? `<div style="font-size:11px;color:${s.muted};margin-bottom:2px;">${esc(pl.address)}</div>` : ''}
+          ${dist ? `<div style="font-size:10px;color:${s.muted};">${dist}</div>` : ''}
+          ${pl.opening_hours ? `<div style="font-size:10px;color:${s.muted};margin-top:4px;">${esc(pl.opening_hours)}</div>` : ''}
+          ${pl.phone ? `<div style="margin-top:6px;"><a href="tel:${esc(pl.phone)}" style="color:${s.link};font-size:12px;text-decoration:none;">${esc(pl.phone)}</a></div>` : ''}
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            ${plWebsite ? `<a href="${esc(plWebsite)}" target="_blank" rel="noopener" style="flex:1;display:block;background:${s.link};color:white;text-align:center;padding:8px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Verkkosivut</a>` : ''}
+            <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${pl.latitude},${pl.longitude}" target="_blank" rel="noopener" style="flex:1;display:block;background:${pColor};color:white;text-align:center;padding:8px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet</a>
+          </div>
+        </div>
+      </div>`, { maxWidth: 320, className: 'leaflet-popup-styled' })
       placeCluster.addLayer(marker)
     })
     map.addLayer(placeCluster)
@@ -535,11 +594,14 @@ export default function MapScreen() {
           .not('location_lng', 'is', null)
           .order('event_date', { ascending: true })
           .limit(200),
+        // Use wider bounds at query level (matching web's HELSINKI_BOUNDS);
+        // client-side isInHelsinki does the precise zone-based filtering
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
           .gte('start_time', new Date().toISOString())
-          .gte('latitude', HKI.south).lte('latitude', HKI.north)
-          .gte('longitude', HKI.west).lte('longitude', HKI.east)
+          .gte('latitude', 60.14).lte('latitude', 60.29)
+          .gte('longitude', 24.83).lte('longitude', 25.22)
+          .order('start_time', { ascending: true })
           .limit(200),
         supabase.from('local_places')
           .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')
