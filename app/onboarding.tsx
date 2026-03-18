@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -27,7 +27,7 @@ const NEIGHBORHOODS = [
 type OnboardingStep = 'welcome' | 'neighborhood' | 'profile'
 
 export default function OnboardingScreen() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -40,7 +40,7 @@ export default function OnboardingScreen() {
   const [saving, setSaving] = useState(false)
 
   // Pre-fill name from auth metadata
-  useMemo(() => {
+  useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user?.user_metadata?.name) {
         setName(user.user_metadata.name)

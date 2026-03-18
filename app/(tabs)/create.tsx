@@ -537,8 +537,183 @@ export default function CreateScreen() {
             )}
           </Pressable>
         </ScrollView>
+
+        {/* Map Location Picker Modal */}
+        <Modal
+          visible={mapModalVisible}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setMapModalVisible(false)}
+        >
+          <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('locationPicker.title')}</Text>
+              <Pressable onPress={() => setMapModalVisible(false)} hitSlop={12}>
+                <X size={24} color={colors.foreground} />
+              </Pressable>
+            </View>
+
+            {/* Map — web uses embedded Leaflet */}
+            {Platform.OS === 'web' ? (
+              <LeafletMapPicker
+                coords={tempMapCoords}
+                onCoordsChange={setTempMapCoords}
+                colors={colors}
+              />
+            ) : (
+              <View style={styles.mapFallback}>
+                <MapPin size={40} color={colors.mutedForeground} />
+                <Text style={[styles.mapFallbackText, { color: colors.mutedForeground }]}>
+                  {t('locationPicker.tapToSelect')}
+                </Text>
+                <Text style={[styles.mapFallbackHint, { color: colors.mutedForeground }]}>
+                  {t('locationPicker.nativeHint')}
+                </Text>
+                {/* Simple coordinate input as native fallback */}
+                <View style={styles.coordInputRow}>
+                  <TextInput
+                    style={[styles.coordInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    placeholder="Lat (60.17)"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="decimal-pad"
+                    value={tempMapCoords?.lat?.toString() ?? ''}
+                    onChangeText={(text) => {
+                      const lat = parseFloat(text)
+                      if (!isNaN(lat)) setTempMapCoords(prev => ({ lat, lng: prev?.lng ?? 24.94 }))
+                    }}
+                  />
+                  <TextInput
+                    style={[styles.coordInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    placeholder="Lng (24.94)"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="decimal-pad"
+                    value={tempMapCoords?.lng?.toString() ?? ''}
+                    onChangeText={(text) => {
+                      const lng = parseFloat(text)
+                      if (!isNaN(lng)) setTempMapCoords(prev => ({ lat: prev?.lat ?? 60.17, lng }))
+                    }}
+                  />
+                </View>
+              </View>
+            )}
+
+            {/* Selected coordinates display */}
+            {tempMapCoords && (
+              <View style={[styles.coordsDisplay, { backgroundColor: colors.card }]}>
+                <MapPin size={16} color={colors.primary} />
+                <Text style={[styles.coordsDisplayText, { color: colors.foreground }]}>
+                  {tempMapCoords.lat.toFixed(5)}, {tempMapCoords.lng.toFixed(5)}
+                </Text>
+              </View>
+            )}
+
+            {/* Confirm button */}
+            <View style={styles.modalFooter}>
+              <Pressable
+                onPress={handleConfirmMapLocation}
+                disabled={!tempMapCoords}
+                style={[
+                  styles.confirmBtn,
+                  { backgroundColor: tempMapCoords ? colors.primary : colors.muted },
+                ]}
+              >
+                <Text style={[styles.confirmBtnText, { color: tempMapCoords ? colors.primaryForeground : colors.mutedForeground }]}>
+                  {t('locationPicker.confirm')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
       </View>
     </KeyboardAvoidingView>
+  )
+}
+
+// ── Leaflet Map Picker for Web ──
+function LeafletMapPicker({ coords, onCoordsChange, colors }: {
+  coords: { lat: number; lng: number } | null
+  onCoordsChange: (c: { lat: number; lng: number }) => void
+  colors: ReturnType<typeof useTheme>['colors']
+}) {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const leafletMapRef = useRef<any>(null)
+  const markerRef = useRef<any>(null)
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !mapRef.current) return
+
+    // Load Leaflet CSS
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link')
+      link.id = 'leaflet-css'
+      link.rel = 'stylesheet'
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+      document.head.appendChild(link)
+    }
+
+    // Load Leaflet JS
+    const loadLeaflet = () => {
+      return new Promise<void>((resolve) => {
+        if ((window as any).L) { resolve(); return }
+        const script = document.createElement('script')
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+        script.onload = () => resolve()
+        document.head.appendChild(script)
+      })
+    }
+
+    loadLeaflet().then(() => {
+      const L = (window as any).L
+      if (!L || !mapRef.current || leafletMapRef.current) return
+
+      const center = coords ?? { lat: 60.1699, lng: 24.9384 } // Helsinki center
+      const map = L.map(mapRef.current).setView([center.lat, center.lng], 14)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+        maxZoom: 19,
+      }).addTo(map)
+
+      // Add existing marker if coords exist
+      if (coords) {
+        markerRef.current = L.marker([coords.lat, coords.lng]).addTo(map)
+      }
+
+      // Click handler to place/move pin
+      map.on('click', (e: any) => {
+        const { lat, lng } = e.latlng
+        if (markerRef.current) {
+          markerRef.current.setLatLng([lat, lng])
+        } else {
+          markerRef.current = L.marker([lat, lng]).addTo(map)
+        }
+        onCoordsChange({ lat, lng })
+      })
+
+      leafletMapRef.current = map
+
+      // Fix map size after render
+      setTimeout(() => map.invalidateSize(), 100)
+    })
+
+    return () => {
+      if (leafletMapRef.current) {
+        leafletMapRef.current.remove()
+        leafletMapRef.current = null
+        markerRef.current = null
+      }
+    }
+  }, []) // Only init once
+
+  if (Platform.OS !== 'web') return null
+
+  return (
+    <View style={{ flex: 1 }}>
+      <div
+        ref={mapRef as any}
+        style={{ width: '100%', height: '100%', minHeight: 300 }}
+      />
+    </View>
   )
 }
 
@@ -608,4 +783,45 @@ const styles = StyleSheet.create({
   },
   submitText: { fontSize: 16, fontWeight: '600' },
   submitLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+
+  // Location picker
+  locationRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
+  locationInput: { flex: 1 },
+  mapPickerBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 12, borderRadius: 12, minHeight: 48,
+  },
+  mapPickerBtnText: { fontSize: 12, fontWeight: '600' },
+  coordsText: { fontSize: 11, marginTop: 2 },
+
+  // Map modal
+  modalContainer: { flex: 1 },
+  modalHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700' },
+  modalFooter: { paddingHorizontal: 16, paddingVertical: 12 },
+  confirmBtn: {
+    borderRadius: 12, paddingVertical: 14, alignItems: 'center',
+    justifyContent: 'center', minHeight: 48,
+  },
+  confirmBtnText: { fontSize: 16, fontWeight: '600' },
+  coordsDisplay: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 14, paddingVertical: 10,
+    borderRadius: 10,
+  },
+  coordsDisplayText: { fontSize: 13, fontWeight: '500' },
+  mapFallback: {
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32,
+  },
+  mapFallbackText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
+  mapFallbackHint: { fontSize: 13, textAlign: 'center' },
+  coordInputRow: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
+  coordInput: {
+    flex: 1, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
+    fontSize: 14, textAlign: 'center',
+  },
 })
