@@ -11,6 +11,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
+import { shareContent } from '@/lib/share'
 import { formatEventDateShort, formatEventDate } from '@/lib/format'
 import type { Event, CityEvent } from '@/lib/types'
 
@@ -153,8 +154,12 @@ export default function EventsScreen() {
   }, [userId, activities, supabase, router, t])
 
   const shareEvent = useCallback(async (event: Event) => {
-    // React Native Share not available in web - use clipboard
-    Alert.alert(t('events.linkCopied'))
+    const shared = await shareContent({
+      title: event.title,
+      text: event.title,
+      url: `https://tackbird-v2.vercel.app/events`,
+    })
+    if (shared) Alert.alert(t('events.linkCopied'))
   }, [t])
 
   const getCityEventName = (e: CityEvent) => {

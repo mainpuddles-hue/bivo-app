@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, Share, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save } from 'lucide-react-native'
@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n, type Locale } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
+import { downloadAsFile } from '@/lib/share'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 import type { Profile, ProfileVisibility } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -29,6 +31,7 @@ export default function SettingsScreen() {
   const supabase = useMemo(() => createClient(), [])
 
   const [profile, setProfile] = useState<Profile | null>(null)
+  const push = usePushNotifications(profile?.id ?? null)
   const [notifMessages, setNotifMessages] = useState(true)
   const [notifReviews, setNotifReviews] = useState(true)
   const [notifRentals, setNotifRentals] = useState(true)
@@ -114,7 +117,8 @@ export default function SettingsScreen() {
         reviews: reviewsRes.data ?? [],
         exported_at: new Date().toISOString(),
       }
-      await Share.share({ message: JSON.stringify(exportData, null, 2) })
+      const jsonStr = JSON.stringify(exportData, null, 2)
+      await downloadAsFile(jsonStr, `tackbird-export-${new Date().toISOString().slice(0, 10)}.json`)
     } catch {
       Alert.alert(t('common.error'))
     } finally { setExporting(false) }
@@ -221,6 +225,19 @@ export default function SettingsScreen() {
               />
             </View>
           ))}
+          {push.isSupported && (
+            <View style={s.toggleRow}>
+              <Bell size={18} color={push.isSubscribed ? colors.primary : colors.mutedForeground} />
+              <Text style={[s.rowText, { color: colors.foreground }]}>Push-ilmoitukset</Text>
+              <Switch
+                value={push.isSubscribed}
+                onValueChange={(val) => val ? push.subscribe() : push.unsubscribe()}
+                disabled={push.isLoading}
+                trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
+                thumbColor={push.isSubscribed ? colors.primary : colors.mutedForeground}
+              />
+            </View>
+          )}
         </View>
 
         {/* Pro */}

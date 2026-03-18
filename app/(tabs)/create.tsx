@@ -106,21 +106,42 @@ export default function CreateScreen() {
     setStep('form')
   }
 
-  const pickImage = useCallback(async () => {
+  const launchPicker = useCallback(async (useCamera: boolean) => {
     if (images.length >= 5) {
       Alert.alert(t('common.error'), t('create.maxImages'))
       return
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 0.8,
-      allowsMultipleSelection: false,
-    })
+    if (useCamera) {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert(t('common.error'), 'Kameralupa vaaditaan')
+        return
+      }
+    }
+    const result = useCamera
+      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8, allowsMultipleSelection: false })
     if (!result.canceled && result.assets[0]) {
       setImages(prev => [...prev, result.assets[0].uri])
     }
   }, [images.length, t])
+
+  const pickImage = useCallback(() => {
+    if (Platform.OS === 'web') {
+      // Web: show both options
+      Alert.alert('Lisää kuva', '', [
+        { text: 'Kamera', onPress: () => launchPicker(true) },
+        { text: 'Galleria', onPress: () => launchPicker(false) },
+        { text: t('common.cancel'), style: 'cancel' },
+      ])
+    } else {
+      Alert.alert('Lisää kuva', '', [
+        { text: 'Kamera', onPress: () => launchPicker(true) },
+        { text: 'Galleria', onPress: () => launchPicker(false) },
+        { text: t('common.cancel'), style: 'cancel' },
+      ])
+    }
+  }, [launchPicker, t])
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index))

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Share, TextInput, FlatList, Alert } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -10,6 +10,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
+import { shareContent } from '@/lib/share'
 import { CATEGORIES, POST_SELECT } from '@/lib/constants'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import type { Post, PostType, PostComment } from '@/lib/types'
@@ -146,8 +147,10 @@ export default function PostDetailScreen() {
 
   const handleShare = () => {
     if (!post) return
-    Share.share({
-      message: `${post.title}\n\nhttps://tackbird-v2.vercel.app/post/${post.id}`,
+    shareContent({
+      title: post.title,
+      text: post.title,
+      url: `https://tackbird-v2.vercel.app/post/${post.id}`,
     })
   }
 
