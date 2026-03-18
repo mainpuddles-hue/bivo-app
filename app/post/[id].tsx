@@ -6,7 +6,7 @@ import { Image } from 'expo-image'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
   HandHelping, Gift, Zap, BookOpen, CalendarDays, BadgeCheck, Send, Flag,
-  MoreHorizontal, X,
+  MoreHorizontal, X, Calendar,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -42,6 +42,13 @@ export default function PostDetailScreen() {
   const [editDescription, setEditDescription] = useState('')
   const [editLocation, setEditLocation] = useState('')
   const [saving, setSaving] = useState(false)
+  const [relatedPosts, setRelatedPosts] = useState<{ id: string; type: string; title: string; image_url: string | null; location: string | null; created_at: string }[]>([])
+
+  // Booking modal state
+  const [bookingModalVisible, setBookingModalVisible] = useState(false)
+  const [bookingStartDate, setBookingStartDate] = useState('')
+  const [bookingEndDate, setBookingEndDate] = useState('')
+  const [sendingBooking, setSendingBooking] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -72,6 +79,19 @@ export default function PostDetailScreen() {
         .eq('post_id', id)
         .order('created_at', { ascending: true })
       setComments((cmts ?? []) as unknown as PostComment[])
+
+      // Fetch related posts (same type)
+      if (data) {
+        const { data: related } = await supabase
+          .from('posts')
+          .select('id, type, title, image_url, location, created_at')
+          .eq('type', (data as any).type)
+          .eq('is_active', true)
+          .neq('id', id)
+          .order('created_at', { ascending: false })
+          .limit(4)
+        setRelatedPosts((related ?? []) as any[])
+      }
 
       setLoading(false)
     }
@@ -244,6 +264,73 @@ export default function PostDetailScreen() {
     }
   }, [userId, post, supabase, t, router])
 
+  const bookingDays = useMemo(() => {
+    if (!bookingStartDate || !bookingEndDate) return 0
+    const start = new Date(bookingStartDate)
+    const end = new Date(bookingEndDate)
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0
+    const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+    return diff > 0 ? diff : 0
+  }, [bookingStartDate, bookingEndDate])
+
+  const bookingTotal = useMemo(() => {
+    if (!post?.daily_fee || bookingDays <= 0) return 0
+    return bookingDays * post.daily_fee
+  }, [bookingDays, post?.daily_fee])
+
+  const handleSendBooking = useCallback(async () => {
+    if (!userId) { router.push('/(auth)/login'); return }
+    if (!post || sendingBooking) return
+    if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
+    if (bookingDays <= 0) { Alert.alert(t('common.error'), t('post.bookingInvalidDates')); return }
+
+    setSendingBooking(true)
+    try {
+      // Find existing conversation or create new one
+      const { data: existing } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
+        .eq('post_id', id)
+        .maybeSingle()
+
+      let convId: string
+      if (existing) {
+        convId = (existing as any).id
+      } else {
+        const { data: newConv, error } = await (supabase.from('conversations') as any)
+          .insert({ user1_id: userId, user2_id: post.user_id, post_id: id })
+          .select('id')
+          .single()
+        if (error || !newConv) {
+          Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
+          setSendingBooking(false)
+          return
+        }
+        convId = newConv.id
+      }
+
+      // Send booking request message
+      const content = `Varauspyyntö: ${post.title}\nAjankohta: ${bookingStartDate} - ${bookingEndDate}\nHinta: ${bookingTotal.toFixed(2)} €`
+      await (supabase.from('messages') as any).insert({
+        conversation_id: convId,
+        sender_id: userId,
+        content,
+      })
+
+      setBookingModalVisible(false)
+      setBookingStartDate('')
+      setBookingEndDate('')
+      Alert.alert(t('common.success'), t('post.bookingSent'), [
+        { text: 'OK', onPress: () => router.push(`/messages/${convId}`) },
+      ])
+    } catch {
+      Alert.alert(t('common.error'), t('post.bookingFailed'))
+    } finally {
+      setSendingBooking(false)
+    }
+  }, [userId, post, sendingBooking, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, id, supabase, router, t])
+
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -333,6 +420,16 @@ export default function PostDetailScreen() {
             </Text>
           )}
 
+          {post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (
+            <Pressable
+              onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }}
+              style={[styles.bookingBtn, { backgroundColor: colors.primary }]}
+            >
+              <Calendar size={16} color={colors.primaryForeground} />
+              <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
+            </Pressable>
+          )}
+
           {post.event_date && (
             <Text style={[styles.eventDate, { color: colors.primary }]}>
               {formatEventDate(post.event_date, locale)}
@@ -387,6 +484,44 @@ export default function PostDetailScreen() {
           <Text style={[styles.timestamp, { color: colors.mutedForeground }]}>
             {formatTimeAgo(post.created_at, t, locale)}
           </Text>
+
+          {/* ── Related posts carousel ── */}
+          {relatedPosts.length > 0 && (
+            <View style={[styles.relatedSection, { borderTopColor: colors.border }]}>
+              <Text style={[styles.relatedTitle, { color: colors.foreground }]}>
+                {t('post.relatedListings')}
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.relatedScroll}>
+                {relatedPosts.map((rp) => {
+                  const rpCat = CATEGORIES[rp.type as PostType]
+                  return (
+                    <Pressable
+                      key={rp.id}
+                      onPress={() => router.push(`/post/${rp.id}` as any)}
+                      style={[styles.relatedCard, { backgroundColor: colors.card }]}
+                    >
+                      {rp.image_url ? (
+                        <Image source={{ uri: rp.image_url }} style={styles.relatedImage} contentFit="cover" />
+                      ) : (
+                        <View style={[styles.relatedImage, { backgroundColor: rpCat ? (isDark ? rpCat.bgDark : rpCat.bgLight) : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                          {rpCat && ICON_MAP[rpCat.icon] && (() => { const I = ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
+                        </View>
+                      )}
+                      <View style={styles.relatedCardBody}>
+                        <Text style={[styles.relatedCardTitle, { color: colors.foreground }]} numberOfLines={2}>{rp.title}</Text>
+                        {rp.location && (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                            <MapPin size={10} color={colors.mutedForeground} />
+                            <Text style={[styles.relatedCardLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{rp.location}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </Pressable>
+                  )
+                })}
+              </ScrollView>
+            </View>
+          )}
 
           {/* ── Comments section ── */}
           <View style={[styles.commentSection, { borderTopColor: colors.border }]}>
@@ -493,6 +628,72 @@ export default function PostDetailScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Booking Modal */}
+      <Modal visible={bookingModalVisible} animationType="slide" transparent>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.booking')}</Text>
+              <Pressable onPress={() => setBookingModalVisible(false)} hitSlop={12}>
+                <X size={22} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
+
+            <Text style={[styles.bookingPostTitle, { color: colors.foreground }]}>{post?.title}</Text>
+            {post?.daily_fee != null && (
+              <Text style={[styles.bookingFee, { color: '#C98B2E' }]}>
+                {formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}
+              </Text>
+            )}
+
+            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.bookingStartDate')}</Text>
+            <TextInput
+              style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={bookingStartDate}
+              onChangeText={setBookingStartDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={colors.mutedForeground}
+              maxLength={10}
+              keyboardType="numbers-and-punctuation"
+            />
+
+            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.bookingEndDate')}</Text>
+            <TextInput
+              style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={bookingEndDate}
+              onChangeText={setBookingEndDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={colors.mutedForeground}
+              maxLength={10}
+              keyboardType="numbers-and-punctuation"
+            />
+
+            {bookingDays > 0 && post?.daily_fee != null && (
+              <View style={[styles.bookingSummary, { backgroundColor: colors.muted }]}>
+                <Text style={[styles.bookingSummaryText, { color: colors.foreground }]}>
+                  {bookingDays} {bookingDays === 1 ? t('common.day') : t('common.days')}
+                </Text>
+                <Text style={[styles.bookingTotalPrice, { color: colors.primary }]}>
+                  {bookingTotal.toFixed(2)} €
+                </Text>
+              </View>
+            )}
+
+            <Pressable
+              onPress={handleSendBooking}
+              disabled={sendingBooking || bookingDays <= 0}
+              style={[styles.saveBtn, { backgroundColor: sendingBooking || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16 }]}
+            >
+              {sendingBooking ? (
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
+              ) : (
+                <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.sendBooking')}</Text>
+              )}
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   )
 }
@@ -581,4 +782,25 @@ const styles = StyleSheet.create({
     paddingVertical: 12, borderRadius: 10, marginTop: 16,
   },
   saveBtnText: { fontSize: 15, fontWeight: '600' },
+  relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
+  relatedTitle: { fontSize: 16, fontWeight: '700' },
+  relatedScroll: { gap: 10 },
+  relatedCard: { width: 160, borderRadius: 12, overflow: 'hidden' },
+  relatedImage: { width: 160, height: 100, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
+  relatedCardBody: { padding: 8, gap: 4 },
+  relatedCardTitle: { fontSize: 13, fontWeight: '600', lineHeight: 17 },
+  relatedCardLocation: { fontSize: 11 },
+  bookingBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 10, paddingHorizontal: 16, borderRadius: 10, alignSelf: 'flex-start',
+  },
+  bookingBtnText: { fontSize: 14, fontWeight: '600' },
+  bookingPostTitle: { fontSize: 16, fontWeight: '600' },
+  bookingFee: { fontSize: 15, fontWeight: '700' },
+  bookingSummary: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: 14, borderRadius: 10, marginTop: 12,
+  },
+  bookingSummaryText: { fontSize: 15, fontWeight: '500' },
+  bookingTotalPrice: { fontSize: 18, fontWeight: '700' },
 })

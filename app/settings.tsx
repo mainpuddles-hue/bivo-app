@@ -304,7 +304,7 @@ export default function SettingsScreen() {
         {/* Blocked users */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.blockedUsers')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => Alert.alert(t('settings.blockedUsers'), t('blocked.noBlocked'))} style={s.row}>
+          <Pressable onPress={() => router.push('/blocked')} style={s.row}>
             <ShieldBan size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.blockedUsers')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />

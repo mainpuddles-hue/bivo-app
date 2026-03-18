@@ -36,6 +36,20 @@ export default function SearchScreen() {
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
   const [activeTab, setActiveTab] = useState<'posts' | 'users'>('posts')
   const [userResults, setUserResults] = useState<{ id: string; name: string; avatar_url: string | null; naapurusto: string }[]>([])
+  const [trendingPosts, setTrendingPosts] = useState<{ id: string; title: string; type: string; like_count: number }[]>([])
+
+  // Load trending posts
+  useEffect(() => {
+    supabase
+      .from('posts')
+      .select('id, title, type, like_count')
+      .eq('is_active', true)
+      .order('like_count', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (data) setTrendingPosts(data as any[])
+      })
+  }, [supabase])
 
   // Load search history
   useEffect(() => {
@@ -128,7 +142,34 @@ export default function SearchScreen() {
           <TrendingUp size={16} color={colors.mutedForeground} />
           <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.trending')}</Text>
         </View>
-        <Text style={[s.hintText, { color: colors.mutedForeground }]}>{t('search.noTrending')}</Text>
+        {trendingPosts.length === 0 ? (
+          <Text style={[s.hintText, { color: colors.mutedForeground }]}>{t('search.noTrending')}</Text>
+        ) : (
+          <View style={s.trendingList}>
+            {trendingPosts.map((tp) => {
+              const tpCat = CATEGORIES[tp.type as PostType]
+              return (
+                <Pressable
+                  key={tp.id}
+                  onPress={() => router.push(`/post/${tp.id}` as any)}
+                  style={[s.trendingCard, { backgroundColor: colors.card }]}
+                >
+                  {tpCat && (
+                    <View style={[s.trendingDot, { backgroundColor: tpCat.color }]} />
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.trendingTitle, { color: colors.foreground }]} numberOfLines={1}>{tp.title}</Text>
+                    {tpCat && <Text style={[s.trendingCat, { color: colors.mutedForeground }]}>{t(tpCat.label)}</Text>}
+                  </View>
+                  <View style={s.trendingLikes}>
+                    <Heart size={12} color={colors.destructive} fill={colors.destructive} />
+                    <Text style={[s.trendingLikeCount, { color: colors.mutedForeground }]}>{tp.like_count}</Text>
+                  </View>
+                </Pressable>
+              )
+            })}
+          </View>
+        )}
       </View>
 
       {/* Search history */}
@@ -351,4 +392,14 @@ const s = StyleSheet.create({
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
   userName: { fontSize: 15, fontWeight: '600' },
   userNh: { fontSize: 13 },
+  trendingList: { gap: 6 },
+  trendingCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 14, paddingVertical: 12, borderRadius: 12,
+  },
+  trendingDot: { width: 8, height: 8, borderRadius: 4 },
+  trendingTitle: { fontSize: 14, fontWeight: '600' },
+  trendingCat: { fontSize: 11, marginTop: 1 },
+  trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  trendingLikeCount: { fontSize: 12, fontWeight: '500' },
 })

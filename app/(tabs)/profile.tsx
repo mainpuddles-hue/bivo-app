@@ -47,6 +47,7 @@ export default function ProfileScreen() {
   const [badges, setBadges] = useState<UserBadge[]>([])
   const [recentPosts, setRecentPosts] = useState<Post[]>([])
   const [savedCount, setSavedCount] = useState(0)
+  const [thanksCount, setThanksCount] = useState(0)
   const [activity, setActivity] = useState<ActivityItem[]>([])
   const [editingBio, setEditingBio] = useState(false)
   const [bioText, setBioText] = useState('')
@@ -63,16 +64,18 @@ export default function ProfileScreen() {
       if (p) { setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '') }
 
       // Counts
-      const [postsRes, followersRes, followingRes, savedRes] = await Promise.all([
+      const [postsRes, followersRes, followingRes, savedRes, thanksRes] = await Promise.all([
         supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
         supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
         supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
         supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id),
       ])
       setPostCount(postsRes.count ?? 0)
       setFollowerCount(followersRes.count ?? 0)
       setFollowingCount(followingRes.count ?? 0)
       setSavedCount(savedRes.count ?? 0)
+      setThanksCount(thanksRes.count ?? 0)
 
       // Reviews received
       const { data: revs } = await supabase
@@ -308,6 +311,14 @@ export default function ProfileScreen() {
           <View style={s.stat}>
             <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <View style={s.stat}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{thanksCount}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Heart size={10} color={colors.destructive} fill={colors.destructive} />
+              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
+            </View>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
