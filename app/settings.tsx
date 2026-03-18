@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save } from 'lucide-react-native'
+import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n, type Locale } from '@/lib/i18n'
@@ -228,7 +228,7 @@ export default function SettingsScreen() {
           {push.isSupported && (
             <View style={s.toggleRow}>
               <Bell size={18} color={push.isSubscribed ? colors.primary : colors.mutedForeground} />
-              <Text style={[s.rowText, { color: colors.foreground }]}>Push-ilmoitukset</Text>
+              <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.pushNotifications')}</Text>
               <Switch
                 value={push.isSubscribed}
                 onValueChange={(val) => val ? push.subscribe() : push.unsubscribe()}
@@ -281,12 +281,32 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Saved items */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('saved.title')}</Text>
+        <View style={[s.card, { backgroundColor: colors.card }]}>
+          <Pressable onPress={() => router.push('/saved')} style={s.row}>
+            <Bookmark size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('saved.title')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+        </View>
+
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <Pressable onPress={handleExport} disabled={exporting} style={s.row}>
             <Download size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+        </View>
+
+        {/* Blocked users */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.blockedUsers')}</Text>
+        <View style={[s.card, { backgroundColor: colors.card }]}>
+          <Pressable onPress={() => Alert.alert(t('settings.blockedUsers'), t('blocked.noBlocked'))} style={s.row}>
+            <ShieldBan size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.blockedUsers')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -298,6 +318,16 @@ export default function SettingsScreen() {
             <Info size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Mobile v1.0.0</Text>
           </View>
+          <Pressable onPress={() => router.push('/privacy')} style={s.row}>
+            <Lock size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+          <Pressable onPress={() => router.push('/terms')} style={s.row}>
+            <FileText size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
         </View>
 
         {/* Danger zone */}

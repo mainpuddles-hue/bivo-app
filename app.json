@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "tackbird",
-    "owner": "tackbird",
+    "owner": "puddles",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -43,14 +43,15 @@
       "versionCode": 1,
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "POST_NOTIFICATIONS"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
       ],
       "_googleServicesFile_TODO": "./google-services.json",
       "intentFilters": [
@@ -69,7 +70,10 @@
               "pathPrefix": "/events"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -111,11 +115,12 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "tackbird-mobile"
+        "projectId": "504a9107-9e8e-4e5d-90fe-ea7564166e33"
       },
       "privacyPolicyUrl": "https://tackbird-v2.vercel.app/privacy",
       "termsOfServiceUrl": "https://tackbird-v2.vercel.app/terms",
-      "supportEmail": "tuki@tackbird.fi"
+      "supportEmail": "tuki@tackbird.fi",
+      "router": {}
     },
     "runtimeVersion": {
       "policy": "appVersion"

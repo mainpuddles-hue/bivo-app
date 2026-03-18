@@ -605,7 +605,12 @@
     "passwordRequired": "Syötä salasanasi",
     "nameRequired": "Syötä nimesi",
     "resetPasswordHint": "Syötä sähköpostiosoitteesi, niin lähetämme sinulle nollauslinkin.",
-    "continueWithGoogle": "Jatka Googlella"
+    "continueWithGoogle": "Jatka Googlella",
+    "passwordMinLength": "Vähintään 8 merkkiä",
+    "passwordUppercase": "Iso kirjain",
+    "passwordNumber": "Numero",
+    "passwordTooShort": "Salasanan pitää olla vähintään 8 merkkiä",
+    "invalidPassword": "Anna kelvollinen salasana"
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
@@ -1016,7 +1021,10 @@
     "nappaaExpires24h": "Nappaa-ilmoitukset vanhenevat aina 24 tunnissa",
     "maxAttendees": "Osallistujaraja",
     "maxAttendeesPlaceholder": "Rajaton",
-    "uploadingImages": "Ladataan kuvia..."
+    "uploadingImages": "Ladataan kuvia...",
+    "camera": "Kamera",
+    "gallery": "Galleria",
+    "cameraPermissionRequired": "Kameralupa vaaditaan"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -1276,7 +1284,19 @@
     "eventSourceCity": "Helsinki",
     "cityEventCategoryFilter": "Kaupunkitapahtumat",
     "cityEventFree": "Ilmainen",
-    "cityEventMoreInfo": "Lisätietoja"
+    "cityEventMoreInfo": "Lisätietoja",
+    "dataLoadError": "Virhe ladattaessa karttadataa",
+    "checkConnection": "Tarkista verkkoyhteys ja yritä uudelleen.",
+    "retry": "Yritä uudelleen",
+    "locationPermission": "Sijaintilupa",
+    "locationPermissionDesc": "Salli sijainnin käyttö asetuksista.",
+    "viewPost": "Katso ilmoitus",
+    "viewEvent": "Katso tapahtuma",
+    "moreInfo": "Lisätietoja",
+    "directions": "Reittiohjeet",
+    "website": "Verkkosivut",
+    "free": "Ilmainen",
+    "event": "Tapahtuma"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

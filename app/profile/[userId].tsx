@@ -1,0 +1,458 @@
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { Image } from 'expo-image'
+import {
+  ArrowLeft, MapPin, Star, MessageCircle, UserPlus, UserMinus,
+  Flag, ShieldBan, Crown, BadgeCheck, Shield, Flame,
+} from 'lucide-react-native'
+import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
+import { createClient } from '@/lib/supabase/client'
+import { formatTimeAgo } from '@/lib/format'
+import { PostCard } from '@/components/PostCard'
+import type { Profile, Post, Review, UserBadge } from '@/lib/types'
+
+const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
+  verified: { icon: BadgeCheck, color: '#3B82F6' },
+  pro: { icon: Crown, color: '#F59E0B' },
+  trusted: { icon: Shield, color: '#10B981' },
+  active: { icon: Flame, color: '#EF4444' },
+}
+
+export default function PublicProfileScreen() {
+  const { colors } = useTheme()
+  const { t, locale } = useI18n()
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const { userId } = useLocalSearchParams<{ userId: string }>()
+  const supabase = useMemo(() => createClient(), [])
+
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [postCount, setPostCount] = useState(0)
+  const [followerCount, setFollowerCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
+  const [avgRating, setAvgRating] = useState<number | null>(null)
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [badges, setBadges] = useState<UserBadge[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
+  const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts')
+
+  useEffect(() => {
+    async function load() {
+      if (!userId) return
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) setCurrentUserId(user.id)
+
+      // If viewing own profile, redirect to profile tab
+      if (user && user.id === userId) {
+        router.replace('/(tabs)/profile')
+        return
+      }
+
+      // Fetch profile
+      const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).single()
+      if (!p) { setLoading(false); return }
+      setProfile(p as unknown as Profile)
+
+      // Parallel fetches
+      const [postsRes, followersRes, followingRes] = await Promise.all([
+        supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_active', true),
+        supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', userId),
+        supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId),
+      ])
+      setPostCount(postsRes.count ?? 0)
+      setFollowerCount(followersRes.count ?? 0)
+      setFollowingCount(followingRes.count ?? 0)
+
+      // Check follow/block status
+      if (user) {
+        const [followRes, blockRes] = await Promise.all([
+          supabase.from('user_follows').select('id').eq('follower_id', user.id).eq('followed_id', userId).maybeSingle(),
+          supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', userId).maybeSingle(),
+        ])
+        setIsFollowing(!!followRes.data)
+        setIsBlocked(!!blockRes.data)
+      }
+
+      // Reviews received
+      const { data: revs } = await supabase
+        .from('reviews')
+        .select('*, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
+        .eq('reviewed_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+      setReviews((revs ?? []) as unknown as Review[])
+      if (revs && revs.length > 0) {
+        const avg = (revs as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revs.length
+        setAvgRating(Math.round(avg * 10) / 10)
+      }
+
+      // Badges
+      const { data: bdg } = await supabase.from('user_badges').select('badge_type').eq('user_id', userId)
+      setBadges((bdg ?? []) as UserBadge[])
+
+      // Public posts
+      const { data: userPosts } = await supabase
+        .from('posts')
+        .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      setPosts((userPosts ?? []) as unknown as Post[])
+
+      setLoading(false)
+    }
+    load()
+  }, [userId, supabase, router])
+
+  const handleFollow = useCallback(async () => {
+    if (!currentUserId) { router.push('/(auth)/login'); return }
+    if (isFollowing) {
+      setIsFollowing(false)
+      setFollowerCount(c => c - 1)
+      await supabase.from('user_follows').delete().eq('follower_id', currentUserId).eq('followed_id', userId)
+    } else {
+      setIsFollowing(true)
+      setFollowerCount(c => c + 1)
+      await (supabase.from('user_follows') as any).insert({ follower_id: currentUserId, followed_id: userId })
+    }
+  }, [currentUserId, isFollowing, userId, supabase, router])
+
+  const handleMessage = useCallback(async () => {
+    if (!currentUserId) { router.push('/(auth)/login'); return }
+    // Find existing conversation or create new one
+    const { data: existing } = await supabase
+      .from('conversations')
+      .select('id')
+      .or(`and(user1_id.eq.${currentUserId},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${currentUserId})`)
+      .maybeSingle()
+
+    if (existing) {
+      router.push(`/messages/${(existing as any).id}`)
+    } else {
+      const { data: newConv, error } = await (supabase.from('conversations') as any)
+        .insert({ user1_id: currentUserId, user2_id: userId })
+        .select('id')
+        .single()
+      if (error || !newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+      router.push(`/messages/${newConv.id}`)
+    }
+  }, [currentUserId, userId, supabase, router, t])
+
+  const handleBlock = useCallback(async () => {
+    if (!currentUserId) { router.push('/(auth)/login'); return }
+    Alert.alert(
+      t('post.block'),
+      t('post.blockConfirm', { name: profile?.name ?? '' }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('post.block'), style: 'destructive',
+          onPress: async () => {
+            if (isBlocked) {
+              setIsBlocked(false)
+              await supabase.from('blocked_users').delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
+              Alert.alert(t('common.success'), t('profile.unblocked'))
+            } else {
+              setIsBlocked(true)
+              await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
+              Alert.alert(t('common.success'), t('profile.blocked'))
+            }
+          },
+        },
+      ]
+    )
+  }, [currentUserId, isBlocked, userId, profile, supabase, t, router])
+
+  const handleReport = useCallback(() => {
+    if (!currentUserId) { router.push('/(auth)/login'); return }
+    Alert.alert(
+      t('post.report'),
+      t('post.report'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('post.report'), style: 'destructive',
+          onPress: async () => {
+            await (supabase.from('reports') as any).insert({
+              reporter_id: currentUserId,
+              reported_user_id: userId,
+              reason: 'user_report',
+            })
+            Alert.alert(t('common.success'), t('post.reportSent'))
+          },
+        },
+      ]
+    )
+  }, [currentUserId, userId, supabase, t, router])
+
+  const renderStars = (rating: number) => (
+    <View style={{ flexDirection: 'row', gap: 2 }}>
+      {[1, 2, 3, 4, 5].map(i => (
+        <Star key={i} size={12} color={i <= rating ? colors.pro : colors.muted} fill={i <= rating ? colors.pro : 'transparent'} />
+      ))}
+    </View>
+  )
+
+  if (loading) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={12}>
+            <ArrowLeft size={24} color={colors.foreground} />
+          </Pressable>
+        </View>
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+      </View>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={12}>
+            <ArrowLeft size={24} color={colors.foreground} />
+          </Pressable>
+          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+        </View>
+        <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.notFound')}</Text>
+      </View>
+    )
+  }
+
+  return (
+    <View style={[s.container, { backgroundColor: colors.background }]}>
+      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
+          <ArrowLeft size={24} color={colors.foreground} />
+        </Pressable>
+        <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
+        <View style={{ flex: 1 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        {/* Hero */}
+        <View style={s.hero}>
+          {profile.avatar_url ? (
+            <Image source={{ uri: profile.avatar_url }} style={[s.bigAvatar, profile.is_pro && { borderWidth: 3, borderColor: colors.pro }]} />
+          ) : (
+            <View style={[s.bigAvatar, s.bigAvatarFb, { backgroundColor: colors.muted }]}>
+              <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase()}</Text>
+            </View>
+          )}
+          <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
+          {profile.naapurusto && (
+            <View style={s.nhRow}>
+              <MapPin size={14} color={colors.primary} />
+              <Text style={[s.nhText, { color: colors.primary }]}>{profile.naapurusto}</Text>
+            </View>
+          )}
+
+          {profile.bio ? (
+            <Text style={[s.bio, { color: colors.mutedForeground }]}>{profile.bio}</Text>
+          ) : null}
+
+          {/* Badges */}
+          {badges.length > 0 && (
+            <View style={s.badgesRow}>
+              {badges.map((b) => {
+                const cfg = BADGE_ICONS[b.badge_type]
+                if (!cfg) return null
+                const Icon = cfg.icon
+                return (
+                  <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: `${cfg.color}20` }]}>
+                    <Icon size={12} color={cfg.color} />
+                    <Text style={[s.badgeText, { color: cfg.color }]}>{t(`badges.${b.badge_type}`)}</Text>
+                  </View>
+                )
+              })}
+            </View>
+          )}
+
+          {profile.is_pro && (
+            <View style={[s.proBadge, { backgroundColor: `${colors.pro}20` }]}>
+              <Crown size={14} color={colors.pro} fill={colors.pro} />
+              <Text style={[s.proText, { color: colors.pro }]}>Pro</Text>
+            </View>
+          )}
+
+          {/* Action buttons */}
+          <View style={s.actions}>
+            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]}>
+              {isFollowing ? (
+                <UserMinus size={16} color={colors.foreground} />
+              ) : (
+                <UserPlus size={16} color={colors.primaryForeground} />
+              )}
+              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.primaryForeground }]}>
+                {isFollowing ? t('profile.unfollow') : t('profile.follow')}
+              </Text>
+            </Pressable>
+            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <MessageCircle size={16} color={colors.foreground} />
+              <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Stats 4-column */}
+        <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={s.stat}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <View style={s.stat}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{followingCount}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.following')}</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <View style={s.stat}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <View style={s.stat}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating ?? '\u2013'}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
+          </View>
+        </View>
+
+        {/* Tabs */}
+        <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground }]}>{t('profile.posts')}</Text>
+          </Pressable>
+          <Pressable onPress={() => setActiveTab('reviews')} style={[s.tab, activeTab === 'reviews' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+            <Text style={[s.tabText, { color: activeTab === 'reviews' ? colors.primary : colors.mutedForeground }]}>{t('profile.reviews')}</Text>
+          </Pressable>
+        </View>
+
+        {/* Posts tab */}
+        {activeTab === 'posts' && (
+          <View style={s.tabContent}>
+            {posts.length === 0 ? (
+              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPosts')}</Text>
+            ) : (
+              posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))
+            )}
+          </View>
+        )}
+
+        {/* Reviews tab */}
+        {activeTab === 'reviews' && (
+          <View style={s.tabContent}>
+            {reviews.length === 0 ? (
+              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
+            ) : (
+              reviews.map((rev) => (
+                <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
+                  <View style={s.reviewHeader}>
+                    {rev.reviewer?.avatar_url ? (
+                      <Image source={{ uri: rev.reviewer.avatar_url }} style={s.reviewAvatar} />
+                    ) : (
+                      <View style={[s.reviewAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600' }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase()}</Text>
+                      </View>
+                    )}
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={[s.reviewName, { color: colors.foreground }]}>{rev.reviewer?.name}</Text>
+                      {renderStars(rev.rating)}
+                    </View>
+                    <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
+                  </View>
+                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]}>{rev.comment}</Text>}
+                </View>
+              ))
+            )}
+          </View>
+        )}
+
+        {/* Block / Report */}
+        {currentUserId && currentUserId !== userId && (
+          <View style={s.dangerActions}>
+            <Pressable onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+              <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
+              <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
+                {isBlocked ? t('post.unblock') : t('post.block')}
+              </Text>
+            </Pressable>
+            <Pressable onPress={handleReport} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+              <Flag size={18} color={colors.mutedForeground} />
+              <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  )
+}
+
+const s = StyleSheet.create({
+  container: { flex: 1 },
+  header: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, maxWidth: 250 },
+  content: { padding: 16, gap: 16, paddingBottom: 40 },
+  hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
+  bigAvatar: { width: 80, height: 80, borderRadius: 40 },
+  bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },
+  bigAvatarInit: { fontSize: 32, fontWeight: '700' },
+  profileName: { fontSize: 20, fontWeight: '700' },
+  nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  nhText: { fontSize: 14, fontWeight: '500' },
+  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, color: '#888' },
+  badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
+  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  badgeText: { fontSize: 11, fontWeight: '600' },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  proText: { fontSize: 13, fontWeight: '600' },
+  actions: { flexDirection: 'row', gap: 10, marginTop: 8, width: '100%', paddingHorizontal: 16 },
+  followBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingVertical: 10, borderRadius: 10,
+  },
+  followBtnText: { fontSize: 14, fontWeight: '600' },
+  messageBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingVertical: 10, borderRadius: 10, borderWidth: 1,
+  },
+  messageBtnText: { fontSize: 14, fontWeight: '600' },
+  statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth },
+  stat: { flex: 1, alignItems: 'center', gap: 4 },
+  statNum: { fontSize: 18, fontWeight: '700' },
+  statLabel: { fontSize: 11 },
+  statDiv: { width: 1 },
+  tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+  tabActive: { borderBottomWidth: 2 },
+  tabText: { fontSize: 14, fontWeight: '600' },
+  tabContent: { gap: 12 },
+  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 20 },
+  reviewCard: { borderRadius: 12, padding: 14, gap: 8 },
+  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
+  reviewName: { fontSize: 13, fontWeight: '600' },
+  reviewTime: { fontSize: 11 },
+  reviewComment: { fontSize: 14, lineHeight: 19 },
+  dangerActions: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  dangerBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, padding: 14, borderRadius: 12,
+  },
+  dangerBtnText: { fontSize: 14, fontWeight: '500' },
+  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100 },
+})

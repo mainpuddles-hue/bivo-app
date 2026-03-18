@@ -9,24 +9,25 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
 
-const AUTH_ERRORS: Record<string, string> = {
-  'Invalid login credentials': 'Virheellinen sähköposti tai salasana',
-  'User already registered': 'Käyttäjä on jo rekisteröitynyt',
-  'Email not confirmed': 'Sähköpostia ei ole vahvistettu',
-  'Password should be at least 6 characters': 'Salasanan pitää olla vähintään 8 merkkiä',
-  'Signup requires a valid password': 'Anna kelvollinen salasana',
+const AUTH_ERROR_KEYS: Record<string, string> = {
+  'Invalid login credentials': 'auth.invalidCredentials',
+  'User already registered': 'auth.userAlreadyRegistered',
+  'Email not confirmed': 'auth.emailNotConfirmed',
+  'Password should be at least 6 characters': 'auth.passwordTooShort',
+  'Signup requires a valid password': 'auth.invalidPassword',
 }
 
 function PasswordStrength({ password, colors }: { password: string; colors: ReturnType<typeof useTheme>['colors'] }) {
+  const { t } = useI18n()
   const checks = [
-    { label: 'Vähintään 8 merkkiä', met: password.length >= 8 },
-    { label: 'Iso kirjain', met: /[A-Z]/.test(password) },
-    { label: 'Numero', met: /[0-9]/.test(password) },
+    { key: 'minLength', label: t('auth.passwordMinLength'), met: password.length >= 8 },
+    { key: 'uppercase', label: t('auth.passwordUppercase'), met: /[A-Z]/.test(password) },
+    { key: 'number', label: t('auth.passwordNumber'), met: /[0-9]/.test(password) },
   ]
   return (
     <View style={pwStyles.container}>
       {checks.map((check) => (
-        <View key={check.label} style={pwStyles.row}>
+        <View key={check.key} style={pwStyles.row}>
           {check.met ? (
             <Check size={14} color={colors.success} />
           ) : (
@@ -62,7 +63,10 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
 
-  const translateError = (msg: string) => AUTH_ERRORS[msg] ?? msg
+  const translateError = (msg: string) => {
+    const key = AUTH_ERROR_KEYS[msg]
+    return key ? t(key) : msg
+  }
 
   const handleSubmit = async () => {
     if (!email.trim()) { Alert.alert(t('common.error'), t('auth.emailRequired')); return }

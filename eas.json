@@ -30,7 +30,6 @@
       "distribution": "store",
       "autoIncrement": true,
       "ios": {
-        "autoCredentials": true,
         "buildConfiguration": "Release"
       },
       "android": {

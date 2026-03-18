@@ -600,7 +600,12 @@
     "userAlreadyRegistered": "An account with this email already exists",
     "tooManyAttempts": "Too many attempts. Please wait a moment and try again.",
     "registerFailed": "Registration failed",
-    "joinTackBird": "Join TackBird"
+    "joinTackBird": "Join TackBird",
+    "passwordMinLength": "At least 8 characters",
+    "passwordUppercase": "Uppercase letter",
+    "passwordNumber": "Number",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "invalidPassword": "Enter a valid password"
   },
   "onboarding": {
     "welcome": "Welcome to TackBird!",
@@ -999,7 +1004,10 @@
     "nappaaExpires24h": "Grab posts always expire in 24 hours",
     "maxAttendees": "Attendee limit",
     "maxAttendeesPlaceholder": "Unlimited",
-    "uploadingImages": "Uploading images..."
+    "uploadingImages": "Uploading images...",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "cameraPermissionRequired": "Camera permission required"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1247,7 +1255,19 @@
     "eventSourceCity": "Helsinki",
     "cityEventCategoryFilter": "City events",
     "cityEventFree": "Free",
-    "cityEventMoreInfo": "More info"
+    "cityEventMoreInfo": "More info",
+    "dataLoadError": "Error loading map data",
+    "checkConnection": "Check your connection and try again.",
+    "retry": "Try again",
+    "locationPermission": "Location permission",
+    "locationPermissionDesc": "Allow location access in settings.",
+    "viewPost": "View post",
+    "viewEvent": "View event",
+    "moreInfo": "More info",
+    "directions": "Directions",
+    "website": "Website",
+    "free": "Free",
+    "event": "Event"
   },
   "privacy": {
     "title": "Privacy Policy",

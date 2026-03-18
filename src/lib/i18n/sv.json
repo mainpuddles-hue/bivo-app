@@ -600,7 +600,12 @@
     "userAlreadyRegistered": "Ett konto med denna e-post finns redan",
     "tooManyAttempts": "För många försök. Vänta en stund och försök igen.",
     "registerFailed": "Registrering misslyckades",
-    "joinTackBird": "Ga med i TackBird"
+    "joinTackBird": "Gå med i TackBird",
+    "passwordMinLength": "Minst 8 tecken",
+    "passwordUppercase": "Stor bokstav",
+    "passwordNumber": "Siffra",
+    "passwordTooShort": "Lösenordet måste vara minst 8 tecken",
+    "invalidPassword": "Ange ett giltigt lösenord"
   },
   "onboarding": {
     "welcome": "Välkommen till TackBird!",
@@ -999,7 +1004,10 @@
     "nappaaExpires24h": "Fånga-annonser förfaller alltid om 24 timmar",
     "maxAttendees": "Deltagarantal",
     "maxAttendeesPlaceholder": "Obegränsat",
-    "uploadingImages": "Laddar upp bilder..."
+    "uploadingImages": "Laddar upp bilder...",
+    "camera": "Kamera",
+    "gallery": "Galleri",
+    "cameraPermissionRequired": "Kameratillstånd krävs"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1247,7 +1255,19 @@
     "eventSourceCity": "Helsingfors",
     "cityEventCategoryFilter": "Stadsevenemang",
     "cityEventFree": "Gratis",
-    "cityEventMoreInfo": "Mer info"
+    "cityEventMoreInfo": "Mer info",
+    "dataLoadError": "Fel vid laddning av kartdata",
+    "checkConnection": "Kontrollera din anslutning och försök igen.",
+    "retry": "Försök igen",
+    "locationPermission": "Platstillstånd",
+    "locationPermissionDesc": "Tillåt platsåtkomst i inställningarna.",
+    "viewPost": "Visa inlägg",
+    "viewEvent": "Visa evenemang",
+    "moreInfo": "Mer info",
+    "directions": "Vägbeskrivning",
+    "website": "Webbplats",
+    "free": "Gratis",
+    "event": "Evenemang"
   },
   "privacy": {
     "title": "Integritetspolicy",

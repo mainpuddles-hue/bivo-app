@@ -114,7 +114,7 @@ export default function CreateScreen() {
     if (useCamera) {
       const { status } = await ImagePicker.requestCameraPermissionsAsync()
       if (status !== 'granted') {
-        Alert.alert(t('common.error'), 'Kameralupa vaaditaan')
+        Alert.alert(t('common.error'), t('create.cameraPermissionRequired'))
         return
       }
     }
@@ -127,20 +127,11 @@ export default function CreateScreen() {
   }, [images.length, t])
 
   const pickImage = useCallback(() => {
-    if (Platform.OS === 'web') {
-      // Web: show both options
-      Alert.alert('Lisää kuva', '', [
-        { text: 'Kamera', onPress: () => launchPicker(true) },
-        { text: 'Galleria', onPress: () => launchPicker(false) },
-        { text: t('common.cancel'), style: 'cancel' },
-      ])
-    } else {
-      Alert.alert('Lisää kuva', '', [
-        { text: 'Kamera', onPress: () => launchPicker(true) },
-        { text: 'Galleria', onPress: () => launchPicker(false) },
-        { text: t('common.cancel'), style: 'cancel' },
-      ])
-    }
+    Alert.alert(t('create.addImage'), '', [
+      { text: t('create.camera'), onPress: () => launchPicker(true) },
+      { text: t('create.gallery'), onPress: () => launchPicker(false) },
+      { text: t('common.cancel'), style: 'cancel' },
+    ])
   }, [launchPicker, t])
 
   const removeImage = (index: number) => {
