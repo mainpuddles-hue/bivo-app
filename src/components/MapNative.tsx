@@ -98,6 +98,16 @@ const PLACE_LABEL: Record<string, string> = {
 }
 
 // Sub-categories for 2-level filter
+const POST_SUBCATS = [
+  { key: null, label: 'Kaikki', color: LAYER_COLORS.post },
+  { key: 'tarvitsen', label: 'Tarvitsen', color: '#C75B3A' },
+  { key: 'tarjoan', label: 'Tarjoan', color: '#7C5CBF' },
+  { key: 'ilmaista', label: 'Ilmaista', color: '#3B7DD8' },
+  { key: 'nappaa', label: 'Nappaa', color: '#E8A050' },
+  { key: 'lainaa', label: 'Lainaa', color: '#C98B2E' },
+  { key: 'tapahtuma', label: 'Tapahtuma', color: '#2B8A62' },
+]
+
 const EVENT_SUBCATS = [
   { key: null, label: 'Kaikki' },
   { key: 'culture', label: 'Kulttuuri' },
@@ -508,10 +518,15 @@ export default function MapScreen() {
 
     // Sub-category filter
     if (subCategory) {
-      if (activeFilter === 'events') {
+      if (activeFilter === 'posts') {
+        items = items.filter(i => {
+          if (i.kind === 'post') return (i.sourceData as Post).type === subCategory
+          return true
+        })
+      } else if (activeFilter === 'events') {
         items = items.filter(i => {
           if (i.kind === 'city_event') return (i.sourceData as CityEvent).category === subCategory
-          return true // community events don't have sub-categories
+          return true
         })
       } else if (activeFilter === 'places') {
         items = items.filter(i => {
@@ -727,11 +742,14 @@ export default function MapScreen() {
     // Extract extra info per type
     const isEvent = item.kind === 'community_event' || item.kind === 'city_event'
     const isCityEvent = item.kind === 'city_event'
+    const isCommunityEvent = item.kind === 'community_event'
     const isPlace = item.kind === 'place'
     const isPost = item.kind === 'post'
 
     const isFree = isCityEvent && (item.sourceData as CityEvent).is_free
     const price = isCityEvent ? (item.sourceData as CityEvent).price_info : null
+    const isTicketmaster = isCityEvent && (item.sourceData as CityEvent).source === 'ticketmaster'
+    const isLinkedEvents = isCityEvent && (item.sourceData as CityEvent).source === 'linkedevents'
     const userName = isPost ? ((item.sourceData as any).user?.name ?? null) : null
     const postType = isPost ? (item.sourceData as Post).type : null
     const cat = isPost && postType ? CATEGORIES[postType as PostType] : null
@@ -774,6 +792,21 @@ export default function MapScreen() {
               {placeCategory && (
                 <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
                   <Text style={[cs.badgeText, { color: item.color }]}>{placeCategory}</Text>
+                </View>
+              )}
+              {isLinkedEvents && (
+                <View style={[cs.badge, { backgroundColor: '#8E44AD18' }]}>
+                  <Text style={[cs.badgeText, { color: '#8E44AD' }]}>Helsinki</Text>
+                </View>
+              )}
+              {isTicketmaster && (
+                <View style={[cs.badge, { backgroundColor: '#E91E6318' }]}>
+                  <Text style={[cs.badgeText, { color: '#E91E63' }]}>Liput</Text>
+                </View>
+              )}
+              {isCommunityEvent && (
+                <View style={[cs.badge, { backgroundColor: '#2B8A6218' }]}>
+                  <Text style={[cs.badgeText, { color: '#2B8A62' }]}>Yhteisö</Text>
                 </View>
               )}
               {isFree && (
@@ -930,16 +963,19 @@ export default function MapScreen() {
           <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
         )}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
-          {(activeFilter === 'events' || activeFilter === 'places') ? (
+          {(activeFilter === 'posts' || activeFilter === 'events' || activeFilter === 'places') ? (
             <>
               {/* Back to main filters */}
               <Pressable
-                style={[styles.filterPill, { backgroundColor: activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place, borderColor: 'transparent' }]}
+                style={[styles.filterPill, {
+                  backgroundColor: activeFilter === 'posts' ? LAYER_COLORS.post : activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place,
+                  borderColor: 'transparent',
+                }]}
                 onPress={() => { setActiveFilter('all'); setSubCategory(null); setTimeFilter('all') }}
               >
                 <ArrowLeft size={14} color="#FFF" />
                 <Text style={[styles.filterPillText, { color: '#FFF' }]}>
-                  {activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
+                  {activeFilter === 'posts' ? t('map.layerPosts') : activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
                 </Text>
               </Pressable>
 
@@ -960,22 +996,47 @@ export default function MapScreen() {
                 </Pressable>
               ))}
 
-              {/* Sub-category pills */}
-              {(activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => (
-                <Pressable
-                  key={sc.key ?? '__all__'}
-                  style={[
-                    styles.filterPill,
-                    { borderColor: subCategory === sc.key ? (activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place) : colors.border },
-                    subCategory === sc.key && { backgroundColor: activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place },
-                  ]}
-                  onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
-                >
-                  <Text style={[styles.filterPillText, { color: subCategory === sc.key ? '#FFF' : colors.foreground }]}>
-                    {sc.label}
-                  </Text>
-                </Pressable>
-              ))}
+              {/* Sub-category pills — post categories use their own colors */}
+              {activeFilter === 'posts' ? (
+                POST_SUBCATS.map(sc => {
+                  const isActive = subCategory === sc.key
+                  return (
+                    <Pressable
+                      key={sc.key ?? '__all__'}
+                      style={[
+                        styles.filterPill,
+                        { borderColor: isActive ? sc.color : colors.border },
+                        isActive && { backgroundColor: sc.color },
+                      ]}
+                      onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
+                    >
+                      <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                        {sc.label}
+                      </Text>
+                    </Pressable>
+                  )
+                })
+              ) : (
+                (activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => {
+                  const layerColor = activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place
+                  const isActive = subCategory === sc.key
+                  return (
+                    <Pressable
+                      key={sc.key ?? '__all__'}
+                      style={[
+                        styles.filterPill,
+                        { borderColor: isActive ? layerColor : colors.border },
+                        isActive && { backgroundColor: layerColor },
+                      ]}
+                      onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
+                    >
+                      <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                        {sc.label}
+                      </Text>
+                    </Pressable>
+                  )
+                })
+              )}
             </>
           ) : (
             /* Main layer filters */
