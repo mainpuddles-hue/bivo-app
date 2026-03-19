@@ -6,7 +6,7 @@ import {
   type SectionListData,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { fetchHelsinkiEvents, fetchNearbyEvents, invalidateEventsCache } from '@/lib/linkedevents'
+import { fetchNearbyEvents, loadMoreNearbyEvents, hasMoreNearbyEvents, getNearbyEventsTotal, invalidateEventsCache } from '@/lib/linkedevents'
 import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
 import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import { useRouter } from 'expo-router'
@@ -208,6 +208,7 @@ export default function MapScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
@@ -337,6 +338,22 @@ export default function MapScreen() {
     setRefreshing(false)
   }, [fetchGlobalData, fetchPlaces, center])
 
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMore || !hasMoreNearbyEvents(center.latitude, center.longitude)) return
+    setLoadingMore(true)
+    const more = await loadMoreNearbyEvents(center.latitude, center.longitude)
+    if (more) {
+      setCityEvents(prev => {
+        // Merge: keep Ticketmaster events, replace LinkedEvents with full set
+        const tmEvents = prev.filter(e => e.source === 'ticketmaster')
+        const linkedNames = new Set(more.map(e => e.name_fi.toLowerCase().slice(0, 20)))
+        const uniqueTm = tmEvents.filter(e => !linkedNames.has(e.name_fi.toLowerCase().slice(0, 20)))
+        return [...more, ...uniqueTm]
+      })
+    }
+    setLoadingMore(false)
+  }, [center, loadingMore])
+
   // ── Build list items filtered by radius ──
   const radiusKm = useMemo(() => getRadiusKm(selectedNeighborhood), [selectedNeighborhood])
   const allItems = useMemo<ListItem[]>(() => {
@@ -368,12 +385,11 @@ export default function MapScreen() {
       })
     }
 
-    // Community events (future only) — wider radius since events are worth traveling for
+    // Community events (future only) — no radius limit, already filtered by Supabase
     for (const e of communityEvents) {
       if (e.location_lat == null || e.location_lng == null) continue
       if (e.event_date && isPast(e.event_date)) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
-      if (dist > eventRadius) continue
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
       const creator = (e as any).creator?.name ?? ''
       const evParts = [dateStr, e.location_name, creator].filter(Boolean)
@@ -391,12 +407,11 @@ export default function MapScreen() {
       })
     }
 
-    // City events (future only) — wider radius since events are sparse and users travel further
+    // City events (future only) — no radius limit for list, already filtered by bbox API
     for (const c of cityEvents) {
       if (c.latitude == null || c.longitude == null) continue
       if (c.start_time && isPast(c.start_time)) continue
       const dist = haversineKm(cLat, cLng, c.latitude, c.longitude)
-      if (dist > eventRadius) continue
       const name = locale === 'sv' ? (c.name_sv ?? c.name_fi) :
                    locale === 'en' ? (c.name_en ?? c.name_fi) : c.name_fi
       const ceDateStr = new Date(c.start_time).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -838,6 +853,8 @@ export default function MapScreen() {
           stickySectionHeadersEnabled
           contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleFullRefresh} tintColor={colors.primary} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.3}
           ListEmptyComponent={
             <View style={styles.emptyList}>
               <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
@@ -848,6 +865,21 @@ export default function MapScreen() {
                 {searchQuery ? t('map.noSearchResults') : t('map.noResultsFilterHint')}
               </Text>
             </View>
+          }
+          ListFooterComponent={
+            hasMoreNearbyEvents(center.latitude, center.longitude) ? (
+              <View style={styles.loadMoreFooter}>
+                {loadingMore ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <Pressable onPress={handleLoadMore} style={[styles.loadMoreBtn, { borderColor: colors.border }]}>
+                    <Text style={[styles.loadMoreText, { color: colors.primary }]}>
+                      Lataa lisää tapahtumia ({getNearbyEventsTotal(center.latitude, center.longitude)} yhteensä)
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            ) : null
           }
         />
       )}
@@ -1442,5 +1474,19 @@ const styles = StyleSheet.create({
   },
   mapInfoText: {
     fontSize: 11,
+  },
+  loadMoreFooter: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  loadMoreBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  loadMoreText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
 })

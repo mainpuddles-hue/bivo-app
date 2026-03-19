@@ -157,48 +157,108 @@ export function invalidateEventsCache(): void {
   cache = null
 }
 
+// ── Paginated nearby events with loadMore support ──
+
+interface NearbyEventsState {
+  events: CityEvent[]
+  nextUrl: string | null
+  totalCount: number
+  fetchedAt: number
+  loading: boolean
+}
+
+const nearbyState = new Map<string, NearbyEventsState>()
+
+function buildBbox(lat: number, lng: number, radiusKm: number): string {
+  const dLat = radiusKm / 111
+  const dLng = radiusKm / (111 * Math.cos(lat * Math.PI / 180))
+  return `${(lng - dLng).toFixed(4)},${(lat - dLat).toFixed(4)},${(lng + dLng).toFixed(4)},${(lat + dLat).toFixed(4)}`
+}
+
+function nearbyKey(lat: number, lng: number): string {
+  return `${lat.toFixed(3)}-${lng.toFixed(3)}`
+}
+
 /**
- * Fetch events near a specific point using LinkedEvents bbox parameter.
- * Much more relevant than the global fetch for small neighborhoods.
+ * Fetch first page of nearby events. Fast (~500ms).
+ * Call loadMoreNearbyEvents() to get subsequent pages.
  */
 export async function fetchNearbyEvents(
   lat: number,
   lng: number,
-  radiusKm: number = 1.5,
+  radiusKm: number = 5,
 ): Promise<CityEvent[]> {
-  const cacheKey = `${lat.toFixed(3)}-${lng.toFixed(3)}`
-  const cached = bboxCache.get(cacheKey)
-  if (cached && Date.now() - cached.fetchedAt < BBOX_CACHE_TTL) {
-    return cached.events
+  const key = nearbyKey(lat, lng)
+  const existing = nearbyState.get(key)
+  if (existing && Date.now() - existing.fetchedAt < BBOX_CACHE_TTL) {
+    return existing.events
   }
 
   try {
     const today = new Date().toISOString().split('T')[0]
-    // Convert radius to bbox (approximate: 1 degree lat ≈ 111km)
-    const dLat = radiusKm / 111
-    const dLng = radiusKm / (111 * Math.cos(lat * Math.PI / 180))
-    const bbox = `${(lng - dLng).toFixed(4)},${(lat - dLat).toFixed(4)},${(lng + dLng).toFixed(4)},${(lat + dLat).toFixed(4)}`
+    const bbox = buildBbox(lat, lng, radiusKm)
+    const url = `${BASE_URL}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
 
-    const allEvents: CityEvent[] = []
-    let pageUrl: string | null = `${BASE_URL}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
+    const res = await fetch(url)
+    if (!res.ok) return []
+    const json: LinkedEventResponse = await res.json()
+    const events = json.data
+      .filter(e => (e.name?.fi || e.name?.en) && e.location?.name?.fi !== 'Internet')
+      .map(mapEvent)
 
-    for (let page = 0; page < 3 && pageUrl; page++) {
-      const res = await fetch(pageUrl)
-      if (!res.ok) break
-      const json: LinkedEventResponse = await res.json()
-      const events = json.data
-        .filter(e => (e.name?.fi || e.name?.en) && e.location?.name?.fi !== 'Internet')
-        .map(mapEvent)
-      allEvents.push(...events)
-      pageUrl = json.meta.next
-    }
+    nearbyState.set(key, {
+      events,
+      nextUrl: json.meta.next,
+      totalCount: json.meta.count,
+      fetchedAt: Date.now(),
+      loading: false,
+    })
 
-    bboxCache.set(cacheKey, { events: allEvents, fetchedAt: Date.now() })
-    return allEvents
+    return events
   } catch (err) {
-    console.log('[linkedevents] bbox fetch error:', err)
+    console.log('[linkedevents] nearby fetch error:', err)
     return []
   }
+}
+
+/**
+ * Load next page of events for a location. Returns ALL events so far (including previous pages).
+ * Returns null if no more pages or already loading.
+ */
+export async function loadMoreNearbyEvents(lat: number, lng: number): Promise<CityEvent[] | null> {
+  const key = nearbyKey(lat, lng)
+  const state = nearbyState.get(key)
+  if (!state || !state.nextUrl || state.loading) return null
+
+  state.loading = true
+  try {
+    const res = await fetch(state.nextUrl)
+    if (!res.ok) { state.loading = false; return null }
+    const json: LinkedEventResponse = await res.json()
+    const newEvents = json.data
+      .filter(e => (e.name?.fi || e.name?.en) && e.location?.name?.fi !== 'Internet')
+      .map(mapEvent)
+
+    state.events = [...state.events, ...newEvents]
+    state.nextUrl = json.meta.next
+    state.loading = false
+    return state.events
+  } catch {
+    state.loading = false
+    return null
+  }
+}
+
+/** Check if more pages are available */
+export function hasMoreNearbyEvents(lat: number, lng: number): boolean {
+  const state = nearbyState.get(nearbyKey(lat, lng))
+  return !!state?.nextUrl
+}
+
+/** Get total count from API */
+export function getNearbyEventsTotal(lat: number, lng: number): number {
+  const state = nearbyState.get(nearbyKey(lat, lng))
+  return state?.totalCount ?? 0
 }
 
 /**
