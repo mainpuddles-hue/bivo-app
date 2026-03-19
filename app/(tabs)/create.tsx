@@ -328,7 +328,7 @@ export default function CreateScreen() {
   if (step === 'category') {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+        <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('create.selectCategory')}</Text>
         </View>
         <ScrollView contentContainerStyle={styles.categoryGrid}>
@@ -363,7 +363,7 @@ export default function CreateScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+        <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
           <Pressable onPress={() => setStep('category')} hitSlop={12}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>

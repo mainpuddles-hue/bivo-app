@@ -135,7 +135,8 @@
         {
           "cameraPermission": "TackBird tarvitsee kameran kuvien ottamiseen."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {

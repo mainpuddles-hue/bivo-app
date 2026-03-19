@@ -10,7 +10,7 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { POST_SELECT } from '@/lib/constants'
 import { formatEventDateShort } from '@/lib/format'
-import { Header } from '@/components/Header'
+import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { FilterBar } from '@/components/FilterBar'
 import { HeroCarousel } from '@/components/HeroCarousel'
 import { PostCard } from '@/components/PostCard'
@@ -164,29 +164,22 @@ export default function FeedScreen() {
   // Fetch city events and nearby places
   const fetchExtraContent = useCallback(async () => {
     setExtraLoading(true)
-    const [eventsRes, placesRes] = await Promise.all([
-      supabase
-        .from('city_events')
-        .select('*')
-        .gte('start_time', new Date().toISOString())
-        .gte('latitude', 60.14).lte('latitude', 60.29)
-        .gte('longitude', 24.83).lte('longitude', 25.22)
-        .order('start_time', { ascending: true })
-        .limit(8),
+    const [helsinkiEvents, placesRes] = await Promise.all([
+      fetchHelsinkiEvents(),
       supabase
         .from('local_places')
         .select('*')
         .not('neighborhood', 'is', null)
         .gte('latitude', 60.14).lte('latitude', 60.29)
         .gte('longitude', 24.83).lte('longitude', 25.22)
-        .limit(8),
+        .limit(50),
     ])
-    setCityEvents((eventsRes.data ?? []) as unknown as CityEvent[])
+    setCityEvents(helsinkiEvents.slice(0, 20))
     setNearbyPlaces((placesRes.data ?? []) as unknown as LocalPlace[])
     setExtraLoading(false)
   }, [supabase])
 
-  useEffect(() => { fetchExtraContent() }, [fetchExtraContent])
+  useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])
 
   const fetchPosts = useCallback(async (reset = false) => {
     abortRef.current?.abort()
@@ -535,44 +528,57 @@ export default function FeedScreen() {
     return <View style={{ paddingBottom: 12 }}>{sections}</View>
   }, [loading, hasMore, posts.length, colors, t, locale, cityEvents, nearbyPlaces, extraLoading, getCityEventName, router])
 
+  const scrollY = useRef(new Animated.Value(0)).current
+  const lastScrollY = useRef(0)
+  const filterTranslateY = useRef(new Animated.Value(0)).current
+
+  const handleScroll = useCallback((event: any) => {
+    const currentY = event.nativeEvent.contentOffset.y
+    const diff = currentY - lastScrollY.current
+    if (diff > 8 && currentY > 60) {
+      Animated.timing(filterTranslateY, { toValue: -60, duration: 200, useNativeDriver: true }).start()
+    } else if (diff < -8) {
+      Animated.timing(filterTranslateY, { toValue: 0, duration: 200, useNativeDriver: true }).start()
+    }
+    lastScrollY.current = currentY
+  }, [filterTranslateY])
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header />
+      <Animated.View style={[styles.filterWrapper, { backgroundColor: colors.background, transform: [{ translateY: filterTranslateY }] }]}>
+        <View style={styles.filterRow}>
+          <FilterBar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
+        </View>
+        {followedIds.length > 0 && (
+          <Pressable
+            onPress={() => setShowFollowing(p => !p)}
+            style={[
+              styles.followingBtn,
+              showFollowing
+                ? { backgroundColor: colors.primary }
+                : { backgroundColor: isDark ? colors.card : colors.muted },
+            ]}
+          >
+            <Users size={14} color={showFollowing ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.75} />
+            <Text style={[styles.followingText, { color: showFollowing ? colors.primaryForeground : colors.mutedForeground }]}>
+              {t('feed.following')}
+            </Text>
+          </Pressable>
+        )}
+      </Animated.View>
       <FlatList
         data={posts}
         renderItem={renderPost}
         keyExtractor={item => item.id}
-        contentContainerStyle={[styles.list, { paddingTop: insets.top + 48 + 8 }]}
-        ListHeaderComponent={
-          <View style={{ gap: 12 }}>
-            {/* Filter bar + following toggle */}
-            <View style={styles.filterRow}>
-              <FilterBar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
-            </View>
-            {followedIds.length > 0 && (
-              <Pressable
-                onPress={() => setShowFollowing(p => !p)}
-                style={[
-                  styles.followingBtn,
-                  showFollowing
-                    ? { backgroundColor: colors.primary }
-                    : { backgroundColor: isDark ? colors.card : colors.muted },
-                ]}
-              >
-                <Users size={14} color={showFollowing ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.75} />
-                <Text style={[styles.followingText, { color: showFollowing ? colors.primaryForeground : colors.mutedForeground }]}>
-                  {t('feed.following')}
-                </Text>
-              </Pressable>
-            )}
-            {ListHeader}
-          </View>
-        }
+        contentContainerStyle={[styles.list, { paddingTop: 56 }]}
+        ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.3}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         showsVerticalScrollIndicator={false}
       />
@@ -582,8 +588,12 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  list: { paddingHorizontal: 16, paddingBottom: 20 },
-  filterRow: { paddingBottom: 4 },
+  filterWrapper: {
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30,
+    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, gap: 8,
+  },
+  list: { paddingHorizontal: 16, paddingBottom: 100 },
+  filterRow: { paddingBottom: 0 },
   followingBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,

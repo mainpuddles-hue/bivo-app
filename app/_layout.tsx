@@ -6,7 +6,7 @@ import { Platform, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
 import { I18nProvider } from '@/lib/i18n'
-import { useTheme } from '@/hooks/useTheme'
+import { useTheme, ThemeProvider } from '@/hooks/useTheme'
 import { createClient } from '@/lib/supabase/client'
 
 // Configure how notifications are handled when the app is in the foreground
@@ -163,9 +163,11 @@ function RootLayoutInner() {
 export default function RootLayout() {
   return (
     <I18nProvider>
-      <SafeAreaProvider>
-        <RootLayoutInner />
-      </SafeAreaProvider>
+      <ThemeProvider>
+        <SafeAreaProvider>
+          <RootLayoutInner />
+        </SafeAreaProvider>
+      </ThemeProvider>
     </I18nProvider>
   )
 }

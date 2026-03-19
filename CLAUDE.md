@@ -11,7 +11,7 @@ TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood 
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Expo SDK 55 + Expo Router |
+| Framework | Expo SDK 54 + Expo Router |
 | Language | TypeScript (strict) |
 | UI | React Native + StyleSheet.create + Lucide React Native |
 | Backend | Supabase (shared with web — same project) |

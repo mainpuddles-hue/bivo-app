@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, Pressable, SectionList, Modal, FlatList,
   StyleSheet, ActivityIndicator, Alert, Linking, Platform,
+  RefreshControl, TextInput,
   type SectionListData,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -10,13 +11,13 @@ import { useRouter } from 'expo-router'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
 import * as Location from 'expo-location'
 import {
-  ChevronDown, ChevronRight, MapPin, Navigation, X,
+  ChevronDown, ChevronRight, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
-import { NEIGHBORHOODS } from '@/lib/constants'
-import type { Post, Event, CityEvent, LocalPlace } from '@/lib/types'
+import { NEIGHBORHOODS, CATEGORIES } from '@/lib/constants'
+import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 
 // ── Neighborhood Centers ──
 
@@ -85,6 +86,13 @@ const PLACE_PIN: Record<string, string> = {
   library: '#27AE60', health: '#E91E63', sport: '#F39C12', culture: '#8E44AD',
   hotel: '#2C3E50', attraction: '#F1C40F', service: '#607D8B',
   fast_food: '#FF5722', pub: '#795548', other: '#78716C',
+}
+
+const PLACE_LABEL: Record<string, string> = {
+  restaurant: 'Ravintola', cafe: 'Kahvila', bar: 'Baari', shop: 'Kauppa',
+  library: 'Kirjasto', health: 'Terveys', sport: 'Urheilu', culture: 'Kulttuuri',
+  hotel: 'Hotelli', attraction: 'Nähtävyys', service: 'Palvelu',
+  fast_food: 'Pikaruoka', pub: 'Pubi', other: 'Muu',
 }
 
 // Dark map style
@@ -156,6 +164,7 @@ interface StableMarker {
   longitude: number
   pinColor: string
   title: string
+  description: string
 }
 
 type FilterKey = 'all' | 'posts' | 'events' | 'places'
@@ -189,6 +198,9 @@ export default function MapScreen() {
   const [neighborhoodModalVisible, setNeighborhoodModalVisible] = useState(false)
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
 
   // Stable marker state for diffing
   const [renderedMarkers, setRenderedMarkers] = useState<StableMarker[]>([])
@@ -223,24 +235,50 @@ export default function MapScreen() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
+      const today = new Date().toISOString().split('T')[0]
       const [postsRes, eventsRes, placesRes, cityEventsData] = await Promise.all([
-        supabase.from('posts').select('id, user_id, type, title, description, location, latitude, longitude, image_url, created_at, is_active').eq('is_active', true).limit(200),
-        supabase.from('events').select('id, post_id, creator_id, title, description, event_date, location_name, location_lat, location_lng, icon, created_at').limit(100),
-        supabase.from('local_places').select('id, name, category, subcategory, address, latitude, longitude, neighborhood, tags, created_at').limit(200),
+        supabase.from('posts')
+          .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, is_active, like_count, comment_count, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
+          .eq('is_active', true)
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(500),
+        supabase.from('events')
+          .select('id, post_id, creator_id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, created_at, creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
+          .gte('event_date', today)
+          .not('location_lat', 'is', null)
+          .not('location_lng', 'is', null)
+          .order('event_date', { ascending: true })
+          .limit(500),
+        supabase.from('local_places')
+          .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags, created_at')
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null)
+          .limit(1000),
         fetchHelsinkiEvents(),
       ])
-      if (postsRes.data) setPosts(postsRes.data as Post[])
-      if (eventsRes.data) setCommunityEvents(eventsRes.data as Event[])
-      if (placesRes.data) setPlaces(placesRes.data as LocalPlace[])
+      if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
+      if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
+      if (placesRes.data) setPlaces(placesRes.data as unknown as LocalPlace[])
       setCityEvents(cityEventsData)
-    } catch {
-      // silent
+      if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
+      if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
+      if (placesRes.error) console.log('[map] places error:', placesRes.error.message)
+    } catch (err) {
+      console.log('[map] fetch error:', err)
     } finally {
       setLoading(false)
     }
   }, [supabase])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true)
+    await fetchData()
+    setRefreshing(false)
+  }, [fetchData])
 
   // ── Build list items filtered by radius ──
   const allItems = useMemo<ListItem[]>(() => {
@@ -253,11 +291,15 @@ export default function MapScreen() {
       if (p.latitude == null || p.longitude == null) continue
       const dist = haversineKm(cLat, cLng, p.latitude, p.longitude)
       if (dist > RADIUS_KM) continue
+      const cat = CATEGORIES[p.type as PostType]
+      const catLabel = cat ? t(cat.label) : ''
+      const userName = (p as any).user?.name ?? ''
+      const parts = [catLabel, p.location, userName].filter(Boolean)
       items.push({
         id: `post-${p.id}`,
         kind: 'post',
         title: p.title,
-        subtitle: p.location ?? '',
+        subtitle: parts.join(' · '),
         color: POST_PIN[p.type] ?? '#607D8B',
         latitude: p.latitude,
         longitude: p.longitude,
@@ -272,11 +314,14 @@ export default function MapScreen() {
       if (e.location_lat == null || e.location_lng == null) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
       if (dist > RADIUS_KM) continue
+      const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
+      const creator = (e as any).creator?.name ?? ''
+      const evParts = [dateStr, e.location_name, creator].filter(Boolean)
       items.push({
         id: `event-${e.id}`,
         kind: 'community_event',
         title: e.title,
-        subtitle: e.location_name ?? '',
+        subtitle: evParts.join(' · '),
         color: '#2B8A62',
         latitude: e.location_lat,
         longitude: e.location_lng,
@@ -293,11 +338,13 @@ export default function MapScreen() {
       if (dist > RADIUS_KM) continue
       const name = locale === 'sv' ? (c.name_sv ?? c.name_fi) :
                    locale === 'en' ? (c.name_en ?? c.name_fi) : c.name_fi
+      const ceDateStr = new Date(c.start_time).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      const ceParts = [ceDateStr, c.location_name, c.is_free ? t('events.free') : null].filter(Boolean)
       items.push({
         id: `city-${c.id}`,
         kind: 'city_event',
         title: name,
-        subtitle: c.location_name ?? '',
+        subtitle: ceParts.join(' · '),
         color: CITY_EVENT_PIN[c.category] ?? '#607D8B',
         latitude: c.latitude,
         longitude: c.longitude,
@@ -311,11 +358,13 @@ export default function MapScreen() {
     for (const pl of places) {
       const dist = haversineKm(cLat, cLng, pl.latitude, pl.longitude)
       if (dist > RADIUS_KM) continue
+      const plLabel = PLACE_LABEL[pl.category] ?? ''
+      const plParts = [plLabel, pl.address].filter(Boolean)
       items.push({
         id: `place-${pl.id}`,
         kind: 'place',
         title: pl.name,
-        subtitle: pl.address ?? '',
+        subtitle: plParts.join(' · '),
         color: PLACE_PIN[pl.category] ?? '#78716C',
         latitude: pl.latitude,
         longitude: pl.longitude,
@@ -327,14 +376,19 @@ export default function MapScreen() {
     return items
   }, [posts, communityEvents, cityEvents, places, center, locale])
 
-  // ── Filter by active filter ──
+  // ── Filter by active filter + search ──
   const filteredItems = useMemo(() => {
-    if (activeFilter === 'all') return allItems
-    if (activeFilter === 'posts') return allItems.filter(i => i.kind === 'post')
-    if (activeFilter === 'events') return allItems.filter(i => i.kind === 'community_event' || i.kind === 'city_event')
-    if (activeFilter === 'places') return allItems.filter(i => i.kind === 'place')
-    return allItems
-  }, [allItems, activeFilter])
+    let items = allItems
+    if (activeFilter === 'posts') items = items.filter(i => i.kind === 'post')
+    else if (activeFilter === 'events') items = items.filter(i => i.kind === 'community_event' || i.kind === 'city_event')
+    else if (activeFilter === 'places') items = items.filter(i => i.kind === 'place')
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim()
+      items = items.filter(i => i.title.toLowerCase().includes(q) || i.subtitle.toLowerCase().includes(q))
+    }
+    return items
+  }, [allItems, activeFilter, searchQuery])
 
   // ── Counts for filter pills ──
   const counts = useMemo(() => ({
@@ -392,6 +446,7 @@ export default function MapScreen() {
       longitude: item.longitude,
       pinColor: item.color,
       title: item.title,
+      description: `${item.subtitle} · ${formatDistance(item.distance)}`,
     }))
 
     const nextKey = next.map(m => m.key).join(',')
@@ -504,28 +559,29 @@ export default function MapScreen() {
   const renderItem = useCallback(({ item }: { item: ListItem }) => (
     <Pressable
       style={[styles.listItem, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
-      onPress={() => handleListItemPress(item)}
-      onLongPress={() => handleListItemNavigate(item)}
+      onPress={() => handleListItemNavigate(item)}
     >
       <View style={[styles.listDot, { backgroundColor: item.color }]} />
       <View style={styles.listItemContent}>
         <Text style={[styles.listItemTitle, { color: colors.foreground }]} numberOfLines={1}>
           {item.title}
         </Text>
-        <Text style={[styles.listItemSubtitle, { color: colors.mutedForeground }]} numberOfLines={1}>
-          {item.subtitle}{item.subtitle ? ' · ' : ''}{formatDistance(item.distance)}
-          {item.sortDate ? ` · ${new Date(item.sortDate).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US', { day: 'numeric', month: 'short' })}` : ''}
+        <Text style={[styles.listItemSubtitle, { color: colors.mutedForeground }]} numberOfLines={2}>
+          {item.subtitle}
+        </Text>
+        <Text style={[styles.listItemMeta, { color: colors.mutedForeground }]}>
+          {formatDistance(item.distance)}
         </Text>
       </View>
       <Pressable
         style={styles.listItemAction}
-        onPress={() => handleListItemNavigate(item)}
+        onPress={() => handleListItemPress(item)}
         hitSlop={8}
       >
-        <ChevronRight size={18} color={colors.mutedForeground} />
+        <MapPin size={16} color={colors.primary} />
       </Pressable>
     </Pressable>
-  ), [colors, locale, handleListItemPress, handleListItemNavigate])
+  ), [colors, handleListItemPress, handleListItemNavigate])
 
   const keyExtractor = useCallback((item: ListItem) => item.id, [])
 
@@ -533,19 +589,48 @@ export default function MapScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* ── Top Bar: Neighborhood Selector ── */}
+      {/* ── Top Bar ── */}
       <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={8}>
+          <ArrowLeft size={20} color={colors.foreground} />
+        </Pressable>
         <Pressable
           style={[styles.neighborhoodButton, { borderColor: colors.border }]}
           onPress={() => setNeighborhoodModalVisible(true)}
         >
-          <MapPin size={16} color={colors.primary} />
+          <MapPin size={14} color={colors.primary} />
           <Text style={[styles.neighborhoodText, { color: colors.foreground }]} numberOfLines={1}>
             {displayNeighborhood}
           </Text>
-          <ChevronDown size={16} color={colors.mutedForeground} />
+          <ChevronDown size={14} color={colors.mutedForeground} />
+        </Pressable>
+        <Pressable onPress={() => setShowSearch(!showSearch)} style={styles.topBarIcon} hitSlop={8}>
+          <Search size={20} color={showSearch ? colors.primary : colors.mutedForeground} />
+        </Pressable>
+        <Pressable onPress={handleGPSSelect} style={styles.topBarIcon} hitSlop={8}>
+          <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? colors.primary : colors.mutedForeground} />
         </Pressable>
       </View>
+
+      {/* ── Search Bar ── */}
+      {showSearch && (
+        <View style={[styles.searchBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <Search size={16} color={colors.mutedForeground} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.foreground }]}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Hae paikkoja ja tapahtumia..."
+            placeholderTextColor={colors.mutedForeground}
+            autoFocus
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+              <X size={16} color={colors.mutedForeground} />
+            </Pressable>
+          )}
+        </View>
+      )}
 
       {/* ── Mini Map ── */}
       <View style={styles.mapContainer}>
@@ -571,6 +656,8 @@ export default function MapScreen() {
               coordinate={{ latitude: m.latitude, longitude: m.longitude }}
               pinColor={m.pinColor}
               title={m.title}
+              description={m.description}
+              tracksViewChanges={false}
               onPress={() => handleMarkerPress(m)}
             />
           ))}
@@ -629,9 +716,21 @@ export default function MapScreen() {
           renderSectionHeader={renderSectionHeader}
           stickySectionHeadersEnabled
           contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
+          ListEmptyComponent={
+            <View style={styles.emptyList}>
+              <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+                {searchQuery ? 'Ei tuloksia' : `Ei sisältöä alueella ${displayNeighborhood}`}
+              </Text>
+              <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
+                {searchQuery ? 'Kokeile toista hakusanaa' : 'Kokeile toista naapurustoa tai laajenna hakua'}
+              </Text>
+            </View>
+          }
           getItemLayout={(data, index) => ({
-            length: 56,
-            offset: 56 * index,
+            length: 72,
+            offset: 72 * index,
             index,
           })}
         />
@@ -709,9 +808,19 @@ const styles = StyleSheet.create({
 
   // ── Top Bar ──
   topBar: {
-    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
     paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 8,
+  },
+  topBarIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   neighborhoodButton: {
     flexDirection: 'row',
@@ -812,8 +921,39 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 2,
   },
+  listItemMeta: {
+    fontSize: 11,
+    marginTop: 2,
+  },
   listItemAction: {
-    padding: 4,
+    padding: 8,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    paddingVertical: 4,
+  },
+  emptyList: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  emptyHint: {
+    fontSize: 13,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
 
   // ── Empty ──

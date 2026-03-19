@@ -147,7 +147,7 @@ export default function MessagesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
         <Pressable onPress={() => setShowArchived(!showArchived)} hitSlop={8}>
           <Archive size={20} color={showArchived ? colors.primary : colors.mutedForeground} />
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 12, height: 40,
   },
   searchInput: { flex: 1, fontSize: 14 },
-  list: { paddingBottom: 20 },
+  list: { paddingBottom: 100 },
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingVertical: 14,

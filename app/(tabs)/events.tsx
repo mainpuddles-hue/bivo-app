@@ -13,6 +13,7 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { shareContent } from '@/lib/share'
 import { formatEventDateShort, formatEventDate } from '@/lib/format'
+import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import type { Event, CityEvent } from '@/lib/types'
 
 type Tab = 'community' | 'city' | 'activities'
@@ -206,34 +207,32 @@ export default function EventsScreen() {
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
+    try {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) setUserId(user.id)
 
-    const [evtsRes, cityRes, actRes] = await Promise.all([
+    const today = new Date().toISOString().split('T')[0]
+    const [evtsRes, helsinkiEvents, actRes] = await Promise.all([
       supabase
         .from('events')
         .select('*, creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
         .eq('is_active', true)
-        .gte('event_date', new Date().toISOString())
+        .gte('event_date', today)
         .order('event_date', { ascending: true })
-        .limit(50),
-      supabase
-        .from('city_events')
-        .select('*')
-        .gte('start_time', new Date().toISOString())
-        .gte('latitude', 60.14).lte('latitude', 60.29)
-        .gte('longitude', 24.83).lte('longitude', 25.22)
-        .order('start_time', { ascending: true })
-        .limit(30),
+        .limit(500),
+      fetchHelsinkiEvents(),
       supabase
         .from('activities')
         .select('*, creator:profiles!activities_creator_id_fkey(id, name, avatar_url)')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(30),
+        .limit(500),
     ])
+    if (evtsRes.error) console.log('[events] events error:', evtsRes.error.message)
+    if (actRes.error) console.log('[events] activities error:', actRes.error.message)
+    console.log(`[events] LinkedEvents: ${helsinkiEvents.length} events loaded`)
     setEvents((evtsRes.data ?? []) as unknown as Event[])
-    setCityEvents((cityRes.data ?? []) as unknown as CityEvent[])
+    setCityEvents(helsinkiEvents)
     setActivities((actRes.data ?? []) as unknown as Activity[])
 
     if (user) {
@@ -245,8 +244,12 @@ export default function EventsScreen() {
       setAttendingIds(new Set((attendRes.data ?? []).map((a: any) => a.event_id)))
     }
 
-    setLoading(false)
-    setRefreshing(false)
+    } catch (err) {
+      console.log('[events] fetchData error:', err)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
   }, [supabase])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -471,8 +474,8 @@ export default function EventsScreen() {
 
   return (
     <View style={[ev.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[ev.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+      {/* Sub-header */}
+      <View style={[ev.header, { borderBottomColor: colors.border }]}>
         <View>
           <Text style={[ev.headerTitle, { color: colors.foreground }]}>{t('events.title')}</Text>
           <Text style={[ev.headerSub, { color: colors.mutedForeground }]}>
@@ -752,7 +755,7 @@ const ev = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
   headerSub: { fontSize: 13, marginTop: 2 },
@@ -785,7 +788,7 @@ const ev = StyleSheet.create({
   dateFilters: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
   dateChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
   dateChipText: { fontSize: 12, fontWeight: '500' },
-  list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 80 },
+  list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 100 },
   card: { borderRadius: 12, overflow: 'hidden' },
   cardTop: { flexDirection: 'row', padding: 12, gap: 12, alignItems: 'flex-start' },
   iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

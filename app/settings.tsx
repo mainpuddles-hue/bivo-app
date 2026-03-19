@@ -27,7 +27,7 @@ const VISIBILITY_OPTIONS: { key: ProfileVisibility; label: string }[] = [
 ]
 
 export default function SettingsScreen() {
-  const { colors, isDark } = useTheme()
+  const { colors, isDark, theme, setTheme: setAppTheme } = useTheme()
   const { t, locale, setLocale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -38,7 +38,6 @@ export default function SettingsScreen() {
   const iap = useInAppPurchase(profile?.id ?? null)
   const notifPrefs = useNotificationPreferences()
   const [visibility, setVisibility] = useState<ProfileVisibility>('everyone')
-  const [theme, setTheme] = useState('system')
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -70,8 +69,7 @@ export default function SettingsScreen() {
         setProfile(p)
         setVisibility(p.profile_visibility)
       }
-      const storedTheme = await AsyncStorage.getItem('tackbird-theme')
-      if (storedTheme) setTheme(storedTheme)
+      // Theme is handled by ThemeProvider
     }
     load()
   }, [supabase])
@@ -84,7 +82,6 @@ export default function SettingsScreen() {
         profile_visibility: visibility,
         notifications_enabled: notifPrefs.preferences.messages,
       }).eq('id', profile.id)
-      await AsyncStorage.setItem('tackbird-theme', theme)
       setDirty(false)
       Alert.alert(t('common.success'), t('settings.settingsSaved'))
     } catch {
@@ -314,7 +311,7 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.theme')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {THEME_OPTIONS.map(({ key, label, icon: Icon }) => (
-            <Pressable key={key} onPress={() => { setTheme(key); setDirty(true) }} style={s.row}>
+            <Pressable key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark'); setDirty(true) }} style={s.row}>
               <Icon size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[theme === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />

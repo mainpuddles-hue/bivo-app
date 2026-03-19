@@ -177,7 +177,7 @@ export default function ProfileScreen() {
   if (!profile) {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+        <View style={[s.header, { paddingTop: 12 }]}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <Pressable onPress={() => router.push('/(auth)/login')} style={[s.loginBtn, { backgroundColor: colors.primary }]}>
@@ -206,7 +206,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         <Pressable onPress={() => router.push('/settings')} hitSlop={8}>
           <Settings size={22} color={colors.mutedForeground} />
@@ -296,34 +296,29 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Stats 4-column */}
+        {/* Stats */}
         <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Pressable style={s.stat} onPress={() => openFollowList('followers')}>
             <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
           </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <Pressable style={s.stat} onPress={() => openFollowList('following')}>
             <Text style={[s.statNum, { color: colors.foreground }]}>{followingCount}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.following')}</Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.following')}</Text>
           </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
             <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{thanksCount}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Heart size={10} color={colors.destructive} fill={colors.destructive} />
-              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{thanksCount}</Text>
+              <Heart size={12} color={colors.destructive} fill={colors.destructive} />
             </View>
-          </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating ?? '–'}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
           </View>
         </View>
 
@@ -413,10 +408,6 @@ export default function ProfileScreen() {
 
         {/* Actions */}
         <View style={{ gap: 8, marginTop: 8 }}>
-          <Pressable onPress={() => router.push('/settings')} style={[s.menuItem, { backgroundColor: colors.card }]}>
-            <Settings size={20} color={colors.mutedForeground} />
-            <Text style={[s.menuText, { color: colors.foreground }]}>{t('nav.settings')}</Text>
-          </Pressable>
           <Pressable onPress={handleLogout} style={[s.menuItem, { backgroundColor: colors.card }]}>
             <LogOut size={20} color={colors.destructive} />
             <Text style={[s.menuText, { color: colors.destructive }]}>{t('profile.logout')}</Text>
@@ -469,7 +460,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
-  content: { padding: 16, gap: 16, paddingBottom: 40 },
+  content: { padding: 16, gap: 16, paddingBottom: 100 },
   hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
   bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },

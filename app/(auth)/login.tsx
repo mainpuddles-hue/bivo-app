@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Eye, EyeOff, Check, X } from 'lucide-react-native'
 import Svg, { Path } from 'react-native-svg'
+import * as WebBrowser from 'expo-web-browser'
 import { GoogleLogo } from '@/components/GoogleLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -142,25 +143,51 @@ export default function LoginScreen() {
   const handleGoogleOAuth = async () => {
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: Platform.OS === 'web'
-            ? (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback'
-            : 'tackbird://auth/callback',
-          queryParams: {
-            prompt: 'select_account',
+      if (Platform.OS === 'web') {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback',
+            queryParams: { prompt: 'select_account' },
+            skipBrowserRedirect: false,
           },
-          skipBrowserRedirect: false,
-        },
-      })
-      if (error) {
-        Alert.alert(t('common.error'), t('auth.googleFailed'))
-        setLoading(false)
+        })
+        if (error) Alert.alert(t('common.error'), t('auth.googleFailed'))
+      } else {
+        // Native: use WebBrowser to open OAuth flow and capture redirect
+        const redirectTo = 'tackbird://auth/callback'
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo,
+            queryParams: { prompt: 'select_account' },
+            skipBrowserRedirect: true,
+          },
+        })
+        if (error) throw error
+        if (data?.url) {
+          const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
+          if (result.type === 'success' && result.url) {
+            // Extract tokens from URL fragment
+            const url = result.url
+            const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1] || '')
+            const accessToken = params.get('access_token')
+            const refreshToken = params.get('refresh_token')
+            if (accessToken && refreshToken) {
+              const { error: sessionError } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              })
+              if (sessionError) throw sessionError
+              router.replace('/')
+              return
+            }
+          }
+        }
       }
-      // Don't reset loading — browser navigates to Google
     } catch {
       Alert.alert(t('common.error'), t('auth.googleFailedNetwork'))
+    } finally {
       setLoading(false)
     }
   }

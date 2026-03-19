@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Newspaper, CalendarDays, Plus, MessageCircle, User } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { Header } from '@/components/Header'
 
 function TabIcon({ icon: Icon, label, focused, isCreate, colors }: {
   icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
@@ -18,7 +19,7 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors }: {
         <View style={[s.createFab, { backgroundColor: colors.accent }]}>
           <Icon size={16} color={colors.accentForeground} strokeWidth={2.5} />
         </View>
-        <Text style={[s.tabLabel, { color: colors.accent, fontWeight: '600' }]}>{label}</Text>
+        <Text numberOfLines={1} style={[s.tabLabel, { color: colors.accent, fontWeight: '600' }]}>{label}</Text>
       </View>
     )
   }
@@ -32,7 +33,7 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors }: {
           strokeWidth={focused ? 2.25 : 1.6}
         />
       </View>
-      <Text style={[
+      <Text numberOfLines={1} style={[
         s.tabLabel,
         { color: focused ? colors.primary : colors.mutedForeground },
         focused && { fontWeight: '600' },
@@ -50,6 +51,8 @@ export default function TabLayout() {
   const tabBarBg = isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)'
 
   return (
+    <View style={{ flex: 1 }}>
+    <Header />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -57,8 +60,9 @@ export default function TabLayout() {
           backgroundColor: tabBarBg,
           borderTopColor: colors.border,
           borderTopWidth: StyleSheet.hairlineWidth,
-          height: 56 + insets.bottom,
+          height: 72 + insets.bottom,
           paddingBottom: insets.bottom,
+          paddingTop: 6,
         },
         tabBarShowLabel: false,
       }}
@@ -79,11 +83,12 @@ export default function TabLayout() {
         tabBarIcon: ({ focused }) => <TabIcon icon={User} label={t('nav.profile')} focused={focused} colors={colors} />,
       }} />
     </Tabs>
+    </View>
   )
 }
 
 const s = StyleSheet.create({
-  tabItem: { alignItems: 'center', gap: 2, position: 'relative' },
+  tabItem: { alignItems: 'center', gap: 3, position: 'relative', width: 64 },
   iconWrap: {
     width: 36, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',

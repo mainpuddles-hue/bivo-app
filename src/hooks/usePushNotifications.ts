@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Platform } from 'react-native'
+import { Platform, Alert } from 'react-native'
 import * as Notifications from 'expo-notifications'
-import Constants from 'expo-constants'
+import Constants, { ExecutionEnvironment } from 'expo-constants'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@/lib/supabase/client'
 
 const PROJECT_ID = '504a9107-9e8e-4e5d-90fe-ea7564166e33'
+
+function isExpoGo() {
+  return Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+}
 
 async function setupAndroidChannel() {
   if (Platform.OS !== 'android') return
@@ -16,6 +21,23 @@ async function setupAndroidChannel() {
   })
 }
 
+async function saveTokenToBackend(userId: string, pushToken: string | null) {
+  const supabase = createClient()
+  const { error } = await (supabase.from('profiles') as any)
+    .update({ push_token: pushToken })
+    .eq('id', userId)
+
+  if (error) {
+    // Fallback: store locally
+    if (pushToken) {
+      await AsyncStorage.setItem('push_token', pushToken)
+    } else {
+      await AsyncStorage.removeItem('push_token')
+    }
+    console.log('[push] saved token locally (backend failed):', error.message)
+  }
+}
+
 export function usePushNotifications(userId: string | null) {
   const [isSupported, setIsSupported] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
@@ -23,7 +45,6 @@ export function usePushNotifications(userId: string | null) {
   const [token, setToken] = useState<string | null>(null)
   const notificationListener = useRef<Notifications.EventSubscription | null>(null)
 
-  // Web — return no-op early
   if (Platform.OS === 'web') {
     return {
       isSupported: false,
@@ -35,42 +56,37 @@ export function usePushNotifications(userId: string | null) {
     }
   }
 
-  // Check support + existing token on mount
   useEffect(() => {
-    // Physical device check via Constants (simulators have no push support)
-    const isDevice = Constants.executionEnvironment !== 'storeClient'
-      ? true // dev client or standalone — allow
-      : true // Expo Go on physical device
-    setIsSupported(isDevice)
-    if (!userId) return
+    const supported = !isExpoGo()
+    setIsSupported(supported)
+    if (!userId || !supported) return
 
     let mounted = true
 
     async function checkExistingToken() {
       try {
         await setupAndroidChannel()
-
         const { status } = await Notifications.getPermissionsAsync()
         if (status !== 'granted') return
 
-        const projectId =
-          Constants.expoConfig?.extra?.eas?.projectId ?? PROJECT_ID
-
-        const pushToken = (
-          await Notifications.getExpoPushTokenAsync({ projectId })
-        ).data
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? PROJECT_ID
+        const pushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data
 
         if (!mounted) return
         setToken(pushToken)
         setIsSubscribed(true)
       } catch {
-        // Token not available yet — user hasn't subscribed or on simulator
+        // Try local fallback
+        const local = await AsyncStorage.getItem('push_token')
+        if (local && mounted) {
+          setToken(local)
+          setIsSubscribed(true)
+        }
       }
     }
 
     checkExistingToken()
 
-    // Listener: notification received while app is foregrounded
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log('[push] received:', notification.request.identifier)
@@ -84,6 +100,14 @@ export function usePushNotifications(userId: string | null) {
 
   const subscribe = useCallback(async () => {
     if (!userId) return
+
+    if (isExpoGo()) {
+      Alert.alert(
+        'Push-ilmoitukset',
+        'Push-ilmoitukset vaativat natiivi-buildin (EAS Build). Expo Go -sovelluksessa ne eivät ole käytettävissä.'
+      )
+      return
+    }
 
     setIsLoading(true)
     try {
@@ -102,25 +126,21 @@ export function usePushNotifications(userId: string | null) {
         return
       }
 
-      const projectId =
-        Constants.expoConfig?.extra?.eas?.projectId ?? PROJECT_ID
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? PROJECT_ID
 
-      const pushToken = (
-        await Notifications.getExpoPushTokenAsync({ projectId })
-      ).data
-
-      // Store token in Supabase profiles table
-      const supabase = createClient()
-      const { error } = await (supabase.from('profiles') as any)
-        .update({ push_token: pushToken })
-        .eq('id', userId)
-
-      if (error) {
-        console.error('[push] failed to save token:', error.message)
+      let pushToken: string
+      try {
+        pushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data
+      } catch {
+        Alert.alert(
+          'Push-ilmoitukset',
+          'Push-tokenin luominen epäonnistui. Varmista, että käytät natiivi-buildia (EAS Build).'
+        )
         setIsLoading(false)
         return
       }
 
+      await saveTokenToBackend(userId, pushToken)
       setToken(pushToken)
       setIsSubscribed(true)
     } catch (err) {
@@ -132,15 +152,9 @@ export function usePushNotifications(userId: string | null) {
 
   const unsubscribe = useCallback(async () => {
     if (!userId) return
-
     setIsLoading(true)
     try {
-      // Remove token from Supabase
-      const supabase = createClient()
-      await (supabase.from('profiles') as any)
-        .update({ push_token: null })
-        .eq('id', userId)
-
+      await saveTokenToBackend(userId, null)
       setToken(null)
       setIsSubscribed(false)
     } catch (err) {
