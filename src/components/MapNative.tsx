@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, ActivityIndicator, Alert, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import { useRouter } from 'expo-router'
-import MapView, { Marker, Callout, Circle, PROVIDER_DEFAULT, type Region } from 'react-native-maps'
+import MapView, { Marker, Circle, PROVIDER_DEFAULT, type Region } from 'react-native-maps'
 import * as Location from 'expo-location'
 import {
   ArrowLeft, Search, X, MapPin, Navigation, ChevronDown,
   Newspaper, CalendarDays, Coffee, Crosshair, Loader2,
+  Palette, Music, Dumbbell, Baby, UtensilsCrossed, TreePine,
+  GraduationCap, Theater, Frame, PartyPopper, ShoppingCart, Calendar,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -81,31 +84,30 @@ const PLACE_CATS: Record<string, { color: string; icon: string; label: string }>
   other: { color: '#78716C', icon: '\u{1F4CD}', label: 'Muu' },
 }
 
-// City event category config matching web exactly
-const CITY_EVENT_CATS: Record<string, { color: string; icon: string }> = {
-  culture: { color: '#8E44AD', icon: '\u{1F3A8}' },
-  music: { color: '#E91E63', icon: '\u{1F3B5}' },
-  sport: { color: '#27AE60', icon: '\u{1F3CB}' },
-  family: { color: '#FF9800', icon: '\u{1F46A}' },
-  food: { color: '#E74C3C', icon: '\u{1F374}' },
-  nature: { color: '#4CAF50', icon: '\u{1F33F}' },
-  education: { color: '#2196F3', icon: '\u{1F393}' },
-  theatre: { color: '#9C27B0', icon: '\u{1F3AD}' },
-  exhibition: { color: '#795548', icon: '\u{1F5BC}' },
-  festival: { color: '#FF5722', icon: '\u{1F389}' },
-  market: { color: '#FF9800', icon: '\u{1F6D2}' },
-  other: { color: '#607D8B', icon: '\u{1F4C5}' },
+// City event category config
+const CITY_EVENT_CATS: Record<string, { color: string; Icon: React.ComponentType<{ size: number; color: string }> }> = {
+  culture: { color: '#8E44AD', Icon: Palette },
+  music: { color: '#E91E63', Icon: Music },
+  sport: { color: '#27AE60', Icon: Dumbbell },
+  family: { color: '#FF9800', Icon: Baby },
+  food: { color: '#E74C3C', Icon: UtensilsCrossed },
+  nature: { color: '#4CAF50', Icon: TreePine },
+  education: { color: '#2196F3', Icon: GraduationCap },
+  theatre: { color: '#9C27B0', Icon: Theater },
+  exhibition: { color: '#795548', Icon: Frame },
+  festival: { color: '#FF5722', Icon: PartyPopper },
+  market: { color: '#FF9800', Icon: ShoppingCart },
+  other: { color: '#607D8B', Icon: Calendar },
 }
 
-// Post type icon emojis (for native markers)
-const POST_TYPE_ICONS: Record<string, string> = {
-  HandHelping: '\u{1F91D}',
-  Gift: '\u{1F381}',
-  Heart: '\u2764',
-  Zap: '\u26A1',
-  BookOpen: '\u{1F4D6}',
-  CalendarDays: '\u{1F4C5}',
-  MapPin: '\u{1F4CD}',
+// Post type → pinColor mapping (native markers only)
+const POST_TYPE_PIN_COLORS: Record<string, string> = {
+  tarvitsen: '#C75B3A',
+  tarjoan: '#7C5CBF',
+  ilmaista: '#3B7DD8',
+  nappaa: '#E8A050',
+  lainaa: '#C98B2E',
+  tapahtuma: '#2B8A62',
 }
 
 const PLACE_CATEGORIES = [
@@ -131,75 +133,29 @@ function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
 }
 
-// ── Grid-based clustering ──
-
-interface ClusterItem {
-  id: string
-  latitude: number
-  longitude: number
-  type: 'post' | 'event' | 'city_event' | 'place'
-}
-
-interface Cluster {
-  id: string
-  latitude: number
-  longitude: number
-  count: number
-  items: ClusterItem[]
-}
-
-/**
- * Simple grid-based clustering: divide the visible region into cells,
- * group markers by cell. When a cell has >1 marker, show a cluster.
- */
-function clusterMarkers(items: ClusterItem[], region: Region, gridSize: number = 8): (ClusterItem | Cluster)[] {
-  if (items.length === 0) return []
-
-  const cellLat = region.latitudeDelta / gridSize
-  const cellLng = region.longitudeDelta / gridSize
-
-  const grid = new Map<string, ClusterItem[]>()
-
-  for (const item of items) {
-    const row = Math.floor((item.latitude - (region.latitude - region.latitudeDelta / 2)) / cellLat)
-    const col = Math.floor((item.longitude - (region.longitude - region.longitudeDelta / 2)) / cellLng)
-    const key = `${row}:${col}`
-    const arr = grid.get(key)
-    if (arr) arr.push(item)
-    else grid.set(key, [item])
-  }
-
-  const results: (ClusterItem | Cluster)[] = []
-  for (const [key, cellItems] of grid) {
-    if (cellItems.length === 1) {
-      results.push(cellItems[0])
-    } else {
-      // Compute centroid
-      let sumLat = 0
-      let sumLng = 0
-      for (const ci of cellItems) { sumLat += ci.latitude; sumLng += ci.longitude }
-      results.push({
-        id: `cluster-${key}`,
-        latitude: sumLat / cellItems.length,
-        longitude: sumLng / cellItems.length,
-        count: cellItems.length,
-        items: cellItems,
-      })
-    }
-  }
-
-  return results
-}
-
-function isCluster(item: ClusterItem | Cluster): item is Cluster {
-  return 'count' in item
-}
-
 /** Validate URL scheme — only allow http/https */
 function safeUrl(url: string | null | undefined): string | null {
   if (!url) return null
   try { const p = new URL(url); return (p.protocol === 'http:' || p.protocol === 'https:') ? url : null }
   catch { return null }
+}
+
+// ── Hard cap: never render more than this many markers total ──
+const MAX_MARKERS_TOTAL = 50
+
+// ── Unified marker type for the bottom sheet detail panel ──
+interface SelectedMarker {
+  type: 'post' | 'event' | 'city_event' | 'place'
+  id: string
+  title: string
+  subtitle?: string
+  description?: string
+  color: string
+  location?: string
+  distance?: string
+  actionLabel: string
+  onAction: () => void
+  extra?: { key: string; value: string }[]
 }
 
 // Dark mode map style for react-native-maps
@@ -257,7 +213,11 @@ export default function MapScreen() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [fetchError, setFetchError] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const regionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [currentRegion, setCurrentRegion] = useState<Region>({ ...HELSINKI_CENTER, latitudeDelta: 0.08, longitudeDelta: 0.08 })
+
+  // Selected marker for bottom detail panel (replaces all Callouts)
+  const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(null)
 
   // Debounce search 200ms
   useEffect(() => {
@@ -269,7 +229,7 @@ export default function MapScreen() {
   // ── Data fetching (matching web exactly) ──
   useEffect(() => {
     async function fetchData() {
-      const [postsRes, eventsRes, cityRes, placesRes] = await Promise.allSettled([
+      const [postsRes, eventsRes, helsinkiEvents, placesRes] = await Promise.allSettled([
         supabase.from('posts')
           .select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)')
           .eq('is_active', true)
@@ -281,18 +241,12 @@ export default function MapScreen() {
         supabase.from('events')
           .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, attendees:event_attendees(count), creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
-          .gte('event_date', new Date().toISOString())
+          .gte('event_date', new Date().toISOString().split('T')[0])
           .not('location_lat', 'is', null)
           .not('location_lng', 'is', null)
           .order('event_date', { ascending: true })
           .limit(200),
-        supabase.from('city_events')
-          .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
-          .gte('start_time', new Date().toISOString())
-          .gte('latitude', 60.14).lte('latitude', 60.29)
-          .gte('longitude', 24.83).lte('longitude', 25.22)
-          .order('start_time', { ascending: true })
-          .limit(200),
+        fetchHelsinkiEvents(),
         supabase.from('local_places')
           .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')
           .not('neighborhood', 'is', null)
@@ -303,7 +257,7 @@ export default function MapScreen() {
 
       const pData = postsRes.status === 'fulfilled' ? (postsRes.value.data ?? []) : []
       const eData = eventsRes.status === 'fulfilled' ? (eventsRes.value.data ?? []) : []
-      const cData = cityRes.status === 'fulfilled' ? (cityRes.value.data ?? []) : []
+      const cData = helsinkiEvents.status === 'fulfilled' ? helsinkiEvents.value : []
       const plData = placesRes.status === 'fulfilled' ? (placesRes.value.data ?? []) : []
 
       // Show error if ALL queries failed
@@ -380,15 +334,23 @@ export default function MapScreen() {
     return e
   }, [events, showEvents, eventSource, debouncedSearch, userPos, radiusKm])
 
-  // 3. City events: source + category + search + radius + Helsinki only
+  // 3. City events: source + category + search + radius + Helsinki only + viewport
   const filteredCityEvents = useMemo(() => {
     if (!showEvents || eventSource === 'community') return []
     let c = cityEvents.filter(x => x.latitude && x.longitude && isInHelsinki(x.latitude!, x.longitude!))
     if (cityEventCategory) c = c.filter(x => x.category === cityEventCategory)
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); c = c.filter(x => x.name_fi.toLowerCase().includes(q) || x.location_name?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) c = c.filter(x => x.latitude && x.longitude && haversineKm(userPos[0], userPos[1], x.latitude!, x.longitude!) <= radiusKm)
+    // Viewport filter: only show events within current map region + margin
+    const r = currentRegion
+    c = c.filter(x => x.latitude && x.longitude &&
+      x.latitude! >= r.latitude - r.latitudeDelta * 0.6 &&
+      x.latitude! <= r.latitude + r.latitudeDelta * 0.6 &&
+      x.longitude! >= r.longitude - r.longitudeDelta * 0.6 &&
+      x.longitude! <= r.longitude + r.longitudeDelta * 0.6
+    )
     return c
-  }, [cityEvents, showEvents, eventSource, cityEventCategory, debouncedSearch, userPos, radiusKm])
+  }, [cityEvents, showEvents, eventSource, cityEventCategory, debouncedSearch, userPos, radiusKm, currentRegion])
 
   // 4. Places: category + search + radius
   const filteredPlaces = useMemo(() => {
@@ -409,37 +371,123 @@ export default function MapScreen() {
 
   const totalVisible = layerCounts.posts + layerCounts.events + layerCounts.places
 
-  // 5b. Clustered places — places are dense so cluster them at low zoom
-  const clusteredPlaces = useMemo(() => {
-    // Only cluster when zoom is fairly low (latitudeDelta > 0.02)
-    if (currentRegion.latitudeDelta <= 0.02 || filteredPlaces.length <= 30) return null
-    const items: ClusterItem[] = filteredPlaces.map(p => ({
-      id: p.id,
-      latitude: p.latitude,
-      longitude: p.longitude,
-      type: 'place' as const,
-    }))
-    return clusterMarkers(items, currentRegion, 10)
-  }, [filteredPlaces, currentRegion])
+  // ── HARD-CAPPED markers: max 50 total, sorted by proximity to map center ──
+  // This is the key crash fix: we merge all layers into a single list,
+  // sort by distance to the current map center, and take at most MAX_MARKERS_TOTAL.
+  // All markers use ONLY native pinColor — zero custom View children.
 
-  // 5c. Clustered posts — cluster when many posts at low zoom
-  const clusteredPosts = useMemo(() => {
-    if (currentRegion.latitudeDelta <= 0.02 || filteredPosts.length <= 30) return null
-    const items: ClusterItem[] = filteredPosts.filter(p => p.latitude && p.longitude).map(p => ({
-      id: p.id,
-      latitude: p.latitude!,
-      longitude: p.longitude!,
-      type: 'post' as const,
-    }))
-    return clusterMarkers(items, currentRegion, 10)
-  }, [filteredPosts, currentRegion])
+  interface NativeMarkerData {
+    key: string
+    latitude: number
+    longitude: number
+    pinColor: string
+    title: string
+    description: string
+    distToCenter: number
+    type: 'post' | 'event' | 'city_event' | 'place'
+    id: string
+  }
 
-  // Build lookup for fast access to original data by id
+  const cappedMarkers = useMemo(() => {
+    const center = currentRegion
+    const all: NativeMarkerData[] = []
+
+    // Posts
+    for (const p of filteredPosts) {
+      if (!p.latitude || !p.longitude) continue
+      const cat = CATEGORIES[p.type as PostType]
+      const color = POST_TYPE_PIN_COLORS[p.type] ?? '#2D6B5E'
+      const distToCenter = haversineKm(center.latitude, center.longitude, p.latitude, p.longitude)
+      const distStr = userPos ? ` (${formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude))})` : ''
+      all.push({
+        key: `post-${p.id}`,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        pinColor: color,
+        title: p.title,
+        description: [t(cat?.label ?? ''), p.location, distStr].filter(Boolean).join(' · '),
+        distToCenter,
+        type: 'post',
+        id: p.id,
+      })
+    }
+
+    // Community events
+    for (const e of filteredEvents) {
+      if (!e.location_lat || !e.location_lng) continue
+      const distToCenter = haversineKm(center.latitude, center.longitude, e.location_lat, e.location_lng)
+      const dateStr = new Date(e.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
+      all.push({
+        key: `event-${e.id}`,
+        latitude: e.location_lat,
+        longitude: e.location_lng,
+        pinColor: '#2B8A62',
+        title: e.title,
+        description: [dateStr, e.location_name].filter(Boolean).join(' · '),
+        distToCenter,
+        type: 'event',
+        id: e.id,
+      })
+    }
+
+    // City events
+    for (const ce of filteredCityEvents) {
+      if (!ce.latitude || !ce.longitude) continue
+      const catCfg = CITY_EVENT_CATS[ce.category] ?? CITY_EVENT_CATS.other
+      const distToCenter = haversineKm(center.latitude, center.longitude, ce.latitude, ce.longitude)
+      all.push({
+        key: `ce-${ce.id}`,
+        latitude: ce.latitude,
+        longitude: ce.longitude,
+        pinColor: catCfg.color,
+        title: ce.name_fi,
+        description: [ce.location_name, ce.is_free ? 'Ilmainen' : null].filter(Boolean).join(' · '),
+        distToCenter,
+        type: 'city_event',
+        id: ce.id,
+      })
+    }
+
+    // Places
+    for (const pl of filteredPlaces) {
+      const pCat = PLACE_CATS[pl.category] ?? PLACE_CATS.other
+      const distToCenter = haversineKm(center.latitude, center.longitude, pl.latitude, pl.longitude)
+      all.push({
+        key: `pl-${pl.id}`,
+        latitude: pl.latitude,
+        longitude: pl.longitude,
+        pinColor: pCat.color,
+        title: pl.name,
+        description: [pCat.label, pl.address].filter(Boolean).join(' · '),
+        distToCenter,
+        type: 'place',
+        id: pl.id,
+      })
+    }
+
+    // Sort by proximity to map center and hard-cap
+    all.sort((a, b) => a.distToCenter - b.distToCenter)
+    return all.slice(0, MAX_MARKERS_TOTAL)
+  }, [filteredPosts, filteredEvents, filteredCityEvents, filteredPlaces, currentRegion, userPos, t])
+
+  // Build lookup maps for detail panel (pre-computed, not in render)
   const postById = useMemo(() => {
     const map = new Map<string, Post>()
     for (const p of filteredPosts) map.set(p.id, p)
     return map
   }, [filteredPosts])
+
+  const eventById = useMemo(() => {
+    const map = new Map<string, Event>()
+    for (const e of filteredEvents) map.set(e.id, e)
+    return map
+  }, [filteredEvents])
+
+  const cityEventById = useMemo(() => {
+    const map = new Map<string, CityEvent>()
+    for (const ce of filteredCityEvents) map.set(ce.id, ce)
+    return map
+  }, [filteredCityEvents])
 
   const placeById = useMemo(() => {
     const map = new Map<string, LocalPlace>()
@@ -447,28 +495,105 @@ export default function MapScreen() {
     return map
   }, [filteredPlaces])
 
-  // Zoom to cluster on tap
-  const handleClusterPress = useCallback((cluster: Cluster) => {
-    // Calculate bounding box of cluster items and zoom to fit
-    let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180
-    for (const item of cluster.items) {
-      if (item.latitude < minLat) minLat = item.latitude
-      if (item.latitude > maxLat) maxLat = item.latitude
-      if (item.longitude < minLng) minLng = item.longitude
-      if (item.longitude > maxLng) maxLng = item.longitude
+  // Handle marker press → show detail in bottom sheet (no Callout)
+  const handleMarkerPress = useCallback((marker: NativeMarkerData) => {
+    if (marker.type === 'post') {
+      const p = postById.get(marker.id)
+      if (!p) return
+      const cat = CATEGORIES[p.type as PostType]
+      const dist = userPos && p.latitude && p.longitude ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : undefined
+      setSelectedMarker({
+        type: 'post',
+        id: p.id,
+        title: p.title,
+        subtitle: t(cat?.label ?? ''),
+        description: p.description?.slice(0, 120),
+        color: POST_TYPE_PIN_COLORS[p.type] ?? '#2D6B5E',
+        location: p.location ?? undefined,
+        distance: dist,
+        actionLabel: 'Katso ilmoitus',
+        onAction: () => router.push(`/post/${p.id}` as any),
+        extra: [
+          ...(p.user?.name ? [{ key: 'user', value: p.user.name }] : []),
+          ...(p.daily_fee ? [{ key: 'price', value: `${p.daily_fee} \u20AC/pv` }] : []),
+        ],
+      })
+    } else if (marker.type === 'event') {
+      const e = eventById.get(marker.id)
+      if (!e) return
+      const dateStr = new Date(e.event_date).toLocaleDateString('fi-FI', { weekday: 'long', day: 'numeric', month: 'long' })
+      const dist = userPos && e.location_lat && e.location_lng ? formatDistance(haversineKm(userPos[0], userPos[1], e.location_lat, e.location_lng)) : undefined
+      setSelectedMarker({
+        type: 'event',
+        id: e.id,
+        title: e.title,
+        subtitle: dateStr,
+        description: e.description?.slice(0, 120),
+        color: '#2B8A62',
+        location: e.location_name ?? undefined,
+        distance: dist,
+        actionLabel: 'Katso tapahtuma',
+        onAction: () => router.push('/events' as any),
+        extra: e.creator?.name ? [{ key: 'creator', value: e.creator.name }] : [],
+      })
+    } else if (marker.type === 'city_event') {
+      const ce = cityEventById.get(marker.id)
+      if (!ce) return
+      const catCfg = CITY_EVENT_CATS[ce.category] ?? CITY_EVENT_CATS.other
+      const dist = userPos && ce.latitude && ce.longitude ? formatDistance(haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude)) : undefined
+      const url = safeUrl(ce.info_url)
+      setSelectedMarker({
+        type: 'city_event',
+        id: ce.id,
+        title: ce.name_fi,
+        subtitle: ce.category,
+        description: ce.location_name ?? undefined,
+        color: catCfg.color,
+        location: ce.location_name ?? undefined,
+        distance: dist,
+        actionLabel: url ? 'Lisätietoja' : 'Sulje',
+        onAction: () => { if (url) Linking.openURL(url); setSelectedMarker(null) },
+        extra: ce.is_free ? [{ key: 'free', value: 'Ilmainen' }] : [],
+      })
+    } else if (marker.type === 'place') {
+      const pl = placeById.get(marker.id)
+      if (!pl) return
+      const pCat = PLACE_CATS[pl.category] ?? PLACE_CATS.other
+      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : undefined
+      const plWebsite = safeUrl(pl.website)
+      setSelectedMarker({
+        type: 'place',
+        id: pl.id,
+        title: pl.name,
+        subtitle: pCat.label,
+        description: pl.address ?? undefined,
+        color: pCat.color,
+        location: pl.address ?? undefined,
+        distance: dist,
+        actionLabel: plWebsite ? 'Verkkosivut' : 'Reittiohjeet',
+        onAction: () => {
+          if (plWebsite) Linking.openURL(plWebsite)
+          else Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${pl.latitude},${pl.longitude}`)
+        },
+        extra: [
+          ...(pl.opening_hours ? [{ key: 'hours', value: pl.opening_hours }] : []),
+          ...(pl.phone ? [{ key: 'phone', value: pl.phone }] : []),
+        ],
+      })
     }
-    const padLat = Math.max((maxLat - minLat) * 0.3, 0.003)
-    const padLng = Math.max((maxLng - minLng) * 0.3, 0.003)
-    mapRef.current?.animateToRegion({
-      latitude: (minLat + maxLat) / 2,
-      longitude: (minLng + maxLng) / 2,
-      latitudeDelta: (maxLat - minLat) + padLat,
-      longitudeDelta: (maxLng - minLng) + padLng,
-    }, 500)
+  }, [postById, eventById, cityEventById, placeById, userPos, t, router])
+
+  // Debounced region change — prevents rapid marker re-creation cascades
+  const onRegionChange = useCallback((region: Region) => {
+    if (regionDebounceRef.current) clearTimeout(regionDebounceRef.current)
+    regionDebounceRef.current = setTimeout(() => {
+      setCurrentRegion(region)
+    }, 300)
   }, [])
 
-  const onRegionChange = useCallback((region: Region) => {
-    setCurrentRegion(region)
+  // Cleanup region debounce on unmount
+  useEffect(() => {
+    return () => { if (regionDebounceRef.current) clearTimeout(regionDebounceRef.current) }
   }, [])
 
   // 6. Search results for fly-to (max 8)
@@ -554,6 +679,7 @@ export default function MapScreen() {
     setActiveSubFilter(null)
     setShowAreaPicker(false)
     setShowSearch(false)
+    setSelectedMarker(null)
   }, [])
 
   // ── Render ──
@@ -574,27 +700,13 @@ export default function MapScreen() {
         provider={PROVIDER_DEFAULT}
         style={ms.map}
         initialRegion={{ ...HELSINKI_CENTER, latitudeDelta: 0.08, longitudeDelta: 0.08 }}
-        showsUserLocation={false}
+        showsUserLocation={!!userPos}
         showsMyLocationButton={false}
         customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
         onPress={onMapPress}
         onRegionChangeComplete={onRegionChange}
         mapPadding={{ top: 100, right: 0, bottom: 60, left: 0 }}
       >
-        {/* ── User location dot ── */}
-        {userPos && (
-          <Marker
-            coordinate={{ latitude: userPos[0], longitude: userPos[1] }}
-            anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
-          >
-            <View style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
-              <View style={{ position: 'absolute', width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(59,130,244,0.15)' }} />
-              <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#3B82F4', borderWidth: 3, borderColor: 'white' }} />
-            </View>
-          </Marker>
-        )}
-
         {/* ── Radius circle ── */}
         {userPos && radiusKm && (
           <Circle
@@ -603,393 +715,21 @@ export default function MapScreen() {
             strokeColor="#4285F4"
             strokeWidth={2}
             fillColor={isDark ? 'rgba(66,133,244,0.12)' : 'rgba(66,133,244,0.08)'}
-            lineDashPattern={[6, 4]}
           />
         )}
 
-        {/* ── Post markers (clustered when zoomed out) ── */}
-        {clusteredPosts ? (
-          clusteredPosts.map((item) => {
-            if (isCluster(item)) {
-              return (
-                <Marker
-                  key={item.id}
-                  coordinate={{ latitude: item.latitude, longitude: item.longitude }}
-                  anchor={{ x: 0.5, y: 0.5 }}
-                  tracksViewChanges={false}
-                  onPress={() => handleClusterPress(item)}
-                >
-                  <View style={ms.clusterMarker}>
-                    <View style={[ms.clusterCircle, { backgroundColor: isDark ? '#6FCF97' : '#2D6B5E' }]}>
-                      <Text style={ms.clusterText}>{item.count}</Text>
-                    </View>
-                  </View>
-                </Marker>
-              )
-            }
-            const p = postById.get(item.id)
-            if (!p || !p.latitude || !p.longitude) return null
-            const cat = CATEGORIES[p.type as PostType]
-            const color = cat?.color ?? '#2D6B5E'
-            const iconEmoji = POST_TYPE_ICONS[cat?.icon ?? 'MapPin'] ?? '\u{1F4CD}'
-            const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : ''
-            return (
-              <Marker
-                key={`post-${p.id}`}
-                coordinate={{ latitude: p.latitude, longitude: p.longitude }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges={false}
-              >
-                <View style={{ width: 36, height: 44, alignItems: 'center' }}>
-                  <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: color, borderWidth: 2.5, borderColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: 'white', fontSize: 14 }}>{iconEmoji}</Text>
-                  </View>
-                  <View style={{ width: 0, height: 0, borderLeftWidth: 7, borderRightWidth: 7, borderTopWidth: 7, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: 'white' }} />
-                </View>
-                <Callout tooltip onPress={() => router.push(`/post/${p.id}` as any)}>
-                  <View style={[ms.calloutCard, isDark && ms.calloutCardDark]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />
-                      <Text style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', color }}>{t(cat?.label ?? '')}</Text>
-                    </View>
-                    <Text style={[ms.calloutTitle, isDark && ms.calloutTitleDark]} numberOfLines={2}>{p.title}</Text>
-                    {p.description ? <Text style={ms.calloutMuted} numberOfLines={1}>{p.description.slice(0, 100)}</Text> : null}
-                    {p.location ? <Text style={[ms.calloutSmall, { marginTop: 4 }]}>{'\u{1F4CD}'} {p.location}</Text> : null}
-                    {dist ? <Text style={ms.calloutSmall}>{'\u{1F9ED}'} {dist}</Text> : null}
-                    {p.user ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: isDark ? '#333' : '#eee' }}>
-                        <Text style={{ fontSize: 12, color: '#6B7280' }}>{p.user.name ?? ''}</Text>
-                        {p.user.naapurusto ? <Text style={{ fontSize: 10, color: '#9CA3AF', marginLeft: 'auto' }}>{p.user.naapurusto}</Text> : null}
-                      </View>
-                    ) : null}
-                    {p.daily_fee ? (
-                      <View style={{ marginTop: 6 }}>
-                        <Text style={{ backgroundColor: '#FDF6E8', color: '#C98B2E', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, fontSize: 11, fontWeight: '600', overflow: 'hidden', alignSelf: 'flex-start' }}>{p.daily_fee} \u20AC/pv</Text>
-                      </View>
-                    ) : null}
-                    <View style={[ms.calloutCta, { backgroundColor: color }]}>
-                      <Text style={ms.calloutCtaText}>Katso ilmoitus \u2192</Text>
-                    </View>
-                  </View>
-                </Callout>
-              </Marker>
-            )
-          })
-        ) : (
-          filteredPosts.map((p) => {
-            if (!p.latitude || !p.longitude) return null
-            const cat = CATEGORIES[p.type as PostType]
-            const color = cat?.color ?? '#2D6B5E'
-            const iconEmoji = POST_TYPE_ICONS[cat?.icon ?? 'MapPin'] ?? '\u{1F4CD}'
-            const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : ''
-            return (
-              <Marker
-                key={`post-${p.id}`}
-                coordinate={{ latitude: p.latitude, longitude: p.longitude }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges={false}
-              >
-                <View style={{ width: 36, height: 44, alignItems: 'center' }}>
-                  <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: color, borderWidth: 2.5, borderColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: 'white', fontSize: 14 }}>{iconEmoji}</Text>
-                  </View>
-                  <View style={{ width: 0, height: 0, borderLeftWidth: 7, borderRightWidth: 7, borderTopWidth: 7, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: 'white' }} />
-                </View>
-                <Callout tooltip onPress={() => router.push(`/post/${p.id}` as any)}>
-                  <View style={[ms.calloutCard, isDark && ms.calloutCardDark]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />
-                      <Text style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', color }}>{t(cat?.label ?? '')}</Text>
-                    </View>
-                    <Text style={[ms.calloutTitle, isDark && ms.calloutTitleDark]} numberOfLines={2}>{p.title}</Text>
-                    {p.description ? <Text style={ms.calloutMuted} numberOfLines={1}>{p.description.slice(0, 100)}</Text> : null}
-                    {p.location ? <Text style={[ms.calloutSmall, { marginTop: 4 }]}>{'\u{1F4CD}'} {p.location}</Text> : null}
-                    {dist ? <Text style={ms.calloutSmall}>{'\u{1F9ED}'} {dist}</Text> : null}
-                    {p.user ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: isDark ? '#333' : '#eee' }}>
-                        <Text style={{ fontSize: 12, color: '#6B7280' }}>{p.user.name ?? ''}</Text>
-                        {p.user.naapurusto ? <Text style={{ fontSize: 10, color: '#9CA3AF', marginLeft: 'auto' }}>{p.user.naapurusto}</Text> : null}
-                      </View>
-                    ) : null}
-                    {p.daily_fee ? (
-                      <View style={{ marginTop: 6 }}>
-                        <Text style={{ backgroundColor: '#FDF6E8', color: '#C98B2E', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, fontSize: 11, fontWeight: '600', overflow: 'hidden', alignSelf: 'flex-start' }}>{p.daily_fee} \u20AC/pv</Text>
-                      </View>
-                    ) : null}
-                    <View style={[ms.calloutCta, { backgroundColor: color }]}>
-                      <Text style={ms.calloutCtaText}>Katso ilmoitus \u2192</Text>
-                    </View>
-                  </View>
-                </Callout>
-              </Marker>
-            )
-          })
-        )}
-
-        {/* ── Community event markers ── */}
-        {filteredEvents.map((e) => {
-          if (!e.location_lat || !e.location_lng) return null
-          const day = new Date(e.event_date).getDate()
-          const dateStr = new Date(e.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
-          const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], e.location_lat, e.location_lng)) : ''
-          const ac = (e as any).attendee_count as number | undefined
-          return (
-            <Marker
-              key={`event-${e.id}`}
-              coordinate={{ latitude: e.location_lat, longitude: e.location_lng }}
-              anchor={{ x: 0.5, y: 1 }}
-              tracksViewChanges={false}
-            >
-              <View style={{ width: 36, height: 44, alignItems: 'center' }}>
-                <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: '#2B8A62', borderWidth: 2.5, borderColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: 'white', fontSize: 14 }}>{'\u{1F4C5}'}</Text>
-                </View>
-                <View style={{ width: 0, height: 0, borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 6, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: 'white' }} />
-              </View>
-              <Callout tooltip onPress={() => router.push('/events' as any)}>
-                <View style={[ms.calloutCard, isDark && ms.calloutCardDark, { padding: 0, overflow: 'hidden' }]}>
-                  {/* Green header */}
-                  <View style={{ backgroundColor: '#2B8A62', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={{ color: 'white', fontSize: 18, fontWeight: '800' }}>{day}</Text>
-                    </View>
-                    <View>
-                      <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.95)', fontWeight: '600' }}>{dateStr}</Text>
-                      <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontWeight: '600', textTransform: 'uppercase' }}>Tapahtuma</Text>
-                    </View>
-                  </View>
-                  {/* Content */}
-                  <View style={{ padding: 12 }}>
-                    <Text style={[ms.calloutTitle, isDark && ms.calloutTitleDark]} numberOfLines={2}>{e.title}</Text>
-                    {e.creator ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                        <Text style={{ fontSize: 11, color: '#9CA3AF' }}>{e.creator.name ?? ''}</Text>
-                      </View>
-                    ) : null}
-                    {e.description ? <Text style={ms.calloutMuted} numberOfLines={2}>{e.description}</Text> : null}
-                    {e.location_name ? <Text style={[ms.calloutSmall, { marginTop: 4 }]}>{e.location_name}</Text> : null}
-                    {dist ? <Text style={ms.calloutSmall}>{dist}</Text> : null}
-                    {/* Attendee bar */}
-                    {e.max_attendees && ac != null ? (
-                      <View style={{ marginTop: 6 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
-                          <Text style={{ fontSize: 10, color: '#6B7280' }}>{ac}/{e.max_attendees}</Text>
-                          <Text style={{ fontSize: 10, color: '#6B7280' }}>{Math.round((ac / e.max_attendees) * 100)}%</Text>
-                        </View>
-                        <View style={{ height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, overflow: 'hidden' }}>
-                          <View style={{
-                            height: 4, borderRadius: 2,
-                            width: `${Math.min((ac / e.max_attendees) * 100, 100)}%` as any,
-                            backgroundColor: (ac / e.max_attendees) >= 0.9 ? '#dc2626' : (ac / e.max_attendees) >= 0.7 ? '#d97706' : '#2B8A62',
-                          }} />
-                        </View>
-                      </View>
-                    ) : null}
-                    <View style={[ms.calloutCta, { backgroundColor: '#2B8A62', borderRadius: 20, marginTop: 10 }]}>
-                      <Text style={ms.calloutCtaText}>Katso tapahtuma \u2192</Text>
-                    </View>
-                  </View>
-                </View>
-              </Callout>
-            </Marker>
-          )
-        })}
-
-        {/* ── City event markers ── */}
-        {filteredCityEvents.map((ce) => {
-          if (!ce.latitude || !ce.longitude) return null
-          const catCfg = CITY_EVENT_CATS[ce.category] ?? CITY_EVENT_CATS.other
-          const catColor = catCfg.color
-          const catIcon = catCfg.icon
-          const ceDate = new Date(ce.start_time)
-          const ceDay = ceDate.getDate()
-          const ceDateStr = ceDate.toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
-          const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude)) : ''
-          const ceInfoUrl = safeUrl(ce.info_url)
-          return (
-            <Marker
-              key={`ce-${ce.id}`}
-              coordinate={{ latitude: ce.latitude, longitude: ce.longitude }}
-              anchor={{ x: 0.5, y: 1 }}
-              tracksViewChanges={false}
-            >
-              <View style={{ width: 36, height: 44, alignItems: 'center' }}>
-                <View style={{ width: 36, height: 36, borderRadius: 14, backgroundColor: catColor, borderWidth: 2.5, borderColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: 'white', fontSize: 14 }}>{catIcon}</Text>
-                </View>
-                <View style={{ width: 0, height: 0, borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 6, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: 'white' }} />
-              </View>
-              <Callout tooltip onPress={() => { if (ceInfoUrl) Linking.openURL(ceInfoUrl) }}>
-                <View style={[ms.calloutCard, isDark && ms.calloutCardDark, { padding: 0, overflow: 'hidden' }]}>
-                  {/* Colored header */}
-                  <View style={{ backgroundColor: catColor, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <View style={{ width: 36, height: 36, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={{ color: 'white', fontSize: 18, fontWeight: '800' }}>{ceDay}</Text>
-                    </View>
-                    <View>
-                      <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.95)', fontWeight: '600' }}>{ceDateStr}</Text>
-                      <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontWeight: '600', textTransform: 'uppercase' }}>{ce.category}</Text>
-                    </View>
-                  </View>
-                  {/* Content */}
-                  <View style={{ padding: 12 }}>
-                    {/* Category badge */}
-                    <View style={{ alignSelf: 'flex-start', borderRadius: 20, paddingHorizontal: 9, paddingVertical: 2, backgroundColor: catColor, marginBottom: 6 }}>
-                      <Text style={{ fontSize: 9, fontWeight: '600', color: 'white', textTransform: 'uppercase' }}>{ce.category}</Text>
-                    </View>
-                    <Text style={[ms.calloutTitle, isDark && ms.calloutTitleDark]} numberOfLines={2}>{ce.name_fi}</Text>
-                    {ce.description_fi ? <Text style={ms.calloutMuted} numberOfLines={2}>{ce.description_fi.slice(0, 120)}</Text> : null}
-                    {ce.location_name ? <Text style={[ms.calloutSmall, { marginTop: 4 }]}>{ce.location_name}</Text> : null}
-                    {dist ? <Text style={ms.calloutSmall}>{dist}</Text> : null}
-                    {ce.is_free ? (
-                      <View style={{ marginTop: 6 }}>
-                        <Text style={{
-                          fontSize: 11, fontWeight: '600', alignSelf: 'flex-start',
-                          color: isDark ? '#34d399' : '#2B8A62',
-                          backgroundColor: isDark ? 'rgba(52,211,153,0.15)' : 'rgba(43,138,98,0.1)',
-                          paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, overflow: 'hidden',
-                        }}>Ilmainen</Text>
-                      </View>
-                    ) : ce.price_info ? <Text style={[ms.calloutSmall, { marginTop: 4 }]}>{ce.price_info.slice(0, 40)}</Text> : null}
-                    <View style={[ms.calloutCta, { backgroundColor: ceInfoUrl ? '#2D6B5E' : catColor, borderRadius: 20, marginTop: 10 }]}>
-                      <Text style={ms.calloutCtaText}>{ceInfoUrl ? 'Lis\u00E4tietoja \u2192' : 'Reittiohjeet \u2192'}</Text>
-                    </View>
-                  </View>
-                </View>
-              </Callout>
-            </Marker>
-          )
-        })}
-
-        {/* ── Place markers (clustered when zoomed out) ── */}
-        {clusteredPlaces ? (
-          clusteredPlaces.map((item) => {
-            if (isCluster(item)) {
-              return (
-                <Marker
-                  key={item.id}
-                  coordinate={{ latitude: item.latitude, longitude: item.longitude }}
-                  anchor={{ x: 0.5, y: 0.5 }}
-                  tracksViewChanges={false}
-                  onPress={() => handleClusterPress(item)}
-                >
-                  <View style={ms.clusterMarker}>
-                    <View style={[ms.clusterCircle, { backgroundColor: '#78716C' }]}>
-                      <Text style={ms.clusterText}>{item.count}</Text>
-                    </View>
-                  </View>
-                </Marker>
-              )
-            }
-            const pl = placeById.get(item.id)
-            if (!pl) return null
-            const pCat = PLACE_CATS[pl.category] ?? PLACE_CATS.other
-            const pColor = pCat.color
-            const pIcon = pCat.icon
-            const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : ''
-            const plWebsite = safeUrl(pl.website)
-            return (
-              <Marker
-                key={`pl-${pl.id}`}
-                coordinate={{ latitude: pl.latitude, longitude: pl.longitude }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges={false}
-              >
-                <View style={{ width: 30, height: 36, alignItems: 'center' }}>
-                  <View style={{ width: 26, height: 26, borderRadius: 6, backgroundColor: pColor, opacity: isDark ? 0.9 : 0.85, borderWidth: 2, borderColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: 'white', fontSize: 11 }}>{pIcon}</Text>
-                  </View>
-                  <View style={{ width: 0, height: 0, borderLeftWidth: 4, borderRightWidth: 4, borderTopWidth: 5, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: pColor, opacity: 0.85 }} />
-                </View>
-                <Callout tooltip onPress={() => {
-                  if (plWebsite) Linking.openURL(plWebsite)
-                  else Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${pl.latitude},${pl.longitude}`)
-                }}>
-                  <View style={[ms.calloutCard, isDark && ms.calloutCardDark, { padding: 0, overflow: 'hidden' }]}>
-                    <View style={{ backgroundColor: pColor, paddingHorizontal: 14, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Text style={{ color: 'white', fontSize: 14 }}>{pIcon}</Text>
-                      <View>
-                        <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.95)', fontWeight: '600' }}>{pCat.label}</Text>
-                        {pl.subcategory ? <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)' }}>{pl.subcategory}</Text> : null}
-                      </View>
-                    </View>
-                    <View style={{ padding: 12 }}>
-                      <Text style={[ms.calloutTitle, isDark && ms.calloutTitleDark]}>{pl.name}</Text>
-                      {pl.address ? <Text style={[ms.calloutSmall, { marginBottom: 2 }]}>{pl.address}</Text> : null}
-                      {dist ? <Text style={ms.calloutSmall}>{dist}</Text> : null}
-                      {pl.opening_hours ? <Text style={[ms.calloutSmall, { marginTop: 4 }]}>{pl.opening_hours}</Text> : null}
-                      {pl.phone ? <Text style={{ fontSize: 12, color: isDark ? '#6FCF97' : '#2D6B5E', marginTop: 6 }}>{pl.phone}</Text> : null}
-                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                        {plWebsite ? (
-                          <View style={[ms.calloutCta, { flex: 1, backgroundColor: isDark ? '#6FCF97' : '#2D6B5E', borderRadius: 20 }]}>
-                            <Text style={ms.calloutCtaText}>Verkkosivut</Text>
-                          </View>
-                        ) : null}
-                        <View style={[ms.calloutCta, { flex: 1, backgroundColor: pColor, borderRadius: 20 }]}>
-                          <Text style={ms.calloutCtaText}>Reittiohjeet</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </Callout>
-              </Marker>
-            )
-          })
-        ) : (
-          filteredPlaces.map((pl) => {
-            const pCat = PLACE_CATS[pl.category] ?? PLACE_CATS.other
-            const pColor = pCat.color
-            const pIcon = pCat.icon
-            const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : ''
-            const plWebsite = safeUrl(pl.website)
-            return (
-              <Marker
-                key={`pl-${pl.id}`}
-                coordinate={{ latitude: pl.latitude, longitude: pl.longitude }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges={false}
-              >
-                <View style={{ width: 30, height: 36, alignItems: 'center' }}>
-                  <View style={{ width: 26, height: 26, borderRadius: 6, backgroundColor: pColor, opacity: isDark ? 0.9 : 0.85, borderWidth: 2, borderColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: 'white', fontSize: 11 }}>{pIcon}</Text>
-                  </View>
-                  <View style={{ width: 0, height: 0, borderLeftWidth: 4, borderRightWidth: 4, borderTopWidth: 5, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: pColor, opacity: 0.85 }} />
-                </View>
-                <Callout tooltip onPress={() => {
-                  if (plWebsite) Linking.openURL(plWebsite)
-                  else Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${pl.latitude},${pl.longitude}`)
-                }}>
-                  <View style={[ms.calloutCard, isDark && ms.calloutCardDark, { padding: 0, overflow: 'hidden' }]}>
-                    <View style={{ backgroundColor: pColor, paddingHorizontal: 14, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Text style={{ color: 'white', fontSize: 14 }}>{pIcon}</Text>
-                      <View>
-                        <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.95)', fontWeight: '600' }}>{pCat.label}</Text>
-                        {pl.subcategory ? <Text style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)' }}>{pl.subcategory}</Text> : null}
-                      </View>
-                    </View>
-                    <View style={{ padding: 12 }}>
-                      <Text style={[ms.calloutTitle, isDark && ms.calloutTitleDark]}>{pl.name}</Text>
-                      {pl.address ? <Text style={[ms.calloutSmall, { marginBottom: 2 }]}>{pl.address}</Text> : null}
-                      {dist ? <Text style={ms.calloutSmall}>{dist}</Text> : null}
-                      {pl.opening_hours ? <Text style={[ms.calloutSmall, { marginTop: 4 }]}>{pl.opening_hours}</Text> : null}
-                      {pl.phone ? <Text style={{ fontSize: 12, color: isDark ? '#6FCF97' : '#2D6B5E', marginTop: 6 }}>{pl.phone}</Text> : null}
-                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                        {plWebsite ? (
-                          <View style={[ms.calloutCta, { flex: 1, backgroundColor: isDark ? '#6FCF97' : '#2D6B5E', borderRadius: 20 }]}>
-                            <Text style={ms.calloutCtaText}>Verkkosivut</Text>
-                          </View>
-                        ) : null}
-                        <View style={[ms.calloutCta, { flex: 1, backgroundColor: pColor, borderRadius: 20 }]}>
-                          <Text style={ms.calloutCtaText}>Reittiohjeet</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </Callout>
-              </Marker>
-            )
-          })
-        )}
+        {/* ── ALL markers: native pinColor only, hard-capped at 50 ── */}
+        {cappedMarkers.map((m) => (
+          <Marker
+            key={m.key}
+            coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+            pinColor={m.pinColor}
+            title={m.title}
+            description={m.description}
+            tracksViewChanges={false}
+            onPress={() => handleMarkerPress(m)}
+          />
+        ))}
       </MapView>
 
       {/* ── TOP BAR: Back + Area + Search ── */}
@@ -1174,11 +914,50 @@ export default function MapScreen() {
         </View>
       )}
 
+      {/* ── SELECTED MARKER DETAIL PANEL (replaces all Callouts) ── */}
+      {selectedMarker && (
+        <View style={[ms.detailPanel, { bottom: insets.bottom + 24, backgroundColor: colors.card, borderColor: colors.border }]}>
+          {/* Close button */}
+          <Pressable onPress={() => setSelectedMarker(null)} style={ms.detailClose} hitSlop={8}>
+            <X size={16} color={colors.mutedForeground} />
+          </Pressable>
+          {/* Color accent bar */}
+          <View style={[ms.detailAccent, { backgroundColor: selectedMarker.color }]} />
+          <View style={ms.detailContent}>
+            {selectedMarker.subtitle ? (
+              <Text style={[ms.detailSubtitle, { color: selectedMarker.color }]}>{selectedMarker.subtitle}</Text>
+            ) : null}
+            <Text style={[ms.detailTitle, { color: colors.foreground }]} numberOfLines={2}>{selectedMarker.title}</Text>
+            {selectedMarker.description ? (
+              <Text style={[ms.detailDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{selectedMarker.description}</Text>
+            ) : null}
+            <View style={ms.detailMeta}>
+              {selectedMarker.location ? (
+                <Text style={ms.detailSmall}>{'\u{1F4CD}'} {selectedMarker.location}</Text>
+              ) : null}
+              {selectedMarker.distance ? (
+                <Text style={ms.detailSmall}>{'\u{1F9ED}'} {selectedMarker.distance}</Text>
+              ) : null}
+              {selectedMarker.extra?.map((e) => (
+                <Text key={e.key} style={ms.detailSmall}>{e.value}</Text>
+              ))}
+            </View>
+            <Pressable onPress={selectedMarker.onAction} style={[ms.detailAction, { backgroundColor: selectedMarker.color }]}>
+              <Text style={ms.detailActionText}>{selectedMarker.actionLabel} {'\u2192'}</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       {/* ── COUNT BAR (bottom center) ── */}
-      <View style={[ms.countBar, { bottom: insets.bottom + 24, backgroundColor: colors.card, borderColor: colors.border }]}>
-        <MapPin size={14} color={colors.mutedForeground} />
-        <Text style={[ms.countText, { color: colors.foreground }]}>{totalVisible} {t('map.visible')}</Text>
-      </View>
+      {!selectedMarker && (
+        <View style={[ms.countBar, { bottom: insets.bottom + 24, backgroundColor: colors.card, borderColor: colors.border }]}>
+          <MapPin size={14} color={colors.mutedForeground} />
+          <Text style={[ms.countText, { color: colors.foreground }]}>
+            {cappedMarkers.length}{totalVisible > MAX_MARKERS_TOTAL ? `/${totalVisible}` : ''} {t('map.visible')}
+          </Text>
+        </View>
+      )}
 
       {/* ── ERROR STATE ── */}
       {fetchError && !loading && (
@@ -1257,27 +1036,21 @@ const ms = StyleSheet.create({
   // Count bar
   countBar: { position: 'absolute', left: 60, right: 60, zIndex: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18, borderWidth: 1, ...shadow },
   countText: { fontSize: 13, fontWeight: '500' },
-  // Callout styles
-  calloutCard: { backgroundColor: 'white', borderRadius: 12, padding: 12, minWidth: 220, maxWidth: 280, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
-  calloutCardDark: { backgroundColor: '#1E1E1E' },
-  calloutTitle: { fontSize: 15, fontWeight: '600', color: '#1A1A1A', marginBottom: 4, lineHeight: 20 },
-  calloutTitleDark: { color: '#E8E6E0' },
-  calloutMuted: { fontSize: 12, color: '#6B7280', marginBottom: 6 },
-  calloutSmall: { fontSize: 11, color: '#9CA3AF' },
-  calloutCta: { marginTop: 10, backgroundColor: '#2D6B5E', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center' },
-  calloutCtaText: { color: 'white', fontSize: 13, fontWeight: '600' },
+  // Detail panel (replaces all Callouts — renders OUTSIDE the MapView)
+  detailPanel: { position: 'absolute', left: 12, right: 12, zIndex: 20, borderRadius: 16, borderWidth: 1, overflow: 'hidden', ...shadow },
+  detailClose: { position: 'absolute', top: 10, right: 10, zIndex: 1, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.06)', alignItems: 'center', justifyContent: 'center' },
+  detailAccent: { height: 4, width: '100%' },
+  detailContent: { padding: 14 },
+  detailSubtitle: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', marginBottom: 4 },
+  detailTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4, lineHeight: 21, paddingRight: 24 },
+  detailDesc: { fontSize: 13, marginBottom: 8, lineHeight: 18 },
+  detailMeta: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  detailSmall: { fontSize: 11, color: '#9CA3AF' },
+  detailAction: { borderRadius: 20, paddingVertical: 10, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
+  detailActionText: { color: 'white', fontSize: 14, fontWeight: '600' },
   // Empty state
   empty: { position: 'absolute', left: 40, right: 40, top: '40%', zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 24, alignItems: 'center', gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
   emptyTitle: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
   emptyHint: { fontSize: 13, textAlign: 'center', lineHeight: 18 },
   emptyBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, marginTop: 4 },
-  // Cluster styles
-  clusterMarker: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  clusterCircle: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 3, borderColor: 'white',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
-  },
-  clusterText: { color: 'white', fontSize: 14, fontWeight: '800' },
 })
