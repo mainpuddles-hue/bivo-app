@@ -338,7 +338,7 @@ export default function MapScreen() {
     } catch (err) {
       console.log('[map] global fetch error:', err)
     }
-  }, [supabase, center, selectedNeighborhood])
+  }, [supabase, center])
 
   // ── Fetch places from Helsinki Palvelukartta (per neighborhood) ──
   const fetchPlaces = useCallback(async () => {
@@ -402,7 +402,6 @@ export default function MapScreen() {
   const allItems = useMemo<ListItem[]>(() => {
     const cLat = center.latitude
     const cLng = center.longitude
-    const eventRadius = Math.max(radiusKm, 5)
     const items: ListItem[] = []
 
     // Posts
@@ -1370,6 +1369,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
