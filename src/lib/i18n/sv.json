@@ -1393,7 +1393,13 @@
     "directions": "Vägbeskrivning",
     "website": "Webbplats",
     "free": "Gratis",
-    "event": "Evenemang"
+    "event": "Evenemang",
+    "noEventsToday": "Inga evenemang idag",
+    "locationFailed": "Kunde inte hämta plats.",
+    "layerPosts": "Annonser",
+    "layerEvents": "Evenemang",
+    "layerPlaces": "Platser",
+    "items": "objekt"
   },
   "privacy": {
     "title": "Integritetspolicy",

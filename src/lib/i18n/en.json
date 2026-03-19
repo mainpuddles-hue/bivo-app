@@ -1393,7 +1393,13 @@
     "directions": "Directions",
     "website": "Website",
     "free": "Free",
-    "event": "Event"
+    "event": "Event",
+    "noEventsToday": "No events today",
+    "locationFailed": "Could not get location.",
+    "layerPosts": "Posts",
+    "layerEvents": "Events",
+    "layerPlaces": "Places",
+    "items": "items"
   },
   "privacy": {
     "title": "Privacy Policy",

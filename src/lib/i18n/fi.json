@@ -1420,7 +1420,13 @@
     "directions": "Reittiohjeet",
     "website": "Verkkosivut",
     "free": "Ilmainen",
-    "event": "Tapahtuma"
+    "event": "Tapahtuma",
+    "noEventsToday": "Ei tapahtumia tänään",
+    "locationFailed": "Sijaintia ei voitu hakea.",
+    "layerPosts": "Ilmoitukset",
+    "layerEvents": "Tapahtumat",
+    "layerPlaces": "Paikat",
+    "items": "kohdetta"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

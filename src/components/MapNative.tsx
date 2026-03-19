@@ -299,7 +299,7 @@ export default function MapScreen() {
       const today = new Date().toISOString().split('T')[0]
       const [postsRes, eventsRes, cityEventsData, tmData] = await Promise.all([
         supabase.from('posts')
-          .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, is_active, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
+          .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
           .not('latitude', 'is', null)
           .not('longitude', 'is', null)
@@ -598,18 +598,19 @@ export default function MapScreen() {
     // Always show "today" section when events filter active (even if empty — tells user nothing is on today)
     const showEvents = activeFilter === 'all' || activeFilter === 'events'
     if (showEvents && (eventsToday.length > 0 || eventsUpcoming.length > 0)) {
-      result.push({ title: t('events.filterToday'), data: eventsToday.length > 0 ? eventsToday : [{ id: '__empty_today__', kind: 'empty' as any, title: 'Ei tapahtumia tänään', subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }] })
+      result.push({ title: t('events.filterToday'), data: eventsToday.length > 0 ? eventsToday : [{ id: '__empty_today__', kind: 'empty' as any, title: t('map.noEventsToday'), subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }] })
     }
     if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming })
     if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems })
     if (placeItems.length > 0) result.push({ title: t('map.layerPlaces'), data: placeItems })
 
     return result
-  }, [filteredItems, t])
+  }, [filteredItems, t, activeFilter])
 
-  // ── Map markers (max 15, stable diff) ──
+  // ── Map markers (max 20, stable diff) ──
   useEffect(() => {
-    const sorted = [...filteredItems].sort((a, b) => a.distance - b.distance)
+    const realItems = filteredItems.filter(i => !i.id.startsWith('__empty_'))
+    const sorted = [...realItems].sort((a, b) => a.distance - b.distance)
     const top = sorted.slice(0, MAX_MAP_MARKERS)
     const next: StableMarker[] = top.map(item => ({
       key: item.id,
@@ -695,47 +696,122 @@ export default function MapScreen() {
   // ── Render ──
 
   const renderSectionHeader = useCallback(({ section }: { section: SectionListData<ListItem, Section> }) => (
-    <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+    <View style={[styles.sectionHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
       <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
         {section.title}
       </Text>
-      <Text style={[styles.sectionCount, { color: colors.mutedForeground }]}>
-        ({section.data.length})
-      </Text>
+      <View style={[styles.sectionCountBadge, { backgroundColor: colors.muted }]}>
+        <Text style={[styles.sectionCount, { color: colors.mutedForeground }]}>
+          {section.data.filter(d => !d.id.startsWith('__empty_')).length}
+        </Text>
+      </View>
     </View>
   ), [colors])
 
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
-    // Empty placeholder row (e.g., "Ei tapahtumia tänään")
+    // Empty placeholder row
     if (item.id.startsWith('__empty_')) {
       return (
-        <View style={[styles.listItem, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-          <Text style={[styles.listItemSubtitle, { color: colors.mutedForeground, fontStyle: 'italic' }]}>
-            {item.title}
-          </Text>
+        <View style={[cs.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[cs.emptyText, { color: colors.mutedForeground }]}>{item.title}</Text>
         </View>
       )
     }
+
+    // Extract image URL from sourceData
+    const imageUrl = item.kind === 'city_event' ? (item.sourceData as CityEvent).image_url
+      : item.kind === 'place' ? (item.sourceData as LocalPlace).image_url
+      : item.kind === 'post' ? (item.sourceData as Post).image_url
+      : null
+
+    // Extract extra info per type
+    const isEvent = item.kind === 'community_event' || item.kind === 'city_event'
+    const isCityEvent = item.kind === 'city_event'
+    const isPlace = item.kind === 'place'
+    const isPost = item.kind === 'post'
+
+    const isFree = isCityEvent && (item.sourceData as CityEvent).is_free
+    const price = isCityEvent ? (item.sourceData as CityEvent).price_info : null
+    const userName = isPost ? ((item.sourceData as any).user?.name ?? null) : null
+    const postType = isPost ? (item.sourceData as Post).type : null
+    const cat = isPost && postType ? CATEGORIES[postType as PostType] : null
+    const placeCategory = isPlace ? PLACE_LABEL[(item.sourceData as LocalPlace).category] : null
+
     return (
       <Pressable
-        style={[styles.listItem, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
+        style={[cs.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         onPress={() => handleListItemNavigate(item)}
       >
-        <View style={[styles.listDot, { backgroundColor: item.color }]} />
-        <View style={styles.listItemContent}>
-          <Text style={[styles.listItemTitle, { color: colors.foreground }]} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={[styles.listItemSubtitle, { color: colors.mutedForeground }]} numberOfLines={2}>
-            {item.subtitle}
-          </Text>
-          <Text style={[styles.listItemMeta, { color: colors.mutedForeground }]}>
-            {formatDistance(item.distance)}
-          </Text>
+        {/* Color accent bar */}
+        <View style={[cs.accentBar, { backgroundColor: item.color }]} />
+
+        <View style={cs.cardBody}>
+          {/* Image or avatar */}
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={cs.cardImage} contentFit="cover" />
+          ) : (
+            <View style={[cs.cardImagePlaceholder, { backgroundColor: `${item.color}15` }]}>
+              <MapPin size={18} color={item.color} />
+            </View>
+          )}
+
+          {/* Content */}
+          <View style={cs.cardContent}>
+            {/* Category / type badge */}
+            <View style={cs.cardBadgeRow}>
+              {cat && (
+                <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
+                  <Text style={[cs.badgeText, { color: item.color }]}>{t(cat.label)}</Text>
+                </View>
+              )}
+              {isEvent && item.sortDate && (
+                <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
+                  <Text style={[cs.badgeText, { color: item.color }]}>
+                    {new Date(item.sortDate).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </Text>
+                </View>
+              )}
+              {placeCategory && (
+                <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
+                  <Text style={[cs.badgeText, { color: item.color }]}>{placeCategory}</Text>
+                </View>
+              )}
+              {isFree && (
+                <View style={[cs.badge, { backgroundColor: '#2B8A6218' }]}>
+                  <Text style={[cs.badgeText, { color: '#2B8A62' }]}>{t('events.free')}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Title */}
+            <Text style={[cs.title, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
+
+            {/* Meta row */}
+            <View style={cs.metaRow}>
+              {item.subtitle ? (
+                <Text style={[cs.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
+              ) : null}
+            </View>
+
+            {/* Bottom row: distance + user */}
+            <View style={cs.bottomRow}>
+              <Text style={[cs.distance, { color: colors.mutedForeground }]}>
+                {formatDistance(item.distance)}
+              </Text>
+              {userName && (
+                <Text style={[cs.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {userName}
+                </Text>
+              )}
+              {price && !isFree && (
+                <Text style={[cs.price, { color: colors.foreground }]}>{price}</Text>
+              )}
+            </View>
+          </View>
         </View>
       </Pressable>
     )
-  }, [colors, handleListItemNavigate])
+  }, [colors, handleListItemNavigate, locale, t])
 
   const keyExtractor = useCallback((item: ListItem) => item.id, [])
 
@@ -1398,43 +1474,17 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  sectionCountBadge: {
+    minWidth: 24,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
   sectionCount: {
     fontSize: 12,
-    fontWeight: '500',
-  },
-
-  // ── List Item ──
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    minHeight: 56,
-  },
-  listDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 12,
-  },
-  listItemContent: {
-    flex: 1,
-    marginRight: 8,
-  },
-  listItemTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-  listItemSubtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  listItemMeta: {
-    fontSize: 11,
-    marginTop: 2,
+    fontWeight: '700',
   },
   searchBar: {
     flexDirection: 'row',
@@ -1633,5 +1683,92 @@ const styles = StyleSheet.create({
   loadMoreText: {
     fontSize: 13,
     fontWeight: '500',
+  },
+})
+
+// ── Card styles for list items ──
+const cs = StyleSheet.create({
+  card: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  accentBar: {
+    height: 3,
+    width: '100%',
+  },
+  cardBody: {
+    flexDirection: 'row',
+    padding: 10,
+    gap: 10,
+  },
+  cardImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+  },
+  cardImagePlaceholder: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardContent: {
+    flex: 1,
+    gap: 3,
+  },
+  cardBadgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  badge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 19,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  meta: {
+    fontSize: 12,
+    lineHeight: 16,
+    flex: 1,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 2,
+  },
+  distance: {
+    fontSize: 11,
+  },
+  userName: {
+    fontSize: 11,
+    flex: 1,
+  },
+  price: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  emptyText: {
+    padding: 16,
+    fontStyle: 'italic',
+    fontSize: 13,
+    textAlign: 'center',
   },
 })
