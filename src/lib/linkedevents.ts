@@ -152,6 +152,11 @@ async function loadMorePages(startUrl: string, maxPages: number) {
 const bboxCache = new Map<string, { events: CityEvent[]; fetchedAt: number }>()
 const BBOX_CACHE_TTL = 30 * 60 * 1000 // 30 min
 
+export function invalidateEventsCache(): void {
+  bboxCache.clear()
+  cache = null
+}
+
 /**
  * Fetch events near a specific point using LinkedEvents bbox parameter.
  * Much more relevant than the global fetch for small neighborhoods.

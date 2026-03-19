@@ -6,7 +6,7 @@ import {
   type SectionListData,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { fetchHelsinkiEvents, fetchNearbyEvents } from '@/lib/linkedevents'
+import { fetchHelsinkiEvents, fetchNearbyEvents, invalidateEventsCache } from '@/lib/linkedevents'
 import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
 import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import { useRouter } from 'expo-router'
@@ -271,7 +271,7 @@ export default function MapScreen() {
           .not('location_lng', 'is', null)
           .order('event_date', { ascending: true })
           .limit(500),
-        fetchNearbyEvents(center.latitude, center.longitude, Math.max(radiusKm, 3)),
+        fetchNearbyEvents(center.latitude, center.longitude, 5),
         fetchTicketmasterEvents(),
       ])
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
@@ -332,6 +332,7 @@ export default function MapScreen() {
   const handleFullRefresh = useCallback(async () => {
     setRefreshing(true)
     invalidatePlacesCache(center.latitude, center.longitude)
+    invalidateEventsCache()
     await Promise.all([fetchGlobalData(), fetchPlaces()])
     setRefreshing(false)
   }, [fetchGlobalData, fetchPlaces, center])
@@ -341,7 +342,7 @@ export default function MapScreen() {
   const allItems = useMemo<ListItem[]>(() => {
     const cLat = center.latitude
     const cLng = center.longitude
-    const eventRadius = Math.max(radiusKm, 3)
+    const eventRadius = Math.max(radiusKm, 5)
     const items: ListItem[] = []
 
     // Posts
@@ -836,7 +837,7 @@ export default function MapScreen() {
           renderSectionHeader={renderSectionHeader}
           stickySectionHeadersEnabled
           contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleFullRefresh} tintColor={colors.primary} />}
           ListEmptyComponent={
             <View style={styles.emptyList}>
               <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
