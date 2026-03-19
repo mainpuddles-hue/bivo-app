@@ -20,6 +20,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { NEIGHBORHOODS, CATEGORIES } from '@/lib/constants'
+import { formatTimeAgo } from '@/lib/format'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 
 // ── Neighborhood Centers ──
@@ -491,7 +492,7 @@ export default function MapScreen() {
       const plLabel = t(`placeCategories.${pl.category}`) !== `placeCategories.${pl.category}`
         ? t(`placeCategories.${pl.category}`)
         : PLACE_LABEL[pl.category] ?? ''
-      const plParts = [plLabel, pl.address].filter(Boolean)
+      const plParts = [plLabel, pl.address, pl.opening_hours].filter(Boolean)
       items.push({
         id: `place-${pl.id}`,
         kind: 'place',
@@ -757,7 +758,7 @@ export default function MapScreen() {
 
     return (
       <Pressable
-        style={[cs.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={({ pressed }) => [cs.card, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
         onPress={() => handleListItemNavigate(item)}
       >
         {/* Color accent bar */}
@@ -836,6 +837,11 @@ export default function MapScreen() {
                   {userName}
                 </Text>
               )}
+              {isPost && item.sortDate && (
+                <Text style={[cs.distance, { color: colors.mutedForeground }]}>
+                  {formatTimeAgo(item.sortDate, t, locale)}
+                </Text>
+              )}
               {price && !isFree && (
                 <Text style={[cs.price, { color: colors.foreground }]}>{price}</Text>
               )}
@@ -874,6 +880,7 @@ export default function MapScreen() {
 
       {/* ── Search Bar ── */}
       {showSearch && (
+        <>
         <View style={[styles.searchBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <Search size={16} color={colors.mutedForeground} />
           <TextInput
@@ -890,6 +897,12 @@ export default function MapScreen() {
             </Pressable>
           )}
         </View>
+        {searchQuery.trim().length > 0 && (
+          <Text style={[styles.searchCount, { color: colors.mutedForeground }]}>
+            {filteredItems.length} {t('map.items')}
+          </Text>
+        )}
+        </>
       )}
 
       {/* ── Mini Map ── */}
@@ -1115,7 +1128,7 @@ export default function MapScreen() {
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
           stickySectionHeadersEnabled
-          contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 80, paddingTop: 4 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleFullRefresh} tintColor={colors.primary} />}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.3}
@@ -1379,7 +1392,15 @@ export default function MapScreen() {
           </Pressable>
 
           <FlatList
-            data={NEIGHBORHOODS as unknown as string[]}
+            data={userLocation
+              ? [...NEIGHBORHOODS].sort((a, b) => {
+                  const ca = NEIGHBORHOOD_CENTERS[a]; const cb = NEIGHBORHOOD_CENTERS[b]
+                  if (!ca || !cb) return 0
+                  return haversineKm(userLocation.latitude, userLocation.longitude, ca.latitude, ca.longitude)
+                    - haversineKm(userLocation.latitude, userLocation.longitude, cb.latitude, cb.longitude)
+                }) as unknown as string[]
+              : NEIGHBORHOODS as unknown as string[]
+            }
             keyExtractor={item => item}
             renderItem={({ item }: { item: string }) => (
               <Pressable
@@ -1559,6 +1580,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     paddingVertical: 4,
+  },
+  searchCount: {
+    fontSize: 11,
+    paddingHorizontal: 16,
+    paddingBottom: 4,
   },
   emptyList: {
     alignItems: 'center',
