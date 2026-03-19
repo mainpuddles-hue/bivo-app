@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock } from 'lucide-react-native'
+import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n, type Locale } from '@/lib/i18n'
@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { downloadAsFile } from '@/lib/share'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInAppPurchase } from '@/hooks/useInAppPurchase'
+import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
 import type { Profile, ProfileVisibility } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -34,16 +35,13 @@ export default function SettingsScreen() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const push = usePushNotifications(profile?.id ?? null)
   const iap = useInAppPurchase(profile?.id ?? null)
-  const [notifMessages, setNotifMessages] = useState(true)
-  const [notifReviews, setNotifReviews] = useState(true)
-  const [notifRentals, setNotifRentals] = useState(true)
-  const [notifSystem, setNotifSystem] = useState(true)
-  const [notifMarketing, setNotifMarketing] = useState(false)
+  const notifPrefs = useNotificationPreferences()
   const [visibility, setVisibility] = useState<ProfileVisibility>('everyone')
   const [theme, setTheme] = useState('system')
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [exportProgress, setExportProgress] = useState('')
 
   // Password change
   const [currentPw, setCurrentPw] = useState('')
@@ -72,7 +70,7 @@ export default function SettingsScreen() {
     try {
       await (supabase.from('profiles') as any).update({
         profile_visibility: visibility,
-        notifications_enabled: notifMessages,
+        notifications_enabled: notifPrefs.preferences.messages,
       }).eq('id', profile.id)
       await AsyncStorage.setItem('tackbird-theme', theme)
       setDirty(false)
@@ -80,7 +78,7 @@ export default function SettingsScreen() {
     } catch {
       Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
     } finally { setSaving(false) }
-  }, [profile, visibility, notifMessages, theme, supabase, t])
+  }, [profile, visibility, notifPrefs.preferences.messages, theme, supabase, t])
 
   const handleChangePassword = useCallback(async () => {
     if (!newPw || newPw.length < 8) {
@@ -106,24 +104,85 @@ export default function SettingsScreen() {
   const handleExport = useCallback(async () => {
     if (!profile) return
     setExporting(true)
+    setExportProgress('1/5')
     try {
+      // Batch 1: posts, messages, reviews
       const [postsRes, msgsRes, reviewsRes] = await Promise.all([
         supabase.from('posts').select('*').eq('user_id', profile.id),
         supabase.from('messages').select('*').eq('sender_id', profile.id),
         supabase.from('reviews').select('*').eq('reviewer_id', profile.id),
       ])
+
+      setExportProgress('2/5')
+      // Batch 2: saved posts, saved events, post likes
+      const [savedPostsRes, savedEventsRes, postLikesRes] = await Promise.all([
+        supabase.from('saved_posts').select('*').eq('user_id', profile.id),
+        supabase.from('saved_events').select('*').eq('user_id', profile.id),
+        supabase.from('post_likes').select('*').eq('user_id', profile.id),
+      ])
+
+      setExportProgress('3/5')
+      // Batch 3: comments, follows (both directions)
+      const [commentsRes, followersRes, followingRes] = await Promise.all([
+        supabase.from('post_comments').select('*').eq('user_id', profile.id),
+        supabase.from('user_follows').select('*').eq('followed_id', profile.id),
+        supabase.from('user_follows').select('*').eq('follower_id', profile.id),
+      ])
+
+      setExportProgress('4/5')
+      // Batch 4: notification preferences, conversations, badges
+      const [notifPrefsRes, conversationsRes, badgesRes] = await Promise.all([
+        supabase.from('notification_preferences').select('*').eq('user_id', profile.id),
+        supabase.from('conversations').select('id, user1_id, user2_id, post_id, created_at, updated_at').or(`user1_id.eq.${profile.id},user2_id.eq.${profile.id}`),
+        supabase.from('user_badges').select('*').eq('user_id', profile.id),
+      ])
+
+      setExportProgress('5/5')
       const exportData = {
         profile,
         posts: postsRes.data ?? [],
         messages: msgsRes.data ?? [],
         reviews: reviewsRes.data ?? [],
+        saved_posts: savedPostsRes.data ?? [],
+        saved_events: savedEventsRes.data ?? [],
+        post_likes: postLikesRes.data ?? [],
+        post_comments: commentsRes.data ?? [],
+        followers: followersRes.data ?? [],
+        following: followingRes.data ?? [],
+        notification_preferences: notifPrefsRes.data ?? [],
+        conversations: conversationsRes.data ?? [],
+        user_badges: badgesRes.data ?? [],
         exported_at: new Date().toISOString(),
       }
+
       const jsonStr = JSON.stringify(exportData, null, 2)
-      await downloadAsFile(jsonStr, `tackbird-export-${new Date().toISOString().slice(0, 10)}.json`)
+      const filename = `tackbird-export-${new Date().toISOString().slice(0, 10)}.json`
+
+      // Try native file sharing via expo-file-system + expo-sharing
+      if (Platform.OS !== 'web') {
+        try {
+          const FileSystem = require('expo-file-system')
+          const Sharing = require('expo-sharing')
+          const fileUri = FileSystem.documentDirectory + filename
+          await FileSystem.writeAsStringAsync(fileUri, jsonStr, { encoding: FileSystem.EncodingType.UTF8 })
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri, { mimeType: 'application/json', dialogTitle: t('settings.export') })
+          } else {
+            await downloadAsFile(jsonStr, filename)
+          }
+        } catch {
+          // Fallback if modules not available
+          await downloadAsFile(jsonStr, filename)
+        }
+      } else {
+        await downloadAsFile(jsonStr, filename)
+      }
     } catch {
       Alert.alert(t('common.error'))
-    } finally { setExporting(false) }
+    } finally {
+      setExporting(false)
+      setExportProgress('')
+    }
   }, [profile, supabase, t])
 
   const handleDeleteAccount = () => {
@@ -210,23 +269,31 @@ export default function SettingsScreen() {
         {/* Notifications */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.notifications')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          {[
-            { label: 'nav.messages', value: notifMessages, setter: markDirty(setNotifMessages) },
-            { label: 'profile.reviews', value: notifReviews, setter: markDirty(setNotifReviews) },
-            { label: 'settings.proSubscription', value: notifRentals, setter: markDirty(setNotifRentals) },
-            { label: 'settings.notifications', value: notifSystem, setter: markDirty(setNotifSystem) },
-          ].map(({ label, value, setter }) => (
-            <View key={label} style={s.toggleRow}>
-              <Bell size={18} color={colors.mutedForeground} />
-              <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
-              <Switch
-                value={value}
-                onValueChange={setter}
-                trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
-                thumbColor={value ? colors.primary : colors.mutedForeground}
-              />
+          {notifPrefs.loading ? (
+            <View style={s.toggleRow}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={[s.rowText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
             </View>
-          ))}
+          ) : (
+            ([
+              { type: 'messages' as NotificationType, label: 'nav.messages' },
+              { type: 'reviews' as NotificationType, label: 'profile.reviews' },
+              { type: 'rentals' as NotificationType, label: 'settings.proSubscription' },
+              { type: 'system' as NotificationType, label: 'settings.notifications' },
+              { type: 'marketing' as NotificationType, label: 'settings.marketing' },
+            ]).map(({ type, label }) => (
+              <View key={type} style={s.toggleRow}>
+                <Bell size={18} color={colors.mutedForeground} />
+                <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
+                <Switch
+                  value={notifPrefs.preferences[type]}
+                  onValueChange={(val) => { notifPrefs.updatePreference(type, val); setDirty(true) }}
+                  trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
+                  thumbColor={notifPrefs.preferences[type] ? colors.primary : colors.mutedForeground}
+                />
+              </View>
+            ))
+          )}
           {push.isSupported && (
             <View style={s.toggleRow}>
               <Bell size={18} color={push.isSubscribed ? colors.primary : colors.mutedForeground} />
@@ -303,13 +370,28 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
+        {/* Payment History */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.paymentHistory')}</Text>
+        <View style={[s.card, { backgroundColor: colors.card }]}>
+          <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row}>
+            <CreditCard size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.paymentHistory')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+        </View>
+
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <Pressable onPress={handleExport} disabled={exporting} style={s.row}>
-            <Download size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
+            {exporting ? <ActivityIndicator size="small" color={colors.primary} /> : <Download size={18} color={colors.mutedForeground} />}
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
+              {exporting && exportProgress ? (
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2 }}>{exportProgress}</Text>
+              ) : null}
+            </View>
+            {!exporting && <ChevronRight size={16} color={colors.mutedForeground} />}
           </Pressable>
         </View>
 

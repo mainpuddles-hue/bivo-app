@@ -14,6 +14,8 @@ import { createClient } from '@/lib/supabase/client'
 import { shareContent } from '@/lib/share'
 import { CATEGORIES, POST_SELECT } from '@/lib/constants'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
+import { useStripePayment } from '@/hooks/useStripePayment'
+import DateRangePicker from '@/components/DateRangePicker'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string }>> = {
@@ -46,9 +48,13 @@ export default function PostDetailScreen() {
 
   // Booking modal state
   const [bookingModalVisible, setBookingModalVisible] = useState(false)
-  const [bookingStartDate, setBookingStartDate] = useState('')
-  const [bookingEndDate, setBookingEndDate] = useState('')
+  const [bookingStartDate, setBookingStartDate] = useState<string | null>(null)
+  const [bookingEndDate, setBookingEndDate] = useState<string | null>(null)
   const [sendingBooking, setSendingBooking] = useState(false)
+  const [blockedDates, setBlockedDates] = useState<string[]>([])
+  const { createPayment, loading: paymentLoading, error: paymentError } = useStripePayment()
+
+  const SERVICE_FEE_RATE = 0.10
 
   useEffect(() => {
     async function load() {
@@ -273,63 +279,116 @@ export default function PostDetailScreen() {
     return diff > 0 ? diff : 0
   }, [bookingStartDate, bookingEndDate])
 
-  const bookingTotal = useMemo(() => {
+  const rentalFee = useMemo(() => {
     if (!post?.daily_fee || bookingDays <= 0) return 0
     return bookingDays * post.daily_fee
   }, [bookingDays, post?.daily_fee])
 
-  const handleSendBooking = useCallback(async () => {
+  const serviceFee = useMemo(() => {
+    return Math.round(rentalFee * SERVICE_FEE_RATE * 100) / 100
+  }, [rentalFee])
+
+  const bookingTotal = useMemo(() => {
+    return rentalFee + serviceFee
+  }, [rentalFee, serviceFee])
+
+  // Fetch blocked dates when booking modal opens
+  useEffect(() => {
+    if (!bookingModalVisible || !id) return
+    async function fetchBlockedDates() {
+      const { data } = await (supabase
+        .from('rental_bookings') as any)
+        .select('start_date, end_date')
+        .eq('post_id', id)
+        .in('status', ['pending', 'confirmed', 'paid', 'active'])
+      if (!data) return
+      const blocked: string[] = []
+      for (const booking of data as any[]) {
+        const start = new Date(booking.start_date)
+        const end = new Date(booking.end_date)
+        const cursor = new Date(start)
+        while (cursor <= end) {
+          const y = cursor.getFullYear()
+          const m = String(cursor.getMonth() + 1).padStart(2, '0')
+          const d = String(cursor.getDate()).padStart(2, '0')
+          blocked.push(`${y}-${m}-${d}`)
+          cursor.setDate(cursor.getDate() + 1)
+        }
+      }
+      setBlockedDates(blocked)
+    }
+    fetchBlockedDates()
+  }, [bookingModalVisible, id, supabase])
+
+  const handlePayAndBook = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
-    if (!post || sendingBooking) return
+    if (!post || sendingBooking || paymentLoading) return
     if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
-    if (bookingDays <= 0) { Alert.alert(t('common.error'), t('post.bookingInvalidDates')); return }
+    if (bookingDays <= 0 || !bookingStartDate || !bookingEndDate) {
+      Alert.alert(t('common.error'), t('rental.endDateAfterStart'))
+      return
+    }
 
     setSendingBooking(true)
     try {
-      // Find existing conversation or create new one
-      const { data: existing } = await supabase
-        .from('conversations')
+      // Create rental_bookings record with status 'pending'
+      const { data: booking, error: bookingError } = await (supabase.from('rental_bookings') as any)
+        .insert({
+          post_id: id,
+          borrower_id: userId,
+          lender_id: post.user_id,
+          start_date: bookingStartDate,
+          end_date: bookingEndDate,
+          daily_fee: post.daily_fee,
+          service_fee: serviceFee,
+          total_amount: bookingTotal,
+          status: 'pending',
+        })
         .select('id')
-        .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
-        .eq('post_id', id)
-        .maybeSingle()
+        .single()
 
-      let convId: string
-      if (existing) {
-        convId = (existing as any).id
-      } else {
-        const { data: newConv, error } = await (supabase.from('conversations') as any)
-          .insert({ user1_id: userId, user2_id: post.user_id, post_id: id })
-          .select('id')
-          .single()
-        if (error || !newConv) {
-          Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
-          setSendingBooking(false)
-          return
-        }
-        convId = newConv.id
+      if (bookingError || !booking) {
+        Alert.alert(t('common.error'), t('rental.bookingFailed'))
+        setSendingBooking(false)
+        return
       }
 
-      // Send booking request message
-      const content = `Varauspyyntö: ${post.title}\nAjankohta: ${bookingStartDate} - ${bookingEndDate}\nHinta: ${bookingTotal.toFixed(2)} €`
-      await (supabase.from('messages') as any).insert({
-        conversation_id: convId,
-        sender_id: userId,
-        content,
+      // Initiate Stripe payment
+      const amountCents = Math.round(bookingTotal * 100)
+      const sessionId = await createPayment({
+        amount: amountCents,
+        description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`,
+        type: 'rental',
+        postId: id,
+        sellerId: post.user_id,
+        metadata: {
+          booking_id: booking.id,
+          start_date: bookingStartDate,
+          end_date: bookingEndDate,
+        },
       })
 
+      if (sessionId) {
+        // Update booking with stripe session id
+        await (supabase.from('rental_bookings') as any)
+          .update({ stripe_session_id: sessionId })
+          .eq('id', booking.id)
+      }
+
       setBookingModalVisible(false)
-      setBookingStartDate('')
-      setBookingEndDate('')
-      Alert.alert(t('common.success'), t('post.bookingSent'), [
-        { text: 'OK', onPress: () => router.push(`/messages/${convId}`) },
-      ])
+      setBookingStartDate(null)
+      setBookingEndDate(null)
+
+      if (!sessionId) {
+        // Payment not initiated (opened in browser) — inform user
+        Alert.alert(t('common.success'), t('rental.bookingCreated'))
+      }
     } catch {
-      Alert.alert(t('common.error'), t('post.bookingFailed'))
+      Alert.alert(t('common.error'), t('rental.bookingFailed'))
     } finally {
       setSendingBooking(false)
     }
-  }, [userId, post, sendingBooking, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, id, supabase, router, t])
+  }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, createPayment])
 
   if (loading) {
     return (
@@ -631,68 +690,111 @@ export default function PostDetailScreen() {
 
       {/* Booking Modal */}
       <Modal visible={bookingModalVisible} animationType="slide" transparent>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.booking')}</Text>
-              <Pressable onPress={() => setBookingModalVisible(false)} hitSlop={12}>
-                <X size={22} color={colors.mutedForeground} />
-              </Pressable>
-            </View>
-
-            <Text style={[styles.bookingPostTitle, { color: colors.foreground }]}>{post?.title}</Text>
-            {post?.daily_fee != null && (
-              <Text style={[styles.bookingFee, { color: '#C98B2E' }]}>
-                {formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}
-              </Text>
-            )}
-
-            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.bookingStartDate')}</Text>
-            <TextInput
-              style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
-              value={bookingStartDate}
-              onChangeText={setBookingStartDate}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={colors.mutedForeground}
-              maxLength={10}
-              keyboardType="numbers-and-punctuation"
-            />
-
-            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.bookingEndDate')}</Text>
-            <TextInput
-              style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
-              value={bookingEndDate}
-              onChangeText={setBookingEndDate}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={colors.mutedForeground}
-              maxLength={10}
-              keyboardType="numbers-and-punctuation"
-            />
-
-            {bookingDays > 0 && post?.daily_fee != null && (
-              <View style={[styles.bookingSummary, { backgroundColor: colors.muted }]}>
-                <Text style={[styles.bookingSummaryText, { color: colors.foreground }]}>
-                  {bookingDays} {bookingDays === 1 ? t('common.day') : t('common.days')}
-                </Text>
-                <Text style={[styles.bookingTotalPrice, { color: colors.primary }]}>
-                  {bookingTotal.toFixed(2)} €
-                </Text>
+        <Pressable style={styles.modalOverlay} onPress={() => setBookingModalVisible(false)}>
+          <Pressable style={[styles.modalContent, { backgroundColor: colors.card }]} onPress={() => {}}>
+            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('rental.booking')}</Text>
+                <Pressable onPress={() => setBookingModalVisible(false)} hitSlop={12}>
+                  <X size={22} color={colors.mutedForeground} />
+                </Pressable>
               </View>
-            )}
 
-            <Pressable
-              onPress={handleSendBooking}
-              disabled={sendingBooking || bookingDays <= 0}
-              style={[styles.saveBtn, { backgroundColor: sendingBooking || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16 }]}
-            >
-              {sendingBooking ? (
-                <ActivityIndicator size="small" color={colors.primaryForeground} />
-              ) : (
-                <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.sendBooking')}</Text>
+              <Text style={[styles.bookingPostTitle, { color: colors.foreground }]}>{post?.title}</Text>
+              {post?.daily_fee != null && (
+                <Text style={[styles.bookingFee, { color: '#C98B2E' }]}>
+                  {formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}
+                </Text>
               )}
-            </Pressable>
-          </View>
-        </KeyboardAvoidingView>
+
+              {/* Date Range Picker */}
+              <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{t('rental.selectDates')}</Text>
+              <DateRangePicker
+                startDate={bookingStartDate}
+                endDate={bookingEndDate}
+                onSelect={(start, end) => {
+                  setBookingStartDate(start)
+                  setBookingEndDate(end)
+                }}
+                blockedDates={blockedDates}
+              />
+
+              {/* Selected dates summary */}
+              {bookingStartDate && (
+                <View style={[styles.datesSummary, { backgroundColor: colors.muted }]}>
+                  <View style={styles.datesSummaryItem}>
+                    <Text style={[styles.datesSummaryLabel, { color: colors.mutedForeground }]}>{t('rental.startDate')}</Text>
+                    <Text style={[styles.datesSummaryValue, { color: colors.foreground }]}>{bookingStartDate}</Text>
+                  </View>
+                  {bookingEndDate && (
+                    <View style={styles.datesSummaryItem}>
+                      <Text style={[styles.datesSummaryLabel, { color: colors.mutedForeground }]}>{t('rental.endDate')}</Text>
+                      <Text style={[styles.datesSummaryValue, { color: colors.foreground }]}>{bookingEndDate}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* Pricing breakdown */}
+              {bookingDays > 0 && post?.daily_fee != null && (
+                <View style={[styles.pricingBreakdown, { borderColor: colors.border }]}>
+                  <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('rental.pricingBreakdown')}</Text>
+
+                  <View style={styles.pricingRow}>
+                    <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>
+                      {formatPrice(post.daily_fee, locale)} x {bookingDays} {t('rental.daysAbbr')}
+                    </Text>
+                    <Text style={[styles.pricingValue, { color: colors.foreground }]}>
+                      {formatPrice(rentalFee, locale)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.pricingRow}>
+                    <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>
+                      {t('rental.serviceFee')} ({t('rental.serviceFeeNote')})
+                    </Text>
+                    <Text style={[styles.pricingValue, { color: colors.foreground }]}>
+                      {formatPrice(serviceFee, locale)}
+                    </Text>
+                  </View>
+
+                  <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}>
+                    <Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text>
+                    <Text style={[styles.bookingTotalPrice, { color: colors.primary }]}>
+                      {formatPrice(bookingTotal, locale)}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Confirmation note */}
+              {bookingDays > 0 && (
+                <Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>
+                  {t('rental.confirmationNote')}
+                </Text>
+              )}
+
+              {paymentError && (
+                <Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>
+              )}
+
+              <Pressable
+                onPress={handlePayAndBook}
+                disabled={sendingBooking || paymentLoading || bookingDays <= 0}
+                style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }]}
+              >
+                {sendingBooking || paymentLoading ? (
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
+                ) : (
+                  <>
+                    <Calendar size={16} color={colors.primaryForeground} />
+                    <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text>
+                  </>
+                )}
+              </Pressable>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   )
@@ -797,10 +899,26 @@ const styles = StyleSheet.create({
   bookingBtnText: { fontSize: 14, fontWeight: '600' },
   bookingPostTitle: { fontSize: 16, fontWeight: '600' },
   bookingFee: { fontSize: 15, fontWeight: '700' },
-  bookingSummary: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 14, borderRadius: 10, marginTop: 12,
-  },
-  bookingSummaryText: { fontSize: 15, fontWeight: '500' },
   bookingTotalPrice: { fontSize: 18, fontWeight: '700' },
+  datesSummary: {
+    flexDirection: 'row', gap: 16, padding: 12, borderRadius: 10, marginTop: 12,
+  },
+  datesSummaryItem: { flex: 1, gap: 2 },
+  datesSummaryLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.3 },
+  datesSummaryValue: { fontSize: 14, fontWeight: '600' },
+  pricingBreakdown: {
+    borderWidth: StyleSheet.hairlineWidth, borderRadius: 10, padding: 14, marginTop: 12, gap: 8,
+  },
+  pricingTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
+  pricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  pricingLabel: { fontSize: 13 },
+  pricingValue: { fontSize: 13, fontWeight: '500' },
+  pricingTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, marginTop: 4 },
+  pricingTotalLabel: { fontSize: 15, fontWeight: '600' },
+  confirmNote: { fontSize: 12, textAlign: 'center', marginTop: 10, lineHeight: 17 },
+  errorText: { fontSize: 13, textAlign: 'center', marginTop: 8 },
+  payBookBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 14, borderRadius: 10,
+  },
 })

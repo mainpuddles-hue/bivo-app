@@ -5,13 +5,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, MapPin, Star, MessageCircle, UserPlus, UserMinus,
-  Flag, ShieldBan, Crown, BadgeCheck, Shield, Flame,
+  Flag, ShieldBan, Crown, BadgeCheck, Shield, Flame, PenLine,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
 import { PostCard } from '@/components/PostCard'
+import { ReviewModal } from '@/components/ReviewModal'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
@@ -42,6 +43,9 @@ export default function PublicProfileScreen() {
   const [badges, setBadges] = useState<UserBadge[]>([])
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts')
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [hasTransaction, setHasTransaction] = useState(false)
+  const [hasExistingReview, setHasExistingReview] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -71,14 +75,22 @@ export default function PublicProfileScreen() {
       setFollowerCount(followersRes.count ?? 0)
       setFollowingCount(followingRes.count ?? 0)
 
-      // Check follow/block status
+      // Check follow/block status + transaction history for reviews
       if (user) {
-        const [followRes, blockRes] = await Promise.all([
+        const [followRes, blockRes, convRes, existingReviewRes] = await Promise.all([
           supabase.from('user_follows').select('id').eq('follower_id', user.id).eq('followed_id', userId).maybeSingle(),
           supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', userId).maybeSingle(),
+          // Check if there's been a conversation (transaction proxy) between users
+          supabase.from('conversations').select('id').or(
+            `and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`
+          ).maybeSingle(),
+          // Check for existing review
+          supabase.from('reviews').select('id').eq('reviewer_id', user.id).eq('reviewed_id', userId).maybeSingle(),
         ])
         setIsFollowing(!!followRes.data)
         setIsBlocked(!!blockRes.data)
+        setHasTransaction(!!convRes.data)
+        setHasExistingReview(!!existingReviewRes.data)
       }
 
       // Reviews received
@@ -302,6 +314,14 @@ export default function PublicProfileScreen() {
               <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
           </View>
+
+          {/* Write Review button — only if user has had a transaction and hasn't reviewed yet */}
+          {currentUserId && hasTransaction && !hasExistingReview && (
+            <Pressable onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <PenLine size={16} color={colors.pro} />
+              <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Stats 4-column */}
@@ -395,6 +415,30 @@ export default function PublicProfileScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Review Modal */}
+      <ReviewModal
+        visible={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        reviewedUserId={userId!}
+        onReviewSubmitted={() => {
+          setHasExistingReview(true)
+          // Refresh reviews list
+          supabase
+            .from('reviews')
+            .select('*, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
+            .eq('reviewed_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(10)
+            .then(({ data }) => {
+              if (data) {
+                setReviews(data as unknown as Review[])
+                const avg = (data as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / data.length
+                setAvgRating(Math.round(avg * 10) / 10)
+              }
+            })
+        }}
+      />
     </View>
   )
 }
@@ -454,5 +498,10 @@ const s = StyleSheet.create({
     gap: 8, padding: 14, borderRadius: 12,
   },
   dangerBtnText: { fontSize: 14, fontWeight: '500' },
+  reviewBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1, width: '100%', paddingHorizontal: 16,
+  },
+  reviewBtnText: { fontSize: 14, fontWeight: '600' },
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100 },
 })

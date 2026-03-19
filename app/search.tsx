@@ -3,13 +3,14 @@ import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet, Act
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, Bookmark, BookmarkCheck, LayoutGrid, ChevronRight, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays } from 'lucide-react-native'
+import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, Bookmark, BookmarkCheck, LayoutGrid, ChevronRight, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, Star, Trash2 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { POST_SELECT, CATEGORIES } from '@/lib/constants'
 import { PostCard } from '@/components/PostCard'
+import { SearchFilters, EMPTY_FILTERS, countActiveFilters, type SearchFilterValues, type SortOption } from '@/components/SearchFilters'
 import type { Post, PostType } from '@/lib/types'
 
 const CAT_ICON_MAP: Record<string, React.ComponentType<any>> = {
@@ -17,7 +18,30 @@ const CAT_ICON_MAP: Record<string, React.ComponentType<any>> = {
 }
 
 const HISTORY_KEY = 'tackbird-search-history'
+const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
 const MAX_HISTORY = 10
+
+interface SavedSearch {
+  id: string
+  query: string
+  filters: SearchFilterValues
+  createdAt: string
+}
+
+/**
+ * Compute a bounding box from a center point and distance in km.
+ * Returns { minLat, maxLat, minLng, maxLng }.
+ */
+function boundingBox(lat: number, lng: number, km: number) {
+  const latDelta = km / 111.32
+  const lngDelta = km / (111.32 * Math.cos((lat * Math.PI) / 180))
+  return {
+    minLat: lat - latDelta,
+    maxLat: lat + latDelta,
+    minLng: lng - lngDelta,
+    maxLng: lng + lngDelta,
+  }
+}
 
 export default function SearchScreen() {
   const { colors, isDark } = useTheme()
@@ -38,6 +62,13 @@ export default function SearchScreen() {
   const [userResults, setUserResults] = useState<{ id: string; name: string; avatar_url: string | null; naapurusto: string }[]>([])
   const [trendingPosts, setTrendingPosts] = useState<{ id: string; title: string; type: string; like_count: number }[]>([])
 
+  // Filter state
+  const [filtersVisible, setFiltersVisible] = useState(false)
+  const [filters, setFilters] = useState<SearchFilterValues>({ ...EMPTY_FILTERS })
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
+
+  const filterCount = useMemo(() => countActiveFilters(filters), [filters])
+
   // Load trending posts
   useEffect(() => {
     supabase
@@ -51,10 +82,13 @@ export default function SearchScreen() {
       })
   }, [supabase])
 
-  // Load search history
+  // Load search history + saved searches
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY).then(stored => {
       if (stored) setHistory(JSON.parse(stored))
+    })
+    AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
+      if (stored) setSavedSearches(JSON.parse(stored))
     })
   }, [])
 
@@ -70,12 +104,132 @@ export default function SearchScreen() {
     await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
   }, [history])
 
-  const handleSearch = useCallback(async (searchQuery?: string) => {
+  const saveCurrentSearch = useCallback(async () => {
+    const q = query.trim()
+    if (!q) return
+    const newSaved: SavedSearch = {
+      id: Date.now().toString(),
+      query: q,
+      filters: { ...filters },
+      createdAt: new Date().toISOString(),
+    }
+    const updated = [newSaved, ...savedSearches].slice(0, 20)
+    setSavedSearches(updated)
+    await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
+  }, [query, filters, savedSearches])
+
+  const removeSavedSearch = useCallback(async (id: string) => {
+    const updated = savedSearches.filter(s => s.id !== id)
+    setSavedSearches(updated)
+    await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
+  }, [savedSearches])
+
+  const loadSavedSearch = useCallback((saved: SavedSearch) => {
+    setQuery(saved.query)
+    setFilters(saved.filters)
+    // Trigger search after state updates
+    setTimeout(() => handleSearch(saved.query, saved.filters), 0)
+  }, [])
+
+  /**
+   * Build a Supabase query applying all active filters.
+   */
+  const buildFilteredQuery = useCallback(
+    (baseQuery: any, f: SearchFilterValues, categoryFilter: PostType | null) => {
+      let q = baseQuery
+
+      // Category filter
+      if (categoryFilter) {
+        q = q.eq('type', categoryFilter)
+      }
+
+      // Price range
+      if (f.minPrice) {
+        q = q.gte('daily_fee', parseFloat(f.minPrice))
+      }
+      if (f.maxPrice) {
+        q = q.lte('daily_fee', parseFloat(f.maxPrice))
+      }
+
+      // Date range
+      if (f.postedAfter) {
+        q = q.gte('created_at', `${f.postedAfter}T00:00:00`)
+      }
+      if (f.postedBefore) {
+        q = q.lte('created_at', `${f.postedBefore}T23:59:59`)
+      }
+
+      // Distance bounding box
+      if (f.distanceKm < 50 && f.userLat != null && f.userLng != null) {
+        const bb = boundingBox(f.userLat, f.userLng, f.distanceKm)
+        q = q
+          .gte('latitude', bb.minLat)
+          .lte('latitude', bb.maxLat)
+          .gte('longitude', bb.minLng)
+          .lte('longitude', bb.maxLng)
+      }
+
+      // Neighborhood filter
+      if (f.neighborhoods.length > 0) {
+        q = q.in('location', f.neighborhoods)
+      }
+
+      // Sort order
+      switch (f.sortBy) {
+        case 'newest':
+          q = q.order('created_at', { ascending: false })
+          break
+        case 'closest':
+          // Supabase doesn't have native geo-sort — fall back to created_at
+          // Distance sorting happens client-side after fetch
+          q = q.order('created_at', { ascending: false })
+          break
+        case 'most_liked':
+          q = q.order('like_count', { ascending: false })
+          break
+        case 'price_asc':
+          q = q.order('daily_fee', { ascending: true, nullsFirst: false })
+          break
+        case 'price_desc':
+          q = q.order('daily_fee', { ascending: false })
+          break
+      }
+
+      return q
+    },
+    []
+  )
+
+  /**
+   * Client-side sort by distance when sortBy === 'closest'.
+   */
+  const sortByDistance = useCallback(
+    (posts: Post[], f: SearchFilterValues): Post[] => {
+      if (f.sortBy !== 'closest' || f.userLat == null || f.userLng == null) return posts
+      const { userLat, userLng } = f
+      return [...posts].sort((a, b) => {
+        const distA =
+          a.latitude != null && a.longitude != null
+            ? Math.hypot(a.latitude - userLat, a.longitude - userLng)
+            : Infinity
+        const distB =
+          b.latitude != null && b.longitude != null
+            ? Math.hypot(b.latitude - userLat, b.longitude - userLng)
+            : Infinity
+        return distA - distB
+      })
+    },
+    []
+  )
+
+  const handleSearch = useCallback(async (searchQuery?: string, overrideFilters?: SearchFilterValues) => {
     const q = (searchQuery ?? query).trim()
     if (!q) return
     setLoading(true)
     setSearched(true)
     addToHistory(q)
+
+    const f = overrideFilters ?? filters
 
     // Search posts
     let postQuery = supabase
@@ -83,13 +237,14 @@ export default function SearchScreen() {
       .select(POST_SELECT)
       .eq('is_active', true)
       .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
-      .order('created_at', { ascending: false })
-      .limit(20)
 
-    if (activeFilter) postQuery = postQuery.eq('type', activeFilter)
+    postQuery = buildFilteredQuery(postQuery, f, activeFilter)
+    postQuery = postQuery.limit(20)
 
     const { data: posts } = await postQuery
-    setResults((posts ?? []) as unknown as Post[])
+    let postResults = (posts ?? []) as unknown as Post[]
+    postResults = sortByDistance(postResults, f)
+    setResults(postResults)
     setHasMore((posts ?? []).length >= 20)
 
     // Search users
@@ -101,7 +256,7 @@ export default function SearchScreen() {
     setUserResults((users ?? []) as any[])
 
     setLoading(false)
-  }, [query, activeFilter, supabase, addToHistory])
+  }, [query, activeFilter, filters, supabase, addToHistory, buildFilteredQuery, sortByDistance])
 
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore) return
@@ -112,16 +267,17 @@ export default function SearchScreen() {
       .select(POST_SELECT)
       .eq('is_active', true)
       .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
-      .order('created_at', { ascending: false })
-      .range(results.length, results.length + 19)
 
-    if (activeFilter) postQuery = postQuery.eq('type', activeFilter)
+    postQuery = buildFilteredQuery(postQuery, filters, activeFilter)
+    postQuery = postQuery.range(results.length, results.length + 19)
+
     const { data } = await postQuery
-    const newPosts = (data ?? []) as unknown as Post[]
+    let newPosts = (data ?? []) as unknown as Post[]
+    newPosts = sortByDistance(newPosts, filters)
     setResults(prev => [...prev, ...newPosts])
     setHasMore(newPosts.length >= 20)
     setLoadingMore(false)
-  }, [hasMore, loadingMore, query, activeFilter, results.length, supabase])
+  }, [hasMore, loadingMore, query, activeFilter, filters, results.length, supabase, buildFilteredQuery, sortByDistance])
 
   const handleCategoryFilter = (type: PostType | null) => {
     setActiveFilter(type)
@@ -133,9 +289,52 @@ export default function SearchScreen() {
     }
   }
 
+  const handleApplyFilters = useCallback((newFilters: SearchFilterValues) => {
+    setFilters(newFilters)
+    if (searched) {
+      setResults([])
+      setLoading(true)
+      setTimeout(() => handleSearch(undefined, newFilters), 0)
+    }
+  }, [searched, handleSearch])
+
   // ── Discovery View (no search yet) ──
   const DiscoveryView = () => (
     <ScrollView contentContainerStyle={s.discovery} showsVerticalScrollIndicator={false}>
+      {/* Saved Searches */}
+      {savedSearches.length > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Star size={16} color={colors.mutedForeground} />
+            <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.savedSearches')}</Text>
+          </View>
+          {savedSearches.map((saved) => {
+            const savedFilterCount = countActiveFilters(saved.filters)
+            return (
+              <View key={saved.id} style={s.historyRow}>
+                <Pressable
+                  onPress={() => loadSavedSearch(saved)}
+                  style={s.historyBtn}
+                >
+                  <SearchIcon size={14} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.historyText, { color: colors.foreground }]}>{saved.query}</Text>
+                    {savedFilterCount > 0 && (
+                      <Text style={[s.savedFilterHint, { color: colors.mutedForeground }]}>
+                        {t('search.activeFilters', { count: savedFilterCount })}
+                      </Text>
+                    )}
+                  </View>
+                </Pressable>
+                <Pressable onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
+                  <Trash2 size={14} color={colors.mutedForeground} />
+                </Pressable>
+              </View>
+            )
+          })}
+        </View>
+      )}
+
       {/* Trending */}
       <View style={s.section}>
         <View style={s.sectionHeader}>
@@ -247,7 +446,32 @@ export default function SearchScreen() {
             </Pressable>
           )}
         </View>
+        {/* Filter button */}
+        <Pressable onPress={() => setFiltersVisible(true)} hitSlop={8} style={s.filterButton}>
+          <SlidersHorizontal size={20} color={filterCount > 0 ? colors.primary : colors.mutedForeground} />
+          {filterCount > 0 && (
+            <View style={[s.filterBadge, { backgroundColor: colors.primary }]}>
+              <Text style={[s.filterBadgeText, { color: colors.primaryForeground }]}>{filterCount}</Text>
+            </View>
+          )}
+        </Pressable>
       </View>
+
+      {/* Save search + active filter indicator */}
+      {searched && filterCount > 0 && (
+        <View style={[s.activeFilterBar, { backgroundColor: `${colors.primary}10`, borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => setFiltersVisible(true)} style={s.activeFilterInfo}>
+            <SlidersHorizontal size={14} color={colors.primary} />
+            <Text style={[s.activeFilterText, { color: colors.primary }]}>
+              {t('search.activeFilters', { count: filterCount })}
+            </Text>
+          </Pressable>
+          <Pressable onPress={saveCurrentSearch} hitSlop={8} style={s.saveSearchBtn}>
+            <Star size={14} color={colors.primary} />
+            <Text style={[s.saveSearchText, { color: colors.primary }]}>{t('search.saveThisSearch')}</Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* Category filter chips */}
       {searched && (
@@ -344,6 +568,14 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      {/* Filter modal */}
+      <SearchFilters
+        visible={filtersVisible}
+        onClose={() => setFiltersVisible(false)}
+        filters={filters}
+        onApply={handleApplyFilters}
+      />
     </View>
   )
 }
@@ -359,6 +591,22 @@ const s = StyleSheet.create({
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 44,
   },
   searchInput: { flex: 1, fontSize: 15 },
+  filterButton: { position: 'relative', padding: 4 },
+  filterBadge: {
+    position: 'absolute', top: -2, right: -4,
+    minWidth: 16, height: 16, borderRadius: 8,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
+  },
+  filterBadgeText: { fontSize: 9, fontWeight: '700' },
+  activeFilterBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  activeFilterInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  activeFilterText: { fontSize: 12, fontWeight: '600' },
+  saveSearchBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  saveSearchText: { fontSize: 12, fontWeight: '500' },
   filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
   filterText: { fontSize: 12, fontWeight: '500' },
@@ -374,6 +622,7 @@ const s = StyleSheet.create({
   historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   historyText: { fontSize: 14 },
+  savedFilterHint: { fontSize: 11, marginTop: 1 },
   hintText: { fontSize: 14, lineHeight: 20 },
   categoryGrid: { gap: 8 },
   categoryCard: {

@@ -8,6 +8,16 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
+        "simulator": false
+      },
+      "env": {
+        "APP_ENV": "development"
+      }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
         "simulator": true
       },
       "env": {
@@ -24,6 +34,17 @@
       },
       "env": {
         "APP_ENV": "preview"
+      }
+    },
+    "preview-simulator": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "APP_ENV": "preview",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://wfsghkseyyxkkalcqtzq.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_mxe47ezCmOL_FsHxfCp9Fw_xMm7o6xK"
       }
     },
     "production": {

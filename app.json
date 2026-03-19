@@ -68,6 +68,31 @@
               "scheme": "https",
               "host": "tackbird-v2.vercel.app",
               "pathPrefix": "/events"
+            },
+            {
+              "scheme": "https",
+              "host": "tackbird-v2.vercel.app",
+              "pathPrefix": "/messages"
+            },
+            {
+              "scheme": "https",
+              "host": "tackbird-v2.vercel.app",
+              "pathPrefix": "/profile"
+            },
+            {
+              "scheme": "https",
+              "host": "tackbird-v2.vercel.app",
+              "pathPrefix": "/search"
+            },
+            {
+              "scheme": "https",
+              "host": "tackbird-v2.vercel.app",
+              "pathPrefix": "/settings"
+            },
+            {
+              "scheme": "https",
+              "host": "tackbird-v2.vercel.app",
+              "pathPrefix": "/bookings"
             }
           ],
           "category": [
@@ -83,7 +108,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-image",
       "expo-font",
       "expo-secure-store",
       [
