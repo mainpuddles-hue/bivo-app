@@ -23,7 +23,7 @@ interface TMEvent {
 
 interface TMResponse {
   _embedded?: { events?: TMEvent[] }
-  page?: { totalElements?: number }
+  page?: { totalElements?: number; totalPages?: number }
 }
 
 function mapCategory(e: TMEvent): string {
@@ -95,16 +95,26 @@ export async function fetchTicketmasterEvents(): Promise<CityEvent[]> {
 
   try {
     const today = new Date().toISOString().split('T')[0]
-    const url = `${BASE_URL}/events.json?city=Helsinki&countryCode=FI&startDateTime=${today}T00:00:00Z&size=100&sort=date,asc&apikey=${API_KEY}`
-    const res = await fetch(url)
-    if (!res.ok) return cache?.events ?? []
-    const json: TMResponse = await res.json()
-    const events = (json._embedded?.events ?? [])
-      .map(mapEvent)
-      .filter((e): e is CityEvent => e !== null)
+    const allEvents: CityEvent[] = []
 
-    cache = { events, fetchedAt: Date.now() }
-    return events
+    // Fetch up to 3 pages (max 200 per page, usually ~100 total for Helsinki)
+    for (let page = 0; page < 3; page++) {
+      const url = `${BASE_URL}/events.json?city=Helsinki&countryCode=FI&startDateTime=${today}T00:00:00Z&size=200&page=${page}&sort=date,asc&apikey=${API_KEY}`
+      const res = await fetch(url)
+      if (!res.ok) break
+      const json: TMResponse = await res.json()
+      const events = (json._embedded?.events ?? [])
+        .map(mapEvent)
+        .filter((e): e is CityEvent => e !== null)
+      allEvents.push(...events)
+
+      // Stop if no more pages
+      const totalPages = json.page?.totalPages ?? 1
+      if (page + 1 >= totalPages) break
+    }
+
+    cache = { events: allEvents, fetchedAt: Date.now() }
+    return allEvents
   } catch (err) {
     console.log('[ticketmaster] fetch error:', err)
     return cache?.events ?? []

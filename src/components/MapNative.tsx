@@ -316,7 +316,7 @@ export default function MapScreen() {
           .gte('location_lng', 24.75).lte('location_lng', 25.30)
           .order('event_date', { ascending: true })
           .limit(500),
-        fetchNearbyEvents(center.latitude, center.longitude, 5),
+        fetchNearbyEvents(60.1699, 24.9384, 10),  // Koko Helsinki — tapahtumat ovat kaupunkitasoa
         fetchTicketmasterEvents(),
       ])
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
