@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, Pressable, SectionList, Modal, FlatList, ScrollView,
-  StyleSheet, ActivityIndicator, Alert, Linking, Platform,
+  StyleSheet, ActivityIndicator, Alert, Linking, Platform, Share,
   RefreshControl, TextInput,
   type SectionListData,
 } from 'react-native'
@@ -79,7 +79,7 @@ function getRadiusKm(neighborhood: string): number {
   if (DENSE_NEIGHBORHOODS.has(neighborhood)) return 0.8
   return 1.5
 }
-const MAX_MAP_MARKERS = 15
+const MAX_MAP_MARKERS = 20
 const MAP_HEIGHT = 250
 
 const POST_PIN: Record<string, string> = {
@@ -228,6 +228,7 @@ export default function MapScreen() {
   const prevMarkersRef = useRef<string>('')
 
   // ── Load user profile neighborhood ──
+  const [needsNeighborhoodPick, setNeedsNeighborhoodPick] = useState(false)
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -241,7 +242,13 @@ export default function MapScreen() {
           .single() as { data: { naapurusto?: string } | null }
         if (!cancelled && data?.naapurusto && NEIGHBORHOOD_CENTERS[data.naapurusto]) {
           setSelectedNeighborhood(data.naapurusto)
+        } else if (!cancelled) {
+          setNeedsNeighborhoodPick(true)
+          setNeighborhoodModalVisible(true)
         }
+      } else if (!cancelled) {
+        setNeedsNeighborhoodPick(true)
+        setNeighborhoodModalVisible(true)
       }
     })()
     return () => { cancelled = true }
@@ -331,6 +338,7 @@ export default function MapScreen() {
   const allItems = useMemo<ListItem[]>(() => {
     const cLat = center.latitude
     const cLng = center.longitude
+    const eventRadius = Math.max(radiusKm, 3)
     const items: ListItem[] = []
 
     // Posts
@@ -356,12 +364,12 @@ export default function MapScreen() {
       })
     }
 
-    // Community events (future only)
+    // Community events (future only) — wider radius since events are worth traveling for
     for (const e of communityEvents) {
       if (e.location_lat == null || e.location_lng == null) continue
       if (e.event_date && isPast(e.event_date)) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
-      if (dist > radiusKm) continue
+      if (dist > eventRadius) continue
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
       const creator = (e as any).creator?.name ?? ''
       const evParts = [dateStr, e.location_name, creator].filter(Boolean)
@@ -379,12 +387,12 @@ export default function MapScreen() {
       })
     }
 
-    // City events (future only)
+    // City events (future only) — wider radius since events are sparse and users travel further
     for (const c of cityEvents) {
       if (c.latitude == null || c.longitude == null) continue
       if (c.start_time && isPast(c.start_time)) continue
       const dist = haversineKm(cLat, cLng, c.latitude, c.longitude)
-      if (dist > radiusKm) continue
+      if (dist > eventRadius) continue
       const name = locale === 'sv' ? (c.name_sv ?? c.name_fi) :
                    locale === 'en' ? (c.name_en ?? c.name_fi) : c.name_fi
       const ceDateStr = new Date(c.start_time).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -495,7 +503,11 @@ export default function MapScreen() {
     }
 
     const result: Section[] = []
-    if (eventsToday.length > 0) result.push({ title: t('events.filterToday'), data: eventsToday })
+    // Always show "today" section when events filter active (even if empty — tells user nothing is on today)
+    const showEvents = activeFilter === 'all' || activeFilter === 'events'
+    if (showEvents && (eventsToday.length > 0 || eventsUpcoming.length > 0)) {
+      result.push({ title: t('events.filterToday'), data: eventsToday.length > 0 ? eventsToday : [{ id: '__empty_today__', kind: 'empty' as any, title: 'Ei tapahtumia tänään', subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }] })
+    }
     if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming })
     if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems })
     if (placeItems.length > 0) result.push({ title: t('map.layerPlaces'), data: placeItems })
@@ -566,23 +578,11 @@ export default function MapScreen() {
   }, [sections])
 
   const handleMarkerPress = useCallback((marker: StableMarker) => {
-    // Find item via O(1) lookup — always open detail sheet
     const item = itemLookup.get(marker.key)
-    if (item) {
+    if (item && !item.id.startsWith('__empty_')) {
       setSelectedItem(item)
     }
-
-    // Also scroll list to that item via O(1) lookup
-    const pos = sectionIndexLookup.get(marker.key)
-    if (pos && sectionListRef.current) {
-      sectionListRef.current.scrollToLocation({
-        sectionIndex: pos.sectionIndex,
-        itemIndex: pos.itemIndex,
-        animated: true,
-        viewOffset: 50,
-      })
-    }
-  }, [itemLookup, sectionIndexLookup])
+  }, [itemLookup])
 
   const handleGPSSelect = useCallback(async () => {
     try {
@@ -613,25 +613,37 @@ export default function MapScreen() {
     </View>
   ), [colors])
 
-  const renderItem = useCallback(({ item }: { item: ListItem }) => (
-    <Pressable
-      style={[styles.listItem, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
-      onPress={() => handleListItemNavigate(item)}
-    >
-      <View style={[styles.listDot, { backgroundColor: item.color }]} />
-      <View style={styles.listItemContent}>
-        <Text style={[styles.listItemTitle, { color: colors.foreground }]} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={[styles.listItemSubtitle, { color: colors.mutedForeground }]} numberOfLines={2}>
-          {item.subtitle}
-        </Text>
-        <Text style={[styles.listItemMeta, { color: colors.mutedForeground }]}>
-          {formatDistance(item.distance)}
-        </Text>
-      </View>
-    </Pressable>
-  ), [colors, handleListItemNavigate])
+  const renderItem = useCallback(({ item }: { item: ListItem }) => {
+    // Empty placeholder row (e.g., "Ei tapahtumia tänään")
+    if (item.id.startsWith('__empty_')) {
+      return (
+        <View style={[styles.listItem, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <Text style={[styles.listItemSubtitle, { color: colors.mutedForeground, fontStyle: 'italic' }]}>
+            {item.title}
+          </Text>
+        </View>
+      )
+    }
+    return (
+      <Pressable
+        style={[styles.listItem, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
+        onPress={() => handleListItemNavigate(item)}
+      >
+        <View style={[styles.listDot, { backgroundColor: item.color }]} />
+        <View style={styles.listItemContent}>
+          <Text style={[styles.listItemTitle, { color: colors.foreground }]} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text style={[styles.listItemSubtitle, { color: colors.mutedForeground }]} numberOfLines={2}>
+            {item.subtitle}
+          </Text>
+          <Text style={[styles.listItemMeta, { color: colors.mutedForeground }]}>
+            {formatDistance(item.distance)}
+          </Text>
+        </View>
+      </Pressable>
+    )
+  }, [colors, handleListItemNavigate])
 
   const keyExtractor = useCallback((item: ListItem) => item.id, [])
 
@@ -727,6 +739,15 @@ export default function MapScreen() {
           <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? '#FFF' : colors.foreground} />
         </Pressable>
       </View>
+
+      {/* ── Map info bar ── */}
+      {renderedMarkers.length > 0 && filteredItems.length > renderedMarkers.length && (
+        <View style={[styles.mapInfoBar, { backgroundColor: colors.muted }]}>
+          <Text style={[styles.mapInfoText, { color: colors.mutedForeground }]}>
+            {renderedMarkers.length} / {filteredItems.length} lähintä kartalla
+          </Text>
+        </View>
+      )}
 
       {/* ── Filter Pills ── */}
       <View style={[styles.filterRow, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
@@ -1008,6 +1029,19 @@ export default function MapScreen() {
                 <Navigation size={16} color={colors.foreground} />
                 <Text style={[styles.detailActionText, { color: colors.foreground }]}>{t('map.directions')}</Text>
               </Pressable>
+              <Pressable
+                onPress={() => {
+                  const shareUrl = selectedItem.kind === 'city_event'
+                    ? (selectedItem.sourceData as CityEvent).info_url
+                    : selectedItem.kind === 'place' && (selectedItem.sourceData as LocalPlace).website
+                    ? (selectedItem.sourceData as LocalPlace).website
+                    : `https://www.google.com/maps/search/?api=1&query=${selectedItem.latitude},${selectedItem.longitude}`
+                  Share.share({ message: `${selectedItem.title}\n${shareUrl ?? ''}`.trim() }).catch(() => {})
+                }}
+                style={[styles.detailActionBtn, { backgroundColor: colors.muted, flex: 0, paddingHorizontal: 14 }]}
+              >
+                <ExternalLink size={16} color={colors.foreground} />
+              </Pressable>
             </View>
           </View>
         </Modal>
@@ -1075,6 +1109,11 @@ export default function MapScreen() {
                 ]}>
                   {item}
                 </Text>
+                {userLocation && NEIGHBORHOOD_CENTERS[item] && (
+                  <Text style={[styles.neighborhoodRowDist, { color: colors.mutedForeground }]}>
+                    {formatDistance(haversineKm(userLocation.latitude, userLocation.longitude, NEIGHBORHOOD_CENTERS[item].latitude, NEIGHBORHOOD_CENTERS[item].longitude))}
+                  </Text>
+                )}
               </Pressable>
             )}
           />
@@ -1387,5 +1426,17 @@ const styles = StyleSheet.create({
   },
   neighborhoodRowText: {
     fontSize: 15,
+    flex: 1,
+  },
+  neighborhoodRowDist: {
+    fontSize: 12,
+  },
+  mapInfoBar: {
+    paddingVertical: 4,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  mapInfoText: {
+    fontSize: 11,
   },
 })
