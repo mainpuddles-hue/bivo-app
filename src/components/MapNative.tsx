@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
-  View, Text, Pressable, SectionList, Modal, FlatList,
-  StyleSheet, ActivityIndicator, Alert, Linking, Platform,
+  View, Text, Pressable, SectionList, Modal, FlatList, ScrollView,
+  StyleSheet, ActivityIndicator, Alert, Linking,
   RefreshControl, TextInput,
   type SectionListData,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
+import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useRouter } from 'expo-router'
+import { Image } from 'expo-image'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
 import * as Location from 'expo-location'
 import {
-  ChevronDown, ChevronRight, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft,
+  ChevronDown, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -124,6 +126,13 @@ function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
 }
 
+function isPast(dateStr: string): boolean {
+  const d = new Date(dateStr)
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  return d < now
+}
+
 function isToday(dateStr: string): boolean {
   const d = new Date(dateStr)
   const now = new Date()
@@ -201,6 +210,7 @@ export default function MapScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
 
   // Stable marker state for diffing
   const [renderedMarkers, setRenderedMarkers] = useState<StableMarker[]>([])
@@ -208,19 +218,22 @@ export default function MapScreen() {
 
   // ── Load user profile neighborhood ──
   useEffect(() => {
-    (async () => {
+    let cancelled = false
+    ;(async () => {
       const { data: { user } } = await supabase.auth.getUser()
+      if (cancelled) return
       if (user) {
         const { data } = await (supabase
           .from('profiles') as any)
           .select('naapurusto')
           .eq('id', user.id)
           .single() as { data: { naapurusto?: string } | null }
-        if (data?.naapurusto && NEIGHBORHOOD_CENTERS[data.naapurusto]) {
+        if (!cancelled && data?.naapurusto && NEIGHBORHOOD_CENTERS[data.naapurusto]) {
           setSelectedNeighborhood(data.naapurusto)
         }
       }
     })()
+    return () => { cancelled = true }
   }, [supabase])
 
   // ── Get center for current neighborhood ──
@@ -231,12 +244,11 @@ export default function MapScreen() {
     return NEIGHBORHOOD_CENTERS[selectedNeighborhood] ?? NEIGHBORHOOD_CENTERS['Kallio']
   }, [selectedNeighborhood, userLocation])
 
-  // ── Fetch all data ──
-  const fetchData = useCallback(async () => {
-    setLoading(true)
+  // ── Fetch posts + events (global, once) ──
+  const fetchGlobalData = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
-      const [postsRes, eventsRes, placesRes, cityEventsData] = await Promise.all([
+      const [postsRes, eventsRes, cityEventsData] = await Promise.all([
         supabase.from('posts')
           .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, is_active, like_count, comment_count, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
@@ -251,34 +263,46 @@ export default function MapScreen() {
           .not('location_lng', 'is', null)
           .order('event_date', { ascending: true })
           .limit(500),
-        supabase.from('local_places')
-          .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags, created_at')
-          .not('latitude', 'is', null)
-          .not('longitude', 'is', null)
-          .limit(1000),
         fetchHelsinkiEvents(),
       ])
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
-      if (placesRes.data) setPlaces(placesRes.data as unknown as LocalPlace[])
       setCityEvents(cityEventsData)
       if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
       if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
-      if (placesRes.error) console.log('[map] places error:', placesRes.error.message)
     } catch (err) {
-      console.log('[map] fetch error:', err)
-    } finally {
-      setLoading(false)
+      console.log('[map] global fetch error:', err)
     }
   }, [supabase])
 
+  // ── Fetch places from Helsinki Palvelukartta (per neighborhood) ──
+  const fetchPlaces = useCallback(async () => {
+    try {
+      const placesData = await fetchHelsinkiPlaces(center.latitude, center.longitude, RADIUS_KM * 1000)
+      setPlaces(placesData)
+      console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
+    } catch (err) {
+      console.log('[map] places fetch error:', err)
+    }
+  }, [center, selectedNeighborhood])
+
+  // ── Initial load ──
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    await Promise.all([fetchGlobalData(), fetchPlaces()])
+    setLoading(false)
+  }, [fetchGlobalData, fetchPlaces])
+
   useEffect(() => { fetchData() }, [fetchData])
+
+  // Re-fetch places when neighborhood changes
+  useEffect(() => { fetchPlaces() }, [fetchPlaces])
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
-    await fetchData()
+    await Promise.all([fetchGlobalData(), fetchPlaces()])
     setRefreshing(false)
-  }, [fetchData])
+  }, [fetchGlobalData, fetchPlaces])
 
   // ── Build list items filtered by radius ──
   const allItems = useMemo<ListItem[]>(() => {
@@ -309,9 +333,10 @@ export default function MapScreen() {
       })
     }
 
-    // Community events
+    // Community events (future only)
     for (const e of communityEvents) {
       if (e.location_lat == null || e.location_lng == null) continue
+      if (e.event_date && isPast(e.event_date)) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
       if (dist > RADIUS_KM) continue
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
@@ -331,9 +356,10 @@ export default function MapScreen() {
       })
     }
 
-    // City events
+    // City events (future only)
     for (const c of cityEvents) {
       if (c.latitude == null || c.longitude == null) continue
+      if (c.start_time && isPast(c.start_time)) continue
       const dist = haversineKm(cLat, cLng, c.latitude, c.longitude)
       if (dist > RADIUS_KM) continue
       const name = locale === 'sv' ? (c.name_sv ?? c.name_fi) :
@@ -358,7 +384,9 @@ export default function MapScreen() {
     for (const pl of places) {
       const dist = haversineKm(cLat, cLng, pl.latitude, pl.longitude)
       if (dist > RADIUS_KM) continue
-      const plLabel = PLACE_LABEL[pl.category] ?? ''
+      const plLabel = t(`placeCategories.${pl.category}`) !== `placeCategories.${pl.category}`
+        ? t(`placeCategories.${pl.category}`)
+        : PLACE_LABEL[pl.category] ?? ''
       const plParts = [plLabel, pl.address].filter(Boolean)
       items.push({
         id: `place-${pl.id}`,
@@ -374,7 +402,7 @@ export default function MapScreen() {
     }
 
     return items
-  }, [posts, communityEvents, cityEvents, places, center, locale])
+  }, [posts, communityEvents, cityEvents, places, center, locale, t])
 
   // ── Filter by active filter + search ──
   const filteredItems = useMemo(() => {
@@ -390,13 +418,21 @@ export default function MapScreen() {
     return items
   }, [allItems, activeFilter, searchQuery])
 
-  // ── Counts for filter pills ──
-  const counts = useMemo(() => ({
-    all: allItems.length,
-    posts: allItems.filter(i => i.kind === 'post').length,
-    events: allItems.filter(i => i.kind === 'community_event' || i.kind === 'city_event').length,
-    places: allItems.filter(i => i.kind === 'place').length,
-  }), [allItems])
+  // ── Counts for filter pills (reflect search filtering when active) ──
+  const counts = useMemo(() => {
+    const base = searchQuery.trim()
+      ? (() => {
+          const q = searchQuery.toLowerCase().trim()
+          return allItems.filter(i => i.title.toLowerCase().includes(q) || i.subtitle.toLowerCase().includes(q))
+        })()
+      : allItems
+    return {
+      all: base.length,
+      posts: base.filter(i => i.kind === 'post').length,
+      events: base.filter(i => i.kind === 'community_event' || i.kind === 'city_event').length,
+      places: base.filter(i => i.kind === 'place').length,
+    }
+  }, [allItems, searchQuery])
 
   // ── Build sections ──
   const sections = useMemo(() => {
@@ -409,8 +445,6 @@ export default function MapScreen() {
       if (item.kind === 'community_event' || item.kind === 'city_event') {
         if (item.sortDate && isToday(item.sortDate)) {
           eventsToday.push(item)
-        } else if (item.sortDate && isWithin7Days(item.sortDate)) {
-          eventsUpcoming.push(item)
         } else {
           eventsUpcoming.push(item)
         }
@@ -428,13 +462,13 @@ export default function MapScreen() {
     placeItems.sort((a, b) => a.distance - b.distance)
 
     const result: Section[] = []
-    if (eventsToday.length > 0) result.push({ title: 'Tapahtumat tänään', data: eventsToday })
-    if (eventsUpcoming.length > 0) result.push({ title: 'Tulevat tapahtumat', data: eventsUpcoming })
-    if (postItems.length > 0) result.push({ title: 'Ilmoitukset', data: postItems })
-    if (placeItems.length > 0) result.push({ title: 'Paikat', data: placeItems })
+    if (eventsToday.length > 0) result.push({ title: t('events.filterToday'), data: eventsToday })
+    if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming })
+    if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems })
+    if (placeItems.length > 0) result.push({ title: t('map.layerPlaces'), data: placeItems })
 
     return result
-  }, [filteredItems])
+  }, [filteredItems, t])
 
   // ── Map markers (max 15, stable diff) ──
   useEffect(() => {
@@ -481,23 +515,14 @@ export default function MapScreen() {
     if (item.kind === 'post') {
       const post = item.sourceData as Post
       router.push(`/post/${post.id}`)
-    } else if (item.kind === 'city_event') {
-      const ce = item.sourceData as CityEvent
-      if (ce.info_url) {
-        Linking.openURL(ce.info_url).catch(() => {})
-      }
-    } else if (item.kind === 'community_event') {
-      const ev = item.sourceData as Event
-      if (ev.post_id) {
-        router.push(`/post/${ev.post_id}`)
-      }
-    } else if (item.kind === 'place') {
-      const pl = item.sourceData as LocalPlace
-      const url = Platform.select({
-        ios: `maps:0,0?q=${pl.latitude},${pl.longitude}`,
-        default: `geo:${pl.latitude},${pl.longitude}?q=${pl.latitude},${pl.longitude}`,
-      })
-      Linking.openURL(url).catch(() => {})
+    } else {
+      // Open detail sheet for events and places
+      setSelectedItem(item)
+      // Also animate map
+      mapRef.current?.animateToRegion({
+        latitude: item.latitude, longitude: item.longitude,
+        latitudeDelta: 0.005, longitudeDelta: 0.005,
+      }, 400)
     }
   }, [router])
 
@@ -531,7 +556,7 @@ export default function MapScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync()
       if (status !== 'granted') {
-        Alert.alert('Sijainti', 'Sijaintilupa tarvitaan.')
+        Alert.alert(t('map.locationPermission'), t('map.locationPermissionDesc'))
         return
       }
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
@@ -539,9 +564,9 @@ export default function MapScreen() {
       setSelectedNeighborhood('__gps__')
       setNeighborhoodModalVisible(false)
     } catch {
-      Alert.alert('Sijainti', 'Sijaintia ei voitu hakea.')
+      Alert.alert(t('map.locationPermission'), t('map.locationFailed'))
     }
-  }, [])
+  }, [t])
 
   // ── Render ──
 
@@ -585,7 +610,7 @@ export default function MapScreen() {
 
   const keyExtractor = useCallback((item: ListItem) => item.id, [])
 
-  const displayNeighborhood = selectedNeighborhood === '__gps__' ? 'Lähellä minua' : selectedNeighborhood
+  const displayNeighborhood = selectedNeighborhood === '__gps__' ? t('map.myLocation') : selectedNeighborhood
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -620,7 +645,7 @@ export default function MapScreen() {
             style={[styles.searchInput, { color: colors.foreground }]}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Hae paikkoja ja tapahtumia..."
+            placeholder={t('map.searchPlaceholder')}
             placeholderTextColor={colors.mutedForeground}
             autoFocus
           />
@@ -671,40 +696,49 @@ export default function MapScreen() {
 
       {/* ── Filter Pills ── */}
       <View style={[styles.filterRow, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        {([
-          { key: 'all' as FilterKey, label: 'Kaikki' },
-          { key: 'posts' as FilterKey, label: 'Ilmoitukset' },
-          { key: 'events' as FilterKey, label: 'Tapahtumat' },
-          { key: 'places' as FilterKey, label: 'Paikat' },
-        ]).map(f => {
-          const isActive = activeFilter === f.key
-          return (
-            <Pressable
-              key={f.key}
-              style={[
-                styles.filterPill,
-                { borderColor: isActive ? colors.primary : colors.border },
-                isActive && { backgroundColor: colors.primary },
-              ]}
-              onPress={() => setActiveFilter(f.key)}
-            >
-              <Text style={[
-                styles.filterPillText,
-                { color: isActive ? colors.primaryForeground : colors.foreground },
-              ]}>
-                {f.label} {counts[f.key]}
-              </Text>
-            </Pressable>
-          )
-        })}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
+          {([
+            { key: 'all' as FilterKey, label: t('events.filterAll') },
+            { key: 'posts' as FilterKey, label: t('map.layerPosts') },
+            { key: 'events' as FilterKey, label: t('map.layerEvents') },
+            { key: 'places' as FilterKey, label: t('map.layerPlaces') },
+          ]).map(f => {
+            const isActive = activeFilter === f.key
+            return (
+              <Pressable
+                key={f.key}
+                style={[
+                  styles.filterPill,
+                  { borderColor: isActive ? colors.primary : colors.border },
+                  isActive && { backgroundColor: colors.primary },
+                ]}
+                onPress={() => setActiveFilter(f.key)}
+              >
+                <Text style={[
+                  styles.filterPillText,
+                  { color: isActive ? colors.primaryForeground : colors.foreground },
+                ]}>
+                  {f.label} {counts[f.key]}
+                </Text>
+              </Pressable>
+            )
+          })}
+        </ScrollView>
       </View>
 
       {/* ── Section List ── */}
-      {sections.length === 0 && !loading ? (
+      {loading && sections.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+            {t('map.loadingMap')}
+          </Text>
+        </View>
+      ) : sections.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MapPin size={32} color={colors.mutedForeground} />
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            Ei tuloksia tällä alueella
+            {t('map.noResults')}
           </Text>
         </View>
       ) : (
@@ -721,19 +755,170 @@ export default function MapScreen() {
             <View style={styles.emptyList}>
               <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
               <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-                {searchQuery ? 'Ei tuloksia' : `Ei sisältöä alueella ${displayNeighborhood}`}
+                {searchQuery ? t('map.noResults') : t('map.noResultsFilterHint')}
               </Text>
               <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
-                {searchQuery ? 'Kokeile toista hakusanaa' : 'Kokeile toista naapurustoa tai laajenna hakua'}
+                {searchQuery ? t('map.noSearchResults') : t('map.noResultsFilterHint')}
               </Text>
             </View>
           }
-          getItemLayout={(data, index) => ({
-            length: 72,
-            offset: 72 * index,
-            index,
-          })}
         />
+      )}
+
+      {/* ── Detail Sheet (events & places) ── */}
+      {selectedItem && (
+        <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedItem(null)}>
+          <View style={[styles.detailModal, { backgroundColor: colors.background }]}>
+            {/* Header */}
+            <View style={[styles.detailHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.detailColorBar, { backgroundColor: selectedItem.color }]} />
+              <Text style={[styles.detailHeaderTitle, { color: colors.foreground }]} numberOfLines={1}>
+                {selectedItem.kind === 'city_event' ? t('feedContent.cityEventLabel')
+                  : selectedItem.kind === 'community_event' ? t('map.event')
+                  : t('places.title')}
+              </Text>
+              <Pressable onPress={() => setSelectedItem(null)} hitSlop={12}>
+                <X size={22} color={colors.foreground} />
+              </Pressable>
+            </View>
+
+            {/* Image */}
+            {(() => {
+              const imgUrl = selectedItem.kind === 'city_event'
+                ? (selectedItem.sourceData as CityEvent).image_url
+                : selectedItem.kind === 'place'
+                ? (selectedItem.sourceData as LocalPlace).image_url
+                : null
+              return imgUrl ? (
+                <Image source={{ uri: imgUrl }} style={styles.detailImage} contentFit="cover" />
+              ) : null
+            })()}
+
+            {/* Content */}
+            <View style={styles.detailBody}>
+              <Text style={[styles.detailTitle, { color: colors.foreground }]}>{selectedItem.title}</Text>
+
+              {/* Date & time */}
+              {selectedItem.sortDate && (
+                <View style={styles.detailRow}>
+                  <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
+                    {new Date(selectedItem.sortDate).toLocaleDateString(
+                      locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', {
+                      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                      hour: '2-digit', minute: '2-digit',
+                    })}
+                  </Text>
+                </View>
+              )}
+
+              {/* Location */}
+              {(() => {
+                const locName = selectedItem.kind === 'city_event'
+                  ? (selectedItem.sourceData as CityEvent).location_name
+                  : selectedItem.kind === 'community_event'
+                  ? (selectedItem.sourceData as Event).location_name
+                  : selectedItem.kind === 'place'
+                  ? (selectedItem.sourceData as LocalPlace).address
+                  : null
+                return locName ? (
+                  <View style={styles.detailRow}>
+                    <MapPin size={14} color={colors.primary} />
+                    <Text style={[styles.detailLabel, { color: colors.foreground }]}>{locName}</Text>
+                  </View>
+                ) : null
+              })()}
+
+              {/* Distance */}
+              <View style={styles.detailRow}>
+                <Navigation size={14} color={colors.mutedForeground} />
+                <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{formatDistance(selectedItem.distance)}</Text>
+              </View>
+
+              {/* Price (city events) */}
+              {selectedItem.kind === 'city_event' && (() => {
+                const ce = selectedItem.sourceData as CityEvent
+                return (
+                  <View style={[styles.detailBadge, { backgroundColor: ce.is_free ? '#2B8A6220' : '#E8A05020' }]}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: ce.is_free ? '#2B8A62' : '#E8A050' }}>
+                      {ce.is_free ? t('events.free') : ce.price_info ?? t('events.paid')}
+                    </Text>
+                  </View>
+                )
+              })()}
+
+              {/* Description */}
+              {(() => {
+                let desc: string | null = null
+                if (selectedItem.kind === 'city_event') {
+                  const ce = selectedItem.sourceData as CityEvent
+                  desc = locale === 'sv' ? (ce.description_sv ?? ce.description_fi)
+                    : locale === 'en' ? (ce.description_en ?? ce.description_fi)
+                    : ce.description_fi
+                } else if (selectedItem.kind === 'community_event') {
+                  desc = (selectedItem.sourceData as Event).description
+                } else if (selectedItem.kind === 'place') {
+                  desc = (selectedItem.sourceData as LocalPlace).description
+                }
+                return desc ? (
+                  <Text style={[styles.detailDesc, { color: colors.mutedForeground }]}>{desc}</Text>
+                ) : null
+              })()}
+
+              {/* Place extra info */}
+              {selectedItem.kind === 'place' && (() => {
+                const pl = selectedItem.sourceData as LocalPlace
+                return (
+                  <View style={{ gap: 6, marginTop: 8 }}>
+                    {pl.opening_hours && (
+                      <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{t('places.openingHours')}: {pl.opening_hours}</Text>
+                    )}
+                    {pl.phone && (
+                      <Pressable onPress={() => Linking.openURL(`tel:${pl.phone}`).catch(() => {})}>
+                        <Text style={[styles.detailLabel, { color: colors.primary }]}>{pl.phone}</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                )
+              })()}
+
+              {/* Organizer (city events) */}
+              {selectedItem.kind === 'city_event' && (selectedItem.sourceData as CityEvent).organizer && (
+                <Text style={[styles.detailLabel, { color: colors.mutedForeground, marginTop: 8 }]}>
+                  {t('events.creator')}: {(selectedItem.sourceData as CityEvent).organizer}
+                </Text>
+              )}
+            </View>
+
+            {/* Actions */}
+            <View style={styles.detailActions}>
+              {selectedItem.kind === 'city_event' && (selectedItem.sourceData as CityEvent).info_url && (
+                <Pressable
+                  onPress={() => Linking.openURL((selectedItem.sourceData as CityEvent).info_url!).catch(() => {})}
+                  style={[styles.detailActionBtn, { backgroundColor: selectedItem.color }]}
+                >
+                  <ExternalLink size={16} color="#FFF" />
+                  <Text style={styles.detailActionText}>{t('map.moreInfo')}</Text>
+                </Pressable>
+              )}
+              {selectedItem.kind === 'place' && (selectedItem.sourceData as LocalPlace).website && (
+                <Pressable
+                  onPress={() => Linking.openURL((selectedItem.sourceData as LocalPlace).website!).catch(() => {})}
+                  style={[styles.detailActionBtn, { backgroundColor: selectedItem.color }]}
+                >
+                  <ExternalLink size={16} color="#FFF" />
+                  <Text style={styles.detailActionText}>{t('map.website')}</Text>
+                </Pressable>
+              )}
+              <Pressable
+                onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${selectedItem.latitude},${selectedItem.longitude}`).catch(() => {})}
+                style={[styles.detailActionBtn, { backgroundColor: colors.muted }]}
+              >
+                <Navigation size={16} color={colors.foreground} />
+                <Text style={[styles.detailActionText, { color: colors.foreground }]}>{t('map.directions')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
       )}
 
       {/* ── Neighborhood Modal ── */}
@@ -746,7 +931,7 @@ export default function MapScreen() {
         <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
             <Text style={[styles.modalTitle, { color: colors.foreground }]}>
-              Valitse naapurusto
+              {t('map.selectArea')}
             </Text>
             <Pressable onPress={() => setNeighborhoodModalVisible(false)} hitSlop={12}>
               <X size={24} color={colors.foreground} />
@@ -763,7 +948,7 @@ export default function MapScreen() {
           >
             <Navigation size={18} color={colors.primary} />
             <Text style={[styles.neighborhoodRowText, { color: colors.primary, fontWeight: '600' }]}>
-              Lähellä minua
+              {t('map.myLocation')}
             </Text>
           </Pressable>
 
@@ -823,11 +1008,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   neighborhoodButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 10,
     borderWidth: 1,
   },
@@ -861,6 +1047,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  filterScrollContent: {
+    flexDirection: 'row',
+    gap: 8,
   },
   filterPill: {
     paddingHorizontal: 12,
@@ -954,6 +1144,83 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     paddingHorizontal: 32,
+  },
+
+  // ── Detail Modal ──
+  detailModal: {
+    flex: 1,
+  },
+  detailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  detailColorBar: {
+    width: 4,
+    height: 20,
+    borderRadius: 2,
+    marginRight: 10,
+  },
+  detailHeaderTitle: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  detailImage: {
+    width: '100%',
+    height: 200,
+  },
+  detailBody: {
+    padding: 16,
+    gap: 10,
+  },
+  detailTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 26,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  detailBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  detailDesc: {
+    fontSize: 14,
+    lineHeight: 21,
+    marginTop: 4,
+  },
+  detailActions: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 16,
+    marginTop: 'auto' as any,
+  },
+  detailActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  detailActionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFF',
   },
 
   // ── Empty ──
