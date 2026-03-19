@@ -68,7 +68,17 @@ const NEIGHBORHOOD_CENTERS: Record<string, { latitude: number; longitude: number
 
 // ── Constants ──
 
-const RADIUS_KM = 1
+// Adaptive radius: dense central neighborhoods get 0.8km, outer suburbs 1.5km
+const DENSE_NEIGHBORHOODS = new Set([
+  'Kallio', 'Sörnäinen', 'Kamppi', 'Punavuori', 'Kruununhaka',
+  'Katajanokka', 'Hakaniemi', 'Ullanlinna', 'Eira', 'Töölö',
+  'Ruoholahti', 'Jätkäsaari', 'Merihaka', 'Hermanni', 'Alppiharju',
+])
+function getRadiusKm(neighborhood: string): number {
+  if (neighborhood === '__gps__') return 1.0
+  if (DENSE_NEIGHBORHOODS.has(neighborhood)) return 0.8
+  return 1.5
+}
 const MAX_MAP_MARKERS = 15
 const MAP_HEIGHT = 250
 
@@ -278,7 +288,8 @@ export default function MapScreen() {
   // ── Fetch places from Helsinki Palvelukartta (per neighborhood) ──
   const fetchPlaces = useCallback(async () => {
     try {
-      const placesData = await fetchHelsinkiPlaces(center.latitude, center.longitude, RADIUS_KM * 1000)
+      const radius = getRadiusKm(selectedNeighborhood)
+      const placesData = await fetchHelsinkiPlaces(center.latitude, center.longitude, radius * 1000)
       setPlaces(placesData)
       console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
     } catch (err) {
@@ -305,6 +316,7 @@ export default function MapScreen() {
   }, [fetchGlobalData, fetchPlaces])
 
   // ── Build list items filtered by radius ──
+  const radiusKm = getRadiusKm(selectedNeighborhood)
   const allItems = useMemo<ListItem[]>(() => {
     const cLat = center.latitude
     const cLng = center.longitude
@@ -314,7 +326,7 @@ export default function MapScreen() {
     for (const p of posts) {
       if (p.latitude == null || p.longitude == null) continue
       const dist = haversineKm(cLat, cLng, p.latitude, p.longitude)
-      if (dist > RADIUS_KM) continue
+      if (dist > radiusKm) continue
       const cat = CATEGORIES[p.type as PostType]
       const catLabel = cat ? t(cat.label) : ''
       const userName = (p as any).user?.name ?? ''
@@ -338,7 +350,7 @@ export default function MapScreen() {
       if (e.location_lat == null || e.location_lng == null) continue
       if (e.event_date && isPast(e.event_date)) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
-      if (dist > RADIUS_KM) continue
+      if (dist > radiusKm) continue
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
       const creator = (e as any).creator?.name ?? ''
       const evParts = [dateStr, e.location_name, creator].filter(Boolean)
@@ -361,7 +373,7 @@ export default function MapScreen() {
       if (c.latitude == null || c.longitude == null) continue
       if (c.start_time && isPast(c.start_time)) continue
       const dist = haversineKm(cLat, cLng, c.latitude, c.longitude)
-      if (dist > RADIUS_KM) continue
+      if (dist > radiusKm) continue
       const name = locale === 'sv' ? (c.name_sv ?? c.name_fi) :
                    locale === 'en' ? (c.name_en ?? c.name_fi) : c.name_fi
       const ceDateStr = new Date(c.start_time).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -383,7 +395,7 @@ export default function MapScreen() {
     // Places
     for (const pl of places) {
       const dist = haversineKm(cLat, cLng, pl.latitude, pl.longitude)
-      if (dist > RADIUS_KM) continue
+      if (dist > radiusKm) continue
       const plLabel = t(`placeCategories.${pl.category}`) !== `placeCategories.${pl.category}`
         ? t(`placeCategories.${pl.category}`)
         : PLACE_LABEL[pl.category] ?? ''
@@ -402,7 +414,7 @@ export default function MapScreen() {
     }
 
     return items
-  }, [posts, communityEvents, cityEvents, places, center, locale, t])
+  }, [posts, communityEvents, cityEvents, places, center, locale, t, radiusKm])
 
   // ── Filter by active filter + search ──
   const filteredItems = useMemo(() => {
@@ -492,12 +504,13 @@ export default function MapScreen() {
 
   // ── Animate map to center when neighborhood changes ──
   useEffect(() => {
+    const delta = DENSE_NEIGHBORHOODS.has(selectedNeighborhood) ? 0.012 : 0.022
     mapRef.current?.animateToRegion({
       ...center,
-      latitudeDelta: 0.015,
-      longitudeDelta: 0.015,
+      latitudeDelta: delta,
+      longitudeDelta: delta,
     }, 500)
-  }, [center])
+  }, [center, selectedNeighborhood])
 
   // ── Actions ──
 
@@ -527,7 +540,18 @@ export default function MapScreen() {
   }, [router])
 
   const handleMarkerPress = useCallback((marker: StableMarker) => {
-    // Find section and item index
+    // Find item in filtered list and open detail
+    const item = filteredItems.find(i => i.id === marker.key)
+    if (item) {
+      if (item.kind === 'post') {
+        const post = item.sourceData as Post
+        router.push(`/post/${post.id}`)
+      } else {
+        setSelectedItem(item)
+      }
+    }
+
+    // Also scroll list to that item
     let sectionIndex = 0
     let itemIndex = 0
     let found = false
@@ -550,7 +574,7 @@ export default function MapScreen() {
         viewOffset: 50,
       })
     }
-  }, [sections])
+  }, [sections, filteredItems, router])
 
   const handleGPSSelect = useCallback(async () => {
     try {
