@@ -1399,7 +1399,15 @@
     "layerPosts": "Annonser",
     "layerEvents": "Evenemang",
     "layerPlaces": "Platser",
-    "items": "objekt"
+    "items": "objekt",
+    "noSearchResults": "Inga resultat för",
+    "clearSearch": "Rensa sökning",
+    "showAll": "Visa alla",
+    "noContentInArea": "Inget innehåll i området",
+    "tryAnotherArea": "Prova ett annat område",
+    "loadMoreEvents": "Ladda fler evenemang",
+    "totalEvents": "totalt",
+    "viewPost": "Visa annons"
   },
   "privacy": {
     "title": "Integritetspolicy",

@@ -1399,7 +1399,15 @@
     "layerPosts": "Posts",
     "layerEvents": "Events",
     "layerPlaces": "Places",
-    "items": "items"
+    "items": "items",
+    "noSearchResults": "No results for",
+    "clearSearch": "Clear search",
+    "showAll": "Show all",
+    "noContentInArea": "No content in area",
+    "tryAnotherArea": "Try another neighborhood",
+    "loadMoreEvents": "Load more events",
+    "totalEvents": "total",
+    "viewPost": "View post"
   },
   "privacy": {
     "title": "Privacy Policy",

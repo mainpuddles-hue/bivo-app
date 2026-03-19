@@ -1426,7 +1426,15 @@
     "layerPosts": "Ilmoitukset",
     "layerEvents": "Tapahtumat",
     "layerPlaces": "Paikat",
-    "items": "kohdetta"
+    "items": "kohdetta",
+    "noSearchResults": "Ei tuloksia haulle",
+    "clearSearch": "Tyhjennä haku",
+    "showAll": "Näytä kaikki",
+    "noContentInArea": "Ei sisältöä alueella",
+    "tryAnotherArea": "Kokeile toista naapurustoa",
+    "loadMoreEvents": "Lataa lisää tapahtumia",
+    "totalEvents": "yhteensä",
+    "viewPost": "Katso ilmoitus"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

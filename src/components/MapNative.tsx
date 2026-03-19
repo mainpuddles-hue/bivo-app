@@ -1020,28 +1020,28 @@ export default function MapScreen() {
           {searchQuery.trim() ? (
             <>
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                Ei tuloksia haulle '{searchQuery}'
+                {t('map.noSearchResults')} '{searchQuery}'
               </Text>
               <Pressable onPress={() => setSearchQuery('')} style={[styles.emptyActionBtn, { borderColor: colors.primary }]}>
-                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>{'Tyhjennä haku'}</Text>
+                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>{t('map.clearSearch')}</Text>
               </Pressable>
             </>
           ) : activeFilter !== 'all' ? (
             <>
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                Ei {activeFilter === 'posts' ? 'ilmoituksia' : activeFilter === 'events' ? 'tapahtumia' : 'paikkoja'} alueella {displayNeighborhood}
+                {t('map.noContentInArea')} {displayNeighborhood}
               </Text>
               <Pressable onPress={() => setActiveFilter('all')} style={[styles.emptyActionBtn, { borderColor: colors.primary }]}>
-                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>{'Näytä kaikki'}</Text>
+                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>{t('map.showAll')}</Text>
               </Pressable>
             </>
           ) : (
             <>
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                {'Ei sisältöä alueella '}{displayNeighborhood}
+                {t('map.noContentInArea')} {displayNeighborhood}
               </Text>
               <Text style={[styles.emptyHintText, { color: colors.mutedForeground }]}>
-                Kokeile toista naapurustoa
+                {t('map.tryAnotherArea')}
               </Text>
             </>
           )}
@@ -1077,7 +1077,7 @@ export default function MapScreen() {
                 ) : (
                   <Pressable onPress={handleLoadMore} style={[styles.loadMoreBtn, { borderColor: colors.border }]}>
                     <Text style={[styles.loadMoreText, { color: colors.primary }]}>
-                      Lataa lisää tapahtumia ({getNearbyEventsTotal(center.latitude, center.longitude)} yhteensä)
+                      {t('map.loadMoreEvents')} ({getNearbyEventsTotal(center.latitude, center.longitude)} {t('map.totalEvents')})
                     </Text>
                   </Pressable>
                 )}
@@ -1228,7 +1228,7 @@ export default function MapScreen() {
                   style={[styles.detailActionBtn, { backgroundColor: selectedItem.color }]}
                 >
                   <ExternalLink size={16} color="#FFF" />
-                  <Text style={styles.detailActionText}>Katso ilmoitus</Text>
+                  <Text style={styles.detailActionText}>{t('map.viewPost')}</Text>
                 </Pressable>
               )}
               {selectedItem.kind === 'city_event' && (selectedItem.sourceData as CityEvent).info_url && (
