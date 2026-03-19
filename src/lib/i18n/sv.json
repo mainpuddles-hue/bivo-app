@@ -128,7 +128,17 @@
     "comments": "Kommentarer",
     "addComment": "Lägg till en kommentar...",
     "notFound": "Annonsen hittades inte",
-    "cannotMessageSelf": "Du kan inte skicka meddelanden till dig själv"
+    "cannotMessageSelf": "Du kan inte skicka meddelanden till dig själv",
+    "markClosed": "Markera som stängd",
+    "markClosedConfirm": "Vill du verkligen markera det här inlägget som stängt?",
+    "markedClosed": "Inlägget markerat som stängt",
+    "reopen": "Öppna igen",
+    "closedBanner": "Den här annonsen är stängd",
+    "reply": "Svara",
+    "replyingTo": "Svarar @{name}",
+    "writeReply": "Skriv ett svar...",
+    "showReplies": "Visa {count} svar",
+    "hideReplies": "Dölj svar"
   },
   "events": {
     "title": "Evenemang",
@@ -224,7 +234,12 @@
     "heroTitle": "Ditt grannskaps anslagstavla",
     "heroSubtitle": "Be, erbjud, låna och upptäck — allt inom gångavstånd.",
     "heroDescription": "Evenemang, hjälpande händer och lånbara saker på ett ställe.",
-    "heroCreateCTA": "Skapa annons"
+    "heroCreateCTA": "Skapa annons",
+    "calendarNoEvents": "Inga evenemang denna dag",
+    "eventsOnDay": "{count} evenemang",
+    "shareEventTitle": "Evenemang: {title}",
+    "openInMaps": "Öppna i kartor",
+    "description": "Beskrivning"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -558,7 +573,13 @@
     "payInApp": "Betala i appen",
     "anonymousUser": "Anonym användare",
     "images": "bilder",
-    "perDay": "{price}/dag"
+    "perDay": "{price}/dag",
+    "expiresIn": "{count}d kvar",
+    "expiresTomorrow": "Går ut imorgon",
+    "expiresToday": "Går ut idag",
+    "expired": "Utgången",
+    "distanceKm": "{distance} km",
+    "verified": "Verifierad"
   },
   "auth": {
     "login": "Logga in",
@@ -586,6 +607,8 @@
     "emailPlaceholder": "namn@exempel.se",
     "sending": "Skickar...",
     "signInWithGoogle": "Logga in med Google",
+    "signInWithApple": "Logga in med Apple",
+    "appleFailed": "Apple-inloggningen misslyckades",
     "name": "Namn",
     "namePlaceholder": "Ditt namn",
     "passwordPlaceholder": "Minst 8 tecken",
@@ -1060,7 +1083,13 @@
     "uploadingImages": "Laddar upp bilder...",
     "camera": "Kamera",
     "gallery": "Galleri",
-    "cameraPermissionRequired": "Kameratillstånd krävs"
+    "cameraPermissionRequired": "Kameratillstånd krävs",
+    "eventStartTime": "Starttid",
+    "eventEndTime": "Sluttid",
+    "eventMaxCapacity": "Max deltagare",
+    "eventMaxCapacityPlaceholder": "Obegränsat",
+    "eventStartTimePlaceholder": "t.ex. 18:00",
+    "eventEndTimePlaceholder": "t.ex. 20:00"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1658,8 +1687,13 @@
     "harassment": "Trakasseri",
     "inappropriate": "Olämpligt innehåll",
     "scam": "Bedrägeri",
+    "fake": "Falskt eller vilseledande",
     "other": "Övrigt",
-    "submitted": "Anmälan skickad"
+    "submitted": "Anmälan skickad",
+    "descriptionLabel": "Ytterligare detaljer (valfritt)",
+    "descriptionPlaceholder": "Beskriv problemet...",
+    "submit": "Skicka anmälan",
+    "submitFailed": "Kunde inte skicka anmälan"
   },
   "apiErrors": {
     "ALREADY_REVIEWED": "Du har redan recenserat denna användare",

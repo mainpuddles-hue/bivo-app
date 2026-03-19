@@ -1,0 +1,262 @@
+import { useState, useMemo, useCallback } from 'react'
+import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { Flag, X, Check } from 'lucide-react-native'
+import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
+import { createClient } from '@/lib/supabase/client'
+
+const REPORT_REASONS = ['spam', 'inappropriate', 'harassment', 'scam', 'fake', 'other'] as const
+type ReportReason = typeof REPORT_REASONS[number]
+
+interface ReportModalProps {
+  visible: boolean
+  onClose: () => void
+  type: 'post' | 'user'
+  targetId: string
+}
+
+export function ReportModal({ visible, onClose, type, targetId }: ReportModalProps) {
+  const { colors } = useTheme()
+  const { t } = useI18n()
+  const supabase = useMemo(() => createClient(), [])
+
+  const [reason, setReason] = useState<ReportReason | null>(null)
+  const [description, setDescription] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+
+  const reasonLabels: Record<ReportReason, string> = {
+    spam: t('report.spam'),
+    inappropriate: t('report.inappropriate'),
+    harassment: t('report.harassment'),
+    scam: t('report.scam'),
+    fake: t('report.fake'),
+    other: t('report.other'),
+  }
+
+  const handleSubmit = useCallback(async () => {
+    if (!reason) {
+      Alert.alert(t('common.error'), t('report.selectReason'))
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        Alert.alert(t('common.error'), t('common.loginRequired'))
+        setLoading(false)
+        return
+      }
+
+      const payload: Record<string, unknown> = {
+        reporter_id: user.id,
+        target_type: type,
+        target_id: targetId,
+        reason,
+        description: description.trim() || null,
+      }
+
+      const { error } = await (supabase.from('reports') as any).insert(payload)
+      if (error) throw error
+
+      setSuccess(true)
+      setTimeout(() => {
+        setSuccess(false)
+        setReason(null)
+        setDescription('')
+        onClose()
+      }, 1500)
+    } catch {
+      Alert.alert(t('common.error'), t('report.submitFailed'))
+    } finally {
+      setLoading(false)
+    }
+  }, [reason, description, type, targetId, supabase, t, onClose])
+
+  const handleClose = useCallback(() => {
+    if (!loading) {
+      setReason(null)
+      setDescription('')
+      setSuccess(false)
+      onClose()
+    }
+  }, [loading, onClose])
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+      <Pressable style={s.backdrop} onPress={handleClose}>
+        <Pressable style={[s.card, { backgroundColor: colors.card }]} onPress={() => {}}>
+          {/* Header */}
+          <View style={s.header}>
+            <View style={s.headerLeft}>
+              <Flag size={18} color={colors.destructive} />
+              <Text style={[s.title, { color: colors.foreground }]}>{t('report.title')}</Text>
+            </View>
+            <Pressable onPress={handleClose} hitSlop={12}>
+              <X size={20} color={colors.mutedForeground} />
+            </Pressable>
+          </View>
+
+          {success ? (
+            <View style={s.successContainer}>
+              <Check size={48} color={colors.success} />
+              <Text style={[s.successText, { color: colors.foreground }]}>{t('report.submitted')}</Text>
+            </View>
+          ) : (
+            <>
+              {/* Reason selection */}
+              <Text style={[s.label, { color: colors.mutedForeground }]}>{t('report.selectReason')}</Text>
+              <View style={s.reasonList}>
+                {REPORT_REASONS.map((r) => (
+                  <Pressable
+                    key={r}
+                    onPress={() => setReason(r)}
+                    style={[
+                      s.reasonItem,
+                      { borderColor: reason === r ? colors.destructive : colors.border },
+                      reason === r && { backgroundColor: `${colors.destructive}10` },
+                    ]}
+                  >
+                    <View style={[
+                      reason === r
+                        ? [s.radio, { backgroundColor: colors.destructive }]
+                        : [s.radioEmpty, { borderColor: colors.border }],
+                    ]} />
+                    <Text style={[s.reasonText, { color: reason === r ? colors.destructive : colors.foreground }]}>
+                      {reasonLabels[r]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {/* Description */}
+              <Text style={[s.label, { color: colors.mutedForeground }]}>{t('report.descriptionLabel')}</Text>
+              <TextInput
+                style={[s.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+                value={description}
+                onChangeText={(text) => setDescription(text.slice(0, 500))}
+                placeholder={t('report.descriptionPlaceholder')}
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+              <Text style={[s.charCount, { color: colors.mutedForeground }]}>{description.length}/500</Text>
+
+              {/* Submit */}
+              <Pressable
+                onPress={handleSubmit}
+                disabled={loading || !reason}
+                style={[s.submitBtn, { backgroundColor: colors.destructive, opacity: loading || !reason ? 0.5 : 1 }]}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={s.submitText}>{t('report.submit')}</Text>
+                )}
+              </Pressable>
+            </>
+          )}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  )
+}
+
+const s = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 20,
+    gap: 12,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  reasonList: {
+    gap: 6,
+  },
+  reasonItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  reasonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  radio: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  radioEmpty: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+  },
+  input: {
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    minHeight: 80,
+  },
+  charCount: {
+    fontSize: 11,
+    textAlign: 'right',
+    marginTop: -8,
+  },
+  submitBtn: {
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  submitText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  successContainer: {
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 24,
+  },
+  successText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+})

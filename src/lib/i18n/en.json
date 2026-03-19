@@ -128,7 +128,17 @@
     "comments": "Comments",
     "addComment": "Add a comment...",
     "notFound": "Post not found",
-    "cannotMessageSelf": "You cannot message yourself"
+    "cannotMessageSelf": "You cannot message yourself",
+    "markClosed": "Mark as closed",
+    "markClosedConfirm": "Are you sure you want to mark this post as closed?",
+    "markedClosed": "Post marked as closed",
+    "reopen": "Reopen",
+    "closedBanner": "This listing is closed",
+    "reply": "Reply",
+    "replyingTo": "Replying to @{name}",
+    "writeReply": "Write a reply...",
+    "showReplies": "Show {count} replies",
+    "hideReplies": "Hide replies"
   },
   "events": {
     "title": "Events",
@@ -224,7 +234,12 @@
     "heroTitle": "Your neighborhood bulletin board",
     "heroSubtitle": "Ask, offer, borrow and discover — all within walking distance.",
     "heroDescription": "Events, helping hands and loanable items in one place.",
-    "heroCreateCTA": "Create listing"
+    "heroCreateCTA": "Create listing",
+    "calendarNoEvents": "No events on this day",
+    "eventsOnDay": "{count} events",
+    "shareEventTitle": "Event: {title}",
+    "openInMaps": "Open in maps",
+    "description": "Description"
   },
   "activity": {
     "activities": "Together",
@@ -346,7 +361,11 @@
     "noSearchResults": "No search results",
     "tryDifferentSearch": "Try a different search term",
     "emptyHint": "Start a conversation with your neighbor by clicking a listing",
-    "unreadMessages": "unread messages"
+    "unreadMessages": "unread messages",
+    "pinned": "Pinned",
+    "unpinned": "Unpinned",
+    "pinConversation": "Pin conversation",
+    "unpinConversation": "Unpin conversation"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -363,7 +382,9 @@
     "loadFailed": "Failed to load messages",
     "imageLoadFailed": "Image failed to load",
     "read": "Read",
-    "sent": "Sent"
+    "sent": "Sent",
+    "deleteMessage": "Delete message",
+    "messageDeleted": "Message deleted"
   },
   "profile": {
     "title": "Profile",
@@ -546,7 +567,13 @@
     "notifMarketingDesc": "Offers, tips and TackBird news",
     "notifPrefsLoading": "Loading preferences...",
     "notifPrefsSaved": "Notification preferences saved",
-    "notifPrefsSaveFailed": "Failed to save notification preferences"
+    "notifPrefsSaveFailed": "Failed to save notification preferences",
+    "restorePurchases": "Restore previous purchases",
+    "marketing": "Marketing",
+    "paymentHistory": "Payment history",
+    "email": "Email",
+    "emailVerified": "Verified",
+    "emailUnverified": "Unverified"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -558,7 +585,13 @@
     "payInApp": "Pay in app",
     "anonymousUser": "Anonymous user",
     "images": "images",
-    "perDay": "{price}/day"
+    "perDay": "{price}/day",
+    "expiresIn": "{count}d left",
+    "expiresTomorrow": "Expires tomorrow",
+    "expiresToday": "Expires today",
+    "expired": "Expired",
+    "distanceKm": "{distance} km",
+    "verified": "Verified"
   },
   "auth": {
     "login": "Log in",
@@ -586,6 +619,8 @@
     "emailPlaceholder": "name@example.com",
     "sending": "Sending...",
     "signInWithGoogle": "Sign in with Google",
+    "signInWithApple": "Sign in with Apple",
+    "appleFailed": "Apple sign-in failed",
     "name": "Name",
     "namePlaceholder": "Your name",
     "passwordPlaceholder": "At least 8 characters",
@@ -1060,7 +1095,13 @@
     "uploadingImages": "Uploading images...",
     "camera": "Camera",
     "gallery": "Gallery",
-    "cameraPermissionRequired": "Camera permission required"
+    "cameraPermissionRequired": "Camera permission required",
+    "eventStartTime": "Start time",
+    "eventEndTime": "End time",
+    "eventMaxCapacity": "Max capacity",
+    "eventMaxCapacityPlaceholder": "Unlimited",
+    "eventStartTimePlaceholder": "e.g. 18:00",
+    "eventEndTimePlaceholder": "e.g. 20:00"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1658,8 +1699,13 @@
     "harassment": "Harassment",
     "inappropriate": "Inappropriate content",
     "scam": "Scam",
+    "fake": "Fake or misleading",
     "other": "Other",
-    "submitted": "Report submitted"
+    "submitted": "Report submitted",
+    "descriptionLabel": "Additional details (optional)",
+    "descriptionPlaceholder": "Describe the issue...",
+    "submit": "Submit report",
+    "submitFailed": "Failed to submit report"
   },
   "apiErrors": {
     "ALREADY_REVIEWED": "You have already reviewed this user",
@@ -1726,5 +1772,50 @@
     "profanityDetected": "Content contains inappropriate language",
     "spamDetected": "Content identified as spam",
     "duplicateDetected": "You have already published a similar post"
+  },
+  "help": {
+    "title": "Help & FAQ",
+    "subtitle": "Find answers to frequently asked questions about TackBird.",
+    "categoryAccount": "Account",
+    "categoryPosts": "Posts",
+    "categoryMessages": "Messages",
+    "categoryPayments": "Payments",
+    "categorySafety": "Safety",
+    "accountQ1": "How do I create an account?",
+    "accountA1": "You can create an account by registering with your email or Google account. After registering, fill in your profile details and choose your neighborhood.",
+    "accountQ2": "How do I change my password?",
+    "accountA2": "Go to Settings > Security > Change password. First enter your current password, then your new password.",
+    "accountQ3": "How do I delete my account?",
+    "accountA3": "Go to Settings > Delete account. Deleting your account is permanent and cannot be undone. All your data will be removed.",
+    "postsQ1": "How do I create a post?",
+    "postsA1": "Tap the Create tab at the bottom. Choose a category, add a title, description, and optional images. You can also set an expiration date for your post.",
+    "postsQ2": "How do I edit or delete my post?",
+    "postsA2": "Open your post and tap the Edit or Delete button. You can modify the title, description, and images.",
+    "postsQ3": "Why doesn't my post appear?",
+    "postsA3": "Your post may be awaiting moderation or may have been flagged for a content violation. Make sure your post follows the terms of service.",
+    "messagesQ1": "How do I send a message?",
+    "messagesA1": "Open a post you're interested in and tap the Send message button. You can also send a quick message directly from the post.",
+    "messagesQ2": "Can I delete messages?",
+    "messagesA2": "Yes, you can delete your own messages by long-pressing a message and selecting Delete. The deleted message will show a 'Message deleted' placeholder.",
+    "paymentsQ1": "How does TackBird Pro work?",
+    "paymentsA1": "TackBird Pro is a monthly subscription that gives you additional features such as boosts, ad management, and a reduced commission. The subscription renews automatically.",
+    "paymentsQ2": "How do I cancel my Pro subscription?",
+    "paymentsA2": "Go to Settings > TackBird Pro and select Cancel subscription. Your subscription remains active until the end of the billing period.",
+    "safetyQ1": "How do I block a user?",
+    "safetyA1": "Open the user's profile and tap the Block button. A blocked user cannot send you messages or see your posts.",
+    "safetyQ2": "How do I report inappropriate content?",
+    "safetyA2": "Tap the Report button on a post or message. Our moderators will review reports as quickly as possible.",
+    "safetyQ3": "How do I keep my data safe?",
+    "safetyA3": "Use a strong password, don't share your login credentials, and be careful sharing personal information in messages.",
+    "contactTitle": "Need more help?",
+    "contactDesc": "Contact our support team and we'll be happy to help."
+  },
+  "about": {
+    "title": "About",
+    "tagline": "Neighborhood bulletin board",
+    "description": "TackBird is a neighborhood bulletin board that connects your local community. Find and offer help, borrow items, discover free stuff, and join local events. All in one safe and easy-to-use app.",
+    "credits": "Credits",
+    "creditsContent": "Designed and developed in Helsinki. Thanks to all beta testers and community members who helped make TackBird better.",
+    "copyright": "\u00a9 2024\u20132026 TackBird. All rights reserved."
   }
 }

@@ -128,7 +128,17 @@
     "comments": "Kommentit",
     "addComment": "Lisää kommentti...",
     "notFound": "Ilmoitusta ei löytynyt",
-    "cannotMessageSelf": "Et voi lähettää viestiä itsellesi"
+    "cannotMessageSelf": "Et voi lähettää viestiä itsellesi",
+    "markClosed": "Merkitse suljetuksi",
+    "markClosedConfirm": "Haluatko varmasti merkitä tämän ilmoituksen suljetuksi?",
+    "markedClosed": "Ilmoitus merkitty suljetuksi",
+    "reopen": "Avaa uudelleen",
+    "closedBanner": "Tämä ilmoitus on suljettu",
+    "reply": "Vastaa",
+    "replyingTo": "Vastaat käyttäjälle @{name}",
+    "writeReply": "Kirjoita vastaus...",
+    "showReplies": "Näytä {count} vastausta",
+    "hideReplies": "Piilota vastaukset"
   },
   "events": {
     "title": "Tapahtumat",
@@ -224,7 +234,12 @@
     "heroTitle": "Naapuruston oma ilmoitustaulu",
     "heroSubtitle": "Pyydä, tarjoa, lainaa ja löydä — kaikki kävelymatkan päässä.",
     "heroDescription": "Tapahtumat, apukädet ja lainatavarat samassa paikassa.",
-    "heroCreateCTA": "Luo ilmoitus"
+    "heroCreateCTA": "Luo ilmoitus",
+    "calendarNoEvents": "Ei tapahtumia tänä päivänä",
+    "eventsOnDay": "{count} tapahtumaa",
+    "shareEventTitle": "Tapahtuma: {title}",
+    "openInMaps": "Avaa kartalla",
+    "description": "Kuvaus"
   },
   "activity": {
     "activities": "Porukalla",
@@ -346,7 +361,11 @@
     "noSearchResults": "Ei hakutuloksia",
     "tryDifferentSearch": "Kokeile eri hakusanaa",
     "emptyHint": "Aloita keskustelu naapurisi kanssa klikkaamalla kiinnostavaa ilmoitusta.",
-    "unreadMessages": "lukematonta viestiä"
+    "unreadMessages": "lukematonta viestiä",
+    "pinned": "Kiinnitetty",
+    "unpinned": "Kiinnitys poistettu",
+    "pinConversation": "Kiinnitä keskustelu",
+    "unpinConversation": "Poista kiinnitys"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -363,7 +382,9 @@
     "loadFailed": "Viestien lataus epäonnistui",
     "imageLoadFailed": "Kuva ei latautunut",
     "read": "Luettu",
-    "sent": "Lähetetty"
+    "sent": "Lähetetty",
+    "deleteMessage": "Poista viesti",
+    "messageDeleted": "Viesti poistettu"
   },
   "profile": {
     "title": "Profiili",
@@ -546,7 +567,13 @@
     "notifMarketingDesc": "Tarjoukset, vinkit ja TackBird-uutiset",
     "notifPrefsLoading": "Ladataan asetuksia...",
     "notifPrefsSaved": "Ilmoitusasetukset tallennettu",
-    "notifPrefsSaveFailed": "Ilmoitusasetusten tallennus epäonnistui"
+    "notifPrefsSaveFailed": "Ilmoitusasetusten tallennus epäonnistui",
+    "restorePurchases": "Palauta aiemmat ostot",
+    "marketing": "Markkinointi",
+    "paymentHistory": "Maksuhistoria",
+    "email": "Sähköposti",
+    "emailVerified": "Vahvistettu",
+    "emailUnverified": "Vahvistamaton"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -558,7 +585,13 @@
     "payInApp": "Maksu sovelluksessa",
     "anonymousUser": "Nimetön käyttäjä",
     "images": "kuvaa",
-    "perDay": "{price}/pv"
+    "perDay": "{price}/pv",
+    "expiresIn": "{count} pv jäljellä",
+    "expiresTomorrow": "Vanhenee huomenna",
+    "expiresToday": "Vanhenee tänään",
+    "expired": "Vanhentunut",
+    "distanceKm": "{distance} km",
+    "verified": "Vahvistettu"
   },
   "auth": {
     "login": "Kirjaudu",
@@ -586,6 +619,8 @@
     "emailPlaceholder": "nimi@esimerkki.fi",
     "sending": "Lähetetään...",
     "signInWithGoogle": "Kirjaudu Googlella",
+    "signInWithApple": "Kirjaudu Applella",
+    "appleFailed": "Apple-kirjautuminen epäonnistui",
     "name": "Nimi",
     "namePlaceholder": "Nimesi",
     "passwordPlaceholder": "Vähintään 8 merkkiä",
@@ -1077,7 +1112,13 @@
     "uploadingImages": "Ladataan kuvia...",
     "camera": "Kamera",
     "gallery": "Galleria",
-    "cameraPermissionRequired": "Kameralupa vaaditaan"
+    "cameraPermissionRequired": "Kameralupa vaaditaan",
+    "eventStartTime": "Aloitusaika",
+    "eventEndTime": "Päättymisaika",
+    "eventMaxCapacity": "Osallistujaraja",
+    "eventMaxCapacityPlaceholder": "Rajaton",
+    "eventStartTimePlaceholder": "esim. 18:00",
+    "eventEndTimePlaceholder": "esim. 20:00"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -1685,8 +1726,13 @@
     "harassment": "Häirintä",
     "inappropriate": "Sopimaton sisältö",
     "scam": "Huijaus",
+    "fake": "Harhaanjohtava tai valheellinen",
     "other": "Muu syy",
-    "submitted": "Ilmianto lähetetty"
+    "submitted": "Ilmianto lähetetty",
+    "descriptionLabel": "Lisätiedot (valinnainen)",
+    "descriptionPlaceholder": "Kuvaile ongelmaa...",
+    "submit": "Lähetä ilmianto",
+    "submitFailed": "Ilmiannon lähettäminen epäonnistui"
   },
   "apiErrors": {
     "ALREADY_REVIEWED": "Olet jo arvostellut tämän käyttäjän",
@@ -1753,5 +1799,50 @@
     "profanityDetected": "Sisältö sisältää sopimatonta kieltä",
     "spamDetected": "Sisältö tunnistettu roskapostiksi",
     "duplicateDetected": "Olet jo julkaissut samanlaisen ilmoituksen"
+  },
+  "help": {
+    "title": "Ohjeet ja UKK",
+    "subtitle": "Löydä vastauksia yleisimpiin kysymyksiin TackBird-palvelusta.",
+    "categoryAccount": "Tili",
+    "categoryPosts": "Ilmoitukset",
+    "categoryMessages": "Viestit",
+    "categoryPayments": "Maksut",
+    "categorySafety": "Turvallisuus",
+    "accountQ1": "Miten luon tilin?",
+    "accountA1": "Voit luoda tilin rekisteröitymällä sähköpostilla tai Google-tilillä. Rekisteröitymisen jälkeen täytä profiilitietosi ja valitse naapurustosi.",
+    "accountQ2": "Miten vaihdan salasanani?",
+    "accountA2": "Mene Asetukset > Turvallisuus > Vaihda salasana. Syötä ensin nykyinen salasanasi ja sitten uusi salasana.",
+    "accountQ3": "Miten poistan tilini?",
+    "accountA3": "Mene Asetukset > Poista tili. Tilin poistaminen on pysyvä toimenpide eikä sitä voi perua. Kaikki tietosi poistetaan.",
+    "postsQ1": "Miten luon ilmoituksen?",
+    "postsA1": "Napauta alalaidasta Luo-välilehteä. Valitse kategoria, lisää otsikko, kuvaus ja mahdolliset kuvat. Voit myös asettaa ilmoitukselle vanhentumisajan.",
+    "postsQ2": "Miten muokkaan tai poistan ilmoitukseni?",
+    "postsA2": "Avaa oma ilmoituksesi ja napauta Muokkaa- tai Poista-painiketta. Voit muokata otsikkoa, kuvausta ja kuvia.",
+    "postsQ3": "Miksi ilmoitukseni ei näy?",
+    "postsA3": "Ilmoituksesi saattaa odottaa moderointia tai se on voitu merkitä sisältörikkomuksesta. Tarkista, että ilmoitus noudattaa käyttöehtoja.",
+    "messagesQ1": "Miten lähetän viestin?",
+    "messagesA1": "Avaa kiinnostava ilmoitus ja napauta Lähetä viesti -painiketta. Voit myös lähettää pikaviestin suoraan ilmoituksen yhteydestä.",
+    "messagesQ2": "Voinko poistaa viestejä?",
+    "messagesA2": "Kyllä, voit poistaa omia viestejäsi painamalla viestiä pitkään ja valitsemalla Poista. Poistetun viestin tilalle tulee 'Viesti poistettu' -teksti.",
+    "paymentsQ1": "Miten TackBird Pro toimii?",
+    "paymentsA1": "TackBird Pro on kuukausitilaus, joka antaa lisäominaisuuksia kuten nostoja, mainosten hallintaa ja alennetun provision. Tilaus uusiutuu automaattisesti.",
+    "paymentsQ2": "Miten peruutan Pro-tilauksen?",
+    "paymentsA2": "Mene Asetukset > TackBird Pro ja valitse Peruuta tilaus. Tilaus on voimassa laskutuskauden loppuun asti.",
+    "safetyQ1": "Miten estän käyttäjän?",
+    "safetyA1": "Avaa käyttäjän profiili ja napauta Estä-painiketta. Estetty käyttäjä ei voi lähettää sinulle viestejä eikä näe ilmoituksiasi.",
+    "safetyQ2": "Miten ilmiannan sopimattoman sisällön?",
+    "safetyA2": "Napauta ilmoituksen tai viestin kohdalla Ilmianna-painiketta. Moderaattorimme käsittelevät ilmiannot mahdollisimman pian.",
+    "safetyQ3": "Miten pidän tietoni turvassa?",
+    "safetyA3": "Käytä vahvaa salasanaa, älä jaa kirjautumistietojasi ja ole varovainen henkilökohtaisten tietojen jakamisessa viesteissä.",
+    "contactTitle": "Tarvitsetko lisäapua?",
+    "contactDesc": "Ota yhteyttä tukitiimiimme, niin autamme sinua mielellämme."
+  },
+  "about": {
+    "title": "Tietoja",
+    "tagline": "Naapuruston ilmoitustaulu",
+    "description": "TackBird on naapuruston ilmoitustaulu, joka yhdistää lähiyhteisösi asukkaat. Löydä ja tarjoa apua, lainaa tavaroita, löydä ilmaisia tavaroita ja osallistu paikallisiin tapahtumiin. Kaikki tämä yhdessä turvallisessa ja helppokäyttöisessä sovelluksessa.",
+    "credits": "Tekijät",
+    "creditsContent": "Suunniteltu ja kehitetty Helsingissä. Kiitos kaikille beta-testaajille ja yhteisön jäsenille, jotka ovat auttaneet tekemään TackBirdistä paremman.",
+    "copyright": "\u00a9 2024\u20132026 TackBird. Kaikki oikeudet pidätetään."
   }
 }
