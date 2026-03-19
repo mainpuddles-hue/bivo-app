@@ -14,7 +14,7 @@ import { Image } from 'expo-image'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
 import * as Location from 'expo-location'
 import {
-  ChevronDown, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft,
+  ChevronDown, ChevronUp, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -97,6 +97,38 @@ const PLACE_LABEL: Record<string, string> = {
   fast_food: 'Pikaruoka', pub: 'Pubi', other: 'Muu',
 }
 
+// Sub-categories for 2-level filter
+const EVENT_SUBCATS = [
+  { key: null, label: 'Kaikki' },
+  { key: 'culture', label: 'Kulttuuri' },
+  { key: 'music', label: 'Musiikki' },
+  { key: 'sport', label: 'Urheilu' },
+  { key: 'family', label: 'Perhe' },
+  { key: 'theatre', label: 'Teatteri' },
+  { key: 'exhibition', label: 'Näyttely' },
+  { key: 'food', label: 'Ruoka' },
+  { key: 'other', label: 'Muu' },
+]
+
+const PLACE_SUBCATS = [
+  { key: null, label: 'Kaikki' },
+  { key: 'restaurant', label: 'Ravintolat' },
+  { key: 'cafe', label: 'Kahvilat' },
+  { key: 'bar', label: 'Baarit' },
+  { key: 'shop', label: 'Kaupat' },
+  { key: 'culture', label: 'Kulttuuri' },
+  { key: 'sport', label: 'Urheilu' },
+  { key: 'library', label: 'Kirjastot' },
+  { key: 'health', label: 'Terveys' },
+]
+
+const TIME_FILTERS = [
+  { key: 'all' as const, label: 'Kaikki' },
+  { key: 'today' as const, label: 'Tänään' },
+  { key: 'tomorrow' as const, label: 'Huomenna' },
+  { key: 'week' as const, label: 'Tällä vkolla' },
+]
+
 // Dark map style
 const DARK_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#212121' }] },
@@ -141,11 +173,19 @@ function isToday(dateStr: string): boolean {
     d.getDate() === now.getDate()
 }
 
-function isWithin7Days(dateStr: string): boolean {
+function isTomorrow(dateStr: string): boolean {
+  const d = new Date(dateStr)
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  return d.getFullYear() === tomorrow.getFullYear() &&
+    d.getMonth() === tomorrow.getMonth() &&
+    d.getDate() === tomorrow.getDate()
+}
+
+function isWithinDays(dateStr: string, days: number): boolean {
   const d = new Date(dateStr).getTime()
   const now = Date.now()
-  const sevenDays = 7 * 24 * 60 * 60 * 1000
-  return d > now && d <= now + sevenDays
+  return d >= now && d <= now + days * 24 * 60 * 60 * 1000
 }
 
 // ── Unified list item ──
@@ -206,6 +246,9 @@ export default function MapScreen() {
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('Kallio')
   const [neighborhoodModalVisible, setNeighborhoodModalVisible] = useState(false)
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
+  const [subCategory, setSubCategory] = useState<string | null>(null)
+  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'tomorrow' | 'week'>('all')
+  const [mapExpanded, setMapExpanded] = useState(false)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -454,19 +497,48 @@ export default function MapScreen() {
     return items
   }, [posts, communityEvents, cityEvents, places, center, locale, t, radiusKm])
 
-  // ── Filter by active filter + search ──
+  // ── Filter by active filter + sub-category + time + search ──
   const filteredItems = useMemo(() => {
     let items = allItems
+    // Layer filter
     if (activeFilter === 'posts') items = items.filter(i => i.kind === 'post')
     else if (activeFilter === 'events') items = items.filter(i => i.kind === 'community_event' || i.kind === 'city_event')
     else if (activeFilter === 'places') items = items.filter(i => i.kind === 'place')
 
+    // Sub-category filter
+    if (subCategory) {
+      if (activeFilter === 'events') {
+        items = items.filter(i => {
+          if (i.kind === 'city_event') return (i.sourceData as CityEvent).category === subCategory
+          return true // community events don't have sub-categories
+        })
+      } else if (activeFilter === 'places') {
+        items = items.filter(i => {
+          if (i.kind === 'place') return (i.sourceData as LocalPlace).category === subCategory
+          return true
+        })
+      }
+    }
+
+    // Time filter (events only)
+    if (timeFilter !== 'all' && (activeFilter === 'events' || activeFilter === 'all')) {
+      items = items.filter(i => {
+        if (i.kind !== 'community_event' && i.kind !== 'city_event') return true
+        if (!i.sortDate) return false
+        if (timeFilter === 'today') return isToday(i.sortDate)
+        if (timeFilter === 'tomorrow') return isTomorrow(i.sortDate)
+        if (timeFilter === 'week') return isWithinDays(i.sortDate, 7)
+        return true
+      })
+    }
+
+    // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim()
       items = items.filter(i => i.title.toLowerCase().includes(q) || i.subtitle.toLowerCase().includes(q))
     }
     return items
-  }, [allItems, activeFilter, searchQuery])
+  }, [allItems, activeFilter, subCategory, timeFilter, searchQuery])
 
   // ── Counts for filter pills (single-pass, reflects search filtering) ──
   const counts = useMemo(() => {
@@ -711,7 +783,7 @@ export default function MapScreen() {
       )}
 
       {/* ── Mini Map ── */}
-      <View style={styles.mapContainer}>
+      <View style={[styles.mapContainer, mapExpanded && { height: 400 }]}>
         <MapView
           ref={mapRef}
           style={styles.map}
@@ -745,6 +817,13 @@ export default function MapScreen() {
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
         )}
+        {/* Expand/collapse toggle */}
+        <Pressable
+          onPress={() => setMapExpanded(prev => !prev)}
+          style={[styles.mapToggleBtn, { backgroundColor: colors.card, top: 8 }]}
+        >
+          {mapExpanded ? <ChevronUp size={18} color={colors.foreground} /> : <ChevronDown size={18} color={colors.foreground} />}
+        </Pressable>
         <Pressable
           onPress={handleGPSSelect}
           style={[
@@ -768,38 +847,85 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* ── Filter Pills ── */}
+      {/* ── Filter Pills (2-level) ── */}
       <View style={[styles.filterRow, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         {neighborhoodLoading && (
           <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
         )}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
-          {([
-            { key: 'all' as FilterKey, label: t('events.filterAll'), color: colors.primary },
-            { key: 'posts' as FilterKey, label: t('map.layerPosts'), color: LAYER_COLORS.post },
-            { key: 'events' as FilterKey, label: t('map.layerEvents'), color: LAYER_COLORS.event },
-            { key: 'places' as FilterKey, label: t('map.layerPlaces'), color: LAYER_COLORS.place },
-          ]).map(f => {
-            const isActive = activeFilter === f.key
-            return (
+          {(activeFilter === 'events' || activeFilter === 'places') ? (
+            <>
+              {/* Back to main filters */}
               <Pressable
-                key={f.key}
-                style={[
-                  styles.filterPill,
-                  { borderColor: isActive ? f.color : colors.border },
-                  isActive && { backgroundColor: f.color },
-                ]}
-                onPress={() => setActiveFilter(prev => prev === f.key ? 'all' : f.key)}
+                style={[styles.filterPill, { backgroundColor: activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place, borderColor: 'transparent' }]}
+                onPress={() => { setActiveFilter('all'); setSubCategory(null); setTimeFilter('all') }}
               >
-                <Text style={[
-                  styles.filterPillText,
-                  { color: isActive ? '#FFFFFF' : colors.foreground },
-                ]}>
-                  {f.label} ({counts[f.key]})
+                <ArrowLeft size={14} color="#FFF" />
+                <Text style={[styles.filterPillText, { color: '#FFF' }]}>
+                  {activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
                 </Text>
               </Pressable>
-            )
-          })}
+
+              {/* Time filters (events only) */}
+              {activeFilter === 'events' && TIME_FILTERS.map(tf => (
+                <Pressable
+                  key={tf.key}
+                  style={[
+                    styles.filterPill,
+                    { borderColor: timeFilter === tf.key ? LAYER_COLORS.event : colors.border },
+                    timeFilter === tf.key && { backgroundColor: LAYER_COLORS.event },
+                  ]}
+                  onPress={() => setTimeFilter(prev => prev === tf.key ? 'all' : tf.key)}
+                >
+                  <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? '#FFF' : colors.foreground }]}>
+                    {tf.label}
+                  </Text>
+                </Pressable>
+              ))}
+
+              {/* Sub-category pills */}
+              {(activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => (
+                <Pressable
+                  key={sc.key ?? '__all__'}
+                  style={[
+                    styles.filterPill,
+                    { borderColor: subCategory === sc.key ? (activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place) : colors.border },
+                    subCategory === sc.key && { backgroundColor: activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place },
+                  ]}
+                  onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
+                >
+                  <Text style={[styles.filterPillText, { color: subCategory === sc.key ? '#FFF' : colors.foreground }]}>
+                    {sc.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </>
+          ) : (
+            /* Main layer filters */
+            ([
+              { key: 'all' as FilterKey, label: t('events.filterAll'), color: colors.primary },
+              { key: 'posts' as FilterKey, label: t('map.layerPosts'), color: LAYER_COLORS.post },
+              { key: 'events' as FilterKey, label: t('map.layerEvents'), color: LAYER_COLORS.event },
+              { key: 'places' as FilterKey, label: t('map.layerPlaces'), color: LAYER_COLORS.place },
+            ]).map(f => {
+              const isActive = activeFilter === f.key
+              return (
+                <Pressable
+                  key={f.key}
+                  style={[
+                    styles.filterPill,
+                    { borderColor: isActive ? f.color : colors.border },
+                    isActive && { backgroundColor: f.color },
+                  ]}
+                  onPress={() => { setActiveFilter(f.key); setSubCategory(null); setTimeFilter('all') }}
+                >
+                  <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                    {f.label} ({counts[f.key]})
+                  </Text>
+                </Pressable>
+              )
+            })
+          )}
         </ScrollView>
       </View>
 
@@ -1474,6 +1600,21 @@ const styles = StyleSheet.create({
   },
   mapInfoText: {
     fontSize: 11,
+  },
+  mapToggleBtn: {
+    position: 'absolute',
+    right: 8,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
   loadMoreFooter: {
     paddingVertical: 16,
