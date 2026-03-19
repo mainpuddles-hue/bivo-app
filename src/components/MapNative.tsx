@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, Pressable, SectionList, Modal, FlatList, ScrollView,
-  StyleSheet, ActivityIndicator, Alert, Linking,
+  StyleSheet, ActivityIndicator, Alert, Linking, Platform,
   RefreshControl, TextInput,
   type SectionListData,
 } from 'react-native'
@@ -221,6 +221,7 @@ export default function MapScreen() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
+  const [neighborhoodLoading, setNeighborhoodLoading] = useState(false)
 
   // Stable marker state for diffing
   const [renderedMarkers, setRenderedMarkers] = useState<StableMarker[]>([])
@@ -534,30 +535,15 @@ export default function MapScreen() {
 
   // ── Actions ──
 
-  const handleListItemPress = useCallback((item: ListItem) => {
-    // Animate map
+  const handleListItemNavigate = useCallback((item: ListItem) => {
+    // Always open detail sheet for consistent behavior
+    setSelectedItem(item)
+    // Also animate map
     mapRef.current?.animateToRegion({
-      latitude: item.latitude,
-      longitude: item.longitude,
-      latitudeDelta: 0.005,
-      longitudeDelta: 0.005,
+      latitude: item.latitude, longitude: item.longitude,
+      latitudeDelta: 0.005, longitudeDelta: 0.005,
     }, 400)
   }, [])
-
-  const handleListItemNavigate = useCallback((item: ListItem) => {
-    if (item.kind === 'post') {
-      const post = item.sourceData as Post
-      router.push(`/post/${post.id}`)
-    } else {
-      // Open detail sheet for events and places
-      setSelectedItem(item)
-      // Also animate map
-      mapRef.current?.animateToRegion({
-        latitude: item.latitude, longitude: item.longitude,
-        latitudeDelta: 0.005, longitudeDelta: 0.005,
-      }, 400)
-    }
-  }, [router])
 
   // O(1) lookup map for marker press — rebuilt when filteredItems changes
   const itemLookup = useMemo(() => {
@@ -580,15 +566,10 @@ export default function MapScreen() {
   }, [sections])
 
   const handleMarkerPress = useCallback((marker: StableMarker) => {
-    // Find item via O(1) lookup
+    // Find item via O(1) lookup — always open detail sheet
     const item = itemLookup.get(marker.key)
     if (item) {
-      if (item.kind === 'post') {
-        const post = item.sourceData as Post
-        router.push(`/post/${post.id}`)
-      } else {
-        setSelectedItem(item)
-      }
+      setSelectedItem(item)
     }
 
     // Also scroll list to that item via O(1) lookup
@@ -601,7 +582,7 @@ export default function MapScreen() {
         viewOffset: 50,
       })
     }
-  }, [itemLookup, sectionIndexLookup, router])
+  }, [itemLookup, sectionIndexLookup])
 
   const handleGPSSelect = useCallback(async () => {
     try {
@@ -627,7 +608,7 @@ export default function MapScreen() {
         {section.title}
       </Text>
       <Text style={[styles.sectionCount, { color: colors.mutedForeground }]}>
-        {section.data.length}
+        ({section.data.length})
       </Text>
     </View>
   ), [colors])
@@ -649,15 +630,8 @@ export default function MapScreen() {
           {formatDistance(item.distance)}
         </Text>
       </View>
-      <Pressable
-        style={styles.listItemAction}
-        onPress={() => handleListItemPress(item)}
-        hitSlop={8}
-      >
-        <MapPin size={16} color={colors.primary} />
-      </Pressable>
     </Pressable>
-  ), [colors, handleListItemPress, handleListItemNavigate])
+  ), [colors, handleListItemNavigate])
 
   const keyExtractor = useCallback((item: ListItem) => item.id, [])
 
@@ -680,11 +654,8 @@ export default function MapScreen() {
           </Text>
           <ChevronDown size={14} color={colors.mutedForeground} />
         </Pressable>
-        <Pressable onPress={() => setShowSearch(!showSearch)} style={styles.topBarIcon} hitSlop={8}>
+        <Pressable onPress={() => { if (showSearch) { setShowSearch(false); setSearchQuery('') } else { setShowSearch(true) } }} style={styles.topBarIcon} hitSlop={8}>
           <Search size={20} color={showSearch ? colors.primary : colors.mutedForeground} />
-        </Pressable>
-        <Pressable onPress={handleGPSSelect} style={styles.topBarIcon} hitSlop={8}>
-          <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? colors.primary : colors.mutedForeground} />
         </Pressable>
       </View>
 
@@ -738,15 +709,30 @@ export default function MapScreen() {
             />
           ))}
         </MapView>
-        {loading && (
+        {(loading || neighborhoodLoading) && (
           <View style={styles.mapOverlay}>
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
         )}
+        <Pressable
+          onPress={handleGPSSelect}
+          style={[
+            styles.gpsButton,
+            {
+              backgroundColor: selectedNeighborhood === '__gps__' ? colors.primary : colors.card,
+              shadowColor: '#000',
+            },
+          ]}
+        >
+          <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? '#FFF' : colors.foreground} />
+        </Pressable>
       </View>
 
       {/* ── Filter Pills ── */}
       <View style={[styles.filterRow, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        {neighborhoodLoading && (
+          <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
+        )}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
           {([
             { key: 'all' as FilterKey, label: t('events.filterAll') },
@@ -763,7 +749,7 @@ export default function MapScreen() {
                   { borderColor: isActive ? colors.primary : colors.border },
                   isActive && { backgroundColor: colors.primary },
                 ]}
-                onPress={() => setActiveFilter(f.key)}
+                onPress={() => setActiveFilter(prev => prev === f.key ? 'all' : f.key)}
               >
                 <Text style={[
                   styles.filterPillText,
@@ -788,9 +774,34 @@ export default function MapScreen() {
       ) : sections.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MapPin size={32} color={colors.mutedForeground} />
-          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            {t('map.noResults')}
-          </Text>
+          {searchQuery.trim() ? (
+            <>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                Ei tuloksia haulle '{searchQuery}'
+              </Text>
+              <Pressable onPress={() => setSearchQuery('')} style={[styles.emptyActionBtn, { borderColor: colors.primary }]}>
+                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>{'Tyhjennä haku'}</Text>
+              </Pressable>
+            </>
+          ) : activeFilter !== 'all' ? (
+            <>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                Ei {activeFilter === 'posts' ? 'ilmoituksia' : activeFilter === 'events' ? 'tapahtumia' : 'paikkoja'} alueella {displayNeighborhood}
+              </Text>
+              <Pressable onPress={() => setActiveFilter('all')} style={[styles.emptyActionBtn, { borderColor: colors.primary }]}>
+                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>{'Näytä kaikki'}</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                {'Ei sisältöä alueella '}{displayNeighborhood}
+              </Text>
+              <Text style={[styles.emptyHintText, { color: colors.mutedForeground }]}>
+                Kokeile toista naapurustoa
+              </Text>
+            </>
+          )}
         </View>
       ) : (
         <SectionList
@@ -826,6 +837,7 @@ export default function MapScreen() {
               <Text style={[styles.detailHeaderTitle, { color: colors.foreground }]} numberOfLines={1}>
                 {selectedItem.kind === 'city_event' ? t('feedContent.cityEventLabel')
                   : selectedItem.kind === 'community_event' ? t('map.event')
+                  : selectedItem.kind === 'post' ? t('map.layerPosts')
                   : t('places.title')}
               </Text>
               <Pressable onPress={() => setSelectedItem(null)} hitSlop={12}>
@@ -839,6 +851,8 @@ export default function MapScreen() {
                 ? (selectedItem.sourceData as CityEvent).image_url
                 : selectedItem.kind === 'place'
                 ? (selectedItem.sourceData as LocalPlace).image_url
+                : selectedItem.kind === 'post'
+                ? (selectedItem.sourceData as Post).image_url
                 : null
               return imgUrl ? (
                 <Image source={{ uri: imgUrl }} style={styles.detailImage} contentFit="cover" />
@@ -909,6 +923,8 @@ export default function MapScreen() {
                   desc = (selectedItem.sourceData as Event).description
                 } else if (selectedItem.kind === 'place') {
                   desc = (selectedItem.sourceData as LocalPlace).description
+                } else if (selectedItem.kind === 'post') {
+                  desc = (selectedItem.sourceData as Post).description
                 }
                 return desc ? (
                   <Text style={[styles.detailDesc, { color: colors.mutedForeground }]}>{desc}</Text>
@@ -942,6 +958,19 @@ export default function MapScreen() {
 
             {/* Actions */}
             <View style={styles.detailActions}>
+              {selectedItem.kind === 'post' && (
+                <Pressable
+                  onPress={() => {
+                    const post = selectedItem.sourceData as Post
+                    setSelectedItem(null)
+                    router.push(`/post/${post.id}`)
+                  }}
+                  style={[styles.detailActionBtn, { backgroundColor: selectedItem.color }]}
+                >
+                  <ExternalLink size={16} color="#FFF" />
+                  <Text style={styles.detailActionText}>Katso ilmoitus</Text>
+                </Pressable>
+              )}
               {selectedItem.kind === 'city_event' && (selectedItem.sourceData as CityEvent).info_url && (
                 <Pressable
                   onPress={() => Linking.openURL((selectedItem.sourceData as CityEvent).info_url!).catch(() => {})}
@@ -961,7 +990,19 @@ export default function MapScreen() {
                 </Pressable>
               )}
               <Pressable
-                onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${selectedItem.latitude},${selectedItem.longitude}`).catch(() => {})}
+                onPress={() => {
+                  const lat = selectedItem.latitude
+                  const lng = selectedItem.longitude
+                  const url = Platform.OS === 'ios'
+                    ? `maps:0,0?q=${lat},${lng}`
+                    : Platform.OS === 'android'
+                    ? `geo:${lat},${lng}?q=${lat},${lng}`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+                  Linking.openURL(url).catch(() => {
+                    // Fallback to Google Maps web
+                    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(() => {})
+                  })
+                }}
                 style={[styles.detailActionBtn, { backgroundColor: colors.muted }]}
               >
                 <Navigation size={16} color={colors.foreground} />
@@ -1012,9 +1053,19 @@ export default function MapScreen() {
                   borderBottomColor: colors.border,
                   backgroundColor: selectedNeighborhood === item ? colors.muted : colors.card,
                 }]}
-                onPress={() => {
+                onPress={async () => {
                   setSelectedNeighborhood(item)
                   setNeighborhoodModalVisible(false)
+                  setNeighborhoodLoading(true)
+                  try {
+                    const c = NEIGHBORHOOD_CENTERS[item] ?? NEIGHBORHOOD_CENTERS['Kallio']
+                    const radius = getRadiusKm(item)
+                    const placesData = await fetchHelsinkiPlaces(c.latitude, c.longitude, radius * 1000)
+                    setPlaces(placesData)
+                  } catch (err) {
+                    console.log('[map] neighborhood switch places error:', err)
+                  }
+                  setNeighborhoodLoading(false)
                 }}
               >
                 <Text style={[
@@ -1089,6 +1140,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.85)',
     borderRadius: 16,
     padding: 6,
+  },
+  gpsButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
   },
 
   // ── Filter Pills ──
@@ -1165,9 +1230,6 @@ const styles = StyleSheet.create({
   listItemMeta: {
     fontSize: 11,
     marginTop: 2,
-  },
-  listItemAction: {
-    padding: 8,
   },
   searchBar: {
     flexDirection: 'row',
@@ -1284,6 +1346,19 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyActionBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  emptyHintText: {
+    fontSize: 13,
+    textAlign: 'center',
   },
 
   // ── Modal ──
