@@ -287,7 +287,8 @@ export default function MapScreen() {
         }
       }
       setCityEvents(allCityEvents)
-      console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster (${allCityEvents.length} merged)`)
+      const withCoords = allCityEvents.filter(e => e.latitude && e.longitude).length
+      console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
       if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
       if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
     } catch (err) {

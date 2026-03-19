@@ -174,16 +174,22 @@ export async function fetchNearbyEvents(
     const dLng = radiusKm / (111 * Math.cos(lat * Math.PI / 180))
     const bbox = `${(lng - dLng).toFixed(4)},${(lat - dLat).toFixed(4)},${(lng + dLng).toFixed(4)},${(lat + dLat).toFixed(4)}`
 
-    const url = `${BASE_URL}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
-    const res = await fetch(url)
-    if (!res.ok) return []
-    const json: LinkedEventResponse = await res.json()
-    const events = json.data
-      .filter(e => e.name?.fi || e.name?.en)
-      .map(mapEvent)
+    const allEvents: CityEvent[] = []
+    let pageUrl: string | null = `${BASE_URL}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
 
-    bboxCache.set(cacheKey, { events, fetchedAt: Date.now() })
-    return events
+    for (let page = 0; page < 3 && pageUrl; page++) {
+      const res = await fetch(pageUrl)
+      if (!res.ok) break
+      const json: LinkedEventResponse = await res.json()
+      const events = json.data
+        .filter(e => (e.name?.fi || e.name?.en) && e.location?.name?.fi !== 'Internet')
+        .map(mapEvent)
+      allEvents.push(...events)
+      pageUrl = json.meta.next
+    }
+
+    bboxCache.set(cacheKey, { events: allEvents, fetchedAt: Date.now() })
+    return allEvents
   } catch (err) {
     console.log('[linkedevents] bbox fetch error:', err)
     return []
