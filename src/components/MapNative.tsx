@@ -262,7 +262,6 @@ export default function MapScreen() {
   const prevMarkersRef = useRef<string>('')
 
   // ── Load user profile neighborhood ──
-  const [needsNeighborhoodPick, setNeedsNeighborhoodPick] = useState(false)
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -277,11 +276,9 @@ export default function MapScreen() {
         if (!cancelled && data?.naapurusto && NEIGHBORHOOD_CENTERS[data.naapurusto]) {
           setSelectedNeighborhood(data.naapurusto)
         } else if (!cancelled) {
-          setNeedsNeighborhoodPick(true)
           setNeighborhoodModalVisible(true)
         }
       } else if (!cancelled) {
-        setNeedsNeighborhoodPick(true)
         setNeighborhoodModalVisible(true)
       }
     })()
@@ -306,6 +303,8 @@ export default function MapScreen() {
           .eq('is_active', true)
           .not('latitude', 'is', null)
           .not('longitude', 'is', null)
+          .gte('latitude', 60.10).lte('latitude', 60.35)
+          .gte('longitude', 24.75).lte('longitude', 25.30)
           .order('created_at', { ascending: false })
           .limit(500),
         supabase.from('events')
@@ -313,6 +312,8 @@ export default function MapScreen() {
           .gte('event_date', today)
           .not('location_lat', 'is', null)
           .not('location_lng', 'is', null)
+          .gte('location_lat', 60.10).lte('location_lat', 60.35)
+          .gte('location_lng', 24.75).lte('location_lng', 25.30)
           .order('event_date', { ascending: true })
           .limit(500),
         fetchNearbyEvents(center.latitude, center.longitude, 5),
@@ -320,13 +321,14 @@ export default function MapScreen() {
       ])
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
-      // Merge LinkedEvents + Ticketmaster, dedupe by name similarity
+      // Merge LinkedEvents + Ticketmaster, dedupe by normalized name
       const linkedEvents = cityEventsData
       const tmEvents = tmData
       const allCityEvents = [...linkedEvents]
-      const linkedNames = new Set(linkedEvents.map(e => e.name_fi.toLowerCase().slice(0, 20)))
+      const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
+      const linkedNames = new Set(linkedEvents.map(e => normalize(e.name_fi)))
       for (const tm of tmEvents) {
-        if (!linkedNames.has(tm.name_fi.toLowerCase().slice(0, 20))) {
+        if (!linkedNames.has(normalize(tm.name_fi))) {
           allCityEvents.push(tm)
         }
       }
@@ -387,10 +389,10 @@ export default function MapScreen() {
     const more = await loadMoreNearbyEvents(center.latitude, center.longitude)
     if (more) {
       setCityEvents(prev => {
-        // Merge: keep Ticketmaster events, replace LinkedEvents with full set
+        const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
         const tmEvents = prev.filter(e => e.source === 'ticketmaster')
-        const linkedNames = new Set(more.map(e => e.name_fi.toLowerCase().slice(0, 20)))
-        const uniqueTm = tmEvents.filter(e => !linkedNames.has(e.name_fi.toLowerCase().slice(0, 20)))
+        const linkedNames = new Set(more.map(e => normalize(e.name_fi)))
+        const uniqueTm = tmEvents.filter(e => !linkedNames.has(normalize(e.name_fi)))
         return [...more, ...uniqueTm]
       })
     }
@@ -440,7 +442,7 @@ export default function MapScreen() {
         kind: 'community_event',
         title: e.title,
         subtitle: evParts.join(' · '),
-        color: '#2B8A62',
+        color: LAYER_COLORS.event,
         latitude: e.location_lat,
         longitude: e.location_lng,
         distance: dist,
