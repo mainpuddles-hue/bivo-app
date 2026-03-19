@@ -147,6 +147,49 @@ async function loadMorePages(startUrl: string, maxPages: number) {
   }
 }
 
+// ── Neighborhood-specific event fetch (bbox) ──
+
+const bboxCache = new Map<string, { events: CityEvent[]; fetchedAt: number }>()
+const BBOX_CACHE_TTL = 30 * 60 * 1000 // 30 min
+
+/**
+ * Fetch events near a specific point using LinkedEvents bbox parameter.
+ * Much more relevant than the global fetch for small neighborhoods.
+ */
+export async function fetchNearbyEvents(
+  lat: number,
+  lng: number,
+  radiusKm: number = 1.5,
+): Promise<CityEvent[]> {
+  const cacheKey = `${lat.toFixed(3)}-${lng.toFixed(3)}`
+  const cached = bboxCache.get(cacheKey)
+  if (cached && Date.now() - cached.fetchedAt < BBOX_CACHE_TTL) {
+    return cached.events
+  }
+
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    // Convert radius to bbox (approximate: 1 degree lat ≈ 111km)
+    const dLat = radiusKm / 111
+    const dLng = radiusKm / (111 * Math.cos(lat * Math.PI / 180))
+    const bbox = `${(lng - dLng).toFixed(4)},${(lat - dLat).toFixed(4)},${(lng + dLng).toFixed(4)},${(lat + dLat).toFixed(4)}`
+
+    const url = `${BASE_URL}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
+    const res = await fetch(url)
+    if (!res.ok) return []
+    const json: LinkedEventResponse = await res.json()
+    const events = json.data
+      .filter(e => e.name?.fi || e.name?.en)
+      .map(mapEvent)
+
+    bboxCache.set(cacheKey, { events, fetchedAt: Date.now() })
+    return events
+  } catch (err) {
+    console.log('[linkedevents] bbox fetch error:', err)
+    return []
+  }
+}
+
 /**
  * Pre-warm the cache. Call this early (e.g., from feed screen) so
  * the map/events screen has data ready instantly.

@@ -6,7 +6,7 @@ import {
   type SectionListData,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { fetchHelsinkiEvents } from '@/lib/linkedevents'
+import { fetchHelsinkiEvents, fetchNearbyEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -82,23 +82,12 @@ function getRadiusKm(neighborhood: string): number {
 const MAX_MAP_MARKERS = 20
 const MAP_HEIGHT = 250
 
-const POST_PIN: Record<string, string> = {
-  tarvitsen: '#C75B3A', tarjoan: '#7C5CBF', ilmaista: '#3B7DD8',
-  nappaa: '#E8A050', lainaa: '#C98B2E', tapahtuma: '#2B8A62',
-}
-
-const CITY_EVENT_PIN: Record<string, string> = {
-  culture: '#8E44AD', music: '#E91E63', sport: '#27AE60', family: '#FF9800',
-  food: '#E74C3C', nature: '#4CAF50', education: '#2196F3', theatre: '#9C27B0',
-  exhibition: '#795548', festival: '#FF5722', market: '#FF9800', other: '#607D8B',
-}
-
-const PLACE_PIN: Record<string, string> = {
-  restaurant: '#E74C3C', cafe: '#8B5E3C', bar: '#9B59B6', shop: '#3498DB',
-  library: '#27AE60', health: '#E91E63', sport: '#F39C12', culture: '#8E44AD',
-  hotel: '#2C3E50', attraction: '#F1C40F', service: '#607D8B',
-  fast_food: '#FF5722', pub: '#795548', other: '#78716C',
-}
+// 3 layer colors — match filter pills, simple for user to understand
+const LAYER_COLORS = {
+  post: '#2D6B5E',       // green — TackBird primary, matches "Ilmoitukset" pill
+  event: '#8E44AD',      // purple — distinct, matches "Tapahtumat" pill
+  place: '#78716C',      // warm gray — background/utility, matches "Paikat" pill
+} as const
 
 const PLACE_LABEL: Record<string, string> = {
   restaurant: 'Ravintola', cafe: 'Kahvila', bar: 'Baari', shop: 'Kauppa',
@@ -281,17 +270,18 @@ export default function MapScreen() {
           .not('location_lng', 'is', null)
           .order('event_date', { ascending: true })
           .limit(500),
-        fetchHelsinkiEvents(),
+        fetchNearbyEvents(center.latitude, center.longitude, Math.max(radiusKm, 3)),
       ])
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
       setCityEvents(cityEventsData)
+      console.log(`[map] Nearby events: ${cityEventsData.length} within 3km of ${selectedNeighborhood}`)
       if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
       if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
     } catch (err) {
       console.log('[map] global fetch error:', err)
     }
-  }, [supabase])
+  }, [supabase, center, selectedNeighborhood])
 
   // ── Fetch places from Helsinki Palvelukartta (per neighborhood) ──
   const fetchPlaces = useCallback(async () => {
@@ -355,7 +345,7 @@ export default function MapScreen() {
         kind: 'post',
         title: p.title,
         subtitle: parts.join(' · '),
-        color: POST_PIN[p.type] ?? '#607D8B',
+        color: LAYER_COLORS.post,
         latitude: p.latitude,
         longitude: p.longitude,
         distance: dist,
@@ -402,7 +392,7 @@ export default function MapScreen() {
         kind: 'city_event',
         title: name,
         subtitle: ceParts.join(' · '),
-        color: CITY_EVENT_PIN[c.category] ?? '#607D8B',
+        color: LAYER_COLORS.event,
         latitude: c.latitude,
         longitude: c.longitude,
         distance: dist,
@@ -424,7 +414,7 @@ export default function MapScreen() {
         kind: 'place',
         title: pl.name,
         subtitle: plParts.join(' · '),
-        color: PLACE_PIN[pl.category] ?? '#78716C',
+        color: LAYER_COLORS.place,
         latitude: pl.latitude,
         longitude: pl.longitude,
         distance: dist,
@@ -756,10 +746,10 @@ export default function MapScreen() {
         )}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
           {([
-            { key: 'all' as FilterKey, label: t('events.filterAll') },
-            { key: 'posts' as FilterKey, label: t('map.layerPosts') },
-            { key: 'events' as FilterKey, label: t('map.layerEvents') },
-            { key: 'places' as FilterKey, label: t('map.layerPlaces') },
+            { key: 'all' as FilterKey, label: t('events.filterAll'), color: colors.primary },
+            { key: 'posts' as FilterKey, label: t('map.layerPosts'), color: LAYER_COLORS.post },
+            { key: 'events' as FilterKey, label: t('map.layerEvents'), color: LAYER_COLORS.event },
+            { key: 'places' as FilterKey, label: t('map.layerPlaces'), color: LAYER_COLORS.place },
           ]).map(f => {
             const isActive = activeFilter === f.key
             return (
@@ -767,16 +757,16 @@ export default function MapScreen() {
                 key={f.key}
                 style={[
                   styles.filterPill,
-                  { borderColor: isActive ? colors.primary : colors.border },
-                  isActive && { backgroundColor: colors.primary },
+                  { borderColor: isActive ? f.color : colors.border },
+                  isActive && { backgroundColor: f.color },
                 ]}
                 onPress={() => setActiveFilter(prev => prev === f.key ? 'all' : f.key)}
               >
                 <Text style={[
                   styles.filterPillText,
-                  { color: isActive ? colors.primaryForeground : colors.foreground },
+                  { color: isActive ? '#FFFFFF' : colors.foreground },
                 ]}>
-                  {f.label} {counts[f.key]}
+                  {f.label} ({counts[f.key]})
                 </Text>
               </Pressable>
             )
