@@ -7,7 +7,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
-import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
+import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
@@ -260,7 +260,7 @@ export default function MapScreen() {
       const today = new Date().toISOString().split('T')[0]
       const [postsRes, eventsRes, cityEventsData] = await Promise.all([
         supabase.from('posts')
-          .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, is_active, like_count, comment_count, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
+          .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, is_active, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
           .not('latitude', 'is', null)
           .not('longitude', 'is', null)
@@ -306,17 +306,27 @@ export default function MapScreen() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Re-fetch places when neighborhood changes
-  useEffect(() => { fetchPlaces() }, [fetchPlaces])
-
+  // Pull-to-refresh: only re-fetch neighborhood-specific places (fast).
+  // Global data (posts, events) is fetched once on mount and doesn't change rapidly.
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
+    // Invalidate cache for this specific neighborhood so we get fresh data
+    invalidatePlacesCache(center.latitude, center.longitude)
+    await fetchPlaces()
+    setRefreshing(false)
+  }, [fetchPlaces, center])
+
+  // Full refresh: re-fetches everything including global data.
+  // Called from a manual action if needed, not on every pull-to-refresh.
+  const handleFullRefresh = useCallback(async () => {
+    setRefreshing(true)
+    invalidatePlacesCache(center.latitude, center.longitude)
     await Promise.all([fetchGlobalData(), fetchPlaces()])
     setRefreshing(false)
-  }, [fetchGlobalData, fetchPlaces])
+  }, [fetchGlobalData, fetchPlaces, center])
 
   // ── Build list items filtered by radius ──
-  const radiusKm = getRadiusKm(selectedNeighborhood)
+  const radiusKm = useMemo(() => getRadiusKm(selectedNeighborhood), [selectedNeighborhood])
   const allItems = useMemo<ListItem[]>(() => {
     const cLat = center.latitude
     const cLng = center.longitude
@@ -430,48 +440,58 @@ export default function MapScreen() {
     return items
   }, [allItems, activeFilter, searchQuery])
 
-  // ── Counts for filter pills (reflect search filtering when active) ──
+  // ── Counts for filter pills (single-pass, reflects search filtering) ──
   const counts = useMemo(() => {
-    const base = searchQuery.trim()
-      ? (() => {
-          const q = searchQuery.toLowerCase().trim()
-          return allItems.filter(i => i.title.toLowerCase().includes(q) || i.subtitle.toLowerCase().includes(q))
-        })()
-      : allItems
-    return {
-      all: base.length,
-      posts: base.filter(i => i.kind === 'post').length,
-      events: base.filter(i => i.kind === 'community_event' || i.kind === 'city_event').length,
-      places: base.filter(i => i.kind === 'place').length,
+    const q = searchQuery.trim().toLowerCase()
+    let all = 0, posts = 0, events = 0, places = 0
+    for (const item of allItems) {
+      if (q && !item.title.toLowerCase().includes(q) && !item.subtitle.toLowerCase().includes(q)) {
+        continue
+      }
+      all++
+      if (item.kind === 'post') posts++
+      else if (item.kind === 'community_event' || item.kind === 'city_event') events++
+      else if (item.kind === 'place') places++
     }
+    return { all, posts, events, places }
   }, [allItems, searchQuery])
 
-  // ── Build sections ──
+  // ── Build sections (bucket + insert-sort in a single pass) ──
   const sections = useMemo(() => {
     const eventsToday: ListItem[] = []
     const eventsUpcoming: ListItem[] = []
     const postItems: ListItem[] = []
     const placeItems: ListItem[] = []
 
+    // Helper: binary-insert into a sorted array to avoid a separate sort pass
+    function insertSorted(arr: ListItem[], item: ListItem, cmp: (a: ListItem, b: ListItem) => number) {
+      let lo = 0, hi = arr.length
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1
+        if (cmp(arr[mid], item) <= 0) lo = mid + 1
+        else hi = mid
+      }
+      arr.splice(lo, 0, item)
+    }
+
+    const byDistanceAsc = (a: ListItem, b: ListItem) => a.distance - b.distance
+    const byDateAsc = (a: ListItem, b: ListItem) => (a.sortDate ?? '').localeCompare(b.sortDate ?? '')
+    const byDateDesc = (a: ListItem, b: ListItem) => (b.sortDate ?? '').localeCompare(a.sortDate ?? '')
+
     for (const item of filteredItems) {
       if (item.kind === 'community_event' || item.kind === 'city_event') {
         if (item.sortDate && isToday(item.sortDate)) {
-          eventsToday.push(item)
+          insertSorted(eventsToday, item, byDistanceAsc)
         } else {
-          eventsUpcoming.push(item)
+          insertSorted(eventsUpcoming, item, byDateAsc)
         }
       } else if (item.kind === 'post') {
-        postItems.push(item)
+        insertSorted(postItems, item, byDateDesc)
       } else if (item.kind === 'place') {
-        placeItems.push(item)
+        // Places don't have sortDate — sort by distance only
+        insertSorted(placeItems, item, byDistanceAsc)
       }
     }
-
-    // Sort
-    eventsToday.sort((a, b) => a.distance - b.distance)
-    eventsUpcoming.sort((a, b) => (a.sortDate ?? '').localeCompare(b.sortDate ?? ''))
-    postItems.sort((a, b) => (b.sortDate ?? '').localeCompare(a.sortDate ?? ''))
-    placeItems.sort((a, b) => a.distance - b.distance)
 
     const result: Section[] = []
     if (eventsToday.length > 0) result.push({ title: t('events.filterToday'), data: eventsToday })
@@ -539,9 +559,29 @@ export default function MapScreen() {
     }
   }, [router])
 
+  // O(1) lookup map for marker press — rebuilt when filteredItems changes
+  const itemLookup = useMemo(() => {
+    const map = new Map<string, ListItem>()
+    for (const item of filteredItems) {
+      map.set(item.id, item)
+    }
+    return map
+  }, [filteredItems])
+
+  // O(1) lookup for section scroll position — rebuilt when sections change
+  const sectionIndexLookup = useMemo(() => {
+    const map = new Map<string, { sectionIndex: number; itemIndex: number }>()
+    for (let s = 0; s < sections.length; s++) {
+      for (let i = 0; i < sections[s].data.length; i++) {
+        map.set(sections[s].data[i].id, { sectionIndex: s, itemIndex: i })
+      }
+    }
+    return map
+  }, [sections])
+
   const handleMarkerPress = useCallback((marker: StableMarker) => {
-    // Find item in filtered list and open detail
-    const item = filteredItems.find(i => i.id === marker.key)
+    // Find item via O(1) lookup
+    const item = itemLookup.get(marker.key)
     if (item) {
       if (item.kind === 'post') {
         const post = item.sourceData as Post
@@ -551,30 +591,17 @@ export default function MapScreen() {
       }
     }
 
-    // Also scroll list to that item
-    let sectionIndex = 0
-    let itemIndex = 0
-    let found = false
-    for (let s = 0; s < sections.length; s++) {
-      for (let i = 0; i < sections[s].data.length; i++) {
-        if (sections[s].data[i].id === marker.key) {
-          sectionIndex = s
-          itemIndex = i
-          found = true
-          break
-        }
-      }
-      if (found) break
-    }
-    if (found && sectionListRef.current) {
+    // Also scroll list to that item via O(1) lookup
+    const pos = sectionIndexLookup.get(marker.key)
+    if (pos && sectionListRef.current) {
       sectionListRef.current.scrollToLocation({
-        sectionIndex,
-        itemIndex,
+        sectionIndex: pos.sectionIndex,
+        itemIndex: pos.itemIndex,
         animated: true,
         viewOffset: 50,
       })
     }
-  }, [sections, filteredItems, router])
+  }, [itemLookup, sectionIndexLookup, router])
 
   const handleGPSSelect = useCallback(async () => {
     try {

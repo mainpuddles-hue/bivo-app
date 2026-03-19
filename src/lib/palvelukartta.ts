@@ -21,9 +21,35 @@ interface PalvelukarttaResponse {
   results: PalvelukarttaUnit[]
 }
 
-// Map service IDs to place categories
-function mapCategory(services: number[]): string {
+// ── Name-based heuristic patterns for category inference ──
+
+const NAME_PATTERNS: [RegExp, string][] = [
+  // Restaurants & food
+  [/ravintola|restaurant|ruokala|dining/i, 'restaurant'],
+  [/kahvila|café|cafe|coffee/i, 'cafe'],
+  [/baari|bar\b|pub\b/i, 'bar'],
+  [/pikaruoka|fast.?food|burger|pizza|kebab|grilli/i, 'fast_food'],
+  // Culture
+  [/museo|museum|teatteri|theatre|theater|galleria|gallery|kulttuuritalo|taidetalo/i, 'culture'],
+  // Libraries
+  [/kirjasto|library|biblio/i, 'library'],
+  // Sports
+  [/liikunta|sport|urheil|uimahalli|jäähalli|kuntosali|gym|stadion|kenttä/i, 'sport'],
+  // Health
+  [/terveysasema|health|sairaala|hospital|hammaslääkäri|neuvola|klinikka|clinic/i, 'health'],
+  // Education & services
+  [/koulu|school|päiväkoti|daycare|opisto/i, 'service'],
+  // Hotels
+  [/hotelli|hotel|hostel|majatalo/i, 'hotel'],
+  // Shops
+  [/kauppa|shop|store|market|tori\b/i, 'shop'],
+]
+
+// Map service IDs to place categories, with name-based fallback
+function mapCategory(services: number[], name: string): string {
   const s = new Set(services)
+
+  // Try service ID matching first (these may be approximate)
   // Restaurants & food
   if (s.has(476) || s.has(477) || s.has(478)) return 'restaurant'
   if (s.has(479) || s.has(480)) return 'cafe'
@@ -39,6 +65,13 @@ function mapCategory(services: number[]): string {
   if (s.has(265) || s.has(266) || s.has(267)) return 'health'
   // Education
   if (s.has(1) || s.has(2) || s.has(3)) return 'service'
+
+  // Fallback: infer category from unit name using text heuristics
+  const lowerName = name.toLowerCase()
+  for (const [pattern, category] of NAME_PATTERNS) {
+    if (pattern.test(lowerName)) return category
+  }
+
   return 'other'
 }
 
@@ -47,29 +80,61 @@ function mapUnit(u: PalvelukarttaUnit): LocalPlace | null {
   const [lng, lat] = u.location.coordinates
   if (!lat || !lng) return null
 
+  const name = u.name?.fi || u.name?.en || ''
+
+  // Extract description — prefer Finnish, fall back to English
+  const description = u.description?.fi || u.description?.en || null
+
+  // Extract opening hours text
+  const openingHours = u.opening_hours?.fi || u.opening_hours?.en || null
+
   return {
     id: `pk-${u.id}`,
-    name: u.name?.fi || u.name?.en || '',
-    category: mapCategory(u.services),
+    source: 'palvelukartta',
+    source_id: String(u.id),
+    name,
+    category: mapCategory(u.services, name),
     subcategory: null,
+    description,
     address: u.street_address?.fi || null,
     latitude: lat,
     longitude: lng,
     phone: u.phone || null,
     website: u.www?.fi || u.www?.en || null,
-    opening_hours: null,
+    opening_hours: openingHours,
     image_url: u.picture_url || null,
     neighborhood: null,
     tags: [],
+    synced_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
-  } as unknown as LocalPlace
+  }
 }
 
-// Cache per neighborhood
+// ── Cache per neighborhood with per-key invalidation ──
+
 const cache = new Map<string, { places: LocalPlace[]; fetchedAt: number }>()
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
 
-let pendingFetches = new Map<string, Promise<LocalPlace[]>>()
+const pendingFetches = new Map<string, Promise<LocalPlace[]>>()
+
+/**
+ * Invalidate cache entries matching a specific coordinate prefix.
+ * Call with the lat/lng of a neighborhood center to clear only that area.
+ */
+export function invalidatePlacesCache(lat?: number, lng?: number): void {
+  if (lat == null || lng == null) {
+    // No coordinates: clear everything
+    cache.clear()
+    return
+  }
+  // Build the prefix that matches this neighborhood's cache keys
+  const prefix = `${lat.toFixed(3)}-${lng.toFixed(3)}-`
+  for (const key of cache.keys()) {
+    if (key.startsWith(prefix)) {
+      cache.delete(key)
+    }
+  }
+}
 
 export async function fetchHelsinkiPlaces(
   lat: number,
