@@ -7,6 +7,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { fetchHelsinkiEvents, fetchNearbyEvents } from '@/lib/linkedevents'
+import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
 import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -255,7 +256,7 @@ export default function MapScreen() {
   const fetchGlobalData = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
-      const [postsRes, eventsRes, cityEventsData] = await Promise.all([
+      const [postsRes, eventsRes, cityEventsData, tmData] = await Promise.all([
         supabase.from('posts')
           .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, is_active, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
@@ -271,11 +272,22 @@ export default function MapScreen() {
           .order('event_date', { ascending: true })
           .limit(500),
         fetchNearbyEvents(center.latitude, center.longitude, Math.max(radiusKm, 3)),
+        fetchTicketmasterEvents(),
       ])
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
-      setCityEvents(cityEventsData)
-      console.log(`[map] Nearby events: ${cityEventsData.length} within 3km of ${selectedNeighborhood}`)
+      // Merge LinkedEvents + Ticketmaster, dedupe by name similarity
+      const linkedEvents = cityEventsData
+      const tmEvents = tmData
+      const allCityEvents = [...linkedEvents]
+      const linkedNames = new Set(linkedEvents.map(e => e.name_fi.toLowerCase().slice(0, 20)))
+      for (const tm of tmEvents) {
+        if (!linkedNames.has(tm.name_fi.toLowerCase().slice(0, 20))) {
+          allCityEvents.push(tm)
+        }
+      }
+      setCityEvents(allCityEvents)
+      console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster (${allCityEvents.length} merged)`)
       if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
       if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
     } catch (err) {
