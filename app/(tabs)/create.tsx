@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
-import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, Camera, X, Check, Clock, MapPin } from 'lucide-react-native'
+import { useRouter, useLocalSearchParams } from 'expo-router'
+import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, Camera, X, Check, Clock, MapPin, Users } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -76,6 +76,7 @@ export default function CreateScreen() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  const params = useLocalSearchParams<{ type?: string }>()
   const supabase = useMemo(() => createClient(), [])
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
@@ -86,6 +87,9 @@ export default function CreateScreen() {
   const [location, setLocation] = useState('')
   const [dailyFee, setDailyFee] = useState('')
   const [eventDate, setEventDate] = useState('')
+  const [eventStartTime, setEventStartTime] = useState('')
+  const [eventEndTime, setEventEndTime] = useState('')
+  const [eventMaxCapacity, setEventMaxCapacity] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [expirationDays, setExpirationDays] = useState(0)
   const [images, setImages] = useState<string[]>([])
@@ -95,6 +99,14 @@ export default function CreateScreen() {
   const [tempMapCoords, setTempMapCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
+
+  // Handle pre-selected type from query params (e.g., from events screen)
+  useEffect(() => {
+    if (params.type && Object.keys(CATEGORIES).includes(params.type)) {
+      setSelectedType(params.type as PostType)
+      setStep('form')
+    }
+  }, [params.type])
 
   // Check auth on mount
   useEffect(() => {
@@ -277,15 +289,27 @@ export default function CreateScreen() {
 
       // Create event record if tapahtuma
       if (selectedType === 'tapahtuma' && post?.id) {
+        // Build event date with optional start time
+        let eventDateISO = new Date(eventDate).toISOString()
+        if (eventStartTime && /^\d{1,2}:\d{2}$/.test(eventStartTime)) {
+          const [h, m] = eventStartTime.split(':').map(Number)
+          const d = new Date(eventDate)
+          d.setHours(h, m, 0, 0)
+          eventDateISO = d.toISOString()
+        }
+
+        const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
+
         await (supabase.from('events') as any).insert({
           post_id: post.id,
           creator_id: user.id,
           title: title.trim(),
           description: description.trim(),
-          event_date: new Date(eventDate).toISOString(),
+          event_date: eventDateISO,
           location_name: location.trim() || null,
           latitude: latitude ?? null,
           longitude: longitude ?? null,
+          max_attendees: (maxAtt && maxAtt > 0) ? maxAtt : null,
           icon: 'CalendarDays',
           is_active: true,
         })
@@ -298,7 +322,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, selectedTags, expirationDays, images, supabase, router, t])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, images, supabase, router, t])
 
   // ── Category selection step ──
   if (step === 'category') {
@@ -462,6 +486,53 @@ export default function CreateScreen() {
                 placeholderTextColor={colors.mutedForeground}
               />
             </View>
+          )}
+
+          {/* Event start/end time + max capacity for tapahtuma */}
+          {selectedType === 'tapahtuma' && (
+            <>
+              <View style={styles.field}>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  <Clock size={14} color={colors.mutedForeground} /> {t('create.eventStartTime')}
+                </Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  value={eventStartTime}
+                  onChangeText={setEventStartTime}
+                  placeholder={t('create.eventStartTimePlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  keyboardType="numbers-and-punctuation"
+                  maxLength={5}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  <Clock size={14} color={colors.mutedForeground} /> {t('create.eventEndTime')}
+                </Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  value={eventEndTime}
+                  onChangeText={setEventEndTime}
+                  placeholder={t('create.eventEndTimePlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  keyboardType="numbers-and-punctuation"
+                  maxLength={5}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  <Users size={14} color={colors.mutedForeground} /> {t('create.eventMaxCapacity')}
+                </Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  value={eventMaxCapacity}
+                  onChangeText={setEventMaxCapacity}
+                  placeholder={t('create.eventMaxCapacityPlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  keyboardType="number-pad"
+                />
+              </View>
+            </>
           )}
 
           {/* Tags */}

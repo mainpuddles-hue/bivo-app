@@ -1,10 +1,10 @@
-import { memo, useState } from 'react'
+import { memo, useState, useMemo } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
-  HandHelping, Gift, BookOpen, CalendarDays, MessageCircle,
+  HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock, Navigation,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -12,15 +12,37 @@ import { CATEGORIES } from '@/lib/constants'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import type { Post, PostType } from '@/lib/types'
 
+function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: Record<string, string | number>) => string): { label: string; color: string } | null {
+  if (!expiresAt) return null
+  const now = new Date()
+  const expires = new Date(expiresAt)
+  const diffMs = expires.getTime() - now.getTime()
+  if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
+  const diffDays = Math.ceil(diffMs / 86400000)
+  if (diffDays <= 0) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
+  if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
+  if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
+  return null
+}
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
   HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
 }
 
 interface PostCardProps {
   post: Post
+  userLocation?: { latitude: number; longitude: number } | null
 }
 
-export const PostCard = memo(function PostCard({ post }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, userLocation }: PostCardProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
@@ -33,6 +55,15 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
   const hasImage = post.image_url && !imgError
   const CategoryIcon = category ? ICON_MAP[category.icon] : null
   const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
+
+  const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
+
+  const distanceText = useMemo(() => {
+    if (!userLocation || !post.latitude || !post.longitude) return null
+    const dist = calculateDistance(userLocation.latitude, userLocation.longitude, post.latitude, post.longitude)
+    if (dist < 0.1) return '< 0.1 km'
+    return t('postCard.distanceKm', { distance: dist < 10 ? dist.toFixed(1) : Math.round(dist).toString() })
+  }, [userLocation, post.latitude, post.longitude, t])
 
   return (
     <Pressable
@@ -85,18 +116,26 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
 
       {/* Content */}
       <View style={styles.content}>
-        {/* Category row */}
-        {category && (
-          <View style={styles.categoryRow}>
-            {CategoryIcon && <CategoryIcon size={14} color={category.color} />}
-            <Text style={[styles.categoryLabel, { color: category.color }]}>
-              {t(category.label)}
-            </Text>
-            <Text style={[styles.categorySubtitle, { color: colors.mutedForeground }]}>
-              {t(category.subtitle)}
-            </Text>
-          </View>
-        )}
+        {/* Category row + expiration badge */}
+        <View style={styles.categoryExpRow}>
+          {category && (
+            <View style={styles.categoryRow}>
+              {CategoryIcon && <CategoryIcon size={14} color={category.color} />}
+              <Text style={[styles.categoryLabel, { color: category.color }]}>
+                {t(category.label)}
+              </Text>
+              <Text style={[styles.categorySubtitle, { color: colors.mutedForeground }]}>
+                {t(category.subtitle)}
+              </Text>
+            </View>
+          )}
+          {expirationInfo && (
+            <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
+              <Clock size={10} color={expirationInfo.color} />
+              <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
+            </View>
+          )}
+        </View>
 
         {/* Title */}
         <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
@@ -110,14 +149,20 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
           </Text>
         ) : null}
 
-        {/* Location + price */}
-        {(post.daily_fee != null || post.location) && (
+        {/* Location + price + distance */}
+        {(post.daily_fee != null || post.location || distanceText) && (
           <View style={styles.metaRow}>
             {post.daily_fee != null && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? '#2D2010' : '#FDF6E8' }]}>
                 <Text style={[styles.priceText, { color: '#C98B2E' }]}>
                   {t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })}
                 </Text>
+              </View>
+            )}
+            {distanceText && (
+              <View style={styles.distanceRow}>
+                <Navigation size={10} color={colors.primary} />
+                <Text style={[styles.distanceText, { color: colors.primary }]}>{distanceText}</Text>
               </View>
             )}
             {post.location && (
@@ -131,23 +176,17 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
           </View>
         )}
 
-        {/* Engagement */}
-        {(post.like_count > 0 || post.comment_count > 0) && (
-          <View style={styles.engagementRow}>
-            {post.like_count > 0 && (
-              <View style={styles.engagementItem}>
-                <Heart size={12} color={colors.mutedForeground} />
-                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.like_count}</Text>
-              </View>
-            )}
-            {post.comment_count > 0 && (
-              <View style={styles.engagementItem}>
-                <MessageCircle size={12} color={colors.mutedForeground} />
-                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
-              </View>
-            )}
+        {/* Engagement — always show heart + comment counts */}
+        <View style={styles.engagementRow}>
+          <View style={styles.engagementItem}>
+            <Heart size={12} color={post.like_count > 0 ? '#D94F4F' : colors.mutedForeground} />
+            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.like_count}</Text>
           </View>
-        )}
+          <View style={styles.engagementItem}>
+            <MessageCircle size={12} color={colors.mutedForeground} />
+            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+          </View>
+        </View>
 
         {/* User row */}
         <View style={styles.userRow}>
@@ -204,7 +243,13 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14, gap: 8 },
-  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  categoryExpRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
+  expirationBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+  },
+  expirationText: { fontSize: 9, fontWeight: '600' },
   categoryLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
   categorySubtitle: { fontSize: 10 },
   title: { fontSize: 16, fontWeight: '600', lineHeight: 22, letterSpacing: -0.3 },
@@ -212,6 +257,8 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   priceText: { fontSize: 11, fontWeight: '600' },
+  distanceRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  distanceText: { fontSize: 10, fontWeight: '600' },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 11, flex: 1 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },

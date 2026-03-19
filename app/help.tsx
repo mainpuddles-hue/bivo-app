@@ -1,0 +1,181 @@
+import { useState, useCallback } from 'react'
+import { View, Text, ScrollView, Pressable, StyleSheet, Linking } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import { ArrowLeft, ChevronDown, ChevronUp, Mail, ExternalLink } from 'lucide-react-native'
+import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
+
+interface FAQItem {
+  question: string
+  answer: string
+}
+
+interface FAQCategory {
+  titleKey: string
+  items: { questionKey: string; answerKey: string }[]
+}
+
+const FAQ_CATEGORIES: FAQCategory[] = [
+  {
+    titleKey: 'help.categoryAccount',
+    items: [
+      { questionKey: 'help.accountQ1', answerKey: 'help.accountA1' },
+      { questionKey: 'help.accountQ2', answerKey: 'help.accountA2' },
+      { questionKey: 'help.accountQ3', answerKey: 'help.accountA3' },
+    ],
+  },
+  {
+    titleKey: 'help.categoryPosts',
+    items: [
+      { questionKey: 'help.postsQ1', answerKey: 'help.postsA1' },
+      { questionKey: 'help.postsQ2', answerKey: 'help.postsA2' },
+      { questionKey: 'help.postsQ3', answerKey: 'help.postsA3' },
+    ],
+  },
+  {
+    titleKey: 'help.categoryMessages',
+    items: [
+      { questionKey: 'help.messagesQ1', answerKey: 'help.messagesA1' },
+      { questionKey: 'help.messagesQ2', answerKey: 'help.messagesA2' },
+    ],
+  },
+  {
+    titleKey: 'help.categoryPayments',
+    items: [
+      { questionKey: 'help.paymentsQ1', answerKey: 'help.paymentsA1' },
+      { questionKey: 'help.paymentsQ2', answerKey: 'help.paymentsA2' },
+    ],
+  },
+  {
+    titleKey: 'help.categorySafety',
+    items: [
+      { questionKey: 'help.safetyQ1', answerKey: 'help.safetyA1' },
+      { questionKey: 'help.safetyQ2', answerKey: 'help.safetyA2' },
+      { questionKey: 'help.safetyQ3', answerKey: 'help.safetyA3' },
+    ],
+  },
+]
+
+export default function HelpScreen() {
+  const { colors } = useTheme()
+  const { t } = useI18n()
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+
+  const toggleItem = useCallback((key: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        next.delete(key)
+      } else {
+        next.add(key)
+      }
+      return next
+    })
+  }, [])
+
+  return (
+    <View style={[s.container, { backgroundColor: colors.background }]}>
+      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
+          <ArrowLeft size={24} color={colors.foreground} />
+        </Pressable>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('help.title')}</Text>
+      </View>
+
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <Text style={[s.subtitle, { color: colors.mutedForeground }]}>{t('help.subtitle')}</Text>
+
+        {FAQ_CATEGORIES.map((category, ci) => (
+          <View key={ci}>
+            <Text style={[s.categoryTitle, { color: colors.foreground }]}>{t(category.titleKey)}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              {category.items.map((item, qi) => {
+                const key = `${ci}-${qi}`
+                const isExpanded = expandedItems.has(key)
+                return (
+                  <View key={key}>
+                    {qi > 0 && <View style={[s.divider, { backgroundColor: colors.border }]} />}
+                    <Pressable onPress={() => toggleItem(key)} style={s.faqRow}>
+                      <Text style={[s.faqQuestion, { color: colors.foreground }]}>{t(item.questionKey)}</Text>
+                      {isExpanded
+                        ? <ChevronUp size={18} color={colors.mutedForeground} />
+                        : <ChevronDown size={18} color={colors.mutedForeground} />
+                      }
+                    </Pressable>
+                    {isExpanded && (
+                      <View style={s.faqAnswer}>
+                        <Text style={[s.answerText, { color: colors.mutedForeground }]}>{t(item.answerKey)}</Text>
+                      </View>
+                    )}
+                  </View>
+                )
+              })}
+            </View>
+          </View>
+        ))}
+
+        {/* Contact support */}
+        <View style={[s.card, { backgroundColor: colors.card, marginTop: 16 }]}>
+          <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
+          <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
+          <Pressable
+            onPress={() => Linking.openURL('mailto:tuki@tackbird.fi')}
+            style={[s.contactBtn, { backgroundColor: colors.primary }]}
+          >
+            <Mail size={16} color={colors.primaryForeground} />
+            <Text style={[s.contactBtnText, { color: colors.primaryForeground }]}>tuki@tackbird.fi</Text>
+          </Pressable>
+        </View>
+
+        {/* Links to terms and privacy */}
+        <View style={[s.card, { backgroundColor: colors.card, marginTop: 12 }]}>
+          <Pressable onPress={() => router.push('/terms')} style={s.linkRow}>
+            <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.terms')}</Text>
+            <ExternalLink size={14} color={colors.primary} />
+          </Pressable>
+          <View style={[s.divider, { backgroundColor: colors.border }]} />
+          <Pressable onPress={() => router.push('/privacy')} style={s.linkRow}>
+            <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.privacy')}</Text>
+            <ExternalLink size={14} color={colors.primary} />
+          </Pressable>
+        </View>
+      </ScrollView>
+    </View>
+  )
+}
+
+const s = StyleSheet.create({
+  container: { flex: 1 },
+  header: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  content: { padding: 16, gap: 8, paddingBottom: 40 },
+  subtitle: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  categoryTitle: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 6, paddingHorizontal: 4 },
+  card: { borderRadius: 12, overflow: 'hidden' },
+  divider: { height: StyleSheet.hairlineWidth },
+  faqRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    padding: 16,
+  },
+  faqQuestion: { fontSize: 15, fontWeight: '500', flex: 1 },
+  faqAnswer: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 },
+  answerText: { fontSize: 14, lineHeight: 21 },
+  contactTitle: { fontSize: 16, fontWeight: '600', padding: 16, paddingBottom: 4 },
+  contactDesc: { fontSize: 14, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 12 },
+  contactBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 10,
+  },
+  contactBtnText: { fontSize: 14, fontWeight: '600' },
+  linkRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    padding: 16,
+  },
+  linkText: { fontSize: 15, fontWeight: '500' },
+})

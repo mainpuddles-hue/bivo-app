@@ -3,6 +3,7 @@ import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
+import * as Location from 'expo-location'
 import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -125,9 +126,29 @@ export default function FeedScreen() {
   const [cityEvents, setCityEvents] = useState<CityEvent[]>([])
   const [nearbyPlaces, setNearbyPlaces] = useState<LocalPlace[]>([])
   const [extraLoading, setExtraLoading] = useState(true)
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Request location permission once, cache result
+  useEffect(() => {
+    let cancelled = false
+    async function getLocation() {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync()
+        if (status !== 'granted' || cancelled) return
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+        if (!cancelled) {
+          setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
+        }
+      } catch {
+        // Silently fail — distance won't be shown
+      }
+    }
+    getLocation()
+    return () => { cancelled = true }
+  }, [])
 
   // Fetch followed user IDs
   useEffect(() => {
@@ -264,7 +285,7 @@ export default function FeedScreen() {
     return e.name_fi
   }, [locale])
 
-  const renderPost = useCallback(({ item }: { item: Post }) => <PostCard post={item} />, [])
+  const renderPost = useCallback(({ item }: { item: Post }) => <PostCard post={item} userLocation={userLocation} />, [userLocation])
 
   // ── List Header ──
   const ListHeader = useMemo(() => (

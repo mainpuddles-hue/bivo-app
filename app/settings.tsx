@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native'
+import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard } from 'lucide-react-native'
+import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n, type Locale } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -48,10 +49,21 @@ export default function SettingsScreen() {
   const [newPw, setNewPw] = useState('')
   const [changingPw, setChangingPw] = useState(false)
 
+  // Delete account
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState(false)
+
+  // Email state
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [emailVerified, setEmailVerified] = useState(false)
+
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      setUserEmail(user.email ?? null)
+      setEmailVerified(!!user.email_confirmed_at)
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
         const p = data as unknown as Profile
@@ -81,6 +93,10 @@ export default function SettingsScreen() {
   }, [profile, visibility, notifPrefs.preferences.messages, theme, supabase, t])
 
   const handleChangePassword = useCallback(async () => {
+    if (!currentPw) {
+      Alert.alert(t('common.error'), t('settings.currentPasswordRequired'))
+      return
+    }
     if (!newPw || newPw.length < 8) {
       Alert.alert(t('common.error'), t('settings.passwordTooShort'))
       return
@@ -91,6 +107,18 @@ export default function SettingsScreen() {
     }
     setChangingPw(true)
     try {
+      // Verify current password by attempting to sign in
+      if (userEmail) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: userEmail,
+          password: currentPw,
+        })
+        if (signInError) {
+          Alert.alert(t('common.error'), t('settings.currentPasswordWrong'))
+          setChangingPw(false)
+          return
+        }
+      }
       const { error } = await supabase.auth.updateUser({ password: newPw })
       if (error) throw error
       Alert.alert(t('common.success'), t('settings.passwordChanged'))
@@ -99,7 +127,7 @@ export default function SettingsScreen() {
     } catch (err: any) {
       Alert.alert(t('common.error'), err.message ?? t('settings.passwordChangeFailed'))
     } finally { setChangingPw(false) }
-  }, [newPw, supabase, t])
+  }, [currentPw, newPw, userEmail, supabase, t])
 
   const handleExport = useCallback(async () => {
     if (!profile) return
@@ -190,19 +218,33 @@ export default function SettingsScreen() {
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('settings.deletePermanently'), style: 'destructive',
-        onPress: () => Alert.alert(t('settings.deleteAccount'), t('settings.deleteSecondConfirm'), [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('settings.deletePermanently'), style: 'destructive',
-            onPress: async () => {
-              await supabase.auth.signOut()
-              router.replace('/(auth)/login')
-            },
-          },
-        ]),
+        onPress: () => {
+          setDeleteConfirmText('')
+          setDeleteModalVisible(true)
+        },
       },
     ])
   }
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (deleteConfirmText !== t('settings.deleteConfirmWord') || deletingAccount) return
+    setDeletingAccount(true)
+    try {
+      // Try RPC first, fallback to signout
+      try {
+        await supabase.rpc('delete_user_account')
+      } catch {
+        // RPC may not exist — just sign out
+      }
+      await supabase.auth.signOut()
+      setDeleteModalVisible(false)
+      router.replace('/(auth)/login')
+    } catch {
+      Alert.alert(t('common.error'), t('settings.accountDeleteFailed'))
+    } finally {
+      setDeletingAccount(false)
+    }
+  }, [deleteConfirmText, deletingAccount, supabase, router, t])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -212,6 +254,8 @@ export default function SettingsScreen() {
   const markDirty = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setDirty(true) }
 
   const langLabel = (l: Locale) => ({ fi: 'Suomi', en: 'English', sv: 'Svenska' }[l])
+
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0'
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -230,6 +274,30 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        {/* Email verification status */}
+        {userEmail && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.email')}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <View style={s.row}>
+                <Mail size={18} color={colors.mutedForeground} />
+                <Text style={[s.rowText, { color: colors.foreground }]} numberOfLines={1}>{userEmail}</Text>
+                {emailVerified ? (
+                  <View style={s.verifiedBadge}>
+                    <CheckCircle size={14} color={colors.success} />
+                    <Text style={[s.verifiedText, { color: colors.success }]}>{t('settings.emailVerified')}</Text>
+                  </View>
+                ) : (
+                  <View style={s.verifiedBadge}>
+                    <AlertCircle size={14} color={colors.pro} />
+                    <Text style={[s.verifiedText, { color: colors.pro }]}>{t('settings.emailUnverified')}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          </>
+        )}
+
         {/* Language */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
@@ -320,11 +388,11 @@ export default function SettingsScreen() {
             ) : iap.isAvailable ? (
               <Pressable onPress={iap.purchase} disabled={iap.purchasing} style={[s.upgradeBtn, { backgroundColor: colors.pro, opacity: iap.purchasing ? 0.6 : 1 }]}>
                 <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>
-                  {iap.purchasing ? '...' : iap.products[0]?.localizedPrice ?? '4,99 €/kk'}
+                  {iap.purchasing ? '...' : iap.products[0]?.localizedPrice ?? '4,99 \u20AC/kk'}
                 </Text>
               </Pressable>
             ) : (
-              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>4,99 €/kk</Text>
+              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>4,99 \u20AC/kk</Text>
             )}
           </View>
           {!profile?.is_pro && iap.isAvailable && (
@@ -342,6 +410,14 @@ export default function SettingsScreen() {
             <Text style={[s.rowText, { color: colors.foreground, fontWeight: '600' }]}>{t('settings.changePassword')}</Text>
             <TextInput
               style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
+              value={currentPw}
+              onChangeText={setCurrentPw}
+              placeholder={t('settings.currentPasswordPlaceholder')}
+              placeholderTextColor={colors.mutedForeground}
+              secureTextEntry
+            />
+            <TextInput
+              style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
               value={newPw}
               onChangeText={setNewPw}
               placeholder={t('settings.newPasswordPlaceholder')}
@@ -350,8 +426,8 @@ export default function SettingsScreen() {
             />
             <Pressable
               onPress={handleChangePassword}
-              disabled={changingPw || !newPw}
-              style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw ? 0.5 : 1 }]}
+              disabled={changingPw || !newPw || !currentPw}
+              style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || !currentPw ? 0.5 : 1 }]}
             >
               <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground }}>
                 {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
@@ -405,13 +481,19 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* About */}
+        {/* About & info links */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.about')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <View style={s.row}>
+          <Pressable onPress={() => router.push('/about' as any)} style={s.row}>
             <Info size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Mobile v1.0.0</Text>
-          </View>
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('about.title')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+          <Pressable onPress={() => router.push('/help' as any)} style={s.row}>
+            <HelpCircle size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('help.title')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
           <Pressable onPress={() => router.push('/privacy')} style={s.row}>
             <Lock size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
@@ -438,7 +520,50 @@ export default function SettingsScreen() {
           <LogOut size={18} color={colors.destructive} />
           <Text style={{ fontSize: 15, fontWeight: '600', color: colors.destructive }}>{t('settings.logout')}</Text>
         </Pressable>
+
+        {/* App version */}
+        <Text style={[s.versionText, { color: colors.mutedForeground }]}>
+          TackBird v{appVersion}
+        </Text>
       </ScrollView>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
+        <Pressable style={s.deleteBackdrop} onPress={() => setDeleteModalVisible(false)}>
+          <Pressable style={[s.deleteCard, { backgroundColor: colors.card }]} onPress={() => {}}>
+            <View style={s.deleteHeader}>
+              <Trash2 size={24} color={colors.destructive} />
+              <Text style={[s.deleteTitle, { color: colors.destructive }]}>{t('settings.deleteAccount')}</Text>
+            </View>
+            <Text style={[s.deleteDesc, { color: colors.foreground }]}>{t('settings.deleteSecondConfirm')}</Text>
+            <Text style={[s.deleteLabel, { color: colors.mutedForeground }]}>{t('settings.deleteConfirmLabel')}</Text>
+            <TextInput
+              style={[s.deleteInput, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
+              placeholder={t('settings.deleteConfirmPlaceholder')}
+              placeholderTextColor={colors.mutedForeground}
+              autoCapitalize="characters"
+            />
+            <View style={s.deleteActions}>
+              <Pressable onPress={() => setDeleteModalVisible(false)} style={[s.deleteCancelBtn, { backgroundColor: colors.muted }]}>
+                <Text style={[s.deleteCancelText, { color: colors.foreground }]}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleConfirmDelete}
+                disabled={deleteConfirmText !== t('settings.deleteConfirmWord') || deletingAccount}
+                style={[s.deleteConfirmBtn, { backgroundColor: colors.destructive, opacity: deleteConfirmText !== t('settings.deleteConfirmWord') || deletingAccount ? 0.5 : 1 }]}
+              >
+                {deletingAccount ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={s.deleteConfirmText}>{t('settings.deletePermanently')}</Text>
+                )}
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   )
 }
@@ -470,5 +595,77 @@ const s = StyleSheet.create({
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, padding: 16, borderRadius: 12, marginTop: 16,
+  },
+  verifiedBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+  },
+  verifiedText: { fontSize: 12, fontWeight: '500' },
+  versionText: {
+    fontSize: 12, textAlign: 'center', marginTop: 24, marginBottom: 8,
+  },
+  deleteBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  deleteCard: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 20,
+    gap: 12,
+  },
+  deleteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  deleteTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  deleteDesc: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  deleteLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  deleteInput: {
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  deleteActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8,
+  },
+  deleteCancelBtn: {
+    flex: 1,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  deleteCancelText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  deleteConfirmBtn: {
+    flex: 1,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  deleteConfirmText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 })

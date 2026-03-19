@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, CheckCheck, Check } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, CheckCheck, Check, Trash2 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -12,6 +12,8 @@ import { formatTimeAgo } from '@/lib/format'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
+
+const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
 function isSameDay(a: string, b: string) {
   return new Date(a).toDateString() === new Date(b).toDateString()
@@ -43,6 +45,11 @@ export default function ConversationScreen() {
   const [otherTyping, setOtherTyping] = useState(false)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Reaction & deletion state
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
+  const [showReactionPicker, setShowReactionPicker] = useState(false)
+  const [reactions, setReactions] = useState<Record<string, { emoji: string; user_id: string }[]>>({})
+
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -65,6 +72,23 @@ export default function ConversationScreen() {
       const sorted = (msgs ?? []).reverse() as Message[]
       setMessages(sorted)
       setHasOlder((msgs ?? []).length >= PAGE_SIZE)
+
+      // Load reactions for these messages
+      const msgIds = sorted.map(m => m.id)
+      if (msgIds.length > 0) {
+        const { data: rxns } = await supabase
+          .from('message_reactions')
+          .select('*')
+          .in('message_id', msgIds)
+        if (rxns) {
+          const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
+          for (const r of rxns as any[]) {
+            if (!grouped[r.message_id]) grouped[r.message_id] = []
+            grouped[r.message_id].push({ emoji: r.emoji, user_id: r.user_id })
+          }
+          setReactions(grouped)
+        }
+      }
 
       // Mark as read
       await (supabase.from('messages') as any).update({ is_read: true })
@@ -90,6 +114,13 @@ export default function ConversationScreen() {
         if (newMsg.sender_id !== userId) {
           (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id)
         }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'messages',
+        filter: `conversation_id=eq.${id}`,
+      }, (payload) => {
+        const updated = payload.new as Message
+        setMessages(prev => prev.map(m => m.id === updated.id ? updated : m))
       })
       .on('broadcast', { event: 'typing' }, (payload) => {
         if ((payload as any).payload?.userId !== userId) {
@@ -167,11 +198,85 @@ export default function ConversationScreen() {
     } finally { setSending(false) }
   }, [userId, id, supabase])
 
+  const handleLongPress = useCallback((messageId: string) => {
+    setSelectedMessageId(messageId)
+    setShowReactionPicker(true)
+  }, [])
+
+  const handleReaction = useCallback(async (emoji: string) => {
+    if (!selectedMessageId || !userId) return
+    setShowReactionPicker(false)
+
+    // Check if user already reacted with this emoji
+    const existing = reactions[selectedMessageId]?.find(
+      r => r.user_id === userId && r.emoji === emoji
+    )
+
+    if (existing) {
+      // Remove reaction
+      await (supabase.from('message_reactions') as any)
+        .delete()
+        .eq('message_id', selectedMessageId)
+        .eq('user_id', userId)
+        .eq('emoji', emoji)
+      setReactions(prev => ({
+        ...prev,
+        [selectedMessageId]: (prev[selectedMessageId] ?? []).filter(
+          r => !(r.user_id === userId && r.emoji === emoji)
+        ),
+      }))
+    } else {
+      // Add reaction
+      await (supabase.from('message_reactions') as any).insert({
+        message_id: selectedMessageId,
+        user_id: userId,
+        emoji,
+      })
+      setReactions(prev => ({
+        ...prev,
+        [selectedMessageId]: [...(prev[selectedMessageId] ?? []), { emoji, user_id: userId }],
+      }))
+    }
+    setSelectedMessageId(null)
+  }, [selectedMessageId, userId, reactions, supabase])
+
+  const handleDeleteMessage = useCallback(async () => {
+    if (!selectedMessageId || !userId) return
+    setShowReactionPicker(false)
+
+    const msg = messages.find(m => m.id === selectedMessageId)
+    if (!msg || msg.sender_id !== userId) return
+
+    // Soft delete
+    await (supabase.from('messages') as any)
+      .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+      .eq('id', selectedMessageId)
+
+    setMessages(prev => prev.map(m =>
+      m.id === selectedMessageId ? { ...m, is_deleted: true } as any : m
+    ))
+    setSelectedMessageId(null)
+  }, [selectedMessageId, userId, messages, supabase])
+
   const renderMessage = useCallback(({ item, index }: { item: Message; index: number }) => {
     const isMine = item.sender_id === userId
     const prev = index > 0 ? messages[index - 1] : null
     const showDateHeader = !prev || !isSameDay(prev.created_at, item.created_at)
     const sameAuthorAsPrev = prev?.sender_id === item.sender_id && !showDateHeader
+    const isDeleted = (item as any).is_deleted
+    const msgReactions = reactions[item.id] ?? []
+
+    // Group reactions by emoji
+    const groupedReactions: { emoji: string; count: number; userReacted: boolean }[] = []
+    for (const r of msgReactions) {
+      const existing = groupedReactions.find(g => g.emoji === r.emoji)
+      if (existing) {
+        existing.count++
+        if (r.user_id === userId) existing.userReacted = true
+      } else {
+        groupedReactions.push({ emoji: r.emoji, count: 1, userReacted: r.user_id === userId })
+      }
+    }
 
     return (
       <View>
@@ -186,33 +291,74 @@ export default function ConversationScreen() {
           ) : !isMine ? (
             <View style={{ width: 28 }} />
           ) : null}
-          <View style={[
-            s.bubble,
-            isMine
-              ? [s.bubbleMine, { backgroundColor: colors.primary }]
-              : [s.bubbleTheirs, { backgroundColor: isDark ? colors.card : '#F0F0F0' }],
-          ]}>
-            {item.image_url ? (
-              <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" />
-            ) : null}
-            {item.content ? (
-              <Text style={[s.msgText, { color: isMine ? colors.primaryForeground : colors.foreground }]}>{item.content}</Text>
-            ) : null}
-            <View style={s.msgMeta}>
-              <Text style={[s.msgTime, { color: isMine ? `${colors.primaryForeground}99` : colors.mutedForeground }]}>
-                {formatTimeAgo(item.created_at, t, locale)}
-              </Text>
-              {isMine && (
-                item.is_read
-                  ? <CheckCheck size={12} color={`${colors.primaryForeground}99`} />
-                  : <Check size={12} color={`${colors.primaryForeground}66`} />
+          <Pressable
+            onLongPress={() => handleLongPress(item.id)}
+            delayLongPress={400}
+            style={{ maxWidth: '78%' }}
+          >
+            <View style={[
+              s.bubble,
+              isMine
+                ? [s.bubbleMine, { backgroundColor: colors.primary }]
+                : [s.bubbleTheirs, { backgroundColor: isDark ? colors.card : '#F0F0F0' }],
+            ]}>
+              {isDeleted ? (
+                <Text style={[s.msgText, s.deletedText, { color: isMine ? `${colors.primaryForeground}88` : colors.mutedForeground }]}>
+                  {t('conversation.messageDeleted')}
+                </Text>
+              ) : (
+                <>
+                  {item.image_url ? (
+                    <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" />
+                  ) : null}
+                  {item.content ? (
+                    <Text style={[s.msgText, { color: isMine ? colors.primaryForeground : colors.foreground }]}>{item.content}</Text>
+                  ) : null}
+                </>
               )}
+              <View style={s.msgMeta}>
+                <Text style={[s.msgTime, { color: isMine ? `${colors.primaryForeground}99` : colors.mutedForeground }]}>
+                  {formatTimeAgo(item.created_at, t, locale)}
+                </Text>
+                {isMine && (
+                  item.is_read
+                    ? <CheckCheck size={12} color={`${colors.primaryForeground}99`} />
+                    : <Check size={12} color={`${colors.primaryForeground}66`} />
+                )}
+              </View>
             </View>
-          </View>
+            {/* Reactions display */}
+            {groupedReactions.length > 0 && (
+              <View style={[s.reactionsRow, isMine ? s.reactionsRowMine : s.reactionsRowTheirs]}>
+                {groupedReactions.map((r) => (
+                  <Pressable
+                    key={r.emoji}
+                    onPress={() => {
+                      setSelectedMessageId(item.id)
+                      handleReaction(r.emoji)
+                    }}
+                    style={[
+                      s.reactionBadge,
+                      { backgroundColor: isDark ? colors.card : '#F0F0F0', borderColor: colors.border },
+                      r.userReacted && { borderColor: colors.primary, backgroundColor: isDark ? `${colors.primary}22` : `${colors.primary}15` },
+                    ]}
+                  >
+                    <Text style={s.reactionEmoji}>{r.emoji}</Text>
+                    {r.count > 1 && (
+                      <Text style={[s.reactionCount, { color: colors.mutedForeground }]}>{r.count}</Text>
+                    )}
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </Pressable>
         </View>
       </View>
     )
-  }, [userId, messages, otherUser, colors, isDark, t, locale])
+  }, [userId, messages, otherUser, colors, isDark, t, locale, reactions, handleLongPress, handleReaction])
+
+  const selectedMsg = selectedMessageId ? messages.find(m => m.id === selectedMessageId) : null
+  const canDelete = selectedMsg?.sender_id === userId && !(selectedMsg as any)?.is_deleted
 
   return (
     <KeyboardAvoidingView
@@ -278,6 +424,39 @@ export default function ConversationScreen() {
         </Pressable>
       )}
 
+      {/* Reaction / Delete Picker Modal */}
+      <Modal
+        visible={showReactionPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => { setShowReactionPicker(false); setSelectedMessageId(null) }}
+      >
+        <Pressable
+          style={s.modalOverlay}
+          onPress={() => { setShowReactionPicker(false); setSelectedMessageId(null) }}
+        >
+          <View style={[s.reactionPickerContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={s.reactionPickerRow}>
+              {QUICK_REACTIONS.map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  onPress={() => handleReaction(emoji)}
+                  style={s.reactionPickerItem}
+                >
+                  <Text style={s.reactionPickerEmoji}>{emoji}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {canDelete && (
+              <Pressable onPress={handleDeleteMessage} style={[s.deleteRow, { borderTopColor: colors.border }]}>
+                <Trash2 size={16} color={colors.destructive} />
+                <Text style={[s.deleteText, { color: colors.destructive }]}>{t('conversation.deleteMessage')}</Text>
+              </Pressable>
+            )}
+          </View>
+        </Pressable>
+      </Modal>
+
       {/* Input */}
       <View style={[s.inputBar, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
         <Pressable onPress={handleSendImage} style={s.imageBtn} hitSlop={8}>
@@ -319,13 +498,23 @@ const s = StyleSheet.create({
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
-  bubble: { maxWidth: '78%', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18 },
+  bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18 },
   bubbleMine: { borderBottomRightRadius: 4 },
   bubbleTheirs: { borderBottomLeftRadius: 4 },
   msgImage: { width: 200, height: 150, borderRadius: 12, marginBottom: 4 },
   msgText: { fontSize: 15, lineHeight: 20 },
+  deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 2 },
   msgTime: { fontSize: 10 },
+  reactionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
+  reactionsRowMine: { justifyContent: 'flex-end' },
+  reactionsRowTheirs: { justifyContent: 'flex-start' },
+  reactionBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 2,
+    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 12, borderWidth: 1,
+  },
+  reactionEmoji: { fontSize: 14 },
+  reactionCount: { fontSize: 11 },
   loadOlderBtn: { alignSelf: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 6, marginBottom: 12 },
   loadOlderText: { fontSize: 13, fontWeight: '500' },
   scrollBtn: {
@@ -335,6 +524,28 @@ const s = StyleSheet.create({
     borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
   },
+  modalOverlay: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  reactionPickerContainer: {
+    borderRadius: 16, borderWidth: 1, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
+  },
+  reactionPickerRow: {
+    flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, gap: 4,
+  },
+  reactionPickerItem: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  reactionPickerEmoji: { fontSize: 24 },
+  deleteRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  deleteText: { fontSize: 15, fontWeight: '500' },
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
     paddingHorizontal: 12, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth,

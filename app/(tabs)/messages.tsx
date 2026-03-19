@@ -3,12 +3,15 @@ import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
-import { Search, X, Archive, CheckCheck, ImageIcon } from 'lucide-react-native'
+import { Search, X, Archive, CheckCheck, ImageIcon, Pin } from 'lucide-react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
 import type { Conversation } from '@/lib/types'
+
+const PINNED_KEY = 'pinned_conversations'
 
 export default function MessagesScreen() {
   const { colors, isDark } = useTheme()
@@ -22,6 +25,31 @@ export default function MessagesScreen() {
   const [userId, setUserId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showArchived, setShowArchived] = useState(false)
+  const [pinnedIds, setPinnedIds] = useState<string[]>([])
+
+  // Load pinned conversations from AsyncStorage
+  useEffect(() => {
+    async function loadPinned() {
+      try {
+        const stored = await AsyncStorage.getItem(PINNED_KEY)
+        if (stored) setPinnedIds(JSON.parse(stored))
+      } catch {}
+    }
+    loadPinned()
+  }, [])
+
+  const savePinnedIds = useCallback(async (ids: string[]) => {
+    setPinnedIds(ids)
+    await AsyncStorage.setItem(PINNED_KEY, JSON.stringify(ids))
+  }, [])
+
+  const handleTogglePin = useCallback(async (convId: string) => {
+    const isPinned = pinnedIds.includes(convId)
+    const newIds = isPinned
+      ? pinnedIds.filter(id => id !== convId)
+      : [...pinnedIds, convId]
+    await savePinnedIds(newIds)
+  }, [pinnedIds, savePinnedIds])
 
   const fetchConversations = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -101,8 +129,16 @@ export default function MessagesScreen() {
       const q = searchQuery.toLowerCase()
       list = list.filter(c => c.other_user?.name?.toLowerCase().includes(q))
     }
+    // Sort: pinned first, then by updated_at
+    list.sort((a, b) => {
+      const aPinned = pinnedIds.includes(a.id)
+      const bPinned = pinnedIds.includes(b.id)
+      if (aPinned && !bPinned) return -1
+      if (!aPinned && bPinned) return 1
+      return 0
+    })
     return list
-  }, [conversations, showArchived, searchQuery])
+  }, [conversations, showArchived, searchQuery, pinnedIds])
 
   const isOnline = (lastActive: string | null | undefined) => {
     if (!lastActive) return false
@@ -147,11 +183,12 @@ export default function MessagesScreen() {
           const isMySent = lastMsg?.sender_id === userId
           const online = isOnline(other?.last_active_date)
           const isImageMsg = lastMsg?.image_url && !lastMsg?.content
+          const isPinned = pinnedIds.includes(item.id)
 
           return (
             <Pressable
               onPress={() => router.push(`/messages/${item.id}`)}
-              onLongPress={() => handleArchive(item.id)}
+              onLongPress={() => handleTogglePin(item.id)}
               style={[styles.convRow, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }]}
             >
               <View style={styles.avatarWrap}>
@@ -167,9 +204,12 @@ export default function MessagesScreen() {
                 {online && <View style={[styles.onlineDot, { borderColor: colors.background }]} />}
               </View>
               <View style={styles.convContent}>
-                <Text style={[styles.convName, { color: colors.foreground }, unread > 0 && { fontWeight: '700' }]} numberOfLines={1}>
-                  {other?.name ?? t('messages.unknownUser')}
-                </Text>
+                <View style={styles.convNameRow}>
+                  {isPinned && <Pin size={12} color={colors.primary} />}
+                  <Text style={[styles.convName, { color: colors.foreground }, unread > 0 && { fontWeight: '700' }]} numberOfLines={1}>
+                    {other?.name ?? t('messages.unknownUser')}
+                  </Text>
+                </View>
                 <View style={styles.previewRow}>
                   {isMySent && lastMsg?.is_read && <CheckCheck size={14} color={colors.primary} />}
                   {isImageMsg ? (
@@ -248,6 +288,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#22C55E', borderWidth: 2,
   },
   convContent: { flex: 1, gap: 3 },
+  convNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   convName: { fontSize: 15, fontWeight: '600' },
   previewRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },

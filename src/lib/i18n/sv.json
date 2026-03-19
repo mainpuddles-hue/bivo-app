@@ -361,7 +361,11 @@
     "noSearchResults": "Inga sökresultat",
     "tryDifferentSearch": "Prova ett annat sökord",
     "emptyHint": "Börja en konversation med din granne genom att klicka på en annons",
-    "unreadMessages": "olästa meddelanden"
+    "unreadMessages": "olästa meddelanden",
+    "pinned": "Fäst",
+    "unpinned": "Avfäst",
+    "pinConversation": "Fäst konversation",
+    "unpinConversation": "Avfäst konversation"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -378,7 +382,9 @@
     "loadFailed": "Kunde inte ladda meddelanden",
     "imageLoadFailed": "Bilden kunde inte laddas",
     "read": "Läst",
-    "sent": "Skickat"
+    "sent": "Skickat",
+    "deleteMessage": "Ta bort meddelande",
+    "messageDeleted": "Meddelande borttaget"
   },
   "profile": {
     "title": "Profil",
@@ -561,7 +567,13 @@
     "notifMarketingDesc": "Erbjudanden, tips och TackBird-nyheter",
     "notifPrefsLoading": "Laddar inst\u00e4llningar...",
     "notifPrefsSaved": "Aviseringsinst\u00e4llningar sparade",
-    "notifPrefsSaveFailed": "Kunde inte spara aviseringsinst\u00e4llningar"
+    "notifPrefsSaveFailed": "Kunde inte spara aviseringsinst\u00e4llningar",
+    "restorePurchases": "\u00c5terst\u00e4ll tidigare k\u00f6p",
+    "marketing": "Marknadsf\u00f6ring",
+    "paymentHistory": "Betalningshistorik",
+    "email": "E-post",
+    "emailVerified": "Verifierad",
+    "emailUnverified": "Ej verifierad"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -1760,5 +1772,50 @@
     "profanityDetected": "Innehållet har olämpligt språk",
     "spamDetected": "Innehåll identifierat som skräppost",
     "duplicateDetected": "Du har redan publicerat ett liknande inlägg"
+  },
+  "help": {
+    "title": "Hjälp och FAQ",
+    "subtitle": "Hitta svar på vanliga frågor om TackBird.",
+    "categoryAccount": "Konto",
+    "categoryPosts": "Inlägg",
+    "categoryMessages": "Meddelanden",
+    "categoryPayments": "Betalningar",
+    "categorySafety": "Säkerhet",
+    "accountQ1": "Hur skapar jag ett konto?",
+    "accountA1": "Du kan skapa ett konto genom att registrera dig med e-post eller Google-konto. Efter registreringen fyller du i din profilinformation och väljer ditt grannskap.",
+    "accountQ2": "Hur ändrar jag mitt lösenord?",
+    "accountA2": "Gå till Inställningar > Säkerhet > Byt lösenord. Ange först ditt nuvarande lösenord och sedan ditt nya lösenord.",
+    "accountQ3": "Hur tar jag bort mitt konto?",
+    "accountA3": "Gå till Inställningar > Ta bort konto. Att ta bort kontot är permanent och kan inte ångras. All din data raderas.",
+    "postsQ1": "Hur skapar jag ett inlägg?",
+    "postsA1": "Tryck på fliken Skapa längst ner. Välj en kategori, lägg till titel, beskrivning och valfria bilder. Du kan också ställa in ett utgångsdatum för ditt inlägg.",
+    "postsQ2": "Hur redigerar eller tar jag bort mitt inlägg?",
+    "postsA2": "Öppna ditt inlägg och tryck på knappen Redigera eller Ta bort. Du kan ändra titel, beskrivning och bilder.",
+    "postsQ3": "Varför syns inte mitt inlägg?",
+    "postsA3": "Ditt inlägg kan vänta på moderering eller ha flaggats för en regelöverträdelse. Kontrollera att inlägget följer användarvillkoren.",
+    "messagesQ1": "Hur skickar jag ett meddelande?",
+    "messagesA1": "Öppna ett inlägg du är intresserad av och tryck på knappen Skicka meddelande. Du kan också skicka ett snabbmeddelande direkt från inlägget.",
+    "messagesQ2": "Kan jag ta bort meddelanden?",
+    "messagesA2": "Ja, du kan ta bort dina egna meddelanden genom att långtrycka på meddelandet och välja Ta bort. Det borttagna meddelandet ersätts med texten 'Meddelande borttaget'.",
+    "paymentsQ1": "Hur fungerar TackBird Pro?",
+    "paymentsA1": "TackBird Pro är en månadsprenumeration som ger dig extra funktioner som lyft, annonshantering och reducerad provision. Prenumerationen förnyas automatiskt.",
+    "paymentsQ2": "Hur avbryter jag min Pro-prenumeration?",
+    "paymentsA2": "Gå till Inställningar > TackBird Pro och välj Avbryt prenumeration. Din prenumeration är aktiv till slutet av faktureringsperioden.",
+    "safetyQ1": "Hur blockerar jag en användare?",
+    "safetyA1": "Öppna användarens profil och tryck på knappen Blockera. En blockerad användare kan inte skicka meddelanden till dig eller se dina inlägg.",
+    "safetyQ2": "Hur anmäler jag olämpligt innehåll?",
+    "safetyA2": "Tryck på knappen Anmäl på ett inlägg eller meddelande. Våra moderatorer granskar anmälningar så snabbt som möjligt.",
+    "safetyQ3": "Hur håller jag mina uppgifter säkra?",
+    "safetyA3": "Använd ett starkt lösenord, dela inte dina inloggningsuppgifter och var försiktig med att dela personlig information i meddelanden.",
+    "contactTitle": "Behöver du mer hjälp?",
+    "contactDesc": "Kontakta vårt supportteam så hjälper vi dig gärna."
+  },
+  "about": {
+    "title": "Om",
+    "tagline": "Grannskapets anslagstavla",
+    "description": "TackBird är grannskapets anslagstavla som förenar ditt lokala samhälle. Hitta och erbjud hjälp, låna saker, upptäck gratis saker och delta i lokala evenemang. Allt i en säker och lättanvänd app.",
+    "credits": "Medverkande",
+    "creditsContent": "Designad och utvecklad i Helsingfors. Tack till alla betatestare och communitymedlemmar som hjälpt till att göra TackBird bättre.",
+    "copyright": "\u00a9 2024\u20132026 TackBird. Alla rättigheter förbehållna."
   }
 }

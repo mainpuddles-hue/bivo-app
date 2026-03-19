@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
 import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
+import { ReportModal } from '@/components/ReportModal'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
@@ -44,6 +45,7 @@ export default function PublicProfileScreen() {
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts')
   const [showReviewModal, setShowReviewModal] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
   const [hasTransaction, setHasTransaction] = useState(false)
   const [hasExistingReview, setHasExistingReview] = useState(false)
 
@@ -186,25 +188,8 @@ export default function PublicProfileScreen() {
 
   const handleReport = useCallback(() => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
-    Alert.alert(
-      t('post.report'),
-      t('post.report'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('post.report'), style: 'destructive',
-          onPress: async () => {
-            await (supabase.from('reports') as any).insert({
-              reporter_id: currentUserId,
-              reported_user_id: userId,
-              reason: 'user_report',
-            })
-            Alert.alert(t('common.success'), t('post.reportSent'))
-          },
-        },
-      ]
-    )
-  }, [currentUserId, userId, supabase, t, router])
+    setShowReportModal(true)
+  }, [currentUserId, router])
 
   const renderStars = (rating: number) => (
     <View style={{ flexDirection: 'row', gap: 2 }}>
@@ -438,6 +423,14 @@ export default function PublicProfileScreen() {
               }
             })
         }}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        type="user"
+        targetId={userId!}
       />
     </View>
   )

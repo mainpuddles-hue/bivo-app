@@ -150,6 +150,11 @@ function RootLayoutInner() {
         <Stack.Screen name="payment/cancel" options={{ animation: 'fade' }} />
         <Stack.Screen name="payment-history" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="pro" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="privacy" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="terms" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="blocked" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="help" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="about" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </View>
   )

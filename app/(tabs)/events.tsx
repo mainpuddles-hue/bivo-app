@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, Modal, TextInput, Alert } from 'react-native'
+import { View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, Modal, TextInput, Alert, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   CalendarDays, MapPin, Users, Plus, Bookmark, BookmarkCheck,
-  ChevronRight, Globe, RefreshCw, List, Calendar, Share2, Trash2, Bell, BellOff, X,
-  Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2,
+  ChevronRight, ChevronLeft, Globe, RefreshCw, List, Calendar, Share2, Trash2, Bell, BellOff, X,
+  Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2, ExternalLink,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -47,6 +47,139 @@ const ACTIVITY_COLORS: Record<string, string> = {
   neighborhood: '#10B981', creative: '#6366F1', health: '#14B8A6', other: '#6B7280',
 }
 
+// ── Simple Calendar Component ──
+function SimpleCalendar({
+  events,
+  selectedDate,
+  onSelectDate,
+  onMonthChange,
+  currentMonth,
+  colors,
+  t,
+}: {
+  events: Event[]
+  selectedDate: string | null
+  onSelectDate: (date: string) => void
+  onMonthChange: (month: Date) => void
+  currentMonth: Date
+  colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors']
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  const year = currentMonth.getFullYear()
+  const month = currentMonth.getMonth()
+
+  const firstDay = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+  // Build event date set (YYYY-MM-DD)
+  const eventDates = useMemo(() => {
+    const s = new Set<string>()
+    events.forEach(e => {
+      const d = new Date(e.event_date)
+      s.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
+    })
+    return s
+  }, [events])
+
+  const weekDays = [
+    t('time.sunday').slice(0, 2),
+    t('time.monday').slice(0, 2),
+    t('time.tuesday').slice(0, 2),
+    t('time.wednesday').slice(0, 2),
+    t('time.thursday').slice(0, 2),
+    t('time.friday').slice(0, 2),
+    t('time.saturday').slice(0, 2),
+  ]
+
+  const monthLabel = new Date(year, month).toLocaleDateString('fi-FI', { month: 'long', year: 'numeric' })
+
+  const goBack = () => onMonthChange(new Date(year, month - 1, 1))
+  const goForward = () => onMonthChange(new Date(year, month + 1, 1))
+
+  // Adjust: start week on Monday (shift firstDay)
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1
+  const totalCells = startOffset + daysInMonth
+  const rows = Math.ceil(totalCells / 7)
+  const weekDaysMon = [weekDays[1], weekDays[2], weekDays[3], weekDays[4], weekDays[5], weekDays[6], weekDays[0]]
+
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+  return (
+    <View style={calStyles.container}>
+      {/* Month nav */}
+      <View style={calStyles.monthNav}>
+        <Pressable onPress={goBack} hitSlop={12} style={calStyles.navBtn}>
+          <ChevronLeft size={18} color={colors.foreground} />
+        </Pressable>
+        <Text style={[calStyles.monthLabel, { color: colors.foreground }]}>{monthLabel}</Text>
+        <Pressable onPress={goForward} hitSlop={12} style={calStyles.navBtn}>
+          <ChevronRight size={18} color={colors.foreground} />
+        </Pressable>
+      </View>
+
+      {/* Weekday headers */}
+      <View style={calStyles.weekRow}>
+        {weekDaysMon.map((d, i) => (
+          <View key={i} style={calStyles.weekCell}>
+            <Text style={[calStyles.weekDayText, { color: colors.mutedForeground }]}>{d}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Day grid */}
+      {Array.from({ length: rows }).map((_, row) => (
+        <View key={row} style={calStyles.weekRow}>
+          {Array.from({ length: 7 }).map((_, col) => {
+            const cellIndex = row * 7 + col
+            const day = cellIndex - startOffset + 1
+            if (day < 1 || day > daysInMonth) {
+              return <View key={col} style={calStyles.dayCell} />
+            }
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            const hasEvent = eventDates.has(dateStr)
+            const isSelected = selectedDate === dateStr
+            const isToday = dateStr === todayStr
+
+            return (
+              <Pressable
+                key={col}
+                onPress={() => onSelectDate(dateStr)}
+                style={[
+                  calStyles.dayCell,
+                  isSelected && { backgroundColor: colors.primary, borderRadius: 20 },
+                  isToday && !isSelected && { borderWidth: 1, borderColor: colors.primary, borderRadius: 20 },
+                ]}
+              >
+                <Text style={[
+                  calStyles.dayText,
+                  { color: isSelected ? colors.primaryForeground : colors.foreground },
+                ]}>{day}</Text>
+                {hasEvent && (
+                  <View style={[calStyles.eventDot, { backgroundColor: isSelected ? colors.primaryForeground : colors.primary }]} />
+                )}
+              </Pressable>
+            )
+          })}
+        </View>
+      ))}
+    </View>
+  )
+}
+
+const calStyles = StyleSheet.create({
+  container: { paddingHorizontal: 16, paddingVertical: 8 },
+  monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
+  navBtn: { padding: 4 },
+  monthLabel: { fontSize: 16, fontWeight: '600', textTransform: 'capitalize' },
+  weekRow: { flexDirection: 'row' },
+  weekCell: { flex: 1, alignItems: 'center', paddingVertical: 6 },
+  weekDayText: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
+  dayCell: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8, minHeight: 40 },
+  dayText: { fontSize: 14, fontWeight: '500' },
+  eventDot: { width: 5, height: 5, borderRadius: 2.5, marginTop: 2 },
+})
+
 export default function EventsScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -67,6 +200,10 @@ export default function EventsScreen() {
   const [attendingIds, setAttendingIds] = useState<Set<string>>(new Set())
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedCityEvent, setSelectedCityEvent] = useState<CityEvent | null>(null)
+
+  // Calendar state
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -155,7 +292,7 @@ export default function EventsScreen() {
 
   const shareEvent = useCallback(async (event: Event) => {
     const shared = await shareContent({
-      title: event.title,
+      title: t('events.shareEventTitle', { title: event.title }),
       text: event.title,
       url: `https://tackbird-v2.vercel.app/events`,
     })
@@ -166,6 +303,12 @@ export default function EventsScreen() {
     if (locale === 'en' && e.name_en) return e.name_en
     if (locale === 'sv' && e.name_sv) return e.name_sv
     return e.name_fi
+  }
+
+  const getCityEventDesc = (e: CityEvent) => {
+    if (locale === 'en' && e.description_en) return e.description_en
+    if (locale === 'sv' && e.description_sv) return e.description_sv
+    return e.description_fi
   }
 
   // Date filtering
@@ -182,11 +325,29 @@ export default function EventsScreen() {
     })
   }, [events, dateFilter])
 
+  // Events for selected calendar day
+  const calendarDayEvents = useMemo(() => {
+    if (!calendarSelectedDate) return []
+    return events.filter(e => {
+      const d = new Date(e.event_date)
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      return dateStr === calendarSelectedDate
+    })
+  }, [events, calendarSelectedDate])
+
   const scheduleLabel = (act: Activity) => {
     const days = [t('time.sunday'), t('time.monday'), t('time.tuesday'), t('time.wednesday'), t('time.thursday'), t('time.friday'), t('time.saturday')]
     const day = days[act.schedule_day] ?? ''
     return `${act.schedule_type === 'weekly' ? t('activity.scheduleWeekly') : act.schedule_type === 'biweekly' ? t('activity.scheduleBiweekly') : ''} ${day} ${t('events.timeSeparator')}${act.schedule_time}`
   }
+
+  const openLocationInMaps = useCallback((locationName: string | null, lat?: number | null, lng?: number | null) => {
+    if (lat && lng) {
+      Linking.openURL(`https://maps.google.com/?q=${lat},${lng}`)
+    } else if (locationName) {
+      Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(locationName)}`)
+    }
+  }, [])
 
   // ── Render Event Card ──
   const renderEvent = ({ item }: { item: Event }) => {
@@ -305,6 +466,9 @@ export default function EventsScreen() {
 
   const currentData = tab === 'community' ? filteredEvents : tab === 'city' ? cityEvents : activities
 
+  // Calendar view for community tab
+  const showCalendar = tab === 'community' && viewMode === 'calendar'
+
   return (
     <View style={[ev.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -317,18 +481,18 @@ export default function EventsScreen() {
         </View>
         <View style={ev.headerActions}>
           {tab === 'community' && (
-            <Pressable onPress={() => setViewMode(v => v === 'list' ? 'calendar' : 'list')} style={[ev.viewBtn, { backgroundColor: colors.muted }]}>
-              {viewMode === 'list' ? <Calendar size={16} color={colors.mutedForeground} /> : <List size={16} color={colors.mutedForeground} />}
+            <Pressable onPress={() => setViewMode(v => v === 'list' ? 'calendar' : 'list')} style={[ev.viewBtn, { backgroundColor: viewMode === 'calendar' ? colors.primary : colors.muted }]}>
+              {viewMode === 'list' ? <Calendar size={16} color={colors.mutedForeground} /> : <List size={16} color={colors.primaryForeground} />}
             </Pressable>
           )}
-          <Pressable onPress={() => router.push('/create')} style={[ev.fabBtn, { backgroundColor: colors.accent }]}>
+          <Pressable onPress={() => router.push('/create?type=tapahtuma')} style={[ev.fabBtn, { backgroundColor: colors.accent }]}>
             <Plus size={16} color={colors.accentForeground} strokeWidth={2.5} />
           </Pressable>
         </View>
       </View>
 
       {/* Hero banner */}
-      <Pressable onPress={() => router.push('/(auth)/login')} style={ev.heroBanner}>
+      <Pressable onPress={() => router.push('/create?type=tapahtuma')} style={ev.heroBanner}>
         <View style={ev.heroContent}>
           <Text style={ev.heroLabel}>{t('events.heroTitle')}</Text>
           <Text style={ev.heroTitle}>{t('events.heroSubtitle')}</Text>
@@ -354,8 +518,8 @@ export default function EventsScreen() {
         ))}
       </View>
 
-      {/* Date filter (community tab) */}
-      {tab === 'community' && (
+      {/* Date filter (community tab, list mode) */}
+      {tab === 'community' && viewMode === 'list' && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={ev.dateFilters}>
           {(['all', 'today', 'week'] as DateFilter[]).map((df) => (
             <Pressable
@@ -371,25 +535,66 @@ export default function EventsScreen() {
         </ScrollView>
       )}
 
-      {/* List */}
-      <FlatList
-        data={currentData as any[]}
-        keyExtractor={item => item.id}
-        contentContainerStyle={ev.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData() }} tintColor={colors.primary} />}
-        renderItem={(tab === 'community' ? renderEvent : tab === 'city' ? renderCityEvent : renderActivity) as any}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        ListEmptyComponent={!loading ? (
-          <View style={ev.empty}>
-            <CalendarDays size={40} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-            <Text style={[ev.emptyTitle, { color: colors.foreground }]}>{tab === 'activities' ? t('activity.noActivities') : t('events.noEvents')}</Text>
-            <Text style={[ev.emptyHint, { color: colors.mutedForeground }]}>{tab === 'activities' ? t('activity.noActivitiesHint') : t('events.createFirst')}</Text>
-          </View>
-        ) : null}
-        showsVerticalScrollIndicator={false}
-      />
+      {/* Calendar view */}
+      {showCalendar ? (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData() }} tintColor={colors.primary} />}
+        >
+          <SimpleCalendar
+            events={events}
+            selectedDate={calendarSelectedDate}
+            onSelectDate={setCalendarSelectedDate}
+            onMonthChange={setCalendarMonth}
+            currentMonth={calendarMonth}
+            colors={colors}
+            t={t}
+          />
+          {/* Events for selected day */}
+          {calendarSelectedDate && (
+            <View style={{ paddingHorizontal: 16, paddingBottom: 20, gap: 12 }}>
+              <Text style={[ev.calDayTitle, { color: colors.foreground }]}>
+                {new Date(calendarSelectedDate + 'T00:00:00').toLocaleDateString(locale === 'en' ? 'en-GB' : locale === 'sv' ? 'sv-SE' : 'fi-FI', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </Text>
+              {calendarDayEvents.length === 0 ? (
+                <Text style={[ev.calNoEvents, { color: colors.mutedForeground }]}>{t('events.calendarNoEvents')}</Text>
+              ) : (
+                calendarDayEvents.map((item) => (
+                  <View key={item.id}>{renderEvent({ item })}</View>
+                ))
+              )}
+            </View>
+          )}
+        </ScrollView>
+      ) : (
+        /* List */
+        <FlatList
+          data={currentData as any[]}
+          keyExtractor={item => item.id}
+          contentContainerStyle={ev.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData() }} tintColor={colors.primary} />}
+          renderItem={(tab === 'community' ? renderEvent : tab === 'city' ? renderCityEvent : renderActivity) as any}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          ListEmptyComponent={!loading ? (
+            <View style={ev.empty}>
+              <CalendarDays size={40} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+              <Text style={[ev.emptyTitle, { color: colors.foreground }]}>{tab === 'activities' ? t('activity.noActivities') : t('events.noEvents')}</Text>
+              <Text style={[ev.emptyHint, { color: colors.mutedForeground }]}>{tab === 'activities' ? t('activity.noActivitiesHint') : t('events.createFirst')}</Text>
+            </View>
+          ) : null}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
-      {/* Event Detail Modal */}
+      {/* Floating Action Button */}
+      <Pressable
+        onPress={() => router.push('/create?type=tapahtuma')}
+        style={[ev.fab, { backgroundColor: colors.primary, bottom: insets.bottom + 16 }]}
+      >
+        <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
+      </Pressable>
+
+      {/* Event Detail Modal — enhanced */}
       <Modal visible={selectedEvent !== null} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedEvent(null)}>
         {selectedEvent && (
           <View style={[ev.modalContainer, { backgroundColor: colors.background }]}>
@@ -400,27 +605,76 @@ export default function EventsScreen() {
             <ScrollView contentContainerStyle={ev.modalBody}>
               <Text style={[ev.detailTitle, { color: colors.foreground }]}>{selectedEvent.title}</Text>
               <Text style={[ev.detailDate, { color: colors.primary }]}>{formatEventDate(selectedEvent.event_date, locale)}</Text>
-              {selectedEvent.description && <Text style={[ev.detailDesc, { color: colors.foreground }]}>{selectedEvent.description}</Text>}
+
+              {/* Full description */}
+              {selectedEvent.description && (
+                <View style={ev.detailSection}>
+                  <Text style={[ev.detailSectionLabel, { color: colors.mutedForeground }]}>{t('events.description')}</Text>
+                  <Text style={[ev.detailDesc, { color: colors.foreground }]}>{selectedEvent.description}</Text>
+                </View>
+              )}
+
+              {/* Location with map link */}
               {selectedEvent.location_name && (
-                <View style={ev.meta}><MapPin size={16} color={colors.mutedForeground} /><Text style={[ev.detailMeta, { color: colors.mutedForeground }]}>{selectedEvent.location_name}</Text></View>
+                <Pressable
+                  onPress={() => openLocationInMaps(selectedEvent.location_name, selectedEvent.location_lat, selectedEvent.location_lng)}
+                  style={ev.detailLocationRow}
+                >
+                  <MapPin size={16} color={colors.mutedForeground} />
+                  <Text style={[ev.detailMeta, { color: colors.mutedForeground, flex: 1 }]}>{selectedEvent.location_name}</Text>
+                  <ExternalLink size={14} color={colors.primary} />
+                </Pressable>
               )}
+
+              {/* Attendee count with avatars */}
               {selectedEvent.attendee_count != null && (
-                <View style={ev.meta}><Users size={16} color={colors.mutedForeground} /><Text style={[ev.detailMeta, { color: colors.mutedForeground }]}>{selectedEvent.max_attendees ? t('events.attendeeCountMax', { count: selectedEvent.attendee_count, max: selectedEvent.max_attendees }) : t('events.attendeeCount', { count: selectedEvent.attendee_count })}</Text></View>
+                <View style={ev.detailAttendeeRow}>
+                  <Users size={16} color={colors.mutedForeground} />
+                  <Text style={[ev.detailMeta, { color: colors.mutedForeground }]}>
+                    {selectedEvent.max_attendees
+                      ? t('events.attendeeCountMax', { count: selectedEvent.attendee_count, max: selectedEvent.max_attendees })
+                      : t('events.attendeeCount', { count: selectedEvent.attendee_count })}
+                  </Text>
+                </View>
               )}
-              <Pressable
-                onPress={() => { toggleAttend(selectedEvent.id); setSelectedEvent(null) }}
-                style={[ev.detailBtn, { backgroundColor: attendingIds.has(selectedEvent.id) ? colors.muted : colors.primary }]}
-              >
-                <Text style={[ev.detailBtnText, { color: attendingIds.has(selectedEvent.id) ? colors.foreground : colors.primaryForeground }]}>
-                  {attendingIds.has(selectedEvent.id) ? t('events.cancelAttendance') : t('events.attendEvent')}
-                </Text>
-              </Pressable>
+
+              {/* Creator info */}
+              {selectedEvent.creator && (
+                <View style={ev.detailCreatorRow}>
+                  {selectedEvent.creator.avatar_url ? (
+                    <Image source={{ uri: selectedEvent.creator.avatar_url }} style={ev.detailCreatorAvatar} />
+                  ) : (
+                    <View style={[ev.detailCreatorAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.mutedForeground }}>{selectedEvent.creator.name?.charAt(0)?.toUpperCase()}</Text>
+                    </View>
+                  )}
+                  <Text style={[ev.detailCreatorName, { color: colors.foreground }]}>{selectedEvent.creator.name}</Text>
+                </View>
+              )}
+
+              {/* Action buttons */}
+              <View style={ev.detailActions}>
+                <Pressable
+                  onPress={() => { toggleAttend(selectedEvent.id); setSelectedEvent(null) }}
+                  style={[ev.detailBtn, { backgroundColor: attendingIds.has(selectedEvent.id) ? colors.muted : colors.primary, flex: 1 }]}
+                >
+                  <Text style={[ev.detailBtnText, { color: attendingIds.has(selectedEvent.id) ? colors.foreground : colors.primaryForeground }]}>
+                    {attendingIds.has(selectedEvent.id) ? t('events.cancelAttendance') : t('events.attendEvent')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => shareEvent(selectedEvent)}
+                  style={[ev.detailShareBtn, { borderColor: colors.border }]}
+                >
+                  <Share2 size={18} color={colors.foreground} />
+                </Pressable>
+              </View>
             </ScrollView>
           </View>
         )}
       </Modal>
 
-      {/* City Event Detail Modal */}
+      {/* City Event Detail Modal — enhanced */}
       <Modal visible={selectedCityEvent !== null} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedCityEvent(null)}>
         {selectedCityEvent && (
           <View style={[ev.modalContainer, { backgroundColor: colors.background }]}>
@@ -432,12 +686,60 @@ export default function EventsScreen() {
               {selectedCityEvent.image_url && <Image source={{ uri: selectedCityEvent.image_url }} style={ev.detailImg} contentFit="cover" />}
               <Text style={[ev.detailTitle, { color: colors.foreground }]}>{getCityEventName(selectedCityEvent)}</Text>
               <Text style={[ev.detailDate, { color: colors.primary }]}>{formatEventDate(selectedCityEvent.start_time, locale)}</Text>
-              {selectedCityEvent.location_name && (
-                <View style={ev.meta}><MapPin size={16} color={colors.mutedForeground} /><Text style={[ev.detailMeta, { color: colors.mutedForeground }]}>{selectedCityEvent.location_name}</Text></View>
+
+              {/* Full description */}
+              {getCityEventDesc(selectedCityEvent) && (
+                <View style={ev.detailSection}>
+                  <Text style={[ev.detailSectionLabel, { color: colors.mutedForeground }]}>{t('events.description')}</Text>
+                  <Text style={[ev.detailDesc, { color: colors.foreground }]}>{getCityEventDesc(selectedCityEvent)}</Text>
+                </View>
               )}
+
+              {/* Location with map link */}
+              {selectedCityEvent.location_name && (
+                <Pressable
+                  onPress={() => openLocationInMaps(selectedCityEvent.location_name, selectedCityEvent.latitude, selectedCityEvent.longitude)}
+                  style={ev.detailLocationRow}
+                >
+                  <MapPin size={16} color={colors.mutedForeground} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[ev.detailMeta, { color: colors.mutedForeground }]}>{selectedCityEvent.location_name}</Text>
+                    {selectedCityEvent.location_address && (
+                      <Text style={[ev.detailMetaSub, { color: `${colors.mutedForeground}99` }]}>{selectedCityEvent.location_address}</Text>
+                    )}
+                  </View>
+                  <ExternalLink size={14} color={colors.primary} />
+                </Pressable>
+              )}
+
               {selectedCityEvent.is_free && <View style={[ev.freeBadge, { backgroundColor: `${colors.success}20` }]}><Text style={[ev.freeText, { color: colors.success }]}>{t('events.free')}</Text></View>}
               {selectedCityEvent.price_info && <Text style={[ev.detailMeta, { color: colors.mutedForeground }]}>{selectedCityEvent.price_info}</Text>}
               {selectedCityEvent.organizer && <Text style={[ev.detailMeta, { color: colors.mutedForeground }]}>{selectedCityEvent.organizer}</Text>}
+
+              {/* Share + open URL */}
+              <View style={ev.detailActions}>
+                {selectedCityEvent.info_url && (
+                  <Pressable
+                    onPress={() => Linking.openURL(selectedCityEvent.info_url!)}
+                    style={[ev.detailBtn, { backgroundColor: colors.primary, flex: 1 }]}
+                  >
+                    <Text style={[ev.detailBtnText, { color: colors.primaryForeground }]}>{t('events.moreInfoAndTickets')}</Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={async () => {
+                    const shared = await shareContent({
+                      title: getCityEventName(selectedCityEvent),
+                      text: getCityEventName(selectedCityEvent),
+                      url: selectedCityEvent.info_url ?? 'https://tackbird-v2.vercel.app/events',
+                    })
+                    if (shared) Alert.alert(t('events.linkCopied'))
+                  }}
+                  style={[ev.detailShareBtn, { borderColor: colors.border }]}
+                >
+                  <Share2 size={18} color={colors.foreground} />
+                </Pressable>
+              </View>
             </ScrollView>
           </View>
         )}
@@ -471,6 +773,11 @@ const ev = StyleSheet.create({
   headerActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   viewBtn: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   fabBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  fab: {
+    position: 'absolute', right: 20, width: 56, height: 56, borderRadius: 28,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
+  },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12 },
   tabActive: { borderBottomWidth: 2 },
@@ -478,7 +785,7 @@ const ev = StyleSheet.create({
   dateFilters: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
   dateChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
   dateChipText: { fontSize: 12, fontWeight: '500' },
-  list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 },
+  list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 80 },
   card: { borderRadius: 12, overflow: 'hidden' },
   cardTop: { flexDirection: 'row', padding: 12, gap: 12, alignItems: 'flex-start' },
   iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
@@ -508,8 +815,20 @@ const ev = StyleSheet.create({
   detailImg: { width: '100%', height: 200, borderRadius: 12 },
   detailTitle: { fontSize: 22, fontWeight: '700', lineHeight: 28 },
   detailDate: { fontSize: 16, fontWeight: '500' },
+  detailSection: { gap: 4 },
+  detailSectionLabel: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
   detailDesc: { fontSize: 15, lineHeight: 22 },
   detailMeta: { fontSize: 14 },
-  detailBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginTop: 8 },
+  detailMetaSub: { fontSize: 12, marginTop: 1 },
+  detailLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  detailAttendeeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  detailCreatorRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
+  detailCreatorAvatar: { width: 32, height: 32, borderRadius: 16 },
+  detailCreatorName: { fontSize: 14, fontWeight: '600' },
+  detailActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  detailBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   detailBtnText: { fontSize: 16, fontWeight: '600' },
+  detailShareBtn: { width: 48, height: 48, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  calDayTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, textTransform: 'capitalize' },
+  calNoEvents: { fontSize: 14, textAlign: 'center', paddingTop: 20 },
 })

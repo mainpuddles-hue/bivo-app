@@ -1,13 +1,22 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Eye, EyeOff, Check, X } from 'lucide-react-native'
+import Svg, { Path } from 'react-native-svg'
 import { GoogleLogo } from '@/components/GoogleLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
+
+function AppleLogo({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <Path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+    </Svg>
+  )
+}
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Invalid login credentials': 'auth.invalidCredentials',
@@ -62,6 +71,22 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
+  const [appleAvailable, setAppleAvailable] = useState(false)
+
+  // Check Apple Sign-In availability (native only)
+  useEffect(() => {
+    if (Platform.OS === 'web') return
+    async function checkApple() {
+      try {
+        const AppleAuth = require('expo-apple-authentication')
+        const available = await AppleAuth.isAvailableAsync()
+        setAppleAvailable(available)
+      } catch {
+        setAppleAvailable(false)
+      }
+    }
+    checkApple()
+  }, [])
 
   const translateError = (msg: string) => {
     const key = AUTH_ERROR_KEYS[msg]
@@ -140,6 +165,42 @@ export default function LoginScreen() {
     }
   }
 
+  const handleAppleSignIn = async () => {
+    if (Platform.OS === 'web') return
+    setLoading(true)
+    try {
+      const AppleAuth = require('expo-apple-authentication')
+      const credential = await AppleAuth.signInAsync({
+        requestedScopes: [
+          AppleAuth.AppleAuthenticationScope.FULL_NAME,
+          AppleAuth.AppleAuthenticationScope.EMAIL,
+        ],
+      })
+
+      if (!credential.identityToken) {
+        Alert.alert(t('common.error'), t('auth.appleFailed'))
+        setLoading(false)
+        return
+      }
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      })
+
+      if (error) throw error
+      router.replace('/')
+    } catch (err: any) {
+      // User cancelled — Apple throws ERR_REQUEST_CANCELED
+      if (err?.code === 'ERR_REQUEST_CANCELED' || err?.code === 'ERR_CANCELED') {
+        setLoading(false)
+        return
+      }
+      Alert.alert(t('common.error'), t('auth.appleFailed'))
+      setLoading(false)
+    }
+  }
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
@@ -200,6 +261,19 @@ export default function LoginScreen() {
                 <GoogleLogo size={20} />
                 <Text style={[styles.googleBtnText, { color: colors.foreground }]}>
                   {t('auth.signInWithGoogle')}
+                </Text>
+              </Pressable>
+            )}
+
+            {/* Apple Sign-In (native only, supported devices) */}
+            {mode !== 'forgot' && Platform.OS !== 'web' && appleAvailable && (
+              <Pressable
+                onPress={handleAppleSignIn}
+                style={styles.appleBtn}
+              >
+                <AppleLogo size={20} color="#FFFFFF" />
+                <Text style={styles.appleBtnText}>
+                  {t('auth.signInWithApple')}
                 </Text>
               </Pressable>
             )}
@@ -326,9 +400,14 @@ const styles = StyleSheet.create({
   modeText: { fontSize: 14, fontWeight: '600' },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    borderWidth: 1, borderRadius: 12, paddingVertical: 14, minHeight: 48, marginBottom: 16,
+    borderWidth: 1, borderRadius: 12, paddingVertical: 14, minHeight: 48, marginBottom: 8,
   },
   googleBtnText: { fontSize: 15, fontWeight: '600' },
+  appleBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: '#000000', borderRadius: 12, paddingVertical: 14, minHeight: 48, marginBottom: 16,
+  },
+  appleBtnText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   dividerLine: { flex: 1, height: 1 },
   dividerText: { fontSize: 13 },
