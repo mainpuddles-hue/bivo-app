@@ -1439,7 +1439,8 @@
     "communityEvent": "Yhteisö",
     "beFirstInArea": "Ole {area} ensimmäinen naapuri TackBirdissä!",
     "createFirstPost": "Luo ensimmäinen ilmoitus",
-    "nearbyEvents": "Lähellä olevia tapahtumia"
+    "nearbyEvents": "Lähellä olevia tapahtumia",
+    "showAllPlaces": "Näytä kaikki {count} paikkaa"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

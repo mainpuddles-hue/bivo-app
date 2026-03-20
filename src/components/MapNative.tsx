@@ -133,7 +133,7 @@ export default function MapScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Top Bar ── */}
       <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={[styles.topBar, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={8}>
+        <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={12}>
           <ArrowLeft size={20} color={colors.foreground} />
         </Pressable>
         <Pressable
@@ -294,7 +294,7 @@ export default function MapScreen() {
                 style={[styles.emptyCreateBtn, { backgroundColor: colors.accent }]}
               >
                 <Plus size={16} color="#FFF" />
-                <Text style={styles.emptyCreateBtnText}>Luo ensimmäinen ilmoitus</Text>
+                <Text style={styles.emptyCreateBtnText}>{t('map.createFirstPost')}</Text>
               </Pressable>
               <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
                 <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 15.6 }}>{t('map.tryAnotherArea')}</Text>

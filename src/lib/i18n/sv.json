@@ -1412,7 +1412,8 @@
     "communityEvent": "Gemenskap",
     "beFirstInArea": "Bli den första grannen i {area} på TackBird!",
     "createFirstPost": "Skapa första annonsen",
-    "nearbyEvents": "Evenemang i närheten"
+    "nearbyEvents": "Evenemang i närheten",
+    "showAllPlaces": "Visa alla {count} platser"
   },
   "privacy": {
     "title": "Integritetspolicy",

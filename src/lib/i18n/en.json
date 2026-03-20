@@ -1412,7 +1412,8 @@
     "communityEvent": "Community",
     "beFirstInArea": "Be the first neighbor in {area} on TackBird!",
     "createFirstPost": "Create the first post",
-    "nearbyEvents": "Nearby events"
+    "nearbyEvents": "Nearby events",
+    "showAllPlaces": "Show all {count} places"
   },
   "privacy": {
     "title": "Privacy Policy",

@@ -10,7 +10,7 @@ import { CATEGORIES } from '@/lib/constants'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import type { ListItem, StableMarker, FilterKey, Section, ItemKind } from './types'
-import { LAYER_COLORS, PLACE_LABEL, formatDistance } from './constants'
+import { LAYER_COLORS, PLACE_LABEL, PLACES_INITIAL_LIMIT, formatDistance } from './constants'
 
 // ── Neighborhood Centers ──
 
@@ -130,7 +130,7 @@ function isWithinDays(dateStr: string, days: number): boolean {
 // Hook
 // ══════════════════════════════════════════════════════════════
 
-export function useMapData(t: (key: string) => string, locale: string) {
+export function useMapData(t: (key: string, params?: Record<string, string | number>) => string, locale: string) {
   const supabase = useMemo(() => createClient(), [])
 
   // ── State ──
@@ -346,7 +346,7 @@ export function useMapData(t: (key: string) => string, locale: string) {
 
     for (const e of communityEvents) {
       if (e.location_lat == null || e.location_lng == null) continue
-      if (e.event_date && isPast(e.event_date)) continue
+      if (!e.event_date || isPast(e.event_date)) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
       const creator = (e as any).creator?.name ?? ''
@@ -523,12 +523,11 @@ export function useMapData(t: (key: string) => string, locale: string) {
     }
     if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming, color: LAYER_COLORS.event })
     if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems, color: LAYER_COLORS.post })
-    const PLACES_INITIAL_LIMIT = 8
     const hasMorePlaces = placeItems.length > PLACES_INITIAL_LIMIT
     const visiblePlaces = showAllPlaces ? placeItems : placeItems.slice(0, PLACES_INITIAL_LIMIT)
     if (visiblePlaces.length > 0) {
       const placesData = hasMorePlaces && !showAllPlaces
-        ? [...visiblePlaces, { id: '__show_all_places__', kind: 'place' as ItemKind, title: `Näytä kaikki ${placeItems.length} paikkaa`, subtitle: '', color: LAYER_COLORS.place, latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }]
+        ? [...visiblePlaces, { id: '__show_all_places__', kind: 'place' as ItemKind, title: t('map.showAllPlaces', { count: placeItems.length }), subtitle: '', color: LAYER_COLORS.place, latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }]
         : visiblePlaces
       result.push({ title: t('map.layerPlaces'), data: placesData, color: LAYER_COLORS.place })
     }

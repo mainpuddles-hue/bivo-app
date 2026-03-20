@@ -55,14 +55,13 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
         {formatDistance(item.distance)}
       </Text>
       <Pressable
-        onPress={(e) => {
-          e.stopPropagation?.()
+        onPress={() => {
           onDirections(item.latitude, item.longitude)
         }}
         hitSlop={8}
         style={styles.placeDirectionsBtn}
       >
-        <Text style={[styles.placeDirectionsText, { color: colors.accent }]}>Reittiohjeet</Text>
+        <Text style={[styles.placeDirectionsText, { color: colors.accent }]}>{t('map.directions')}</Text>
       </Pressable>
     </Pressable>
   )

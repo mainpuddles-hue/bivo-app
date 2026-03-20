@@ -162,7 +162,10 @@ export async function fetchHelsinkiPlaces(
 
       for (let page = 0; page < 2 && url; page++) {
         const res = await fetch(url)
-        if (!res.ok) break
+        if (!res.ok) {
+          if (__DEV__) console.log(`[palvelukartta] pagination failed: ${res.status} ${res.statusText}, page ${page}`)
+          break
+        }
         const json: PalvelukarttaResponse = await res.json()
         for (const unit of json.results) {
           const place = mapUnit(unit)

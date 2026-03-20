@@ -73,7 +73,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
   }
 
   return (
-    <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal visible={item !== null} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={[styles.detailModal, { backgroundColor: colors.background }]}>
         {/* Header */}
         <LinearGradient

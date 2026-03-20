@@ -103,7 +103,10 @@ export async function fetchTicketmasterEvents(): Promise<CityEvent[]> {
     for (let page = 0; page < 3; page++) {
       const url = `${BASE_URL}/events.json?city=Helsinki&countryCode=FI&startDateTime=${today}T00:00:00Z&size=200&page=${page}&sort=date,asc&apikey=${API_KEY}`
       const res = await fetch(url)
-      if (!res.ok) break
+      if (!res.ok) {
+        if (__DEV__) console.log(`[ticketmaster] pagination failed: ${res.status} ${res.statusText}, page ${page}`)
+        break
+      }
       const json: TMResponse = await res.json()
       const events = (json._embedded?.events ?? [])
         .map(mapEvent)

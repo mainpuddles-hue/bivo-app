@@ -90,7 +90,10 @@ function buildUrl(page_size: number): string {
 
 async function fetchPage(url: string): Promise<{ events: CityEvent[]; next: string | null }> {
   const res = await fetch(url)
-  if (!res.ok) return { events: [], next: null }
+  if (!res.ok) {
+    if (__DEV__) console.log(`[linkedevents] fetchPage failed: ${res.status} ${res.statusText}`, url)
+    return { events: [], next: null }
+  }
   const json: LinkedEventResponse = await res.json()
   const events = json.data
     .filter(e => e.name?.fi || e.name?.en)
@@ -139,7 +142,8 @@ async function loadMorePages(startUrl: string, maxPages: number) {
       const page = await fetchPage(url)
       more.push(...page.events)
       url = page.next
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.log('[linkedevents] loadMorePages error:', err)
       break
     }
   }
@@ -245,7 +249,8 @@ export async function loadMoreNearbyEvents(lat: number, lng: number): Promise<Ci
     state.nextUrl = json.meta.next
     state.loading = false
     return state.events
-  } catch {
+  } catch (err) {
+    if (__DEV__) console.log('[linkedevents] loadMoreNearbyEvents error:', err)
     state.loading = false
     return null
   }
