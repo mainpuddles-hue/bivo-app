@@ -232,6 +232,7 @@ type FilterKey = 'all' | 'posts' | 'events' | 'places'
 interface Section {
   title: string
   data: ListItem[]
+  color?: string
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -267,6 +268,7 @@ export default function MapScreen() {
   const [showSearch, setShowSearch] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
   const [neighborhoodLoading, setNeighborhoodLoading] = useState(false)
+  const [showAllPlaces, setShowAllPlaces] = useState(false)
 
   // Stable marker state for diffing
   const [renderedMarkers, setRenderedMarkers] = useState<StableMarker[]>([])
@@ -320,6 +322,9 @@ export default function MapScreen() {
     })()
     return () => { cancelled = true }
   }, [supabase])
+
+  // Reset places expansion when neighborhood changes
+  useEffect(() => { setShowAllPlaces(false) }, [selectedNeighborhood])
 
   // ── Get center for current neighborhood ──
   const center = useMemo(() => {
@@ -654,17 +659,26 @@ export default function MapScreen() {
     const result: Section[] = []
     // Show "today" section: with events if they exist, or empty placeholder only when events filter is active
     if (eventsToday.length > 0) {
-      result.push({ title: t('events.filterToday'), data: eventsToday })
+      result.push({ title: t('events.filterToday'), data: eventsToday, color: LAYER_COLORS.event })
     } else if (activeFilter === 'events' && eventsUpcoming.length > 0) {
       // Only show "no events today" when user is specifically looking at events
-      result.push({ title: t('events.filterToday'), data: [{ id: '__empty_today__', kind: 'empty' as any, title: t('map.noEventsToday'), subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }] })
+      result.push({ title: t('events.filterToday'), data: [{ id: '__empty_today__', kind: 'empty' as any, title: t('map.noEventsToday'), subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }], color: LAYER_COLORS.event })
     }
-    if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming })
-    if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems })
-    if (placeItems.length > 0) result.push({ title: t('map.layerPlaces'), data: placeItems })
+    if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming, color: LAYER_COLORS.event })
+    if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems, color: LAYER_COLORS.post })
+    // Limit places to 8 unless showAllPlaces is true; add a "show more" placeholder at end
+    const PLACES_INITIAL_LIMIT = 8
+    const hasMorePlaces = placeItems.length > PLACES_INITIAL_LIMIT
+    const visiblePlaces = showAllPlaces ? placeItems : placeItems.slice(0, PLACES_INITIAL_LIMIT)
+    if (visiblePlaces.length > 0) {
+      const placesData = hasMorePlaces && !showAllPlaces
+        ? [...visiblePlaces, { id: '__show_all_places__', kind: 'place' as ItemKind, title: `Näytä kaikki ${placeItems.length} paikkaa`, subtitle: '', color: LAYER_COLORS.place, latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }]
+        : visiblePlaces
+      result.push({ title: t('map.layerPlaces'), data: placesData, color: LAYER_COLORS.place })
+    }
 
     return result
-  }, [filteredItems, t, activeFilter])
+  }, [filteredItems, t, activeFilter, showAllPlaces])
 
   // ── Map markers (max 20, stable diff) ──
   useEffect(() => {
@@ -754,18 +768,21 @@ export default function MapScreen() {
 
   // ── Render ──
 
-  const renderSectionHeader = useCallback(({ section }: { section: SectionListData<ListItem, Section> }) => (
-    <View style={[styles.sectionHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-        {section.title}
-      </Text>
-      <View style={[styles.sectionCountBadge, { backgroundColor: colors.muted }]}>
-        <Text style={[styles.sectionCount, { color: colors.mutedForeground }]}>
-          {section.data.filter(d => !d.id.startsWith('__empty_')).length}
+  const renderSectionHeader = useCallback(({ section }: { section: SectionListData<ListItem, Section> }) => {
+    const sectionColor = (section as Section).color
+    return (
+      <View style={[styles.sectionHeader, { backgroundColor: colors.background, borderBottomColor: colors.border, borderLeftWidth: 4, borderLeftColor: sectionColor ?? colors.border }]}>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+          {section.title}
         </Text>
+        <View style={[styles.sectionCountBadge, { backgroundColor: colors.muted }]}>
+          <Text style={[styles.sectionCount, { color: colors.mutedForeground }]}>
+            {section.data.filter(d => !d.id.startsWith('__empty_') && !d.id.startsWith('__show_all_')).length}
+          </Text>
+        </View>
       </View>
-    </View>
-  ), [colors])
+    )
+  }, [colors])
 
   // Helper: open directions in native maps app
   const openDirections = useCallback((lat: number, lng: number) => {
@@ -878,19 +895,41 @@ export default function MapScreen() {
       )
     }
 
-    // ── PLACE CARD: Compact single row, no image ──
+    // ── PLACE: "Show all" button ──
+    if (item.id === '__show_all_places__') {
+      return (
+        <Pressable
+          style={({ pressed }) => [cs.showAllPlacesBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+          onPress={() => setShowAllPlaces(true)}
+        >
+          <Text style={[cs.showAllPlacesText, { color: colors.primary }]}>{item.title}</Text>
+          <ChevronDown size={16} color={colors.primary} />
+        </Pressable>
+      )
+    }
+
+    // ── PLACE CARD: Compact single row with category color left border ──
     if (isPlace) {
-      const placeCategory = PLACE_LABEL[(item.sourceData as LocalPlace).category] ?? ''
+      const placeData = item.sourceData as LocalPlace
+      const placeCategory = PLACE_LABEL[placeData.category] ?? ''
+      // Category-specific color for left border accent
+      const placeCatColor = placeData.category === 'restaurant' || placeData.category === 'fast_food' ? '#C75B3A'
+        : placeData.category === 'cafe' ? '#E8A050'
+        : placeData.category === 'bar' || placeData.category === 'pub' ? '#7C5CBF'
+        : placeData.category === 'culture' || placeData.category === 'library' ? '#3B7DD8'
+        : placeData.category === 'sport' ? '#2B8A62'
+        : placeData.category === 'health' ? '#C75B3A'
+        : LAYER_COLORS.place
       return (
         <Pressable
           style={({ pressed }) => [cs.placeRow, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
           onPress={() => handleListItemNavigate(item)}
         >
-          <View style={[cs.placeDot, { backgroundColor: item.color }]} />
+          <View style={[cs.placeColorBar, { backgroundColor: placeCatColor }]} />
           <Text style={[cs.placeTitle, { color: colors.foreground }]} numberOfLines={1}>{item.title}</Text>
           {placeCategory ? (
-            <View style={[cs.placeCatBadge, { backgroundColor: `${item.color}15` }]}>
-              <Text style={[cs.placeCatText, { color: item.color }]}>{placeCategory}</Text>
+            <View style={[cs.placeCatBadge, { backgroundColor: `${placeCatColor}15` }]}>
+              <Text style={[cs.placeCatText, { color: placeCatColor }]}>{placeCategory}</Text>
             </View>
           ) : null}
           <Text style={[cs.placeDistance, { color: colors.mutedForeground }]}>
@@ -1115,7 +1154,7 @@ export default function MapScreen() {
         </Pressable>
 
         {/* ── Filter Pills (2-level) — overlaid on bottom of map ── */}
-        <View style={[styles.filterOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.85)' }]}>
+        <View style={[styles.filterOverlay, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)', borderWidth: 1, borderColor: colors.border }]}>
           {neighborhoodLoading && (
             <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
           )}
@@ -2058,27 +2097,44 @@ const cs = StyleSheet.create({
     gap: 4,
   },
 
-  // ── PLACE CARD: Compact single row ──
+  // ── PLACE CARD: Compact single row with color bar ──
   placeRow: {
     marginHorizontal: 12,
-    marginVertical: 2,
-    borderRadius: 10,
+    marginVertical: 4,
+    borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    height: 48,
+    paddingVertical: 10,
+    minHeight: 52,
     gap: 8,
+    overflow: 'hidden',
   },
-  placeDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  placeColorBar: {
+    width: 3,
+    height: '70%' as any,
+    borderRadius: 2,
   },
   placeTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     flex: 1,
+  },
+  showAllPlacesBtn: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 6,
+  },
+  showAllPlacesText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   placeCatBadge: {
     paddingHorizontal: 6,
@@ -2090,7 +2146,7 @@ const cs = StyleSheet.create({
     fontWeight: '600',
   },
   placeDistance: {
-    fontSize: 11,
+    fontSize: 12,
   },
   placeDirectionsBtn: {
     paddingHorizontal: 6,
@@ -2125,19 +2181,19 @@ const cs = StyleSheet.create({
     gap: 8,
   },
   postAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   postAvatarPlaceholder: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   postAvatarInitial: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
 })
