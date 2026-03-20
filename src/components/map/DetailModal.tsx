@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Modal, StyleSheet, Linking, Platform, Share } from 'react-native'
 import { Image } from 'expo-image'
 import { MapPin, Navigation, X, ExternalLink } from 'lucide-react-native'
+import { fonts } from '@/lib/fonts'
 import type { Router } from 'expo-router'
 import type { Post, Event, CityEvent, LocalPlace } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
@@ -128,7 +129,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
             const ce = item.sourceData as CityEvent
             return (
               <View style={[styles.detailBadge, { backgroundColor: ce.is_free ? '#2B8A6220' : '#E8A05020' }]}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: ce.is_free ? '#2B8A62' : '#E8A050' }}>
+                <Text style={{ fontSize: 13, fontFamily: fonts.bodyMedium, color: ce.is_free ? '#2B8A62' : '#E8A050' }}>
                   {ce.is_free ? t('events.free') : ce.price_info ?? t('events.paid')}
                 </Text>
               </View>
@@ -237,8 +238,8 @@ const styles = StyleSheet.create({
   },
   detailHeaderTitle: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 11,
+    fontFamily: fonts.bodyMedium,
   },
   detailImage: {
     width: '100%',
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
   },
   detailTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     lineHeight: 26,
   },
   detailRow: {
@@ -259,7 +260,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   detailLabel: {
-    fontSize: 14,
+    fontSize: 12,
+    fontFamily: fonts.body,
     lineHeight: 20,
   },
   detailBadge: {
@@ -270,6 +272,7 @@ const styles = StyleSheet.create({
   },
   detailDesc: {
     fontSize: 14,
+    fontFamily: fonts.body,
     lineHeight: 21,
     marginTop: 4,
   },
@@ -286,11 +289,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   detailActionText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     color: '#FFF',
   },
 })

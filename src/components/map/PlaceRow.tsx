@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { ChevronDown } from 'lucide-react-native'
+import { fonts } from '@/lib/fonts'
 import type { LocalPlace } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
 import { LAYER_COLORS, PLACE_LABEL, formatDistance } from './constants'
@@ -70,16 +71,21 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
 const styles = StyleSheet.create({
   placeRow: {
     marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
+    marginVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     minHeight: 52,
     gap: 8,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   placeColorBar: {
     width: 3,
@@ -88,35 +94,41 @@ const styles = StyleSheet.create({
   },
   placeTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
     flex: 1,
   },
   showAllPlacesBtn: {
     marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
+    marginVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
     gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   showAllPlacesText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   placeCatBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   placeCatText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
   },
   placeDistance: {
     fontSize: 12,
+    fontFamily: fonts.body,
   },
   placeDirectionsBtn: {
     paddingHorizontal: 6,
@@ -124,6 +136,6 @@ const styles = StyleSheet.create({
   },
   placeDirectionsText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 })

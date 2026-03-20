@@ -1,5 +1,6 @@
 import { View, Text, Pressable, Modal, FlatList, StyleSheet } from 'react-native'
 import { X, Navigation } from 'lucide-react-native'
+import { fonts } from '@/lib/fonts'
 import type { ThemeColors } from './types'
 import { formatDistance } from './constants'
 
@@ -63,7 +64,7 @@ export function NeighborhoodModal({
           onPress={onGPSSelect}
         >
           <Navigation size={18} color={colors.primary} />
-          <Text style={[styles.neighborhoodRowText, { color: colors.primary, fontWeight: '600' }]}>
+          <Text style={[styles.neighborhoodRowText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
             {t('map.myLocation')}
           </Text>
         </Pressable>
@@ -90,7 +91,7 @@ export function NeighborhoodModal({
               <Text style={[
                 styles.neighborhoodRowText,
                 { color: colors.foreground },
-                selected === item && { color: colors.primary, fontWeight: '600' },
+                selected === item && { color: colors.primary, fontFamily: fonts.bodySemi },
               ]}>
                 {item}
               </Text>
@@ -120,8 +121,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   modalTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: fonts.headingSemi,
   },
   neighborhoodRow: {
     flexDirection: 'row',
@@ -133,9 +134,11 @@ const styles = StyleSheet.create({
   },
   neighborhoodRowText: {
     fontSize: 15,
+    fontFamily: fonts.body,
     flex: 1,
   },
   neighborhoodRowDist: {
     fontSize: 12,
+    fontFamily: fonts.body,
   },
 })

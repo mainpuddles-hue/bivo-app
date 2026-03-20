@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { MapPin } from 'lucide-react-native'
+import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
 import { formatTimeAgo } from '@/lib/format'
 import type { Post, PostType } from '@/lib/types'
@@ -97,11 +98,16 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
 const styles = StyleSheet.create({
   postCard: {
     marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
+    marginVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
     flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   postColorBar: {
     width: 4,
@@ -109,7 +115,7 @@ const styles = StyleSheet.create({
   postBody: {
     flex: 1,
     flexDirection: 'row',
-    padding: 10,
+    padding: 12,
     gap: 10,
   },
   cardImage: {
@@ -147,12 +153,12 @@ const styles = StyleSheet.create({
   },
   postAvatarInitial: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.headingSemi,
   },
   title: {
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 19,
+    fontSize: 15,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 20,
   },
   cardBadgeRow: {
     flexDirection: 'row',
@@ -161,16 +167,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
   },
   meta: {
     fontSize: 12,
+    fontFamily: fonts.body,
     lineHeight: 16,
     flex: 1,
   },
@@ -182,9 +189,11 @@ const styles = StyleSheet.create({
   },
   distance: {
     fontSize: 11,
+    fontFamily: fonts.body,
   },
   userName: {
     fontSize: 11,
+    fontFamily: fonts.body,
     flex: 1,
   },
 })

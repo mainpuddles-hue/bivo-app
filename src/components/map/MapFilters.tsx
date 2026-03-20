@@ -1,5 +1,6 @@
 import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { ArrowLeft } from 'lucide-react-native'
+import { fonts } from '@/lib/fonts'
 import type { FilterKey, ThemeColors } from './types'
 import { LAYER_COLORS, POST_SUBCATS, EVENT_SUBCATS, PLACE_SUBCATS, TIME_FILTERS } from './constants'
 
@@ -49,7 +50,7 @@ export function MapFilters({
               onPress={() => { onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
             >
               <ArrowLeft size={14} color="#FFF" />
-              <Text style={[styles.filterPillText, { color: '#FFF' }]}>
+              <Text style={[styles.backPillText, { color: '#FFF' }]}>
                 {activeFilter === 'posts' ? t('map.layerPosts') : activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
               </Text>
             </Pressable>
@@ -159,6 +160,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 6,
     zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   filterScrollContent: {
     flexDirection: 'row',
@@ -175,6 +181,10 @@ const styles = StyleSheet.create({
   },
   filterPillText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
+  },
+  backPillText: {
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
   },
 })

@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { MapPin } from 'lucide-react-native'
+import { fonts } from '@/lib/fonts'
 import type { CityEvent } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
 import { formatDistance } from './constants'
@@ -101,10 +102,15 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
 const styles = StyleSheet.create({
   eventCard: {
     marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
+    marginVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   eventImageWrapper: {
     width: '100%',
@@ -114,14 +120,14 @@ const styles = StyleSheet.create({
   eventImage: {
     width: '100%',
     height: 140,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
   },
   eventImagePlaceholder: {
     width: '100%',
     height: 140,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -138,19 +144,20 @@ const styles = StyleSheet.create({
   eventDateOverlayText: {
     color: '#FFF',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
   },
   eventContent: {
-    padding: 10,
+    padding: 12,
     gap: 4,
   },
   title: {
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 19,
+    fontSize: 15,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 20,
   },
   meta: {
     fontSize: 12,
+    fontFamily: fonts.body,
     lineHeight: 16,
     flex: 1,
   },
@@ -161,15 +168,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
   },
   distance: {
     fontSize: 11,
+    fontFamily: fonts.body,
   },
 })
