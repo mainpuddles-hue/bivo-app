@@ -173,6 +173,8 @@ export default function FeedScreen() {
 
   // Fix 9: Register inline search toggle with layout context
   const feedSearchCtx = useFeedSearch()
+  const feedSearchCtxRef = useRef(feedSearchCtx)
+  feedSearchCtxRef.current = feedSearchCtx
   useEffect(() => {
     const handler = () => {
       setShowInlineSearch(prev => {
@@ -181,9 +183,9 @@ export default function FeedScreen() {
         return true
       })
     }
-    feedSearchCtx._setHandler?.(() => handler)
-    return () => { feedSearchCtx._setHandler?.(undefined) }
-  }, [feedSearchCtx])
+    feedSearchCtxRef.current._setHandler?.(() => handler)
+    return () => { feedSearchCtxRef.current._setHandler?.(undefined) }
+  }, [])
 
   // Request location permission once, cache result
   useEffect(() => {
