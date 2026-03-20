@@ -1409,7 +1409,10 @@
     "totalEvents": "totalt",
     "viewPost": "Visa annons",
     "ticketEvent": "Biljetter",
-    "communityEvent": "Gemenskap"
+    "communityEvent": "Gemenskap",
+    "beFirstInArea": "Bli den första grannen i {area} på TackBird!",
+    "createFirstPost": "Skapa första annonsen",
+    "nearbyEvents": "Evenemang i närheten"
   },
   "privacy": {
     "title": "Integritetspolicy",

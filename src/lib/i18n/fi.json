@@ -1436,7 +1436,10 @@
     "totalEvents": "yhteensä",
     "viewPost": "Katso ilmoitus",
     "ticketEvent": "Liput",
-    "communityEvent": "Yhteisö"
+    "communityEvent": "Yhteisö",
+    "beFirstInArea": "Ole {area} ensimmäinen naapuri TackBirdissä!",
+    "createFirstPost": "Luo ensimmäinen ilmoitus",
+    "nearbyEvents": "Lähellä olevia tapahtumia"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

@@ -2,8 +2,8 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
-  View, Text, Pressable, SectionList, Modal, FlatList, ScrollView,
-  StyleSheet, ActivityIndicator, Alert, Linking, Platform, Share,
+  View, Text, Pressable, SectionList,
+  StyleSheet, ActivityIndicator, Alert, Linking, Platform,
   RefreshControl, TextInput,
   type SectionListData,
 } from 'react-native'
@@ -12,18 +12,25 @@ import { fetchNearbyEvents, loadMoreNearbyEvents, hasMoreNearbyEvents, getNearby
 import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
 import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import { useRouter } from 'expo-router'
-import { Image } from 'expo-image'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
 import * as Location from 'expo-location'
 import {
-  ChevronDown, ChevronUp, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft, Plus,
+  ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { NEIGHBORHOODS, CATEGORIES } from '@/lib/constants'
-import { formatTimeAgo } from '@/lib/format'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
+
+import type { ListItem, StableMarker, FilterKey, Section, ItemKind } from './map/types'
+import { LAYER_COLORS, PLACE_LABEL, formatDistance } from './map/constants'
+import { EventCard } from './map/EventCard'
+import { PlaceRow } from './map/PlaceRow'
+import { PostCard } from './map/PostCard'
+import { MapFilters } from './map/MapFilters'
+import { NeighborhoodModal } from './map/NeighborhoodModal'
+import { DetailModal } from './map/DetailModal'
 
 // ── Neighborhood Centers ──
 
@@ -72,7 +79,6 @@ const NEIGHBORHOOD_CENTERS: Record<string, { latitude: number; longitude: number
 
 // ── Constants ──
 
-// Adaptive radius: dense central neighborhoods get 0.8km, outer suburbs 1.5km
 const DENSE_NEIGHBORHOODS = new Set([
   'Kallio', 'Sörnäinen', 'Kamppi', 'Punavuori', 'Kruununhaka',
   'Katajanokka', 'Hakaniemi', 'Ullanlinna', 'Eira', 'Töölö',
@@ -86,63 +92,6 @@ function getRadiusKm(neighborhood: string): number {
 const MAX_MAP_MARKERS = 20
 const MAP_HEIGHT = 250
 
-// 3 layer colors — match filter pills, simple for user to understand
-const LAYER_COLORS = {
-  post: '#2D6B5E',       // green — TackBird primary, matches "Ilmoitukset" pill
-  event: '#8E44AD',      // purple — distinct, matches "Tapahtumat" pill
-  place: '#78716C',      // warm gray — background/utility, matches "Paikat" pill
-} as const
-
-const PLACE_LABEL: Record<string, string> = {
-  restaurant: 'Ravintola', cafe: 'Kahvila', bar: 'Baari', shop: 'Kauppa',
-  library: 'Kirjasto', health: 'Terveys', sport: 'Urheilu', culture: 'Kulttuuri',
-  hotel: 'Hotelli', attraction: 'Nähtävyys', service: 'Palvelu',
-  fast_food: 'Pikaruoka', pub: 'Pubi', other: 'Muu',
-}
-
-// Sub-categories for 2-level filter
-const POST_SUBCATS = [
-  { key: null, label: 'Kaikki tyypit', color: LAYER_COLORS.post },
-  { key: 'tarvitsen', label: 'Tarvitsen', color: '#C75B3A' },
-  { key: 'tarjoan', label: 'Tarjoan', color: '#7C5CBF' },
-  { key: 'ilmaista', label: 'Ilmaista', color: '#3B7DD8' },
-  { key: 'nappaa', label: 'Nappaa', color: '#E8A050' },
-  { key: 'lainaa', label: 'Lainaa', color: '#C98B2E' },
-  { key: 'tapahtuma', label: 'Tapahtuma', color: '#2B8A62' },
-]
-
-const EVENT_SUBCATS = [
-  { key: null, label: 'Kaikki kategoriat' },
-  { key: 'culture', label: 'Kulttuuri' },
-  { key: 'music', label: 'Musiikki' },
-  { key: 'sport', label: 'Urheilu' },
-  { key: 'family', label: 'Perhe' },
-  { key: 'theatre', label: 'Teatteri' },
-  { key: 'exhibition', label: 'Näyttely' },
-  { key: 'food', label: 'Ruoka' },
-  { key: 'other', label: 'Muu' },
-]
-
-const PLACE_SUBCATS = [
-  { key: null, label: 'Kaikki paikat' },
-  { key: 'restaurant', label: 'Ravintolat' },
-  { key: 'cafe', label: 'Kahvilat' },
-  { key: 'bar', label: 'Baarit' },
-  { key: 'shop', label: 'Kaupat' },
-  { key: 'culture', label: 'Kulttuuri' },
-  { key: 'sport', label: 'Urheilu' },
-  { key: 'library', label: 'Kirjastot' },
-  { key: 'health', label: 'Terveys' },
-]
-
-const TIME_FILTERS = [
-  { key: 'all' as const, label: 'Kaikki' },
-  { key: 'today' as const, label: 'Tänään' },
-  { key: 'tomorrow' as const, label: 'Huomenna' },
-  { key: 'week' as const, label: 'Tällä vkolla' },
-]
-
-// Dark map style
 const DARK_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#212121' }] },
   { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
@@ -165,10 +114,6 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   const a = Math.sin(dLat / 2) ** 2 +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
-function formatDistance(km: number): string {
-  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
 }
 
 function isPast(dateStr: string): boolean {
@@ -199,42 +144,6 @@ function isWithinDays(dateStr: string, days: number): boolean {
   const d = new Date(dateStr).getTime()
   const now = Date.now()
   return d >= now && d <= now + days * 24 * 60 * 60 * 1000
-}
-
-// ── Unified list item ──
-
-type ItemKind = 'post' | 'community_event' | 'city_event' | 'place'
-
-interface ListItem {
-  id: string
-  kind: ItemKind
-  title: string
-  subtitle: string
-  color: string
-  latitude: number
-  longitude: number
-  distance: number
-  sortDate?: string
-  sourceData: Post | Event | CityEvent | LocalPlace
-}
-
-// ── Stable marker ──
-
-interface StableMarker {
-  key: string
-  latitude: number
-  longitude: number
-  pinColor: string
-  title: string
-  description: string
-}
-
-type FilterKey = 'all' | 'posts' | 'events' | 'places'
-
-interface Section {
-  title: string
-  data: ListItem[]
-  color?: string
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -283,7 +192,6 @@ export default function MapScreen() {
       const { data: { user } } = await supabase.auth.getUser()
       if (cancelled) return
       if (user) {
-        // Supabase untyped - see CLAUDE.md
         const { data } = await (supabase
           .from('profiles') as any)
           .select('naapurusto')
@@ -292,7 +200,6 @@ export default function MapScreen() {
         if (!cancelled && data?.naapurusto && NEIGHBORHOOD_CENTERS[data.naapurusto]) {
           setSelectedNeighborhood(data.naapurusto)
         } else if (!cancelled) {
-          // No neighborhood set — try GPS first before showing modal
           try {
             const { status } = await Location.requestForegroundPermissionsAsync()
             if (cancelled) return
@@ -301,14 +208,12 @@ export default function MapScreen() {
               if (cancelled) return
               setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
               setSelectedNeighborhood('__gps__')
-              return  // Don't show modal
+              return
             }
           } catch {}
-          // GPS failed/denied — show modal
           if (!cancelled) setNeighborhoodModalVisible(true)
         }
       } else if (!cancelled) {
-        // Not logged in — try GPS first before showing modal
         try {
           const { status } = await Location.requestForegroundPermissionsAsync()
           if (cancelled) return
@@ -326,10 +231,8 @@ export default function MapScreen() {
     return () => { cancelled = true }
   }, [supabase])
 
-  // Reset places expansion when neighborhood changes
   useEffect(() => { setShowAllPlaces(false) }, [selectedNeighborhood])
 
-  // ── Get center for current neighborhood ──
   const center = useMemo(() => {
     if (selectedNeighborhood === '__gps__' && userLocation) {
       return userLocation
@@ -360,13 +263,11 @@ export default function MapScreen() {
           .gte('location_lng', 24.75).lte('location_lng', 25.30)
           .order('event_date', { ascending: true })
           .limit(500),
-        fetchNearbyEvents(60.1699, 24.9384, 10),  // Koko Helsinki — tapahtumat ovat kaupunkitasoa
+        fetchNearbyEvents(60.1699, 24.9384, 10),
         fetchTicketmasterEvents(),
       ])
-      // Supabase untyped - see CLAUDE.md
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
-      // Merge LinkedEvents + Ticketmaster, dedupe by normalized name
       const linkedEvents = cityEventsData
       const tmEvents = tmData
       const allCityEvents = [...linkedEvents]
@@ -379,27 +280,25 @@ export default function MapScreen() {
       }
       setCityEvents(allCityEvents)
       const withCoords = allCityEvents.filter(e => e.latitude && e.longitude).length
-      if (__DEV__) console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
-      if (__DEV__ && postsRes.error) console.log('[map] posts error:', postsRes.error.message)
-      if (__DEV__ && eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
+      console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
+      if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
+      if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
     } catch (err) {
-      if (__DEV__) console.log('[map] global fetch error:', err)
+      console.log('[map] global fetch error:', err)
     }
   }, [supabase, center])
 
-  // ── Fetch places from Helsinki Palvelukartta (per neighborhood) ──
   const fetchPlaces = useCallback(async () => {
     try {
       const radius = getRadiusKm(selectedNeighborhood)
       const placesData = await fetchHelsinkiPlaces(center.latitude, center.longitude, radius * 1000)
       setPlaces(placesData)
-      if (__DEV__) console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
+      console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
     } catch (err) {
-      if (__DEV__) console.log('[map] places fetch error:', err)
+      console.log('[map] places fetch error:', err)
     }
   }, [center, selectedNeighborhood])
 
-  // ── Initial load ──
   const fetchData = useCallback(async () => {
     setLoading(true)
     await Promise.all([fetchGlobalData(), fetchPlaces()])
@@ -408,18 +307,13 @@ export default function MapScreen() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Pull-to-refresh: only re-fetch neighborhood-specific places (fast).
-  // Global data (posts, events) is fetched once on mount and doesn't change rapidly.
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
-    // Invalidate cache for this specific neighborhood so we get fresh data
     invalidatePlacesCache(center.latitude, center.longitude)
     await fetchPlaces()
     setRefreshing(false)
   }, [fetchPlaces, center])
 
-  // Full refresh: re-fetches everything including global data.
-  // Called from a manual action if needed, not on every pull-to-refresh.
   const handleFullRefresh = useCallback(async () => {
     setRefreshing(true)
     invalidatePlacesCache(center.latitude, center.longitude)
@@ -454,14 +348,13 @@ export default function MapScreen() {
     const cLng = center.longitude
     const items: ListItem[] = []
 
-    // Posts
     for (const p of posts) {
       if (p.latitude == null || p.longitude == null) continue
       const dist = haversineKm(cLat, cLng, p.latitude, p.longitude)
       if (dist > radiusKm) continue
       const cat = CATEGORIES[p.type as PostType]
       const catLabel = cat ? t(cat.label) : ''
-      const userName = (p as any).user?.name ?? '' // Supabase untyped - see CLAUDE.md (joined relation)
+      const userName = (p as any).user?.name ?? ''
       const parts = [catLabel, p.location, userName].filter(Boolean)
       items.push({
         id: `post-${p.id}`,
@@ -477,13 +370,12 @@ export default function MapScreen() {
       })
     }
 
-    // Community events (future only) — no radius limit, already filtered by Supabase
     for (const e of communityEvents) {
       if (e.location_lat == null || e.location_lng == null) continue
       if (e.event_date && isPast(e.event_date)) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
-      const creator = (e as any).creator?.name ?? '' // Supabase untyped - see CLAUDE.md (joined relation)
+      const creator = (e as any).creator?.name ?? ''
       const evParts = [e.location_name, creator].filter(Boolean)
       items.push({
         id: `event-${e.id}`,
@@ -499,7 +391,6 @@ export default function MapScreen() {
       })
     }
 
-    // City events (future only) — no radius limit for list, already filtered by bbox API
     for (const c of cityEvents) {
       if (c.latitude == null || c.longitude == null) continue
       if (c.start_time && isPast(c.start_time)) continue
@@ -522,7 +413,6 @@ export default function MapScreen() {
       })
     }
 
-    // Places
     for (const pl of places) {
       const dist = haversineKm(cLat, cLng, pl.latitude, pl.longitude)
       if (dist > radiusKm) continue
@@ -549,19 +439,16 @@ export default function MapScreen() {
   // ── Filter by active filter + sub-category + time + search ──
   const filteredItems = useMemo(() => {
     let items = allItems
-    // Layer filter
     if (activeFilter === 'posts') items = items.filter(i => i.kind === 'post')
     else if (activeFilter === 'events') items = items.filter(i => i.kind === 'community_event' || i.kind === 'city_event')
     else if (activeFilter === 'places') items = items.filter(i => i.kind === 'place')
 
-    // Sub-category filter
     if (subCategory) {
       if (activeFilter === 'posts') {
         items = items.filter(i => i.kind === 'post' && (i.sourceData as Post).type === subCategory)
       } else if (activeFilter === 'events') {
         items = items.filter(i => {
           if (i.kind === 'city_event') return (i.sourceData as CityEvent).category === subCategory
-          // Community events don't have sub-categories — hide them when sub-category is active
           return false
         })
       } else if (activeFilter === 'places') {
@@ -569,7 +456,6 @@ export default function MapScreen() {
       }
     }
 
-    // Time filter (events only)
     if (timeFilter !== 'all' && (activeFilter === 'events' || activeFilter === 'all')) {
       items = items.filter(i => {
         if (i.kind !== 'community_event' && i.kind !== 'city_event') return true
@@ -581,7 +467,6 @@ export default function MapScreen() {
       })
     }
 
-    // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim()
       items = items.filter(i => i.title.toLowerCase().includes(q) || i.subtitle.toLowerCase().includes(q))
@@ -589,7 +474,6 @@ export default function MapScreen() {
     return items
   }, [allItems, activeFilter, subCategory, timeFilter, searchQuery])
 
-  // ── Counts for filter pills (single-pass, reflects search filtering) ──
   const counts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     let all = 0, posts = 0, events = 0, places = 0
@@ -605,7 +489,6 @@ export default function MapScreen() {
     return { all, posts, events, places }
   }, [allItems, searchQuery])
 
-  // Sub-category counts for 2nd level pills
   const subCounts = useMemo(() => {
     const m = new Map<string, number>()
     for (const item of allItems) {
@@ -623,14 +506,13 @@ export default function MapScreen() {
     return m
   }, [allItems])
 
-  // ── Build sections (bucket + insert-sort in a single pass) ──
+  // ── Build sections ──
   const sections = useMemo(() => {
     const eventsToday: ListItem[] = []
     const eventsUpcoming: ListItem[] = []
     const postItems: ListItem[] = []
     const placeItems: ListItem[] = []
 
-    // Helper: binary-insert into a sorted array to avoid a separate sort pass
     function insertSorted(arr: ListItem[], item: ListItem, cmp: (a: ListItem, b: ListItem) => number) {
       let lo = 0, hi = arr.length
       while (lo < hi) {
@@ -655,29 +537,23 @@ export default function MapScreen() {
       } else if (item.kind === 'post') {
         insertSorted(postItems, item, byDateDesc)
       } else if (item.kind === 'place') {
-        // Places don't have sortDate — sort by distance only
         insertSorted(placeItems, item, byDistanceAsc)
       }
     }
 
     const result: Section[] = []
-    // Show "today" section: with events if they exist, or empty placeholder only when events filter is active
     if (eventsToday.length > 0) {
       result.push({ title: t('events.filterToday'), data: eventsToday, color: LAYER_COLORS.event })
     } else if (activeFilter === 'events' && eventsUpcoming.length > 0) {
-      // Only show "no events today" when user is specifically looking at events
-      // Placeholder row — 'empty' kind and empty sourceData don't match ListItem union, cast required
       result.push({ title: t('events.filterToday'), data: [{ id: '__empty_today__', kind: 'empty' as any, title: t('map.noEventsToday'), subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }], color: LAYER_COLORS.event })
     }
     if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming, color: LAYER_COLORS.event })
     if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems, color: LAYER_COLORS.post })
-    // Limit places to 8 unless showAllPlaces is true; add a "show more" placeholder at end
     const PLACES_INITIAL_LIMIT = 8
     const hasMorePlaces = placeItems.length > PLACES_INITIAL_LIMIT
     const visiblePlaces = showAllPlaces ? placeItems : placeItems.slice(0, PLACES_INITIAL_LIMIT)
     if (visiblePlaces.length > 0) {
       const placesData = hasMorePlaces && !showAllPlaces
-        // Placeholder row — empty sourceData doesn't match LocalPlace, cast required
         ? [...visiblePlaces, { id: '__show_all_places__', kind: 'place' as ItemKind, title: `Näytä kaikki ${placeItems.length} paikkaa`, subtitle: '', color: LAYER_COLORS.place, latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }]
         : visiblePlaces
       result.push({ title: t('map.layerPlaces'), data: placesData, color: LAYER_COLORS.place })
@@ -707,7 +583,6 @@ export default function MapScreen() {
     }
   }, [filteredItems])
 
-  // ── Animate map to center when neighborhood changes ──
   useEffect(() => {
     const delta = DENSE_NEIGHBORHOODS.has(selectedNeighborhood) ? 0.012 : 0.022
     mapRef.current?.animateToRegion({
@@ -722,14 +597,12 @@ export default function MapScreen() {
   const handleListItemNavigate = useCallback((item: ListItem) => {
     if (item.id.startsWith('__empty_')) return
     setSelectedItem(item)
-    // Also animate map
     mapRef.current?.animateToRegion({
       latitude: item.latitude, longitude: item.longitude,
       latitudeDelta: 0.005, longitudeDelta: 0.005,
     }, 400)
   }, [])
 
-  // O(1) lookup map for marker press — rebuilt when filteredItems changes
   const itemLookup = useMemo(() => {
     const map = new Map<string, ListItem>()
     for (const item of filteredItems) {
@@ -738,7 +611,6 @@ export default function MapScreen() {
     return map
   }, [filteredItems])
 
-  // O(1) lookup for section scroll position — rebuilt when sections change
   const sectionIndexLookup = useMemo(() => {
     const map = new Map<string, { sectionIndex: number; itemIndex: number }>()
     for (let s = 0; s < sections.length; s++) {
@@ -772,6 +644,32 @@ export default function MapScreen() {
     }
   }, [t])
 
+  const openDirections = useCallback((lat: number, lng: number) => {
+    const url = Platform.OS === 'ios'
+      ? `maps:0,0?q=${lat},${lng}`
+      : Platform.OS === 'android'
+      ? `geo:${lat},${lng}?q=${lat},${lng}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+    Linking.openURL(url).catch(() => {
+      Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(() => {})
+    })
+  }, [])
+
+  const handleNeighborhoodSelect = useCallback(async (item: string) => {
+    setSelectedNeighborhood(item)
+    setNeighborhoodModalVisible(false)
+    setNeighborhoodLoading(true)
+    try {
+      const c = NEIGHBORHOOD_CENTERS[item] ?? NEIGHBORHOOD_CENTERS['Kallio']
+      const radius = getRadiusKm(item)
+      const placesData = await fetchHelsinkiPlaces(c.latitude, c.longitude, radius * 1000)
+      setPlaces(placesData)
+    } catch (err) {
+      console.log('[map] neighborhood switch places error:', err)
+    }
+    setNeighborhoodLoading(false)
+  }, [])
+
   // ── Render ──
 
   const renderSectionHeader = useCallback(({ section }: { section: SectionListData<ListItem, Section> }) => {
@@ -790,253 +688,32 @@ export default function MapScreen() {
     )
   }, [colors])
 
-  // Helper: open directions in native maps app
-  const openDirections = useCallback((lat: number, lng: number) => {
-    const url = Platform.OS === 'ios'
-      ? `maps:0,0?q=${lat},${lng}`
-      : Platform.OS === 'android'
-      ? `geo:${lat},${lng}?q=${lat},${lng}`
-      : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-    Linking.openURL(url).catch(() => {
-      Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(() => {})
-    })
-  }, [])
-
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     // Empty placeholder row
     if (item.id.startsWith('__empty_')) {
       return (
-        <View style={[cs.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[cs.emptyText, { color: colors.mutedForeground }]}>{item.title}</Text>
+        <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.emptyCardText, { color: colors.mutedForeground }]}>{item.title}</Text>
         </View>
       )
     }
 
     const isEvent = item.kind === 'community_event' || item.kind === 'city_event'
-    const isCityEvent = item.kind === 'city_event'
-    const isCommunityEvent = item.kind === 'community_event'
     const isPlace = item.kind === 'place'
     const isPost = item.kind === 'post'
 
-    // ── EVENT CARD (city_event + community_event): Full-width image, date overlay ──
     if (isEvent) {
-      const imageUrl = isCityEvent
-        ? (item.sourceData as CityEvent).image_url
-        : null
-      const isFree = isCityEvent && (item.sourceData as CityEvent).is_free
-      const price = isCityEvent ? (item.sourceData as CityEvent).price_info : null
-      const isTicketmaster = isCityEvent && (item.sourceData as CityEvent).source === 'ticketmaster'
-      const isLinkedEvents = isCityEvent && (item.sourceData as CityEvent).source === 'linkedevents'
-      const dateStr = item.sortDate
-        ? new Date(item.sortDate).toLocaleDateString(
-            locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB',
-            { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }
-          )
-        : null
-
-      return (
-        <Pressable
-          style={({ pressed }) => [cs.eventCard, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
-          onPress={() => handleListItemNavigate(item)}
-        >
-          {/* Full-width image with date overlay */}
-          {imageUrl ? (
-            <View style={cs.eventImageWrapper}>
-              <Image source={{ uri: imageUrl }} style={cs.eventImage} contentFit="cover" />
-              {dateStr && (
-                <View style={cs.eventDateOverlay}>
-                  <Text style={cs.eventDateOverlayText}>{dateStr}</Text>
-                </View>
-              )}
-            </View>
-          ) : (
-            <View style={[cs.eventImagePlaceholder, { backgroundColor: `${item.color}12` }]}>
-              <MapPin size={24} color={item.color} />
-              {dateStr && (
-                <View style={cs.eventDateOverlay}>
-                  <Text style={cs.eventDateOverlayText}>{dateStr}</Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Title + subtitle + badges */}
-          <View style={cs.eventContent}>
-            <Text style={[cs.title, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
-            {item.subtitle ? (
-              <Text style={[cs.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
-            ) : null}
-            <View style={cs.cardBadgeRow}>
-              {isLinkedEvents && (
-                <View style={[cs.badge, { backgroundColor: '#8E44AD18' }]}>
-                  <Text style={[cs.badgeText, { color: '#8E44AD' }]}>Helsinki</Text>
-                </View>
-              )}
-              {isTicketmaster && (
-                <View style={[cs.badge, { backgroundColor: '#E91E6318' }]}>
-                  <Text style={[cs.badgeText, { color: '#E91E63' }]}>{t('map.ticketEvent')}</Text>
-                </View>
-              )}
-              {isCommunityEvent && (
-                <View style={[cs.badge, { backgroundColor: '#2B8A6218' }]}>
-                  <Text style={[cs.badgeText, { color: '#2B8A62' }]}>{t('map.communityEvent')}</Text>
-                </View>
-              )}
-              {isFree && (
-                <View style={[cs.badge, { backgroundColor: '#2B8A6218' }]}>
-                  <Text style={[cs.badgeText, { color: '#2B8A62' }]}>{t('events.free')}</Text>
-                </View>
-              )}
-              {price && !isFree && (
-                <View style={[cs.badge, { backgroundColor: '#E8A05018' }]}>
-                  <Text style={[cs.badgeText, { color: '#E8A050' }]}>{price}</Text>
-                </View>
-              )}
-              <Text style={[cs.distance, { color: colors.mutedForeground }]}>
-                {formatDistance(item.distance)}
-              </Text>
-            </View>
-          </View>
-        </Pressable>
-      )
+      return <EventCard item={item} colors={colors} locale={locale} t={t} onPress={handleListItemNavigate} />
     }
 
-    // ── PLACE: "Show all" button ──
-    if (item.id === '__show_all_places__') {
-      return (
-        <Pressable
-          style={({ pressed }) => [cs.showAllPlacesBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
-          onPress={() => setShowAllPlaces(true)}
-        >
-          <Text style={[cs.showAllPlacesText, { color: colors.primary }]}>{item.title}</Text>
-          <ChevronDown size={16} color={colors.primary} />
-        </Pressable>
-      )
+    if (item.id === '__show_all_places__' || isPlace) {
+      return <PlaceRow item={item} colors={colors} t={t} onPress={handleListItemNavigate} onDirections={openDirections} onShowAllPlaces={() => setShowAllPlaces(true)} />
     }
 
-    // ── PLACE CARD: Compact single row with category color left border ──
-    if (isPlace) {
-      const placeData = item.sourceData as LocalPlace
-      const placeCategory = PLACE_LABEL[placeData.category] ?? ''
-      // Category-specific color for left border accent
-      const placeCatColor = placeData.category === 'restaurant' || placeData.category === 'fast_food' ? '#C75B3A'
-        : placeData.category === 'cafe' ? '#E8A050'
-        : placeData.category === 'bar' || placeData.category === 'pub' ? '#7C5CBF'
-        : placeData.category === 'culture' || placeData.category === 'library' ? '#3B7DD8'
-        : placeData.category === 'sport' ? '#2B8A62'
-        : placeData.category === 'health' ? '#C75B3A'
-        : LAYER_COLORS.place
-      return (
-        <Pressable
-          style={({ pressed }) => [cs.placeRow, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
-          onPress={() => handleListItemNavigate(item)}
-        >
-          <View style={[cs.placeColorBar, { backgroundColor: placeCatColor }]} />
-          <Text style={[cs.placeTitle, { color: colors.foreground }]} numberOfLines={1}>{item.title}</Text>
-          {placeCategory ? (
-            <View style={[cs.placeCatBadge, { backgroundColor: `${placeCatColor}15` }]}>
-              <Text style={[cs.placeCatText, { color: placeCatColor }]}>{placeCategory}</Text>
-            </View>
-          ) : null}
-          <Text style={[cs.placeDistance, { color: colors.mutedForeground }]}>
-            {formatDistance(item.distance)}
-          </Text>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation?.()
-              openDirections(item.latitude, item.longitude)
-            }}
-            hitSlop={8}
-            style={cs.placeDirectionsBtn}
-          >
-            <Text style={[cs.placeDirectionsText, { color: colors.primary }]}>Reittiohjeet</Text>
-          </Pressable>
-        </Pressable>
-      )
-    }
-
-    // ── POST CARD: Category color bar on left edge, user avatar ──
     if (isPost) {
-      const postData = item.sourceData as Post
-      const imageUrl = postData.image_url
-      // Supabase untyped - see CLAUDE.md (joined relation)
-      const userName = (postData as any).user?.name ?? null
-      const avatarUrl = (postData as any).user?.avatar_url ?? null
-      const postType = postData.type
-      const cat = postType ? CATEGORIES[postType as PostType] : null
-      const catColor = cat ? cat.color : item.color
-
-      return (
-        <Pressable
-          style={({ pressed }) => [cs.postCard, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
-          onPress={() => handleListItemNavigate(item)}
-        >
-          {/* Category color bar on left edge */}
-          <View style={[cs.postColorBar, { backgroundColor: catColor }]} />
-
-          <View style={cs.postBody}>
-            {/* Image or placeholder */}
-            {imageUrl ? (
-              <Image source={{ uri: imageUrl }} style={cs.cardImage} contentFit="cover" />
-            ) : (
-              <View style={[cs.cardImagePlaceholder, { backgroundColor: `${item.color}15` }]}>
-                <MapPin size={18} color={item.color} />
-              </View>
-            )}
-
-            {/* Content */}
-            <View style={cs.cardContent}>
-              {/* Title row with avatar */}
-              <View style={cs.postTitleRow}>
-                {avatarUrl ? (
-                  <Image source={{ uri: avatarUrl }} style={cs.postAvatar} contentFit="cover" />
-                ) : (
-                  <View style={[cs.postAvatarPlaceholder, { backgroundColor: `${item.color}20` }]}>
-                    <Text style={[cs.postAvatarInitial, { color: item.color }]}>
-                      {(userName ?? '?')[0].toUpperCase()}
-                    </Text>
-                  </View>
-                )}
-                <Text style={[cs.title, { color: colors.foreground, flex: 1 }]} numberOfLines={2}>{item.title}</Text>
-              </View>
-
-              {/* Category / type badge */}
-              <View style={cs.cardBadgeRow}>
-                {cat && (
-                  <View style={[cs.badge, { backgroundColor: `${catColor}18` }]}>
-                    <Text style={[cs.badgeText, { color: catColor }]}>{t(cat.label)}</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Meta row */}
-              {item.subtitle ? (
-                <Text style={[cs.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
-              ) : null}
-
-              {/* Bottom row: distance + user + time */}
-              <View style={cs.bottomRow}>
-                <Text style={[cs.distance, { color: colors.mutedForeground }]}>
-                  {formatDistance(item.distance)}
-                </Text>
-                {userName && (
-                  <Text style={[cs.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-                    {userName}
-                  </Text>
-                )}
-                {item.sortDate && (
-                  <Text style={[cs.distance, { color: colors.mutedForeground }]}>
-                    {formatTimeAgo(item.sortDate, t, locale)}
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      )
+      return <PostCard item={item} colors={colors} locale={locale} t={t} onPress={handleListItemNavigate} />
     }
 
-    // Fallback (shouldn't happen)
     return null
   }, [colors, handleListItemNavigate, locale, t, openDirections])
 
@@ -1128,7 +805,6 @@ export default function MapScreen() {
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
         )}
-        {/* Expand/collapse toggle */}
         <Pressable
           onPress={() => setMapExpanded(prev => !prev)}
           style={[styles.mapToggleBtn, { backgroundColor: colors.card, top: 8 }]}
@@ -1160,118 +836,21 @@ export default function MapScreen() {
           <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? '#FFF' : colors.foreground} />
         </Pressable>
 
-        {/* ── Filter Pills (2-level) — overlaid on bottom of map ── */}
-        <View style={[styles.filterOverlay, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)', borderWidth: 1, borderColor: colors.border }]}>
-          {neighborhoodLoading && (
-            <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
-          )}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
-            {(activeFilter === 'posts' || activeFilter === 'events' || activeFilter === 'places') ? (
-              <>
-                {/* Back to main filters */}
-                <Pressable
-                  style={[styles.filterPill, {
-                    backgroundColor: activeFilter === 'posts' ? LAYER_COLORS.post : activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place,
-                    borderColor: 'transparent',
-                  }]}
-                  onPress={() => { setActiveFilter('all'); setSubCategory(null); setTimeFilter('all') }}
-                >
-                  <ArrowLeft size={14} color="#FFF" />
-                  <Text style={[styles.filterPillText, { color: '#FFF' }]}>
-                    {activeFilter === 'posts' ? t('map.layerPosts') : activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
-                  </Text>
-                </Pressable>
-
-                {/* Time filters (events only) */}
-                {activeFilter === 'events' && TIME_FILTERS.map(tf => (
-                  <Pressable
-                    key={tf.key}
-                    style={[
-                      styles.filterPill,
-                      { borderColor: timeFilter === tf.key ? LAYER_COLORS.event : colors.border },
-                      timeFilter === tf.key && { backgroundColor: LAYER_COLORS.event },
-                    ]}
-                    onPress={() => setTimeFilter(prev => prev === tf.key ? 'all' : tf.key)}
-                  >
-                    <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? '#FFF' : colors.foreground }]}>
-                      {tf.label}
-                    </Text>
-                  </Pressable>
-                ))}
-
-                {/* Sub-category pills — post categories use their own colors */}
-                {activeFilter === 'posts' ? (
-                  POST_SUBCATS.map(sc => {
-                    const isActive = subCategory === sc.key
-                    const count = sc.key ? (subCounts.get(`post:${sc.key}`) ?? 0) : counts.posts
-                    return (
-                      <Pressable
-                        key={sc.key ?? '__all__'}
-                        style={[
-                          styles.filterPill,
-                          { borderColor: isActive ? sc.color : colors.border },
-                          isActive && { backgroundColor: sc.color },
-                        ]}
-                        onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
-                      >
-                        <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                          {sc.label} ({count})
-                        </Text>
-                      </Pressable>
-                    )
-                  })
-                ) : (
-                  (activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => {
-                    const layerColor = activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place
-                    const isActive = subCategory === sc.key
-                    const prefix = activeFilter === 'events' ? 'event' : 'place'
-                    const count = sc.key ? (subCounts.get(`${prefix}:${sc.key}`) ?? 0) : (activeFilter === 'events' ? counts.events : counts.places)
-                    return (
-                      <Pressable
-                        key={sc.key ?? '__all__'}
-                        style={[
-                          styles.filterPill,
-                          { borderColor: isActive ? layerColor : colors.border },
-                          isActive && { backgroundColor: layerColor },
-                        ]}
-                        onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
-                      >
-                        <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                          {sc.label} ({count})
-                        </Text>
-                      </Pressable>
-                    )
-                  })
-                )}
-              </>
-            ) : (
-              /* Main layer filters — add chevron hint for drillable categories */
-              ([
-                { key: 'all' as FilterKey, label: t('events.filterAll'), color: colors.primary, hasSubFilter: false },
-                { key: 'posts' as FilterKey, label: t('map.layerPosts'), color: LAYER_COLORS.post, hasSubFilter: true },
-                { key: 'events' as FilterKey, label: t('map.layerEvents'), color: LAYER_COLORS.event, hasSubFilter: true },
-                { key: 'places' as FilterKey, label: t('map.layerPlaces'), color: LAYER_COLORS.place, hasSubFilter: true },
-              ]).map(f => {
-                const isActive = activeFilter === f.key
-                return (
-                  <Pressable
-                    key={f.key}
-                    style={[
-                      styles.filterPill,
-                      { borderColor: isActive ? f.color : colors.border },
-                      isActive && { backgroundColor: f.color },
-                    ]}
-                    onPress={() => { setActiveFilter(f.key); setSubCategory(null); setTimeFilter('all') }}
-                  >
-                    <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                      {f.label} ({counts[f.key]}){f.hasSubFilter ? ' \u25B8' : ''}
-                    </Text>
-                  </Pressable>
-                )
-              })
-            )}
-          </ScrollView>
-        </View>
+        {/* ── Filter Pills ── */}
+        <MapFilters
+          activeFilter={activeFilter}
+          subCategory={subCategory}
+          timeFilter={timeFilter}
+          counts={counts}
+          subCounts={subCounts}
+          colors={colors}
+          isDark={isDark}
+          t={t}
+          neighborhoodLoading={neighborhoodLoading}
+          onFilterChange={setActiveFilter}
+          onSubCategoryChange={setSubCategory}
+          onTimeFilterChange={setTimeFilter}
+        />
       </View>
 
       {/* ── Section List ── */}
@@ -1362,285 +941,29 @@ export default function MapScreen() {
         />
       )}
 
-      {/* ── Detail Sheet (events & places) ── */}
-      {selectedItem && (
-        <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedItem(null)}>
-          <View style={[styles.detailModal, { backgroundColor: colors.background }]}>
-            {/* Header */}
-            <View style={[styles.detailHeader, { borderBottomColor: colors.border }]}>
-              <View style={[styles.detailColorBar, { backgroundColor: selectedItem.color }]} />
-              <Text style={[styles.detailHeaderTitle, { color: colors.foreground }]} numberOfLines={1}>
-                {selectedItem.kind === 'city_event' ? t('feedContent.cityEventLabel')
-                  : selectedItem.kind === 'community_event' ? t('map.event')
-                  : selectedItem.kind === 'post' ? t('map.layerPosts')
-                  : t('places.title')}
-              </Text>
-              <Pressable onPress={() => setSelectedItem(null)} hitSlop={12}>
-                <X size={22} color={colors.foreground} />
-              </Pressable>
-            </View>
-
-            {/* Image */}
-            {(() => {
-              const imgUrl = selectedItem.kind === 'city_event'
-                ? (selectedItem.sourceData as CityEvent).image_url
-                : selectedItem.kind === 'place'
-                ? (selectedItem.sourceData as LocalPlace).image_url
-                : selectedItem.kind === 'post'
-                ? (selectedItem.sourceData as Post).image_url
-                : null
-              return imgUrl ? (
-                <Image source={{ uri: imgUrl }} style={styles.detailImage} contentFit="cover" />
-              ) : null
-            })()}
-
-            {/* Content */}
-            <View style={styles.detailBody}>
-              <Text style={[styles.detailTitle, { color: colors.foreground }]}>{selectedItem.title}</Text>
-
-              {/* Date & time */}
-              {selectedItem.sortDate && (
-                <View style={styles.detailRow}>
-                  <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
-                    {new Date(selectedItem.sortDate).toLocaleDateString(
-                      locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', {
-                      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-                      hour: '2-digit', minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
-              )}
-
-              {/* Location */}
-              {(() => {
-                const locName = selectedItem.kind === 'city_event'
-                  ? (selectedItem.sourceData as CityEvent).location_name
-                  : selectedItem.kind === 'community_event'
-                  ? (selectedItem.sourceData as Event).location_name
-                  : selectedItem.kind === 'place'
-                  ? (selectedItem.sourceData as LocalPlace).address
-                  : null
-                return locName ? (
-                  <View style={styles.detailRow}>
-                    <MapPin size={14} color={colors.primary} />
-                    <Text style={[styles.detailLabel, { color: colors.foreground }]}>{locName}</Text>
-                  </View>
-                ) : null
-              })()}
-
-              {/* Distance */}
-              <View style={styles.detailRow}>
-                <Navigation size={14} color={colors.mutedForeground} />
-                <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{formatDistance(selectedItem.distance)}</Text>
-              </View>
-
-              {/* Price (city events) */}
-              {selectedItem.kind === 'city_event' && (() => {
-                const ce = selectedItem.sourceData as CityEvent
-                return (
-                  <View style={[styles.detailBadge, { backgroundColor: ce.is_free ? '#2B8A6220' : '#E8A05020' }]}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: ce.is_free ? '#2B8A62' : '#E8A050' }}>
-                      {ce.is_free ? t('events.free') : ce.price_info ?? t('events.paid')}
-                    </Text>
-                  </View>
-                )
-              })()}
-
-              {/* Description */}
-              {(() => {
-                let desc: string | null = null
-                if (selectedItem.kind === 'city_event') {
-                  const ce = selectedItem.sourceData as CityEvent
-                  desc = locale === 'sv' ? (ce.description_sv ?? ce.description_fi)
-                    : locale === 'en' ? (ce.description_en ?? ce.description_fi)
-                    : ce.description_fi
-                } else if (selectedItem.kind === 'community_event') {
-                  desc = (selectedItem.sourceData as Event).description
-                } else if (selectedItem.kind === 'place') {
-                  desc = (selectedItem.sourceData as LocalPlace).description
-                } else if (selectedItem.kind === 'post') {
-                  desc = (selectedItem.sourceData as Post).description
-                }
-                return desc ? (
-                  <Text style={[styles.detailDesc, { color: colors.mutedForeground }]}>{desc}</Text>
-                ) : null
-              })()}
-
-              {/* Place extra info */}
-              {selectedItem.kind === 'place' && (() => {
-                const pl = selectedItem.sourceData as LocalPlace
-                return (
-                  <View style={{ gap: 6, marginTop: 8 }}>
-                    {pl.opening_hours && (
-                      <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{t('places.openingHours')}: {pl.opening_hours}</Text>
-                    )}
-                    {pl.phone && (
-                      <Pressable onPress={() => Linking.openURL(`tel:${pl.phone}`).catch(() => {})}>
-                        <Text style={[styles.detailLabel, { color: colors.primary }]}>{pl.phone}</Text>
-                      </Pressable>
-                    )}
-                  </View>
-                )
-              })()}
-
-              {/* Organizer (city events) */}
-              {selectedItem.kind === 'city_event' && (selectedItem.sourceData as CityEvent).organizer && (
-                <Text style={[styles.detailLabel, { color: colors.mutedForeground, marginTop: 8 }]}>
-                  {t('events.creator')}: {(selectedItem.sourceData as CityEvent).organizer}
-                </Text>
-              )}
-            </View>
-
-            {/* Actions */}
-            <View style={styles.detailActions}>
-              {selectedItem.kind === 'post' && (
-                <Pressable
-                  onPress={() => {
-                    const post = selectedItem.sourceData as Post
-                    setSelectedItem(null)
-                    router.push(`/post/${post.id}`)
-                  }}
-                  style={[styles.detailActionBtn, { backgroundColor: selectedItem.color }]}
-                >
-                  <ExternalLink size={16} color="#FFF" />
-                  <Text style={styles.detailActionText}>{t('map.viewPost')}</Text>
-                </Pressable>
-              )}
-              {selectedItem.kind === 'city_event' && (selectedItem.sourceData as CityEvent).info_url && (
-                <Pressable
-                  onPress={() => Linking.openURL((selectedItem.sourceData as CityEvent).info_url!).catch(() => {})}
-                  style={[styles.detailActionBtn, { backgroundColor: selectedItem.color }]}
-                >
-                  <ExternalLink size={16} color="#FFF" />
-                  <Text style={styles.detailActionText}>{t('map.moreInfo')}</Text>
-                </Pressable>
-              )}
-              {selectedItem.kind === 'place' && (selectedItem.sourceData as LocalPlace).website && (
-                <Pressable
-                  onPress={() => Linking.openURL((selectedItem.sourceData as LocalPlace).website!).catch(() => {})}
-                  style={[styles.detailActionBtn, { backgroundColor: selectedItem.color }]}
-                >
-                  <ExternalLink size={16} color="#FFF" />
-                  <Text style={styles.detailActionText}>{t('map.website')}</Text>
-                </Pressable>
-              )}
-              <Pressable
-                onPress={() => {
-                  const lat = selectedItem.latitude
-                  const lng = selectedItem.longitude
-                  const url = Platform.OS === 'ios'
-                    ? `maps:0,0?q=${lat},${lng}`
-                    : Platform.OS === 'android'
-                    ? `geo:${lat},${lng}?q=${lat},${lng}`
-                    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-                  Linking.openURL(url).catch(() => {
-                    // Fallback to Google Maps web
-                    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(() => {})
-                  })
-                }}
-                style={[styles.detailActionBtn, { backgroundColor: colors.muted }]}
-              >
-                <Navigation size={16} color={colors.foreground} />
-                <Text style={[styles.detailActionText, { color: colors.foreground }]}>{t('map.directions')}</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  const shareUrl = selectedItem.kind === 'city_event'
-                    ? (selectedItem.sourceData as CityEvent).info_url
-                    : selectedItem.kind === 'place' && (selectedItem.sourceData as LocalPlace).website
-                    ? (selectedItem.sourceData as LocalPlace).website
-                    : `https://www.google.com/maps/search/?api=1&query=${selectedItem.latitude},${selectedItem.longitude}`
-                  Share.share({ message: `${selectedItem.title}\n${shareUrl ?? ''}`.trim() }).catch(() => {})
-                }}
-                style={[styles.detailActionBtn, { backgroundColor: colors.muted, flex: 0, paddingHorizontal: 14 }]}
-              >
-                <ExternalLink size={16} color={colors.foreground} />
-              </Pressable>
-            </View>
-          </View>
-        </Modal>
-      )}
+      {/* ── Detail Sheet ── */}
+      <DetailModal
+        item={selectedItem}
+        colors={colors}
+        locale={locale}
+        t={t}
+        router={router}
+        onClose={() => setSelectedItem(null)}
+      />
 
       {/* ── Neighborhood Modal ── */}
-      <Modal
+      <NeighborhoodModal
         visible={neighborhoodModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setNeighborhoodModalVisible(false)}
-      >
-        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.modalTitle, { color: colors.foreground }]}>
-              {t('map.selectArea')}
-            </Text>
-            <Pressable onPress={() => setNeighborhoodModalVisible(false)} hitSlop={12}>
-              <X size={24} color={colors.foreground} />
-            </Pressable>
-          </View>
-
-          {/* GPS option */}
-          <Pressable
-            style={[styles.neighborhoodRow, {
-              borderBottomColor: colors.border,
-              backgroundColor: selectedNeighborhood === '__gps__' ? colors.muted : colors.card,
-            }]}
-            onPress={handleGPSSelect}
-          >
-            <Navigation size={18} color={colors.primary} />
-            <Text style={[styles.neighborhoodRowText, { color: colors.primary, fontWeight: '600' }]}>
-              {t('map.myLocation')}
-            </Text>
-          </Pressable>
-
-          <FlatList
-            data={userLocation
-              ? ([...NEIGHBORHOODS].sort((a, b) => {
-                  const ca = NEIGHBORHOOD_CENTERS[a]; const cb = NEIGHBORHOOD_CENTERS[b]
-                  if (!ca || !cb) return 0
-                  return haversineKm(userLocation.latitude, userLocation.longitude, ca.latitude, ca.longitude)
-                    - haversineKm(userLocation.latitude, userLocation.longitude, cb.latitude, cb.longitude)
-                }) as string[]) // readonly to mutable array
-              : ([...NEIGHBORHOODS] as string[]) // readonly to mutable array
-            }
-            keyExtractor={item => item}
-            renderItem={({ item }: { item: string }) => (
-              <Pressable
-                style={[styles.neighborhoodRow, {
-                  borderBottomColor: colors.border,
-                  backgroundColor: selectedNeighborhood === item ? colors.muted : colors.card,
-                }]}
-                onPress={async () => {
-                  setSelectedNeighborhood(item)
-                  setNeighborhoodModalVisible(false)
-                  setNeighborhoodLoading(true)
-                  try {
-                    const c = NEIGHBORHOOD_CENTERS[item] ?? NEIGHBORHOOD_CENTERS['Kallio']
-                    const radius = getRadiusKm(item)
-                    const placesData = await fetchHelsinkiPlaces(c.latitude, c.longitude, radius * 1000)
-                    setPlaces(placesData)
-                  } catch (err) {
-                    if (__DEV__) console.log('[map] neighborhood switch places error:', err)
-                  }
-                  setNeighborhoodLoading(false)
-                }}
-              >
-                <Text style={[
-                  styles.neighborhoodRowText,
-                  { color: colors.foreground },
-                  selectedNeighborhood === item && { color: colors.primary, fontWeight: '600' },
-                ]}>
-                  {item}
-                </Text>
-                {userLocation && NEIGHBORHOOD_CENTERS[item] && (
-                  <Text style={[styles.neighborhoodRowDist, { color: colors.mutedForeground }]}>
-                    {formatDistance(haversineKm(userLocation.latitude, userLocation.longitude, NEIGHBORHOOD_CENTERS[item].latitude, NEIGHBORHOOD_CENTERS[item].longitude))}
-                  </Text>
-                )}
-              </Pressable>
-            )}
-          />
-        </View>
-      </Modal>
+        selected={selectedNeighborhood}
+        neighborhoods={NEIGHBORHOODS}
+        centers={NEIGHBORHOOD_CENTERS}
+        userLocation={userLocation}
+        colors={colors}
+        t={t}
+        onSelect={handleNeighborhoodSelect}
+        onGPSSelect={handleGPSSelect}
+        onClose={() => setNeighborhoodModalVisible(false)}
+      />
     </View>
   )
 }
@@ -1653,8 +976,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
-  // ── Top Bar ──
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1685,8 +1006,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-
-  // ── Map ──
   mapContainer: {
     height: MAP_HEIGHT,
     position: 'relative',
@@ -1717,39 +1036,6 @@ const styles = StyleSheet.create({
     elevation: 4,
     zIndex: 11,
   },
-
-  // ── Filter Pills (overlay on map) ──
-  filterOverlay: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    right: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    zIndex: 10,
-  },
-  filterScrollContent: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  filterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  filterPillText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-
-  // ── Section List ──
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1807,85 +1093,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 32,
   },
-
-  // ── Detail Modal ──
-  detailModal: {
-    flex: 1,
-  },
-  detailHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  detailColorBar: {
-    width: 4,
-    height: 20,
-    borderRadius: 2,
-    marginRight: 10,
-  },
-  detailHeaderTitle: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  detailImage: {
-    width: '100%',
-    height: 200,
-  },
-  detailBody: {
-    padding: 16,
-    gap: 10,
-  },
-  detailTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 26,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  detailLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  detailBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  detailDesc: {
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 4,
-  },
-  detailActions: {
-    flexDirection: 'row',
-    gap: 10,
-    padding: 16,
-    marginTop: 'auto' as any, // RN StyleSheet type limitation
-  },
-  detailActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  detailActionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFF',
-  },
-
-  // ── Empty ──
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -1904,42 +1111,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     marginTop: 4,
-  },
-  emptyHintText: {
-    fontSize: 13,
-    textAlign: 'center',
-  },
-
-  // ── Modal ──
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  modalTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  neighborhoodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  neighborhoodRowText: {
-    fontSize: 15,
-    flex: 1,
-  },
-  neighborhoodRowDist: {
-    fontSize: 12,
   },
   emptyCreateBtn: {
     flexDirection: 'row',
@@ -1984,223 +1155,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
   },
-})
-
-// ── Card styles for list items ──
-const cs = StyleSheet.create({
-  // ── Shared ──
-  card: {
+  emptyCard: {
     marginHorizontal: 12,
     marginVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
   },
-  cardImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-  },
-  cardImagePlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardContent: {
-    flex: 1,
-    gap: 3,
-  },
-  cardBadgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-    alignItems: 'center',
-  },
-  badge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 19,
-  },
-  meta: {
-    fontSize: 12,
-    lineHeight: 16,
-    flex: 1,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
-  },
-  distance: {
-    fontSize: 11,
-  },
-  userName: {
-    fontSize: 11,
-    flex: 1,
-  },
-  emptyText: {
+  emptyCardText: {
     padding: 16,
     fontStyle: 'italic',
     fontSize: 13,
     textAlign: 'center',
-  },
-
-  // ── EVENT CARD: Full-width image, date overlay ──
-  eventCard: {
-    marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  eventImageWrapper: {
-    width: '100%',
-    height: 140,
-    position: 'relative',
-  },
-  eventImage: {
-    width: '100%',
-    height: 140,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  eventImagePlaceholder: {
-    width: '100%',
-    height: 140,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  eventDateOverlay: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  eventDateOverlayText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  eventContent: {
-    padding: 10,
-    gap: 4,
-  },
-
-  // ── PLACE CARD: Compact single row with color bar ──
-  placeRow: {
-    marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    minHeight: 52,
-    gap: 8,
-    overflow: 'hidden',
-  },
-  placeColorBar: {
-    width: 3,
-    height: '70%' as any, // RN StyleSheet type limitation
-    borderRadius: 2,
-  },
-  placeTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    flex: 1,
-  },
-  showAllPlacesBtn: {
-    marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    gap: 6,
-  },
-  showAllPlacesText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  placeCatBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  placeCatText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  placeDistance: {
-    fontSize: 12,
-  },
-  placeDirectionsBtn: {
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-  },
-  placeDirectionsText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-
-  // ── POST CARD: Color bar left edge, user avatar ──
-  postCard: {
-    marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-    flexDirection: 'row',
-  },
-  postColorBar: {
-    width: 4,
-  },
-  postBody: {
-    flex: 1,
-    flexDirection: 'row',
-    padding: 10,
-    gap: 10,
-  },
-  postTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  postAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-  postAvatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  postAvatarInitial: {
-    fontSize: 14,
-    fontWeight: '700',
   },
 })

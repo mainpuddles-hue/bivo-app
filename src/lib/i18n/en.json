@@ -1409,7 +1409,10 @@
     "totalEvents": "total",
     "viewPost": "View post",
     "ticketEvent": "Tickets",
-    "communityEvent": "Community"
+    "communityEvent": "Community",
+    "beFirstInArea": "Be the first neighbor in {area} on TackBird!",
+    "createFirstPost": "Create the first post",
+    "nearbyEvents": "Nearby events"
   },
   "privacy": {
     "title": "Privacy Policy",

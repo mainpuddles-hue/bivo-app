@@ -1,0 +1,129 @@
+import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { ChevronDown } from 'lucide-react-native'
+import type { LocalPlace } from '@/lib/types'
+import type { ListItem, ThemeColors } from './types'
+import { LAYER_COLORS, PLACE_LABEL, formatDistance } from './constants'
+
+interface PlaceRowProps {
+  item: ListItem
+  colors: ThemeColors
+  t: (key: string) => string
+  onPress: (item: ListItem) => void
+  onDirections: (lat: number, lng: number) => void
+  onShowAllPlaces?: () => void
+}
+
+export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlaces }: PlaceRowProps) {
+  // "Show all" button
+  if (item.id === '__show_all_places__') {
+    return (
+      <Pressable
+        style={({ pressed }) => [styles.showAllPlacesBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+        onPress={() => onShowAllPlaces?.()}
+      >
+        <Text style={[styles.showAllPlacesText, { color: colors.primary }]}>{item.title}</Text>
+        <ChevronDown size={16} color={colors.primary} />
+      </Pressable>
+    )
+  }
+
+  const placeData = item.sourceData as LocalPlace
+  const placeCategory = PLACE_LABEL[placeData.category] ?? ''
+  // Category-specific color for left border accent
+  const placeCatColor = placeData.category === 'restaurant' || placeData.category === 'fast_food' ? '#C75B3A'
+    : placeData.category === 'cafe' ? '#E8A050'
+    : placeData.category === 'bar' || placeData.category === 'pub' ? '#7C5CBF'
+    : placeData.category === 'culture' || placeData.category === 'library' ? '#3B7DD8'
+    : placeData.category === 'sport' ? '#2B8A62'
+    : placeData.category === 'health' ? '#C75B3A'
+    : LAYER_COLORS.place
+
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.placeRow, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+      onPress={() => onPress(item)}
+    >
+      <View style={[styles.placeColorBar, { backgroundColor: placeCatColor }]} />
+      <Text style={[styles.placeTitle, { color: colors.foreground }]} numberOfLines={1}>{item.title}</Text>
+      {placeCategory ? (
+        <View style={[styles.placeCatBadge, { backgroundColor: `${placeCatColor}15` }]}>
+          <Text style={[styles.placeCatText, { color: placeCatColor }]}>{placeCategory}</Text>
+        </View>
+      ) : null}
+      <Text style={[styles.placeDistance, { color: colors.mutedForeground }]}>
+        {formatDistance(item.distance)}
+      </Text>
+      <Pressable
+        onPress={(e) => {
+          e.stopPropagation?.()
+          onDirections(item.latitude, item.longitude)
+        }}
+        hitSlop={8}
+        style={styles.placeDirectionsBtn}
+      >
+        <Text style={[styles.placeDirectionsText, { color: colors.primary }]}>Reittiohjeet</Text>
+      </Pressable>
+    </Pressable>
+  )
+}
+
+const styles = StyleSheet.create({
+  placeRow: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 52,
+    gap: 8,
+    overflow: 'hidden',
+  },
+  placeColorBar: {
+    width: 3,
+    height: '70%' as any,
+    borderRadius: 2,
+  },
+  placeTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+  },
+  showAllPlacesBtn: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 6,
+  },
+  showAllPlacesText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  placeCatBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  placeCatText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  placeDistance: {
+    fontSize: 12,
+  },
+  placeDirectionsBtn: {
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+  },
+  placeDirectionsText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+})
