@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import type { CityEvent } from './types'
 
 const API_KEY = process.env.EXPO_PUBLIC_TICKETMASTER_API_KEY ?? ''
@@ -116,7 +118,7 @@ export async function fetchTicketmasterEvents(): Promise<CityEvent[]> {
     cache = { events: allEvents, fetchedAt: Date.now() }
     return allEvents
   } catch (err) {
-    console.log('[ticketmaster] fetch error:', err)
+    if (__DEV__) console.log('[ticketmaster] fetch error:', err)
     return cache?.events ?? []
   }
 }

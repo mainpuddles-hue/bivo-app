@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, Pressable, SectionList, Modal, FlatList, ScrollView,
@@ -281,6 +283,7 @@ export default function MapScreen() {
       const { data: { user } } = await supabase.auth.getUser()
       if (cancelled) return
       if (user) {
+        // Supabase untyped - see CLAUDE.md
         const { data } = await (supabase
           .from('profiles') as any)
           .select('naapurusto')
@@ -360,6 +363,7 @@ export default function MapScreen() {
         fetchNearbyEvents(60.1699, 24.9384, 10),  // Koko Helsinki — tapahtumat ovat kaupunkitasoa
         fetchTicketmasterEvents(),
       ])
+      // Supabase untyped - see CLAUDE.md
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
       // Merge LinkedEvents + Ticketmaster, dedupe by normalized name
@@ -375,11 +379,11 @@ export default function MapScreen() {
       }
       setCityEvents(allCityEvents)
       const withCoords = allCityEvents.filter(e => e.latitude && e.longitude).length
-      console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
-      if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
-      if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
+      if (__DEV__) console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
+      if (__DEV__ && postsRes.error) console.log('[map] posts error:', postsRes.error.message)
+      if (__DEV__ && eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
     } catch (err) {
-      console.log('[map] global fetch error:', err)
+      if (__DEV__) console.log('[map] global fetch error:', err)
     }
   }, [supabase, center])
 
@@ -389,9 +393,9 @@ export default function MapScreen() {
       const radius = getRadiusKm(selectedNeighborhood)
       const placesData = await fetchHelsinkiPlaces(center.latitude, center.longitude, radius * 1000)
       setPlaces(placesData)
-      console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
+      if (__DEV__) console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
     } catch (err) {
-      console.log('[map] places fetch error:', err)
+      if (__DEV__) console.log('[map] places fetch error:', err)
     }
   }, [center, selectedNeighborhood])
 
@@ -457,7 +461,7 @@ export default function MapScreen() {
       if (dist > radiusKm) continue
       const cat = CATEGORIES[p.type as PostType]
       const catLabel = cat ? t(cat.label) : ''
-      const userName = (p as any).user?.name ?? ''
+      const userName = (p as any).user?.name ?? '' // Supabase untyped - see CLAUDE.md (joined relation)
       const parts = [catLabel, p.location, userName].filter(Boolean)
       items.push({
         id: `post-${p.id}`,
@@ -479,7 +483,7 @@ export default function MapScreen() {
       if (e.event_date && isPast(e.event_date)) continue
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
-      const creator = (e as any).creator?.name ?? ''
+      const creator = (e as any).creator?.name ?? '' // Supabase untyped - see CLAUDE.md (joined relation)
       const evParts = [e.location_name, creator].filter(Boolean)
       items.push({
         id: `event-${e.id}`,
@@ -662,6 +666,7 @@ export default function MapScreen() {
       result.push({ title: t('events.filterToday'), data: eventsToday, color: LAYER_COLORS.event })
     } else if (activeFilter === 'events' && eventsUpcoming.length > 0) {
       // Only show "no events today" when user is specifically looking at events
+      // Placeholder row — 'empty' kind and empty sourceData don't match ListItem union, cast required
       result.push({ title: t('events.filterToday'), data: [{ id: '__empty_today__', kind: 'empty' as any, title: t('map.noEventsToday'), subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }], color: LAYER_COLORS.event })
     }
     if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming, color: LAYER_COLORS.event })
@@ -672,6 +677,7 @@ export default function MapScreen() {
     const visiblePlaces = showAllPlaces ? placeItems : placeItems.slice(0, PLACES_INITIAL_LIMIT)
     if (visiblePlaces.length > 0) {
       const placesData = hasMorePlaces && !showAllPlaces
+        // Placeholder row — empty sourceData doesn't match LocalPlace, cast required
         ? [...visiblePlaces, { id: '__show_all_places__', kind: 'place' as ItemKind, title: `Näytä kaikki ${placeItems.length} paikkaa`, subtitle: '', color: LAYER_COLORS.place, latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }]
         : visiblePlaces
       result.push({ title: t('map.layerPlaces'), data: placesData, color: LAYER_COLORS.place })
@@ -953,6 +959,7 @@ export default function MapScreen() {
     if (isPost) {
       const postData = item.sourceData as Post
       const imageUrl = postData.image_url
+      // Supabase untyped - see CLAUDE.md (joined relation)
       const userName = (postData as any).user?.name ?? null
       const avatarUrl = (postData as any).user?.avatar_url ?? null
       const postType = postData.type
@@ -1587,13 +1594,13 @@ export default function MapScreen() {
 
           <FlatList
             data={userLocation
-              ? [...NEIGHBORHOODS].sort((a, b) => {
+              ? ([...NEIGHBORHOODS].sort((a, b) => {
                   const ca = NEIGHBORHOOD_CENTERS[a]; const cb = NEIGHBORHOOD_CENTERS[b]
                   if (!ca || !cb) return 0
                   return haversineKm(userLocation.latitude, userLocation.longitude, ca.latitude, ca.longitude)
                     - haversineKm(userLocation.latitude, userLocation.longitude, cb.latitude, cb.longitude)
-                }) as unknown as string[]
-              : NEIGHBORHOODS as unknown as string[]
+                }) as string[]) // readonly to mutable array
+              : ([...NEIGHBORHOODS] as string[]) // readonly to mutable array
             }
             keyExtractor={item => item}
             renderItem={({ item }: { item: string }) => (
@@ -1612,7 +1619,7 @@ export default function MapScreen() {
                     const placesData = await fetchHelsinkiPlaces(c.latitude, c.longitude, radius * 1000)
                     setPlaces(placesData)
                   } catch (err) {
-                    console.log('[map] neighborhood switch places error:', err)
+                    if (__DEV__) console.log('[map] neighborhood switch places error:', err)
                   }
                   setNeighborhoodLoading(false)
                 }}
@@ -1861,7 +1868,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     padding: 16,
-    marginTop: 'auto' as any,
+    marginTop: 'auto' as any, // RN StyleSheet type limitation
   },
   detailActionBtn: {
     flex: 1,
@@ -2113,7 +2120,7 @@ const cs = StyleSheet.create({
   },
   placeColorBar: {
     width: 3,
-    height: '70%' as any,
+    height: '70%' as any, // RN StyleSheet type limitation
     borderRadius: 2,
   },
   placeTitle: {

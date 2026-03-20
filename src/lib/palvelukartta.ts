@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import type { LocalPlace } from './types'
 
 const BASE_URL = 'https://api.hel.fi/servicemap/v2'
@@ -169,7 +171,7 @@ export async function fetchHelsinkiPlaces(
         url = json.next
       }
     } catch (err) {
-      console.log('[palvelukartta] fetch error:', err)
+      if (__DEV__) console.log('[palvelukartta] fetch error:', err)
     }
 
     cache.set(cacheKey, { places: allPlaces, fetchedAt: Date.now() })

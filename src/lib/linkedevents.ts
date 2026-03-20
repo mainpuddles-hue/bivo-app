@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import type { CityEvent } from './types'
 
 const BASE_URL = 'https://api.hel.fi/linkedevents/v1'
@@ -216,7 +218,7 @@ export async function fetchNearbyEvents(
 
     return events
   } catch (err) {
-    console.log('[linkedevents] nearby fetch error:', err)
+    if (__DEV__) console.log('[linkedevents] nearby fetch error:', err)
     return []
   }
 }
