@@ -1407,7 +1407,9 @@
     "tryAnotherArea": "Prova ett annat område",
     "loadMoreEvents": "Ladda fler evenemang",
     "totalEvents": "totalt",
-    "viewPost": "Visa annons"
+    "viewPost": "Visa annons",
+    "ticketEvent": "Biljetter",
+    "communityEvent": "Gemenskap"
   },
   "privacy": {
     "title": "Integritetspolicy",

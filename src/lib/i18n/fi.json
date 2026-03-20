@@ -1434,7 +1434,9 @@
     "tryAnotherArea": "Kokeile toista naapurustoa",
     "loadMoreEvents": "Lataa lisää tapahtumia",
     "totalEvents": "yhteensä",
-    "viewPost": "Katso ilmoitus"
+    "viewPost": "Katso ilmoitus",
+    "ticketEvent": "Liput",
+    "communityEvent": "Yhteisö"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

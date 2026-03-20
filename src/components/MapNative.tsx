@@ -450,7 +450,7 @@ export default function MapScreen() {
       const dist = haversineKm(cLat, cLng, e.location_lat, e.location_lng)
       const dateStr = new Date(e.event_date).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
       const creator = (e as any).creator?.name ?? ''
-      const evParts = [dateStr, e.location_name, creator].filter(Boolean)
+      const evParts = [e.location_name, creator].filter(Boolean)
       items.push({
         id: `event-${e.id}`,
         kind: 'community_event',
@@ -473,7 +473,7 @@ export default function MapScreen() {
       const name = locale === 'sv' ? (c.name_sv ?? c.name_fi) :
                    locale === 'en' ? (c.name_en ?? c.name_fi) : c.name_fi
       const ceDateStr = new Date(c.start_time).toLocaleDateString(locale === 'sv' ? 'sv-SE' : locale === 'en' ? 'en-GB' : 'fi-FI', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-      const ceParts = [ceDateStr, c.location_name, c.is_free ? t('events.free') : null].filter(Boolean)
+      const ceParts = [c.location_name].filter(Boolean)
       items.push({
         id: `city-${c.id}`,
         kind: 'city_event',
@@ -570,6 +570,24 @@ export default function MapScreen() {
     }
     return { all, posts, events, places }
   }, [allItems, searchQuery])
+
+  // Sub-category counts for 2nd level pills
+  const subCounts = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const item of allItems) {
+      if (item.kind === 'post') {
+        const type = (item.sourceData as Post).type
+        m.set(`post:${type}`, (m.get(`post:${type}`) ?? 0) + 1)
+      } else if (item.kind === 'city_event') {
+        const cat = (item.sourceData as CityEvent).category
+        m.set(`event:${cat}`, (m.get(`event:${cat}`) ?? 0) + 1)
+      } else if (item.kind === 'place') {
+        const cat = (item.sourceData as LocalPlace).category
+        m.set(`place:${cat}`, (m.get(`place:${cat}`) ?? 0) + 1)
+      }
+    }
+    return m
+  }, [allItems])
 
   // ── Build sections (bucket + insert-sort in a single pass) ──
   const sections = useMemo(() => {
@@ -784,7 +802,7 @@ export default function MapScreen() {
               {isEvent && item.sortDate && (
                 <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
                   <Text style={[cs.badgeText, { color: item.color }]}>
-                    {new Date(item.sortDate).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    {new Date(item.sortDate).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </Text>
                 </View>
               )}
@@ -800,12 +818,12 @@ export default function MapScreen() {
               )}
               {isTicketmaster && (
                 <View style={[cs.badge, { backgroundColor: '#E91E6318' }]}>
-                  <Text style={[cs.badgeText, { color: '#E91E63' }]}>Liput</Text>
+                  <Text style={[cs.badgeText, { color: '#E91E63' }]}>{t('map.ticketEvent')}</Text>
                 </View>
               )}
               {isCommunityEvent && (
                 <View style={[cs.badge, { backgroundColor: '#2B8A6218' }]}>
-                  <Text style={[cs.badgeText, { color: '#2B8A62' }]}>Yhteisö</Text>
+                  <Text style={[cs.badgeText, { color: '#2B8A62' }]}>{t('map.communityEvent')}</Text>
                 </View>
               )}
               {isFree && (
@@ -1011,6 +1029,7 @@ export default function MapScreen() {
               {activeFilter === 'posts' ? (
                 POST_SUBCATS.map(sc => {
                   const isActive = subCategory === sc.key
+                  const count = sc.key ? (subCounts.get(`post:${sc.key}`) ?? 0) : counts.posts
                   return (
                     <Pressable
                       key={sc.key ?? '__all__'}
@@ -1022,7 +1041,7 @@ export default function MapScreen() {
                       onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
                     >
                       <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                        {sc.label}
+                        {sc.label} ({count})
                       </Text>
                     </Pressable>
                   )
@@ -1031,6 +1050,8 @@ export default function MapScreen() {
                 (activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => {
                   const layerColor = activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place
                   const isActive = subCategory === sc.key
+                  const prefix = activeFilter === 'events' ? 'event' : 'place'
+                  const count = sc.key ? (subCounts.get(`${prefix}:${sc.key}`) ?? 0) : (activeFilter === 'events' ? counts.events : counts.places)
                   return (
                     <Pressable
                       key={sc.key ?? '__all__'}
@@ -1042,7 +1063,7 @@ export default function MapScreen() {
                       onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
                     >
                       <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                        {sc.label}
+                        {sc.label} ({count})
                       </Text>
                     </Pressable>
                   )
