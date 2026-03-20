@@ -78,6 +78,9 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
+      {/* Left category color bar */}
+      <View style={[styles.categoryBar, { backgroundColor: category?.color ?? colors.primary }]} />
+
       {/* Top accent line */}
       <View style={[
         styles.accentLine,
@@ -178,17 +181,23 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
           </View>
         )}
 
-        {/* Engagement — always show heart + comment counts */}
-        <View style={styles.engagementRow}>
-          <View style={styles.engagementItem}>
-            <Heart size={12} color={post.like_count > 0 ? '#D94F4F' : colors.mutedForeground} />
-            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.like_count}</Text>
+        {/* Engagement — hide if both counts are zero */}
+        {(post.like_count > 0 || post.comment_count > 0) && (
+          <View style={styles.engagementRow}>
+            {post.like_count > 0 && (
+              <View style={styles.engagementItem}>
+                <Heart size={12} color="#D94F4F" />
+                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.like_count}</Text>
+              </View>
+            )}
+            {post.comment_count > 0 && (
+              <View style={styles.engagementItem}>
+                <MessageCircle size={12} color={colors.mutedForeground} />
+                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+              </View>
+            )}
           </View>
-          <View style={styles.engagementItem}>
-            <MessageCircle size={12} color={colors.mutedForeground} />
-            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
-          </View>
-        </View>
+        )}
 
         {/* User row */}
         <View style={styles.userRow}>
@@ -228,7 +237,8 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
 })
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
+  categoryBar: { position: 'absolute' as const, left: 0, top: 0, bottom: 0, width: 4, zIndex: 1, borderTopLeftRadius: 12, borderBottomLeftRadius: 12 },
   accentLine: { height: 2 },
   imageContainer: { aspectRatio: 3 / 2, position: 'relative' },
   image: { width: '100%', height: '100%' },
@@ -254,7 +264,7 @@ const styles = StyleSheet.create({
   expirationText: { fontSize: 9, fontWeight: '600' },
   categoryLabel: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.5, textTransform: 'uppercase' },
   categorySubtitle: { fontSize: 10, fontFamily: fonts.body },
-  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.3 },
+  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.16 },
   description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
@@ -265,7 +275,7 @@ const styles = StyleSheet.create({
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  engagementText: { fontSize: 10, fontFamily: fonts.bodyMedium },
+  engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
   avatar: { width: 24, height: 24, borderRadius: 12, borderWidth: 1 },
