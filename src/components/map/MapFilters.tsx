@@ -1,5 +1,4 @@
 import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
-import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
@@ -36,7 +35,7 @@ export function MapFilters({
   onTimeFilterChange,
 }: MapFiltersProps) {
   return (
-    <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={[styles.filterOverlay, { borderWidth: 1, borderColor: colors.border, overflow: 'hidden' }]}>
+    <View style={[styles.filterOverlay, { borderWidth: 1, borderColor: colors.border, backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}>
       {neighborhoodLoading && (
         <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
       )}
@@ -151,7 +150,7 @@ export function MapFilters({
           })
         )}
       </ScrollView>
-    </BlurView>
+    </View>
   )
 }
 

@@ -7,7 +7,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
-import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import {
   ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X,
@@ -132,7 +131,7 @@ export default function MapScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Top Bar ── */}
-      <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={[styles.topBar, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+      <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)', borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={12}>
           <ArrowLeft size={20} color={colors.foreground} />
         </Pressable>
@@ -149,7 +148,7 @@ export default function MapScreen() {
         <Pressable onPress={() => { if (showSearch) { setShowSearch(false); setSearchQuery('') } else { setShowSearch(true) } }} style={styles.topBarIcon} hitSlop={8}>
           <Search size={20} color={showSearch ? colors.primary : colors.mutedForeground} />
         </Pressable>
-      </BlurView>
+      </View>
 
       {/* ── Search Bar ── */}
       {showSearch && (
