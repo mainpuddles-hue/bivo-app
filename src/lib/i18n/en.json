@@ -53,6 +53,7 @@
     "newPosts": "New posts — refresh",
     "refresh": "Refresh",
     "allLoaded": "All posts loaded",
+    "popular": "Popular",
     "noPosts": "It's quiet here so far",
     "noPostsHint": "Try a different filter or create the first post for your neighborhood!",
     "searchPlaceholder": "Search posts...",

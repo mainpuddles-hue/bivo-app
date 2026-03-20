@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
+import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import type { Post, PostType } from '@/lib/types'
 
@@ -42,13 +43,16 @@ const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string
 interface PostCardProps {
   post: Post
   userLocation?: { latitude: number; longitude: number } | null
+  userId?: string | null
 }
 
-export const PostCard = memo(function PostCard({ post, userLocation }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, userLocation, userId }: PostCardProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
   const [imgError, setImgError] = useState(false)
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
 
   const category = CATEGORIES[post.type as PostType]
   const isPro = post.is_pro_listing
@@ -197,16 +201,39 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
           </View>
         )}
 
-        {/* Engagement — always visible, zeros dimmed */}
+        {/* Engagement — like button is interactive */}
         <View style={styles.engagementRow}>
-          <View style={[styles.engagementItem, post.like_count === 0 && { opacity: 0.3 }]}>
-            <Heart size={12} color="#D94F4F" />
-            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.like_count}</Text>
-          </View>
+          <Pressable
+            hitSlop={12}
+            onPress={async (e) => {
+              e.stopPropagation?.()
+              if (!userId) { router.push('/(auth)/login'); return }
+              try { Haptics.selectionAsync() } catch {}
+              const supabase = createClient()
+              if (liked) {
+                await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                setLiked(false)
+                setLikeCount(c => Math.max(0, c - 1))
+              } else {
+                await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
+                setLiked(true)
+                setLikeCount(c => c + 1)
+              }
+            }}
+            style={[styles.engagementItem, !liked && likeCount === 0 && { opacity: 0.3 }]}
+          >
+            <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
+            <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>
+          </Pressable>
           <View style={[styles.engagementItem, post.comment_count === 0 && { opacity: 0.3 }]}>
-            <MessageCircle size={12} color={colors.mutedForeground} />
+            <MessageCircle size={14} color={colors.mutedForeground} />
             <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
           </View>
+          {likeCount >= 5 && (
+            <View style={styles.popularBadge}>
+              <Text style={styles.popularText}>🔥 {t('feed.popular')}</Text>
+            </View>
+          )}
         </View>
 
         {/* User row */}
@@ -294,6 +321,8 @@ const styles = StyleSheet.create({
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
+  popularBadge: { marginLeft: 'auto' as any, backgroundColor: '#FEF3C7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
+  popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },
   userRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
   avatar: { width: 36, height: 36, borderRadius: 18, borderWidth: 1 },

@@ -165,6 +165,7 @@ export default function FeedScreen() {
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [showInlineSearch, setShowInlineSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const lastScrollYRef = useRef(0)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
@@ -186,6 +187,13 @@ export default function FeedScreen() {
     feedSearchCtxRef.current._setHandler?.(() => handler)
     return () => { feedSearchCtxRef.current._setHandler?.(undefined) }
   }, [])
+
+  // Fetch current user ID for like functionality
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id)
+    })
+  }, [supabase])
 
   // Request location permission once, cache result
   useEffect(() => {
@@ -389,7 +397,7 @@ export default function FeedScreen() {
             <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
           </View>
         ) : null}
-        <PostCard post={item} userLocation={userLocation} />
+        <PostCard post={item} userLocation={userLocation} userId={currentUserId} />
       </View>
     )
   }, [userLocation, posts, filteredPosts, searchQuery, colors.mutedForeground])
