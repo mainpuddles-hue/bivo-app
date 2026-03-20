@@ -1,4 +1,6 @@
 import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
+import { BlurView } from 'expo-blur'
+import * as Haptics from 'expo-haptics'
 import { ArrowLeft } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import type { FilterKey, ThemeColors } from './types'
@@ -34,7 +36,7 @@ export function MapFilters({
   onTimeFilterChange,
 }: MapFiltersProps) {
   return (
-    <View style={[styles.filterOverlay, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)', borderWidth: 1, borderColor: colors.border }]}>
+    <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={[styles.filterOverlay, { borderWidth: 1, borderColor: colors.border, overflow: 'hidden' }]}>
       {neighborhoodLoading && (
         <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
       )}
@@ -47,7 +49,7 @@ export function MapFilters({
                 backgroundColor: activeFilter === 'posts' ? LAYER_COLORS.post : activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place,
                 borderColor: 'transparent',
               }]}
-              onPress={() => { onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
+              onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
             >
               <ArrowLeft size={14} color="#FFF" />
               <Text style={[styles.backPillText, { color: '#FFF' }]}>
@@ -64,7 +66,7 @@ export function MapFilters({
                   { borderColor: timeFilter === tf.key ? LAYER_COLORS.event : colors.border },
                   timeFilter === tf.key && { backgroundColor: LAYER_COLORS.event },
                 ]}
-                onPress={() => onTimeFilterChange(timeFilter === tf.key ? 'all' : tf.key)}
+                onPress={() => { try { Haptics.selectionAsync() } catch {} onTimeFilterChange(timeFilter === tf.key ? 'all' : tf.key) }}
               >
                 <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? '#FFF' : colors.foreground }]}>
                   {tf.label}
@@ -85,7 +87,7 @@ export function MapFilters({
                       { borderColor: isActive ? sc.color : colors.border },
                       isActive && { backgroundColor: sc.color },
                     ]}
-                    onPress={() => onSubCategoryChange(subCategory === sc.key ? null : sc.key)}
+                    onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
                       {sc.label} ({count})
@@ -107,7 +109,7 @@ export function MapFilters({
                       { borderColor: isActive ? layerColor : colors.border },
                       isActive && { backgroundColor: layerColor },
                     ]}
-                    onPress={() => onSubCategoryChange(subCategory === sc.key ? null : sc.key)}
+                    onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
                       {sc.label} ({count})
@@ -134,7 +136,7 @@ export function MapFilters({
                   { borderColor: isActive ? f.color : colors.border },
                   isActive && { backgroundColor: f.color },
                 ]}
-                onPress={() => { onFilterChange(f.key); onSubCategoryChange(null); onTimeFilterChange('all') }}
+                onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange(f.key); onSubCategoryChange(null); onTimeFilterChange('all') }}
               >
                 <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
                   {f.label} ({counts[f.key]}){f.hasSubFilter ? ' \u25B8' : ''}
@@ -144,7 +146,7 @@ export function MapFilters({
           })
         )}
       </ScrollView>
-    </View>
+    </BlurView>
   )
 }
 

@@ -1,4 +1,5 @@
 import { View, Text, Pressable, Modal, FlatList, StyleSheet } from 'react-native'
+import * as Haptics from 'expo-haptics'
 import { X, Navigation } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import type { ThemeColors } from './types'
@@ -61,7 +62,7 @@ export function NeighborhoodModal({
             borderBottomColor: colors.border,
             backgroundColor: selected === '__gps__' ? colors.muted : colors.card,
           }]}
-          onPress={onGPSSelect}
+          onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onGPSSelect() }}
         >
           <Navigation size={18} color={colors.primary} />
           <Text style={[styles.neighborhoodRowText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
@@ -86,7 +87,7 @@ export function NeighborhoodModal({
                 borderBottomColor: colors.border,
                 backgroundColor: selected === item ? colors.muted : colors.card,
               }]}
-              onPress={() => onSelect(item)}
+              onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onSelect(item) }}
             >
               <Text style={[
                 styles.neighborhoodRowText,

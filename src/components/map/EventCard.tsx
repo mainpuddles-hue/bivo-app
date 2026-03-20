@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
 import { MapPin } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import type { CityEvent } from '@/lib/types'
@@ -42,18 +43,24 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
         <View style={styles.eventImageWrapper}>
           <Image source={{ uri: imageUrl }} style={styles.eventImage} contentFit="cover" />
           {dateStr && (
-            <View style={styles.eventDateOverlay}>
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.7)']}
+              style={styles.eventImageGradient}
+            >
               <Text style={styles.eventDateOverlayText}>{dateStr}</Text>
-            </View>
+            </LinearGradient>
           )}
         </View>
       ) : (
         <View style={[styles.eventImagePlaceholder, { backgroundColor: `${item.color}12` }]}>
           <MapPin size={24} color={item.color} />
           {dateStr && (
-            <View style={styles.eventDateOverlay}>
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.7)']}
+              style={styles.eventImageGradient}
+            >
               <Text style={styles.eventDateOverlayText}>{dateStr}</Text>
-            </View>
+            </LinearGradient>
           )}
         </View>
       )}
@@ -132,14 +139,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-  eventDateOverlay: {
+  eventImageGradient: {
     position: 'absolute',
-    bottom: 8,
-    left: 8,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingTop: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   eventDateOverlayText: {
     color: '#FFF',

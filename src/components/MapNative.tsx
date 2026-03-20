@@ -7,6 +7,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
+import { BlurView } from 'expo-blur'
+import * as Haptics from 'expo-haptics'
 import {
   ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X,
 } from 'lucide-react-native'
@@ -61,6 +63,7 @@ export default function MapScreen() {
   const onItemPress = useCallback((item: ListItem) => {
     handleListItemNavigate(item)
     if (!item.id.startsWith('__empty_')) {
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
       mapRef.current?.animateToRegion({
         latitude: item.latitude, longitude: item.longitude,
         latitudeDelta: 0.005, longitudeDelta: 0.005,
@@ -129,7 +132,7 @@ export default function MapScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Top Bar ── */}
-      <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+      <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={[styles.topBar, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={8}>
           <ArrowLeft size={20} color={colors.foreground} />
         </Pressable>
@@ -146,7 +149,7 @@ export default function MapScreen() {
         <Pressable onPress={() => { if (showSearch) { setShowSearch(false); setSearchQuery('') } else { setShowSearch(true) } }} style={styles.topBarIcon} hitSlop={8}>
           <Search size={20} color={showSearch ? colors.primary : colors.mutedForeground} />
         </Pressable>
-      </View>
+      </BlurView>
 
       {/* ── Search Bar ── */}
       {showSearch && (
@@ -218,6 +221,7 @@ export default function MapScreen() {
         </Pressable>
         <Pressable
           onPress={async () => {
+            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
             const loc = await handleCenterOnUser()
             if (loc) {
               mapRef.current?.animateToRegion({ ...loc, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 500)
