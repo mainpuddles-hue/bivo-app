@@ -8,6 +8,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import type { Post, PostType } from '@/lib/types'
@@ -67,6 +68,7 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
 
   return (
     <Pressable
+      accessibilityLabel={post.title}
       onPress={() => router.push(`/post/${post.id}`)}
       style={({ pressed }) => [
         styles.card,
@@ -250,20 +252,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
   },
   expirationText: { fontSize: 9, fontWeight: '600' },
-  categoryLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
-  categorySubtitle: { fontSize: 10 },
-  title: { fontSize: 16, fontWeight: '600', lineHeight: 22, letterSpacing: -0.3 },
-  description: { fontSize: 13, lineHeight: 18 },
+  categoryLabel: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.5, textTransform: 'uppercase' },
+  categorySubtitle: { fontSize: 10, fontFamily: fonts.body },
+  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.3 },
+  description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   priceText: { fontSize: 11, fontWeight: '600' },
   distanceRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   distanceText: { fontSize: 10, fontWeight: '600' },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
-  locationText: { fontSize: 11, flex: 1 },
+  locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  engagementText: { fontSize: 10 },
+  engagementText: { fontSize: 10, fontFamily: fonts.bodyMedium },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
   avatar: { width: 24, height: 24, borderRadius: 12, borderWidth: 1 },
@@ -273,6 +275,6 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: -1, right: -1,
     width: 8, height: 8, borderRadius: 4, borderWidth: 1,
   },
-  userName: { fontSize: 11, flex: 1 },
-  timeAgo: { fontSize: 11 },
+  userName: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
+  timeAgo: { fontSize: 11, fontFamily: fonts.body },
 })

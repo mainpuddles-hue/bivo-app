@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { ChevronRight, Sparkles, Users, Heart } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n, type TFunction } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const SLIDE_HEIGHT = 168
@@ -142,10 +143,10 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.7)', marginBottom: 4,
   },
   slideTitle: {
-    fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 4,
+    fontSize: 16, fontFamily: fonts.heading, color: '#FFFFFF', marginBottom: 4,
   },
   slideSubtitle: {
-    fontSize: 14, color: 'rgba(255,255,255,0.85)',
+    fontSize: 14, fontFamily: fonts.body, color: 'rgba(255,255,255,0.85)',
   },
   ctaButton: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'flex-start',
     minHeight: 36,
   },
-  ctaText: { fontSize: 14, fontWeight: '600' },
+  ctaText: { fontSize: 14, fontFamily: fonts.bodySemi },
   dots: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, marginTop: 12,

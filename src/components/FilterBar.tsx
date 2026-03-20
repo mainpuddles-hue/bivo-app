@@ -5,6 +5,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
 import type { PostType } from '@/lib/types'
 
@@ -30,6 +31,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
     >
       {/* "All" chip */}
       <Pressable
+        accessibilityLabel={t('common.all')}
         onPress={() => onFilterChange(null)}
         style={[
           styles.chip,
@@ -55,6 +57,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
         return (
           <Pressable
             key={type}
+            accessibilityLabel={t(cat.label)}
             onPress={() => onFilterChange(isActive ? null : type)}
             style={[
               styles.chip,
@@ -90,6 +93,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 8,
     borderRadius: 20, minHeight: 36,
   },
-  chipText: { fontSize: 12, fontWeight: '500' },
-  chipSubtitle: { fontSize: 10, fontWeight: '400' },
+  chipText: { fontSize: 12, fontFamily: fonts.bodyMedium },
+  chipSubtitle: { fontSize: 10, fontFamily: fonts.body },
 })

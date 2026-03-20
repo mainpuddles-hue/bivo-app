@@ -7,10 +7,12 @@ import * as Location from 'expo-location'
 import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
 import { POST_SELECT } from '@/lib/constants'
 import { formatEventDateShort } from '@/lib/format'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
+import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { FilterBar } from '@/components/FilterBar'
 import { HeroCarousel } from '@/components/HeroCarousel'
 import { PostCard } from '@/components/PostCard'
@@ -161,23 +163,37 @@ export default function FeedScreen() {
     fetchFollows()
   }, [supabase])
 
+  // Real-time subscription for follows changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('follows-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_follows' }, () => {
+        // Re-fetch followed IDs
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (!user) return
+          supabase.from('user_follows').select('followed_id').eq('follower_id', user.id)
+            .then(({ data }) => {
+              if (data) setFollowedIds(data.map((f: any) => f.followed_id))
+            })
+        })
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase])
+
   // Fetch city events and nearby places
   const fetchExtraContent = useCallback(async () => {
     setExtraLoading(true)
-    const [helsinkiEvents, placesRes] = await Promise.all([
+    const lat = userLocation?.latitude ?? 60.1699
+    const lng = userLocation?.longitude ?? 24.9384
+    const [helsinkiEvents, placesData] = await Promise.all([
       fetchHelsinkiEvents(),
-      supabase
-        .from('local_places')
-        .select('*')
-        .not('neighborhood', 'is', null)
-        .gte('latitude', 60.14).lte('latitude', 60.29)
-        .gte('longitude', 24.83).lte('longitude', 25.22)
-        .limit(50),
+      fetchHelsinkiPlaces(lat, lng, 2000),
     ])
     setCityEvents(helsinkiEvents.slice(0, 20))
-    setNearbyPlaces((placesRes.data ?? []) as unknown as LocalPlace[])
+    setNearbyPlaces(placesData.slice(0, 20))
     setExtraLoading(false)
-  }, [supabase])
+  }, [userLocation])
 
   useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])
 
@@ -494,7 +510,11 @@ export default function FeedScreen() {
               const catColor = PLACE_COLORS[place.category] || '#95A5A6'
               const catLabel = PLACE_LABELS[place.category] || place.category
               return (
-                <View key={place.id} style={[extraStyles.placeCard, { backgroundColor: colors.card }]}>
+                <Pressable
+                  key={place.id}
+                  onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`)}
+                  style={[extraStyles.placeCard, { backgroundColor: colors.card }]}
+                >
                   {/* Category color circle */}
                   <View style={[extraStyles.placeCatCircle, { backgroundColor: `${catColor}20` }]}>
                     <MapPin size={16} color={catColor} />
@@ -516,7 +536,7 @@ export default function FeedScreen() {
                       {place.address}
                     </Text>
                   )}
-                </View>
+                </Pressable>
               )
             })}
           </ScrollView>
@@ -604,7 +624,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, borderRadius: 12, paddingVertical: 10, minHeight: 44,
   },
-  newBannerText: { fontSize: 14, fontWeight: '600' },
+  newBannerText: { fontSize: 14, fontFamily: fonts.bodySemi },
   errorBox: {
     borderRadius: 12, borderWidth: 1, padding: 16,
     alignItems: 'center', gap: 12,
@@ -617,7 +637,7 @@ const styles = StyleSheet.create({
   retryText: { fontSize: 13, fontWeight: '500' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
   sectionBar: { width: 3, height: 16, borderRadius: 1.5 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', letterSpacing: -0.3, flex: 1 },
+  sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.3, flex: 1 },
   countBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   countText: { fontSize: 11, fontWeight: '500' },
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
@@ -654,10 +674,10 @@ const extraStyles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   eventInfo: { padding: 10, gap: 3 },
-  eventName: { fontSize: 13, fontWeight: '600', lineHeight: 17 },
+  eventName: { fontSize: 13, fontFamily: fonts.headingSemi, lineHeight: 17 },
   eventMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  eventDate: { fontSize: 11, fontWeight: '500' },
-  eventLocation: { fontSize: 11, flex: 1 },
+  eventDate: { fontSize: 11, fontFamily: fonts.body },
+  eventLocation: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
   freeBadge: {
     paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
     alignSelf: 'flex-start', marginTop: 2,
@@ -674,11 +694,11 @@ const extraStyles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center', marginBottom: 4,
   },
-  placeName: { fontSize: 13, fontWeight: '600', lineHeight: 17 },
+  placeName: { fontSize: 13, fontFamily: fonts.headingSemi, lineHeight: 17 },
   placeCatBadge: {
     paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
     alignSelf: 'flex-start',
   },
   placeCatText: { fontSize: 10, fontWeight: '600' },
-  placeAddress: { fontSize: 10, marginTop: 2 },
+  placeAddress: { fontSize: 10, fontFamily: fonts.body, marginTop: 2 },
 })

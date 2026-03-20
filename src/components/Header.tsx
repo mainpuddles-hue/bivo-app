@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { Bell, Search, Map } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { TackBirdLogo } from './TackBirdLogo'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -50,13 +51,13 @@ export function Header() {
         </Pressable>
 
         <View style={styles.actions}>
-          <Pressable onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
+          <Pressable accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
             <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
-          <Pressable onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
+          <Pressable accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
             <Map size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
-          <Pressable onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
+          <Pressable accessibilityLabel={t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={20}
               color={unreadCount > 0 ? colors.primary : colors.mutedForeground}
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
     width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
-  wordmark: { fontSize: 12, fontWeight: '700', letterSpacing: 1.7 },
+  wordmark: { fontSize: 12, fontFamily: fonts.heading, letterSpacing: 1.7 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconButton: {
     width: 40, height: 40, borderRadius: 20,
@@ -101,5 +102,5 @@ const styles = StyleSheet.create({
     minWidth: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
   },
-  badgeText: { fontSize: 9, fontWeight: '700' },
+  badgeText: { fontSize: 9, fontFamily: fonts.bodyMedium },
 })
