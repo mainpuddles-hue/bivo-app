@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics'
 import {
   ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X,
 } from 'lucide-react-native'
+import { PinIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -264,7 +265,7 @@ export default function MapScreen() {
         </View>
       ) : sections.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <MapPin size={32} color={colors.mutedForeground} />
+          <PinIllustration size={80} />
           {searchQuery.trim() ? (
             <>
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>

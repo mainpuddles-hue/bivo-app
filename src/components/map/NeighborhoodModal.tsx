@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Modal, FlatList, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { X, Navigation } from 'lucide-react-native'
+import { NeighborhoodIllustration } from '@/components/illustrations'
 import { fonts } from '@/lib/fonts'
 import type { ThemeColors } from './types'
 import { formatDistance } from './constants'
@@ -48,9 +49,12 @@ export function NeighborhoodModal({
     >
       <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
         <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.modalTitle, { color: colors.foreground }]}>
-            {t('map.selectArea')}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+            <NeighborhoodIllustration size={60} />
+            <Text style={[styles.modalTitle, { color: colors.foreground }]}>
+              {t('map.selectArea')}
+            </Text>
+          </View>
           <Pressable onPress={onClose} hitSlop={12}>
             <X size={24} color={colors.foreground} />
           </Pressable>

@@ -6,6 +6,7 @@ import { Image } from 'expo-image'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
 import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, ChevronDown, Globe, CheckCircle, X, Search } from 'lucide-react-native'
+import { BoardIllustration, BirdMascot } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -660,7 +661,7 @@ export default function FeedScreen() {
     const areaLabel = userNeighborhood ?? 'Helsinki'
     return (
       <View style={styles.coldStart}>
-        <MapPin size={40} color={colors.primary} style={{ opacity: 0.6, marginBottom: 4 }} />
+        <BoardIllustration size={80} />
         <Text style={[styles.coldStartTitle, { color: colors.foreground }]}>{t('feed.noPosts')}</Text>
         <Text style={[styles.coldStartHint, { color: colors.mutedForeground }]}>
           {t('map.beFirstInArea', { area: areaLabel })}
@@ -692,6 +693,7 @@ export default function FeedScreen() {
       sections.push(
         <View key="all-loaded" style={styles.allLoadedWrap}>
           <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
+          <BirdMascot size={40} />
           <View style={styles.allLoadedContent}>
             <CheckCircle size={14} color={`${colors.mutedForeground}60`} />
             <Text style={[styles.allLoadedText, { color: `${colors.mutedForeground}80` }]}>Olet ajan tasalla</Text>
