@@ -1,11 +1,11 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking } from 'react-native'
+import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking, TextInput } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
-import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe, CheckCircle } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe, CheckCircle, X, Search } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -16,6 +16,7 @@ import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
+import { useFeedSearch } from '@/lib/feedSearchContext'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 // ── Category color maps ──
@@ -122,6 +123,24 @@ function isWithinDays(dateStr: string, days: number): boolean {
   return d >= now && d <= now + days * 86400000
 }
 
+// ── Date group helper for time-based section breaks (Fix 10) ──
+function isYesterday(dateStr: string): boolean {
+  const d = new Date(dateStr); const y = new Date(); y.setDate(y.getDate() - 1)
+  return d.getFullYear() === y.getFullYear() && d.getMonth() === y.getMonth() && d.getDate() === y.getDate()
+}
+
+function isWithinPastDays(dateStr: string, days: number): boolean {
+  const d = new Date(dateStr).getTime(); const now = Date.now()
+  return d <= now && d >= now - days * 86400000
+}
+
+function getDateGroup(dateStr: string): string {
+  if (isToday(dateStr)) return 'Tänään'
+  if (isYesterday(dateStr)) return 'Eilen'
+  if (isWithinPastDays(dateStr, 7)) return 'Tällä viikolla'
+  return 'Aiemmin'
+}
+
 export default function FeedScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -145,10 +164,27 @@ export default function FeedScreen() {
   const [nearBottom, setNearBottom] = useState(false)
   const [fabVisible, setFabVisible] = useState(true)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
+  const [showInlineSearch, setShowInlineSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const lastScrollYRef = useRef(0)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchInputRef = useRef<TextInput>(null)
+
+  // Fix 9: Register inline search toggle with layout context
+  const feedSearchCtx = useFeedSearch()
+  useEffect(() => {
+    const handler = () => {
+      setShowInlineSearch(prev => {
+        if (prev) { setSearchQuery(''); return false }
+        setTimeout(() => searchInputRef.current?.focus(), 100)
+        return true
+      })
+    }
+    feedSearchCtx._setHandler?.(() => handler)
+    return () => { feedSearchCtx._setHandler?.(undefined) }
+  }, [feedSearchCtx])
 
   // Request location permission once, cache result
   useEffect(() => {
@@ -316,7 +352,33 @@ export default function FeedScreen() {
     return e.name_fi
   }, [locale])
 
-  const renderPost = useCallback(({ item }: { item: Post }) => <PostCard post={item} userLocation={userLocation} />, [userLocation])
+  // Fix 9: Client-side search filtering
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery.trim()) return posts
+    const q = searchQuery.toLowerCase()
+    return posts.filter(p =>
+      p.title?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
+    )
+  }, [posts, searchQuery])
+
+  // Fix 10: Time-based section breaks in feed
+  const renderPost = useCallback(({ item, index }: { item: Post; index: number }) => {
+    const postsToUse = searchQuery.trim() ? filteredPosts : posts
+    const currentGroup = item.created_at ? getDateGroup(item.created_at) : ''
+    const prevGroup = index > 0 && postsToUse[index - 1]?.created_at ? getDateGroup(postsToUse[index - 1].created_at!) : ''
+    const showLabel = index === 0 || currentGroup !== prevGroup
+
+    return (
+      <View>
+        {showLabel && currentGroup ? (
+          <View style={styles.dateGroupLabel}>
+            <Text style={[styles.dateGroupText, { color: colors.mutedForeground }]}>{currentGroup}</Text>
+          </View>
+        ) : null}
+        <PostCard post={item} userLocation={userLocation} />
+      </View>
+    )
+  }, [userLocation, posts, filteredPosts, searchQuery, colors.mutedForeground])
 
   // Event section with cascading fallback: today -> tomorrow -> this week (Fix 4)
   const { displayEvents, eventSectionTitle } = useMemo(() => {
@@ -408,7 +470,7 @@ export default function FeedScreen() {
             <View style={[styles.sectionBar, { backgroundColor: '#3B7DD8' }]} />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('events.cityEvents')}</Text>
           </View>
-          <HorizontalSkeleton colors={colors} width={200} height={140} />
+          <HorizontalSkeleton colors={colors} width={160} height={140} />
         </View>
       ) : cityEvents.length > 0 ? (
         <View style={{ gap: 12 }}>
@@ -424,8 +486,8 @@ export default function FeedScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             decelerationRate="fast"
-            snapToInterval={212}
-            contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingBottom: 4 }}
+            snapToInterval={172}
+            contentContainerStyle={{ gap: 10, paddingHorizontal: 4, paddingBottom: 4 }}
           >
             {cityEvents.map((event) => {
               const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
@@ -440,7 +502,7 @@ export default function FeedScreen() {
                     <Image source={{ uri: event.image_url }} style={extraStyles.eventImage} contentFit="cover" />
                   ) : (
                     <View style={[extraStyles.eventImageFallback, { backgroundColor: `${catColor}20` }]}>
-                      <Globe size={24} color={catColor} />
+                      <Globe size={20} color={catColor} />
                     </View>
                   )}
                   <View style={extraStyles.eventInfo}>
@@ -448,14 +510,14 @@ export default function FeedScreen() {
                       {getCityEventName(event)}
                     </Text>
                     <View style={extraStyles.eventMeta}>
-                      <CalendarDays size={11} color={colors.mutedForeground} />
+                      <CalendarDays size={10} color={colors.mutedForeground} />
                       <Text style={[extraStyles.eventDate, { color: colors.primary }]}>
                         {formatEventDateShort(event.start_time, locale)}
                       </Text>
                     </View>
                     {event.location_name && (
                       <View style={extraStyles.eventMeta}>
-                        <MapPin size={11} color={colors.mutedForeground} />
+                        <MapPin size={10} color={colors.mutedForeground} />
                         <Text style={[extraStyles.eventLocation, { color: colors.mutedForeground }]} numberOfLines={1}>
                           {event.location_name}
                         </Text>
@@ -481,7 +543,7 @@ export default function FeedScreen() {
             <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
           </View>
-          <HorizontalSkeleton colors={colors} width={160} height={120} />
+          <HorizontalSkeleton colors={colors} width={56} height={56} />
         </View>
       ) : nearbyPlaces.length > 0 ? (
         <View style={{ gap: 12 }}>
@@ -496,33 +558,24 @@ export default function FeedScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            snapToInterval={172}
-            contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingBottom: 4 }}
+            contentContainerStyle={{ gap: 14, paddingHorizontal: 4, paddingBottom: 4 }}
           >
             {nearbyPlaces.map((place) => {
               const catColor = PLACE_COLORS[place.category] || '#95A5A6'
               const catLabel = PLACE_LABELS[place.category] || place.category
+              const firstLetter = catLabel.charAt(0).toUpperCase()
               return (
                 <Pressable
                   key={place.id}
                   onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`)}
-                  style={[extraStyles.placeCard, { backgroundColor: colors.card }]}
+                  style={extraStyles.placeCompact}
                 >
-                  <View style={[extraStyles.placeCatCircle, { backgroundColor: `${catColor}20` }]}>
-                    <MapPin size={16} color={catColor} />
+                  <View style={[extraStyles.placeCircle, { backgroundColor: `${catColor}26` }]}>
+                    <Text style={[extraStyles.placeCircleText, { color: catColor }]}>{firstLetter}</Text>
                   </View>
-                  <Text style={[extraStyles.placeName, { color: colors.foreground }]} numberOfLines={2}>
+                  <Text style={[extraStyles.placeCompactName, { color: colors.foreground }]} numberOfLines={2}>
                     {place.name}
                   </Text>
-                  <View style={[extraStyles.placeCatBadge, { backgroundColor: `${catColor}15` }]}>
-                    <Text style={[extraStyles.placeCatText, { color: catColor }]}>{catLabel}</Text>
-                  </View>
-                  {place.address && (
-                    <Text style={[extraStyles.placeAddress, { color: `${colors.mutedForeground}AA` }]} numberOfLines={1}>
-                      {place.address}
-                    </Text>
-                  )}
                 </Pressable>
               )
             })}
@@ -608,8 +661,8 @@ export default function FeedScreen() {
       )
     }
 
-    // All loaded — clean minimal footer
-    if (!hasMore && posts.length > 0) {
+    // All loaded — clean minimal footer (Fix 8: only show when >= 10 posts)
+    if (!hasMore && posts.length >= 10) {
       sections.push(
         <View key="all-loaded" style={styles.allLoadedWrap}>
           <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
@@ -629,6 +682,31 @@ export default function FeedScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar — no scroll-hide animation */}
       <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+        {/* Fix 1: Neighborhood context */}
+        <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
+          {userLocation ? 'Lähellä sinua' : userNeighborhood ? `📍 ${userNeighborhood}` : 'Helsinki'}
+        </Text>
+        {/* Fix 9: Inline search bar */}
+        {showInlineSearch && (
+          <View style={[styles.inlineSearchRow, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}>
+            <Search size={16} color={colors.mutedForeground} />
+            <TextInput
+              ref={searchInputRef}
+              style={[styles.inlineSearchInput, { color: colors.foreground }]}
+              placeholder={t('common.search') || 'Hae...'}
+              placeholderTextColor={colors.mutedForeground}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+              autoCorrect={false}
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                <X size={16} color={colors.mutedForeground} />
+              </Pressable>
+            )}
+          </View>
+        )}
         <View style={styles.filterRow}>
           <FilterBar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
         </View>
@@ -650,10 +728,10 @@ export default function FeedScreen() {
         )}
       </View>
       <FlatList
-        data={posts}
+        data={filteredPosts}
         renderItem={renderPost}
         keyExtractor={item => item.id}
-        contentContainerStyle={[styles.list, { paddingTop: 56 }]}
+        contentContainerStyle={[styles.list, { paddingTop: showInlineSearch ? 110 : 76 }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
@@ -662,7 +740,7 @@ export default function FeedScreen() {
         onEndReachedThreshold={0.3}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         showsVerticalScrollIndicator={false}
       />
 
@@ -686,11 +764,20 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30,
-    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, gap: 8,
+    paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8, gap: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,
   },
+  neighborhoodText: { fontSize: 12, fontFamily: fonts.body, paddingVertical: 2 },
+  inlineSearchRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderRadius: 10, borderWidth: 1,
+    paddingHorizontal: 12, height: 36,
+  },
+  inlineSearchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, paddingVertical: 0 },
+  dateGroupLabel: { paddingTop: 6, paddingBottom: 8 },
+  dateGroupText: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.2 },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   filterRow: { paddingBottom: 0 },
   followingBtn: {
@@ -761,20 +848,20 @@ const extraStyles = StyleSheet.create({
   },
   showAllText: { fontSize: 13, fontWeight: '600' },
 
-  // ── City Event Card ──
+  // ── City Event Card (Fix 3: smaller — 160px wide, 90px image) ──
   eventCard: {
-    width: 200, borderRadius: 12, overflow: 'hidden',
+    width: 160, borderRadius: 10, overflow: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+    shadowOpacity: 0.08, shadowRadius: 6, elevation: 3,
   },
-  eventAccent: { height: 3 },
-  eventImage: { width: '100%', height: 80 },
+  eventAccent: { height: 2 },
+  eventImage: { width: '100%', height: 90 },
   eventImageFallback: {
-    width: '100%', height: 80,
+    width: '100%', height: 90,
     alignItems: 'center', justifyContent: 'center',
   },
-  eventInfo: { padding: 10, gap: 3 },
-  eventName: { fontSize: 13, fontFamily: fonts.headingSemi, lineHeight: 17, letterSpacing: -0.16 },
+  eventInfo: { padding: 8, gap: 2 },
+  eventName: { fontSize: 12, fontFamily: fonts.headingSemi, lineHeight: 15, letterSpacing: -0.16 },
   eventMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   eventDate: { fontSize: 11, fontFamily: fonts.body },
   eventLocation: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
@@ -784,21 +871,14 @@ const extraStyles = StyleSheet.create({
   },
   freeText: { fontSize: 10, fontWeight: '600' },
 
-  // ── Nearby Place Card ──
-  placeCard: {
-    width: 160, borderRadius: 12, padding: 12, gap: 4,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+  // ── Nearby Place Card (Fix 4: compact circles with name below) ──
+  placeCompact: {
+    width: 72, alignItems: 'center', gap: 6,
   },
-  placeCatCircle: {
-    width: 36, height: 36, borderRadius: 18,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 4,
+  placeCircle: {
+    width: 56, height: 56, borderRadius: 28,
+    alignItems: 'center', justifyContent: 'center',
   },
-  placeName: { fontSize: 13, fontFamily: fonts.headingSemi, lineHeight: 17, letterSpacing: -0.16 },
-  placeCatBadge: {
-    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  placeCatText: { fontSize: 10, fontWeight: '600' },
-  placeAddress: { fontSize: 10, fontFamily: fonts.body, marginTop: 2 },
+  placeCircleText: { fontSize: 20, fontWeight: '700' },
+  placeCompactName: { fontSize: 11, fontFamily: fonts.body, textAlign: 'center', lineHeight: 14 },
 })

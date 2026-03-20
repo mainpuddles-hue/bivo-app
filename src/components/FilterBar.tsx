@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import {
-  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, LayoutGrid,
+  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -30,27 +30,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
       contentContainerStyle={styles.scrollContent}
       style={styles.scroll}
     >
-      {/* "All" chip */}
-      <Pressable
-        accessibilityLabel={t('common.all')}
-        onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(null) }}
-        style={[
-          styles.chip,
-          !activeFilter
-            ? { backgroundColor: colors.primary }
-            : { backgroundColor: isDark ? colors.card : colors.muted },
-        ]}
-      >
-        <LayoutGrid size={14} color={!activeFilter ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.75} />
-        <Text style={[
-          styles.chipText,
-          { color: !activeFilter ? colors.primaryForeground : colors.mutedForeground }
-        ]}>
-          {t('common.all')}
-        </Text>
-      </Pressable>
-
-      {/* Category chips */}
+      {/* Category chips — tapping active chip deselects (shows all) */}
       {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
         const Icon = ICON_MAP[cat.icon]
         const isActive = activeFilter === type

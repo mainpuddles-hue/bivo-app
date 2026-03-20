@@ -8,8 +8,14 @@ import { fonts } from '@/lib/fonts'
 import { TackBirdLogo } from './TackBirdLogo'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useFeedSearch } from '@/lib/feedSearchContext'
 
-export function Header() {
+interface HeaderProps {
+  onSearchPress?: () => void
+}
+
+export function Header({ onSearchPress }: HeaderProps = {}) {
+  const feedSearch = useFeedSearch()
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -51,7 +57,7 @@ export function Header() {
         </Pressable>
 
         <View style={styles.actions}>
-          <Pressable accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
+          <Pressable accessibilityLabel={t('common.search')} onPress={onSearchPress ?? feedSearch.onSearchPress ?? (() => router.push('/search'))} style={styles.iconButton} hitSlop={8}>
             <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
           <Pressable accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>

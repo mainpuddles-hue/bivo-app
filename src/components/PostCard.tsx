@@ -79,13 +79,19 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.card },
-        isPro && { borderWidth: 2, borderColor: 'rgba(245,158,11,0.5)' },
         isNappaa && !isPro && { borderWidth: 2, borderColor: '#E8A050' },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
       {/* Left category color bar */}
       <View style={[styles.categoryBar, { backgroundColor: category?.color ?? colors.primary }]} />
+
+      {/* Pro banner at top of card */}
+      {isPro && (
+        <View style={styles.proBanner}>
+          <Text style={styles.proBannerText}>{'⭐ Pro'}</Text>
+        </View>
+      )}
 
       {/* Top accent line */}
       <View style={[
@@ -205,7 +211,7 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
 
         {/* User row */}
         <View style={styles.userRow}>
-          <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
             <View style={styles.avatarContainer}>
               {user?.avatar_url ? (
                 <Image source={{ uri: user.avatar_url }} style={[
@@ -222,18 +228,20 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
               {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
             </View>
 
-            <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-              {user?.name ?? t('postCard.anonymousUser')}
-            </Text>
-
-            {isVerified && <BadgeCheck size={14} color={colors.info} />}
+            <View style={styles.userInfo}>
+              <View style={styles.userNameRow}>
+                <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
+                  {user?.name ?? t('postCard.anonymousUser')}
+                </Text>
+                {isVerified && <BadgeCheck size={14} color={colors.info} />}
+              </View>
+              {post.created_at && (
+                <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
+                  {formatTimeAgo(post.created_at, t, locale)}
+                </Text>
+              )}
+            </View>
           </Pressable>
-
-          {post.created_at && (
-            <Text style={[styles.timeAgo, { color: `${colors.mutedForeground}CC` }]}>
-              {formatTimeAgo(post.created_at, t, locale)}
-            </Text>
-          )}
         </View>
       </View>
     </Pressable>
@@ -243,6 +251,11 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
 const styles = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
   categoryBar: { position: 'absolute' as const, left: 0, top: 0, bottom: 0, width: 4, zIndex: 1, borderTopLeftRadius: 12, borderBottomLeftRadius: 12 },
+  proBanner: {
+    height: 22, backgroundColor: '#F59E0B',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
   accentLine: { height: 2 },
   imageContainer: { aspectRatio: 3 / 2, position: 'relative' },
   image: { width: '100%', height: '100%' },
@@ -281,15 +294,17 @@ const styles = StyleSheet.create({
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
-  userRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8 },
+  userRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
-  avatar: { width: 24, height: 24, borderRadius: 12, borderWidth: 1 },
+  avatar: { width: 36, height: 36, borderRadius: 18, borderWidth: 1 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { fontSize: 10, fontWeight: '600' },
+  avatarInitial: { fontSize: 13, fontWeight: '600' },
   statusDot: {
     position: 'absolute', bottom: -1, right: -1,
     width: 8, height: 8, borderRadius: 4, borderWidth: 1,
   },
-  userName: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
+  userInfo: { flex: 1, gap: 1 },
+  userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  userName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
   timeAgo: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14.3 },
 })
