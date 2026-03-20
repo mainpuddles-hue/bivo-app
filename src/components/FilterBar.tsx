@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
+import * as Haptics from 'expo-haptics'
 import {
   HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, LayoutGrid,
 } from 'lucide-react-native'
@@ -32,7 +33,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
       {/* "All" chip */}
       <Pressable
         accessibilityLabel={t('common.all')}
-        onPress={() => onFilterChange(null)}
+        onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(null) }}
         style={[
           styles.chip,
           !activeFilter
@@ -58,7 +59,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
           <Pressable
             key={type}
             accessibilityLabel={t(cat.label)}
-            onPress={() => onFilterChange(isActive ? null : type)}
+            onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
             style={[
               styles.chip,
               isActive

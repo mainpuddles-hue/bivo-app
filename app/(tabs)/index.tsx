@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Location from 'expo-location'
-import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
+import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe, CheckCircle } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -15,7 +16,6 @@ import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
-import { TackBirdLogo } from '@/components/TackBirdLogo'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 // ── Category color maps ──
@@ -108,15 +108,18 @@ const skelStyles = StyleSheet.create({
   avatar: { width: 24, height: 24, borderRadius: 12 },
 })
 
-// Check if a city event is happening today
-function isEventToday(startTime: string): boolean {
-  const now = new Date()
-  const eventDate = new Date(startTime)
-  return (
-    eventDate.getFullYear() === now.getFullYear() &&
-    eventDate.getMonth() === now.getMonth() &&
-    eventDate.getDate() === now.getDate()
-  )
+// ── Date helpers for event cascading fallback ──
+function isToday(dateStr: string): boolean {
+  const d = new Date(dateStr); const n = new Date()
+  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate()
+}
+function isTomorrow(dateStr: string): boolean {
+  const d = new Date(dateStr); const t = new Date(); t.setDate(t.getDate() + 1)
+  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate()
+}
+function isWithinDays(dateStr: string, days: number): boolean {
+  const d = new Date(dateStr).getTime(); const now = Date.now()
+  return d >= now && d <= now + days * 86400000
 }
 
 export default function FeedScreen() {
@@ -140,6 +143,9 @@ export default function FeedScreen() {
   const [extraLoading, setExtraLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [nearBottom, setNearBottom] = useState(false)
+  const [fabVisible, setFabVisible] = useState(true)
+  const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
+  const lastScrollYRef = useRef(0)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -163,15 +169,19 @@ export default function FeedScreen() {
     return () => { cancelled = true }
   }, [])
 
-  // Fetch followed user IDs
+  // Fetch followed user IDs + user neighborhood
   useEffect(() => {
-    async function fetchFollows() {
+    async function fetchFollowsAndProfile() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase.from('user_follows').select('followed_id').eq('follower_id', user.id)
-      if (data) setFollowedIds(data.map((f: any) => f.followed_id))
+      const [{ data: followsData }, { data: profileData }] = await Promise.all([
+        supabase.from('user_follows').select('followed_id').eq('follower_id', user.id),
+        (supabase.from('profiles') as any).select('naapurusto').eq('id', user.id).single(),
+      ])
+      if (followsData) setFollowedIds(followsData.map((f: any) => f.followed_id))
+      if ((profileData as any)?.naapurusto) setUserNeighborhood((profileData as any).naapurusto)
     }
-    fetchFollows()
+    fetchFollowsAndProfile()
   }, [supabase])
 
   // Real-time subscription for follows changes
@@ -280,6 +290,7 @@ export default function FeedScreen() {
   }, [supabase])
 
   const handleRefresh = useCallback(() => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
     setRefreshing(true)
     setHasNewPosts(false)
     offsetRef.current = 0
@@ -307,29 +318,51 @@ export default function FeedScreen() {
 
   const renderPost = useCallback(({ item }: { item: Post }) => <PostCard post={item} userLocation={userLocation} />, [userLocation])
 
-  // Today's events from city events
-  const todayEvents = useMemo(() => cityEvents.filter(e => isEventToday(e.start_time)).slice(0, 3), [cityEvents])
+  // Event section with cascading fallback: today -> tomorrow -> this week (Fix 4)
+  const { displayEvents, eventSectionTitle } = useMemo(() => {
+    const todayEvts = cityEvents.filter(e => isToday(e.start_time))
+    const tomorrowEvts = !todayEvts.length ? cityEvents.filter(e => isTomorrow(e.start_time)) : []
+    const weekEvts = !todayEvts.length && !tomorrowEvts.length ? cityEvents.filter(e => isWithinDays(e.start_time, 7)) : []
+    const display = todayEvts.length ? todayEvts : tomorrowEvts.length ? tomorrowEvts : weekEvts
+    const title = todayEvts.length ? t('events.filterToday') + ' (' + todayEvts.length + ')'
+      : tomorrowEvts.length ? 'Huomenna (' + tomorrowEvts.length + ')'
+      : weekEvts.length ? 'Tällä viikolla (' + weekEvts.length + ')' : ''
+    return { displayEvents: display.slice(0, 3), eventSectionTitle: title }
+  }, [cityEvents, t])
 
-  // ── Scroll handler for FAB near-bottom detection ──
+  // Places section contextual title (Fix 5)
+  const placesSectionTitle = useMemo(() => {
+    if (userLocation) return 'Paikat lähellä sinua'
+    if (userNeighborhood) return `Paikat – ${userNeighborhood}`
+    return 'Paikat Helsingissä'
+  }, [userLocation, userNeighborhood])
+
+  // ── Scroll handler for FAB near-bottom detection + scroll-direction FAB hide ──
   const handleScroll = useCallback((event: any) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent
     const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y
     setNearBottom(distanceFromBottom < 200)
+    // FAB hides on scroll down, shows on scroll up (Fix 7)
+    const currentY = contentOffset.y
+    const diff = currentY - lastScrollYRef.current
+    if (diff > 10 && currentY > 100) setFabVisible(false)
+    else if (diff < -10) setFabVisible(true)
+    lastScrollYRef.current = currentY
   }, [])
 
   // ── List Header (now includes city events + nearby places + dynamic hero) ──
   const ListHeader = useMemo(() => (
     <View style={{ gap: 16 }}>
-      {/* Dynamic hero: today's events or welcome message */}
-      {todayEvents.length > 0 ? (
+      {/* Dynamic hero: cascading event fallback (today -> tomorrow -> week) or welcome */}
+      {displayEvents.length > 0 ? (
         <View style={{ gap: 10 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
             <View style={[styles.sectionBar, { backgroundColor: '#2B8A62' }]} />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              {t('events.todayNearby') || 'Tanaan lahella'}
+              {eventSectionTitle}
             </Text>
           </View>
-          {todayEvents.map((event) => {
+          {displayEvents.map((event) => {
             const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
             return (
               <Pressable
@@ -446,7 +479,7 @@ export default function FeedScreen() {
         <View style={{ gap: 12 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
             <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('map.layerPlaces') || 'Paikat lahella'}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
           </View>
           <HorizontalSkeleton colors={colors} width={160} height={120} />
         </View>
@@ -454,7 +487,7 @@ export default function FeedScreen() {
         <View style={{ gap: 12 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
             <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('map.layerPlaces') || 'Paikat lahella'}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
             <Pressable onPress={() => router.push('/map')} hitSlop={8} style={extraStyles.showAllBtn}>
               <Text style={[extraStyles.showAllText, { color: colors.primary }]}>{t('nav.map') || 'Kartta'}</Text>
               <ChevronRight size={14} color={colors.primary} />
@@ -534,7 +567,7 @@ export default function FeedScreen() {
         )}
       </View>
     </View>
-  ), [todayEvents, hasNewPosts, error, handleRefresh, isDark, colors, t, posts.length, loading, cityEvents, nearbyPlaces, extraLoading, getCityEventName, locale, router])
+  ), [displayEvents, eventSectionTitle, hasNewPosts, error, handleRefresh, isDark, colors, t, posts.length, loading, cityEvents, nearbyPlaces, extraLoading, getCityEventName, locale, router, placesSectionTitle])
 
   // ── Empty / Cold Start ──
   const EmptyComponent = useMemo(() => {
@@ -545,10 +578,14 @@ export default function FeedScreen() {
         </View>
       )
     }
+    const areaLabel = userNeighborhood ?? 'Helsinki'
     return (
       <View style={styles.coldStart}>
+        <MapPin size={40} color={colors.primary} style={{ opacity: 0.6, marginBottom: 4 }} />
         <Text style={[styles.coldStartTitle, { color: colors.foreground }]}>{t('feed.noPosts')}</Text>
-        <Text style={[styles.coldStartHint, { color: colors.mutedForeground }]}>{t('feed.noPostsHint')}</Text>
+        <Text style={[styles.coldStartHint, { color: colors.mutedForeground }]}>
+          {t('map.beFirstInArea', { area: areaLabel })}
+        </Text>
         <Pressable
           onPress={() => router.push('/create')}
           style={[styles.coldStartBtn, { backgroundColor: colors.primary }]}
@@ -558,7 +595,7 @@ export default function FeedScreen() {
         </Pressable>
       </View>
     )
-  }, [loading, colors, t, router])
+  }, [loading, colors, t, router, userNeighborhood])
 
   // ── Footer: loading indicator + all loaded ──
   const FooterComponent = useMemo(() => {
@@ -571,16 +608,15 @@ export default function FeedScreen() {
       )
     }
 
-    // All loaded divider
+    // All loaded — clean minimal footer
     if (!hasMore && posts.length > 0) {
       sections.push(
         <View key="all-loaded" style={styles.allLoadedWrap}>
-          <View style={styles.allLoadedRow}>
-            <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
-            <TackBirdLogo size={14} color={`${colors.mutedForeground}50`} />
-            <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
+          <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
+          <View style={styles.allLoadedContent}>
+            <CheckCircle size={14} color={`${colors.mutedForeground}60`} />
+            <Text style={[styles.allLoadedText, { color: `${colors.mutedForeground}80` }]}>Olet ajan tasalla</Text>
           </View>
-          <Text style={[styles.allLoadedText, { color: `${colors.mutedForeground}80` }]}>{t('feed.allLoaded')}</Text>
         </View>
       )
     }
@@ -592,7 +628,7 @@ export default function FeedScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar — no scroll-hide animation */}
-      <View style={[styles.filterWrapper, { backgroundColor: colors.background }]}>
+      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <View style={styles.filterRow}>
           <FilterBar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
         </View>
@@ -630,10 +666,13 @@ export default function FeedScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Floating Action Button */}
-      {!nearBottom && (
+      {/* Floating Action Button — hides on scroll down, shows on scroll up */}
+      {fabVisible && !nearBottom && (
         <Pressable
-          onPress={() => router.push('/(tabs)/create')}
+          onPress={() => {
+            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+            router.push('/(tabs)/create')
+          }}
           style={[styles.fab, { bottom: insets.bottom + 80 }]}
         >
           <Plus size={24} color="#FFFFFF" />
@@ -648,6 +687,9 @@ const styles = StyleSheet.create({
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30,
     paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, gap: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,
   },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   filterRow: { paddingBottom: 0 },
@@ -692,16 +734,16 @@ const styles = StyleSheet.create({
   countBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   countText: { fontSize: 11, fontWeight: '500' },
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
-  coldStartTitle: { fontSize: 18, fontWeight: '700' },
+  coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18 },
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
   coldStartBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginTop: 8,
   },
   coldStartBtnText: { fontSize: 15, fontWeight: '600' },
-  allLoadedWrap: { alignItems: 'center', gap: 8, paddingVertical: 24 },
-  allLoadedRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
-  allLoadedLine: { flex: 1, height: 1 },
+  allLoadedWrap: { alignItems: 'center', gap: 10, paddingVertical: 24 },
+  allLoadedLine: { height: 1, width: '100%' },
+  allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   allLoadedText: { fontSize: 11, fontWeight: '500' },
   fab: {
     position: 'absolute', right: 16,

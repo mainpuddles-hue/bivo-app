@@ -2,6 +2,7 @@ import { memo, useState, useMemo } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
+import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
   HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock, Navigation,
@@ -66,10 +67,15 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
     return t('postCard.distanceKm', { distance: dist < 10 ? dist.toFixed(1) : Math.round(dist).toString() })
   }, [userLocation, post.latitude, post.longitude, t])
 
+  const catBgColor = category ? `${category.color}08` : undefined
+
   return (
     <Pressable
       accessibilityLabel={post.title}
-      onPress={() => router.push(`/post/${post.id}`)}
+      onPress={() => {
+        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+        router.push(`/post/${post.id}`)
+      }}
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.card },
@@ -119,8 +125,8 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
         </View>
       )}
 
-      {/* Content */}
-      <View style={styles.content}>
+      {/* Content — category color background for imageless cards */}
+      <View style={[styles.content, !hasImage && catBgColor ? { backgroundColor: catBgColor } : undefined]}>
         {/* Category row + expiration badge */}
         <View style={styles.categoryExpRow}>
           {category && (
@@ -142,8 +148,12 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
           )}
         </View>
 
-        {/* Title */}
-        <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
+        {/* Title — larger style for imageless cards */}
+        <Text style={[
+          styles.title,
+          { color: colors.foreground },
+          !hasImage && styles.titleLarge,
+        ]} numberOfLines={2}>
           {post.title}
         </Text>
 
@@ -181,23 +191,17 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
           </View>
         )}
 
-        {/* Engagement — hide if both counts are zero */}
-        {(post.like_count > 0 || post.comment_count > 0) && (
-          <View style={styles.engagementRow}>
-            {post.like_count > 0 && (
-              <View style={styles.engagementItem}>
-                <Heart size={12} color="#D94F4F" />
-                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.like_count}</Text>
-              </View>
-            )}
-            {post.comment_count > 0 && (
-              <View style={styles.engagementItem}>
-                <MessageCircle size={12} color={colors.mutedForeground} />
-                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
-              </View>
-            )}
+        {/* Engagement — always visible, zeros dimmed */}
+        <View style={styles.engagementRow}>
+          <View style={[styles.engagementItem, post.like_count === 0 && { opacity: 0.3 }]}>
+            <Heart size={12} color="#D94F4F" />
+            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.like_count}</Text>
           </View>
-        )}
+          <View style={[styles.engagementItem, post.comment_count === 0 && { opacity: 0.3 }]}>
+            <MessageCircle size={12} color={colors.mutedForeground} />
+            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+          </View>
+        </View>
 
         {/* User row */}
         <View style={styles.userRow}>
@@ -248,7 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 10,
     paddingHorizontal: 8, paddingVertical: 3,
   },
-  multiImageText: { fontSize: 10, fontWeight: '600', color: '#FFFFFF' },
+  multiImageText: { fontSize: 10, fontWeight: '600', color: '#FFFFFF', lineHeight: 13 },
   proBadge: {
     position: 'absolute', top: 10, right: 10,
     width: 28, height: 28, borderRadius: 14,
@@ -261,21 +265,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 3,
     paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
   },
-  expirationText: { fontSize: 9, fontWeight: '600' },
-  categoryLabel: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.5, textTransform: 'uppercase' },
-  categorySubtitle: { fontSize: 10, fontFamily: fonts.body },
+  expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7 },
+  categoryLabel: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.5, textTransform: 'uppercase', lineHeight: 13 },
+  categorySubtitle: { fontSize: 10, fontFamily: fonts.body, lineHeight: 13 },
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.16 },
+  titleLarge: { fontSize: 18, fontFamily: fonts.headingSemi, letterSpacing: -0.18, lineHeight: 24 },
   description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  priceText: { fontSize: 11, fontWeight: '600' },
+  priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14.3 },
   distanceRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  distanceText: { fontSize: 10, fontWeight: '600' },
+  distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
-  locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
+  locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium },
+  engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
   avatar: { width: 24, height: 24, borderRadius: 12, borderWidth: 1 },
@@ -285,6 +290,6 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: -1, right: -1,
     width: 8, height: 8, borderRadius: 4, borderWidth: 1,
   },
-  userName: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
-  timeAgo: { fontSize: 11, fontFamily: fonts.body },
+  userName: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
+  timeAgo: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14.3 },
 })
