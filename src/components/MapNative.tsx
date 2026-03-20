@@ -100,7 +100,7 @@ const PLACE_LABEL: Record<string, string> = {
 
 // Sub-categories for 2-level filter
 const POST_SUBCATS = [
-  { key: null, label: 'Kaikki', color: LAYER_COLORS.post },
+  { key: null, label: 'Kaikki tyypit', color: LAYER_COLORS.post },
   { key: 'tarvitsen', label: 'Tarvitsen', color: '#C75B3A' },
   { key: 'tarjoan', label: 'Tarjoan', color: '#7C5CBF' },
   { key: 'ilmaista', label: 'Ilmaista', color: '#3B7DD8' },
@@ -110,7 +110,7 @@ const POST_SUBCATS = [
 ]
 
 const EVENT_SUBCATS = [
-  { key: null, label: 'Kaikki' },
+  { key: null, label: 'Kaikki kategoriat' },
   { key: 'culture', label: 'Kulttuuri' },
   { key: 'music', label: 'Musiikki' },
   { key: 'sport', label: 'Urheilu' },
@@ -122,7 +122,7 @@ const EVENT_SUBCATS = [
 ]
 
 const PLACE_SUBCATS = [
-  { key: null, label: 'Kaikki' },
+  { key: null, label: 'Kaikki paikat' },
   { key: 'restaurant', label: 'Ravintolat' },
   { key: 'cafe', label: 'Kahvilat' },
   { key: 'bar', label: 'Baarit' },
@@ -627,10 +627,12 @@ export default function MapScreen() {
     }
 
     const result: Section[] = []
-    // Always show "today" section when events filter active (even if empty — tells user nothing is on today)
-    const showEvents = activeFilter === 'all' || activeFilter === 'events'
-    if (showEvents && (eventsToday.length > 0 || eventsUpcoming.length > 0)) {
-      result.push({ title: t('events.filterToday'), data: eventsToday.length > 0 ? eventsToday : [{ id: '__empty_today__', kind: 'empty' as any, title: t('map.noEventsToday'), subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }] })
+    // Show "today" section: with events if they exist, or empty placeholder only when events filter is active
+    if (eventsToday.length > 0) {
+      result.push({ title: t('events.filterToday'), data: eventsToday })
+    } else if (activeFilter === 'events' && eventsUpcoming.length > 0) {
+      // Only show "no events today" when user is specifically looking at events
+      result.push({ title: t('events.filterToday'), data: [{ id: '__empty_today__', kind: 'empty' as any, title: t('map.noEventsToday'), subtitle: '', color: '#9CA3AF', latitude: 0, longitude: 0, distance: 0, sourceData: {} as any }] })
     }
     if (eventsUpcoming.length > 0) result.push({ title: t('discover.upcomingEvents'), data: eventsUpcoming })
     if (postItems.length > 0) result.push({ title: t('map.layerPosts'), data: postItems })
@@ -964,11 +966,23 @@ export default function MapScreen() {
           {mapExpanded ? <ChevronUp size={18} color={colors.foreground} /> : <ChevronDown size={18} color={colors.foreground} />}
         </Pressable>
         <Pressable
-          onPress={handleGPSSelect}
+          onPress={async () => {
+            if (userLocation) {
+              mapRef.current?.animateToRegion({ ...userLocation, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 500)
+            } else {
+              try {
+                const { status } = await Location.requestForegroundPermissionsAsync()
+                if (status !== 'granted') return
+                const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+                setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
+                mapRef.current?.animateToRegion({ latitude: loc.coords.latitude, longitude: loc.coords.longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 500)
+              } catch {}
+            }
+          }}
           style={[
             styles.gpsButton,
             {
-              backgroundColor: selectedNeighborhood === '__gps__' ? colors.primary : colors.card,
+              backgroundColor: userLocation ? colors.primary : colors.card,
               shadowColor: '#000',
             },
           ]}
@@ -1163,7 +1177,7 @@ export default function MapScreen() {
             </View>
           }
           ListFooterComponent={
-            hasMoreNearbyEvents(center.latitude, center.longitude) ? (
+            (activeFilter === 'all' || activeFilter === 'events') && hasMoreNearbyEvents(center.latitude, center.longitude) ? (
               <View style={styles.loadMoreFooter}>
                 {loadingMore ? (
                   <ActivityIndicator size="small" color={colors.primary} />
