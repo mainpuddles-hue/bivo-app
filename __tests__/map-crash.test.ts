@@ -28,9 +28,12 @@ function describe(name: string, fn: () => void) {
   fn()
 }
 
-// Read the source file
+// Read source files (main component + data hook)
 const MAP_FILE = path.join(__dirname, '..', 'src', 'components', 'MapNative.tsx')
-const source = fs.readFileSync(MAP_FILE, 'utf-8')
+const HOOK_FILE = path.join(__dirname, '..', 'src', 'components', 'map', 'useMapData.ts')
+const mapSource = fs.readFileSync(MAP_FILE, 'utf-8')
+const hookSource = fs.existsSync(HOOK_FILE) ? fs.readFileSync(HOOK_FILE, 'utf-8') : ''
+const source = mapSource + '\n' + hookSource
 const lines = source.split('\n')
 
 // ══════════════════════════════════════════════════
