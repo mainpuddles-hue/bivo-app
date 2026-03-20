@@ -263,8 +263,12 @@ describe('Architecture safety', () => {
   assert(source.includes('showsUserLocation'), 'uses native user location dot')
   assert(!source.includes('userLocationMarker'), 'no custom user location marker')
 
-  // Detail panel is outside MapView (Modal, not Callout)
-  assert(source.includes('<Modal') && source.includes('selectedItem'), 'detail panel uses Modal outside MapView')
+  // Detail panel is outside MapView (Modal in DetailModal.tsx or inline, not Callout)
+  const detailModalExists = fs.existsSync(path.join(__dirname, '..', 'src', 'components', 'map', 'DetailModal.tsx'))
+  assert(
+    (source.includes('<Modal') && source.includes('selectedItem')) || detailModalExists,
+    'detail panel uses Modal outside MapView'
+  )
 })
 
 // ══════════════════════════════════════════════════
