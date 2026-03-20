@@ -394,8 +394,10 @@ export default function MapScreen() {
     setRefreshing(false)
   }, [fetchGlobalData, fetchPlaces, center])
 
+  const loadingMoreRef = useRef(false)
   const handleLoadMore = useCallback(async () => {
-    if (loadingMore || !hasMoreNearbyEvents(center.latitude, center.longitude)) return
+    if (loadingMoreRef.current || !hasMoreNearbyEvents(center.latitude, center.longitude)) return
+    loadingMoreRef.current = true
     setLoadingMore(true)
     const more = await loadMoreNearbyEvents(center.latitude, center.longitude)
     if (more) {
@@ -407,8 +409,9 @@ export default function MapScreen() {
         return [...more, ...uniqueTm]
       })
     }
+    loadingMoreRef.current = false
     setLoadingMore(false)
-  }, [center, loadingMore])
+  }, [center])
 
   // ── Build list items filtered by radius ──
   const radiusKm = useMemo(() => getRadiusKm(selectedNeighborhood), [selectedNeighborhood])
@@ -520,20 +523,15 @@ export default function MapScreen() {
     // Sub-category filter
     if (subCategory) {
       if (activeFilter === 'posts') {
-        items = items.filter(i => {
-          if (i.kind === 'post') return (i.sourceData as Post).type === subCategory
-          return true
-        })
+        items = items.filter(i => i.kind === 'post' && (i.sourceData as Post).type === subCategory)
       } else if (activeFilter === 'events') {
         items = items.filter(i => {
           if (i.kind === 'city_event') return (i.sourceData as CityEvent).category === subCategory
-          return true
+          // Community events don't have sub-categories — hide them when sub-category is active
+          return false
         })
       } else if (activeFilter === 'places') {
-        items = items.filter(i => {
-          if (i.kind === 'place') return (i.sourceData as LocalPlace).category === subCategory
-          return true
-        })
+        items = items.filter(i => i.kind === 'place' && (i.sourceData as LocalPlace).category === subCategory)
       }
     }
 
@@ -657,7 +655,7 @@ export default function MapScreen() {
   // ── Actions ──
 
   const handleListItemNavigate = useCallback((item: ListItem) => {
-    // Always open detail sheet for consistent behavior
+    if (item.id.startsWith('__empty_')) return
     setSelectedItem(item)
     // Also animate map
     mapRef.current?.animateToRegion({
