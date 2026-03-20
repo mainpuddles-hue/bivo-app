@@ -5,6 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Platform, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
+import { useFonts, BricolageGrotesque_500Medium, BricolageGrotesque_600SemiBold, BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque'
+import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans'
 import { I18nProvider } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
 import { createClient } from '@/lib/supabase/client'
@@ -161,6 +163,17 @@ function RootLayoutInner() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    BricolageGrotesque_500Medium,
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+    InstrumentSans_400Regular,
+    InstrumentSans_500Medium,
+    InstrumentSans_600SemiBold,
+  })
+
+  if (!fontsLoaded) return null
+
   return (
     <I18nProvider>
       <ThemeProvider>
