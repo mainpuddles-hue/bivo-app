@@ -62,7 +62,7 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
         hitSlop={8}
         style={styles.placeDirectionsBtn}
       >
-        <Text style={[styles.placeDirectionsText, { color: colors.primary }]}>Reittiohjeet</Text>
+        <Text style={[styles.placeDirectionsText, { color: colors.accent }]}>Reittiohjeet</Text>
       </Pressable>
     </Pressable>
   )
@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   placeTitle: {
     fontSize: 14,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 21,
     flex: 1,
   },
   showAllPlacesBtn: {
@@ -116,26 +117,30 @@ const styles = StyleSheet.create({
   showAllPlacesText: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
+    lineHeight: 21,
   },
   placeCatBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   placeCatText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 14.3,
   },
   placeDistance: {
     fontSize: 12,
     fontFamily: fonts.body,
+    lineHeight: 15.6,
   },
   placeDirectionsBtn: {
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
   placeDirectionsText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
+    lineHeight: 15.6,
   },
 })

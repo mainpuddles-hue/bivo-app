@@ -271,8 +271,8 @@ export default function MapScreen() {
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                 {t('map.noSearchResults')} '{searchQuery}'
               </Text>
-              <Pressable onPress={() => setSearchQuery('')} style={[styles.emptyActionBtn, { borderColor: colors.primary }]}>
-                <Text style={{ color: colors.primary, fontSize: 14, fontFamily: fonts.bodySemi }}>{t('map.clearSearch')}</Text>
+              <Pressable onPress={() => setSearchQuery('')} style={[styles.emptyActionBtn, { borderColor: colors.accent }]}>
+                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 21 }}>{t('map.clearSearch')}</Text>
               </Pressable>
             </>
           ) : activeFilter !== 'all' ? (
@@ -280,8 +280,8 @@ export default function MapScreen() {
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                 {t('map.noContentInArea')} {displayNeighborhood}
               </Text>
-              <Pressable onPress={() => setActiveFilter('all')} style={[styles.emptyActionBtn, { borderColor: colors.primary }]}>
-                <Text style={{ color: colors.primary, fontSize: 14, fontFamily: fonts.bodySemi }}>{t('map.showAll')}</Text>
+              <Pressable onPress={() => setActiveFilter('all')} style={[styles.emptyActionBtn, { borderColor: colors.accent }]}>
+                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 21 }}>{t('map.showAll')}</Text>
               </Pressable>
             </>
           ) : (
@@ -291,13 +291,13 @@ export default function MapScreen() {
               </Text>
               <Pressable
                 onPress={() => router.push('/(tabs)/create')}
-                style={[styles.emptyCreateBtn, { backgroundColor: colors.primary }]}
+                style={[styles.emptyCreateBtn, { backgroundColor: colors.accent }]}
               >
                 <Plus size={16} color="#FFF" />
                 <Text style={styles.emptyCreateBtnText}>Luo ensimmäinen ilmoitus</Text>
               </Pressable>
               <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
-                <Text style={{ color: colors.mutedForeground, fontSize: 13, fontFamily: fonts.body }}>{t('map.tryAnotherArea')}</Text>
+                <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 15.6 }}>{t('map.tryAnotherArea')}</Text>
               </Pressable>
             </>
           )}
@@ -381,10 +381,10 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingBottom: 10,
+    paddingHorizontal: 14,
+    paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 8,
+    gap: 10,
   },
   topBarIcon: {
     width: 36,
@@ -400,13 +400,15 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
   },
   neighborhoodText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: fonts.headingSemi,
+    letterSpacing: -0.16,
+    lineHeight: 20,
   },
   mapContainer: {
     height: MAP_HEIGHT,
@@ -451,36 +453,40 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headingSemi,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    lineHeight: 16.9,
   },
   sectionCountBadge: {
     minWidth: 24,
     height: 22,
-    borderRadius: 11,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
   sectionCount: {
-    fontSize: 12,
+    fontSize: 10,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 13,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
     fontFamily: fonts.body,
+    lineHeight: 21,
     paddingVertical: 4,
   },
   searchCount: {
     fontSize: 11,
-    fontFamily: fonts.body,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 14.3,
     paddingHorizontal: 16,
     paddingBottom: 4,
   },
@@ -490,12 +496,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: fonts.headingSemi,
+    letterSpacing: -0.16,
+    lineHeight: 20,
   },
   emptyHint: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: fonts.body,
+    lineHeight: 15.6,
     textAlign: 'center',
     paddingHorizontal: 32,
   },
@@ -509,13 +518,14 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     fontFamily: fonts.body,
+    lineHeight: 21,
     textAlign: 'center',
     paddingHorizontal: 24,
   },
   emptyActionBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
     marginTop: 4,
   },
@@ -535,8 +545,9 @@ const styles = StyleSheet.create({
   },
   emptyCreateBtnText: {
     color: '#FFF',
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodySemi,
+    lineHeight: 21,
   },
   mapToggleBtn: {
     position: 'absolute',
@@ -564,8 +575,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   loadMoreText: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
+    lineHeight: 15.6,
   },
   emptyCard: {
     marginHorizontal: 12,
@@ -583,7 +595,8 @@ const styles = StyleSheet.create({
     padding: 16,
     fontStyle: 'italic',
     fontFamily: fonts.body,
-    fontSize: 13,
+    fontSize: 14,
+    lineHeight: 21,
     textAlign: 'center',
   },
 })

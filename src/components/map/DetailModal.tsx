@@ -133,7 +133,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
             const ce = item.sourceData as CityEvent
             return (
               <View style={[styles.detailBadge, { backgroundColor: ce.is_free ? '#2B8A6220' : '#E8A05020' }]}>
-                <Text style={{ fontSize: 13, fontFamily: fonts.bodyMedium, color: ce.is_free ? '#2B8A62' : '#E8A050' }}>
+                <Text style={{ fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14.3, color: ce.is_free ? '#2B8A62' : '#E8A050' }}>
                   {ce.is_free ? t('events.free') : ce.price_info ?? t('events.paid')}
                 </Text>
               </View>
@@ -205,10 +205,10 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           )}
           <Pressable
             onPress={openDirections}
-            style={[styles.detailActionBtn, { backgroundColor: colors.muted }]}
+            style={[styles.detailActionBtn, { backgroundColor: colors.accent }]}
           >
-            <Navigation size={16} color={colors.foreground} />
-            <Text style={[styles.detailActionText, { color: colors.foreground }]}>{t('map.directions')}</Text>
+            <Navigation size={16} color={colors.accentForeground} />
+            <Text style={[styles.detailActionText, { color: colors.accentForeground }]}>{t('map.directions')}</Text>
           </Pressable>
           <Pressable
             onPress={handleShare}
@@ -230,48 +230,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   detailColorBar: {
     width: 4,
     height: 20,
-    borderRadius: 2,
+    borderRadius: 12,
     marginRight: 10,
   },
   detailHeaderTitle: {
     flex: 1,
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 14.3,
   },
   detailImage: {
     width: '100%',
     height: 200,
   },
   detailBody: {
-    padding: 16,
-    gap: 10,
+    padding: 20,
+    gap: 12,
   },
   detailTitle: {
-    fontSize: 20,
-    fontFamily: fonts.heading,
-    lineHeight: 26,
+    fontSize: 22,
+    fontFamily: fonts.headingMedium,
+    letterSpacing: -0.22,
+    lineHeight: 27.5,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   detailLabel: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 20,
+    lineHeight: 15.6,
   },
   detailBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 12,
   },
   detailDesc: {
@@ -283,7 +285,7 @@ const styles = StyleSheet.create({
   detailActions: {
     flexDirection: 'row',
     gap: 10,
-    padding: 16,
+    padding: 20,
     marginTop: 'auto' as any,
   },
   detailActionBtn: {
@@ -301,8 +303,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   detailActionText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodySemi,
+    lineHeight: 21,
     color: '#FFF',
   },
 })
