@@ -14,7 +14,7 @@ import { Image } from 'expo-image'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
 import * as Location from 'expo-location'
 import {
-  ChevronDown, ChevronUp, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft,
+  ChevronDown, ChevronUp, MapPin, Navigation, X, Search, Crosshair, ExternalLink, ArrowLeft, Plus,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -287,10 +287,35 @@ export default function MapScreen() {
         if (!cancelled && data?.naapurusto && NEIGHBORHOOD_CENTERS[data.naapurusto]) {
           setSelectedNeighborhood(data.naapurusto)
         } else if (!cancelled) {
-          setNeighborhoodModalVisible(true)
+          // No neighborhood set — try GPS first before showing modal
+          try {
+            const { status } = await Location.requestForegroundPermissionsAsync()
+            if (cancelled) return
+            if (status === 'granted') {
+              const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+              if (cancelled) return
+              setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
+              setSelectedNeighborhood('__gps__')
+              return  // Don't show modal
+            }
+          } catch {}
+          // GPS failed/denied — show modal
+          if (!cancelled) setNeighborhoodModalVisible(true)
         }
       } else if (!cancelled) {
-        setNeighborhoodModalVisible(true)
+        // Not logged in — try GPS first before showing modal
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync()
+          if (cancelled) return
+          if (status === 'granted') {
+            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+            if (cancelled) return
+            setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
+            setSelectedNeighborhood('__gps__')
+            return
+          }
+        } catch {}
+        if (!cancelled) setNeighborhoodModalVisible(true)
       }
     })()
     return () => { cancelled = true }
@@ -742,6 +767,18 @@ export default function MapScreen() {
     </View>
   ), [colors])
 
+  // Helper: open directions in native maps app
+  const openDirections = useCallback((lat: number, lng: number) => {
+    const url = Platform.OS === 'ios'
+      ? `maps:0,0?q=${lat},${lng}`
+      : Platform.OS === 'android'
+      ? `geo:${lat},${lng}?q=${lat},${lng}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+    Linking.openURL(url).catch(() => {
+      Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(() => {})
+    })
+  }, [])
+
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     // Empty placeholder row
     if (item.id.startsWith('__empty_')) {
@@ -752,67 +789,61 @@ export default function MapScreen() {
       )
     }
 
-    // Extract image URL from sourceData
-    const imageUrl = item.kind === 'city_event' ? (item.sourceData as CityEvent).image_url
-      : item.kind === 'place' ? (item.sourceData as LocalPlace).image_url
-      : item.kind === 'post' ? (item.sourceData as Post).image_url
-      : null
-
-    // Extract extra info per type
     const isEvent = item.kind === 'community_event' || item.kind === 'city_event'
     const isCityEvent = item.kind === 'city_event'
     const isCommunityEvent = item.kind === 'community_event'
     const isPlace = item.kind === 'place'
     const isPost = item.kind === 'post'
 
-    const isFree = isCityEvent && (item.sourceData as CityEvent).is_free
-    const price = isCityEvent ? (item.sourceData as CityEvent).price_info : null
-    const isTicketmaster = isCityEvent && (item.sourceData as CityEvent).source === 'ticketmaster'
-    const isLinkedEvents = isCityEvent && (item.sourceData as CityEvent).source === 'linkedevents'
-    const userName = isPost ? ((item.sourceData as any).user?.name ?? null) : null
-    const postType = isPost ? (item.sourceData as Post).type : null
-    const cat = isPost && postType ? CATEGORIES[postType as PostType] : null
-    const placeCategory = isPlace ? PLACE_LABEL[(item.sourceData as LocalPlace).category] : null
+    // ── EVENT CARD (city_event + community_event): Full-width image, date overlay ──
+    if (isEvent) {
+      const imageUrl = isCityEvent
+        ? (item.sourceData as CityEvent).image_url
+        : null
+      const isFree = isCityEvent && (item.sourceData as CityEvent).is_free
+      const price = isCityEvent ? (item.sourceData as CityEvent).price_info : null
+      const isTicketmaster = isCityEvent && (item.sourceData as CityEvent).source === 'ticketmaster'
+      const isLinkedEvents = isCityEvent && (item.sourceData as CityEvent).source === 'linkedevents'
+      const dateStr = item.sortDate
+        ? new Date(item.sortDate).toLocaleDateString(
+            locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB',
+            { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }
+          )
+        : null
 
-    return (
-      <Pressable
-        style={({ pressed }) => [cs.card, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
-        onPress={() => handleListItemNavigate(item)}
-      >
-        {/* Color accent bar */}
-        <View style={[cs.accentBar, { backgroundColor: item.color }]} />
-
-        <View style={cs.cardBody}>
-          {/* Image or avatar */}
+      return (
+        <Pressable
+          style={({ pressed }) => [cs.eventCard, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+          onPress={() => handleListItemNavigate(item)}
+        >
+          {/* Full-width image with date overlay */}
           {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={cs.cardImage} contentFit="cover" />
+            <View style={cs.eventImageWrapper}>
+              <Image source={{ uri: imageUrl }} style={cs.eventImage} contentFit="cover" />
+              {dateStr && (
+                <View style={cs.eventDateOverlay}>
+                  <Text style={cs.eventDateOverlayText}>{dateStr}</Text>
+                </View>
+              )}
+            </View>
           ) : (
-            <View style={[cs.cardImagePlaceholder, { backgroundColor: `${item.color}15` }]}>
-              <MapPin size={18} color={item.color} />
+            <View style={[cs.eventImagePlaceholder, { backgroundColor: `${item.color}12` }]}>
+              <MapPin size={24} color={item.color} />
+              {dateStr && (
+                <View style={cs.eventDateOverlay}>
+                  <Text style={cs.eventDateOverlayText}>{dateStr}</Text>
+                </View>
+              )}
             </View>
           )}
 
-          {/* Content */}
-          <View style={cs.cardContent}>
-            {/* Category / type badge */}
+          {/* Title + subtitle + badges */}
+          <View style={cs.eventContent}>
+            <Text style={[cs.title, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
+            {item.subtitle ? (
+              <Text style={[cs.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
+            ) : null}
             <View style={cs.cardBadgeRow}>
-              {cat && (
-                <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
-                  <Text style={[cs.badgeText, { color: item.color }]}>{t(cat.label)}</Text>
-                </View>
-              )}
-              {isEvent && item.sortDate && (
-                <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
-                  <Text style={[cs.badgeText, { color: item.color }]}>
-                    {new Date(item.sortDate).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                </View>
-              )}
-              {placeCategory && (
-                <View style={[cs.badge, { backgroundColor: `${item.color}18` }]}>
-                  <Text style={[cs.badgeText, { color: item.color }]}>{placeCategory}</Text>
-                </View>
-              )}
               {isLinkedEvents && (
                 <View style={[cs.badge, { backgroundColor: '#8E44AD18' }]}>
                   <Text style={[cs.badgeText, { color: '#8E44AD' }]}>Helsinki</Text>
@@ -833,42 +864,135 @@ export default function MapScreen() {
                   <Text style={[cs.badgeText, { color: '#2B8A62' }]}>{t('events.free')}</Text>
                 </View>
               )}
-            </View>
-
-            {/* Title */}
-            <Text style={[cs.title, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
-
-            {/* Meta row */}
-            <View style={cs.metaRow}>
-              {item.subtitle ? (
-                <Text style={[cs.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
-              ) : null}
-            </View>
-
-            {/* Bottom row: distance + user */}
-            <View style={cs.bottomRow}>
+              {price && !isFree && (
+                <View style={[cs.badge, { backgroundColor: '#E8A05018' }]}>
+                  <Text style={[cs.badgeText, { color: '#E8A050' }]}>{price}</Text>
+                </View>
+              )}
               <Text style={[cs.distance, { color: colors.mutedForeground }]}>
                 {formatDistance(item.distance)}
               </Text>
-              {userName && (
-                <Text style={[cs.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {userName}
-                </Text>
-              )}
-              {isPost && item.sortDate && (
-                <Text style={[cs.distance, { color: colors.mutedForeground }]}>
-                  {formatTimeAgo(item.sortDate, t, locale)}
-                </Text>
-              )}
-              {price && !isFree && (
-                <Text style={[cs.price, { color: colors.foreground }]}>{price}</Text>
-              )}
             </View>
           </View>
-        </View>
-      </Pressable>
-    )
-  }, [colors, handleListItemNavigate, locale, t])
+        </Pressable>
+      )
+    }
+
+    // ── PLACE CARD: Compact single row, no image ──
+    if (isPlace) {
+      const placeCategory = PLACE_LABEL[(item.sourceData as LocalPlace).category] ?? ''
+      return (
+        <Pressable
+          style={({ pressed }) => [cs.placeRow, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+          onPress={() => handleListItemNavigate(item)}
+        >
+          <View style={[cs.placeDot, { backgroundColor: item.color }]} />
+          <Text style={[cs.placeTitle, { color: colors.foreground }]} numberOfLines={1}>{item.title}</Text>
+          {placeCategory ? (
+            <View style={[cs.placeCatBadge, { backgroundColor: `${item.color}15` }]}>
+              <Text style={[cs.placeCatText, { color: item.color }]}>{placeCategory}</Text>
+            </View>
+          ) : null}
+          <Text style={[cs.placeDistance, { color: colors.mutedForeground }]}>
+            {formatDistance(item.distance)}
+          </Text>
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation?.()
+              openDirections(item.latitude, item.longitude)
+            }}
+            hitSlop={8}
+            style={cs.placeDirectionsBtn}
+          >
+            <Text style={[cs.placeDirectionsText, { color: colors.primary }]}>Reittiohjeet</Text>
+          </Pressable>
+        </Pressable>
+      )
+    }
+
+    // ── POST CARD: Category color bar on left edge, user avatar ──
+    if (isPost) {
+      const postData = item.sourceData as Post
+      const imageUrl = postData.image_url
+      const userName = (postData as any).user?.name ?? null
+      const avatarUrl = (postData as any).user?.avatar_url ?? null
+      const postType = postData.type
+      const cat = postType ? CATEGORIES[postType as PostType] : null
+      const catColor = cat ? cat.color : item.color
+
+      return (
+        <Pressable
+          style={({ pressed }) => [cs.postCard, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+          onPress={() => handleListItemNavigate(item)}
+        >
+          {/* Category color bar on left edge */}
+          <View style={[cs.postColorBar, { backgroundColor: catColor }]} />
+
+          <View style={cs.postBody}>
+            {/* Image or placeholder */}
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={cs.cardImage} contentFit="cover" />
+            ) : (
+              <View style={[cs.cardImagePlaceholder, { backgroundColor: `${item.color}15` }]}>
+                <MapPin size={18} color={item.color} />
+              </View>
+            )}
+
+            {/* Content */}
+            <View style={cs.cardContent}>
+              {/* Title row with avatar */}
+              <View style={cs.postTitleRow}>
+                {avatarUrl ? (
+                  <Image source={{ uri: avatarUrl }} style={cs.postAvatar} contentFit="cover" />
+                ) : (
+                  <View style={[cs.postAvatarPlaceholder, { backgroundColor: `${item.color}20` }]}>
+                    <Text style={[cs.postAvatarInitial, { color: item.color }]}>
+                      {(userName ?? '?')[0].toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                <Text style={[cs.title, { color: colors.foreground, flex: 1 }]} numberOfLines={2}>{item.title}</Text>
+              </View>
+
+              {/* Category / type badge */}
+              <View style={cs.cardBadgeRow}>
+                {cat && (
+                  <View style={[cs.badge, { backgroundColor: `${catColor}18` }]}>
+                    <Text style={[cs.badgeText, { color: catColor }]}>{t(cat.label)}</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Meta row */}
+              {item.subtitle ? (
+                <Text style={[cs.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
+              ) : null}
+
+              {/* Bottom row: distance + user + time */}
+              <View style={cs.bottomRow}>
+                <Text style={[cs.distance, { color: colors.mutedForeground }]}>
+                  {formatDistance(item.distance)}
+                </Text>
+                {userName && (
+                  <Text style={[cs.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
+                    {userName}
+                  </Text>
+                )}
+                {item.sortDate && (
+                  <Text style={[cs.distance, { color: colors.mutedForeground }]}>
+                    {formatTimeAgo(item.sortDate, t, locale)}
+                  </Text>
+                )}
+              </View>
+            </View>
+          </View>
+        </Pressable>
+      )
+    }
+
+    // Fallback (shouldn't happen)
+    return null
+  }, [colors, handleListItemNavigate, locale, t, openDirections])
 
   const keyExtractor = useCallback((item: ListItem) => item.id, [])
 
@@ -989,128 +1113,119 @@ export default function MapScreen() {
         >
           <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? '#FFF' : colors.foreground} />
         </Pressable>
-      </View>
 
-      {/* ── Map info bar ── */}
-      {renderedMarkers.length > 0 && filteredItems.length > renderedMarkers.length && (
-        <View style={[styles.mapInfoBar, { backgroundColor: colors.muted }]}>
-          <Text style={[styles.mapInfoText, { color: colors.mutedForeground }]}>
-            {renderedMarkers.length} / {filteredItems.length} lähintä kartalla
-          </Text>
-        </View>
-      )}
-
-      {/* ── Filter Pills (2-level) ── */}
-      <View style={[styles.filterRow, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        {neighborhoodLoading && (
-          <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
-        )}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
-          {(activeFilter === 'posts' || activeFilter === 'events' || activeFilter === 'places') ? (
-            <>
-              {/* Back to main filters */}
-              <Pressable
-                style={[styles.filterPill, {
-                  backgroundColor: activeFilter === 'posts' ? LAYER_COLORS.post : activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place,
-                  borderColor: 'transparent',
-                }]}
-                onPress={() => { setActiveFilter('all'); setSubCategory(null); setTimeFilter('all') }}
-              >
-                <ArrowLeft size={14} color="#FFF" />
-                <Text style={[styles.filterPillText, { color: '#FFF' }]}>
-                  {activeFilter === 'posts' ? t('map.layerPosts') : activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
-                </Text>
-              </Pressable>
-
-              {/* Time filters (events only) */}
-              {activeFilter === 'events' && TIME_FILTERS.map(tf => (
-                <Pressable
-                  key={tf.key}
-                  style={[
-                    styles.filterPill,
-                    { borderColor: timeFilter === tf.key ? LAYER_COLORS.event : colors.border },
-                    timeFilter === tf.key && { backgroundColor: LAYER_COLORS.event },
-                  ]}
-                  onPress={() => setTimeFilter(prev => prev === tf.key ? 'all' : tf.key)}
-                >
-                  <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? '#FFF' : colors.foreground }]}>
-                    {tf.label}
-                  </Text>
-                </Pressable>
-              ))}
-
-              {/* Sub-category pills — post categories use their own colors */}
-              {activeFilter === 'posts' ? (
-                POST_SUBCATS.map(sc => {
-                  const isActive = subCategory === sc.key
-                  const count = sc.key ? (subCounts.get(`post:${sc.key}`) ?? 0) : counts.posts
-                  return (
-                    <Pressable
-                      key={sc.key ?? '__all__'}
-                      style={[
-                        styles.filterPill,
-                        { borderColor: isActive ? sc.color : colors.border },
-                        isActive && { backgroundColor: sc.color },
-                      ]}
-                      onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
-                    >
-                      <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                        {sc.label} ({count})
-                      </Text>
-                    </Pressable>
-                  )
-                })
-              ) : (
-                (activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => {
-                  const layerColor = activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place
-                  const isActive = subCategory === sc.key
-                  const prefix = activeFilter === 'events' ? 'event' : 'place'
-                  const count = sc.key ? (subCounts.get(`${prefix}:${sc.key}`) ?? 0) : (activeFilter === 'events' ? counts.events : counts.places)
-                  return (
-                    <Pressable
-                      key={sc.key ?? '__all__'}
-                      style={[
-                        styles.filterPill,
-                        { borderColor: isActive ? layerColor : colors.border },
-                        isActive && { backgroundColor: layerColor },
-                      ]}
-                      onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
-                    >
-                      <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                        {sc.label} ({count})
-                      </Text>
-                    </Pressable>
-                  )
-                })
-              )}
-            </>
-          ) : (
-            /* Main layer filters */
-            ([
-              { key: 'all' as FilterKey, label: t('events.filterAll'), color: colors.primary },
-              { key: 'posts' as FilterKey, label: t('map.layerPosts'), color: LAYER_COLORS.post },
-              { key: 'events' as FilterKey, label: t('map.layerEvents'), color: LAYER_COLORS.event },
-              { key: 'places' as FilterKey, label: t('map.layerPlaces'), color: LAYER_COLORS.place },
-            ]).map(f => {
-              const isActive = activeFilter === f.key
-              return (
-                <Pressable
-                  key={f.key}
-                  style={[
-                    styles.filterPill,
-                    { borderColor: isActive ? f.color : colors.border },
-                    isActive && { backgroundColor: f.color },
-                  ]}
-                  onPress={() => { setActiveFilter(f.key); setSubCategory(null); setTimeFilter('all') }}
-                >
-                  <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
-                    {f.label} ({counts[f.key]})
-                  </Text>
-                </Pressable>
-              )
-            })
+        {/* ── Filter Pills (2-level) — overlaid on bottom of map ── */}
+        <View style={[styles.filterOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.85)' }]}>
+          {neighborhoodLoading && (
+            <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
           )}
-        </ScrollView>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
+            {(activeFilter === 'posts' || activeFilter === 'events' || activeFilter === 'places') ? (
+              <>
+                {/* Back to main filters */}
+                <Pressable
+                  style={[styles.filterPill, {
+                    backgroundColor: activeFilter === 'posts' ? LAYER_COLORS.post : activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place,
+                    borderColor: 'transparent',
+                  }]}
+                  onPress={() => { setActiveFilter('all'); setSubCategory(null); setTimeFilter('all') }}
+                >
+                  <ArrowLeft size={14} color="#FFF" />
+                  <Text style={[styles.filterPillText, { color: '#FFF' }]}>
+                    {activeFilter === 'posts' ? t('map.layerPosts') : activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
+                  </Text>
+                </Pressable>
+
+                {/* Time filters (events only) */}
+                {activeFilter === 'events' && TIME_FILTERS.map(tf => (
+                  <Pressable
+                    key={tf.key}
+                    style={[
+                      styles.filterPill,
+                      { borderColor: timeFilter === tf.key ? LAYER_COLORS.event : colors.border },
+                      timeFilter === tf.key && { backgroundColor: LAYER_COLORS.event },
+                    ]}
+                    onPress={() => setTimeFilter(prev => prev === tf.key ? 'all' : tf.key)}
+                  >
+                    <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? '#FFF' : colors.foreground }]}>
+                      {tf.label}
+                    </Text>
+                  </Pressable>
+                ))}
+
+                {/* Sub-category pills — post categories use their own colors */}
+                {activeFilter === 'posts' ? (
+                  POST_SUBCATS.map(sc => {
+                    const isActive = subCategory === sc.key
+                    const count = sc.key ? (subCounts.get(`post:${sc.key}`) ?? 0) : counts.posts
+                    return (
+                      <Pressable
+                        key={sc.key ?? '__all__'}
+                        style={[
+                          styles.filterPill,
+                          { borderColor: isActive ? sc.color : colors.border },
+                          isActive && { backgroundColor: sc.color },
+                        ]}
+                        onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
+                      >
+                        <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                          {sc.label} ({count})
+                        </Text>
+                      </Pressable>
+                    )
+                  })
+                ) : (
+                  (activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => {
+                    const layerColor = activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place
+                    const isActive = subCategory === sc.key
+                    const prefix = activeFilter === 'events' ? 'event' : 'place'
+                    const count = sc.key ? (subCounts.get(`${prefix}:${sc.key}`) ?? 0) : (activeFilter === 'events' ? counts.events : counts.places)
+                    return (
+                      <Pressable
+                        key={sc.key ?? '__all__'}
+                        style={[
+                          styles.filterPill,
+                          { borderColor: isActive ? layerColor : colors.border },
+                          isActive && { backgroundColor: layerColor },
+                        ]}
+                        onPress={() => setSubCategory(prev => prev === sc.key ? null : sc.key)}
+                      >
+                        <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                          {sc.label} ({count})
+                        </Text>
+                      </Pressable>
+                    )
+                  })
+                )}
+              </>
+            ) : (
+              /* Main layer filters — add chevron hint for drillable categories */
+              ([
+                { key: 'all' as FilterKey, label: t('events.filterAll'), color: colors.primary, hasSubFilter: false },
+                { key: 'posts' as FilterKey, label: t('map.layerPosts'), color: LAYER_COLORS.post, hasSubFilter: true },
+                { key: 'events' as FilterKey, label: t('map.layerEvents'), color: LAYER_COLORS.event, hasSubFilter: true },
+                { key: 'places' as FilterKey, label: t('map.layerPlaces'), color: LAYER_COLORS.place, hasSubFilter: true },
+              ]).map(f => {
+                const isActive = activeFilter === f.key
+                return (
+                  <Pressable
+                    key={f.key}
+                    style={[
+                      styles.filterPill,
+                      { borderColor: isActive ? f.color : colors.border },
+                      isActive && { backgroundColor: f.color },
+                    ]}
+                    onPress={() => { setActiveFilter(f.key); setSubCategory(null); setTimeFilter('all') }}
+                  >
+                    <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                      {f.label} ({counts[f.key]}){f.hasSubFilter ? ' \u25B8' : ''}
+                    </Text>
+                  </Pressable>
+                )
+              })
+            )}
+          </ScrollView>
+        </View>
       </View>
 
       {/* ── Section List ── */}
@@ -1147,9 +1262,16 @@ export default function MapScreen() {
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
                 {t('map.noContentInArea')} {displayNeighborhood}
               </Text>
-              <Text style={[styles.emptyHintText, { color: colors.mutedForeground }]}>
-                {t('map.tryAnotherArea')}
-              </Text>
+              <Pressable
+                onPress={() => router.push('/(tabs)/create')}
+                style={[styles.emptyCreateBtn, { backgroundColor: colors.primary }]}
+              >
+                <Plus size={16} color="#FFF" />
+                <Text style={styles.emptyCreateBtnText}>Luo ensimmäinen ilmoitus</Text>
+              </Pressable>
+              <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
+                <Text style={{ color: colors.mutedForeground, fontSize: 13 }}>{t('map.tryAnotherArea')}</Text>
+              </Pressable>
             </>
           )}
         </View>
@@ -1536,7 +1658,7 @@ const styles = StyleSheet.create({
   },
   gpsButton: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 8,
     right: 10,
     width: 40,
     height: 40,
@@ -1547,15 +1669,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
+    zIndex: 11,
   },
 
-  // ── Filter Pills ──
-  filterRow: {
+  // ── Filter Pills (overlay on map) ──
+  filterOverlay: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    right: 56,
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    zIndex: 10,
   },
   filterScrollContent: {
     flexDirection: 'row',
@@ -1767,13 +1895,19 @@ const styles = StyleSheet.create({
   neighborhoodRowDist: {
     fontSize: 12,
   },
-  mapInfoBar: {
-    paddingVertical: 4,
-    paddingHorizontal: 16,
+  emptyCreateBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 8,
   },
-  mapInfoText: {
-    fontSize: 11,
+  emptyCreateBtnText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
   mapToggleBtn: {
     position: 'absolute',
@@ -1808,21 +1942,13 @@ const styles = StyleSheet.create({
 
 // ── Card styles for list items ──
 const cs = StyleSheet.create({
+  // ── Shared ──
   card: {
     marginHorizontal: 12,
     marginVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
-  },
-  accentBar: {
-    height: 3,
-    width: '100%',
-  },
-  cardBody: {
-    flexDirection: 'row',
-    padding: 10,
-    gap: 10,
   },
   cardImage: {
     width: 64,
@@ -1844,6 +1970,7 @@ const cs = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 4,
+    alignItems: 'center',
   },
   badge: {
     paddingHorizontal: 7,
@@ -1858,10 +1985,6 @@ const cs = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 19,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   meta: {
     fontSize: 12,
@@ -1881,14 +2004,140 @@ const cs = StyleSheet.create({
     fontSize: 11,
     flex: 1,
   },
-  price: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
   emptyText: {
     padding: 16,
     fontStyle: 'italic',
     fontSize: 13,
     textAlign: 'center',
+  },
+
+  // ── EVENT CARD: Full-width image, date overlay ──
+  eventCard: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  eventImageWrapper: {
+    width: '100%',
+    height: 140,
+    position: 'relative',
+  },
+  eventImage: {
+    width: '100%',
+    height: 140,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  eventImagePlaceholder: {
+    width: '100%',
+    height: 140,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  eventDateOverlay: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  eventDateOverlayText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  eventContent: {
+    padding: 10,
+    gap: 4,
+  },
+
+  // ── PLACE CARD: Compact single row ──
+  placeRow: {
+    marginHorizontal: 12,
+    marginVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    height: 48,
+    gap: 8,
+  },
+  placeDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  placeTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+  },
+  placeCatBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  placeCatText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  placeDistance: {
+    fontSize: 11,
+  },
+  placeDirectionsBtn: {
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+  },
+  placeDirectionsText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // ── POST CARD: Color bar left edge, user avatar ──
+  postCard: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+    flexDirection: 'row',
+  },
+  postColorBar: {
+    width: 4,
+  },
+  postBody: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 10,
+    gap: 10,
+  },
+  postTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  postAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+  },
+  postAvatarPlaceholder: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postAvatarInitial: {
+    fontSize: 12,
+    fontWeight: '700',
   },
 })
