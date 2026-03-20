@@ -1,11 +1,11 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking, TextInput } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
-import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, Globe, CheckCircle, X, Search } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, ChevronDown, Globe, CheckCircle, X, Search } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -162,10 +162,10 @@ export default function FeedScreen() {
   const [extraLoading, setExtraLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [nearBottom, setNearBottom] = useState(false)
-  const [fabVisible, setFabVisible] = useState(true)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [showInlineSearch, setShowInlineSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const hasMountedRef = useRef(false)
   const lastScrollYRef = useRef(0)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
@@ -325,6 +325,17 @@ export default function FeedScreen() {
     }
   }, [supabase])
 
+  // Fix 5: Auto-refresh feed when returning from another screen (e.g. create)
+  useFocusEffect(useCallback(() => {
+    if (hasMountedRef.current) {
+      // Screen regained focus — refresh posts silently
+      offsetRef.current = 0
+      fetchPosts(true)
+    } else {
+      hasMountedRef.current = true
+    }
+  }, [fetchPosts]))
+
   const handleRefresh = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
     setRefreshing(true)
@@ -372,7 +383,9 @@ export default function FeedScreen() {
       <View>
         {showLabel && currentGroup ? (
           <View style={styles.dateGroupLabel}>
+            <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
             <Text style={[styles.dateGroupText, { color: colors.mutedForeground }]}>{currentGroup}</Text>
+            <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
           </View>
         ) : null}
         <PostCard post={item} userLocation={userLocation} />
@@ -399,17 +412,13 @@ export default function FeedScreen() {
     return 'Paikat Helsingissä'
   }, [userLocation, userNeighborhood])
 
-  // ── Scroll handler for FAB near-bottom detection + scroll-direction FAB hide ──
+  // ── Scroll handler for near-bottom detection ──
+  // Fix 6: FAB always visible — removed scroll-direction hide logic
   const handleScroll = useCallback((event: any) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent
     const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y
     setNearBottom(distanceFromBottom < 200)
-    // FAB hides on scroll down, shows on scroll up (Fix 7)
-    const currentY = contentOffset.y
-    const diff = currentY - lastScrollYRef.current
-    if (diff > 10 && currentY > 100) setFabVisible(false)
-    else if (diff < -10) setFabVisible(true)
-    lastScrollYRef.current = currentY
+    lastScrollYRef.current = contentOffset.y
   }, [])
 
   // ── List Header (now includes city events + nearby places + dynamic hero) ──
@@ -529,6 +538,10 @@ export default function FeedScreen() {
                       </View>
                     )}
                   </View>
+                  {/* Fix 4: Tappable hint chevron */}
+                  <View style={extraStyles.eventChevron}>
+                    <ChevronRight size={12} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
+                  </View>
                 </Pressable>
               )
             })}
@@ -575,6 +588,10 @@ export default function FeedScreen() {
                   </View>
                   <Text style={[extraStyles.placeCompactName, { color: colors.foreground }]} numberOfLines={2}>
                     {place.name}
+                  </Text>
+                  {/* Fix 7: Category label below place name */}
+                  <Text style={[extraStyles.placeCategoryLabel, { color: colors.mutedForeground }]} numberOfLines={1}>
+                    {catLabel}
                   </Text>
                 </Pressable>
               )
@@ -682,30 +699,42 @@ export default function FeedScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar — no scroll-hide animation */}
       <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        {/* Fix 1: Neighborhood context */}
-        <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
-          {userLocation ? 'Lähellä sinua' : userNeighborhood ? `📍 ${userNeighborhood}` : 'Helsinki'}
-        </Text>
+        {/* Fix 2 + Fix 3: Tappable city context — navigates to map */}
+        <Pressable onPress={() => router.push('/map')} style={styles.neighborhoodBtn} hitSlop={4}>
+          <MapPin size={12} color={colors.mutedForeground} />
+          <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
+            {userNeighborhood ? `Helsinki · ${userNeighborhood}` : 'Helsinki'}
+          </Text>
+          <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
+        </Pressable>
         {/* Fix 9: Inline search bar */}
         {showInlineSearch && (
-          <View style={[styles.inlineSearchRow, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}>
-            <Search size={16} color={colors.mutedForeground} />
-            <TextInput
-              ref={searchInputRef}
-              style={[styles.inlineSearchInput, { color: colors.foreground }]}
-              placeholder={t('common.search') || 'Hae...'}
-              placeholderTextColor={colors.mutedForeground}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              returnKeyType="search"
-              autoCorrect={false}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-                <X size={16} color={colors.mutedForeground} />
-              </Pressable>
+          <>
+            <View style={[styles.inlineSearchRow, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}>
+              <Search size={16} color={colors.mutedForeground} />
+              <TextInput
+                ref={searchInputRef}
+                style={[styles.inlineSearchInput, { color: colors.foreground }]}
+                placeholder={t('common.search') || 'Hae...'}
+                placeholderTextColor={colors.mutedForeground}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+                autoCorrect={false}
+              />
+              {searchQuery.length > 0 && (
+                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                  <X size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </View>
+            {/* Fix 1 + Fix 9: Search result count */}
+            {searchQuery.trim().length > 0 && (
+              <Text style={[styles.searchResultCount, { color: colors.mutedForeground }]}>
+                {filteredPosts.length} tulosta
+              </Text>
             )}
-          </View>
+          </>
         )}
         <View style={styles.filterRow}>
           <FilterBar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
@@ -744,8 +773,8 @@ export default function FeedScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Floating Action Button — hides on scroll down, shows on scroll up */}
-      {fabVisible && !nearBottom && (
+      {/* Fix 6: Floating Action Button — always visible */}
+      {!nearBottom && (
         <Pressable
           onPress={() => {
             try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -769,15 +798,18 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,
   },
-  neighborhoodText: { fontSize: 12, fontFamily: fonts.body, paddingVertical: 2 },
+  neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 2, alignSelf: 'flex-start' },
+  neighborhoodText: { fontSize: 12, fontFamily: fonts.body },
   inlineSearchRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     borderRadius: 10, borderWidth: 1,
     paddingHorizontal: 12, height: 36,
   },
   inlineSearchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, paddingVertical: 0 },
-  dateGroupLabel: { paddingTop: 6, paddingBottom: 8 },
-  dateGroupText: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.2 },
+  searchResultCount: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14.3, paddingTop: 2 },
+  dateGroupLabel: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, paddingBottom: 10 },
+  dateGroupLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3 },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   filterRow: { paddingBottom: 0 },
   followingBtn: {
@@ -870,6 +902,8 @@ const extraStyles = StyleSheet.create({
     alignSelf: 'flex-start', marginTop: 2,
   },
   freeText: { fontSize: 10, fontWeight: '600' },
+  // Fix 4: Chevron hint for tappable event cards
+  eventChevron: { position: 'absolute', bottom: 6, right: 6 },
 
   // ── Nearby Place Card (Fix 4: compact circles with name below) ──
   placeCompact: {
@@ -881,4 +915,6 @@ const extraStyles = StyleSheet.create({
   },
   placeCircleText: { fontSize: 20, fontWeight: '700' },
   placeCompactName: { fontSize: 11, fontFamily: fonts.body, textAlign: 'center', lineHeight: 14 },
+  // Fix 7: Category label below place name
+  placeCategoryLabel: { fontSize: 9, fontFamily: fonts.body, textAlign: 'center', lineHeight: 12 },
 })

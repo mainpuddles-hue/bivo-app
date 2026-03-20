@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
-  HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock, Navigation,
+  HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -182,7 +182,7 @@ export const PostCard = memo(function PostCard({ post, userLocation }: PostCardP
             )}
             {distanceText && (
               <View style={styles.distanceRow}>
-                <Navigation size={10} color={colors.primary} />
+                <MapPin size={11} color={colors.primary} />
                 <Text style={[styles.distanceText, { color: colors.primary }]}>{distanceText}</Text>
               </View>
             )}
