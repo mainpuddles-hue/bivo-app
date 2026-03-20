@@ -165,7 +165,6 @@ export default function FeedScreen() {
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [showInlineSearch, setShowInlineSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const hasMountedRef = useRef(false)
   const lastScrollYRef = useRef(0)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
@@ -326,15 +325,15 @@ export default function FeedScreen() {
   }, [supabase])
 
   // Fix 5: Auto-refresh feed when returning from another screen (e.g. create)
+  // Empty deps to prevent infinite loop — fetchPosts is stable enough via ref
+  const focusCountRef = useRef(0)
   useFocusEffect(useCallback(() => {
-    if (hasMountedRef.current) {
-      // Screen regained focus — refresh posts silently
+    focusCountRef.current++
+    if (focusCountRef.current > 1) {
       offsetRef.current = 0
       fetchPosts(true)
-    } else {
-      hasMountedRef.current = true
     }
-  }, [fetchPosts]))
+  }, []))
 
   const handleRefresh = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
