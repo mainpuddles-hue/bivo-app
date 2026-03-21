@@ -168,6 +168,7 @@ export default function FeedScreen() {
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastFetchLocationRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
   // Fetch current user ID for like functionality
   useEffect(() => {
@@ -230,16 +231,31 @@ export default function FeedScreen() {
 
   // Fetch city events and nearby places
   const fetchExtraContent = useCallback(async () => {
-    setExtraLoading(true)
     const lat = userLocation?.latitude ?? 60.1699
     const lng = userLocation?.longitude ?? 24.9384
-    const [helsinkiEvents, placesData] = await Promise.all([
-      fetchHelsinkiEvents(),
-      fetchHelsinkiPlaces(lat, lng, 2000),
-    ])
-    setCityEvents(helsinkiEvents.slice(0, 20))
-    setNearbyPlaces(placesData.slice(0, 20))
-    setExtraLoading(false)
+
+    // Skip if location hasn't moved significantly (>500m)
+    if (lastFetchLocationRef.current) {
+      const dlat = lat - lastFetchLocationRef.current.latitude
+      const dlng = lng - lastFetchLocationRef.current.longitude
+      const dist = Math.sqrt(dlat * dlat + dlng * dlng) * 111000 // rough meters
+      if (dist < 500) return
+    }
+
+    setExtraLoading(true)
+    try {
+      const [helsinkiEvents, placesData] = await Promise.all([
+        fetchHelsinkiEvents().catch(() => []),
+        fetchHelsinkiPlaces(lat, lng, 2000).catch(() => []),
+      ])
+      setCityEvents(helsinkiEvents.slice(0, 20))
+      setNearbyPlaces(placesData.slice(0, 20))
+      lastFetchLocationRef.current = { latitude: lat, longitude: lng }
+    } catch {
+      // Silently fail — discovery section won't show
+    } finally {
+      setExtraLoading(false)
+    }
   }, [userLocation])
 
   useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])
@@ -293,6 +309,10 @@ export default function FeedScreen() {
     }
   }, [supabase, activeFilter, showFollowing, followedIds, t])
 
+  // Ref to avoid stale closures in useFocusEffect and realtime callbacks
+  const fetchPostsRef = useRef(fetchPosts)
+  fetchPostsRef.current = fetchPosts
+
   useEffect(() => {
     setLoading(true)
     offsetRef.current = 0
@@ -300,13 +320,22 @@ export default function FeedScreen() {
     return () => { abortRef.current?.abort() }
   }, [fetchPosts])
 
-  // Realtime with 2s debounce
+  // Realtime with 2s debounce — listen for INSERT, UPDATE, and DELETE
   useEffect(() => {
     const channel = supabase
       .channel('feed-new-posts')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, () => {
-        if (debounceRef.current) clearTimeout(debounceRef.current)
-        debounceRef.current = setTimeout(() => setHasNewPosts(true), 2000)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          if (debounceRef.current) clearTimeout(debounceRef.current)
+          debounceRef.current = setTimeout(() => setHasNewPosts(true), 2000)
+        } else if (payload.eventType === 'DELETE' || payload.eventType === 'UPDATE') {
+          // Refresh to reflect changes
+          if (debounceRef.current) clearTimeout(debounceRef.current)
+          debounceRef.current = setTimeout(() => {
+            offsetRef.current = 0
+            fetchPostsRef.current(true)
+          }, 1000)
+        }
       })
       .subscribe()
     return () => {
@@ -316,13 +345,13 @@ export default function FeedScreen() {
   }, [supabase])
 
   // Fix 5: Auto-refresh feed when returning from another screen (e.g. create)
-  // Empty deps to prevent infinite loop — fetchPosts is stable enough via ref
+  // Uses fetchPostsRef to avoid stale closure with empty deps
   const focusCountRef = useRef(0)
   useFocusEffect(useCallback(() => {
     focusCountRef.current++
     if (focusCountRef.current > 1) {
       offsetRef.current = 0
-      fetchPosts(true)
+      fetchPostsRef.current(true)
     }
   }, []))
 
@@ -351,14 +380,13 @@ export default function FeedScreen() {
     setUserNeighborhood(nh)
     setShowNeighborhoodPicker(false)
     if (currentUserId) {
-      const sb = createClient()
-      await (sb.from('profiles') as any).update({ naapurusto: nh }).eq('id', currentUserId)
+      await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', currentUserId)
     }
     // Refresh content
     offsetRef.current = 0
     fetchPosts(true)
     fetchExtraContent()
-  }, [currentUserId, fetchPosts, fetchExtraContent])
+  }, [supabase, currentUserId, fetchPosts, fetchExtraContent])
 
   const getCityEventName = useCallback((e: CityEvent) => {
     if (locale === 'en' && e.name_en) return e.name_en
