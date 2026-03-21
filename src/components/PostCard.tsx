@@ -257,45 +257,43 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
             )}
           </View>
+          <Pressable
+            hitSlop={12}
+            onPress={async (e) => {
+              e.stopPropagation?.()
+              if (!userId) { router.push('/(auth)/login'); return }
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+              const supabase = createClient()
+              if (saved) {
+                await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                setSaved(false)
+              } else {
+                await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+                setSaved(true)
+              }
+            }}
+            style={styles.engagementItem}
+          >
+            {saved ? (
+              <BookmarkCheck size={14} color={colors.primary} fill={colors.primary} />
+            ) : (
+              <Bookmark size={14} color={colors.mutedForeground} />
+            )}
+          </Pressable>
           {showMore && (
-            <>
-              <Pressable
-                hitSlop={12}
-                onPress={async (e) => {
-                  e.stopPropagation?.()
-                  try {
-                    Haptics.selectionAsync()
-                    await Share.share({ message: post.title + '\n' + APP_URL + '/post/' + post.id })
-                  } catch {}
-                }}
-                style={styles.engagementItem}
-              >
-                <Share2 size={14} color={colors.mutedForeground} />
-              </Pressable>
-              <Pressable
-                hitSlop={12}
-                onPress={async (e) => {
-                  e.stopPropagation?.()
-                  if (!userId) { router.push('/(auth)/login'); return }
-                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-                  const supabase = createClient()
-                  if (saved) {
-                    await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                    setSaved(false)
-                  } else {
-                    await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
-                    setSaved(true)
-                  }
-                }}
-                style={styles.engagementItem}
-              >
-                {saved ? (
-                  <BookmarkCheck size={14} color={colors.primary} fill={colors.primary} />
-                ) : (
-                  <Bookmark size={14} color={colors.mutedForeground} />
-                )}
-              </Pressable>
-            </>
+            <Pressable
+              hitSlop={12}
+              onPress={async (e) => {
+                e.stopPropagation?.()
+                try {
+                  Haptics.selectionAsync()
+                  await Share.share({ message: post.title + '\n' + APP_URL + '/post/' + post.id })
+                } catch {}
+              }}
+              style={styles.engagementItem}
+            >
+              <Share2 size={14} color={colors.mutedForeground} />
+            </Pressable>
           )}
           <Pressable
             hitSlop={12}

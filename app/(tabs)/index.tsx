@@ -1,16 +1,16 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking } from 'react-native'
+import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking, Modal } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
-import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, ChevronDown, Globe, CheckCircle } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, ChevronDown, Globe, CheckCircle, X, Check } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
-import { POST_SELECT } from '@/lib/constants'
+import { POST_SELECT, NEIGHBORHOODS } from '@/lib/constants'
 import { formatEventDateShort } from '@/lib/format'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
@@ -33,11 +33,11 @@ const PLACE_COLORS: Record<string, string> = {
   service: '#607D8B', other: '#95A5A6',
 }
 
-const PLACE_LABELS: Record<string, string> = {
-  restaurant: 'Ravintola', cafe: 'Kahvila', bar: 'Baari', pub: 'Pubi',
-  fast_food: 'Pikaruoka', shop: 'Kauppa', library: 'Kirjasto', health: 'Terveys',
-  sport: 'Liikunta', culture: 'Kulttuuri', hotel: 'Majoitus', attraction: 'Nähtävyys',
-  service: 'Palvelu', other: 'Muu',
+const PLACE_LABEL_KEYS: Record<string, string> = {
+  restaurant: 'places.restaurant', cafe: 'places.cafe', bar: 'places.bar', pub: 'places.pub',
+  fast_food: 'places.fastFood', shop: 'places.shop', library: 'places.library', health: 'places.health',
+  sport: 'places.sport', culture: 'places.culture', hotel: 'places.hotel', attraction: 'places.attraction',
+  service: 'places.service', other: 'places.other',
 }
 
 const PAGE_SIZE = 20
@@ -162,6 +162,8 @@ export default function FeedScreen() {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [discoveryTab, setDiscoveryTab] = useState<'events' | 'places'>('events')
+  const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
   const lastScrollYRef = useRef(0)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
@@ -345,6 +347,19 @@ export default function FeedScreen() {
     setLoading(true)
   }, [])
 
+  const handleNeighborhoodSelect = useCallback(async (nh: string) => {
+    setUserNeighborhood(nh)
+    setShowNeighborhoodPicker(false)
+    if (currentUserId) {
+      const sb = createClient()
+      await (sb.from('profiles') as any).update({ naapurusto: nh }).eq('id', currentUserId)
+    }
+    // Refresh content
+    offsetRef.current = 0
+    fetchPosts(true)
+    fetchExtraContent()
+  }, [currentUserId, fetchPosts, fetchExtraContent])
+
   const getCityEventName = useCallback((e: CityEvent) => {
     if (locale === 'en' && e.name_en) return e.name_en
     if (locale === 'sv' && e.name_sv) return e.name_sv
@@ -369,7 +384,7 @@ export default function FeedScreen() {
         <PostCard post={item} userLocation={userLocation} userId={currentUserId} />
       </View>
     )
-  }, [userLocation, posts, colors.mutedForeground, t])
+  }, [userLocation, posts, colors.mutedForeground, colors.border, t, currentUserId])
 
   // Event section with cascading fallback: today -> tomorrow -> this week (Fix 4)
   const { displayEvents, eventSectionTitle } = useMemo(() => {
@@ -380,7 +395,7 @@ export default function FeedScreen() {
     const title = todayEvts.length ? t('events.filterToday') + ' (' + todayEvts.length + ')'
       : tomorrowEvts.length ? t('feed.tomorrow') + ' (' + tomorrowEvts.length + ')'
       : weekEvts.length ? t('feed.thisWeek') + ' (' + weekEvts.length + ')' : ''
-    return { displayEvents: display.slice(0, 3), eventSectionTitle: title }
+    return { displayEvents: display.slice(0, 1), eventSectionTitle: title }
   }, [cityEvents, t])
 
   // Places section contextual title (Fix 5)
@@ -449,141 +464,190 @@ export default function FeedScreen() {
         </View>
       ) : null}
 
-      {/* ── City Events Section ── */}
-      {extraLoading && cityEvents.length === 0 ? (
-        <View style={{ gap: 12 }}>
+      {/* ── Discovery Section: Combined Events + Places with tab toggle ── */}
+      {extraLoading && cityEvents.length === 0 && nearbyPlaces.length === 0 ? (
+        <View style={{ gap: 10 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
             <View style={[styles.sectionBar, { backgroundColor: '#3B7DD8' }]} />
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('events.cityEvents')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('nav.events')}</Text>
           </View>
           <HorizontalSkeleton colors={colors} width={160} height={140} />
         </View>
-      ) : cityEvents.length > 0 ? (
-        <View style={{ gap: 12 }}>
-          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
-            <View style={[styles.sectionBar, { backgroundColor: '#3B7DD8' }]} />
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('events.cityEvents')}</Text>
-            <Pressable onPress={() => router.push('/(tabs)/events')} hitSlop={8} style={extraStyles.showAllBtn}>
-              <Text style={[extraStyles.showAllText, { color: colors.primary }]}>{t('events.cityTab')}</Text>
+      ) : (cityEvents.length > 0 || nearbyPlaces.length > 0) ? (
+        <View style={{ gap: 10 }}>
+          {/* Tab chips row */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
+            <Pressable
+              onPress={() => setDiscoveryTab('events')}
+              style={[
+                extraStyles.discoveryChip,
+                discoveryTab === 'events'
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: isDark ? colors.card : colors.muted },
+              ]}
+            >
+              <CalendarDays size={13} color={discoveryTab === 'events' ? colors.primaryForeground : colors.mutedForeground} />
+              <Text style={[
+                extraStyles.discoveryChipText,
+                { color: discoveryTab === 'events' ? colors.primaryForeground : colors.mutedForeground },
+              ]}>
+                {t('nav.events')}
+              </Text>
+              {cityEvents.length > 0 && discoveryTab === 'events' && (
+                <View style={[extraStyles.discoveryChipCount, { backgroundColor: `${colors.primaryForeground}30` }]}>
+                  <Text style={[extraStyles.discoveryChipCountText, { color: colors.primaryForeground }]}>{cityEvents.length}</Text>
+                </View>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setDiscoveryTab('places')}
+              style={[
+                extraStyles.discoveryChip,
+                discoveryTab === 'places'
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: isDark ? colors.card : colors.muted },
+              ]}
+            >
+              <MapPin size={13} color={discoveryTab === 'places' ? colors.primaryForeground : colors.mutedForeground} />
+              <Text style={[
+                extraStyles.discoveryChipText,
+                { color: discoveryTab === 'places' ? colors.primaryForeground : colors.mutedForeground },
+              ]}>
+                {t('places.places') || t('feed.placesNearYou')}
+              </Text>
+              {nearbyPlaces.length > 0 && discoveryTab === 'places' && (
+                <View style={[extraStyles.discoveryChipCount, { backgroundColor: `${colors.primaryForeground}30` }]}>
+                  <Text style={[extraStyles.discoveryChipCountText, { color: colors.primaryForeground }]}>{nearbyPlaces.length}</Text>
+                </View>
+              )}
+            </Pressable>
+            {/* Show All link */}
+            <View style={{ flex: 1 }} />
+            <Pressable
+              onPress={() => discoveryTab === 'events' ? router.push('/(tabs)/events') : router.push('/map')}
+              hitSlop={8}
+              style={extraStyles.showAllBtn}
+            >
+              <Text style={[extraStyles.showAllText, { color: colors.primary }]}>
+                {discoveryTab === 'events' ? t('events.cityTab') : (t('nav.map') || 'Kartta')}
+              </Text>
               <ChevronRight size={14} color={colors.primary} />
             </Pressable>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            snapToInterval={172}
-            contentContainerStyle={{ gap: 10, paddingHorizontal: 4, paddingBottom: 4 }}
-          >
-            {cityEvents.map((event) => {
-              const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
-              return (
-                <Pressable
-                  key={event.id}
-                  onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/(tabs)/events')}
-                  style={[extraStyles.eventCard, { backgroundColor: colors.card }]}
-                >
-                  <View style={[extraStyles.eventAccent, { backgroundColor: catColor }]} />
-                  {event.image_url ? (
-                    <Image source={{ uri: event.image_url }} style={extraStyles.eventImage} contentFit="cover" />
-                  ) : (
-                    <View style={[extraStyles.eventImageFallback, { backgroundColor: `${catColor}20` }]}>
-                      <Globe size={20} color={catColor} />
-                    </View>
-                  )}
-                  <View style={extraStyles.eventInfo}>
-                    <Text style={[extraStyles.eventName, { color: colors.foreground }]} numberOfLines={2}>
-                      {getCityEventName(event)}
-                    </Text>
-                    <View style={extraStyles.eventMeta}>
-                      <CalendarDays size={10} color={colors.mutedForeground} />
-                      <Text style={[extraStyles.eventDate, { color: colors.primary }]}>
-                        {formatEventDateShort(event.start_time, locale)}
+
+          {/* Events carousel */}
+          {discoveryTab === 'events' && cityEvents.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              decelerationRate="fast"
+              snapToInterval={172}
+              contentContainerStyle={{ gap: 10, paddingHorizontal: 4, paddingBottom: 4 }}
+            >
+              {cityEvents.map((event) => {
+                const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
+                return (
+                  <Pressable
+                    key={event.id}
+                    onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/(tabs)/events')}
+                    style={[extraStyles.eventCard, { backgroundColor: colors.card }]}
+                  >
+                    <View style={[extraStyles.eventAccent, { backgroundColor: catColor }]} />
+                    {event.image_url ? (
+                      <Image source={{ uri: event.image_url }} style={extraStyles.eventImage} contentFit="cover" />
+                    ) : (
+                      <View style={[extraStyles.eventImageFallback, { backgroundColor: `${catColor}20` }]}>
+                        <Globe size={20} color={catColor} />
+                      </View>
+                    )}
+                    <View style={extraStyles.eventInfo}>
+                      <Text style={[extraStyles.eventName, { color: colors.foreground }]} numberOfLines={2}>
+                        {getCityEventName(event)}
                       </Text>
-                    </View>
-                    {event.location_name && (
                       <View style={extraStyles.eventMeta}>
-                        <MapPin size={10} color={colors.mutedForeground} />
-                        <Text style={[extraStyles.eventLocation, { color: colors.mutedForeground }]} numberOfLines={1}>
-                          {event.location_name}
+                        <CalendarDays size={10} color={colors.mutedForeground} />
+                        <Text style={[extraStyles.eventDate, { color: colors.primary }]}>
+                          {formatEventDateShort(event.start_time, locale)}
                         </Text>
                       </View>
-                    )}
-                    {event.is_free && (
-                      <View style={[extraStyles.freeBadge, { backgroundColor: `${colors.success}20` }]}>
-                        <Text style={[extraStyles.freeText, { color: colors.success }]}>{t('events.free')}</Text>
-                      </View>
-                    )}
-                  </View>
-                  {/* Fix 4: Tappable hint chevron */}
-                  <View style={extraStyles.eventChevron}>
-                    <ChevronRight size={12} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
-                  </View>
-                </Pressable>
-              )
-            })}
-          </ScrollView>
-        </View>
-      ) : null}
+                      {event.location_name && (
+                        <View style={extraStyles.eventMeta}>
+                          <MapPin size={10} color={colors.mutedForeground} />
+                          <Text style={[extraStyles.eventLocation, { color: colors.mutedForeground }]} numberOfLines={1}>
+                            {event.location_name}
+                          </Text>
+                        </View>
+                      )}
+                      {event.is_free && (
+                        <View style={[extraStyles.freeBadge, { backgroundColor: `${colors.success}20` }]}>
+                          <Text style={[extraStyles.freeText, { color: colors.success }]}>{t('events.free')}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <View style={extraStyles.eventChevron}>
+                      <ChevronRight size={12} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
+                    </View>
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+          )}
 
-      {/* ── Nearby Places Section ── */}
-      {extraLoading && nearbyPlaces.length === 0 ? (
-        <View style={{ gap: 12 }}>
-          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
-            <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
-          </View>
-          <HorizontalSkeleton colors={colors} width={56} height={56} />
-        </View>
-      ) : nearbyPlaces.length > 0 ? (
-        <View style={{ gap: 8 }}>
-          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
-            <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
-            <Pressable onPress={() => router.push('/map')} hitSlop={8} style={extraStyles.showAllBtn}>
-              <Text style={[extraStyles.showAllText, { color: colors.primary }]}>{t('nav.map') || 'Kartta'}</Text>
-              <ChevronRight size={14} color={colors.primary} />
-            </Pressable>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 14, paddingHorizontal: 4, paddingBottom: 2 }}
-          >
-            {nearbyPlaces.slice(0, 6).map((place) => {
-              const catColor = PLACE_COLORS[place.category] || '#95A5A6'
-              const catLabel = PLACE_LABELS[place.category] || place.category
-              const firstLetter = catLabel.charAt(0).toUpperCase()
-              return (
-                <Pressable
-                  key={place.id}
-                  onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`)}
-                  style={extraStyles.placeCompact}
-                >
-                  <View style={[extraStyles.placeCircle, { backgroundColor: `${catColor}26` }]}>
-                    <Text style={[extraStyles.placeCircleText, { color: catColor }]}>{firstLetter}</Text>
+          {/* Events empty state */}
+          {discoveryTab === 'events' && cityEvents.length === 0 && (
+            <Text style={{ color: colors.mutedForeground, fontSize: 13, fontFamily: fonts.body, paddingHorizontal: 4 }}>
+              {t('events.noEvents')}
+            </Text>
+          )}
+
+          {/* Places carousel */}
+          {discoveryTab === 'places' && nearbyPlaces.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 14, paddingHorizontal: 4, paddingBottom: 2 }}
+            >
+              {nearbyPlaces.slice(0, 6).map((place) => {
+                const catColor = PLACE_COLORS[place.category] || '#95A5A6'
+                const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other') || place.category
+                const firstLetter = catLabel.charAt(0).toUpperCase()
+                return (
+                  <Pressable
+                    key={place.id}
+                    onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`)}
+                    style={extraStyles.placeCompact}
+                  >
+                    <View style={[extraStyles.placeCircle, { backgroundColor: `${catColor}26` }]}>
+                      <Text style={[extraStyles.placeCircleText, { color: catColor }]}>{firstLetter}</Text>
+                    </View>
+                    <Text style={[extraStyles.placeCompactName, { color: colors.foreground }]} numberOfLines={2}>
+                      {place.name}
+                    </Text>
+                    <Text style={[extraStyles.placeCategoryLabel, { color: colors.mutedForeground }]} numberOfLines={1}>
+                      {catLabel}
+                    </Text>
+                  </Pressable>
+                )
+              })}
+              {nearbyPlaces.length > 6 && (
+                <Pressable onPress={() => router.push('/map')} style={extraStyles.placeCompact}>
+                  <View style={[extraStyles.placeCircle, { backgroundColor: colors.muted }]}>
+                    <Text style={[extraStyles.placeCircleText, { color: colors.mutedForeground }]}>+{nearbyPlaces.length - 6}</Text>
                   </View>
-                  <Text style={[extraStyles.placeCompactName, { color: colors.foreground }]} numberOfLines={2}>
-                    {place.name}
-                  </Text>
-                  {/* Fix 7: Category label below place name */}
-                  <Text style={[extraStyles.placeCategoryLabel, { color: colors.mutedForeground }]} numberOfLines={1}>
-                    {catLabel}
+                  <Text style={[extraStyles.placeCompactName, { color: colors.primary }]} numberOfLines={1}>
+                    {t('feed.showAll')}
                   </Text>
                 </Pressable>
-              )
-            })}
-            {nearbyPlaces.length > 6 && (
-              <Pressable onPress={() => router.push('/map')} style={extraStyles.placeCompact}>
-                <View style={[extraStyles.placeCircle, { backgroundColor: colors.muted }]}>
-                  <Text style={[extraStyles.placeCircleText, { color: colors.mutedForeground }]}>+{nearbyPlaces.length - 6}</Text>
-                </View>
-                <Text style={[extraStyles.placeCompactName, { color: colors.primary }]} numberOfLines={1}>
-                  {t('feed.showAll')}
-                </Text>
-              </Pressable>
-            )}
-          </ScrollView>
+              )}
+            </ScrollView>
+          )}
+
+          {/* Places empty state */}
+          {discoveryTab === 'places' && nearbyPlaces.length === 0 && (
+            <Text style={{ color: colors.mutedForeground, fontSize: 13, fontFamily: fonts.body, paddingHorizontal: 4 }}>
+              {placesSectionTitle}
+            </Text>
+          )}
         </View>
       ) : null}
 
@@ -613,10 +677,9 @@ export default function FeedScreen() {
         </View>
       )}
 
-      {/* Section header */}
-      <View style={styles.sectionHeader}>
-        <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('feed.latestListings')}</Text>
+      {/* Section header — compact, no bar decoration */}
+      <View style={styles.compactSectionHeader}>
+        <Text style={[styles.compactSectionTitle, { color: colors.foreground }]}>{t('feed.latestListings')}</Text>
         {posts.length > 0 && !loading && (
           <View style={[styles.countBadge, { backgroundColor: colors.muted }]}>
             <Text style={[styles.countText, { color: colors.mutedForeground }]}>{posts.length}</Text>
@@ -624,7 +687,7 @@ export default function FeedScreen() {
         )}
       </View>
     </View>
-  ), [displayEvents, eventSectionTitle, hasNewPosts, error, handleRefresh, isDark, colors, t, posts.length, loading, cityEvents, nearbyPlaces, extraLoading, getCityEventName, locale, router, placesSectionTitle])
+  ), [displayEvents, eventSectionTitle, hasNewPosts, error, handleRefresh, isDark, colors, t, posts.length, loading, cityEvents, nearbyPlaces, extraLoading, getCityEventName, locale, router, placesSectionTitle, discoveryTab])
 
   // ── Empty / Cold Start ──
   const EmptyComponent = useMemo(() => {
@@ -686,8 +749,8 @@ export default function FeedScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar — no scroll-hide animation */}
       <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        {/* Fix 2 + Fix 3: Tappable city context — navigates to map */}
-        <Pressable onPress={() => router.push('/map')} style={styles.neighborhoodBtn} hitSlop={4}>
+        {/* Fix 2 + Fix 3: Tappable city context — opens neighborhood picker */}
+        <Pressable onPress={() => setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={4}>
           <MapPin size={12} color={colors.mutedForeground} />
           <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
             {userNeighborhood ? `Helsinki · ${userNeighborhood}` : 'Helsinki'}
@@ -731,9 +794,72 @@ export default function FeedScreen() {
         showsVerticalScrollIndicator={false}
       />
 
+      {/* Neighborhood picker modal */}
+      <Modal
+        visible={showNeighborhoodPicker}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowNeighborhoodPicker(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+          <View style={nhStyles.modalHeader}>
+            <Text style={[nhStyles.modalTitle, { color: colors.foreground }]}>
+              {t('onboarding.neighborhoodTitle')}
+            </Text>
+            <Pressable onPress={() => setShowNeighborhoodPicker(false)} hitSlop={8}>
+              <X size={24} color={colors.foreground} />
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={nhStyles.modalList}>
+            {NEIGHBORHOODS.map(nh => (
+              <Pressable
+                key={nh}
+                onPress={() => handleNeighborhoodSelect(nh)}
+                style={[
+                  nhStyles.modalItem,
+                  {
+                    backgroundColor: userNeighborhood === nh ? `${colors.primary}14` : 'transparent',
+                    borderBottomColor: colors.border,
+                  },
+                ]}
+              >
+                <MapPin size={14} color={userNeighborhood === nh ? colors.primary : colors.mutedForeground} />
+                <Text
+                  style={[
+                    nhStyles.modalItemText,
+                    {
+                      color: userNeighborhood === nh ? colors.primary : colors.foreground,
+                      fontWeight: userNeighborhood === nh ? '600' : '400',
+                    },
+                  ]}
+                >
+                  {nh}
+                </Text>
+                {userNeighborhood === nh && <Check size={16} color={colors.primary} />}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   )
 }
+
+const nhStyles = StyleSheet.create({
+  modalHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#E5E5E5',
+  },
+  modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi, letterSpacing: -0.18 },
+  modalList: { paddingBottom: 40 },
+  modalItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 20, paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  modalItemText: { fontSize: 15, fontFamily: fonts.body, flex: 1 },
+})
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -791,6 +917,8 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
   sectionBar: { width: 3, height: 16, borderRadius: 1.5 },
   sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },
+  compactSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
+  compactSectionTitle: { fontSize: 14, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },
   countBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   countText: { fontSize: 11, fontWeight: '500' },
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
@@ -813,6 +941,17 @@ const extraStyles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 2,
   },
   showAllText: { fontSize: 13, fontWeight: '600' },
+
+  // ── Discovery tab chips ──
+  discoveryChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20,
+  },
+  discoveryChipText: { fontSize: 13, fontWeight: '600' },
+  discoveryChipCount: {
+    paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, marginLeft: 2,
+  },
+  discoveryChipCountText: { fontSize: 10, fontWeight: '700' },
 
   // ── City Event Card (Fix 3: smaller — 160px wide, 90px image) ──
   eventCard: {

@@ -1970,5 +1970,21 @@
     "startConversation": "Aloita keskustelu!",
     "removeConfirm": "Haluatko poistaa jäsenen?",
     "removed": "Jäsen poistettu"
+  },
+  "places": {
+    "restaurant": "Ravintola",
+    "cafe": "Kahvila",
+    "bar": "Baari",
+    "pub": "Pubi",
+    "fastFood": "Pikaruoka",
+    "shop": "Kauppa",
+    "library": "Kirjasto",
+    "health": "Terveys",
+    "sport": "Liikunta",
+    "culture": "Kulttuuri",
+    "hotel": "Majoitus",
+    "attraction": "Nähtävyys",
+    "service": "Palvelu",
+    "other": "Muu"
   }
 }

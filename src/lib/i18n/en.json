@@ -1943,5 +1943,21 @@
     "startConversation": "Start the conversation!",
     "removeConfirm": "Remove this member?",
     "removed": "Member removed"
+  },
+  "places": {
+    "restaurant": "Restaurant",
+    "cafe": "Café",
+    "bar": "Bar",
+    "pub": "Pub",
+    "fastFood": "Fast food",
+    "shop": "Shop",
+    "library": "Library",
+    "health": "Health",
+    "sport": "Sport",
+    "culture": "Culture",
+    "hotel": "Hotel",
+    "attraction": "Attraction",
+    "service": "Service",
+    "other": "Other"
   }
 }

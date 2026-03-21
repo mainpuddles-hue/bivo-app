@@ -136,10 +136,18 @@ export async function fetchWeatherAlerts(): Promise<WeatherAlert[]> {
   }
 }
 
+let alertCache: { data: AppAlert[]; timestamp: number } | null = null
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
 export async function fetchAllAlerts(): Promise<AppAlert[]> {
+  if (alertCache && Date.now() - alertCache.timestamp < CACHE_TTL) {
+    return alertCache.data
+  }
   const [transit, weather] = await Promise.all([
     fetchHSLAlerts(),
     fetchWeatherAlerts(),
   ])
-  return [...weather, ...transit]
+  const result = [...weather, ...transit]
+  alertCache = { data: result, timestamp: Date.now() }
+  return result
 }

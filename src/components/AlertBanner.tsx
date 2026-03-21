@@ -5,10 +5,13 @@ import { useTheme } from '@/hooks/useTheme'
 import { fonts } from '@/lib/fonts'
 import { fetchAllAlerts, type AppAlert } from '@/lib/alerts'
 
+// Module-level — survives component remounts
+const dismissedAlertIds = new Set<string>()
+
 export function AlertBanner() {
   const { colors } = useTheme()
   const [alerts, setAlerts] = useState<AppAlert[]>([])
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const [dismissed, setDismissed] = useState<Set<string>>(() => new Set(dismissedAlertIds))
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -16,15 +19,18 @@ export function AlertBanner() {
   }, [])
 
   const handleDismiss = useCallback((id: string) => {
+    dismissedAlertIds.add(id)
     setDismissed(prev => new Set(prev).add(id))
   }, [])
 
   const visibleAlerts = alerts.filter(a => !dismissed.has(a.id))
+  const shownAlerts = visibleAlerts.slice(0, 2)
+  const moreCount = visibleAlerts.length - shownAlerts.length
   if (visibleAlerts.length === 0) return null
 
   return (
     <View style={styles.container}>
-      {visibleAlerts.map(alert => {
+      {shownAlerts.map(alert => {
         const isWeather = alert.type === 'weather'
         const isSevere = alert.severity === 'severe' || alert.severity === 'warning'
         const bgColor = isSevere ? '#D94F4F18' : '#E8A05018'
@@ -76,6 +82,11 @@ export function AlertBanner() {
           </Pressable>
         )
       })}
+      {moreCount > 0 && (
+        <Text style={[styles.moreText, { color: colors.mutedForeground }]}>
+          +{moreCount} ...
+        </Text>
+      )}
     </View>
   )
 }
@@ -98,5 +109,9 @@ const styles = StyleSheet.create({
   alertDesc: {
     fontSize: 12, fontFamily: fonts.body, lineHeight: 17, marginTop: 6,
     paddingLeft: 24,
+  },
+  moreText: {
+    fontSize: 12, fontFamily: fonts.bodySemi, textAlign: 'center',
+    paddingVertical: 4,
   },
 })

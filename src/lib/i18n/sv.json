@@ -1943,5 +1943,21 @@
     "startConversation": "Starta konversationen!",
     "removeConfirm": "Ta bort denna medlem?",
     "removed": "Medlem borttagen"
+  },
+  "places": {
+    "restaurant": "Restaurang",
+    "cafe": "Kafé",
+    "bar": "Bar",
+    "pub": "Pub",
+    "fastFood": "Snabbmat",
+    "shop": "Butik",
+    "library": "Bibliotek",
+    "health": "Hälsa",
+    "sport": "Sport",
+    "culture": "Kultur",
+    "hotel": "Hotell",
+    "attraction": "Sevärdhet",
+    "service": "Tjänst",
+    "other": "Övrigt"
   }
 }
