@@ -54,9 +54,27 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const { t, locale } = useI18n()
   const router = useRouter()
   const [imgError, setImgError] = useState(false)
-  const [liked, setLiked] = useState(false)
+  const [liked, setLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(post.is_saved ?? false)
+
+  // Check if current user has liked/saved this post
+  useEffect(() => {
+    if (!userId) return
+    // Skip DB check if the post already carries like/save state
+    if (post.is_liked !== undefined && post.is_saved !== undefined) return
+    const supabase = createClient()
+
+    if (post.is_liked === undefined) {
+      supabase.from('post_likes').select('id').eq('post_id', post.id).eq('user_id', userId).maybeSingle()
+        .then(({ data }) => { if (data) setLiked(true) })
+    }
+
+    if (post.is_saved === undefined) {
+      supabase.from('saved_posts').select('id').eq('post_id', post.id).eq('user_id', userId).maybeSingle()
+        .then(({ data }) => { if (data) setSaved(true) })
+    }
+  }, [userId, post.id, post.is_liked, post.is_saved])
 
   const category = CATEGORIES[post.type as PostType]
   const isPro = post.is_pro_listing
@@ -87,6 +105,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   }, [userLocation, post.latitude, post.longitude, t])
 
   const catBgColor = category ? `${category.color}${isDark ? '15' : '08'}` : undefined
+  const hasEngagement = likeCount > 0 || (post.comment_count ?? 0) > 0 || liked
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
@@ -216,38 +235,42 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
           </View>
         )}
 
-        {/* Engagement — like + comment visible, share/save behind more */}
+        {/* Engagement — like + comment visible only when engaged, share/save behind more */}
         <View style={styles.engagementRow}>
-          <Pressable
-            hitSlop={12}
-            onPress={async (e) => {
-              e.stopPropagation?.()
-              if (!userId) { router.push('/(auth)/login'); return }
-              try { Haptics.selectionAsync() } catch {}
-              const supabase = createClient()
-              if (liked) {
-                await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                setLiked(false)
-                setLikeCount(c => Math.max(0, c - 1))
-              } else {
-                await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
-                setLiked(true)
-                setLikeCount(c => c + 1)
-              }
-            }}
-            style={[styles.engagementItem, !liked && likeCount === 0 && { opacity: 0.3 }]}
-          >
-            <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
-            <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>
-          </Pressable>
-          <View style={[styles.engagementItem, post.comment_count === 0 && likeCount === 0 && { opacity: 0.3 }]}>
-            <MessageCircle size={14} color={colors.mutedForeground} />
-            {post.comment_count === 0 && likeCount > 0 ? (
-              <Text style={[styles.engagementText, { color: colors.mutedForeground, fontStyle: 'italic' }]}>{t('feed.startConversation')}</Text>
-            ) : (
-              <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
-            )}
-          </View>
+          {hasEngagement && (
+            <Pressable
+              hitSlop={12}
+              onPress={async (e) => {
+                e.stopPropagation?.()
+                if (!userId) { router.push('/(auth)/login'); return }
+                try { Haptics.selectionAsync() } catch {}
+                const supabase = createClient()
+                if (liked) {
+                  await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                  setLiked(false)
+                  setLikeCount(c => Math.max(0, c - 1))
+                } else {
+                  await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
+                  setLiked(true)
+                  setLikeCount(c => c + 1)
+                }
+              }}
+              style={styles.engagementItem}
+            >
+              <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
+              <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>
+            </Pressable>
+          )}
+          {hasEngagement && (
+            <View style={styles.engagementItem}>
+              <MessageCircle size={14} color={colors.mutedForeground} />
+              {post.comment_count === 0 && likeCount > 0 ? (
+                <Text style={[styles.engagementText, { color: colors.mutedForeground, fontStyle: 'italic' }]}>{t('feed.startConversation')}</Text>
+              ) : (
+                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+              )}
+            </View>
+          )}
           <Pressable
             hitSlop={12}
             onPress={async (e) => {

@@ -120,7 +120,7 @@ export default function FeedScreen() {
     const currentGroup = item.created_at ? getDateGroup(item.created_at) : ''
     const prevGroup = index > 0 && feed.postsRef.current[index - 1]?.created_at
       ? getDateGroup(feed.postsRef.current[index - 1].created_at!) : ''
-    const showLabel = index === 0 || currentGroup !== prevGroup
+    const showLabel = index > 0 && currentGroup !== prevGroup
 
     return (
       <View>
@@ -196,11 +196,6 @@ export default function FeedScreen() {
       {feed.posts.length > 0 && (
         <View style={styles.compactSectionHeader}>
           <Text style={[styles.compactSectionTitle, { color: colors.foreground }]}>{t('feed.latestListings')}</Text>
-          {!feed.loading && (
-            <View style={[styles.countBadge, { backgroundColor: colors.muted }]}>
-              <Text style={[styles.countText, { color: colors.mutedForeground }]}>{feed.posts.length}</Text>
-            </View>
-          )}
         </View>
       )}
     </View>
@@ -310,7 +305,7 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
-    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30,
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
     paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8, gap: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
@@ -347,8 +342,6 @@ const styles = StyleSheet.create({
   errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
   compactSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
   compactSectionTitle: { fontSize: 14, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },
-  countBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  countText: { fontSize: 11, fontWeight: '500' },
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
   coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18 },
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },

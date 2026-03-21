@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect, useCallback } from 'react'
+import { memo, useRef, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, ScrollView, StyleSheet, Pressable, Animated, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -74,6 +74,12 @@ export const DiscoverySection = memo(function DiscoverySection({
   const { t, locale } = useI18n()
   const router = useRouter()
 
+  // Filter out past events — only show future ones in the carousel
+  const futureEvents = useMemo(() => {
+    const now = new Date().toISOString()
+    return cityEvents.filter(e => e.start_time >= now)
+  }, [cityEvents])
+
   const getCityEventName = useCallback((e: CityEvent) => {
     if (locale === 'en' && e.name_en) return e.name_en
     if (locale === 'sv' && e.name_sv) return e.name_sv
@@ -81,7 +87,7 @@ export const DiscoverySection = memo(function DiscoverySection({
   }, [locale])
 
   // Loading state
-  if (extraLoading && cityEvents.length === 0 && nearbyPlaces.length === 0) {
+  if (extraLoading && futureEvents.length === 0 && nearbyPlaces.length === 0) {
     return (
       <View style={{ gap: 10 }}>
         <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
@@ -94,7 +100,7 @@ export const DiscoverySection = memo(function DiscoverySection({
   }
 
   // Nothing to show
-  if (cityEvents.length === 0 && nearbyPlaces.length === 0) {
+  if (futureEvents.length === 0 && nearbyPlaces.length === 0) {
     return null
   }
 
@@ -118,9 +124,9 @@ export const DiscoverySection = memo(function DiscoverySection({
           ]}>
             {t('nav.events')}
           </Text>
-          {cityEvents.length > 0 && discoveryTab === 'events' && (
+          {futureEvents.length > 0 && discoveryTab === 'events' && (
             <View style={[styles.discoveryChipCount, { backgroundColor: `${colors.primaryForeground}30` }]}>
-              <Text style={[styles.discoveryChipCountText, { color: colors.primaryForeground }]}>{cityEvents.length}</Text>
+              <Text style={[styles.discoveryChipCountText, { color: colors.primaryForeground }]}>{futureEvents.length}</Text>
             </View>
           )}
         </Pressable>
@@ -161,7 +167,7 @@ export const DiscoverySection = memo(function DiscoverySection({
       </View>
 
       {/* Events carousel */}
-      {discoveryTab === 'events' && cityEvents.length > 0 && (
+      {discoveryTab === 'events' && futureEvents.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -169,7 +175,7 @@ export const DiscoverySection = memo(function DiscoverySection({
           snapToInterval={172}
           contentContainerStyle={{ gap: 10, paddingHorizontal: 4, paddingBottom: 4 }}
         >
-          {cityEvents.map((event) => {
+          {futureEvents.map((event) => {
             const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
             return (
               <Pressable
@@ -219,7 +225,7 @@ export const DiscoverySection = memo(function DiscoverySection({
       )}
 
       {/* Events empty state */}
-      {discoveryTab === 'events' && cityEvents.length === 0 && (
+      {discoveryTab === 'events' && futureEvents.length === 0 && (
         <Text style={{ color: colors.mutedForeground, fontSize: 13, fontFamily: fonts.body, paddingHorizontal: 4 }}>
           {t('events.noEvents')}
         </Text>
