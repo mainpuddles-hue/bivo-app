@@ -76,7 +76,10 @@
     "placesInHelsinki": "Platser i Helsingfors",
     "placesIn": "Platser — {area}",
     "slogan": "grannskapets egen anslagstavla",
-    "showAll": "Visa alla"
+    "showAll": "Visa alla",
+    "new": "Nytt",
+    "startConversation": "Kommentera",
+    "expiringToday": "Går ut idag!"
   },
   "time": {
     "justNow": "just nu",

@@ -76,7 +76,10 @@
     "placesInHelsinki": "Places in Helsinki",
     "placesIn": "Places — {area}",
     "slogan": "your neighborhood bulletin board",
-    "showAll": "Show all"
+    "showAll": "Show all",
+    "new": "New",
+    "startConversation": "Comment",
+    "expiringToday": "Expiring today!"
   },
   "time": {
     "justNow": "just now",

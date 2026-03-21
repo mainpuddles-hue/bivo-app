@@ -76,7 +76,10 @@
     "placesInHelsinki": "Paikat Helsingissä",
     "placesIn": "Paikat – {area}",
     "slogan": "naapuruston oma ilmoitustaulu",
-    "showAll": "Näytä kaikki"
+    "showAll": "Näytä kaikki",
+    "new": "Uutta",
+    "startConversation": "Kommentoi",
+    "expiringToday": "Vanhenee tänään!"
   },
   "time": {
     "justNow": "juuri nyt",

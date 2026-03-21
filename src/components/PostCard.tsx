@@ -1,5 +1,5 @@
-import { memo, useState, useMemo } from 'react'
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { memo, useState, useMemo, useRef, useEffect } from 'react'
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
@@ -64,6 +64,17 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
 
+  // Fix 2: "Uutta" badge — post created less than 1 hour ago
+  const isNew = useMemo(() => post.created_at ? Date.now() - new Date(post.created_at).getTime() < 3600000 : false, [post.created_at])
+
+  // Fix 4: Smooth card entrance animation
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    try {
+      Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start()
+    } catch {}
+  }, [fadeAnim])
+
   const distanceText = useMemo(() => {
     if (!userLocation || !post.latitude || !post.longitude) return null
     const dist = calculateDistance(userLocation.latitude, userLocation.longitude, post.latitude, post.longitude)
@@ -74,6 +85,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const catBgColor = category ? `${category.color}${isDark ? '15' : '08'}` : undefined
 
   return (
+    <Animated.View style={{ opacity: fadeAnim }}>
     <Pressable
       accessibilityLabel={post.title}
       onPress={() => {
@@ -135,13 +147,27 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
         </View>
       )}
 
+      {/* Fix 2: "Uutta" badge for posts less than 1 hour old */}
+      {isNew && (
+        <View style={styles.newBadge}>
+          <Text style={styles.newBadgeText}>{t('feed.new')}</Text>
+        </View>
+      )}
+
+      {/* Fix 1: Nappaa urgency banner — expiring today */}
+      {isNappaa && expirationInfo && expirationInfo.color === '#D94F4F' && (
+        <View style={styles.urgencyBanner}>
+          <Text style={styles.urgencyText}>{t('feed.expiringToday')}</Text>
+        </View>
+      )}
+
       {/* Content — category color background for imageless cards */}
       <View style={[styles.content, !hasImage && catBgColor ? { backgroundColor: catBgColor } : undefined]}>
         {/* Category row + expiration badge */}
         <View style={styles.categoryExpRow}>
           {category && (
             <View style={styles.categoryRow}>
-              {CategoryIcon && <CategoryIcon size={14} color={category.color} />}
+              {CategoryIcon && <CategoryIcon size={10} color={category.color} strokeWidth={2.5} />}
               <Text style={[styles.categoryLabel, { color: category.color }]}>
                 {t(category.label)}
               </Text>
@@ -225,9 +251,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
             <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
             <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>
           </Pressable>
-          <View style={[styles.engagementItem, post.comment_count === 0 && { opacity: 0.3 }]}>
+          <View style={[styles.engagementItem, post.comment_count === 0 && likeCount === 0 && { opacity: 0.3 }]}>
             <MessageCircle size={14} color={colors.mutedForeground} />
-            <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+            {post.comment_count === 0 && likeCount > 0 ? (
+              <Text style={[styles.engagementText, { color: colors.mutedForeground, fontStyle: 'italic' }]}>{t('feed.startConversation')}</Text>
+            ) : (
+              <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+            )}
           </View>
           {likeCount >= 5 && (
             <View style={[styles.popularBadge, { backgroundColor: isDark ? '#D9770615' : '#FEF3C7' }]}>
@@ -272,6 +302,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
         </View>
       </View>
     </Pressable>
+    </Animated.View>
   )
 })
 
@@ -336,4 +367,17 @@ const styles = StyleSheet.create({
   userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   userName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
   timeAgo: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14.3 },
+  // Fix 2: "Uutta" / "New" badge
+  newBadge: {
+    position: 'absolute' as const, top: 10, left: 16, zIndex: 2,
+    backgroundColor: '#2B8A62', borderRadius: 6,
+    paddingHorizontal: 6, paddingVertical: 2,
+  },
+  newBadgeText: { fontSize: 9, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  // Fix 1: Nappaa urgency banner
+  urgencyBanner: {
+    backgroundColor: '#D94F4F', paddingVertical: 4,
+    alignItems: 'center' as const, justifyContent: 'center' as const,
+  },
+  urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
 })
