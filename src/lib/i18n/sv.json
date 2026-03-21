@@ -64,7 +64,17 @@
     "noRecommendations": "Inga rekommendationer annu. Blaeddra bland annonser sa laer vi oss din smak!",
     "recommendedForYou": "Rekommenderat för dig",
     "following": "Följer",
-    "noFollowedPosts": "Personerna du följer har inte publicerat ännu"
+    "noFollowedPosts": "Personerna du följer har inte publicerat ännu",
+    "today": "Idag",
+    "yesterday": "Igår",
+    "thisWeek": "Denna vecka",
+    "earlier": "Tidigare",
+    "tomorrow": "Imorgon",
+    "allCaughtUp": "Du är uppdaterad",
+    "results": "resultat",
+    "placesNearYou": "Platser nära dig",
+    "placesInHelsinki": "Platser i Helsingfors",
+    "placesIn": "Platser — {area}"
   },
   "time": {
     "justNow": "just nu",

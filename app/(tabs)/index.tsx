@@ -136,10 +136,10 @@ function isWithinPastDays(dateStr: string, days: number): boolean {
 }
 
 function getDateGroup(dateStr: string): string {
-  if (isToday(dateStr)) return 'Tänään'
-  if (isYesterday(dateStr)) return 'Eilen'
-  if (isWithinPastDays(dateStr, 7)) return 'Tällä viikolla'
-  return 'Aiemmin'
+  if (isToday(dateStr)) return 'today'
+  if (isYesterday(dateStr)) return 'yesterday'
+  if (isWithinPastDays(dateStr, 7)) return 'thisWeek'
+  return 'earlier'
 }
 
 export default function FeedScreen() {
@@ -394,14 +394,14 @@ export default function FeedScreen() {
         {showLabel && currentGroup ? (
           <View style={styles.dateGroupLabel}>
             <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
-            <Text style={[styles.dateGroupText, { color: colors.mutedForeground }]}>{currentGroup}</Text>
+            <Text style={[styles.dateGroupText, { color: colors.mutedForeground }]}>{t(`feed.${currentGroup}`)}</Text>
             <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
           </View>
         ) : null}
         <PostCard post={item} userLocation={userLocation} userId={currentUserId} />
       </View>
     )
-  }, [userLocation, posts, filteredPosts, searchQuery, colors.mutedForeground])
+  }, [userLocation, posts, filteredPosts, searchQuery, colors.mutedForeground, t])
 
   // Event section with cascading fallback: today -> tomorrow -> this week (Fix 4)
   const { displayEvents, eventSectionTitle } = useMemo(() => {
@@ -410,17 +410,17 @@ export default function FeedScreen() {
     const weekEvts = !todayEvts.length && !tomorrowEvts.length ? cityEvents.filter(e => isWithinDays(e.start_time, 7)) : []
     const display = todayEvts.length ? todayEvts : tomorrowEvts.length ? tomorrowEvts : weekEvts
     const title = todayEvts.length ? t('events.filterToday') + ' (' + todayEvts.length + ')'
-      : tomorrowEvts.length ? 'Huomenna (' + tomorrowEvts.length + ')'
-      : weekEvts.length ? 'Tällä viikolla (' + weekEvts.length + ')' : ''
+      : tomorrowEvts.length ? t('feed.tomorrow') + ' (' + tomorrowEvts.length + ')'
+      : weekEvts.length ? t('feed.thisWeek') + ' (' + weekEvts.length + ')' : ''
     return { displayEvents: display.slice(0, 3), eventSectionTitle: title }
   }, [cityEvents, t])
 
   // Places section contextual title (Fix 5)
   const placesSectionTitle = useMemo(() => {
-    if (userLocation) return 'Paikat lähellä sinua'
-    if (userNeighborhood) return `Paikat – ${userNeighborhood}`
-    return 'Paikat Helsingissä'
-  }, [userLocation, userNeighborhood])
+    if (userLocation) return t('feed.placesNearYou')
+    if (userNeighborhood) return t('feed.placesIn', { area: userNeighborhood })
+    return t('feed.placesInHelsinki')
+  }, [userLocation, userNeighborhood, t])
 
   // ── Scroll handler for near-bottom detection ──
   // Fix 6: FAB always visible — removed scroll-direction hide logic
@@ -696,7 +696,7 @@ export default function FeedScreen() {
           <BirdMascot size={40} />
           <View style={styles.allLoadedContent}>
             <CheckCircle size={14} color={`${colors.mutedForeground}60`} />
-            <Text style={[styles.allLoadedText, { color: `${colors.mutedForeground}80` }]}>Olet ajan tasalla</Text>
+            <Text style={[styles.allLoadedText, { color: `${colors.mutedForeground}80` }]}>{t('feed.allCaughtUp')}</Text>
           </View>
         </View>
       )
@@ -742,7 +742,7 @@ export default function FeedScreen() {
             {/* Fix 1 + Fix 9: Search result count */}
             {searchQuery.trim().length > 0 && (
               <Text style={[styles.searchResultCount, { color: colors.mutedForeground }]}>
-                {filteredPosts.length} tulosta
+                {filteredPosts.length} {t('feed.results')}
               </Text>
             )}
           </>
@@ -791,7 +791,7 @@ export default function FeedScreen() {
             try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
             router.push('/(tabs)/create')
           }}
-          style={[styles.fab, { bottom: insets.bottom + 80 }]}
+          style={[styles.fab, { bottom: insets.bottom + 80, backgroundColor: colors.accent }]}
         >
           <Plus size={24} color="#FFFFFF" />
         </Pressable>
@@ -878,7 +878,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute', right: 16,
     width: 56, height: 56, borderRadius: 28,
-    backgroundColor: '#4CAF6A', alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
   },

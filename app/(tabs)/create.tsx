@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES } from '@/lib/constants'
+import { fonts } from '@/lib/fonts'
 import type { PostType } from '@/lib/types'
 
 const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string }>> = {
@@ -797,12 +798,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   headerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
   },
-  headerBadgeText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase' },
+  headerBadgeText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', fontFamily: fonts.bodyMedium },
   categoryGrid: { padding: 16, gap: 12 },
   categoryCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -813,17 +814,17 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   categoryTextWrap: { flex: 1, gap: 2 },
-  categoryName: { fontSize: 15, fontWeight: '600' },
-  categorySub: { fontSize: 12 },
+  categoryName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },
+  categorySub: { fontSize: 12, fontFamily: fonts.body },
   form: { padding: 16, gap: 20, paddingBottom: 40 },
   field: { gap: 6 },
-  label: { fontSize: 14, fontWeight: '600' },
+  label: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   input: {
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 15, minHeight: 48,
+    fontSize: 15, minHeight: 48, fontFamily: fonts.body,
   },
   textArea: { minHeight: 120 },
-  charCount: { fontSize: 11, textAlign: 'right' },
+  charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
   imageRow: { flexDirection: 'row', gap: 8 },
   imageThumb: { width: 80, height: 80, borderRadius: 10, overflow: 'hidden', position: 'relative' },
   imageThumbImg: { width: '100%', height: '100%' },
@@ -836,23 +837,23 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     paddingVertical: 2, alignItems: 'center',
   },
-  mainImageBadgeText: { fontSize: 8, fontWeight: '600', color: '#FFFFFF' },
+  mainImageBadgeText: { fontSize: 8, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi },
   addImageBtn: {
     width: 80, height: 80, borderRadius: 10, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
-  addImageText: { fontSize: 10 },
+  addImageText: { fontSize: 10, fontFamily: fonts.body },
   tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16,
   },
-  tagText: { fontSize: 13 },
+  tagText: { fontSize: 13, fontFamily: fonts.body },
   submitBtn: {
     borderRadius: 12, paddingVertical: 14, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
-  submitText: { fontSize: 16, fontWeight: '600' },
+  submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   submitLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   // Location picker
@@ -862,8 +863,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 12, borderRadius: 12, minHeight: 48,
   },
-  mapPickerBtnText: { fontSize: 12, fontWeight: '600' },
-  coordsText: { fontSize: 11, marginTop: 2 },
+  mapPickerBtnText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
+  coordsText: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
 
   // Map modal
   modalContainer: { flex: 1 },
@@ -872,27 +873,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700' },
+  modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
   modalFooter: { paddingHorizontal: 16, paddingVertical: 12 },
   confirmBtn: {
     borderRadius: 12, paddingVertical: 14, alignItems: 'center',
     justifyContent: 'center', minHeight: 48,
   },
-  confirmBtnText: { fontSize: 16, fontWeight: '600' },
+  confirmBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   coordsDisplay: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 14, paddingVertical: 10,
     borderRadius: 10,
   },
-  coordsDisplayText: { fontSize: 13, fontWeight: '500' },
+  coordsDisplayText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.body },
   mapFallback: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32,
   },
-  mapFallbackText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
-  mapFallbackHint: { fontSize: 13, textAlign: 'center' },
+  mapFallbackText: { fontSize: 16, fontWeight: '600', textAlign: 'center', fontFamily: fonts.headingSemi },
+  mapFallbackHint: { fontSize: 13, textAlign: 'center', fontFamily: fonts.body },
   coordInputRow: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
   coordInput: {
     flex: 1, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 14, textAlign: 'center',
+    fontSize: 14, textAlign: 'center', fontFamily: fonts.body,
   },
 })

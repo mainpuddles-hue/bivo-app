@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
+import { fonts } from '@/lib/fonts'
 import type { Conversation } from '@/lib/types'
 
 const PINNED_KEY = 'pinned_conversations'
@@ -266,13 +267,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   searchBar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, borderWidth: 1,
     borderRadius: 12, paddingHorizontal: 12, height: 40,
   },
-  searchInput: { flex: 1, fontSize: 14 },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body },
   list: { paddingBottom: 100 },
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
   avatarWrap: { position: 'relative' },
   avatar: { width: 48, height: 48, borderRadius: 24 },
   avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  avatarInit: { fontSize: 18, fontWeight: '600' },
+  avatarInit: { fontSize: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   onlineDot: {
     position: 'absolute', bottom: 0, right: 0,
     width: 14, height: 14, borderRadius: 7,
@@ -289,19 +290,19 @@ const styles = StyleSheet.create({
   },
   convContent: { flex: 1, gap: 3 },
   convNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  convName: { fontSize: 15, fontWeight: '600' },
+  convName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },
   previewRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  convPreview: { fontSize: 13, flex: 1 },
+  convPreview: { fontSize: 13, flex: 1, fontFamily: fonts.body },
   convRight: { alignItems: 'flex-end', gap: 6 },
-  convTime: { fontSize: 11 },
+  convTime: { fontSize: 11, fontFamily: fonts.body },
   unreadBadge: {
     minWidth: 20, height: 20, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
   },
-  unreadText: { fontSize: 10, fontWeight: '700' },
+  unreadText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 76 },
   empty: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: '600' },
-  emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi },
+  emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 })

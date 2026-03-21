@@ -64,7 +64,17 @@
     "noRecommendations": "No recommendations yet. Browse posts so we can learn your taste!",
     "recommendedForYou": "Recommended for you",
     "following": "Following",
-    "noFollowedPosts": "People you follow haven't posted yet. Check out new listings!"
+    "noFollowedPosts": "People you follow haven't posted yet. Check out new listings!",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "earlier": "Earlier",
+    "tomorrow": "Tomorrow",
+    "allCaughtUp": "You're all caught up",
+    "results": "results",
+    "placesNearYou": "Places near you",
+    "placesInHelsinki": "Places in Helsinki",
+    "placesIn": "Places — {area}"
   },
   "time": {
     "justNow": "just now",

@@ -64,7 +64,17 @@
     "noRecommendations": "Ei vielä suosituksia. Selaa ilmoituksia, niin opimme tuntemaan makusi!",
     "recommendedForYou": "Sinulle suositellut",
     "following": "Seurattavat",
-    "noFollowedPosts": "Seuraamasi naapurit eivät ole julkaisseet vielä. Tutustu uusiin ilmoituksiin!"
+    "noFollowedPosts": "Seuraamasi naapurit eivät ole julkaisseet vielä. Tutustu uusiin ilmoituksiin!",
+    "today": "Tänään",
+    "yesterday": "Eilen",
+    "thisWeek": "Tällä viikolla",
+    "earlier": "Aiemmin",
+    "tomorrow": "Huomenna",
+    "allCaughtUp": "Olet ajan tasalla",
+    "results": "tulosta",
+    "placesNearYou": "Paikat lähellä sinua",
+    "placesInHelsinki": "Paikat Helsingissä",
+    "placesIn": "Paikat – {area}"
   },
   "time": {
     "justNow": "juuri nyt",

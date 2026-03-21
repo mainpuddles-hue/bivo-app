@@ -13,6 +13,7 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
 import { PostCard } from '@/components/PostCard'
+import { fonts } from '@/lib/fonts'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
@@ -258,7 +259,7 @@ export default function ProfileScreen() {
               <View style={s.bioActions}>
                 <Pressable onPress={() => setEditingBio(false)}><X size={20} color={colors.mutedForeground} /></Pressable>
                 <Pressable onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.primary }]}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground }}>{t('common.save')}</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>{t('common.save')}</Text>
                 </Pressable>
               </View>
             </View>
@@ -353,7 +354,7 @@ export default function ProfileScreen() {
                       <Image source={{ uri: rev.reviewer.avatar_url }} style={s.reviewAvatar} />
                     ) : (
                       <View style={[s.reviewAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600' }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase()}</Text>
+                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600', fontFamily: fonts.bodySemi }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase()}</Text>
                       </View>
                     )}
                     <View style={{ flex: 1, gap: 2 }}>
@@ -435,7 +436,7 @@ export default function ProfileScreen() {
                   <Image source={{ uri: item.avatar_url }} style={s.followAvatar} />
                 ) : (
                   <View style={[s.followAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground }}>{item.name?.charAt(0)?.toUpperCase()}</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase()}</Text>
                   </View>
                 )}
                 <Text style={[s.followName, { color: colors.foreground }]}>{item.name}</Text>
@@ -459,67 +460,67 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 16, paddingBottom: 100 },
   hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
   bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },
-  bigAvatarInit: { fontSize: 32, fontWeight: '700' },
+  bigAvatarInit: { fontSize: 32, fontWeight: '700', fontFamily: fonts.heading },
   cameraBtn: {
     position: 'absolute', bottom: 0, right: 0,
     width: 24, height: 24, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
   },
-  profileName: { fontSize: 20, fontWeight: '700' },
+  profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading },
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nhText: { fontSize: 14, fontWeight: '500' },
-  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
+  nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
   bioEditWrap: { width: '100%', gap: 8, paddingHorizontal: 8 },
-  bioInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 60, textAlignVertical: 'top' },
+  bioInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 60, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
   bioSaveBtn: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8 },
   badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  badgeText: { fontSize: 11, fontWeight: '600' },
+  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  proText: { fontSize: 13, fontWeight: '600' },
+  proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statNum: { fontSize: 18, fontWeight: '700' },
-  statLabel: { fontSize: 11 },
+  statNum: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading },
+  statLabel: { fontSize: 11, fontFamily: fonts.body },
   statDiv: { width: 1 },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
   tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600' },
+  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   tabContent: { gap: 12 },
   overviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12 },
-  overviewText: { fontSize: 14, fontWeight: '500' },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 4 },
+  overviewText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.body },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 4, fontFamily: fonts.headingSemi },
   reviewCard: { borderRadius: 12, padding: 14, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
-  reviewName: { fontSize: 13, fontWeight: '600' },
-  reviewTime: { fontSize: 11 },
-  reviewComment: { fontSize: 14, lineHeight: 19 },
-  emptyText: { fontSize: 14 },
-  emptyHint: { fontSize: 13, marginTop: 4 },
+  reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium },
+  reviewTime: { fontSize: 11, fontFamily: fonts.body },
+  reviewComment: { fontSize: 14, lineHeight: 19, fontFamily: fonts.body },
+  emptyText: { fontSize: 14, fontFamily: fonts.body },
+  emptyHint: { fontSize: 13, marginTop: 4, fontFamily: fonts.body },
   emptyActivity: { alignItems: 'center', paddingTop: 20, gap: 4 },
   activityItem: { flexDirection: 'row', gap: 12, paddingLeft: 16, borderLeftWidth: 2, paddingVertical: 8 },
   activityDot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: -25 },
   activityContent: { flex: 1, gap: 2 },
-  activityTitle: { fontSize: 14, fontWeight: '500' },
+  activityTitle: { fontSize: 14, fontWeight: '500', fontFamily: fonts.body },
   activityMeta: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  activityTime: { fontSize: 12 },
-  activityMetaBadge: { fontSize: 12, fontWeight: '600' },
+  activityTime: { fontSize: 12, fontFamily: fonts.body },
+  activityMetaBadge: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
-  menuText: { fontSize: 15, fontWeight: '500' },
+  menuText: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
   loginBtn: { marginHorizontal: 16, marginTop: 60, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  loginBtnText: { fontSize: 16, fontWeight: '600' },
+  loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  modalTitle: { fontSize: 18, fontWeight: '700' },
+  modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
-  followName: { fontSize: 15, fontWeight: '500' },
+  followName: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
 })
