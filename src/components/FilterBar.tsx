@@ -1,18 +1,12 @@
 import { memo } from 'react'
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
-import {
-  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
-} from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
+import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import type { PostType } from '@/lib/types'
-
-const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
-  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
-}
 
 interface FilterBarProps {
   activeFilter: PostType | null

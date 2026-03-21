@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react'
 import { View, Animated, StyleSheet } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 
-function useShimmer() {
+export function useShimmer() {
   const shimmer = useRef(new Animated.Value(0)).current
   useEffect(() => {
     const anim = Animated.loop(

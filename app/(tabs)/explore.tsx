@@ -18,6 +18,7 @@ import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { formatEventDateShort } from '@/lib/format'
 import * as Location from 'expo-location'
 import type { CityEvent, LocalPlace } from '@/lib/types'
+import { getCityEventName } from '@/lib/eventHelpers'
 
 // ── Types ──
 
@@ -127,13 +128,6 @@ export default function ExploreScreen() {
   const [places, setPlaces] = useState<LocalPlace[]>([])
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
 
-  // ── getCityEventName helper ──
-  const getCityEventName = useCallback((e: CityEvent) => {
-    if (locale === 'en' && e.name_en) return e.name_en
-    if (locale === 'sv' && e.name_sv) return e.name_sv
-    return e.name_fi
-  }, [locale])
-
   // ── Fetch location ──
   const fetchLocation = useCallback(async () => {
     try {
@@ -241,7 +235,7 @@ export default function ExploreScreen() {
     for (const e of cityEvents) {
       combined.push({
         id: e.id,
-        title: getCityEventName(e),
+        title: getCityEventName(e, locale),
         date: e.start_time,
         location: e.location_name,
         isFree: e.is_free,
@@ -251,7 +245,7 @@ export default function ExploreScreen() {
     }
 
     return combined.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [communityEvents, cityEvents, getCityEventName])
+  }, [communityEvents, cityEvents, locale])
 
   // ── Tab chips config ──
   const tabs: { key: SubTab; labelKey: string; Icon: typeof Map }[] = [

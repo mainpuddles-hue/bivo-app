@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo, formatEventDateShort } from '@/lib/format'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import type { CityEvent } from '@/lib/types'
+import { getCityEventName } from '@/lib/eventHelpers'
 
 // ── Types ──
 
@@ -225,13 +226,6 @@ export default function CommunityScreen() {
     { key: 'forum', labelKey: 'forum.title', Icon: MessageCircle },
     { key: 'events', labelKey: 'nav.events', Icon: CalendarDays },
   ]
-
-  // ── getCityEventName helper ──
-  const getCityEventName = useCallback((e: CityEvent) => {
-    if (locale === 'en' && e.name_en) return e.name_en
-    if (locale === 'sv' && e.name_sv) return e.name_sv
-    return e.name_fi
-  }, [locale])
 
   // ── Render helpers ──
 
@@ -489,7 +483,7 @@ export default function CommunityScreen() {
                           </View>
                           <View style={s.cardContent}>
                             <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
-                              {getCityEventName(ce)}
+                              {getCityEventName(ce, locale)}
                             </Text>
                             <Text style={[s.cardDateText, { color: colors.primary }]}>
                               {formatEventDateShort(ce.start_time, locale)}

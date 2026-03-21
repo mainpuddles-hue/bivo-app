@@ -1,10 +1,11 @@
-import { memo, useRef, useEffect } from 'react'
+import { memo } from 'react'
 import { View, Text, ScrollView, StyleSheet, Pressable, Animated, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { MapPin, ChevronRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import type { LocalPlace } from '@/lib/types'
 
 const PLACE_COLORS: Record<string, string> = {
@@ -23,18 +24,7 @@ const PLACE_LABEL_KEYS: Record<string, string> = {
 
 // ── Skeleton component ──
 function HorizontalSkeleton({ colors, width, height }: { colors: ReturnType<typeof useTheme>['colors']; width: number; height: number }) {
-  const shimmer = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    )
-    anim.start()
-    return () => anim.stop()
-  }, [shimmer])
-  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+  const opacity = useShimmer()
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 4 }}>
       {[0, 1, 2].map(i => (

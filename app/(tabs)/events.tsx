@@ -16,6 +16,7 @@ import { formatEventDateShort, formatEventDate } from '@/lib/format'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fonts } from '@/lib/fonts'
 import type { Event, CityEvent } from '@/lib/types'
+import { getCityEventName } from '@/lib/eventHelpers'
 
 type Tab = 'community' | 'city' | 'activities'
 type DateFilter = 'all' | 'today' | 'week'
@@ -303,12 +304,6 @@ export default function EventsScreen() {
     if (shared) Alert.alert(t('events.linkCopied'))
   }, [t])
 
-  const getCityEventName = (e: CityEvent) => {
-    if (locale === 'en' && e.name_en) return e.name_en
-    if (locale === 'sv' && e.name_sv) return e.name_sv
-    return e.name_fi
-  }
-
   const getCityEventDesc = (e: CityEvent) => {
     if (locale === 'en' && e.description_en) return e.description_en
     if (locale === 'sv' && e.description_sv) return e.description_sv
@@ -414,7 +409,7 @@ export default function EventsScreen() {
           </View>
         )}
         <View style={ev.cardContent}>
-          <Text style={[ev.cardTitle, { color: colors.foreground }]} numberOfLines={2}>{getCityEventName(item)}</Text>
+          <Text style={[ev.cardTitle, { color: colors.foreground }]} numberOfLines={2}>{getCityEventName(item, locale)}</Text>
           <Text style={[ev.cardDate, { color: colors.primary }]}>{formatEventDateShort(item.start_time, locale)}</Text>
           {item.location_name && (
             <View style={ev.meta}><MapPin size={12} color={colors.mutedForeground} /><Text style={[ev.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>{item.location_name}</Text></View>
@@ -688,7 +683,7 @@ export default function EventsScreen() {
             </View>
             <ScrollView contentContainerStyle={ev.modalBody}>
               {selectedCityEvent.image_url && <Image source={{ uri: selectedCityEvent.image_url }} style={ev.detailImg} contentFit="cover" />}
-              <Text style={[ev.detailTitle, { color: colors.foreground }]}>{getCityEventName(selectedCityEvent)}</Text>
+              <Text style={[ev.detailTitle, { color: colors.foreground }]}>{getCityEventName(selectedCityEvent, locale)}</Text>
               <Text style={[ev.detailDate, { color: colors.primary }]}>{formatEventDate(selectedCityEvent.start_time, locale)}</Text>
 
               {/* Full description */}
@@ -733,8 +728,8 @@ export default function EventsScreen() {
                 <Pressable
                   onPress={async () => {
                     const shared = await shareContent({
-                      title: getCityEventName(selectedCityEvent),
-                      text: getCityEventName(selectedCityEvent),
+                      title: getCityEventName(selectedCityEvent, locale),
+                      text: getCityEventName(selectedCityEvent, locale),
                       url: selectedCityEvent.info_url ?? 'https://tackbird-v2.vercel.app/events',
                     })
                     if (shared) Alert.alert(t('events.linkCopied'))

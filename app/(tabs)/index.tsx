@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useEffect } from 'react'
+import { useCallback, useMemo } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, Animated } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle } from 'lucide-react-native'
@@ -13,54 +13,17 @@ import { PostCard } from '@/components/PostCard'
 import { AlertBanner } from '@/components/AlertBanner'
 import { SmartMatchBanner } from '@/components/SmartMatchBanner'
 import { DiscoverySection } from '@/components/DiscoverySection'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { HeroEventCard } from '@/components/HeroEventCard'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { FeedContextHeader } from '@/components/FeedContextHeader'
 import { NappaaUrgencyStrip } from '@/components/NappaaUrgencyStrip'
 import type { Post } from '@/lib/types'
-
-// ── Date helpers for time-based section breaks ──
-function isToday(dateStr: string): boolean {
-  const d = new Date(dateStr); const n = new Date()
-  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate()
-}
-function isTomorrow(dateStr: string): boolean {
-  const d = new Date(dateStr); const t = new Date(); t.setDate(t.getDate() + 1)
-  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate()
-}
-function isWithinDays(dateStr: string, days: number): boolean {
-  const d = new Date(dateStr).getTime(); const now = Date.now()
-  return d >= now && d <= now + days * 86400000
-}
-function isYesterday(dateStr: string): boolean {
-  const d = new Date(dateStr); const y = new Date(); y.setDate(y.getDate() - 1)
-  return d.getFullYear() === y.getFullYear() && d.getMonth() === y.getMonth() && d.getDate() === y.getDate()
-}
-function isWithinPastDays(dateStr: string, days: number): boolean {
-  const d = new Date(dateStr).getTime(); const now = Date.now()
-  return d <= now && d >= now - days * 86400000
-}
-function getDateGroup(dateStr: string): string {
-  if (isToday(dateStr)) return 'today'
-  if (isYesterday(dateStr)) return 'yesterday'
-  if (isWithinPastDays(dateStr, 7)) return 'thisWeek'
-  return 'earlier'
-}
+import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
 // ── Skeleton ──
 function PostCardSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
-  const shimmer = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    )
-    anim.start()
-    return () => anim.stop()
-  }, [shimmer])
-  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+  const opacity = useShimmer()
   return (
     <View style={[skelStyles.card, { backgroundColor: colors.card }]}>
       <Animated.View style={[skelStyles.image, { backgroundColor: colors.muted, opacity }]} />

@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import type { CityEvent } from '@/lib/types'
+import { getCityEventName } from '@/lib/eventHelpers'
 
 const CITY_EVENT_COLORS: Record<string, string> = {
   culture: '#8E44AD', music: '#E91E63', sport: '#27AE60', family: '#FF9800',
@@ -22,12 +23,6 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
   const { colors } = useTheme()
   const { locale } = useI18n()
   const router = useRouter()
-
-  const getCityEventName = useCallback((e: CityEvent) => {
-    if (locale === 'en' && e.name_en) return e.name_en
-    if (locale === 'sv' && e.name_sv) return e.name_sv
-    return e.name_fi
-  }, [locale])
 
   const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
 
@@ -45,7 +40,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
       )}
       <View style={styles.todayEventInfo}>
         <Text style={[styles.todayEventName, { color: colors.foreground }]} numberOfLines={1}>
-          {getCityEventName(event)}
+          {getCityEventName(event, locale)}
         </Text>
         {event.location_name && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>

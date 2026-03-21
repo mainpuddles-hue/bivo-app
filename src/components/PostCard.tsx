@@ -5,15 +5,17 @@ import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
-  HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock,
+  MessageCircle, Clock,
   Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User, Flag,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
+import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
+import { haversineKm } from '@/lib/geo'
 import type { Post, PostType } from '@/lib/types'
 
 const APP_URL = 'https://tackbird-v2.vercel.app'
@@ -29,18 +31,6 @@ function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: R
   if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
   if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
   return null
-}
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLon = (lon2 - lon1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
-const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
-  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
 }
 
 interface PostCardProps {
@@ -102,7 +92,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
 
   const distanceText = useMemo(() => {
     if (!userLocation || !post.latitude || !post.longitude) return null
-    const dist = calculateDistance(userLocation.latitude, userLocation.longitude, post.latitude, post.longitude)
+    const dist = haversineKm(userLocation.latitude, userLocation.longitude, post.latitude, post.longitude)
     if (dist < 0.1) return '< 0.1 km'
     return t('postCard.distanceKm', { distance: dist < 10 ? dist.toFixed(1) : Math.round(dist).toString() })
   }, [userLocation, post.latitude, post.longitude, t])

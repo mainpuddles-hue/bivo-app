@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import * as Location from 'expo-location'
+import { haversineKm } from '@/lib/geo'
 
 // Approximate center coordinates for Helsinki neighborhoods
 const NEIGHBORHOOD_CENTERS: Record<string, { lat: number; lng: number }> = {
@@ -45,16 +46,6 @@ const NEIGHBORHOOD_CENTERS: Record<string, { lat: number; lng: number }> = {
   Tapulikaupunki: { lat: 60.2625, lng: 25.0297 },
 }
 
-function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371 // km
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLon = (lon2 - lon1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
 export type VerificationStatus = 'idle' | 'checking' | 'verified' | 'unverified' | 'error'
 
 export function useLocationVerification() {
@@ -78,7 +69,7 @@ export function useLocationVerification() {
       }
 
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-      const dist = haversineDistance(loc.coords.latitude, loc.coords.longitude, center.lat, center.lng)
+      const dist = haversineKm(loc.coords.latitude, loc.coords.longitude, center.lat, center.lng)
       setDistanceKm(dist)
 
       if (dist <= 2) {

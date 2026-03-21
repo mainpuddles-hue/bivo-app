@@ -9,6 +9,8 @@ import * as Location from 'expo-location'
 import { CATEGORIES } from '@/lib/constants'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
+import { isToday, isTomorrow, isWithinDays } from '@/lib/dateHelpers'
+import { haversineKm } from '@/lib/geo'
 import type { ListItem, StableMarker, FilterKey, Section, ItemKind } from './types'
 import { LAYER_COLORS, PLACE_LABEL, PLACES_INITIAL_LIMIT, formatDistance } from './constants'
 
@@ -87,43 +89,11 @@ export const DARK_MAP_STYLE = [
 
 // ── Helpers ──
 
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
 function isPast(dateStr: string): boolean {
   const d = new Date(dateStr)
   const now = new Date()
   now.setHours(0, 0, 0, 0)
   return d < now
-}
-
-function isToday(dateStr: string): boolean {
-  const d = new Date(dateStr)
-  const now = new Date()
-  return d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-}
-
-function isTomorrow(dateStr: string): boolean {
-  const d = new Date(dateStr)
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  return d.getFullYear() === tomorrow.getFullYear() &&
-    d.getMonth() === tomorrow.getMonth() &&
-    d.getDate() === tomorrow.getDate()
-}
-
-function isWithinDays(dateStr: string, days: number): boolean {
-  const d = new Date(dateStr).getTime()
-  const now = Date.now()
-  return d >= now && d <= now + days * 24 * 60 * 60 * 1000
 }
 
 // ══════════════════════════════════════════════════════════════
