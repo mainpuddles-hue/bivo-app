@@ -592,7 +592,15 @@
     "paymentHistory": "Betalningshistorik",
     "email": "E-post",
     "emailVerified": "Verifierad",
-    "emailUnverified": "Ej verifierad"
+    "emailUnverified": "Ej verifierad",
+    "notifSection": "Aviseringsinställningar",
+    "notifNearbyPosts": "Nya inlägg i närheten",
+    "notifEvents": "Nya evenemang",
+    "notifMessagesGranular": "Meddelanden",
+    "notifLikes": "Gillningar på dina inlägg",
+    "notifComments": "Kommentarer på dina inlägg",
+    "notifFollows": "Nya följare",
+    "notifNappaa": "Fånga-aviseringar (24h)"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -1260,7 +1268,10 @@
     "searchSaved": "Sökning sparad",
     "searchRemoved": "Sökning borttagen",
     "locationRequired": "Platsåtkomst krävs för avståndsfilter",
-    "selectDate": "Välj datum"
+    "selectDate": "Välj datum",
+    "timeToday": "Idag",
+    "timeWeek": "Denna vecka",
+    "timeAll": "Alla"
   },
   "saved": {
     "title": "Sparade",

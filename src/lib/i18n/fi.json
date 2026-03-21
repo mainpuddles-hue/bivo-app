@@ -592,7 +592,15 @@
     "paymentHistory": "Maksuhistoria",
     "email": "Sähköposti",
     "emailVerified": "Vahvistettu",
-    "emailUnverified": "Vahvistamaton"
+    "emailUnverified": "Vahvistamaton",
+    "notifSection": "Ilmoitusasetukset",
+    "notifNearbyPosts": "Uudet ilmoitukset lähellä",
+    "notifEvents": "Uudet tapahtumat",
+    "notifMessagesGranular": "Viestit",
+    "notifLikes": "Tykkäykset",
+    "notifComments": "Kommentit",
+    "notifFollows": "Seuraaminen",
+    "notifNappaa": "Nappaa! hälytykset"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -1277,7 +1285,10 @@
     "searchSaved": "Haku tallennettu",
     "searchRemoved": "Haku poistettu",
     "locationRequired": "Sijaintilupa tarvitaan etäisyyssuodattimelle",
-    "selectDate": "Valitse päivä"
+    "selectDate": "Valitse päivä",
+    "timeToday": "Tänään",
+    "timeWeek": "Tällä viikolla",
+    "timeAll": "Kaikki"
   },
   "saved": {
     "title": "Tallennetut",

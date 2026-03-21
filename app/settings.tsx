@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle } from 'lucide-react-native'
+import { ArrowLeft, Globe, Bell, Shield, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
@@ -331,8 +331,8 @@ export default function SettingsScreen() {
           ))}
         </View>
 
-        {/* Notifications */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.notifications')}</Text>
+        {/* Notifications — granular preferences */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.notifSection')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {notifPrefs.loading ? (
             <View style={s.toggleRow}>
@@ -341,14 +341,16 @@ export default function SettingsScreen() {
             </View>
           ) : (
             ([
-              { type: 'messages' as NotificationType, label: 'nav.messages' },
-              { type: 'reviews' as NotificationType, label: 'profile.reviews' },
-              { type: 'rentals' as NotificationType, label: 'settings.proSubscription' },
-              { type: 'system' as NotificationType, label: 'settings.notifications' },
-              { type: 'marketing' as NotificationType, label: 'settings.marketing' },
-            ]).map(({ type, label }) => (
+              { type: 'nearby_posts' as NotificationType, label: 'settings.notifNearbyPosts', Icon: MapPin },
+              { type: 'events' as NotificationType, label: 'settings.notifEvents', Icon: CalendarDays },
+              { type: 'messages' as NotificationType, label: 'settings.notifMessagesGranular', Icon: MessageCircle },
+              { type: 'likes' as NotificationType, label: 'settings.notifLikes', Icon: Heart },
+              { type: 'comments' as NotificationType, label: 'settings.notifComments', Icon: MessageSquare },
+              { type: 'follows' as NotificationType, label: 'settings.notifFollows', Icon: UserPlus },
+              { type: 'nappaa' as NotificationType, label: 'settings.notifNappaa', Icon: Zap },
+            ]).map(({ type, label, Icon }) => (
               <View key={type} style={s.toggleRow}>
-                <Bell size={18} color={colors.mutedForeground} />
+                <Icon size={18} color={notifPrefs.preferences[type] ? colors.primary : colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
                 <Switch
                   value={notifPrefs.preferences[type]}

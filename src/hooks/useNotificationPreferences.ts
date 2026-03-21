@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@/lib/supabase/client'
 
-export type NotificationType = 'messages' | 'reviews' | 'rentals' | 'system' | 'marketing'
+export type NotificationType = 'messages' | 'reviews' | 'rentals' | 'system' | 'marketing' | 'nearby_posts' | 'events' | 'likes' | 'comments' | 'follows' | 'nappaa'
 
 export interface NotificationPreferences {
   messages: boolean
@@ -10,6 +10,12 @@ export interface NotificationPreferences {
   rentals: boolean
   system: boolean
   marketing: boolean
+  nearby_posts: boolean
+  events: boolean
+  likes: boolean
+  comments: boolean
+  follows: boolean
+  nappaa: boolean
 }
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
@@ -18,6 +24,12 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   rentals: true,
   system: true,
   marketing: false,
+  nearby_posts: true,
+  events: true,
+  likes: true,
+  comments: true,
+  follows: true,
+  nappaa: true,
 }
 
 const CACHE_KEY = 'tackbird-notification-prefs'

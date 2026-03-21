@@ -592,7 +592,15 @@
     "paymentHistory": "Payment history",
     "email": "Email",
     "emailVerified": "Verified",
-    "emailUnverified": "Unverified"
+    "emailUnverified": "Unverified",
+    "notifSection": "Notification preferences",
+    "notifNearbyPosts": "New posts nearby",
+    "notifEvents": "New events",
+    "notifMessagesGranular": "Messages",
+    "notifLikes": "Likes on your posts",
+    "notifComments": "Comments on your posts",
+    "notifFollows": "New followers",
+    "notifNappaa": "Grab-it alerts (24h)"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -1260,7 +1268,10 @@
     "searchSaved": "Search saved",
     "searchRemoved": "Search removed",
     "locationRequired": "Location access needed for distance filter",
-    "selectDate": "Select date"
+    "selectDate": "Select date",
+    "timeToday": "Today",
+    "timeWeek": "This week",
+    "timeAll": "All"
   },
   "saved": {
     "title": "Saved",
