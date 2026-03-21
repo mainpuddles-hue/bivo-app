@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { BirdMascot } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -246,6 +247,7 @@ export default function MessagesScreen() {
         ListEmptyComponent={
           !loading ? (
             <View style={styles.empty}>
+              <BirdMascot size={60} />
               <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
                 {showArchived ? t('messages.noArchivedConversations') : t('messages.noConversations')}
               </Text>

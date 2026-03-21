@@ -636,6 +636,7 @@ export default function FeedScreen() {
       {/* Error state */}
       {error && (
         <View style={[styles.errorBox, { backgroundColor: `${colors.destructive}10`, borderColor: `${colors.destructive}33` }]}>
+          <BirdMascot size={50} />
           <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
           <Pressable
             onPress={handleRefresh}
