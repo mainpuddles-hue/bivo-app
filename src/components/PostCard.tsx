@@ -106,19 +106,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
       {/* Left category color bar */}
       <View style={[styles.categoryBar, { backgroundColor: category?.color ?? colors.primary }]} />
 
-      {/* Pro banner at top of card */}
-      {isPro && (
+      {/* Pro banner — only when no image (crown badge handles image cards) */}
+      {isPro && !hasImage && (
         <View style={styles.proBanner}>
           <Crown size={12} color="#FFFFFF" />
           <Text style={styles.proBannerText}>Pro</Text>
         </View>
       )}
-
-      {/* Top accent line */}
-      <View style={[
-        styles.accentLine,
-        { backgroundColor: isPro ? colors.pro : isNappaa ? '#E8A050' : category?.color ?? colors.primary }
-      ]} />
 
       {/* Image */}
       {hasImage && (
@@ -168,9 +162,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               {CategoryIcon && <CategoryIcon size={10} color={category.color} strokeWidth={2.5} />}
               <Text style={[styles.categoryLabel, { color: category.color }]}>
                 {t(category.label)}
-              </Text>
-              <Text style={[styles.categorySubtitle, { color: colors.mutedForeground }]}>
-                {t(category.subtitle)}
               </Text>
             </View>
           )}
@@ -298,7 +289,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
           <Pressable
             hitSlop={12}
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
-            style={styles.engagementItem}
+            style={[styles.engagementItem, !showMore && { opacity: 0.5 }]}
           >
             <MoreHorizontal size={14} color={colors.mutedForeground} />
           </Pressable>
@@ -376,8 +367,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
-  accentLine: { height: 2 },
-  imageContainer: { aspectRatio: 3 / 2, position: 'relative' },
+  imageContainer: { aspectRatio: 16 / 9, position: 'relative' },
   image: { width: '100%', height: '100%' },
   multiImageBadge: {
     position: 'absolute', bottom: 10, right: 10,
@@ -400,7 +390,6 @@ const styles = StyleSheet.create({
   },
   expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7 },
   categoryLabel: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.5, textTransform: 'uppercase', lineHeight: 13 },
-  categorySubtitle: { fontSize: 10, fontFamily: fonts.body, lineHeight: 13 },
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.16 },
   titleLarge: { fontSize: 18, fontFamily: fonts.headingSemi, letterSpacing: -0.18, lineHeight: 24 },
   description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
