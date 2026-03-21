@@ -80,7 +80,8 @@
     "showAll": "Näytä kaikki",
     "new": "Uutta",
     "startConversation": "Kommentoi",
-    "expiringToday": "Vanhenee tänään!"
+    "expiringToday": "Vanhenee tänään!",
+    "examplePost": "Esimerkki-ilmoitus"
   },
   "time": {
     "justNow": "juuri nyt",
@@ -472,7 +473,13 @@
     "activityEventAttended": "Osallistui tapahtumaan",
     "activityReviewGiven": "Antoi arvostelun",
     "activityReviewReceived": "Sai arvostelun",
-    "activityRental": "Lainaus"
+    "activityRental": "Lainaus",
+    "yourImpact": "Sinun vaikutuksesi",
+    "helped": "Autettu",
+    "shared": "Jaettu",
+    "impactSaved": "Tallennettu",
+    "streakDays": "{count} päivän putki",
+    "points": "pistettä"
   },
   "settings": {
     "title": "Asetukset",
@@ -1615,7 +1622,14 @@
     "verified": "Vahvistettu",
     "pro": "Pro",
     "trusted": "Luotettu",
-    "active": "Aktiivinen"
+    "active": "Aktiivinen",
+    "first_post": "Ensimmäinen",
+    "helper": "Auttaja",
+    "popular": "Suosittu",
+    "lender": "Lainaaja",
+    "event_creator": "Järjestäjä",
+    "weekly_active": "Viikkoaktiivi",
+    "neighborhood_hero": "Naapurustosankari"
   },
   "presence": {
     "online": "Paikalla",

@@ -80,7 +80,8 @@
     "showAll": "Visa alla",
     "new": "Nytt",
     "startConversation": "Kommentera",
-    "expiringToday": "Går ut idag!"
+    "expiringToday": "Går ut idag!",
+    "examplePost": "Exempelannons"
   },
   "time": {
     "justNow": "just nu",
@@ -472,7 +473,13 @@
     "activityEventAttended": "Deltog i evenemang",
     "activityReviewGiven": "Gav en recension",
     "activityReviewReceived": "Fick en recension",
-    "activityRental": "Uthyrning"
+    "activityRental": "Uthyrning",
+    "yourImpact": "Din påverkan",
+    "helped": "Hjälpt",
+    "shared": "Delat",
+    "impactSaved": "Sparat",
+    "streakDays": "{count} dagars svit",
+    "points": "poäng"
   },
   "settings": {
     "title": "Inställningar",
@@ -1588,7 +1595,14 @@
     "verified": "Verifierad",
     "pro": "Pro",
     "trusted": "Pålitlig",
-    "active": "Aktiv"
+    "active": "Aktiv",
+    "first_post": "Första inlägget",
+    "helper": "Hjälpare",
+    "popular": "Populär",
+    "lender": "Utlånare",
+    "event_creator": "Arrangör",
+    "weekly_active": "Veckoaktiv",
+    "neighborhood_hero": "Grannskapshjälte"
   },
   "presence": {
     "online": "Online",

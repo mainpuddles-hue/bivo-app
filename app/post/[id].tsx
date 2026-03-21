@@ -669,6 +669,31 @@ export default function PostDetailScreen() {
         </Pressable>
       </Modal>
 
+      {/* Fixed bottom CTA */}
+      {post && userId && post.user_id !== userId && (
+        <View style={[ctaStyles.bar, {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          paddingBottom: insets.bottom + 8,
+        }]}>
+          <Pressable
+            onPress={handleMessage}
+            style={[ctaStyles.messageBtn, { backgroundColor: colors.primary }]}
+          >
+            <MessageCircle size={18} color={colors.primaryForeground} />
+            <Text style={[ctaStyles.messageBtnText, { color: colors.primaryForeground }]}>
+              {t('post.message')}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={handleShare}
+            style={[ctaStyles.shareBtn, { backgroundColor: isDark ? colors.muted : colors.background, borderColor: colors.border }]}
+          >
+            <Share2 size={18} color={colors.foreground} />
+          </Pressable>
+        </View>
+      )}
+
       {/* Report Modal */}
       {post && (
         <ReportModal
@@ -685,7 +710,7 @@ export default function PostDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
-  scrollContent: { paddingBottom: 40 },
+  scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
   body: { padding: 16, gap: 12 },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
@@ -775,4 +800,22 @@ const styles = StyleSheet.create({
   confirmNote: { fontSize: 12, textAlign: 'center', marginTop: 10, lineHeight: 17 },
   errorText: { fontSize: 13, textAlign: 'center', marginTop: 8 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 10 },
+})
+
+const ctaStyles = StyleSheet.create({
+  bar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 16, paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  messageBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 14, borderRadius: 12,
+  },
+  messageBtnText: { fontSize: 15, fontWeight: '600' },
+  shareBtn: {
+    width: 48, height: 48, borderRadius: 12, borderWidth: 1,
+    alignItems: 'center', justifyContent: 'center',
+  },
 })

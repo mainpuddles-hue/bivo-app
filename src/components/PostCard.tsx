@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
   HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock,
-  Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User,
+  Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User, Flag,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -216,6 +216,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
         ]} numberOfLines={2}>
           {post.title}
         </Text>
+        {(post as any).is_seed && (
+          <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
+        )}
 
         {/* Description for imageless posts */}
         {!hasImage && post.description ? (
@@ -331,6 +334,21 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               <Share2 size={14} color={colors.mutedForeground} />
             </Pressable>
           )}
+          {showMore && (
+            <Pressable
+              hitSlop={12}
+              onPress={(e) => {
+                e.stopPropagation?.()
+                setShowMore(false)
+                if (!userId) { router.push('/(auth)/login'); return }
+                // Navigate to post detail where report modal exists
+                router.push(`/post/${post.id}`)
+              }}
+              style={styles.engagementItem}
+            >
+              <Flag size={14} color={colors.mutedForeground} />
+            </Pressable>
+          )}
           <Pressable
             hitSlop={12}
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
@@ -437,6 +455,7 @@ const styles = StyleSheet.create({
   categoryLabel: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.5, textTransform: 'uppercase', lineHeight: 13 },
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.16 },
   titleLarge: { fontSize: 18, fontFamily: fonts.headingSemi, letterSpacing: -0.18, lineHeight: 24 },
+  seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic' },
   description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },

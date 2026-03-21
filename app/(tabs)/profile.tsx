@@ -355,6 +355,60 @@ export default function ProfileScreen() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <View style={s.tabContent}>
+            {/* Impact Dashboard */}
+            <View style={[impactStyles.card, { backgroundColor: colors.card }]}>
+              <Text style={[impactStyles.title, { color: colors.foreground }]}>{t('profile.yourImpact')}</Text>
+              <View style={impactStyles.statsRow}>
+                <View style={impactStyles.statItem}>
+                  <Text style={[impactStyles.statNumber, { color: colors.primary }]}>{thanksCount}</Text>
+                  <Text style={[impactStyles.statLabel, { color: colors.mutedForeground }]}>{t('profile.helped')}</Text>
+                </View>
+                <View style={impactStyles.statItem}>
+                  <Text style={[impactStyles.statNumber, { color: colors.primary }]}>{postCount}</Text>
+                  <Text style={[impactStyles.statLabel, { color: colors.mutedForeground }]}>{t('profile.shared')}</Text>
+                </View>
+                <View style={impactStyles.statItem}>
+                  <Text style={[impactStyles.statNumber, { color: colors.primary }]}>{savedCount}</Text>
+                  <Text style={[impactStyles.statLabel, { color: colors.mutedForeground }]}>{t('profile.impactSaved')}</Text>
+                </View>
+              </View>
+              {(profile?.current_streak ?? 0) > 0 && (
+                <View style={[impactStyles.streakRow, { borderTopColor: colors.border }]}>
+                  <Flame size={16} color="#EF4444" />
+                  <Text style={[impactStyles.streakText, { color: colors.foreground }]}>
+                    {t('profile.streakDays', { count: profile?.current_streak ?? 0 })}
+                  </Text>
+                  <Text style={[impactStyles.pointsText, { color: colors.mutedForeground }]}>
+                    · {profile?.total_points ?? 0} {t('profile.points')}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Badge Showcase */}
+            {badges.length > 0 && (
+              <View style={[impactStyles.card, { backgroundColor: colors.card }]}>
+                <Text style={[impactStyles.title, { color: colors.foreground }]}>{t('profile.badges')}</Text>
+                <View style={badgeStyles.grid}>
+                  {badges.map(badge => {
+                    const info = BADGE_ICONS[badge.badge_type]
+                    if (!info) return null
+                    const Icon = info.icon
+                    return (
+                      <View key={badge.badge_type} style={badgeStyles.item}>
+                        <View style={[badgeStyles.circle, { backgroundColor: `${info.color}18` }]}>
+                          <Icon size={20} color={info.color} />
+                        </View>
+                        <Text style={[badgeStyles.label, { color: colors.foreground }]} numberOfLines={1}>
+                          {t(`badges.${badge.badge_type}`)}
+                        </Text>
+                      </View>
+                    )
+                  })}
+                </View>
+              </View>
+            )}
+
             {/* Saved posts count */}
             <Pressable style={[s.overviewCard, { backgroundColor: colors.card }]}>
               <Heart size={18} color={colors.primary} />
@@ -544,4 +598,23 @@ const s = StyleSheet.create({
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
   followName: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
+})
+
+const impactStyles = StyleSheet.create({
+  card: { borderRadius: 12, padding: 16, gap: 12 },
+  title: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16 },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  statItem: { alignItems: 'center', gap: 4 },
+  statNumber: { fontSize: 24, fontFamily: fonts.heading },
+  statLabel: { fontSize: 11, fontFamily: fonts.body },
+  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
+  streakText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  pointsText: { fontSize: 13, fontFamily: fonts.body },
+})
+
+const badgeStyles = StyleSheet.create({
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+  item: { alignItems: 'center', gap: 6, width: 72 },
+  circle: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  label: { fontSize: 10, fontFamily: fonts.body, textAlign: 'center' },
 })

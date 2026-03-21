@@ -80,7 +80,8 @@
     "showAll": "Show all",
     "new": "New",
     "startConversation": "Comment",
-    "expiringToday": "Expiring today!"
+    "expiringToday": "Expiring today!",
+    "examplePost": "Example listing"
   },
   "time": {
     "justNow": "just now",
@@ -472,7 +473,13 @@
     "activityEventAttended": "Attended an event",
     "activityReviewGiven": "Gave a review",
     "activityReviewReceived": "Received a review",
-    "activityRental": "Rental"
+    "activityRental": "Rental",
+    "yourImpact": "Your impact",
+    "helped": "Helped",
+    "shared": "Shared",
+    "impactSaved": "Saved",
+    "streakDays": "{count} day streak",
+    "points": "points"
   },
   "settings": {
     "title": "Settings",
@@ -1588,7 +1595,14 @@
     "verified": "Verified",
     "pro": "Pro",
     "trusted": "Trusted",
-    "active": "Active"
+    "active": "Active",
+    "first_post": "First post",
+    "helper": "Helper",
+    "popular": "Popular",
+    "lender": "Lender",
+    "event_creator": "Event creator",
+    "weekly_active": "Weekly active",
+    "neighborhood_hero": "Neighborhood hero"
   },
   "presence": {
     "online": "Online",

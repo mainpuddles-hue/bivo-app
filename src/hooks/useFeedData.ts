@@ -7,6 +7,7 @@ import { POST_SELECT } from '@/lib/constants'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
+import { getSeedPosts } from '@/lib/seedContent'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type { PostType }
@@ -187,7 +188,13 @@ export function useFeedData() {
       }
 
       if (reset) {
-        setPosts(newPosts)
+        if (newPosts.length === 0) {
+          // Show seed content for empty neighborhoods
+          const seeds = getSeedPosts(userNeighborhood ?? 'Helsinki') as Post[]
+          setPosts(seeds)
+        } else {
+          setPosts(newPosts)
+        }
         offsetRef.current = newPosts.length
       } else {
         setPosts(prev => {
@@ -207,7 +214,7 @@ export function useFeedData() {
         setRefreshing(false)
       }
     }
-  }, [supabase, activeFilter, showFollowing, followedIds, t, currentUserId])
+  }, [supabase, activeFilter, showFollowing, followedIds, t, currentUserId, userNeighborhood])
 
   // Ref to avoid stale closures in useFocusEffect and realtime callbacks
   const fetchPostsRef = useRef(fetchPosts)
