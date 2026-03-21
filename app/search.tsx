@@ -1,15 +1,18 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, Bookmark, BookmarkCheck, LayoutGrid, ChevronRight, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, Star, Trash2 } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
+import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, Star, Trash2 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
 import { POST_SELECT, CATEGORIES } from '@/lib/constants'
 import { PostCard } from '@/components/PostCard'
+import { BoardIllustration } from '@/components/illustrations'
 import { SearchFilters, EMPTY_FILTERS, countActiveFilters, type SearchFilterValues, type SortOption } from '@/components/SearchFilters'
 import type { Post, PostType } from '@/lib/types'
 
@@ -19,7 +22,9 @@ const CAT_ICON_MAP: Record<string, React.ComponentType<any>> = {
 
 const HISTORY_KEY = 'tackbird-search-history'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
-const MAX_HISTORY = 10
+const MAX_HISTORY = 5
+
+type TimeFilter = 'all' | 'today' | 'week'
 
 interface SavedSearch {
   id: string
@@ -30,7 +35,6 @@ interface SavedSearch {
 
 /**
  * Compute a bounding box from a center point and distance in km.
- * Returns { minLat, maxLat, minLng, maxLng }.
  */
 function boundingBox(lat: number, lng: number, km: number) {
   const latDelta = km / 111.32
@@ -41,6 +45,22 @@ function boundingBox(lat: number, lng: number, km: number) {
     minLng: lng - lngDelta,
     maxLng: lng + lngDelta,
   }
+}
+
+/**
+ * Loading skeleton placeholder for search results.
+ */
+function SkeletonCard({ colors }: { colors: any }) {
+  return (
+    <View style={[s.skeletonCard, { backgroundColor: colors.card }]}>
+      <View style={[s.skeletonImage, { backgroundColor: colors.muted }]} />
+      <View style={s.skeletonContent}>
+        <View style={[s.skeletonLine, { backgroundColor: colors.muted, width: '70%' }]} />
+        <View style={[s.skeletonLine, { backgroundColor: colors.muted, width: '90%' }]} />
+        <View style={[s.skeletonLine, { backgroundColor: colors.muted, width: '50%' }]} />
+      </View>
+    </View>
+  )
 }
 
 export default function SearchScreen() {
@@ -61,11 +81,16 @@ export default function SearchScreen() {
   const [activeTab, setActiveTab] = useState<'posts' | 'users'>('posts')
   const [userResults, setUserResults] = useState<{ id: string; name: string; avatar_url: string | null; naapurusto: string }[]>([])
   const [trendingPosts, setTrendingPosts] = useState<{ id: string; title: string; type: string; like_count: number }[]>([])
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
 
   // Filter state
   const [filtersVisible, setFiltersVisible] = useState(false)
   const [filters, setFilters] = useState<SearchFilterValues>({ ...EMPTY_FILTERS })
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
+
+  // Debounce + abort refs
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   const filterCount = useMemo(() => countActiveFilters(filters), [filters])
 
@@ -127,20 +152,31 @@ export default function SearchScreen() {
   const loadSavedSearch = useCallback((saved: SavedSearch) => {
     setQuery(saved.query)
     setFilters(saved.filters)
-    // Trigger search after state updates
-    setTimeout(() => handleSearch(saved.query, saved.filters), 0)
+    setTimeout(() => executeSearch(saved.query, saved.filters), 0)
   }, [])
 
   /**
    * Build a Supabase query applying all active filters.
    */
   const buildFilteredQuery = useCallback(
-    (baseQuery: any, f: SearchFilterValues, categoryFilter: PostType | null) => {
+    (baseQuery: any, f: SearchFilterValues, categoryFilter: PostType | null, currentTimeFilter: TimeFilter) => {
       let q = baseQuery
 
       // Category filter
       if (categoryFilter) {
         q = q.eq('type', categoryFilter)
+      }
+
+      // Time filter
+      if (currentTimeFilter === 'today') {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        q = q.gte('created_at', today.toISOString())
+      } else if (currentTimeFilter === 'week') {
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        weekAgo.setHours(0, 0, 0, 0)
+        q = q.gte('created_at', weekAgo.toISOString())
       }
 
       // Price range
@@ -180,8 +216,6 @@ export default function SearchScreen() {
           q = q.order('created_at', { ascending: false })
           break
         case 'closest':
-          // Supabase doesn't have native geo-sort — fall back to created_at
-          // Distance sorting happens client-side after fetch
           q = q.order('created_at', { ascending: false })
           break
         case 'most_liked':
@@ -222,41 +256,97 @@ export default function SearchScreen() {
     []
   )
 
-  const handleSearch = useCallback(async (searchQuery?: string, overrideFilters?: SearchFilterValues) => {
+  /**
+   * Core search execution — called by debounce and direct triggers.
+   */
+  const executeSearch = useCallback(async (
+    searchQuery?: string,
+    overrideFilters?: SearchFilterValues,
+    overrideCategory?: PostType | null,
+    overrideTimeFilter?: TimeFilter,
+  ) => {
     const q = (searchQuery ?? query).trim()
     if (!q) return
+
+    // Cancel any in-flight request
+    if (abortRef.current) {
+      abortRef.current.abort()
+    }
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setLoading(true)
     setSearched(true)
     addToHistory(q)
 
     const f = overrideFilters ?? filters
+    const catFilter = overrideCategory !== undefined ? overrideCategory : activeFilter
+    const tf = overrideTimeFilter !== undefined ? overrideTimeFilter : timeFilter
 
-    // Search posts
-    let postQuery = supabase
-      .from('posts')
-      .select(POST_SELECT)
-      .eq('is_active', true)
-      .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+    try {
+      // Search posts
+      let postQuery = supabase
+        .from('posts')
+        .select(POST_SELECT)
+        .eq('is_active', true)
+        .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
 
-    postQuery = buildFilteredQuery(postQuery, f, activeFilter)
-    postQuery = postQuery.limit(20)
+      postQuery = buildFilteredQuery(postQuery, f, catFilter, tf)
+      postQuery = postQuery.limit(20)
 
-    const { data: posts } = await postQuery
-    let postResults = (posts ?? []) as unknown as Post[]
-    postResults = sortByDistance(postResults, f)
-    setResults(postResults)
-    setHasMore((posts ?? []).length >= 20)
+      const { data: posts } = await postQuery
+      // Check if this request was aborted
+      if (controller.signal.aborted) return
 
-    // Search users
-    const { data: users } = await supabase
-      .from('profiles')
-      .select('id, name, avatar_url, naapurusto')
-      .ilike('name', `%${q}%`)
-      .limit(10)
-    setUserResults((users ?? []) as any[])
+      let postResults = (posts ?? []) as unknown as Post[]
+      postResults = sortByDistance(postResults, f)
+      setResults(postResults)
+      setHasMore((posts ?? []).length >= 20)
 
-    setLoading(false)
-  }, [query, activeFilter, filters, supabase, addToHistory, buildFilteredQuery, sortByDistance])
+      // Search users
+      const { data: users } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url, naapurusto')
+        .ilike('name', `%${q}%`)
+        .limit(10)
+      if (controller.signal.aborted) return
+
+      setUserResults((users ?? []) as any[])
+    } catch {
+      // Request aborted or failed — ignore
+    } finally {
+      if (!controller.signal.aborted) {
+        setLoading(false)
+      }
+    }
+  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, buildFilteredQuery, sortByDistance])
+
+  /**
+   * Debounced search triggered on text input change.
+   */
+  const debouncedSearch = useCallback((text: string) => {
+    setQuery(text)
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+    if (!text.trim()) {
+      setSearched(false)
+      setResults([])
+      setUserResults([])
+      return
+    }
+    debounceRef.current = setTimeout(() => {
+      executeSearch(text)
+    }, 300)
+  }, [executeSearch])
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (abortRef.current) abortRef.current.abort()
+    }
+  }, [])
 
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore) return
@@ -268,7 +358,7 @@ export default function SearchScreen() {
       .eq('is_active', true)
       .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
 
-    postQuery = buildFilteredQuery(postQuery, filters, activeFilter)
+    postQuery = buildFilteredQuery(postQuery, filters, activeFilter, timeFilter)
     postQuery = postQuery.range(results.length, results.length + 19)
 
     const { data } = await postQuery
@@ -277,36 +367,96 @@ export default function SearchScreen() {
     setResults(prev => [...prev, ...newPosts])
     setHasMore(newPosts.length >= 20)
     setLoadingMore(false)
-  }, [hasMore, loadingMore, query, activeFilter, filters, results.length, supabase, buildFilteredQuery, sortByDistance])
+  }, [hasMore, loadingMore, query, activeFilter, timeFilter, filters, results.length, supabase, buildFilteredQuery, sortByDistance])
 
-  const handleCategoryFilter = (type: PostType | null) => {
+  const handleCategoryFilter = useCallback((type: PostType | null) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     setActiveFilter(type)
-    if (searched) {
+    if (searched && query.trim()) {
       setResults([])
       setLoading(true)
-      // Re-search with new filter
-      setTimeout(() => handleSearch(), 0)
+      setTimeout(() => executeSearch(undefined, undefined, type), 0)
     }
-  }
+  }, [searched, query, executeSearch])
+
+  const handleTimeFilter = useCallback((tf: TimeFilter) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    setTimeFilter(tf)
+    if (searched && query.trim()) {
+      setResults([])
+      setLoading(true)
+      setTimeout(() => executeSearch(undefined, undefined, undefined, tf), 0)
+    }
+  }, [searched, query, executeSearch])
 
   const handleApplyFilters = useCallback((newFilters: SearchFilterValues) => {
     setFilters(newFilters)
-    if (searched) {
+    if (searched && query.trim()) {
       setResults([])
       setLoading(true)
-      setTimeout(() => handleSearch(undefined, newFilters), 0)
+      setTimeout(() => executeSearch(undefined, newFilters), 0)
     }
-  }, [searched, handleSearch])
+  }, [searched, query, executeSearch])
 
-  // ── Discovery View (no search yet) ──
+  const handleHistoryChipTap = useCallback((h: string) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    setQuery(h)
+    executeSearch(h)
+  }, [executeSearch])
+
+  // Time filter options
+  const TIME_FILTERS: { key: TimeFilter; label: string }[] = [
+    { key: 'all', label: t('search.timeAll') },
+    { key: 'today', label: t('search.timeToday') },
+    { key: 'week', label: t('search.timeWeek') },
+  ]
+
+  // Sort filter options for chips
+  const SORT_CHIPS: { key: SortOption; label: string }[] = [
+    { key: 'newest', label: t('search.sortNewest') },
+    { key: 'closest', label: t('search.sortNearest') },
+  ]
+
+  // -- Discovery View (no search yet) --
   const DiscoveryView = () => (
     <ScrollView contentContainerStyle={s.discovery} showsVerticalScrollIndicator={false}>
+      {/* Recent search chips */}
+      {history.length > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Clock size={16} color={colors.mutedForeground} />
+            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recentSearches')}</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
+            {history.map((h) => (
+              <Pressable
+                key={h}
+                onPress={() => handleHistoryChipTap(h)}
+                style={[s.recentChip, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
+              >
+                <Clock size={12} color={colors.mutedForeground} />
+                <Text style={[s.recentChipText, { color: colors.foreground, fontFamily: fonts.body }]}>{h}</Text>
+                <Pressable
+                  onPress={(e) => {
+                    e.stopPropagation?.()
+                    removeFromHistory(h)
+                  }}
+                  hitSlop={8}
+                >
+                  <X size={12} color={colors.mutedForeground} />
+                </Pressable>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* Saved Searches */}
       {savedSearches.length > 0 && (
         <View style={s.section}>
           <View style={s.sectionHeader}>
             <Star size={16} color={colors.mutedForeground} />
-            <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.savedSearches')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.savedSearches')}</Text>
           </View>
           {savedSearches.map((saved) => {
             const savedFilterCount = countActiveFilters(saved.filters)
@@ -318,9 +468,9 @@ export default function SearchScreen() {
                 >
                   <SearchIcon size={14} color={colors.primary} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[s.historyText, { color: colors.foreground }]}>{saved.query}</Text>
+                    <Text style={[s.historyText, { color: colors.foreground, fontFamily: fonts.body }]}>{saved.query}</Text>
                     {savedFilterCount > 0 && (
-                      <Text style={[s.savedFilterHint, { color: colors.mutedForeground }]}>
+                      <Text style={[s.savedFilterHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
                         {t('search.activeFilters', { count: savedFilterCount })}
                       </Text>
                     )}
@@ -339,10 +489,10 @@ export default function SearchScreen() {
       <View style={s.section}>
         <View style={s.sectionHeader}>
           <TrendingUp size={16} color={colors.mutedForeground} />
-          <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.trending')}</Text>
+          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.trending')}</Text>
         </View>
         {trendingPosts.length === 0 ? (
-          <Text style={[s.hintText, { color: colors.mutedForeground }]}>{t('search.noTrending')}</Text>
+          <Text style={[s.hintText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noTrending')}</Text>
         ) : (
           <View style={s.trendingList}>
             {trendingPosts.map((tp) => {
@@ -357,12 +507,12 @@ export default function SearchScreen() {
                     <View style={[s.trendingDot, { backgroundColor: tpCat.color }]} />
                   )}
                   <View style={{ flex: 1 }}>
-                    <Text style={[s.trendingTitle, { color: colors.foreground }]} numberOfLines={1}>{tp.title}</Text>
-                    {tpCat && <Text style={[s.trendingCat, { color: colors.mutedForeground }]}>{t(tpCat.label)}</Text>}
+                    <Text style={[s.trendingTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={1}>{tp.title}</Text>
+                    {tpCat && <Text style={[s.trendingCat, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t(tpCat.label)}</Text>}
                   </View>
                   <View style={s.trendingLikes}>
                     <Heart size={12} color={colors.destructive} fill={colors.destructive} />
-                    <Text style={[s.trendingLikeCount, { color: colors.mutedForeground }]}>{tp.like_count}</Text>
+                    <Text style={[s.trendingLikeCount, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{tp.like_count}</Text>
                   </View>
                 </Pressable>
               )
@@ -371,32 +521,11 @@ export default function SearchScreen() {
         )}
       </View>
 
-      {/* Search history */}
-      {history.length > 0 && (
-        <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Clock size={16} color={colors.mutedForeground} />
-            <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.recentSearches')}</Text>
-          </View>
-          {history.map((h) => (
-            <View key={h} style={s.historyRow}>
-              <Pressable onPress={() => { setQuery(h); handleSearch(h) }} style={s.historyBtn}>
-                <Clock size={14} color={colors.mutedForeground} />
-                <Text style={[s.historyText, { color: colors.foreground }]}>{h}</Text>
-              </Pressable>
-              <Pressable onPress={() => removeFromHistory(h)} hitSlop={8}>
-                <X size={14} color={colors.mutedForeground} />
-              </Pressable>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Category cards (2-column grid like web) */}
+      {/* Category cards */}
       <View style={s.section}>
         <View style={s.sectionHeader}>
           <LayoutGrid size={16} color={colors.mutedForeground} />
-          <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('search.browseByCategory')}</Text>
+          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.browseByCategory')}</Text>
         </View>
         <View style={s.categoryGrid}>
           {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
@@ -404,21 +533,42 @@ export default function SearchScreen() {
             return (
               <Pressable
                 key={type}
-                onPress={() => { setActiveFilter(type); setQuery(t(cat.label)); handleSearch(t(cat.label)) }}
+                onPress={() => {
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+                  setActiveFilter(type)
+                  setQuery(t(cat.label))
+                  executeSearch(t(cat.label), undefined, type)
+                }}
                 style={[s.categoryCard, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}
               >
                 <View style={[s.categoryIconBox, { backgroundColor: `${cat.color}20` }]}>
                   {CatIcon && <CatIcon size={22} color={cat.color} />}
                 </View>
-                <Text style={[s.categoryCardText, { color: colors.foreground }]}>{t(cat.label)}</Text>
+                <Text style={[s.categoryCardText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t(cat.label)}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} style={{ marginLeft: 'auto' }} />
               </Pressable>
             )
           })}
         </View>
-        <Text style={[s.hintText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 8 }]}>{t('search.initialHint')}</Text>
+        <Text style={[s.hintText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 8, fontFamily: fonts.body }]}>{t('search.initialHint')}</Text>
       </View>
     </ScrollView>
+  )
+
+  // -- Loading skeleton --
+  const LoadingSkeleton = () => (
+    <View style={s.skeletonContainer}>
+      {[0, 1, 2].map(i => <SkeletonCard key={i} colors={colors} />)}
+    </View>
+  )
+
+  // -- Empty state --
+  const EmptyState = () => (
+    <View style={s.empty}>
+      <BoardIllustration size={100} />
+      <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
+      <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.tryDifferent')}</Text>
+    </View>
   )
 
   return (
@@ -431,12 +581,12 @@ export default function SearchScreen() {
         <View style={[s.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <SearchIcon size={18} color={colors.mutedForeground} />
           <TextInput
-            style={[s.searchInput, { color: colors.foreground }]}
+            style={[s.searchInput, { color: colors.foreground, fontFamily: fonts.body }]}
             value={query}
-            onChangeText={setQuery}
+            onChangeText={debouncedSearch}
             placeholder={t('feed.searchPlaceholder')}
             placeholderTextColor={colors.mutedForeground}
-            onSubmitEditing={() => handleSearch()}
+            onSubmitEditing={() => executeSearch()}
             returnKeyType="search"
             autoFocus
           />
@@ -462,48 +612,107 @@ export default function SearchScreen() {
         <View style={[s.activeFilterBar, { backgroundColor: `${colors.primary}10`, borderBottomColor: colors.border }]}>
           <Pressable onPress={() => setFiltersVisible(true)} style={s.activeFilterInfo}>
             <SlidersHorizontal size={14} color={colors.primary} />
-            <Text style={[s.activeFilterText, { color: colors.primary }]}>
+            <Text style={[s.activeFilterText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
               {t('search.activeFilters', { count: filterCount })}
             </Text>
           </Pressable>
           <Pressable onPress={saveCurrentSearch} hitSlop={8} style={s.saveSearchBtn}>
             <Star size={14} color={colors.primary} />
-            <Text style={[s.saveSearchText, { color: colors.primary }]}>{t('search.saveThisSearch')}</Text>
+            <Text style={[s.saveSearchText, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('search.saveThisSearch')}</Text>
           </Pressable>
         </View>
       )}
 
-      {/* Category filter chips */}
+      {/* Filter chips: Category + Time + Sort */}
       {searched && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
-          <Pressable
-            onPress={() => handleCategoryFilter(null)}
-            style={[s.filterChip, !activeFilter ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
-          >
-            <Text style={[s.filterText, { color: !activeFilter ? colors.primaryForeground : colors.mutedForeground }]}>{t('common.all')}</Text>
-          </Pressable>
-          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => (
+        <View style={s.chipSections}>
+          {/* Category chips */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
             <Pressable
-              key={type}
-              onPress={() => handleCategoryFilter(type)}
-              style={[s.filterChip, activeFilter === type ? { backgroundColor: cat.color } : { backgroundColor: isDark ? colors.card : colors.muted }]}
+              onPress={() => handleCategoryFilter(null)}
+              style={[s.filterChip, !activeFilter ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
             >
-              <Text style={[s.filterText, { color: activeFilter === type ? '#FFFFFF' : colors.mutedForeground }]}>{t(cat.label)}</Text>
+              <Text style={[s.filterText, { color: !activeFilter ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t('common.all')}</Text>
             </Pressable>
-          ))}
-        </ScrollView>
+            {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => (
+              <Pressable
+                key={type}
+                onPress={() => handleCategoryFilter(type)}
+                style={[s.filterChip, activeFilter === type ? { backgroundColor: cat.color } : { backgroundColor: isDark ? colors.card : colors.muted }]}
+              >
+                <Text style={[s.filterText, { color: activeFilter === type ? '#FFFFFF' : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t(cat.label)}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+
+          {/* Time + Sort chips */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
+            {TIME_FILTERS.map(tf => (
+              <Pressable
+                key={tf.key}
+                onPress={() => handleTimeFilter(tf.key)}
+                style={[
+                  s.filterChip,
+                  s.filterChipOutline,
+                  timeFilter === tf.key
+                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                    : { backgroundColor: 'transparent', borderColor: colors.border },
+                ]}
+              >
+                <Text style={[
+                  s.filterText,
+                  { fontFamily: fonts.bodyMedium },
+                  timeFilter === tf.key
+                    ? { color: colors.primaryForeground }
+                    : { color: colors.mutedForeground },
+                ]}>{tf.label}</Text>
+              </Pressable>
+            ))}
+            <View style={[s.chipDivider, { backgroundColor: colors.border }]} />
+            {SORT_CHIPS.map(sc => (
+              <Pressable
+                key={sc.key}
+                onPress={() => {
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+                  const newFilters = { ...filters, sortBy: sc.key }
+                  setFilters(newFilters)
+                  if (searched && query.trim()) {
+                    setResults([])
+                    setLoading(true)
+                    setTimeout(() => executeSearch(undefined, newFilters), 0)
+                  }
+                }}
+                style={[
+                  s.filterChip,
+                  s.filterChipOutline,
+                  filters.sortBy === sc.key
+                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                    : { backgroundColor: 'transparent', borderColor: colors.border },
+                ]}
+              >
+                <Text style={[
+                  s.filterText,
+                  { fontFamily: fonts.bodyMedium },
+                  filters.sortBy === sc.key
+                    ? { color: colors.primaryForeground }
+                    : { color: colors.mutedForeground },
+                ]}>{sc.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
       )}
 
       {/* Results tabs */}
       {searched && !loading && (
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
-            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground }]}>
+            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('places.posts')} ({results.length})
             </Text>
           </Pressable>
           <Pressable onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
-            <Text style={[s.tabText, { color: activeTab === 'users' ? colors.primary : colors.mutedForeground }]}>
+            <Text style={[s.tabText, { color: activeTab === 'users' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('common.user')} ({userResults.length})
             </Text>
           </Pressable>
@@ -514,7 +723,7 @@ export default function SearchScreen() {
       {!searched ? (
         <DiscoveryView />
       ) : loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
+        <LoadingSkeleton />
       ) : activeTab === 'posts' ? (
         <FlatList
           data={results}
@@ -525,13 +734,7 @@ export default function SearchScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} /> : null}
-          ListEmptyComponent={
-            <View style={s.empty}>
-              <SearchIcon size={40} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-              <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('search.noResults')}</Text>
-              <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('search.tryDifferent')}</Text>
-            </View>
-          }
+          ListEmptyComponent={<EmptyState />}
           showsVerticalScrollIndicator={false}
         />
       ) : (
@@ -545,15 +748,15 @@ export default function SearchScreen() {
                 <Image source={{ uri: item.avatar_url }} style={s.userAvatar} />
               ) : (
                 <View style={[s.userAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', color: colors.mutedForeground }}>{item.name?.charAt(0)?.toUpperCase()}</Text>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase()}</Text>
                 </View>
               )}
               <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[s.userName, { color: colors.foreground }]}>{item.name}</Text>
+                <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
                 {item.naapurusto && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                     <MapPin size={12} color={colors.mutedForeground} />
-                    <Text style={[s.userNh, { color: colors.mutedForeground }]}>{item.naapurusto}</Text>
+                    <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{item.naapurusto}</Text>
                   </View>
                 )}
               </View>
@@ -562,7 +765,8 @@ export default function SearchScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           ListEmptyComponent={
             <View style={s.empty}>
-              <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('search.noResults')}</Text>
+              <BoardIllustration size={80} />
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
             </View>
           }
           showsVerticalScrollIndicator={false}
@@ -607,9 +811,12 @@ const s = StyleSheet.create({
   activeFilterText: { fontSize: 12, fontWeight: '600' },
   saveSearchBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   saveSearchText: { fontSize: 12, fontWeight: '500' },
-  filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
+  chipSections: { gap: 0 },
+  filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 8 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
+  filterChipOutline: { borderWidth: 1 },
   filterText: { fontSize: 12, fontWeight: '500' },
+  chipDivider: { width: 1, height: 20, alignSelf: 'center', marginHorizontal: 4, borderRadius: 1 },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
   tabActive: { borderBottomWidth: 2 },
@@ -619,6 +826,13 @@ const s = StyleSheet.create({
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sectionTitle: { fontSize: 16, fontWeight: '700' },
+  recentChipsRow: { flexDirection: 'row', gap: 8 },
+  recentChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+    borderWidth: 1,
+  },
+  recentChipText: { fontSize: 13 },
   historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   historyText: { fontSize: 14 },
@@ -634,7 +848,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   categoryCardText: { fontSize: 15, fontWeight: '600', flex: 1 },
-  empty: { alignItems: 'center', paddingTop: 60, gap: 8, paddingHorizontal: 32 },
+  empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
   emptyTitle: { fontSize: 16, fontWeight: '600' },
   emptyHint: { fontSize: 14, textAlign: 'center' },
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12 },
@@ -651,4 +865,10 @@ const s = StyleSheet.create({
   trendingCat: { fontSize: 11, marginTop: 1 },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   trendingLikeCount: { fontSize: 12, fontWeight: '500' },
+  // Skeleton styles
+  skeletonContainer: { padding: 16, gap: 16 },
+  skeletonCard: { borderRadius: 12, overflow: 'hidden' },
+  skeletonImage: { height: 160, width: '100%' },
+  skeletonContent: { padding: 16, gap: 10 },
+  skeletonLine: { height: 12, borderRadius: 6 },
 })
