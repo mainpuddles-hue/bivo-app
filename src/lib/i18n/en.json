@@ -74,7 +74,9 @@
     "results": "results",
     "placesNearYou": "Places near you",
     "placesInHelsinki": "Places in Helsinki",
-    "placesIn": "Places — {area}"
+    "placesIn": "Places — {area}",
+    "slogan": "your neighborhood bulletin board",
+    "showAll": "Show all"
   },
   "time": {
     "justNow": "just now",

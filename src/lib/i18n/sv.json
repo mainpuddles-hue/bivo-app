@@ -74,7 +74,9 @@
     "results": "resultat",
     "placesNearYou": "Platser nära dig",
     "placesInHelsinki": "Platser i Helsingfors",
-    "placesIn": "Platser — {area}"
+    "placesIn": "Platser — {area}",
+    "slogan": "grannskapets egen anslagstavla",
+    "showAll": "Visa alla"
   },
   "time": {
     "justNow": "just nu",

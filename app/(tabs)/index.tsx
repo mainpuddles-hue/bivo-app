@@ -476,11 +476,12 @@ export default function FeedScreen() {
             )
           })}
         </View>
-      ) : (
-        <Text style={[styles.welcomeText, { color: colors.mutedForeground }]}>
-          {t('hero.slide1Subtitle') || 'Tervetuloa naapurustosi ilmoitustaululle'}
-        </Text>
-      )}
+      ) : !extraLoading ? (
+        <View style={styles.sloganWrap}>
+          <Text style={[styles.sloganBrand, { color: colors.primary }]}>TackBird</Text>
+          <Text style={[styles.sloganText, { color: colors.mutedForeground }]}>{t('feed.slogan')}</Text>
+        </View>
+      ) : null}
 
       {/* ── City Events Section ── */}
       {extraLoading && cityEvents.length === 0 ? (
@@ -569,7 +570,7 @@ export default function FeedScreen() {
           <HorizontalSkeleton colors={colors} width={56} height={56} />
         </View>
       ) : nearbyPlaces.length > 0 ? (
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 8 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
             <View style={[styles.sectionBar, { backgroundColor: '#27AE60' }]} />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
@@ -581,9 +582,9 @@ export default function FeedScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 14, paddingHorizontal: 4, paddingBottom: 4 }}
+            contentContainerStyle={{ gap: 14, paddingHorizontal: 4, paddingBottom: 2 }}
           >
-            {nearbyPlaces.map((place) => {
+            {nearbyPlaces.slice(0, 6).map((place) => {
               const catColor = PLACE_COLORS[place.category] || '#95A5A6'
               const catLabel = PLACE_LABELS[place.category] || place.category
               const firstLetter = catLabel.charAt(0).toUpperCase()
@@ -606,6 +607,16 @@ export default function FeedScreen() {
                 </Pressable>
               )
             })}
+            {nearbyPlaces.length > 6 && (
+              <Pressable onPress={() => router.push('/map')} style={extraStyles.placeCompact}>
+                <View style={[extraStyles.placeCircle, { backgroundColor: colors.muted }]}>
+                  <Text style={[extraStyles.placeCircleText, { color: colors.mutedForeground }]}>+{nearbyPlaces.length - 6}</Text>
+                </View>
+                <Text style={[extraStyles.placeCompactName, { color: colors.primary }]} numberOfLines={1}>
+                  {t('feed.showAll')}
+                </Text>
+              </Pressable>
+            )}
           </ScrollView>
         </View>
       ) : null}
@@ -829,7 +840,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start', minHeight: 36,
   },
   followingText: { fontSize: 12, fontWeight: '500' },
-  welcomeText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 4 },
+  sloganWrap: { alignItems: 'center', paddingVertical: 8, gap: 2 },
+  sloganBrand: { fontSize: 20, fontFamily: fonts.heading, letterSpacing: 1.7 },
+  sloganText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center' },
   todayEventCard: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 12,
     overflow: 'hidden', gap: 12, paddingRight: 12,
@@ -898,9 +911,9 @@ const extraStyles = StyleSheet.create({
     shadowOpacity: 0.08, shadowRadius: 6, elevation: 3,
   },
   eventAccent: { height: 2 },
-  eventImage: { width: '100%', height: 90 },
+  eventImage: { width: '100%', height: 80 },
   eventImageFallback: {
-    width: '100%', height: 90,
+    width: '100%', height: 80,
     alignItems: 'center', justifyContent: 'center',
   },
   eventInfo: { padding: 8, gap: 2 },

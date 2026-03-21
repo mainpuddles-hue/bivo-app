@@ -74,7 +74,9 @@
     "results": "tulosta",
     "placesNearYou": "Paikat lähellä sinua",
     "placesInHelsinki": "Paikat Helsingissä",
-    "placesIn": "Paikat – {area}"
+    "placesIn": "Paikat – {area}",
+    "slogan": "naapuruston oma ilmoitustaulu",
+    "showAll": "Näytä kaikki"
   },
   "time": {
     "justNow": "juuri nyt",

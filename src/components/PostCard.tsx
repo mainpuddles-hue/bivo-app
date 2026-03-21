@@ -71,7 +71,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
     return t('postCard.distanceKm', { distance: dist < 10 ? dist.toFixed(1) : Math.round(dist).toString() })
   }, [userLocation, post.latitude, post.longitude, t])
 
-  const catBgColor = category ? `${category.color}08` : undefined
+  const catBgColor = category ? `${category.color}${isDark ? '15' : '08'}` : undefined
 
   return (
     <Pressable
@@ -230,7 +230,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
             <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
           </View>
           {likeCount >= 5 && (
-            <View style={styles.popularBadge}>
+            <View style={[styles.popularBadge, { backgroundColor: isDark ? '#D9770615' : '#FEF3C7' }]}>
               <Text style={styles.popularText}>🔥 {t('feed.popular')}</Text>
             </View>
           )}
@@ -277,7 +277,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
 
 const styles = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
-  categoryBar: { position: 'absolute' as const, left: 0, top: 0, bottom: 0, width: 4, zIndex: 1, borderTopLeftRadius: 12, borderBottomLeftRadius: 12 },
+  categoryBar: { position: 'absolute' as const, left: 0, top: 0, bottom: 0, width: 6, zIndex: 1, borderTopLeftRadius: 14, borderBottomLeftRadius: 14 },
   proBanner: {
     height: 22, backgroundColor: '#F59E0B',
     alignItems: 'center', justifyContent: 'center',
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
-  popularBadge: { marginLeft: 'auto' as any, backgroundColor: '#FEF3C7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
+  popularBadge: { marginLeft: 'auto' as any, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },
   userRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
