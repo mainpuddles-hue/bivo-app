@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
   BadgeCheck, Crown, Shield, Flame, Heart, FileText, CalendarDays, Package,
+  HandHelping, TrendingUp, BookOpen, Award, Zap,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -21,6 +22,13 @@ const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: strin
   pro: { icon: Crown, color: '#F59E0B' },
   trusted: { icon: Shield, color: '#10B981' },
   active: { icon: Flame, color: '#EF4444' },
+  first_post: { icon: Star, color: '#4CAF6A' },
+  helper: { icon: HandHelping, color: '#3B7DD8' },
+  popular: { icon: TrendingUp, color: '#E8A050' },
+  lender: { icon: BookOpen, color: '#C98B2E' },
+  event_creator: { icon: CalendarDays, color: '#2B8A62' },
+  weekly_active: { icon: Flame, color: '#EF4444' },
+  neighborhood_hero: { icon: Award, color: '#8E44AD' },
 }
 
 interface ActivityItem {
@@ -274,18 +282,21 @@ export default function ProfileScreen() {
 
           {/* Badges */}
           {badges.length > 0 && (
-            <View style={s.badgesRow}>
-              {badges.map((b) => {
-                const cfg = BADGE_ICONS[b.badge_type]
-                if (!cfg) return null
-                const Icon = cfg.icon
-                return (
-                  <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: `${cfg.color}20` }]}>
-                    <Icon size={12} color={cfg.color} />
-                    <Text style={[s.badgeText, { color: cfg.color }]}>{t(`badges.${b.badge_type}`)}</Text>
-                  </View>
-                )
-              })}
+            <View style={s.badgesSection}>
+              <Text style={[s.badgesSectionTitle, { color: colors.foreground }]}>Saavutukset</Text>
+              <View style={s.badgesRow}>
+                {badges.map((b) => {
+                  const cfg = BADGE_ICONS[b.badge_type]
+                  if (!cfg) return null
+                  const Icon = cfg.icon
+                  return (
+                    <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: `${cfg.color}20` }]}>
+                      <Icon size={12} color={cfg.color} />
+                      <Text style={[s.badgeText, { color: cfg.color }]}>{t(`badges.${b.badge_type}`)}</Text>
+                    </View>
+                  )
+                })}
+              </View>
             </View>
           )}
 
@@ -320,6 +331,14 @@ export default function ProfileScreen() {
               <Heart size={12} color={colors.destructive} fill={colors.destructive} />
             </View>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <View style={s.stat}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{(postCount * 5) + (reviews.length * 10) + (thanksCount * 3) + (followerCount * 2)}</Text>
+              <Zap size={12} color={colors.pro} fill={colors.pro} />
+            </View>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.karma')}</Text>
           </View>
         </View>
 
@@ -479,6 +498,8 @@ const s = StyleSheet.create({
   bioInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 60, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
   bioSaveBtn: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8 },
+  badgesSection: { alignItems: 'center', gap: 6, width: '100%' },
+  badgesSectionTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },

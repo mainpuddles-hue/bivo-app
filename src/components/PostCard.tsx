@@ -1,11 +1,12 @@
 import { memo, useState, useMemo, useRef, useEffect } from 'react'
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
+import { View, Text, Pressable, StyleSheet, Animated, Share } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
   HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock,
+  Share2, Bookmark, BookmarkCheck,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -53,6 +54,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const [imgError, setImgError] = useState(false)
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
+  const [saved, setSaved] = useState(false)
 
   const category = CATEGORIES[post.type as PostType]
   const isPro = post.is_pro_listing
@@ -259,6 +261,42 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
             )}
           </View>
+          <Pressable
+            hitSlop={12}
+            onPress={async (e) => {
+              e.stopPropagation?.()
+              try {
+                Haptics.selectionAsync()
+                await Share.share({ message: post.title + '\nhttps://tackbird-v2.vercel.app/post/' + post.id })
+              } catch {}
+            }}
+            style={styles.engagementItem}
+          >
+            <Share2 size={14} color={colors.mutedForeground} />
+          </Pressable>
+          <Pressable
+            hitSlop={12}
+            onPress={async (e) => {
+              e.stopPropagation?.()
+              if (!userId) { router.push('/(auth)/login'); return }
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+              const supabase = createClient()
+              if (saved) {
+                await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                setSaved(false)
+              } else {
+                await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+                setSaved(true)
+              }
+            }}
+            style={styles.engagementItem}
+          >
+            {saved ? (
+              <BookmarkCheck size={14} color={colors.primary} fill={colors.primary} />
+            ) : (
+              <Bookmark size={14} color={colors.mutedForeground} />
+            )}
+          </Pressable>
           {likeCount >= 5 && (
             <View style={[styles.popularBadge, { backgroundColor: isDark ? '#D9770615' : '#FEF3C7' }]}>
               <Text style={styles.popularText}>🔥 {t('feed.popular')}</Text>
