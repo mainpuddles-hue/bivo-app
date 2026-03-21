@@ -611,6 +611,7 @@
     "verifiedPro": "Verifierad proffs",
     "payInApp": "Betala i appen",
     "anonymousUser": "Anonym användare",
+    "anonymousNeighbor": "Anonym granne",
     "images": "bilder",
     "perDay": "{price}/dag",
     "expiresIn": "{count}d kvar",
@@ -716,7 +717,11 @@
     "firstLike": "Gilla ett inlägg",
     "firstComment": "Kommentera ett inlägg",
     "exploreMap": "Utforska kartan",
-    "pointsReward": "+{points} poäng"
+    "pointsReward": "+{points} poäng",
+    "verifyingLocation": "Kontrollerar plats...",
+    "locationVerified": "Plats verifierad",
+    "locationNotVerified": "Du är {distance} km från det valda grannskapet",
+    "locationCheckFailed": "Platskontroll misslyckades"
   },
   "resetPassword": {
     "title": "Byt lösenord",
@@ -1130,7 +1135,9 @@
     "eventMaxCapacity": "Max deltagare",
     "eventMaxCapacityPlaceholder": "Obegränsat",
     "eventStartTimePlaceholder": "t.ex. 18:00",
-    "eventEndTimePlaceholder": "t.ex. 20:00"
+    "eventEndTimePlaceholder": "t.ex. 20:00",
+    "anonymous": "Publicera anonymt",
+    "anonymousHint": "Ditt namn döljs från inlägget"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",

@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, Camera, X, Check, Clock, MapPin, Users } from 'lucide-react-native'
+import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, Camera, X, Check, Clock, MapPin, Users, EyeOff } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -98,6 +98,7 @@ export default function CreateScreen() {
   const [longitude, setLongitude] = useState<number | null>(null)
   const [mapModalVisible, setMapModalVisible] = useState(false)
   const [tempMapCoords, setTempMapCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [isAnonymous, setIsAnonymous] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
 
@@ -275,6 +276,7 @@ export default function CreateScreen() {
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt,
         is_active: true,
+        is_anonymous: isAnonymous,
         tags: selectedTags,
       }).select('id').single()
 
@@ -323,7 +325,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, images, supabase, router, t])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isAnonymous, images, supabase, router, t])
 
   // ── Category selection step ──
   if (step === 'category') {
@@ -564,6 +566,23 @@ export default function CreateScreen() {
               </View>
             </View>
           )}
+
+          {/* Anonymous posting */}
+          <View style={styles.anonymousRow}>
+            <View style={styles.anonymousInfo}>
+              <EyeOff size={16} color={colors.mutedForeground} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('create.anonymous')}</Text>
+                <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('create.anonymousHint')}</Text>
+              </View>
+            </View>
+            <Switch
+              value={isAnonymous}
+              onValueChange={setIsAnonymous}
+              trackColor={{ false: colors.muted, true: colors.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
 
           {/* Expiration */}
           <View style={styles.field}>
@@ -855,6 +874,14 @@ const styles = StyleSheet.create({
   },
   submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   submitLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+
+  // Anonymous toggle
+  anonymousRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 12, paddingHorizontal: 4, gap: 12,
+  },
+  anonymousInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  anonymousHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 15, marginTop: 2 },
 
   // Location picker
   locationRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },

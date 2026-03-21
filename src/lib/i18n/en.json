@@ -611,6 +611,7 @@
     "verifiedPro": "Verified pro",
     "payInApp": "Pay in app",
     "anonymousUser": "Anonymous user",
+    "anonymousNeighbor": "Anonymous neighbor",
     "images": "images",
     "perDay": "{price}/day",
     "expiresIn": "{count}d left",
@@ -716,7 +717,11 @@
     "firstLike": "Like a post",
     "firstComment": "Comment on a post",
     "exploreMap": "Explore the map",
-    "pointsReward": "+{points} points"
+    "pointsReward": "+{points} points",
+    "verifyingLocation": "Verifying location...",
+    "locationVerified": "Location verified",
+    "locationNotVerified": "You are {distance} km from the selected neighborhood",
+    "locationCheckFailed": "Location check failed"
   },
   "resetPassword": {
     "title": "Change password",
@@ -1130,7 +1135,9 @@
     "eventMaxCapacity": "Max capacity",
     "eventMaxCapacityPlaceholder": "Unlimited",
     "eventStartTimePlaceholder": "e.g. 18:00",
-    "eventEndTimePlaceholder": "e.g. 20:00"
+    "eventEndTimePlaceholder": "e.g. 20:00",
+    "anonymous": "Post anonymously",
+    "anonymousHint": "Your name will be hidden from the post"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",

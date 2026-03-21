@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
   HandHelping, Gift, BookOpen, CalendarDays, MessageCircle, Clock,
-  Share2, Bookmark, BookmarkCheck,
+  Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -15,6 +15,8 @@ import { CATEGORIES } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import type { Post, PostType } from '@/lib/types'
+
+const APP_URL = 'https://tackbird-v2.vercel.app'
 
 function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: Record<string, string | number>) => string): { label: string; color: string } | null {
   if (!expiresAt) return null
@@ -64,10 +66,10 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const CategoryIcon = category ? ICON_MAP[category.icon] : null
   const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
 
-  const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
+  const isAnonymous = (post as any).is_anonymous === true
+  const [showMore, setShowMore] = useState(false)
 
-  // Fix 2: "Uutta" badge — post created less than 1 hour ago
-  const isNew = useMemo(() => post.created_at ? Date.now() - new Date(post.created_at).getTime() < 3600000 : false, [post.created_at])
+  const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
 
   // Fix 4: Smooth card entrance animation
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -107,7 +109,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
       {/* Pro banner at top of card */}
       {isPro && (
         <View style={styles.proBanner}>
-          <Text style={styles.proBannerText}>{'⭐ Pro'}</Text>
+          <Crown size={12} color="#FFFFFF" />
+          <Text style={styles.proBannerText}>Pro</Text>
         </View>
       )}
 
@@ -146,13 +149,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               <Zap size={14} color="#FFFFFF" fill="#FFFFFF" />
             </View>
           )}
-        </View>
-      )}
-
-      {/* Fix 2: "Uutta" badge for posts less than 1 hour old */}
-      {isNew && (
-        <View style={styles.newBadge}>
-          <Text style={styles.newBadgeText}>{t('feed.new')}</Text>
         </View>
       )}
 
@@ -229,7 +225,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
           </View>
         )}
 
-        {/* Engagement — like button is interactive */}
+        {/* Engagement — like + comment visible, share/save behind more */}
         <View style={styles.engagementRow}>
           <Pressable
             hitSlop={12}
@@ -261,82 +257,112 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
             )}
           </View>
+          {showMore && (
+            <>
+              <Pressable
+                hitSlop={12}
+                onPress={async (e) => {
+                  e.stopPropagation?.()
+                  try {
+                    Haptics.selectionAsync()
+                    await Share.share({ message: post.title + '\n' + APP_URL + '/post/' + post.id })
+                  } catch {}
+                }}
+                style={styles.engagementItem}
+              >
+                <Share2 size={14} color={colors.mutedForeground} />
+              </Pressable>
+              <Pressable
+                hitSlop={12}
+                onPress={async (e) => {
+                  e.stopPropagation?.()
+                  if (!userId) { router.push('/(auth)/login'); return }
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+                  const supabase = createClient()
+                  if (saved) {
+                    await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                    setSaved(false)
+                  } else {
+                    await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+                    setSaved(true)
+                  }
+                }}
+                style={styles.engagementItem}
+              >
+                {saved ? (
+                  <BookmarkCheck size={14} color={colors.primary} fill={colors.primary} />
+                ) : (
+                  <Bookmark size={14} color={colors.mutedForeground} />
+                )}
+              </Pressable>
+            </>
+          )}
           <Pressable
             hitSlop={12}
-            onPress={async (e) => {
-              e.stopPropagation?.()
-              try {
-                Haptics.selectionAsync()
-                await Share.share({ message: post.title + '\nhttps://tackbird-v2.vercel.app/post/' + post.id })
-              } catch {}
-            }}
+            onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
             style={styles.engagementItem}
           >
-            <Share2 size={14} color={colors.mutedForeground} />
-          </Pressable>
-          <Pressable
-            hitSlop={12}
-            onPress={async (e) => {
-              e.stopPropagation?.()
-              if (!userId) { router.push('/(auth)/login'); return }
-              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-              const supabase = createClient()
-              if (saved) {
-                await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                setSaved(false)
-              } else {
-                await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
-                setSaved(true)
-              }
-            }}
-            style={styles.engagementItem}
-          >
-            {saved ? (
-              <BookmarkCheck size={14} color={colors.primary} fill={colors.primary} />
-            ) : (
-              <Bookmark size={14} color={colors.mutedForeground} />
-            )}
+            <MoreHorizontal size={14} color={colors.mutedForeground} />
           </Pressable>
           {likeCount >= 5 && (
             <View style={[styles.popularBadge, { backgroundColor: isDark ? '#D9770615' : '#FEF3C7' }]}>
-              <Text style={styles.popularText}>🔥 {t('feed.popular')}</Text>
+              <TrendingUp size={11} color="#D97706" />
+              <Text style={styles.popularText}>{t('feed.popular')}</Text>
             </View>
           )}
         </View>
 
         {/* User row */}
         <View style={styles.userRow}>
-          <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-            <View style={styles.avatarContainer}>
-              {user?.avatar_url ? (
-                <Image source={{ uri: user.avatar_url }} style={[
-                  styles.avatar,
-                  { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
-                ]} />
-              ) : (
-                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
-                  <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
-                    {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                  </Text>
-                </View>
-              )}
-              {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
-            </View>
-
-            <View style={styles.userInfo}>
-              <View style={styles.userNameRow}>
-                <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
-                  {user?.name ?? t('postCard.anonymousUser')}
-                </Text>
-                {isVerified && <BadgeCheck size={14} color={colors.info} />}
+          {isAnonymous ? (
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
+                <User size={18} color={colors.mutedForeground} />
               </View>
-              {post.created_at && (
-                <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
-                  {formatTimeAgo(post.created_at, t, locale)}
+              <View style={styles.userInfo}>
+                <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {t('postCard.anonymousNeighbor')}
                 </Text>
-              )}
+                {post.created_at && (
+                  <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
+                    {formatTimeAgo(post.created_at, t, locale)}
+                  </Text>
+                )}
+              </View>
             </View>
-          </Pressable>
+          ) : (
+            <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+              <View style={styles.avatarContainer}>
+                {user?.avatar_url ? (
+                  <Image source={{ uri: user.avatar_url }} style={[
+                    styles.avatar,
+                    { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
+                  ]} />
+                ) : (
+                  <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
+                    <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
+                      {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
+                    </Text>
+                  </View>
+                )}
+                {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
+              </View>
+
+              <View style={styles.userInfo}>
+                <View style={styles.userNameRow}>
+                  <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
+                    {user?.name ?? t('postCard.anonymousUser')}
+                  </Text>
+                  {isVerified && <BadgeCheck size={14} color={colors.info} />}
+                </View>
+                {post.created_at && (
+                  <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
+                    {formatTimeAgo(post.created_at, t, locale)}
+                  </Text>
+                )}
+              </View>
+            </Pressable>
+          )}
         </View>
       </View>
     </Pressable>
@@ -349,7 +375,7 @@ const styles = StyleSheet.create({
   categoryBar: { position: 'absolute' as const, left: 0, top: 0, bottom: 0, width: 6, zIndex: 1, borderTopLeftRadius: 14, borderBottomLeftRadius: 14 },
   proBanner: {
     height: 22, backgroundColor: '#F59E0B',
-    alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
   accentLine: { height: 2 },
@@ -390,7 +416,7 @@ const styles = StyleSheet.create({
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
-  popularBadge: { marginLeft: 'auto' as any, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
+  popularBadge: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },
   userRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
@@ -405,13 +431,6 @@ const styles = StyleSheet.create({
   userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   userName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
   timeAgo: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14.3 },
-  // Fix 2: "Uutta" / "New" badge
-  newBadge: {
-    position: 'absolute' as const, top: 10, left: 16, zIndex: 2,
-    backgroundColor: '#2B8A62', borderRadius: 6,
-    paddingHorizontal: 6, paddingVertical: 2,
-  },
-  newBadgeText: { fontSize: 9, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi },
   // Fix 1: Nappaa urgency banner
   urgencyBanner: {
     backgroundColor: '#D94F4F', paddingVertical: 4,

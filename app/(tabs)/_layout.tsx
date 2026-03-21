@@ -1,4 +1,3 @@
-import { useState, useMemo } from 'react'
 import { Tabs } from 'expo-router'
 import { View, Text, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -6,7 +5,6 @@ import { Newspaper, CalendarDays, Plus, MessageCircle, User } from 'lucide-react
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Header } from '@/components/Header'
-import { FeedSearchContext } from '@/lib/feedSearchContext'
 
 function TabIcon({ icon: Icon, label, focused, isCreate, colors }: {
   icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
@@ -49,17 +47,9 @@ export default function TabLayout() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
-  const [feedSearchHandler, setFeedSearchHandler] = useState<(() => void) | undefined>(undefined)
-
-  const feedSearchValue = useMemo(() => ({
-    onSearchPress: feedSearchHandler,
-    _setHandler: setFeedSearchHandler,
-  }), [feedSearchHandler])
-
   const tabBarBg = isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)'
 
   return (
-    <FeedSearchContext.Provider value={feedSearchValue}>
     <View style={{ flex: 1 }}>
     <Header />
     <Tabs
@@ -93,7 +83,6 @@ export default function TabLayout() {
       }} />
     </Tabs>
     </View>
-    </FeedSearchContext.Provider>
   )
 }
 

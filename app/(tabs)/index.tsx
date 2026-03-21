@@ -1,11 +1,10 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking, TextInput } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { View, Text, FlatList, RefreshControl, ScrollView, StyleSheet, Pressable, ActivityIndicator, Animated, Linking } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
-import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, ChevronDown, Globe, CheckCircle, X, Search } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, ChevronDown, Globe, CheckCircle } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -17,7 +16,7 @@ import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
-import { useFeedSearch } from '@/lib/feedSearchContext'
+import { AlertBanner } from '@/components/AlertBanner'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 // ── Category color maps ──
@@ -145,7 +144,6 @@ function getDateGroup(dateStr: string): string {
 export default function FeedScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
-  const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
@@ -162,32 +160,12 @@ export default function FeedScreen() {
   const [nearbyPlaces, setNearbyPlaces] = useState<LocalPlace[]>([])
   const [extraLoading, setExtraLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
-  const [nearBottom, setNearBottom] = useState(false)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
-  const [showInlineSearch, setShowInlineSearch] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const lastScrollYRef = useRef(0)
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const searchInputRef = useRef<TextInput>(null)
-
-  // Fix 9: Register inline search toggle with layout context
-  const feedSearchCtx = useFeedSearch()
-  const feedSearchCtxRef = useRef(feedSearchCtx)
-  feedSearchCtxRef.current = feedSearchCtx
-  useEffect(() => {
-    const handler = () => {
-      setShowInlineSearch(prev => {
-        if (prev) { setSearchQuery(''); return false }
-        setTimeout(() => searchInputRef.current?.focus(), 100)
-        return true
-      })
-    }
-    feedSearchCtxRef.current._setHandler?.(() => handler)
-    return () => { feedSearchCtxRef.current._setHandler?.(undefined) }
-  }, [])
 
   // Fetch current user ID for like functionality
   useEffect(() => {
@@ -373,20 +351,10 @@ export default function FeedScreen() {
     return e.name_fi
   }, [locale])
 
-  // Fix 9: Client-side search filtering
-  const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) return posts
-    const q = searchQuery.toLowerCase()
-    return posts.filter(p =>
-      p.title?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
-    )
-  }, [posts, searchQuery])
-
   // Fix 10: Time-based section breaks in feed
   const renderPost = useCallback(({ item, index }: { item: Post; index: number }) => {
-    const postsToUse = searchQuery.trim() ? filteredPosts : posts
     const currentGroup = item.created_at ? getDateGroup(item.created_at) : ''
-    const prevGroup = index > 0 && postsToUse[index - 1]?.created_at ? getDateGroup(postsToUse[index - 1].created_at!) : ''
+    const prevGroup = index > 0 && posts[index - 1]?.created_at ? getDateGroup(posts[index - 1].created_at!) : ''
     const showLabel = index === 0 || currentGroup !== prevGroup
 
     return (
@@ -401,7 +369,7 @@ export default function FeedScreen() {
         <PostCard post={item} userLocation={userLocation} userId={currentUserId} />
       </View>
     )
-  }, [userLocation, posts, filteredPosts, searchQuery, colors.mutedForeground, t])
+  }, [userLocation, posts, colors.mutedForeground, t])
 
   // Event section with cascading fallback: today -> tomorrow -> this week (Fix 4)
   const { displayEvents, eventSectionTitle } = useMemo(() => {
@@ -422,18 +390,16 @@ export default function FeedScreen() {
     return t('feed.placesInHelsinki')
   }, [userLocation, userNeighborhood, t])
 
-  // ── Scroll handler for near-bottom detection ──
-  // Fix 6: FAB always visible — removed scroll-direction hide logic
   const handleScroll = useCallback((event: any) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent
-    const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y
-    setNearBottom(distanceFromBottom < 200)
-    lastScrollYRef.current = contentOffset.y
+    lastScrollYRef.current = event.nativeEvent.contentOffset.y
   }, [])
 
-  // ── List Header (now includes city events + nearby places + dynamic hero) ──
+  // ── List Header (now includes alerts + city events + nearby places + dynamic hero) ──
   const ListHeader = useMemo(() => (
     <View style={{ gap: 16 }}>
+      {/* Alert banners — HSL disruptions + weather warnings */}
+      <AlertBanner />
+
       {/* Dynamic hero: cascading event fallback (today -> tomorrow -> week) or welcome */}
       {displayEvents.length > 0 ? (
         <View style={{ gap: 10 }}>
@@ -728,35 +694,6 @@ export default function FeedScreen() {
           </Text>
           <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
         </Pressable>
-        {/* Fix 9: Inline search bar */}
-        {showInlineSearch && (
-          <>
-            <View style={[styles.inlineSearchRow, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}>
-              <Search size={16} color={colors.mutedForeground} />
-              <TextInput
-                ref={searchInputRef}
-                style={[styles.inlineSearchInput, { color: colors.foreground }]}
-                placeholder={t('common.search') || 'Hae...'}
-                placeholderTextColor={colors.mutedForeground}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                returnKeyType="search"
-                autoCorrect={false}
-              />
-              {searchQuery.length > 0 && (
-                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-                  <X size={16} color={colors.mutedForeground} />
-                </Pressable>
-              )}
-            </View>
-            {/* Fix 1 + Fix 9: Search result count */}
-            {searchQuery.trim().length > 0 && (
-              <Text style={[styles.searchResultCount, { color: colors.mutedForeground }]}>
-                {filteredPosts.length} {t('feed.results')}
-              </Text>
-            )}
-          </>
-        )}
         <View style={styles.filterRow}>
           <FilterBar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
         </View>
@@ -778,10 +715,10 @@ export default function FeedScreen() {
         )}
       </View>
       <FlatList
-        data={filteredPosts}
+        data={posts}
         renderItem={renderPost}
         keyExtractor={item => item.id}
-        contentContainerStyle={[styles.list, { paddingTop: showInlineSearch ? 110 : 76 }]}
+        contentContainerStyle={[styles.list, { paddingTop: 76 }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
@@ -794,18 +731,6 @@ export default function FeedScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Fix 6: Floating Action Button — always visible */}
-      {!nearBottom && (
-        <Pressable
-          onPress={() => {
-            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-            router.push('/(tabs)/create')
-          }}
-          style={[styles.fab, { bottom: insets.bottom + 80, backgroundColor: colors.accent }]}
-        >
-          <Plus size={24} color="#FFFFFF" />
-        </Pressable>
-      )}
     </View>
   )
 }
@@ -821,13 +746,6 @@ const styles = StyleSheet.create({
   },
   neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 2, alignSelf: 'flex-start' },
   neighborhoodText: { fontSize: 12, fontFamily: fonts.body },
-  inlineSearchRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 10, borderWidth: 1,
-    paddingHorizontal: 12, height: 36,
-  },
-  inlineSearchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, paddingVertical: 0 },
-  searchResultCount: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14.3, paddingTop: 2 },
   dateGroupLabel: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, paddingBottom: 10 },
   dateGroupLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3 },
@@ -887,13 +805,6 @@ const styles = StyleSheet.create({
   allLoadedLine: { height: 1, width: '100%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   allLoadedText: { fontSize: 11, fontWeight: '500' },
-  fab: {
-    position: 'absolute', right: 16,
-    width: 56, height: 56, borderRadius: 28,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
-  },
 })
 
 const extraStyles = StyleSheet.create({

@@ -49,7 +49,7 @@ function useOnboardingGuard() {
           .eq('id', user.id)
           .single()
 
-        if (profile?.naapurusto) {
+        if ((profile as any)?.naapurusto) {
           // Already onboarded — set flag and skip
           await AsyncStorage.setItem('onboarding_complete', 'true')
           if (mounted) setChecked(true)

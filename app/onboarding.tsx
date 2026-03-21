@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import {
   View,
   Text,
@@ -24,6 +24,9 @@ import {
   Zap,
   BookOpen,
   CalendarDays,
+  CheckCircle,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
@@ -32,6 +35,7 @@ import { createClient } from '@/lib/supabase/client'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
+import { useLocationVerification } from '@/hooks/useLocationVerification'
 import type { PostType } from '@/lib/types'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
@@ -66,6 +70,14 @@ export default function OnboardingScreen() {
   const [currentPage, setCurrentPage] = useState(0)
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
+
+  // Auto-verify when neighborhood is selected on page 3
+  useEffect(() => {
+    if (selectedNeighborhood && currentPage === 2) {
+      verify(selectedNeighborhood)
+    }
+  }, [selectedNeighborhood, currentPage, verify])
 
   const goToPage = useCallback((page: number) => {
     scrollRef.current?.scrollTo({ x: page * SCREEN_WIDTH, animated: true })
@@ -89,10 +101,14 @@ export default function OnboardingScreen() {
         return
       }
 
-      // Save selected neighborhood
+      // Save selected neighborhood + location verification status
       if (selectedNeighborhood) {
+        const updateData: Record<string, any> = { naapurusto: selectedNeighborhood }
+        if (verificationStatus === 'verified') {
+          updateData.location_verified = true
+        }
         await (supabase.from('profiles') as any)
-          .update({ naapurusto: selectedNeighborhood })
+          .update(updateData)
           .eq('id', user.id)
       }
 
@@ -261,6 +277,47 @@ export default function OnboardingScreen() {
           )
         })}
       </ScrollView>
+
+      {/* Location verification status */}
+      {selectedNeighborhood && verificationStatus !== 'idle' && (
+        <View style={[s.verificationRow, {
+          backgroundColor: verificationStatus === 'verified' ? '#2B8A6215' :
+            verificationStatus === 'unverified' ? '#E8A05015' : colors.muted,
+        }]}>
+          {verificationStatus === 'checking' && (
+            <>
+              <Loader2 size={16} color={colors.mutedForeground} />
+              <Text style={[s.verificationText, { color: colors.mutedForeground }]}>
+                {t('onboarding.verifyingLocation')}
+              </Text>
+            </>
+          )}
+          {verificationStatus === 'verified' && (
+            <>
+              <CheckCircle size={16} color="#2B8A62" />
+              <Text style={[s.verificationText, { color: '#2B8A62' }]}>
+                {t('onboarding.locationVerified')}
+              </Text>
+            </>
+          )}
+          {verificationStatus === 'unverified' && (
+            <>
+              <AlertTriangle size={16} color="#E8A050" />
+              <Text style={[s.verificationText, { color: '#E8A050' }]}>
+                {t('onboarding.locationNotVerified', { distance: distanceKm ? distanceKm.toFixed(1) : '?' })}
+              </Text>
+            </>
+          )}
+          {verificationStatus === 'error' && (
+            <>
+              <MapPin size={16} color={colors.mutedForeground} />
+              <Text style={[s.verificationText, { color: colors.mutedForeground }]}>
+                {t('onboarding.locationCheckFailed')}
+              </Text>
+            </>
+          )}
+        </View>
+      )}
 
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <Pressable
@@ -433,6 +490,23 @@ const s = StyleSheet.create({
   },
   neighborhoodText: {
     fontSize: 14,
+  },
+
+  // Location verification
+  verificationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 24,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  verificationText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+    flex: 1,
   },
 
   // Bottom area

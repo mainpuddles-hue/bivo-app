@@ -611,6 +611,7 @@
     "verifiedPro": "Vahvistettu taitaja",
     "payInApp": "Maksu sovelluksessa",
     "anonymousUser": "Nimetön käyttäjä",
+    "anonymousNeighbor": "Nimetön naapuri",
     "images": "kuvaa",
     "perDay": "{price}/pv",
     "expiresIn": "{count} pv jäljellä",
@@ -721,7 +722,11 @@
     "firstLike": "Tykkää ilmoituksesta",
     "firstComment": "Kommentoi ilmoitusta",
     "exploreMap": "Tutustu karttaan",
-    "pointsReward": "+{points} pistettä"
+    "pointsReward": "+{points} pistettä",
+    "verifyingLocation": "Tarkistetaan sijaintia...",
+    "locationVerified": "Sijainti vahvistettu",
+    "locationNotVerified": "Sijaintisi on {distance} km valitsemastasi naapurustosta",
+    "locationCheckFailed": "Sijainnin tarkistus ei onnistunut"
   },
   "resetPassword": {
     "title": "Vaihda salasana",
@@ -1147,7 +1152,9 @@
     "eventMaxCapacity": "Osallistujaraja",
     "eventMaxCapacityPlaceholder": "Rajaton",
     "eventStartTimePlaceholder": "esim. 18:00",
-    "eventEndTimePlaceholder": "esim. 20:00"
+    "eventEndTimePlaceholder": "esim. 20:00",
+    "anonymous": "Julkaise nimettömänä",
+    "anonymousHint": "Nimesi piilotetaan ilmoituksesta"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
