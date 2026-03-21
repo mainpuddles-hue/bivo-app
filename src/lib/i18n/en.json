@@ -386,7 +386,8 @@
     "unpinConversation": "Unpin conversation",
     "quickThanks": "Thanks for the message! 👋",
     "quickHelp": "I can help! When works?",
-    "quickAvailable": "Is this still available?"
+    "quickAvailable": "Is this still available?",
+    "aboutPost": "About listing"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -1148,7 +1149,9 @@
     "eventStartTimePlaceholder": "e.g. 18:00",
     "eventEndTimePlaceholder": "e.g. 20:00",
     "anonymous": "Post anonymously",
-    "anonymousHint": "Your name will be hidden from the post"
+    "anonymousHint": "Your name will be hidden from the post",
+    "showDetails": "Add details",
+    "hideDetails": "Hide details"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -2000,5 +2003,11 @@
     "placesNearby": "{count} places nearby",
     "noEvents": "No upcoming events",
     "noPlaces": "No places nearby"
+  },
+  "celebration": {
+    "firstResponse": "Your first response!",
+    "neighborHelped": "Your neighbor {name} offered to help.",
+    "howItWorks": "This is how TackBird works — neighbors helping neighbors.",
+    "openMessage": "Open message"
   }
 }

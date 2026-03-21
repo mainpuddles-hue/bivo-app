@@ -6,6 +6,7 @@ import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, Star, Trash2 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { SearchSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -45,22 +46,6 @@ function boundingBox(lat: number, lng: number, km: number) {
     minLng: lng - lngDelta,
     maxLng: lng + lngDelta,
   }
-}
-
-/**
- * Loading skeleton placeholder for search results.
- */
-function SkeletonCard({ colors }: { colors: any }) {
-  return (
-    <View style={[s.skeletonCard, { backgroundColor: colors.card }]}>
-      <View style={[s.skeletonImage, { backgroundColor: colors.muted }]} />
-      <View style={s.skeletonContent}>
-        <View style={[s.skeletonLine, { backgroundColor: colors.muted, width: '70%' }]} />
-        <View style={[s.skeletonLine, { backgroundColor: colors.muted, width: '90%' }]} />
-        <View style={[s.skeletonLine, { backgroundColor: colors.muted, width: '50%' }]} />
-      </View>
-    </View>
-  )
 }
 
 export default function SearchScreen() {
@@ -555,13 +540,6 @@ export default function SearchScreen() {
     </ScrollView>
   )
 
-  // -- Loading skeleton --
-  const LoadingSkeleton = () => (
-    <View style={s.skeletonContainer}>
-      {[0, 1, 2].map(i => <SkeletonCard key={i} colors={colors} />)}
-    </View>
-  )
-
   // -- Empty state --
   const EmptyState = () => (
     <View style={s.empty}>
@@ -723,7 +701,7 @@ export default function SearchScreen() {
       {!searched ? (
         <DiscoveryView />
       ) : loading ? (
-        <LoadingSkeleton />
+        <SearchSkeleton />
       ) : activeTab === 'posts' ? (
         <FlatList
           data={results}
@@ -865,10 +843,4 @@ const s = StyleSheet.create({
   trendingCat: { fontSize: 11, marginTop: 1 },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   trendingLikeCount: { fontSize: 12, fontWeight: '500' },
-  // Skeleton styles
-  skeletonContainer: { padding: 16, gap: 16 },
-  skeletonCard: { borderRadius: 12, overflow: 'hidden' },
-  skeletonImage: { height: 160, width: '100%' },
-  skeletonContent: { padding: 16, gap: 10 },
-  skeletonLine: { height: 12, borderRadius: 6 },
 })

@@ -9,6 +9,7 @@ import {
   BadgeCheck, Crown, Shield, Flame, Heart, FileText, CalendarDays, Package,
   HandHelping, TrendingUp, BookOpen, Award, Zap,
 } from 'lucide-react-native'
+import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -47,6 +48,7 @@ export default function ProfileScreen() {
   const supabase = useMemo(() => createClient(), [])
 
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'activity'>('overview')
   const [postCount, setPostCount] = useState(0)
   const [followerCount, setFollowerCount] = useState(0)
@@ -66,7 +68,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) { setProfileLoading(false); return }
 
       // Profile
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -135,6 +137,7 @@ export default function ProfileScreen() {
       })
       activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setActivity(activities.slice(0, 15))
+      setProfileLoading(false)
     }
     load()
   }, [supabase, t])
@@ -181,6 +184,17 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.replace('/(auth)/login')
+  }
+
+  if (profileLoading) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <View style={[s.header, { paddingTop: 12 }]}>
+          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+        </View>
+        <ProfileSkeleton />
+      </View>
+    )
   }
 
   if (!profile) {

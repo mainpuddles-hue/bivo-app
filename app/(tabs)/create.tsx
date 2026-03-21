@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, Camera, X, Check, Clock, MapPin, Users, EyeOff } from 'lucide-react-native'
+import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -99,6 +99,7 @@ export default function CreateScreen() {
   const [mapModalVisible, setMapModalVisible] = useState(false)
   const [tempMapCoords, setTempMapCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [isAnonymous, setIsAnonymous] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
 
@@ -117,6 +118,13 @@ export default function CreateScreen() {
       if (!user) router.replace('/(auth)/login')
     })
   }, [supabase, router])
+
+  // Auto-expand details for categories that have required detail fields
+  useEffect(() => {
+    if (selectedType === 'lainaa' || selectedType === 'tapahtuma') {
+      setShowDetails(true)
+    }
+  }, [selectedType])
 
   const handleCategorySelect = (type: PostType) => {
     setSelectedType(type)
@@ -436,181 +444,200 @@ export default function CreateScreen() {
             <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{description.length}/2000</Text>
           </View>
 
-          {/* Location */}
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.foreground }]}>{t('post.locationLabel')}</Text>
-            <View style={styles.locationRow}>
-              <TextInput
-                style={[styles.input, styles.locationInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-                value={location}
-                onChangeText={(text) => { setLocation(text); if (!text.trim()) { setLatitude(null); setLongitude(null) } }}
-                placeholder={t('post.locationLabel')}
-                placeholderTextColor={colors.mutedForeground}
-              />
-              <Pressable
-                onPress={handleOpenMapPicker}
-                style={[styles.mapPickerBtn, { backgroundColor: colors.primary }]}
-              >
-                <MapPin size={16} color={colors.primaryForeground} />
-                <Text style={[styles.mapPickerBtnText, { color: colors.primaryForeground }]}>{t('locationPicker.pickFromMap')}</Text>
-              </Pressable>
-            </View>
-            {latitude !== null && longitude !== null && (
-              <Text style={[styles.coordsText, { color: colors.mutedForeground }]}>
-                {latitude.toFixed(5)}, {longitude.toFixed(5)}
-              </Text>
+          {/* Details toggle */}
+          <Pressable
+            onPress={() => setShowDetails(p => !p)}
+            style={[styles.detailsToggle, { borderColor: colors.border }]}
+          >
+            <Text style={[styles.detailsToggleText, { color: colors.primary }]}>
+              {showDetails ? t('create.hideDetails') : t('create.showDetails')}
+            </Text>
+            {showDetails ? (
+              <ChevronUp size={16} color={colors.primary} />
+            ) : (
+              <ChevronDown size={16} color={colors.primary} />
             )}
-          </View>
+          </Pressable>
 
-          {/* Daily fee for lainaa */}
-          {selectedType === 'lainaa' && (
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.foreground }]}>{t('rental.dailyFee')} *</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-                value={dailyFee}
-                onChangeText={setDailyFee}
-                placeholder="0.00 €"
-                placeholderTextColor={colors.mutedForeground}
-                keyboardType="decimal-pad"
-              />
-            </View>
-          )}
-
-          {/* Event date for tapahtuma */}
-          {selectedType === 'tapahtuma' && (
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.foreground }]}>{t('post.eventDate')} *</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-                value={eventDate}
-                onChangeText={setEventDate}
-                placeholder="2026-03-20"
-                placeholderTextColor={colors.mutedForeground}
-              />
-            </View>
-          )}
-
-          {/* Event start/end time + max capacity for tapahtuma */}
-          {selectedType === 'tapahtuma' && (
+          {showDetails && (
             <>
+              {/* Location */}
               <View style={styles.field}>
-                <Text style={[styles.label, { color: colors.foreground }]}>
-                  <Clock size={14} color={colors.mutedForeground} /> {t('create.eventStartTime')}
-                </Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-                  value={eventStartTime}
-                  onChangeText={setEventStartTime}
-                  placeholder={t('create.eventStartTimePlaceholder')}
-                  placeholderTextColor={colors.mutedForeground}
-                  keyboardType="numbers-and-punctuation"
-                  maxLength={5}
-                />
+                <Text style={[styles.label, { color: colors.foreground }]}>{t('post.locationLabel')}</Text>
+                <View style={styles.locationRow}>
+                  <TextInput
+                    style={[styles.input, styles.locationInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    value={location}
+                    onChangeText={(text) => { setLocation(text); if (!text.trim()) { setLatitude(null); setLongitude(null) } }}
+                    placeholder={t('post.locationLabel')}
+                    placeholderTextColor={colors.mutedForeground}
+                  />
+                  <Pressable
+                    onPress={handleOpenMapPicker}
+                    style={[styles.mapPickerBtn, { backgroundColor: colors.primary }]}
+                  >
+                    <MapPin size={16} color={colors.primaryForeground} />
+                    <Text style={[styles.mapPickerBtnText, { color: colors.primaryForeground }]}>{t('locationPicker.pickFromMap')}</Text>
+                  </Pressable>
+                </View>
+                {latitude !== null && longitude !== null && (
+                  <Text style={[styles.coordsText, { color: colors.mutedForeground }]}>
+                    {latitude.toFixed(5)}, {longitude.toFixed(5)}
+                  </Text>
+                )}
               </View>
+
+              {/* Daily fee for lainaa */}
+              {selectedType === 'lainaa' && (
+                <View style={styles.field}>
+                  <Text style={[styles.label, { color: colors.foreground }]}>{t('rental.dailyFee')} *</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    value={dailyFee}
+                    onChangeText={setDailyFee}
+                    placeholder="0.00 €"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              )}
+
+              {/* Event date for tapahtuma */}
+              {selectedType === 'tapahtuma' && (
+                <View style={styles.field}>
+                  <Text style={[styles.label, { color: colors.foreground }]}>{t('post.eventDate')} *</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    value={eventDate}
+                    onChangeText={setEventDate}
+                    placeholder="2026-03-20"
+                    placeholderTextColor={colors.mutedForeground}
+                  />
+                </View>
+              )}
+
+              {/* Event start/end time + max capacity for tapahtuma */}
+              {selectedType === 'tapahtuma' && (
+                <>
+                  <View style={styles.field}>
+                    <Text style={[styles.label, { color: colors.foreground }]}>
+                      <Clock size={14} color={colors.mutedForeground} /> {t('create.eventStartTime')}
+                    </Text>
+                    <TextInput
+                      style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                      value={eventStartTime}
+                      onChangeText={setEventStartTime}
+                      placeholder={t('create.eventStartTimePlaceholder')}
+                      placeholderTextColor={colors.mutedForeground}
+                      keyboardType="numbers-and-punctuation"
+                      maxLength={5}
+                    />
+                  </View>
+                  <View style={styles.field}>
+                    <Text style={[styles.label, { color: colors.foreground }]}>
+                      <Clock size={14} color={colors.mutedForeground} /> {t('create.eventEndTime')}
+                    </Text>
+                    <TextInput
+                      style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                      value={eventEndTime}
+                      onChangeText={setEventEndTime}
+                      placeholder={t('create.eventEndTimePlaceholder')}
+                      placeholderTextColor={colors.mutedForeground}
+                      keyboardType="numbers-and-punctuation"
+                      maxLength={5}
+                    />
+                  </View>
+                  <View style={styles.field}>
+                    <Text style={[styles.label, { color: colors.foreground }]}>
+                      <Users size={14} color={colors.mutedForeground} /> {t('create.eventMaxCapacity')}
+                    </Text>
+                    <TextInput
+                      style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                      value={eventMaxCapacity}
+                      onChangeText={setEventMaxCapacity}
+                      placeholder={t('create.eventMaxCapacityPlaceholder')}
+                      placeholderTextColor={colors.mutedForeground}
+                      keyboardType="number-pad"
+                    />
+                  </View>
+                </>
+              )}
+
+              {/* Tags */}
+              {availableTags.length > 0 && (
+                <View style={styles.field}>
+                  <Text style={[styles.label, { color: colors.foreground }]}>{t('create.tags')} ({selectedTags.length}/3)</Text>
+                  <View style={styles.tagGrid}>
+                    {availableTags.map((tag) => {
+                      const isSelected = selectedTags.includes(tag.id)
+                      return (
+                        <Pressable
+                          key={tag.id}
+                          onPress={() => toggleTag(tag.id)}
+                          style={[
+                            styles.tagChip,
+                            isSelected
+                              ? { backgroundColor: cat?.color ?? colors.primary }
+                              : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                          ]}
+                        >
+                          {isSelected && <Check size={12} color="#FFFFFF" />}
+                          <Text style={[styles.tagText, { color: isSelected ? '#FFFFFF' : colors.foreground }]}>
+                            {t(tag.label)}
+                          </Text>
+                        </Pressable>
+                      )
+                    })}
+                  </View>
+                </View>
+              )}
+
+              {/* Expiration */}
               <View style={styles.field}>
                 <Text style={[styles.label, { color: colors.foreground }]}>
-                  <Clock size={14} color={colors.mutedForeground} /> {t('create.eventEndTime')}
+                  <Clock size={14} color={colors.mutedForeground} /> {t('create.expiration')}
                 </Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-                  value={eventEndTime}
-                  onChangeText={setEventEndTime}
-                  placeholder={t('create.eventEndTimePlaceholder')}
-                  placeholderTextColor={colors.mutedForeground}
-                  keyboardType="numbers-and-punctuation"
-                  maxLength={5}
-                />
+                <View style={styles.tagGrid}>
+                  {EXPIRATION_OPTIONS.map((opt) => {
+                    const isSelected = expirationDays === opt.days
+                    return (
+                      <Pressable
+                        key={opt.days}
+                        onPress={() => setExpirationDays(opt.days)}
+                        style={[
+                          styles.tagChip,
+                          isSelected
+                            ? { backgroundColor: colors.primary }
+                            : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                        ]}
+                      >
+                        <Text style={[styles.tagText, { color: isSelected ? '#FFFFFF' : colors.foreground }]}>
+                          {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}
+                        </Text>
+                      </Pressable>
+                    )
+                  })}
+                </View>
               </View>
-              <View style={styles.field}>
-                <Text style={[styles.label, { color: colors.foreground }]}>
-                  <Users size={14} color={colors.mutedForeground} /> {t('create.eventMaxCapacity')}
-                </Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-                  value={eventMaxCapacity}
-                  onChangeText={setEventMaxCapacity}
-                  placeholder={t('create.eventMaxCapacityPlaceholder')}
-                  placeholderTextColor={colors.mutedForeground}
-                  keyboardType="number-pad"
+
+              {/* Anonymous posting */}
+              <View style={styles.anonymousRow}>
+                <View style={styles.anonymousInfo}>
+                  <EyeOff size={16} color={colors.mutedForeground} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('create.anonymous')}</Text>
+                    <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('create.anonymousHint')}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={isAnonymous}
+                  onValueChange={setIsAnonymous}
+                  trackColor={{ false: colors.muted, true: colors.primary }}
+                  thumbColor="#FFFFFF"
                 />
               </View>
             </>
           )}
-
-          {/* Tags */}
-          {availableTags.length > 0 && (
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.foreground }]}>{t('create.tags')} ({selectedTags.length}/3)</Text>
-              <View style={styles.tagGrid}>
-                {availableTags.map((tag) => {
-                  const isSelected = selectedTags.includes(tag.id)
-                  return (
-                    <Pressable
-                      key={tag.id}
-                      onPress={() => toggleTag(tag.id)}
-                      style={[
-                        styles.tagChip,
-                        isSelected
-                          ? { backgroundColor: cat?.color ?? colors.primary }
-                          : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-                      ]}
-                    >
-                      {isSelected && <Check size={12} color="#FFFFFF" />}
-                      <Text style={[styles.tagText, { color: isSelected ? '#FFFFFF' : colors.foreground }]}>
-                        {t(tag.label)}
-                      </Text>
-                    </Pressable>
-                  )
-                })}
-              </View>
-            </View>
-          )}
-
-          {/* Anonymous posting */}
-          <View style={styles.anonymousRow}>
-            <View style={styles.anonymousInfo}>
-              <EyeOff size={16} color={colors.mutedForeground} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('create.anonymous')}</Text>
-                <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('create.anonymousHint')}</Text>
-              </View>
-            </View>
-            <Switch
-              value={isAnonymous}
-              onValueChange={setIsAnonymous}
-              trackColor={{ false: colors.muted, true: colors.primary }}
-              thumbColor="#FFFFFF"
-            />
-          </View>
-
-          {/* Expiration */}
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.foreground }]}>
-              <Clock size={14} color={colors.mutedForeground} /> {t('create.expiration')}
-            </Text>
-            <View style={styles.tagGrid}>
-              {EXPIRATION_OPTIONS.map((opt) => {
-                const isSelected = expirationDays === opt.days
-                return (
-                  <Pressable
-                    key={opt.days}
-                    onPress={() => setExpirationDays(opt.days)}
-                    style={[
-                      styles.tagChip,
-                      isSelected
-                        ? { backgroundColor: colors.primary }
-                        : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-                    ]}
-                  >
-                    <Text style={[styles.tagText, { color: isSelected ? '#FFFFFF' : colors.foreground }]}>
-                      {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}
-                    </Text>
-                  </Pressable>
-                )
-              })}
-            </View>
-          </View>
 
           {/* Submit */}
           <Pressable
@@ -868,6 +895,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16,
   },
   tagText: { fontSize: 13, fontFamily: fonts.body },
+  detailsToggle: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  detailsToggleText: { fontSize: 14, fontFamily: fonts.bodySemi },
   submitBtn: {
     borderRadius: 12, paddingVertical: 14, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,

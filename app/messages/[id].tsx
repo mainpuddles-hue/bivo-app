@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, CheckCheck, Check, Trash2 } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -45,6 +45,7 @@ export default function ConversationScreen() {
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [otherTyping, setOtherTyping] = useState(false)
   const [showQuickReplies, setShowQuickReplies] = useState(true)
+  const [linkedPost, setLinkedPost] = useState<{ id: string; title: string; type: string; image_url: string | null } | null>(null)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Reaction & deletion state
@@ -63,6 +64,15 @@ export default function ConversationScreen() {
         const otherId = (conv as any).user1_id === user.id ? (conv as any).user2_id : (conv as any).user1_id
         const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).single()
         if (profile) setOtherUser(profile as unknown as Profile)
+
+        if ((conv as any).post_id) {
+          const { data: postData } = await supabase
+            .from('posts')
+            .select('id, title, type, image_url')
+            .eq('id', (conv as any).post_id)
+            .single()
+          if (postData) setLinkedPost(postData as any)
+        }
       }
 
       const { data: msgs } = await supabase
@@ -410,13 +420,30 @@ export default function ConversationScreen() {
           setShowScrollBtn(contentOffset.y < contentSize.height - layoutMeasurement.height - 200)
         }}
         ListHeaderComponent={
-          hasOlder ? (
-            <Pressable onPress={loadOlder} style={[s.loadOlderBtn, { borderColor: colors.border }]}>
-              <Text style={[s.loadOlderText, { color: colors.primary }]}>
-                {loadingOlder ? t('common.loading') : t('conversation.loadOlder')}
-              </Text>
-            </Pressable>
-          ) : null
+          <View>
+            {linkedPost && (
+              <Pressable
+                onPress={() => router.push(`/post/${linkedPost.id}`)}
+                style={[contextStyles.card, { backgroundColor: isDark ? colors.card : colors.muted }]}
+              >
+                {linkedPost.image_url && (
+                  <Image source={{ uri: linkedPost.image_url }} style={contextStyles.image} contentFit="cover" />
+                )}
+                <View style={contextStyles.info}>
+                  <Text style={[contextStyles.label, { color: colors.mutedForeground }]}>{t('messages.aboutPost')}</Text>
+                  <Text style={[contextStyles.title, { color: colors.foreground }]} numberOfLines={1}>{linkedPost.title}</Text>
+                </View>
+                <ChevronRight size={14} color={colors.mutedForeground} />
+              </Pressable>
+            )}
+            {hasOlder ? (
+              <Pressable onPress={loadOlder} style={[s.loadOlderBtn, { borderColor: colors.border }]}>
+                <Text style={[s.loadOlderText, { color: colors.primary }]}>
+                  {loadingOlder ? t('common.loading') : t('conversation.loadOlder')}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         }
         ListEmptyComponent={
           <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('messages.noMessagesYet')}</Text>
@@ -601,4 +628,16 @@ const s = StyleSheet.create({
     borderRadius: 16,
   },
   quickReplyText: { fontSize: 13, fontFamily: fonts.body },
+})
+
+const contextStyles = StyleSheet.create({
+  card: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginVertical: 8, padding: 10,
+    borderRadius: 10,
+  },
+  image: { width: 40, height: 40, borderRadius: 8 },
+  info: { flex: 1, gap: 2 },
+  label: { fontSize: 10, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 13, fontFamily: fonts.bodySemi },
 })

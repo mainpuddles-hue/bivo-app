@@ -386,7 +386,8 @@
     "unpinConversation": "Avfäst konversation",
     "quickThanks": "Tack för meddelandet! 👋",
     "quickHelp": "Jag kan hjälpa! När passar?",
-    "quickAvailable": "Finns detta fortfarande?"
+    "quickAvailable": "Finns detta fortfarande?",
+    "aboutPost": "Gäller annons"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -1148,7 +1149,9 @@
     "eventStartTimePlaceholder": "t.ex. 18:00",
     "eventEndTimePlaceholder": "t.ex. 20:00",
     "anonymous": "Publicera anonymt",
-    "anonymousHint": "Ditt namn döljs från inlägget"
+    "anonymousHint": "Ditt namn döljs från inlägget",
+    "showDetails": "Lägg till detaljer",
+    "hideDetails": "Dölj detaljer"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -2000,5 +2003,11 @@
     "placesNearby": "{count} platser i närheten",
     "noEvents": "Inga kommande evenemang",
     "noPlaces": "Inga platser i närheten"
+  },
+  "celebration": {
+    "firstResponse": "Ditt första svar!",
+    "neighborHelped": "Din granne {name} erbjöd sig att hjälpa.",
+    "howItWorks": "Så fungerar TackBird — grannar hjälper grannar.",
+    "openMessage": "Öppna meddelande"
   }
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -244,7 +245,9 @@ export default function MessagesScreen() {
         }}
         ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
         ListEmptyComponent={
-          !loading ? (
+          loading ? (
+            <MessageListSkeleton />
+          ) : (
             <View style={styles.empty}>
               <MessageCircle size={48} color={colors.mutedForeground} />
               <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
@@ -254,7 +257,7 @@ export default function MessagesScreen() {
                 <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.emptyHint')}</Text>
               )}
             </View>
-          ) : null
+          )
         }
         showsVerticalScrollIndicator={false}
       />

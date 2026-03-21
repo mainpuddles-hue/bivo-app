@@ -386,7 +386,8 @@
     "unpinConversation": "Poista kiinnitys",
     "quickThanks": "Kiitos viestistä! 👋",
     "quickHelp": "Voin auttaa! Milloin sopii?",
-    "quickAvailable": "Onko tämä vielä saatavilla?"
+    "quickAvailable": "Onko tämä vielä saatavilla?",
+    "aboutPost": "Liittyy ilmoitukseen"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -1165,7 +1166,9 @@
     "eventStartTimePlaceholder": "esim. 18:00",
     "eventEndTimePlaceholder": "esim. 20:00",
     "anonymous": "Julkaise nimettömänä",
-    "anonymousHint": "Nimesi piilotetaan ilmoituksesta"
+    "anonymousHint": "Nimesi piilotetaan ilmoituksesta",
+    "showDetails": "Lisää tietoja",
+    "hideDetails": "Piilota tiedot"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -2027,5 +2030,11 @@
     "placesNearby": "{count} paikkaa lähellä",
     "noEvents": "Ei tulevia tapahtumia",
     "noPlaces": "Ei paikkoja lähistöllä"
+  },
+  "celebration": {
+    "firstResponse": "Ensimmäinen vastauksesi!",
+    "neighborHelped": "Naapurisi {name} tarjoutui auttamaan.",
+    "howItWorks": "Näin TackBird toimii — naapurit auttavat toisiaan.",
+    "openMessage": "Avaa viesti"
   }
 }
