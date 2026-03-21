@@ -8,7 +8,6 @@ import {
   ChevronRight, ChevronLeft, Globe, RefreshCw, List, Calendar, Share2, Trash2, Bell, BellOff, X,
   Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2, ExternalLink,
 } from 'lucide-react-native'
-import { BirdMascot } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -582,7 +581,7 @@ export default function EventsScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           ListEmptyComponent={!loading ? (
             <View style={ev.empty}>
-              <BirdMascot size={60} />
+              <CalendarDays size={48} color={colors.mutedForeground} />
               <Text style={[ev.emptyTitle, { color: colors.foreground }]}>{tab === 'activities' ? t('activity.noActivities') : t('events.noEvents')}</Text>
               <Text style={[ev.emptyHint, { color: colors.mutedForeground }]}>{tab === 'activities' ? t('activity.noActivitiesHint') : t('events.createFirst')}</Text>
             </View>

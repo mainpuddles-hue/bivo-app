@@ -1,4 +1,4 @@
-import Svg, { Path, Circle, Rect, G, Polygon } from 'react-native-svg'
+import Svg, { Path, Circle, Rect } from 'react-native-svg'
 
 // Helsinki Dusk brand colors
 const PRIMARY = '#2D6B5E'
@@ -59,35 +59,6 @@ export function BoardIllustration({ size = 120 }: { size?: number }) {
 }
 
 /**
- * NeighborhoodIllustration — A simple rooftop skyline with 5 geometric houses.
- */
-export function NeighborhoodIllustration({ size = 120 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 120 80">
-      {/* Sky background hint */}
-      <Rect x={0} y={0} width={120} height={80} rx={8} fill={PRIMARY} opacity={0.06} />
-      {/* House 1 - short */}
-      <Rect x={8} y={48} width={18} height={24} fill={PRIMARY} opacity={0.6} />
-      <Polygon points="8,48 17,36 26,48" fill={MUTED_GREEN} opacity={0.7} />
-      {/* House 2 - tall */}
-      <Rect x={28} y={32} width={16} height={40} fill={ACCENT} opacity={0.5} />
-      <Polygon points="28,32 36,20 44,32" fill={ACCENT} opacity={0.7} />
-      {/* House 3 - medium */}
-      <Rect x={46} y={40} width={20} height={32} fill={PRIMARY} opacity={0.7} />
-      <Polygon points="46,40 56,26 66,40" fill={PRIMARY} opacity={0.9} />
-      {/* House 4 - tallest */}
-      <Rect x={68} y={28} width={14} height={44} fill={MUTED_GREEN} opacity={0.55} />
-      <Polygon points="68,28 75,16 82,28" fill={LIGHT_GREEN} opacity={0.7} />
-      {/* House 5 - small */}
-      <Rect x={86} y={50} width={22} height={22} fill={ACCENT} opacity={0.4} />
-      <Polygon points="86,50 97,38 108,50" fill={MUTED_GREEN} opacity={0.6} />
-      {/* Ground line */}
-      <Rect x={0} y={72} width={120} height={8} rx={4} fill={PRIMARY} opacity={0.1} />
-    </Svg>
-  )
-}
-
-/**
  * CityMapIllustration — A simplified city map/grid with a location pin.
  * Grid of rectangles (streets) in muted green tones with a primary green pin marker.
  */
@@ -120,41 +91,3 @@ export function CityMapIllustration({ size = 120 }: { size?: number }) {
   )
 }
 
-/**
- * BirdMascot — A cute minimal bird (the TackBird). Round body, beak, and eyes.
- */
-export function BirdMascot({ size = 120 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 100 100">
-      {/* Body */}
-      <Circle cx={50} cy={52} r={28} fill={ACCENT} />
-      {/* Belly highlight */}
-      <Circle cx={50} cy={58} r={18} fill="#FFFFFF" opacity={0.2} />
-      {/* Left eye */}
-      <Circle cx={40} cy={44} r={4} fill="#1A1A1A" />
-      <Circle cx={41} cy={43} r={1.5} fill="#FFFFFF" />
-      {/* Right eye */}
-      <Circle cx={60} cy={44} r={4} fill="#1A1A1A" />
-      <Circle cx={61} cy={43} r={1.5} fill="#FFFFFF" />
-      {/* Beak */}
-      <Polygon points="50,50 44,56 56,56" fill={NAPPAA} />
-      {/* Wing (left) */}
-      <Path
-        d="M22 52 C18 42 24 34 34 38 C28 44 26 50 28 56 Z"
-        fill={MUTED_GREEN}
-        opacity={0.7}
-      />
-      {/* Tail feathers */}
-      <Path
-        d="M74 60 C82 54 88 58 86 66 C80 62 76 62 74 60 Z"
-        fill={MUTED_GREEN}
-        opacity={0.6}
-      />
-      {/* Feet */}
-      <Path d="M42 78 L38 86 M42 78 L42 86 M42 78 L46 86" stroke={NAPPAA} strokeWidth={2} fill="none" strokeLinecap="round" />
-      <Path d="M58 78 L54 86 M58 78 L58 86 M58 78 L62 86" stroke={NAPPAA} strokeWidth={2} fill="none" strokeLinecap="round" />
-      {/* Head tuft */}
-      <Path d="M50 24 C48 18 52 14 54 20 C56 14 60 18 56 24" fill={ACCENT} opacity={0.8} />
-    </Svg>
-  )
-}

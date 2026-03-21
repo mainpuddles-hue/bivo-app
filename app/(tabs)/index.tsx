@@ -6,7 +6,7 @@ import { Image } from 'expo-image'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
 import { Sparkles, RefreshCw, Users, Plus, CalendarDays, MapPin, ChevronRight, ChevronDown, Globe, CheckCircle, X, Search } from 'lucide-react-native'
-import { BoardIllustration, BirdMascot } from '@/components/illustrations'
+import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -636,7 +636,6 @@ export default function FeedScreen() {
       {/* Error state */}
       {error && (
         <View style={[styles.errorBox, { backgroundColor: `${colors.destructive}10`, borderColor: `${colors.destructive}33` }]}>
-          <BirdMascot size={50} />
           <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
           <Pressable
             onPress={handleRefresh}
@@ -705,7 +704,6 @@ export default function FeedScreen() {
       sections.push(
         <View key="all-loaded" style={styles.allLoadedWrap}>
           <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
-          <BirdMascot size={40} />
           <View style={styles.allLoadedContent}>
             <CheckCircle size={14} color={`${colors.mutedForeground}60`} />
             <Text style={[styles.allLoadedText, { color: `${colors.mutedForeground}80` }]}>{t('feed.allCaughtUp')}</Text>

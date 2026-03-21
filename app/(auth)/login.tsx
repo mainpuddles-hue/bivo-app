@@ -10,7 +10,6 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
-import { NeighborhoodIllustration } from '@/components/illustrations'
 
 function AppleLogo({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) {
   return (
@@ -245,7 +244,6 @@ export default function LoginScreen() {
           <Text style={[styles.tagline, { color: colors.mutedForeground }]}>
             {t('events.heroTitle')}
           </Text>
-          <NeighborhoodIllustration size={100} />
         </View>
 
         {/* Forgot password success */}
