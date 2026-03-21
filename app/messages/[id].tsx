@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native'
+import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
+import { fonts } from '@/lib/fonts'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
@@ -43,6 +44,7 @@ export default function ConversationScreen() {
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [otherTyping, setOtherTyping] = useState(false)
+  const [showQuickReplies, setShowQuickReplies] = useState(true)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Reaction & deletion state
@@ -161,9 +163,16 @@ export default function ConversationScreen() {
     })
   }, [id, userId, supabase])
 
+  const quickReplies = useMemo(() => [
+    t('messages.quickThanks'),
+    t('messages.quickHelp'),
+    t('messages.quickAvailable'),
+  ], [t])
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || !userId || sending) return
     setSending(true)
+    setShowQuickReplies(false)
     const content = input.trim()
     setInput('')
     await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content })
@@ -457,6 +466,29 @@ export default function ConversationScreen() {
         </Pressable>
       </Modal>
 
+      {/* Quick Replies */}
+      {showQuickReplies && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.quickRepliesRow}
+          keyboardShouldPersistTaps="handled"
+        >
+          {quickReplies.map((reply, i) => (
+            <Pressable
+              key={i}
+              onPress={() => {
+                setInput(reply)
+                setShowQuickReplies(false)
+              }}
+              style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted }]}
+            >
+              <Text style={[s.quickReplyText, { color: colors.foreground }]}>{reply}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
       {/* Input */}
       <View style={[s.inputBar, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
         <Pressable onPress={handleSendImage} style={s.imageBtn} hitSlop={8}>
@@ -465,7 +497,7 @@ export default function ConversationScreen() {
         <TextInput
           style={[s.textInput, { backgroundColor: colors.muted, color: colors.foreground }]}
           value={input}
-          onChangeText={(text) => { setInput(text); sendTyping() }}
+          onChangeText={(text) => { setInput(text); if (text.length > 0) setShowQuickReplies(false); sendTyping() }}
           placeholder={t('messages.sendPlaceholder')}
           placeholderTextColor={colors.mutedForeground}
           multiline
@@ -560,4 +592,13 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   emptyText: { textAlign: 'center', fontSize: 14, marginTop: 40 },
+  quickRepliesRow: {
+    flexDirection: 'row', gap: 8,
+    paddingHorizontal: 16, paddingVertical: 8,
+  },
+  quickReplyChip: {
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: 16,
+  },
+  quickReplyText: { fontSize: 13, fontFamily: fonts.body },
 })

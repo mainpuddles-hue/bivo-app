@@ -13,6 +13,8 @@ import { AlertBanner } from '@/components/AlertBanner'
 import { DiscoverySection } from '@/components/DiscoverySection'
 import { HeroEventCard } from '@/components/HeroEventCard'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
+import { FeedContextHeader } from '@/components/FeedContextHeader'
+import { NappaaUrgencyStrip } from '@/components/NappaaUrgencyStrip'
 import type { Post } from '@/lib/types'
 
 // ── Date helpers for time-based section breaks ──
@@ -141,7 +143,9 @@ export default function FeedScreen() {
     <View style={{ gap: 16 }}>
       <AlertBanner />
 
-      {/* Hero event or slogan — only show slogan when NO discovery content either */}
+      {/* Nappaa urgency strip */}
+      <NappaaUrgencyStrip posts={feed.posts} />
+
       {displayEvents.length > 0 ? (
         <View style={{ gap: 10 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
@@ -152,12 +156,14 @@ export default function FeedScreen() {
             <HeroEventCard key={event.id} event={event} />
           ))}
         </View>
-      ) : !feed.extraLoading && feed.cityEvents.length === 0 && feed.nearbyPlaces.length === 0 ? (
-        <View style={styles.sloganWrap}>
-          <Text style={[styles.sloganBrand, { color: colors.primary }]}>TackBird</Text>
-          <Text style={[styles.sloganText, { color: colors.mutedForeground }]}>{t('feed.slogan')}</Text>
-        </View>
       ) : null}
+
+      {/* Contextual greeting */}
+      <FeedContextHeader
+        neighborhood={feed.userNeighborhood}
+        postCount={feed.posts.length}
+        loading={feed.loading}
+      />
 
       {/* Discovery: nearby places carousel */}
       <DiscoverySection
@@ -197,7 +203,7 @@ export default function FeedScreen() {
       )}
     </View>
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
-    feed.posts.length, feed.loading, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
+    feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
     placesSectionTitle])
 
   // ── Empty state ──
@@ -321,9 +327,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start', minHeight: 36,
   },
   followingText: { fontSize: 12, fontWeight: '500' },
-  sloganWrap: { alignItems: 'center', paddingVertical: 8, gap: 2 },
-  sloganBrand: { fontSize: 20, fontFamily: fonts.heading, letterSpacing: 1.7 },
-  sloganText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
   sectionBar: { width: 3, height: 16, borderRadius: 1.5 },
   sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },

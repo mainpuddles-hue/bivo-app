@@ -382,7 +382,10 @@
     "pinned": "Pinned",
     "unpinned": "Unpinned",
     "pinConversation": "Pin conversation",
-    "unpinConversation": "Unpin conversation"
+    "unpinConversation": "Unpin conversation",
+    "quickThanks": "Thanks for the message! 👋",
+    "quickHelp": "I can help! When works?",
+    "quickAvailable": "Is this still available?"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -1961,5 +1964,27 @@
     "attraction": "Attraction",
     "service": "Service",
     "other": "Other"
+  },
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "night": "Good night",
+    "postsInArea": "{count} listings in your neighborhood"
+  },
+  "nappaa": {
+    "grabNow": "Grab now!",
+    "timeLeft": "{time} left",
+    "hoursLeft": "{count}h left",
+    "minutesLeft": "{count}min left"
+  },
+  "explore": {
+    "title": "Explore",
+    "openMap": "Open map",
+    "mapHint": "See listings, events, and places on the map",
+    "eventsThisWeek": "{count} events this week",
+    "placesNearby": "{count} places nearby",
+    "noEvents": "No upcoming events",
+    "noPlaces": "No places nearby"
   }
 }

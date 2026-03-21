@@ -382,7 +382,10 @@
     "pinned": "Fäst",
     "unpinned": "Avfäst",
     "pinConversation": "Fäst konversation",
-    "unpinConversation": "Avfäst konversation"
+    "unpinConversation": "Avfäst konversation",
+    "quickThanks": "Tack för meddelandet! 👋",
+    "quickHelp": "Jag kan hjälpa! När passar?",
+    "quickAvailable": "Finns detta fortfarande?"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -1961,5 +1964,27 @@
     "attraction": "Sevärdhet",
     "service": "Tjänst",
     "other": "Övrigt"
+  },
+  "greeting": {
+    "morning": "God morgon",
+    "afternoon": "God eftermiddag",
+    "evening": "God kväll",
+    "night": "God natt",
+    "postsInArea": "{count} annonser i ditt grannskap"
+  },
+  "nappaa": {
+    "grabNow": "Fånga nu!",
+    "timeLeft": "{time} kvar",
+    "hoursLeft": "{count}h kvar",
+    "minutesLeft": "{count}min kvar"
+  },
+  "explore": {
+    "title": "Utforska",
+    "openMap": "Öppna karta",
+    "mapHint": "Se annonser, evenemang och platser på kartan",
+    "eventsThisWeek": "{count} evenemang denna vecka",
+    "placesNearby": "{count} platser i närheten",
+    "noEvents": "Inga kommande evenemang",
+    "noPlaces": "Inga platser i närheten"
   }
 }

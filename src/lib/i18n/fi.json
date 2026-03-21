@@ -382,7 +382,10 @@
     "pinned": "Kiinnitetty",
     "unpinned": "Kiinnitys poistettu",
     "pinConversation": "Kiinnitä keskustelu",
-    "unpinConversation": "Poista kiinnitys"
+    "unpinConversation": "Poista kiinnitys",
+    "quickThanks": "Kiitos viestistä! 👋",
+    "quickHelp": "Voin auttaa! Milloin sopii?",
+    "quickAvailable": "Onko tämä vielä saatavilla?"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -1988,5 +1991,27 @@
     "attraction": "Nähtävyys",
     "service": "Palvelu",
     "other": "Muu"
+  },
+  "greeting": {
+    "morning": "Huomenta",
+    "afternoon": "Hyvää iltapäivää",
+    "evening": "Hyvää iltaa",
+    "night": "Hyvää yötä",
+    "postsInArea": "{count} ilmoitusta naapurustossasi"
+  },
+  "nappaa": {
+    "grabNow": "Nappaa nyt!",
+    "timeLeft": "{time} jäljellä",
+    "hoursLeft": "{count}h jäljellä",
+    "minutesLeft": "{count}min jäljellä"
+  },
+  "explore": {
+    "title": "Tutustu",
+    "openMap": "Avaa kartta",
+    "mapHint": "Näe ilmoitukset, tapahtumat ja paikat kartalla",
+    "eventsThisWeek": "{count} tapahtumaa tällä viikolla",
+    "placesNearby": "{count} paikkaa lähellä",
+    "noEvents": "Ei tulevia tapahtumia",
+    "noPlaces": "Ei paikkoja lähistöllä"
   }
 }

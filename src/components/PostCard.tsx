@@ -58,6 +58,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
   const [saved, setSaved] = useState(post.is_saved ?? false)
 
+  // Animated like heart
+  const likeAnim = useRef(new Animated.Value(1)).current
+
   // Check if current user has liked/saved this post
   useEffect(() => {
     if (!userId) return
@@ -115,6 +118,19 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
         router.push(`/post/${post.id}`)
       }}
+      onLongPress={() => {
+        if (!userId) { router.push('/(auth)/login'); return }
+        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy) } catch {}
+        const supabase = createClient()
+        if (saved) {
+          (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+          setSaved(false)
+        } else {
+          (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+          setSaved(true)
+        }
+      }}
+      delayLongPress={400}
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.card },
@@ -243,7 +259,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               onPress={async (e) => {
                 e.stopPropagation?.()
                 if (!userId) { router.push('/(auth)/login'); return }
-                try { Haptics.selectionAsync() } catch {}
+                try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
                 const supabase = createClient()
                 if (liked) {
                   await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
@@ -253,11 +269,17 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                   await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
                   setLiked(true)
                   setLikeCount(c => c + 1)
+                  Animated.sequence([
+                    Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
+                    Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+                  ]).start()
                 }
               }}
               style={styles.engagementItem}
             >
-              <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
+              <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
+                <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
+              </Animated.View>
               <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>
             </Pressable>
           )}
@@ -276,7 +298,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
             onPress={async (e) => {
               e.stopPropagation?.()
               if (!userId) { router.push('/(auth)/login'); return }
-              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
               const supabase = createClient()
               if (saved) {
                 await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
