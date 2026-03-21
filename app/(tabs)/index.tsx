@@ -211,23 +211,25 @@ export default function FeedScreen() {
     fetchFollowsAndProfile()
   }, [supabase])
 
-  // Real-time subscription for follows changes
+  // Real-time subscription for follows changes — scoped to current user
   useEffect(() => {
+    if (!currentUserId) return
     const channel = supabase
       .channel('follows-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_follows' }, () => {
-        // Re-fetch followed IDs
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (!user) return
-          supabase.from('user_follows').select('followed_id').eq('follower_id', user.id)
-            .then(({ data }) => {
-              if (data) setFollowedIds(data.map((f: any) => f.followed_id))
-            })
-        })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_follows',
+        filter: `follower_id=eq.${currentUserId}`,
+      }, () => {
+        supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId)
+          .then(({ data }) => {
+            if (data) setFollowedIds(data.map((f: any) => f.followed_id))
+          })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [supabase])
+  }, [supabase, currentUserId])
 
   // Fetch city events and nearby places
   const fetchExtraContent = useCallback(async () => {
@@ -260,10 +262,15 @@ export default function FeedScreen() {
 
   useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])
 
+  const loadingRef = useRef(false)
+
   const fetchPosts = useCallback(async (reset = false) => {
+    // Prevent overlapping pagination calls
+    if (!reset && loadingRef.current) return
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
+    loadingRef.current = true
 
     try {
       setError(null)
@@ -287,6 +294,22 @@ export default function FeedScreen() {
       if (fetchError) { setError(t('feed.loadError')); return }
 
       const newPosts = (data ?? []) as unknown as Post[]
+
+      // Batch-fetch liked/saved status to avoid N+1 queries in PostCard
+      if (newPosts.length > 0 && currentUserId) {
+        const postIds = newPosts.map(p => p.id)
+        const [{ data: likedData }, { data: savedData }] = await Promise.all([
+          supabase.from('post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
+          supabase.from('saved_posts').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
+        ])
+        const likedSet = new Set((likedData ?? []).map((l: any) => l.post_id))
+        const savedSet = new Set((savedData ?? []).map((s: any) => s.post_id))
+        newPosts.forEach(p => {
+          (p as any).is_liked = likedSet.has(p.id)
+          ;(p as any).is_saved = savedSet.has(p.id)
+        })
+      }
+
       if (reset) {
         setPosts(newPosts)
         offsetRef.current = newPosts.length
@@ -302,12 +325,13 @@ export default function FeedScreen() {
     } catch {
       if (!controller.signal.aborted) setError(t('feed.loadError'))
     } finally {
+      loadingRef.current = false
       if (!controller.signal.aborted) {
         setLoading(false)
         setRefreshing(false)
       }
     }
-  }, [supabase, activeFilter, showFollowing, followedIds, t])
+  }, [supabase, activeFilter, showFollowing, followedIds, t, currentUserId])
 
   // Ref to avoid stale closures in useFocusEffect and realtime callbacks
   const fetchPostsRef = useRef(fetchPosts)
@@ -394,10 +418,14 @@ export default function FeedScreen() {
     return e.name_fi
   }, [locale])
 
-  // Fix 10: Time-based section breaks in feed
+  // Ref for posts to avoid renderPost depending on posts array
+  const postsRef = useRef(posts)
+  postsRef.current = posts
+
+  // Time-based section breaks in feed — uses postsRef to avoid FlatList full re-render
   const renderPost = useCallback(({ item, index }: { item: Post; index: number }) => {
     const currentGroup = item.created_at ? getDateGroup(item.created_at) : ''
-    const prevGroup = index > 0 && posts[index - 1]?.created_at ? getDateGroup(posts[index - 1].created_at!) : ''
+    const prevGroup = index > 0 && postsRef.current[index - 1]?.created_at ? getDateGroup(postsRef.current[index - 1].created_at!) : ''
     const showLabel = index === 0 || currentGroup !== prevGroup
 
     return (
@@ -412,7 +440,7 @@ export default function FeedScreen() {
         <PostCard post={item} userLocation={userLocation} userId={currentUserId} />
       </View>
     )
-  }, [userLocation, posts, colors.mutedForeground, colors.border, t, currentUserId])
+  }, [userLocation, colors.mutedForeground, colors.border, t, currentUserId])
 
   // Event section with cascading fallback: today -> tomorrow -> this week (Fix 4)
   const { displayEvents, eventSectionTitle } = useMemo(() => {
