@@ -158,6 +158,8 @@ function RootLayoutInner() {
         <Stack.Screen name="help" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="about" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="forum" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="groups" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="groups/[id]" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </View>
   )

@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Bell, Search, Map, MessagesSquare } from 'lucide-react-native'
+import { Bell, Search, Map, MessagesSquare, Users } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -62,6 +62,9 @@ export function Header({ onSearchPress }: HeaderProps = {}) {
           </Pressable>
           <Pressable accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
             <Map size={20} color={colors.mutedForeground} strokeWidth={1.8} />
+          </Pressable>
+          <Pressable accessibilityLabel={t('groups.title')} onPress={() => router.push('/groups')} style={styles.iconButton} hitSlop={8}>
+            <Users size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
           <Pressable accessibilityLabel={t('forum.title')} onPress={() => router.push('/forum')} style={styles.iconButton} hitSlop={8}>
             <MessagesSquare size={20} color={colors.mutedForeground} strokeWidth={1.8} />
