@@ -141,7 +141,7 @@ export default function FeedScreen() {
     <View style={{ gap: 16 }}>
       <AlertBanner />
 
-      {/* Hero event or slogan */}
+      {/* Hero event or slogan — only show slogan when NO discovery content either */}
       {displayEvents.length > 0 ? (
         <View style={{ gap: 10 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
@@ -152,7 +152,7 @@ export default function FeedScreen() {
             <HeroEventCard key={event.id} event={event} />
           ))}
         </View>
-      ) : !feed.extraLoading ? (
+      ) : !feed.extraLoading && feed.cityEvents.length === 0 && feed.nearbyPlaces.length === 0 ? (
         <View style={styles.sloganWrap}>
           <Text style={[styles.sloganBrand, { color: colors.primary }]}>TackBird</Text>
           <Text style={[styles.sloganText, { color: colors.mutedForeground }]}>{t('feed.slogan')}</Text>
@@ -181,26 +181,28 @@ export default function FeedScreen() {
         </Pressable>
       )}
 
-      {/* Error */}
+      {/* Error — compact inline */}
       {feed.error && (
-        <View style={[styles.errorBox, { backgroundColor: `${colors.destructive}10`, borderColor: `${colors.destructive}33` }]}>
-          <Text style={[styles.errorText, { color: colors.destructive }]}>{feed.error}</Text>
-          <Pressable onPress={feed.handleRefresh} style={[styles.retryBtn, { borderColor: `${colors.destructive}33` }]}>
-            <RefreshCw size={14} color={colors.destructive} />
-            <Text style={[styles.retryText, { color: colors.destructive }]}>{t('common.retry')}</Text>
-          </Pressable>
-        </View>
+        <Pressable
+          onPress={feed.handleRefresh}
+          style={[styles.errorRow, { backgroundColor: `${colors.destructive}10` }]}
+        >
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={[styles.errorRowText, { color: colors.destructive }]} numberOfLines={1}>{feed.error}</Text>
+        </Pressable>
       )}
 
-      {/* Section header */}
-      <View style={styles.compactSectionHeader}>
-        <Text style={[styles.compactSectionTitle, { color: colors.foreground }]}>{t('feed.latestListings')}</Text>
-        {feed.posts.length > 0 && !feed.loading && (
-          <View style={[styles.countBadge, { backgroundColor: colors.muted }]}>
-            <Text style={[styles.countText, { color: colors.mutedForeground }]}>{feed.posts.length}</Text>
-          </View>
-        )}
-      </View>
+      {/* Section header — only when posts exist */}
+      {feed.posts.length > 0 && (
+        <View style={styles.compactSectionHeader}>
+          <Text style={[styles.compactSectionTitle, { color: colors.foreground }]}>{t('feed.latestListings')}</Text>
+          {!feed.loading && (
+            <View style={[styles.countBadge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.countText, { color: colors.mutedForeground }]}>{feed.posts.length}</Text>
+            </View>
+          )}
+        </View>
+      )}
     </View>
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts.length, feed.loading, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
@@ -338,10 +340,11 @@ const styles = StyleSheet.create({
     gap: 8, borderRadius: 12, paddingVertical: 10, minHeight: 44,
   },
   newBannerText: { fontSize: 14, fontFamily: fonts.bodySemi },
-  errorBox: { borderRadius: 12, borderWidth: 1, padding: 16, alignItems: 'center', gap: 12 },
-  errorText: { fontSize: 14, fontWeight: '500' },
-  retryBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  retryText: { fontSize: 13, fontWeight: '500' },
+  errorRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+  },
+  errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
   compactSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
   compactSectionTitle: { fontSize: 14, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },
   countBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
