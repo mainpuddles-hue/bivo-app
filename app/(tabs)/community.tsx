@@ -99,6 +99,15 @@ export default function CommunityScreen() {
   const [activeTab, setActiveTab] = useState<SubTab>('groups')
   const [refreshing, setRefreshing] = useState(false)
 
+  // Auth gate
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsAuthenticated(!!user)
+    })
+  }, [supabase])
+
   // Groups state
   const [groups, setGroups] = useState<GroupPreview[]>([])
   const [groupsLoading, setGroupsLoading] = useState(false)
@@ -172,7 +181,6 @@ export default function CommunityScreen() {
         (supabase
           .from('events')
           .select('id, title, event_date, location_name') as any)
-          .eq('is_active', true)
           .gte('event_date', today)
           .order('event_date', { ascending: true })
           .limit(5),
@@ -182,7 +190,9 @@ export default function CommunityScreen() {
         console.log('[community] events error:', eventsRes.error.message)
       }
       setEvents((eventsRes.data ?? []) as EventPreview[])
-      setCityEvents(helsinkiEvents.slice(0, 3))
+      const now = new Date().toISOString()
+      const futureCity = helsinkiEvents.filter(e => e.start_time >= now)
+      setCityEvents(futureCity.slice(0, 3))
     } catch (err) {
       console.log('[community] events fetch error:', err)
       setEvents([])
@@ -229,11 +239,27 @@ export default function CommunityScreen() {
     : activeTab === 'forum' ? forumLoading
     : eventsLoading
 
+  // Auth gate — show login prompt for unauthenticated users
+  if (isAuthenticated === false) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <Text style={[s.headerTitle, { color: colors.foreground, paddingHorizontal: 16, paddingTop: 12 }]}>{t('nav.community')}</Text>
+        <View style={s.authGate}>
+          <Users size={40} color={colors.mutedForeground} />
+          <Text style={[s.authGateTitle, { color: colors.foreground }]}>{t('auth.loginRequiredToast')}</Text>
+          <Pressable onPress={() => router.push('/(auth)/login')} style={[s.authGateBtn, { backgroundColor: colors.primary }]}>
+            <Text style={[s.authGateBtnText, { color: colors.primaryForeground }]}>{t('auth.login')}</Text>
+          </Pressable>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Sub-header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>Yhteiso</Text>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('nav.community')}</Text>
       </View>
 
       {/* Tab chips */}
@@ -670,6 +696,11 @@ const s = StyleSheet.create({
     lineHeight: 20,
     fontFamily: fonts.body,
   },
+  // Auth gate
+  authGate: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32 },
+  authGateTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
+  authGateBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 8 },
+  authGateBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
   // Skeleton
   skelCircle: {
     width: 40,

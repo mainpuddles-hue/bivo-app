@@ -33,7 +33,6 @@ export function useFeedData() {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [discoveryTab, setDiscoveryTab] = useState<'events' | 'places'>('events')
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
 
   // ── Refs ──
@@ -316,9 +315,6 @@ export function useFeedData() {
     cityEvents,
     nearbyPlaces,
     extraLoading,
-    discoveryTab,
-    setDiscoveryTab,
-
     // Neighborhood
     showNeighborhoodPicker,
     setShowNeighborhoodPicker,

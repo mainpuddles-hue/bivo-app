@@ -159,13 +159,10 @@ export default function FeedScreen() {
         </View>
       ) : null}
 
-      {/* Discovery: events + places carousel */}
+      {/* Discovery: nearby places carousel */}
       <DiscoverySection
-        cityEvents={feed.cityEvents}
         nearbyPlaces={feed.nearbyPlaces}
         extraLoading={feed.extraLoading}
-        discoveryTab={feed.discoveryTab}
-        setDiscoveryTab={feed.setDiscoveryTab}
         placesSectionTitle={placesSectionTitle}
       />
 
@@ -201,7 +198,7 @@ export default function FeedScreen() {
     </View>
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts.length, feed.loading, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
-    feed.discoveryTab, feed.setDiscoveryTab, placesSectionTitle])
+    placesSectionTitle])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {
