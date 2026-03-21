@@ -2009,5 +2009,9 @@
     "neighborHelped": "Your neighbor {name} offered to help.",
     "howItWorks": "This is how TackBird works — neighbors helping neighbors.",
     "openMessage": "Open message"
+  },
+  "smartMatch": {
+    "neighborNeeds": "Your neighbor {name} needs help",
+    "youCanHelp": "You can help — you have experience with this!"
   }
 }

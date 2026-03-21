@@ -2009,5 +2009,9 @@
     "neighborHelped": "Din granne {name} erbjöd sig att hjälpa.",
     "howItWorks": "Så fungerar TackBird — grannar hjälper grannar.",
     "openMessage": "Öppna meddelande"
+  },
+  "smartMatch": {
+    "neighborNeeds": "Din granne {name} behöver hjälp",
+    "youCanHelp": "Du kan hjälpa — du har erfarenhet av detta!"
   }
 }

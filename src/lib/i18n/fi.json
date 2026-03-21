@@ -2036,5 +2036,9 @@
     "neighborHelped": "Naapurisi {name} tarjoutui auttamaan.",
     "howItWorks": "Näin TackBird toimii — naapurit auttavat toisiaan.",
     "openMessage": "Avaa viesti"
+  },
+  "smartMatch": {
+    "neighborNeeds": "Naapurisi {name} tarvitsee apua",
+    "youCanHelp": "Voit auttaa — sinulla on kokemusta tästä!"
   }
 }

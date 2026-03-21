@@ -135,6 +135,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
         styles.card,
         { backgroundColor: colors.card },
         isNappaa && !isPro && { borderWidth: 2, borderColor: '#E8A050' },
+        isPro && { borderWidth: 1.5, borderColor: colors.pro },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
@@ -406,6 +407,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                     {user?.name ?? t('postCard.anonymousUser')}
                   </Text>
                   {isVerified && <BadgeCheck size={14} color={colors.info} />}
+                  {isPro && (
+                    <View style={styles.proMicroBadge}>
+                      <Crown size={10} color="#F59E0B" />
+                    </View>
+                  )}
                 </View>
                 {post.created_at && (
                   <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
@@ -428,6 +434,7 @@ const styles = StyleSheet.create({
   proBanner: {
     height: 22, backgroundColor: '#F59E0B',
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
+    shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
   imageContainer: { aspectRatio: 16 / 9, position: 'relative' },
@@ -488,4 +495,8 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const, justifyContent: 'center' as const,
   },
   urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
+  proMicroBadge: {
+    backgroundColor: '#F59E0B18',
+    borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
+  },
 })

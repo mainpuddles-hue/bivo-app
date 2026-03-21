@@ -7,9 +7,11 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useFeedData } from '@/hooks/useFeedData'
+import { useSmartMatch } from '@/hooks/useSmartMatch'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
 import { AlertBanner } from '@/components/AlertBanner'
+import { SmartMatchBanner } from '@/components/SmartMatchBanner'
 import { DiscoverySection } from '@/components/DiscoverySection'
 import { HeroEventCard } from '@/components/HeroEventCard'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
@@ -98,6 +100,7 @@ export default function FeedScreen() {
   const router = useRouter()
 
   const feed = useFeedData()
+  const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
 
   // ── Computed: hero events ──
   const { displayEvents, eventSectionTitle } = useMemo(() => {
@@ -142,6 +145,8 @@ export default function FeedScreen() {
   const ListHeader = useMemo(() => (
     <View style={{ gap: 16 }}>
       <AlertBanner />
+
+      <SmartMatchBanner matches={matches} onDismiss={dismissMatch} />
 
       {/* Nappaa urgency strip */}
       <NappaaUrgencyStrip posts={feed.posts} />
@@ -204,7 +209,7 @@ export default function FeedScreen() {
     </View>
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
-    placesSectionTitle])
+    placesSectionTitle, matches, dismissMatch])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {
