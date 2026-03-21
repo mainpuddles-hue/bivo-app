@@ -46,7 +46,8 @@
     "admin": "Admin",
     "notifications": "Notifications",
     "search": "Search",
-    "homeAriaLabel": "TackBird — home"
+    "homeAriaLabel": "TackBird — home",
+    "community": "Community"
   },
   "feed": {
     "title": "Home",

@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router'
 import { View, Text, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Newspaper, CalendarDays, Plus, MessageCircle, User } from 'lucide-react-native'
+import { Newspaper, CalendarDays, Plus, MessageCircle, User, UsersRound } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Header } from '@/components/Header'
@@ -69,8 +69,11 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{
         tabBarIcon: ({ focused }) => <TabIcon icon={Newspaper} label={t('nav.feed')} focused={focused} colors={colors} />,
       }} />
+      <Tabs.Screen name="community" options={{
+        tabBarIcon: ({ focused }) => <TabIcon icon={UsersRound} label={t('nav.community')} focused={focused} colors={colors} />,
+      }} />
       <Tabs.Screen name="events" options={{
-        tabBarIcon: ({ focused }) => <TabIcon icon={CalendarDays} label={t('nav.events')} focused={focused} colors={colors} />,
+        href: null, // Hide from tab bar
       }} />
       <Tabs.Screen name="create" options={{
         tabBarIcon: ({ focused }) => <TabIcon icon={Plus} label={t('nav.create')} focused={focused} isCreate colors={colors} />,

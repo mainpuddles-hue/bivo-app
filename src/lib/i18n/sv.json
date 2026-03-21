@@ -46,7 +46,8 @@
     "admin": "Admin",
     "notifications": "Aviseringar",
     "search": "Sök",
-    "homeAriaLabel": "TackBird — hem"
+    "homeAriaLabel": "TackBird — hem",
+    "community": "Gemenskap"
   },
   "feed": {
     "title": "Hem",

@@ -46,7 +46,8 @@
     "admin": "Hallinta",
     "notifications": "Ilmoitukset",
     "search": "Haku",
-    "homeAriaLabel": "TackBird — etusivu"
+    "homeAriaLabel": "TackBird — etusivu",
+    "community": "Yhteisö"
   },
   "feed": {
     "title": "Koti",
