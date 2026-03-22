@@ -34,6 +34,12 @@ interface EventPreview {
 
 type SubTab = 'map' | 'events' | 'places'
 
+// ── Group category colors ──
+const GROUP_COLORS: Record<string, string> = {
+  general: '#2D6B5E', sports: '#27AE60', kids: '#FF9800', pets: '#E8A050',
+  garden: '#4CAF6A', food: '#E74C3C', culture: '#8E44AD', other: '#607D8B',
+}
+
 // ── Place category colors ──
 const PLACE_CAT_COLORS: Record<string, string> = {
   restaurant: '#C75B3A', fast_food: '#C75B3A', cafe: '#E8A050',
@@ -131,6 +137,11 @@ export default function ExploreScreen() {
   const [places, setPlaces] = useState<LocalPlace[]>([])
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
 
+  // Community preview state
+  const [groups, setGroups] = useState<Array<{ id: string; name: string; category: string; member_count: number }>>([])
+  const [forumPosts, setForumPosts] = useState<Array<{ id: string; title: string; category: string; reply_count: number; created_at: string }>>([])
+
+
   // ── Fetch location ──
   const fetchLocation = useCallback(async () => {
     try {
@@ -172,6 +183,16 @@ export default function ExploreScreen() {
       setCityEvents(futureCityEvents)
       setCommunityEvents(communityRes)
       setPlaces(placesResult)
+
+      // Fetch groups preview (graceful if table doesn't exist)
+      const groupsRes = await (supabase.from('groups').select('id, name, category, member_count') as any)
+        .order('member_count', { ascending: false }).limit(3)
+      if (!groupsRes.error && groupsRes.data) setGroups(groupsRes.data)
+
+      // Fetch forum posts preview (graceful if table doesn't exist)
+      const forumRes = await (supabase.from('forum_posts').select('id, title, category, reply_count, created_at') as any)
+        .order('created_at', { ascending: false }).limit(3)
+      if (!forumRes.error && forumRes.data) setForumPosts(forumRes.data)
     } catch (err) {
       if (__DEV__) console.log('[explore] fetch error:', err)
     } finally {
@@ -351,25 +372,70 @@ export default function ExploreScreen() {
               </View>
             )}
 
-            {/* Community shortcuts */}
+            {/* Community: Groups */}
             <View style={s.communitySection}>
-              <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('nav.community')}</Text>
-              <Pressable onPress={() => router.push('/groups' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
-                <Users size={20} color={colors.primary} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
-                  <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
-                </View>
-                <ChevronRight size={16} color={colors.mutedForeground} />
-              </Pressable>
-              <Pressable onPress={() => router.push('/forum' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
-                <MessageCircle size={20} color={colors.primary} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
-                  <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
-                </View>
-                <ChevronRight size={16} color={colors.mutedForeground} />
-              </Pressable>
+              <View style={s.sectionHeader}>
+                <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
+                <Pressable onPress={() => router.push('/groups' as any)} style={s.seeAllLink}>
+                  <Text style={[s.seeAllText, { color: colors.primary }]}>{t('feed.showAll')}</Text>
+                  <ChevronRight size={14} color={colors.primary} />
+                </Pressable>
+              </View>
+              {groups.length > 0 ? (
+                groups.map(g => (
+                  <Pressable key={g.id} onPress={() => router.push('/groups' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                    <View style={[s.groupDot, { backgroundColor: GROUP_COLORS[g.category] ?? colors.primary }]}>
+                      <Text style={s.groupDotText}>{g.name.charAt(0)}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{g.name}</Text>
+                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{g.member_count} {t('groups.members')}</Text>
+                    </View>
+                    <ChevronRight size={14} color={colors.mutedForeground} />
+                  </Pressable>
+                ))
+              ) : (
+                <Pressable onPress={() => router.push('/groups' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                  <Users size={20} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
+                    <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
+                  </View>
+                  <ChevronRight size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </View>
+
+            {/* Community: Forum */}
+            <View style={s.communitySection}>
+              <View style={s.sectionHeader}>
+                <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
+                <Pressable onPress={() => router.push('/forum' as any)} style={s.seeAllLink}>
+                  <Text style={[s.seeAllText, { color: colors.primary }]}>{t('feed.showAll')}</Text>
+                  <ChevronRight size={14} color={colors.primary} />
+                </Pressable>
+              </View>
+              {forumPosts.length > 0 ? (
+                forumPosts.map(p => (
+                  <Pressable key={p.id} onPress={() => router.push('/forum' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                    <MessageCircle size={18} color={colors.primary} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{p.title}</Text>
+                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.reply_count} {t('forum.replies')}</Text>
+                    </View>
+                    <ChevronRight size={14} color={colors.mutedForeground} />
+                  </Pressable>
+                ))
+              ) : (
+                <Pressable onPress={() => router.push('/forum' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                  <MessageCircle size={20} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
+                    <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
+                  </View>
+                  <ChevronRight size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
             </View>
 
             {loading && <SectionSkeleton colors={colors} count={2} />}
@@ -647,7 +713,12 @@ const s = StyleSheet.create({
 
   // Community section
   communitySection: { gap: 10, marginTop: 12 },
-  sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, paddingHorizontal: 4 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 },
+  seeAllLink: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  seeAllText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16 },
+  groupDot: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  groupDotText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
   communityCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
     padding: 14, borderRadius: 12,
