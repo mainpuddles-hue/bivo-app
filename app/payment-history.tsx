@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -58,25 +60,31 @@ export default function PaymentHistoryScreen() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
-    const { data, error } = await supabase
-      .from('payments')
-      .select(`
-        id, amount, description, status, type, post_id, booking_id,
-        stripe_session_id, created_at,
-        post:posts!payments_post_id_fkey(title)
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .select(`
+          id, amount, description, status, type, post_id, booking_id,
+          stripe_session_id, created_at,
+          post:posts!payments_post_id_fkey(title)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      Alert.alert(t('common.error'), t('payment.fetchFailed'))
-    } else {
-      setPayments((data ?? []) as unknown as PaymentRecord[])
+      if (error) {
+        if (__DEV__) console.log('[payments] error:', error.message)
+        setPayments([])
+      } else {
+        setPayments((data ?? []) as unknown as PaymentRecord[])
+      }
+    } catch {
+      if (__DEV__) console.log('[payments] fetch failed')
+      setPayments([])
     }
 
     setLoading(false)
     setRefreshing(false)
-  }, [supabase, t])
+  }, [supabase])
 
   useEffect(() => { fetchPayments() }, [fetchPayments])
 

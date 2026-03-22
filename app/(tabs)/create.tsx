@@ -284,7 +284,6 @@ export default function CreateScreen() {
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt,
         is_active: true,
-        is_anonymous: isAnonymous,
         tags: selectedTags,
       }).select('id').single()
 
@@ -333,7 +332,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isAnonymous, images, supabase, router, t])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, images, supabase, router, t])
 
   // ── Category selection step ──
   if (step === 'category') {

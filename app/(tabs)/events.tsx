@@ -284,16 +284,22 @@ export default function EventsScreen() {
     if (!userId) { router.push('/(auth)/login'); return }
     const act = activities.find(a => a.id === activityId)
     if (!act) return
-    if (act.is_member) {
-      await supabase.from('activity_members').delete().eq('activity_id', activityId).eq('user_id', userId)
-      setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: false, member_count: (a.member_count ?? 1) - 1 } : a))
-    } else {
-      if (act.max_members && (act.member_count ?? 0) >= act.max_members) {
-        Alert.alert(t('activity.activityFull'))
-        return
+    try {
+      if (act.is_member) {
+        const { error } = await supabase.from('activity_members').delete().eq('activity_id', activityId).eq('user_id', userId)
+        if (error) { if (__DEV__) console.log('[activities] leave error:', error.message); return }
+        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: false, member_count: (a.member_count ?? 1) - 1 } : a))
+      } else {
+        if (act.max_members && (act.member_count ?? 0) >= act.max_members) {
+          Alert.alert(t('activity.activityFull'))
+          return
+        }
+        const { error } = await (supabase.from('activity_members') as any).insert({ activity_id: activityId, user_id: userId })
+        if (error) { if (__DEV__) console.log('[activities] join error:', error.message); return }
+        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: true, member_count: (a.member_count ?? 0) + 1 } : a))
       }
-      await (supabase.from('activity_members') as any).insert({ activity_id: activityId, user_id: userId })
-      setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: true, member_count: (a.member_count ?? 0) + 1 } : a))
+    } catch (err) {
+      if (__DEV__) console.log('[activities] toggleMember error:', err)
     }
   }, [userId, activities, supabase, router, t])
 

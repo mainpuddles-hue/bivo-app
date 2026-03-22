@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -72,7 +74,14 @@ export default function SavedScreen() {
           .from('saved_places')
           .select('place_id')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .then(res => {
+            if (res.error) {
+              if (__DEV__) console.log('[saved] saved_places error:', res.error.message)
+              return { ...res, data: [] }
+            }
+            return res
+          }),
       ])
 
       // Process posts
@@ -128,11 +137,16 @@ export default function SavedScreen() {
       // Fetch place details
       const placeIds = (savedPlacesRes.data ?? []).map((p: any) => p.place_id)
       if (placeIds.length > 0) {
-        const { data: placeData } = await supabase
+        const { data: placeData, error: placesError } = await supabase
           .from('local_places')
           .select('id, name, category, address')
           .in('id', placeIds)
-        setPlaces((placeData ?? []) as SavedPlace[])
+        if (placesError) {
+          if (__DEV__) console.log('[saved] local_places error:', placesError.message)
+          // Continue — just don't show saved places
+        } else {
+          setPlaces((placeData ?? []) as SavedPlace[])
+        }
       }
 
       setLoading(false)

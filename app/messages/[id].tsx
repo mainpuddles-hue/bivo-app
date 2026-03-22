@@ -90,17 +90,22 @@ export default function ConversationScreen() {
       // Load reactions for these messages
       const msgIds = sorted.map(m => m.id)
       if (msgIds.length > 0) {
-        const { data: rxns } = await supabase
-          .from('message_reactions')
-          .select('*')
-          .in('message_id', msgIds)
-        if (rxns) {
-          const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
-          for (const r of rxns as any[]) {
-            if (!grouped[r.message_id]) grouped[r.message_id] = []
-            grouped[r.message_id].push({ emoji: r.emoji, user_id: r.user_id })
+        try {
+          const { data: rxns } = await supabase
+            .from('message_reactions')
+            .select('*')
+            .in('message_id', msgIds)
+          if (rxns) {
+            const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
+            for (const r of rxns as any[]) {
+              if (!grouped[r.message_id]) grouped[r.message_id] = []
+              grouped[r.message_id].push({ emoji: r.emoji, user_id: r.user_id })
+            }
+            setReactions(grouped)
           }
-          setReactions(grouped)
+        } catch {
+          if (__DEV__) console.log('[conversation] message_reactions fetch failed')
+          // Silently fail — reactions just won't show
         }
       }
 
@@ -235,11 +240,15 @@ export default function ConversationScreen() {
 
     if (existing) {
       // Remove reaction
-      await (supabase.from('message_reactions') as any)
-        .delete()
-        .eq('message_id', selectedMessageId)
-        .eq('user_id', userId)
-        .eq('emoji', emoji)
+      try {
+        await (supabase.from('message_reactions') as any)
+          .delete()
+          .eq('message_id', selectedMessageId)
+          .eq('user_id', userId)
+          .eq('emoji', emoji)
+      } catch {
+        // Silently fail — reaction just won't be removed from server
+      }
       setReactions(prev => ({
         ...prev,
         [selectedMessageId]: (prev[selectedMessageId] ?? []).filter(
@@ -248,11 +257,15 @@ export default function ConversationScreen() {
       }))
     } else {
       // Add reaction
-      await (supabase.from('message_reactions') as any).insert({
-        message_id: selectedMessageId,
-        user_id: userId,
-        emoji,
-      })
+      try {
+        await (supabase.from('message_reactions') as any).insert({
+          message_id: selectedMessageId,
+          user_id: userId,
+          emoji,
+        })
+      } catch {
+        // Silently fail — reaction just won't save
+      }
       setReactions(prev => ({
         ...prev,
         [selectedMessageId]: [...(prev[selectedMessageId] ?? []), { emoji, user_id: userId }],

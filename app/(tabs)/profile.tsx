@@ -80,7 +80,8 @@ export default function ProfileScreen() {
         supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
         supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
         supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id),
+        Promise.resolve(supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id))
+          .catch(() => ({ count: 0, data: null, error: null })),
       ])
       setPostCount(postsRes.count ?? 0)
       setFollowerCount(followersRes.count ?? 0)

@@ -101,12 +101,10 @@ export default function OnboardingScreen() {
         return
       }
 
-      // Save selected neighborhood + location verification status
+      // Save selected neighborhood
       if (selectedNeighborhood) {
         const updateData: Record<string, any> = { naapurusto: selectedNeighborhood }
-        if (verificationStatus === 'verified') {
-          updateData.location_verified = true
-        }
+        // location_verified column not yet in database — skip for now
         await (supabase.from('profiles') as any)
           .update(updateData)
           .eq('id', user.id)

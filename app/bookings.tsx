@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -88,30 +90,36 @@ export default function BookingsScreen() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const fetchBookings = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
-    setUserId(user.id)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoading(false); return }
+      setUserId(user.id)
 
-    const { data, error } = await supabase
-      .from('rental_bookings')
-      .select(`
-        id, post_id, borrower_id, lender_id, start_date, end_date,
-        daily_fee, service_fee, total_amount, status, stripe_session_id, created_at,
-        post:posts!rental_bookings_post_id_fkey(id, title, image_url),
-        borrower:profiles!rental_bookings_borrower_id_fkey(id, name, avatar_url),
-        lender:profiles!rental_bookings_lender_id_fkey(id, name, avatar_url)
-      `)
-      .or(`borrower_id.eq.${user.id},lender_id.eq.${user.id}`)
-      .order('created_at', { ascending: false })
+      const { data, error } = await supabase
+        .from('rental_bookings')
+        .select(`
+          id, post_id, borrower_id, lender_id, start_date, end_date,
+          daily_fee, service_fee, total_amount, status, stripe_session_id, created_at,
+          post:posts!rental_bookings_post_id_fkey(id, title, image_url),
+          borrower:profiles!rental_bookings_borrower_id_fkey(id, name, avatar_url),
+          lender:profiles!rental_bookings_lender_id_fkey(id, name, avatar_url)
+        `)
+        .or(`borrower_id.eq.${user.id},lender_id.eq.${user.id}`)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      Alert.alert(t('common.error'), t('rental.fetchFailed'))
-    } else {
-      setBookings((data ?? []) as unknown as RentalBooking[])
+      if (error) {
+        if (__DEV__) console.log('[bookings] error:', error.message)
+        setBookings([])
+      } else {
+        setBookings((data ?? []) as unknown as RentalBooking[])
+      }
+    } catch (err) {
+      if (__DEV__) console.log('[bookings] fetchBookings error:', err)
+      setBookings([])
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-
-    setLoading(false)
-    setRefreshing(false)
   }, [supabase, t])
 
   useEffect(() => { fetchBookings() }, [fetchBookings])

@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -307,18 +309,23 @@ export default function PostDetailScreen() {
   useEffect(() => {
     if (!bookingModalVisible || !id) return
     async function fetchBlockedDates() {
-      const { data } = await (supabase.from('rental_bookings') as any)
-        .select('start_date, end_date').eq('post_id', id).in('status', ['pending', 'confirmed', 'paid', 'active'])
-      if (!data) return
-      const blocked: string[] = []
-      for (const booking of data as any[]) {
-        const start = new Date(booking.start_date); const end = new Date(booking.end_date); const cursor = new Date(start)
-        while (cursor <= end) {
-          blocked.push(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`)
-          cursor.setDate(cursor.getDate() + 1)
+      try {
+        const { data, error } = await (supabase.from('rental_bookings') as any)
+          .select('start_date, end_date').eq('post_id', id).in('status', ['pending', 'confirmed', 'paid', 'active'])
+        if (error) { if (__DEV__) console.log('[bookings] blocked dates error:', error.message); return }
+        if (!data) return
+        const blocked: string[] = []
+        for (const booking of data as any[]) {
+          const start = new Date(booking.start_date); const end = new Date(booking.end_date); const cursor = new Date(start)
+          while (cursor <= end) {
+            blocked.push(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`)
+            cursor.setDate(cursor.getDate() + 1)
+          }
         }
+        setBlockedDates(blocked)
+      } catch (err) {
+        if (__DEV__) console.log('[bookings] fetchBlockedDates error:', err)
       }
-      setBlockedDates(blocked)
     }
     fetchBlockedDates()
   }, [bookingModalVisible, id, supabase])
@@ -336,7 +343,10 @@ export default function PostDetailScreen() {
       if (bookingError || !booking) { Alert.alert(t('common.error'), t('rental.bookingFailed')); setSendingBooking(false); return }
       const amountCents = Math.round(bookingTotal * 100)
       const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate } })
-      if (sessionId) { await (supabase.from('rental_bookings') as any).update({ stripe_session_id: sessionId }).eq('id', booking.id) }
+      if (sessionId) {
+        const { error: updateError } = await (supabase.from('rental_bookings') as any).update({ stripe_session_id: sessionId }).eq('id', booking.id)
+        if (updateError && __DEV__) console.log('[bookings] update stripe session error:', updateError.message)
+      }
       setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
       if (!sessionId) { Alert.alert(t('common.success'), t('rental.bookingCreated')) }
     } catch { Alert.alert(t('common.error'), t('rental.bookingFailed')) }
