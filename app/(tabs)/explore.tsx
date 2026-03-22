@@ -109,6 +109,7 @@ export default function ExploreScreen() {
   const [activeTab, setActiveTab] = useState<SubTab>('map')
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
 
   // Data state
   const [communityEvents, setCommunityEvents] = useState<EventPreview[]>([])
@@ -140,6 +141,7 @@ export default function ExploreScreen() {
   // ── Fetch all data ──
   const fetchData = useCallback(async () => {
     setLoading(true)
+    setFetchError(false)
     try {
       const location = userLocationRef.current ?? await fetchLocation()
 
@@ -173,17 +175,20 @@ export default function ExploreScreen() {
       setCommunityEvents(communityRes)
       setPlaces(placesResult)
 
-      // Fetch groups preview (graceful if table doesn't exist)
-      const groupsRes = await (supabase.from('groups').select('id, name, category, member_count') as any)
-        .order('member_count', { ascending: false }).limit(3)
+      // Fetch community previews in parallel (graceful if tables don't exist)
+      const [groupsRes, forumRes] = await Promise.all([
+        (supabase.from('groups').select('id, name, category, member_count') as any)
+          .order('member_count', { ascending: false }).limit(3)
+          .then((r: any) => r).catch(() => ({ data: null, error: true })),
+        (supabase.from('forum_posts').select('id, title, category, reply_count, created_at') as any)
+          .order('created_at', { ascending: false }).limit(3)
+          .then((r: any) => r).catch(() => ({ data: null, error: true })),
+      ])
       if (!groupsRes.error && groupsRes.data) setGroups(groupsRes.data)
-
-      // Fetch forum posts preview (graceful if table doesn't exist)
-      const forumRes = await (supabase.from('forum_posts').select('id, title, category, reply_count, created_at') as any)
-        .order('created_at', { ascending: false }).limit(3)
       if (!forumRes.error && forumRes.data) setForumPosts(forumRes.data)
     } catch (err) {
       if (__DEV__) console.log('[explore] fetch error:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
     }
@@ -229,11 +234,15 @@ export default function ExploreScreen() {
       .slice(0, 20)
   }, [places, userLocation])
 
-  // ── All events combined & sorted ──
+  // ── All events combined, deduplicated & sorted ──
   const allEvents = useMemo(() => {
     const combined: Array<{ id: string; title: string; date: string; location: string | null; isFree: boolean; infoUrl: string | null; isCity: boolean }> = []
+    const seenTitles = new Set<string>()
 
     for (const e of communityEvents) {
+      const key = e.title.toLowerCase().trim()
+      if (seenTitles.has(key)) continue
+      seenTitles.add(key)
       combined.push({
         id: e.id,
         title: e.title,
@@ -246,9 +255,13 @@ export default function ExploreScreen() {
     }
 
     for (const e of cityEvents) {
+      const title = getCityEventName(e, locale)
+      const key = title.toLowerCase().trim()
+      if (seenTitles.has(key)) continue
+      seenTitles.add(key)
       combined.push({
         id: e.id,
-        title: getCityEventName(e, locale),
+        title,
         date: e.start_time,
         location: e.location_name,
         isFree: e.is_free,
@@ -260,7 +273,13 @@ export default function ExploreScreen() {
     return combined.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   }, [communityEvents, cityEvents, locale])
 
-  // ── Tab chips config ──
+  // ── Tab chips config with counts ──
+  const tabCounts = useMemo(() => ({
+    map: 0,
+    events: allEvents.length,
+    places: sortedPlaces.length,
+  }), [allEvents.length, sortedPlaces.length])
+
   const tabs: { key: SubTab; labelKey: string; Icon: typeof Map }[] = [
     { key: 'map', labelKey: 'nav.map', Icon: Map },
     { key: 'events', labelKey: 'nav.events', Icon: CalendarDays },
@@ -297,6 +316,13 @@ export default function ExploreScreen() {
               <Text style={[s.chipText, { color: isActive ? '#FFFFFF' : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
+              {tabCounts[key] > 0 && (
+                <View style={[s.chipCount, { backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : `${colors.primary}20` }]}>
+                  <Text style={[s.chipCountText, { color: isActive ? '#FFFFFF' : colors.primary }]}>
+                    {tabCounts[key]}
+                  </Text>
+                </View>
+              )}
             </Pressable>
           )
         })}
@@ -428,6 +454,15 @@ export default function ExploreScreen() {
             </View>
 
             {loading && <SectionSkeleton colors={colors} count={2} />}
+
+            {/* Error state */}
+            {fetchError && !loading && cityEvents.length === 0 && places.length === 0 && (
+              <Pressable onPress={handleRefresh} style={[s.errorRow, { backgroundColor: `${colors.destructive}10` }]}>
+                <Text style={[s.errorRowText, { color: colors.destructive }]}>
+                  {t('feed.loadError')}
+                </Text>
+              </Pressable>
+            )}
           </>
         )}
 
@@ -569,6 +604,11 @@ const s = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.bodyMedium,
   },
+  chipCount: {
+    paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, minWidth: 20,
+    alignItems: 'center' as const,
+  },
+  chipCountText: { fontSize: 11, fontWeight: '700' as const },
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 16,
@@ -714,6 +754,11 @@ const s = StyleSheet.create({
   },
   communityCardTitle: { fontSize: 14, fontFamily: fonts.bodySemi },
   communityCardHint: { fontSize: 12, fontFamily: fonts.body },
+  errorRow: {
+    flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8,
+    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginTop: 12,
+  },
+  errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
 
   // Skeleton
   skelCircle: {
