@@ -5,6 +5,7 @@ import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
   Pressable, Linking, Animated,
 } from 'react-native'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
@@ -22,6 +23,7 @@ import { formatEventDateShort } from '@/lib/format'
 import * as Location from 'expo-location'
 import type { CityEvent, LocalPlace } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
+import { haversineKm } from '@/lib/geo'
 
 // ── Types ──
 
@@ -67,18 +69,6 @@ function PlaceCategoryIcon({ category, size, color }: { category: string; size: 
   }
 }
 
-// ── Distance helper ──
-function distanceBetween(
-  lat1: number, lng1: number, lat2: number, lng2: number,
-): number {
-  const R = 6371 // km
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
 
 function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
@@ -86,18 +76,7 @@ function formatDistance(km: number): string {
 
 // ── Shimmer skeleton ──
 function SectionSkeleton({ colors, count = 3 }: { colors: ReturnType<typeof useTheme>['colors']; count?: number }) {
-  const shimmer = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    )
-    anim.start()
-    return () => anim.stop()
-  }, [shimmer])
-  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+  const opacity = useShimmer()
 
   return (
     <View style={{ gap: 10 }}>
@@ -136,6 +115,7 @@ export default function ExploreScreen() {
   const [cityEvents, setCityEvents] = useState<CityEvent[]>([])
   const [places, setPlaces] = useState<LocalPlace[]>([])
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
+  const userLocationRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
   // Community preview state
   const [groups, setGroups] = useState<Array<{ id: string; name: string; category: string; member_count: number }>>([])
@@ -150,6 +130,7 @@ export default function ExploreScreen() {
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
       const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude }
       setUserLocation(coords)
+      userLocationRef.current = coords
       return coords
     } catch {
       return null
@@ -160,20 +141,28 @@ export default function ExploreScreen() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const location = userLocation ?? await fetchLocation()
+      const location = userLocationRef.current ?? await fetchLocation()
 
       const now = new Date().toISOString()
 
+      const communityEventsPromise = (async () => {
+        try {
+          const { data, error } = await (supabase
+            .from('events')
+            .select('id, title, event_date, location_name') as any)
+            .gte('event_date', now)
+            .order('event_date', { ascending: true })
+            .limit(10)
+          if (error) return [] as EventPreview[]
+          return (data ?? []) as EventPreview[]
+        } catch {
+          return [] as EventPreview[]
+        }
+      })()
+
       const [helsinkiEvents, communityRes, placesResult] = await Promise.all([
         fetchHelsinkiEvents().catch(() => [] as CityEvent[]),
-        (supabase
-          .from('events')
-          .select('id, title, event_date, location_name') as any)
-          .gte('event_date', now)
-          .order('event_date', { ascending: true })
-          .limit(10)
-          .then((res: any) => (res.data ?? []) as EventPreview[])
-          .catch(() => [] as EventPreview[]),
+        communityEventsPromise,
         location
           ? fetchHelsinkiPlaces(location.latitude, location.longitude, 2000).catch(() => [] as LocalPlace[])
           : Promise.resolve([] as LocalPlace[]),
@@ -198,7 +187,7 @@ export default function ExploreScreen() {
     } finally {
       setLoading(false)
     }
-  }, [supabase, userLocation, fetchLocation])
+  }, [supabase, fetchLocation])
 
   // ── Initial load ──
   useEffect(() => {
@@ -234,7 +223,7 @@ export default function ExploreScreen() {
     return [...places]
       .map(p => ({
         ...p,
-        _distance: distanceBetween(userLocation.latitude, userLocation.longitude, p.latitude, p.longitude),
+        _distance: haversineKm(userLocation.latitude, userLocation.longitude, p.latitude, p.longitude),
       }))
       .sort((a, b) => a._distance - b._distance)
       .slice(0, 20)
@@ -481,7 +470,7 @@ export default function ExploreScreen() {
                         {event.isFree && (
                           <View style={[s.freeBadge, { backgroundColor: isDark ? '#102D1A' : '#E8F7EF' }]}>
                             <Text style={[s.freeBadgeText, { color: '#2B8A62' }]}>
-                              {locale === 'sv' ? 'Gratis' : locale === 'en' ? 'Free' : 'Ilmainen'}
+                              {t('events.free')}
                             </Text>
                           </View>
                         )}
