@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Platform, Alert } from 'react-native'
 import * as Notifications from 'expo-notifications'
@@ -34,7 +36,7 @@ async function saveTokenToBackend(userId: string, pushToken: string | null) {
     } else {
       await AsyncStorage.removeItem('push_token')
     }
-    console.log('[push] saved token locally (backend failed):', error.message)
+    if (__DEV__) console.log('[push] saved token locally (backend failed):', error.message)
   }
 }
 
@@ -89,7 +91,7 @@ export function usePushNotifications(userId: string | null) {
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log('[push] received:', notification.request.identifier)
+        if (__DEV__) console.log('[push] received:', notification.request.identifier)
       })
 
     return () => {
@@ -144,7 +146,7 @@ export function usePushNotifications(userId: string | null) {
       setToken(pushToken)
       setIsSubscribed(true)
     } catch (err) {
-      console.error('[push] subscribe failed:', err)
+      if (__DEV__) console.error('[push] subscribe failed:', err)
     } finally {
       setIsLoading(false)
     }
@@ -158,7 +160,7 @@ export function usePushNotifications(userId: string | null) {
       setToken(null)
       setIsSubscribed(false)
     } catch (err) {
-      console.error('[push] unsubscribe failed:', err)
+      if (__DEV__) console.error('[push] unsubscribe failed:', err)
     } finally {
       setIsLoading(false)
     }

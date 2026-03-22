@@ -22,8 +22,10 @@ const CAT_ICON_MAP: Record<string, React.ComponentType<any>> = {
 }
 
 const HISTORY_KEY = 'tackbird-search-history'
+const RECENT_SEARCHES_KEY = 'tackbird_recent_searches'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
 const MAX_HISTORY = 5
+const MAX_RECENT = 8
 
 type TimeFilter = 'all' | 'today' | 'week'
 
@@ -67,6 +69,7 @@ export default function SearchScreen() {
   const [userResults, setUserResults] = useState<{ id: string; name: string; avatar_url: string | null; naapurusto: string }[]>([])
   const [trendingPosts, setTrendingPosts] = useState<{ id: string; title: string; type: string; like_count: number }[]>([])
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
 
   // Filter state
   const [filtersVisible, setFiltersVisible] = useState(false)
@@ -92,13 +95,16 @@ export default function SearchScreen() {
       })
   }, [supabase])
 
-  // Load search history + saved searches
+  // Load search history + saved searches + recent searches
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY).then(stored => {
       if (stored) setHistory(JSON.parse(stored))
     })
     AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
       if (stored) setSavedSearches(JSON.parse(stored))
+    })
+    AsyncStorage.getItem(RECENT_SEARCHES_KEY).then(stored => {
+      if (stored) setRecentSearches(JSON.parse(stored))
     })
   }, [])
 
@@ -113,6 +119,19 @@ export default function SearchScreen() {
     setHistory(updated)
     await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
   }, [history])
+
+  const saveRecentSearch = useCallback(async (term: string) => {
+    const trimmed = term.trim()
+    if (!trimmed) return
+    const updated = [trimmed, ...recentSearches.filter(s => s !== trimmed)].slice(0, MAX_RECENT)
+    setRecentSearches(updated)
+    await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated))
+  }, [recentSearches])
+
+  const clearRecentSearches = useCallback(async () => {
+    setRecentSearches([])
+    await AsyncStorage.removeItem(RECENT_SEARCHES_KEY)
+  }, [])
 
   const saveCurrentSearch = useCallback(async () => {
     const q = query.trim()
@@ -263,6 +282,7 @@ export default function SearchScreen() {
     setLoading(true)
     setSearched(true)
     addToHistory(q)
+    saveRecentSearch(q)
 
     const f = overrideFilters ?? filters
     const catFilter = overrideCategory !== undefined ? overrideCategory : activeFilter
@@ -304,7 +324,7 @@ export default function SearchScreen() {
         setLoading(false)
       }
     }
-  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, buildFilteredQuery, sortByDistance])
+  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, saveRecentSearch, buildFilteredQuery, sortByDistance])
 
   /**
    * Debounced search triggered on text input change.
@@ -405,6 +425,24 @@ export default function SearchScreen() {
   // -- Discovery View (no search yet) --
   const DiscoveryView = () => (
     <ScrollView contentContainerStyle={s.discovery} showsVerticalScrollIndicator={false}>
+      {/* Recent searches — persistent vertical list */}
+      {!query && recentSearches.length > 0 && (
+        <View style={s.section}>
+          <View style={s.recentHeader}>
+            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recent')}</Text>
+            <Pressable onPress={clearRecentSearches}>
+              <Text style={[s.recentClear, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('common.clear')}</Text>
+            </Pressable>
+          </View>
+          {recentSearches.map((term, i) => (
+            <Pressable key={i} onPress={() => { setQuery(term); saveRecentSearch(term); executeSearch(term) }} style={s.recentItem}>
+              <Clock size={14} color={colors.mutedForeground} />
+              <Text style={[s.recentText, { color: colors.foreground, fontFamily: fonts.body }]}>{term}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
       {/* Recent search chips */}
       {history.length > 0 && (
         <View style={s.section}>
@@ -544,7 +582,9 @@ export default function SearchScreen() {
   const EmptyState = () => (
     <View style={s.empty}>
       <BoardIllustration size={100} />
-      <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
+      <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+        {query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}
+      </Text>
       <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.tryDifferent')}</Text>
     </View>
   )
@@ -678,6 +718,15 @@ export default function SearchScreen() {
               </Pressable>
             ))}
           </ScrollView>
+        </View>
+      )}
+
+      {/* Result count */}
+      {searched && !loading && results.length > 0 && activeTab === 'posts' && (
+        <View style={s.resultCountRow}>
+          <Text style={[s.resultCountText, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>
+            {t('search.resultCount', { count: results.length })}
+          </Text>
         </View>
       )}
 
@@ -833,6 +882,12 @@ const s = StyleSheet.create({
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
   userName: { fontSize: 15, fontWeight: '600' },
   userNh: { fontSize: 13 },
+  recentHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  recentClear: { fontSize: 13, fontWeight: '500' },
+  recentItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+  recentText: { fontSize: 14 },
+  resultCountRow: { paddingHorizontal: 16, paddingVertical: 6 },
+  resultCountText: { fontSize: 13, fontWeight: '500' },
   trendingList: { gap: 6 },
   trendingCard: {
     flexDirection: 'row', alignItems: 'center', gap: 10,

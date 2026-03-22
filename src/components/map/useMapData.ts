@@ -224,11 +224,11 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       }
       setCityEvents(allCityEvents)
       const withCoords = allCityEvents.filter(e => e.latitude && e.longitude).length
-      console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
-      if (postsRes.error) console.log('[map] posts error:', postsRes.error.message)
-      if (eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
+      if (__DEV__) console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
+      if (__DEV__ && postsRes.error) console.log('[map] posts error:', postsRes.error.message)
+      if (__DEV__ && eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
     } catch (err) {
-      console.log('[map] global fetch error:', err)
+      if (__DEV__) console.log('[map] global fetch error:', err)
     }
   }, [supabase, center])
 
@@ -237,9 +237,9 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       const radius = getRadiusKm(selectedNeighborhood)
       const placesData = await fetchHelsinkiPlaces(center.latitude, center.longitude, radius * 1000)
       setPlaces(placesData)
-      console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
+      if (__DEV__) console.log(`[map] Palvelukartta: ${placesData.length} places near ${selectedNeighborhood}`)
     } catch (err) {
-      console.log('[map] places fetch error:', err)
+      if (__DEV__) console.log('[map] places fetch error:', err)
     }
   }, [center, selectedNeighborhood])
 
@@ -595,7 +595,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       const placesData = await fetchHelsinkiPlaces(c.latitude, c.longitude, radius * 1000)
       setPlaces(placesData)
     } catch (err) {
-      console.log('[map] neighborhood switch places error:', err)
+      if (__DEV__) console.log('[map] neighborhood switch places error:', err)
     }
     setNeighborhoodLoading(false)
   }, [])

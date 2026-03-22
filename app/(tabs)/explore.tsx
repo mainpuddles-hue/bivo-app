@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
@@ -170,7 +172,7 @@ export default function ExploreScreen() {
       setCommunityEvents(communityRes)
       setPlaces(placesResult)
     } catch (err) {
-      console.log('[explore] fetch error:', err)
+      if (__DEV__) console.log('[explore] fetch error:', err)
     } finally {
       setLoading(false)
     }

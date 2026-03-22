@@ -33,7 +33,8 @@
     "clear": "Rensa",
     "remove": "Ta bort",
     "scrollToBottom": "Scrolla ner",
-    "offline": "Ingen anslutning"
+    "offline": "Ingen anslutning",
+    "loginRequired": "Logga in"
   },
   "nav": {
     "feed": "Hem",
@@ -480,7 +481,16 @@
     "shared": "Delat",
     "impactSaved": "Sparat",
     "streakDays": "{count} dagars svit",
-    "points": "poäng"
+    "points": "poäng",
+    "writeReview": "Skriv en recension",
+    "rating": "Betyg",
+    "reviewComment": "Kommentar",
+    "reviewPlaceholder": "Berätta om din upplevelse...",
+    "submitReview": "Skicka recension",
+    "reviewSubmitted": "Recension skickad!",
+    "reviewFailed": "Kunde inte skicka recension",
+    "selectRating": "Välj ett betyg",
+    "alreadyReviewed": "Du har redan recenserat denna användare"
   },
   "settings": {
     "title": "Inställningar",
@@ -1292,7 +1302,10 @@
     "selectDate": "Välj datum",
     "timeToday": "Idag",
     "timeWeek": "Denna vecka",
-    "timeAll": "Alla"
+    "timeAll": "Alla",
+    "recent": "Senaste sökningar",
+    "noResultsQuery": "Inga resultat för \"{query}\"",
+    "resultCount": "{count} resultat"
   },
   "saved": {
     "title": "Sparade",

@@ -1,11 +1,13 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, Modal, TextInput, Alert, Linking } from 'react-native'
+import { View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, Modal, Alert, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   CalendarDays, MapPin, Users, Plus, Bookmark, BookmarkCheck,
-  ChevronRight, ChevronLeft, Globe, RefreshCw, List, Calendar, Share2, Trash2, Bell, BellOff, X,
+  ChevronRight, ChevronLeft, Globe, RefreshCw, List, Calendar, Share2, X,
   Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2, ExternalLink,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -230,9 +232,9 @@ export default function EventsScreen() {
         .order('created_at', { ascending: false })
         .limit(500),
     ])
-    if (evtsRes.error) console.log('[events] events error:', evtsRes.error.message)
-    if (actRes.error) console.log('[events] activities error:', actRes.error.message)
-    console.log(`[events] LinkedEvents: ${helsinkiEvents.length} events loaded`)
+    if (__DEV__ && evtsRes.error) console.log('[events] events error:', evtsRes.error.message)
+    if (__DEV__ && actRes.error) console.log('[events] activities error:', actRes.error.message)
+    if (__DEV__) console.log(`[events] LinkedEvents: ${helsinkiEvents.length} events loaded`)
     setEvents((evtsRes.data ?? []) as unknown as Event[])
     setCityEvents(helsinkiEvents)
     setActivities((actRes.data ?? []) as unknown as Activity[])
@@ -247,7 +249,7 @@ export default function EventsScreen() {
     }
 
     } catch (err) {
-      console.log('[events] fetchData error:', err)
+      if (__DEV__) console.log('[events] fetchData error:', err)
     } finally {
       setLoading(false)
       setRefreshing(false)

@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -213,7 +215,7 @@ export default function ConversationScreen() {
       })
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
     } catch (err) {
-      console.error('[conversation] image send failed:', err)
+      if (__DEV__) console.error('[conversation] image send failed:', err)
     } finally { setSending(false) }
   }, [userId, id, supabase])
 

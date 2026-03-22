@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
@@ -135,13 +137,13 @@ export default function CommunityScreen() {
         .order('member_count', { ascending: false })
         .limit(5)
       if (error) {
-        console.log('[community] groups error:', error.message)
+        if (__DEV__) console.log('[community] groups error:', error.message)
         setGroups([])
       } else {
         setGroups((data ?? []) as GroupPreview[])
       }
     } catch (err) {
-      console.log('[community] groups fetch error:', err)
+      if (__DEV__) console.log('[community] groups fetch error:', err)
       setGroups([])
     } finally {
       setGroupsLoading(false)
@@ -159,13 +161,13 @@ export default function CommunityScreen() {
         .order('created_at', { ascending: false })
         .limit(5)
       if (error) {
-        console.log('[community] forum error:', error.message)
+        if (__DEV__) console.log('[community] forum error:', error.message)
         setForumPosts([])
       } else {
         setForumPosts((data ?? []) as ForumPostPreview[])
       }
     } catch (err) {
-      console.log('[community] forum fetch error:', err)
+      if (__DEV__) console.log('[community] forum fetch error:', err)
       setForumPosts([])
     } finally {
       setForumLoading(false)
@@ -188,14 +190,14 @@ export default function CommunityScreen() {
         fetchHelsinkiEvents(),
       ])
       if (eventsRes.error) {
-        console.log('[community] events error:', eventsRes.error.message)
+        if (__DEV__) console.log('[community] events error:', eventsRes.error.message)
       }
       setEvents((eventsRes.data ?? []) as EventPreview[])
       const now = new Date().toISOString()
       const futureCity = helsinkiEvents.filter(e => e.start_time >= now)
       setCityEvents(futureCity.slice(0, 3))
     } catch (err) {
-      console.log('[community] events fetch error:', err)
+      if (__DEV__) console.log('[community] events fetch error:', err)
       setEvents([])
       setCityEvents([])
     } finally {

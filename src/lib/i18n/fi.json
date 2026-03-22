@@ -33,7 +33,8 @@
     "clear": "Tyhjennä",
     "remove": "Poista",
     "scrollToBottom": "Vieritä alas",
-    "offline": "Ei verkkoyhteyttä"
+    "offline": "Ei verkkoyhteyttä",
+    "loginRequired": "Kirjaudu sisään"
   },
   "nav": {
     "feed": "Koti",
@@ -480,7 +481,16 @@
     "shared": "Jaettu",
     "impactSaved": "Tallennettu",
     "streakDays": "{count} päivän putki",
-    "points": "pistettä"
+    "points": "pistettä",
+    "writeReview": "Kirjoita arvostelu",
+    "rating": "Arvosana",
+    "reviewComment": "Kommentti",
+    "reviewPlaceholder": "Kerro kokemuksestasi...",
+    "submitReview": "Lähetä arvostelu",
+    "reviewSubmitted": "Arvostelu lähetetty!",
+    "reviewFailed": "Arvostelun lähetys epäonnistui",
+    "selectRating": "Valitse arvosana",
+    "alreadyReviewed": "Olet jo arvostellut tämän käyttäjän"
   },
   "settings": {
     "title": "Asetukset",
@@ -1309,7 +1319,10 @@
     "selectDate": "Valitse päivä",
     "timeToday": "Tänään",
     "timeWeek": "Tällä viikolla",
-    "timeAll": "Kaikki"
+    "timeAll": "Kaikki",
+    "recent": "Viimeisimmät haut",
+    "noResultsQuery": "Ei tuloksia haulle \"{query}\"",
+    "resultCount": "{count} tulosta"
   },
   "saved": {
     "title": "Tallennetut",
