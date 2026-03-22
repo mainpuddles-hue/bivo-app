@@ -1942,7 +1942,8 @@
     "comingSoon": "Keskustelualue tulossa pian!",
     "postTitle": "Otsikko",
     "postContent": "Kirjoita keskustelun aloitus...",
-    "noDiscussions": "Ei vielä keskusteluja",
+    "noDiscussions": "Ei keskusteluja vielä",
+    "noDiscussionsHint": "Keskustelualue avautuu pian. Täällä voit keskustella naapureiden kanssa.",
     "startFirst": "Aloita ensimmäinen keskustelu naapurustossasi!",
     "allAreas": "Kaikki alueet",
     "all": "Kaikki",
@@ -1955,7 +1956,8 @@
     "contentRequired": "Sisältö vaaditaan",
     "categoryRequired": "Valitse kategoria",
     "publishError": "Julkaisu epäonnistui",
-    "replyError": "Vastauksen lähetys epäonnistui"
+    "replyError": "Vastauksen lähetys epäonnistui",
+    "startDiscussion": "Aloita keskustelu naapureiden kanssa"
   },
   "about": {
     "title": "Tietoja",
@@ -1990,7 +1992,8 @@
     "other": "Muu",
     "admin": "Ylläpitäjä",
     "member": "Jäsen",
-    "noGroups": "Et kuulu vielä ryhmiin",
+    "noGroups": "Ei ryhmiä vielä",
+    "noGroupsHint": "Ryhmät ovat tulossa pian! Täällä voit liittyä naapuruston ryhmiin.",
     "joinFirst": "Liity ryhmään tai luo oma!",
     "noSuggested": "Ei ehdotettuja ryhmiä",
     "category": "Kategoria",
@@ -2003,7 +2006,8 @@
     "noPosts": "Ei vielä viestejä",
     "startConversation": "Aloita keskustelu!",
     "removeConfirm": "Haluatko poistaa jäsenen?",
-    "removed": "Jäsen poistettu"
+    "removed": "Jäsen poistettu",
+    "joinOrCreate": "Liity ryhmään tai luo oma"
   },
   "places": {
     "places": "Paikat",
@@ -2042,6 +2046,7 @@
     "eventsThisWeek": "{count} tapahtumaa tällä viikolla",
     "placesNearby": "{count} paikkaa lähellä",
     "noEvents": "Ei tulevia tapahtumia",
+    "noEventsHint": "Tarkista myöhemmin — uusia tapahtumia lisätään jatkuvasti.",
     "noPlaces": "Ei paikkoja lähistöllä"
   },
   "celebration": {

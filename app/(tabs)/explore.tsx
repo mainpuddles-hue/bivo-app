@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router'
 import {
   Map, CalendarDays, MapPin, ChevronRight, Navigation, Globe,
   Store, Coffee, BookOpen, Dumbbell, Heart, UtensilsCrossed,
+  Users, MessageCircle,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -41,10 +42,10 @@ const PLACE_CAT_COLORS: Record<string, string> = {
   hotel: '#8E44AD', service: '#607D8B', other: '#78716C',
 }
 
-const PLACE_LABEL: Record<string, string> = {
-  restaurant: 'Ravintola', cafe: 'Kahvila', bar: 'Baari', shop: 'Kauppa',
-  library: 'Kirjasto', health: 'Terveys', sport: 'Urheilu', culture: 'Kulttuuri',
-  hotel: 'Hotelli', service: 'Palvelu', fast_food: 'Pikaruoka', pub: 'Pubi', other: 'Muu',
+const PLACE_LABEL_KEYS: Record<string, string> = {
+  restaurant: 'places.restaurant', cafe: 'places.cafe', bar: 'places.bar', shop: 'places.shop',
+  library: 'places.library', health: 'places.health', sport: 'places.sport', culture: 'places.culture',
+  hotel: 'places.hotel', service: 'places.service', fast_food: 'places.fastFood', pub: 'places.pub', other: 'places.other',
 }
 
 // ── Place category icon ──
@@ -253,7 +254,7 @@ export default function ExploreScreen() {
   const tabs: { key: SubTab; labelKey: string; Icon: typeof Map }[] = [
     { key: 'map', labelKey: 'nav.map', Icon: Map },
     { key: 'events', labelKey: 'nav.events', Icon: CalendarDays },
-    { key: 'places', labelKey: 'places.title', Icon: MapPin },
+    { key: 'places', labelKey: 'places.places', Icon: MapPin },
   ]
 
   // ── Open Google Maps for a place ──
@@ -322,29 +323,54 @@ export default function ExploreScreen() {
             {/* Summary stats */}
             {!loading && (
               <View style={s.summaryRow}>
-                <Pressable
-                  style={[s.summaryCard, { backgroundColor: colors.card }]}
-                  onPress={() => setActiveTab('events')}
-                >
-                  <CalendarDays size={18} color="#2B8A62" strokeWidth={1.8} />
-                  <Text style={[s.summaryText, { color: colors.foreground }]}>
-                    {t('explore.eventsThisWeek', { count: eventsThisWeek })}
-                  </Text>
-                  <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
+                {cityEvents.length > 0 && (
+                  <Pressable
+                    style={[s.summaryCard, { backgroundColor: colors.card }]}
+                    onPress={() => setActiveTab('events')}
+                  >
+                    <CalendarDays size={18} color="#2B8A62" strokeWidth={1.8} />
+                    <Text style={[s.summaryText, { color: colors.foreground }]}>
+                      {t('explore.eventsThisWeek', { count: eventsThisWeek })}
+                    </Text>
+                    <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
+                  </Pressable>
+                )}
 
-                <Pressable
-                  style={[s.summaryCard, { backgroundColor: colors.card }]}
-                  onPress={() => setActiveTab('places')}
-                >
-                  <MapPin size={18} color="#3B7DD8" strokeWidth={1.8} />
-                  <Text style={[s.summaryText, { color: colors.foreground }]}>
-                    {t('explore.placesNearby', { count: placesCount })}
-                  </Text>
-                  <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
+                {places.length > 0 && (
+                  <Pressable
+                    style={[s.summaryCard, { backgroundColor: colors.card }]}
+                    onPress={() => setActiveTab('places')}
+                  >
+                    <MapPin size={18} color="#3B7DD8" strokeWidth={1.8} />
+                    <Text style={[s.summaryText, { color: colors.foreground }]}>
+                      {t('explore.placesNearby', { count: placesCount })}
+                    </Text>
+                    <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
+                  </Pressable>
+                )}
               </View>
             )}
+
+            {/* Community shortcuts */}
+            <View style={s.communitySection}>
+              <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('nav.community')}</Text>
+              <Pressable onPress={() => router.push('/groups' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                <Users size={20} color={colors.primary} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
+                  <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
+                </View>
+                <ChevronRight size={16} color={colors.mutedForeground} />
+              </Pressable>
+              <Pressable onPress={() => router.push('/forum' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                <MessageCircle size={20} color={colors.primary} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
+                  <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
+                </View>
+                <ChevronRight size={16} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
 
             {loading && <SectionSkeleton colors={colors} count={2} />}
           </>
@@ -417,7 +443,7 @@ export default function ExploreScreen() {
               <View style={s.cardList}>
                 {sortedPlaces.map((place) => {
                   const catColor = PLACE_CAT_COLORS[place.category] ?? '#78716C'
-                  const catLabel = PLACE_LABEL[place.category] ?? ''
+                  const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other')
                   const dist = '_distance' in place
                     ? formatDistance((place as any)._distance)
                     : null
@@ -618,6 +644,16 @@ const s = StyleSheet.create({
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
   },
+
+  // Community section
+  communitySection: { gap: 10, marginTop: 12 },
+  sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, paddingHorizontal: 4 },
+  communityCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    padding: 14, borderRadius: 12,
+  },
+  communityCardTitle: { fontSize: 14, fontFamily: fonts.bodySemi },
+  communityCardHint: { fontSize: 12, fontFamily: fonts.body },
 
   // Skeleton
   skelCircle: {

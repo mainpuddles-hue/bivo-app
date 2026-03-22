@@ -294,10 +294,10 @@ export default function CommunityScreen() {
             {isLoading && !groupsFetched ? (
               <SectionSkeleton colors={colors} />
             ) : groups.length === 0 ? (
-              <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <Users size={36} color={colors.mutedForeground} strokeWidth={1.4} />
+              <View style={s.emptyState}>
+                <Users size={32} color={colors.mutedForeground} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('groups.noGroups')}</Text>
-                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('groups.joinFirst')}</Text>
+                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('groups.noGroupsHint')}</Text>
               </View>
             ) : (
               <View style={s.cardList}>
@@ -357,10 +357,10 @@ export default function CommunityScreen() {
             {isLoading && !forumFetched ? (
               <SectionSkeleton colors={colors} />
             ) : forumPosts.length === 0 ? (
-              <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <MessageCircle size={36} color={colors.mutedForeground} strokeWidth={1.4} />
+              <View style={s.emptyState}>
+                <MessageCircle size={32} color={colors.mutedForeground} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('forum.noDiscussions')}</Text>
-                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('forum.startFirst')}</Text>
+                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('forum.noDiscussionsHint')}</Text>
               </View>
             ) : (
               <View style={s.cardList}>
@@ -420,10 +420,10 @@ export default function CommunityScreen() {
             {isLoading && !eventsFetched ? (
               <SectionSkeleton colors={colors} count={4} />
             ) : events.length === 0 && cityEvents.length === 0 ? (
-              <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <CalendarDays size={36} color={colors.mutedForeground} strokeWidth={1.4} />
-                <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('events.noEvents')}</Text>
-                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('events.createFirst')}</Text>
+              <View style={s.emptyState}>
+                <CalendarDays size={32} color={colors.mutedForeground} />
+                <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noEvents')}</Text>
+                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noEventsHint')}</Text>
               </View>
             ) : (
               <View style={s.cardList}>
@@ -675,22 +675,18 @@ const s = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    borderRadius: 14,
+    paddingVertical: 32,
     gap: 8,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
     fontFamily: fonts.headingSemi,
   },
   emptyHint: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
+    fontSize: 13,
     fontFamily: fonts.body,
+    textAlign: 'center',
+    paddingHorizontal: 24,
   },
   // Auth gate
   authGate: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32 },

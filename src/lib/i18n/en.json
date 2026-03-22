@@ -1916,6 +1916,7 @@
     "postTitle": "Title",
     "postContent": "Start a discussion...",
     "noDiscussions": "No discussions yet",
+    "noDiscussionsHint": "The discussion forum opens soon. Here you can chat with neighbors.",
     "startFirst": "Start the first discussion in your neighborhood!",
     "allAreas": "All areas",
     "all": "All",
@@ -1928,7 +1929,8 @@
     "contentRequired": "Content is required",
     "categoryRequired": "Select a category",
     "publishError": "Failed to publish",
-    "replyError": "Failed to send reply"
+    "replyError": "Failed to send reply",
+    "startDiscussion": "Start a discussion with neighbors"
   },
   "about": {
     "title": "About",
@@ -1963,7 +1965,8 @@
     "other": "Other",
     "admin": "Admin",
     "member": "Member",
-    "noGroups": "You haven't joined any groups yet",
+    "noGroups": "No groups yet",
+    "noGroupsHint": "Groups are coming soon! Here you can join neighborhood groups.",
     "joinFirst": "Join a group or create your own!",
     "noSuggested": "No suggested groups",
     "category": "Category",
@@ -1976,7 +1979,8 @@
     "noPosts": "No posts yet",
     "startConversation": "Start the conversation!",
     "removeConfirm": "Remove this member?",
-    "removed": "Member removed"
+    "removed": "Member removed",
+    "joinOrCreate": "Join a group or create your own"
   },
   "places": {
     "places": "Places",
@@ -2015,6 +2019,7 @@
     "eventsThisWeek": "{count} events this week",
     "placesNearby": "{count} places nearby",
     "noEvents": "No upcoming events",
+    "noEventsHint": "Check back later — new events are added regularly.",
     "noPlaces": "No places nearby"
   },
   "celebration": {

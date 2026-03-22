@@ -1916,6 +1916,7 @@
     "postTitle": "Titel",
     "postContent": "Starta en diskussion...",
     "noDiscussions": "Inga diskussioner ännu",
+    "noDiscussionsHint": "Diskussionsforumet öppnar snart. Här kan du chatta med grannar.",
     "startFirst": "Starta den första diskussionen i ditt grannskap!",
     "allAreas": "Alla områden",
     "all": "Alla",
@@ -1928,7 +1929,8 @@
     "contentRequired": "Innehåll krävs",
     "categoryRequired": "Välj en kategori",
     "publishError": "Publicering misslyckades",
-    "replyError": "Kunde inte skicka svar"
+    "replyError": "Kunde inte skicka svar",
+    "startDiscussion": "Starta en diskussion med grannar"
   },
   "about": {
     "title": "Om",
@@ -1963,7 +1965,8 @@
     "other": "Annat",
     "admin": "Administratör",
     "member": "Medlem",
-    "noGroups": "Du har inte gått med i några grupper ännu",
+    "noGroups": "Inga grupper ännu",
+    "noGroupsHint": "Grupper kommer snart! Här kan du gå med i grannskapets grupper.",
     "joinFirst": "Gå med i en grupp eller skapa din egen!",
     "noSuggested": "Inga föreslagna grupper",
     "category": "Kategori",
@@ -1976,7 +1979,8 @@
     "noPosts": "Inga inlägg ännu",
     "startConversation": "Starta konversationen!",
     "removeConfirm": "Ta bort denna medlem?",
-    "removed": "Medlem borttagen"
+    "removed": "Medlem borttagen",
+    "joinOrCreate": "Gå med i en grupp eller skapa en egen"
   },
   "places": {
     "places": "Platser",
@@ -2015,6 +2019,7 @@
     "eventsThisWeek": "{count} evenemang denna vecka",
     "placesNearby": "{count} platser i närheten",
     "noEvents": "Inga kommande evenemang",
+    "noEventsHint": "Kolla tillbaka senare — nya evenemang läggs till regelbundet.",
     "noPlaces": "Inga platser i närheten"
   },
   "celebration": {
