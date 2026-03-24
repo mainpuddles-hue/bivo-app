@@ -84,6 +84,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const userTrustLevel = computeTrustLevelFromBadges(user?.user_badges)
 
   const isAnonymous = (post as any).is_anonymous === true
+  const isUrgentPost = post.is_urgent && post.expires_at && new Date(post.expires_at).getTime() > Date.now()
   const [showMore, setShowMore] = useState(false)
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
@@ -130,7 +131,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.card },
-        isNappaa && !isPro && { borderWidth: 2, borderColor: '#E8A050' },
+        isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: '#E8A050' },
+        isUrgentPost && { borderWidth: 2, borderColor: '#EF4444' },
         isPro && { borderWidth: 1.5, borderColor: colors.pro },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}

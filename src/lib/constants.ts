@@ -3,7 +3,7 @@ import type { PostType } from './types'
 export const POST_SELECT = `
   id, user_id, type, title, description, location, image_url,
   hub_pickup_id, expires_at, daily_fee, service_price, event_date,
-  latitude, longitude, is_pro_listing, is_active, tags,
+  latitude, longitude, is_pro_listing, is_active, is_urgent, urgency_hours, tags,
   like_count, comment_count,
   created_at, updated_at,
   user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, user_badges(badge_type)),
@@ -11,6 +11,18 @@ export const POST_SELECT = `
 `
 
 export const SERVICE_FEE_RATE = 0.10 // 10% platform fee
+
+// "Juuri nyt" urgency engine
+export const URGENCY_OPTIONS = [
+  { hours: 2, label: 'urgency.2hours', color: '#EF4444' },
+  { hours: 4, label: 'urgency.4hours', color: '#F59E0B' },
+  { hours: 8, label: 'urgency.8hours', color: '#E8A050' },
+] as const
+
+export const SPEED_BADGE_THRESHOLDS = {
+  salamanopea: 15,  // minutes — lightning fast
+  nopea: 60,        // minutes — quick responder
+} as const
 
 export const CATEGORIES: Record<PostType, {
   label: string

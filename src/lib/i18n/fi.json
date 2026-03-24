@@ -2138,5 +2138,19 @@
     "step2Desc": "Voit käyttää myös mobiilivarmentetta tai tunnistuskorttia",
     "step3": "Tietojasi ei tallenneta",
     "step3Desc": "TackBird tallentaa vain vahvistuksen ajankohdan — ei henkilötunnustasi tai pankkitietojasi"
+  },
+  "urgency": {
+    "juuriNyt": "Juuri nyt",
+    "toggle": "Juuri nyt — kiireellinen",
+    "toggleHint": "Naapurisi saavat push-ilmoituksen ja pyyntösi katoaa ajan umpeuduttua",
+    "2hours": "2 tuntia",
+    "4hours": "4 tuntia",
+    "8hours": "8 tuntia",
+    "pushTitle": "Naapurisi tarvitsee apua!",
+    "pushBody": "{name}: {title} — {timeLeft} jäljellä",
+    "expired": "Vanhentunut",
+    "speedBadgeSalamanopea": "Salamanopea",
+    "speedBadgeNopea": "Nopea vastaaja",
+    "respondedIn": "Vastasi {minutes} minuutissa"
   }
 }

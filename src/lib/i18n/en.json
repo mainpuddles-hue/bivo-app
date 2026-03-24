@@ -2111,5 +2111,19 @@
     "step2Desc": "You can also use a mobile certificate or ID card",
     "step3": "Your data is not stored",
     "step3Desc": "TackBird only stores the verification timestamp — not your personal ID or bank details"
+  },
+  "urgency": {
+    "juuriNyt": "Right now",
+    "toggle": "Right now — urgent",
+    "toggleHint": "Your neighbors get a push notification and the post disappears when time runs out",
+    "2hours": "2 hours",
+    "4hours": "4 hours",
+    "8hours": "8 hours",
+    "pushTitle": "Your neighbor needs help!",
+    "pushBody": "{name}: {title} — {timeLeft} left",
+    "expired": "Expired",
+    "speedBadgeSalamanopea": "Lightning fast",
+    "speedBadgeNopea": "Quick responder",
+    "respondedIn": "Responded in {minutes} minutes"
   }
 }

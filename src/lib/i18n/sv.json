@@ -2111,5 +2111,19 @@
     "step2Desc": "Du kan också använda ett mobilt certifikat eller ID-kort",
     "step3": "Dina uppgifter sparas inte",
     "step3Desc": "TackBird sparar bara verifieringstidsstämpeln — inte ditt personnummer eller bankuppgifter"
+  },
+  "urgency": {
+    "juuriNyt": "Just nu",
+    "toggle": "Just nu — brådskande",
+    "toggleHint": "Dina grannar får en push-notis och inlägget försvinner när tiden är ute",
+    "2hours": "2 timmar",
+    "4hours": "4 timmar",
+    "8hours": "8 timmar",
+    "pushTitle": "Din granne behöver hjälp!",
+    "pushBody": "{name}: {title} — {timeLeft} kvar",
+    "expired": "Utgången",
+    "speedBadgeSalamanopea": "Blixtsnabb",
+    "speedBadgeNopea": "Snabb svarare",
+    "respondedIn": "Svarade på {minutes} minuter"
   }
 }

@@ -17,7 +17,7 @@ import { useShimmer } from '@/components/SkeletonLoaders'
 import { HeroEventCard } from '@/components/HeroEventCard'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { FeedContextHeader } from '@/components/FeedContextHeader'
-import { NappaaUrgencyStrip } from '@/components/NappaaUrgencyStrip'
+import { JuuriNytStrip } from '@/components/JuuriNytStrip'
 import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
@@ -111,8 +111,8 @@ export default function FeedScreen() {
 
       <SmartMatchBanner matches={matches} onDismiss={dismissMatch} />
 
-      {/* Nappaa urgency strip */}
-      <NappaaUrgencyStrip posts={feed.posts} />
+      {/* Juuri nyt — urgent posts countdown strip */}
+      <JuuriNytStrip posts={feed.posts} />
 
       {displayEvents.length > 0 ? (
         <View style={{ gap: 10 }}>

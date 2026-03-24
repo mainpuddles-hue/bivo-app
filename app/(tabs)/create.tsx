@@ -107,6 +107,8 @@ export default function CreateScreen() {
   const [mapModalVisible, setMapModalVisible] = useState(false)
   const [tempMapCoords, setTempMapCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [isAnonymous, setIsAnonymous] = useState(false)
+  const [isUrgent, setIsUrgent] = useState(false)
+  const [urgencyHours, setUrgencyHours] = useState<number>(2)
   const [showDetails, setShowDetails] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
@@ -293,9 +295,12 @@ export default function CreateScreen() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { Alert.alert(t('common.error'), t('auth.loginRequired')); return }
 
-      const expiresAt = expirationDays > 0
-        ? new Date(Date.now() + expirationDays * 86400000).toISOString()
-        : null
+      // Urgency overrides manual expiration
+      const expiresAt = isUrgent
+        ? new Date(Date.now() + urgencyHours * 3600000).toISOString()
+        : expirationDays > 0
+          ? new Date(Date.now() + expirationDays * 86400000).toISOString()
+          : null
 
       // Create post first to get ID
       setUploadStatus(t('create.publishing'))
@@ -311,6 +316,8 @@ export default function CreateScreen() {
         service_price: selectedType === 'tarjoan' && servicePrice ? parseFloat(servicePrice) : null,
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt,
+        is_urgent: isUrgent || undefined,
+        urgency_hours: isUrgent ? urgencyHours : undefined,
         is_active: true,
         tags: selectedTags,
       }).select('id').single()
@@ -714,6 +721,46 @@ export default function CreateScreen() {
                   thumbColor="#FFFFFF"
                 />
               </View>
+
+              {/* Juuri nyt — urgency toggle */}
+              {selectedType !== 'tapahtuma' && (
+                <View style={styles.urgencySection}>
+                  <View style={[styles.anonymousRow, { borderColor: isUrgent ? '#EF4444' : colors.border }]}>
+                    <View style={styles.anonymousInfo}>
+                      <Zap size={16} color={isUrgent ? '#EF4444' : colors.mutedForeground} fill={isUrgent ? '#EF4444' : 'transparent'} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('urgency.toggle')}</Text>
+                        <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('urgency.toggleHint')}</Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={isUrgent}
+                      onValueChange={setIsUrgent}
+                      trackColor={{ false: colors.muted, true: '#EF4444' }}
+                      thumbColor="#FFFFFF"
+                    />
+                  </View>
+                  {isUrgent && (
+                    <View style={styles.urgencyOptions}>
+                      {[2, 4, 8].map((h) => (
+                        <Pressable
+                          key={h}
+                          onPress={() => setUrgencyHours(h)}
+                          style={[
+                            styles.urgencyOption,
+                            { borderColor: urgencyHours === h ? '#EF4444' : colors.border },
+                            urgencyHours === h && { backgroundColor: '#EF444415' },
+                          ]}
+                        >
+                          <Text style={[styles.urgencyOptionText, { color: urgencyHours === h ? '#EF4444' : colors.foreground }]}>
+                            {h}h
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
             </>
           )}
 
@@ -943,6 +990,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     alignItems: 'center', justifyContent: 'center',
   },
+  urgencySection: { gap: 8 },
+  urgencyOptions: { flexDirection: 'row', gap: 10 },
+  urgencyOption: {
+    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, borderWidth: 1.5,
+  },
+  urgencyOptionText: { fontSize: 15, fontWeight: '700' },
   categoryTextWrap: { flex: 1, gap: 2 },
   categoryName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },
   categorySub: { fontSize: 12, fontFamily: fonts.body },

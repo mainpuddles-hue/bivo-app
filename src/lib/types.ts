@@ -103,6 +103,8 @@ export interface Post {
   is_pro_listing: boolean
   tags: string[]
   is_active: boolean
+  is_urgent?: boolean
+  urgency_hours?: number | null
   is_seed?: boolean
   like_count: number
   comment_count: number
