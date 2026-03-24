@@ -21,11 +21,12 @@ const FILTERS = [
 function getTypeIcon(type: string) {
   switch (type) {
     case 'new_message': return MessageCircle
-    case 'review_received': return Star
+    case 'review_received': case 'thanks_received': return Star
     case 'rental_update': case 'rental_request': case 'rental_confirmed':
     case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return Package
     case 'new_follower': return UserPlus
     case 'event_reminder': return CalendarDays
+    case 'post_like': case 'post_comment': return Bell
     default: return Bell
   }
 }
@@ -33,11 +34,12 @@ function getTypeIcon(type: string) {
 function getTypeColor(type: string, colors: ReturnType<typeof useTheme>['colors']) {
   switch (type) {
     case 'new_message': return colors.primary
-    case 'review_received': return colors.pro
+    case 'review_received': case 'thanks_received': return colors.pro
     case 'rental_update': case 'rental_request': case 'rental_confirmed':
     case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return '#C98B2E'
     case 'new_follower': return colors.success
     case 'event_reminder': return '#2B8A62'
+    case 'post_like': case 'post_comment': return colors.accent
     default: return colors.info
   }
 }

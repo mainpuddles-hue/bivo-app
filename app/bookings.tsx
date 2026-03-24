@@ -43,6 +43,12 @@ interface RentalBooking {
   }
 }
 
+const VALID_BOOKING_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active', 'completed', 'cancelled', 'disputed', 'refunded']
+
+function isBookingStatus(s: string): s is BookingStatus {
+  return VALID_BOOKING_STATUSES.includes(s as BookingStatus)
+}
+
 const STATUS_KEYS: Record<BookingStatus, string> = {
   pending: 'rental.statusPending',
   confirmed: 'rental.statusConfirmed',
@@ -369,7 +375,8 @@ export default function BookingsScreen() {
   const serviceCount = useMemo(() => serviceBookings.length, [serviceBookings])
 
   const renderServiceBooking = ({ item }: { item: any }) => {
-    const statusColor = getStatusColor(item.status, colors)
+    const safeStatus: BookingStatus = isBookingStatus(item.status) ? item.status : 'pending'
+    const statusColor = getStatusColor(safeStatus, colors)
     const isBuyer = item.buyer_id === userId
     const otherUser = isBuyer ? item.provider : item.buyer
     const isProvider = item.provider_id === userId
@@ -419,7 +426,7 @@ export default function BookingsScreen() {
           <View style={styles.cardRight}>
             <View style={[styles.statusBadge, { backgroundColor: `${statusColor}18` }]}>
               <Text style={[styles.statusText, { color: statusColor }]}>
-                {t(STATUS_KEYS[item.status as BookingStatus] ?? 'rental.statusPending')}
+                {t(STATUS_KEYS[safeStatus])}
               </Text>
             </View>
             <Text style={[styles.priceText, { color: '#7C5CBF' }]}>

@@ -276,8 +276,9 @@ export default function ForumScreen() {
         else next.delete(post.id)
         return next
       })
+      Alert.alert(t('common.error'), t('forum.voteError'))
     }
-  }, [currentUserId, supabase, votedPosts, selectedPost])
+  }, [currentUserId, supabase, votedPosts, selectedPost, t])
 
   // ── Upvote reply ──
   const handleUpvoteReply = useCallback(async (reply: ForumReply) => {
@@ -328,8 +329,9 @@ export default function ForumScreen() {
         else next.delete(reply.id)
         return next
       })
+      Alert.alert(t('common.error'), t('forum.voteError'))
     }
-  }, [currentUserId, supabase, votedReplies])
+  }, [currentUserId, supabase, votedReplies, t])
 
   // ── Open post detail ──
   const openPostDetail = useCallback(async (post: ForumPost) => {

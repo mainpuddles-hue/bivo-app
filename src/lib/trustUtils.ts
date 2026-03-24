@@ -1,8 +1,10 @@
 import type { TrustLevel, UserBadge } from './types'
 
 /**
- * Quick trust level estimate from badges alone (for display in lists).
- * Full trust evaluation with all signals is in useTrustLevel hook.
+ * Display-only trust level estimate from badges alone (for UI rendering in lists/cards).
+ * This is NOT the authoritative trust calculation — the server-side trust score
+ * considers additional signals (reviews, activity, verification status).
+ * Full client-side trust evaluation with all signals is in useTrustLevel hook.
  *
  * - Has 'trusted' badge → Tier 3
  * - Has 'verified' badge → Tier 2

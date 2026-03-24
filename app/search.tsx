@@ -91,7 +91,7 @@ export default function SearchScreen() {
       .order('like_count', { ascending: false })
       .limit(5)
       .then(({ data }) => {
-        if (data) setTrendingPosts(data as any[])
+        if (data) setTrendingPosts((data ?? []) as any[])
       })
   }, [supabase])
 

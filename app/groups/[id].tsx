@@ -292,6 +292,7 @@ export default function GroupDetailScreen() {
         setGroup((prev) => prev ? { ...prev, member_count: Math.max(0, prev.member_count - 1) } : prev)
       } catch {
         setIsMember(true)
+        Alert.alert(t('common.error'), t('groups.leaveError'))
       }
     } else {
       // Join
@@ -308,9 +309,10 @@ export default function GroupDetailScreen() {
         setGroup((prev) => prev ? { ...prev, member_count: prev.member_count + 1 } : prev)
       } catch {
         setIsMember(false)
+        Alert.alert(t('common.error'), t('groups.joinError'))
       }
     }
-  }, [id, currentUserId, group, isMember, supabase])
+  }, [id, currentUserId, group, isMember, supabase, t])
 
   // Send post
   const handleSendPost = useCallback(async () => {
@@ -426,8 +428,9 @@ export default function GroupDetailScreen() {
         else n.delete(post.id)
         return n
       })
+      Alert.alert(t('common.error'), t('groups.likeError'))
     }
-  }, [currentUserId, likedPosts, supabase])
+  }, [currentUserId, likedPosts, supabase, t])
 
   // Fetch comments for a post
   const fetchComments = useCallback(async (postId: string) => {
@@ -532,7 +535,7 @@ export default function GroupDetailScreen() {
               setMembers((prev) => prev.filter((m) => m.user_id !== member.user_id))
               try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
             } catch {
-              // silent
+              Alert.alert(t('common.error'), t('groups.removeError'))
             }
           },
         },

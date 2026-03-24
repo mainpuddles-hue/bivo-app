@@ -155,6 +155,13 @@ export default function ConversationScreen() {
     }
   }, [id, userId, supabase])
 
+  // Extra safety: clear typing timer on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
+    }
+  }, [])
+
   const loadOlder = useCallback(async () => {
     if (!hasOlder || loadingOlder || messages.length === 0) return
     setLoadingOlder(true)

@@ -119,15 +119,14 @@ export default function DateRangePicker({
         const s = parseDateStr(startDate)
         const e = parseDateStr(dateStr)
         let hasBlocked = false
-        const cursor = new Date(s)
-        cursor.setDate(cursor.getDate() + 1)
+        let cursor = new Date(s.getTime() + 86400000)
         while (cursor < e) {
           const cursorStr = toDateStr(cursor.getFullYear(), cursor.getMonth(), cursor.getDate())
           if (blockedSet.has(cursorStr)) {
             hasBlocked = true
             break
           }
-          cursor.setDate(cursor.getDate() + 1)
+          cursor = new Date(cursor.getTime() + 86400000)
         }
         if (hasBlocked) {
           // Start new selection

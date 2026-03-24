@@ -78,24 +78,25 @@ export default function MessagesScreen() {
       }
     }) as Conversation[]
 
-    // Fetch last messages + unread counts
-    for (const conv of convs) {
-      const { data: msgs } = await supabase
-        .from('messages')
-        .select('id, sender_id, content, image_url, is_read, created_at')
-        .eq('conversation_id', conv.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
+    // Fetch last messages + unread counts in parallel
+    await Promise.all(convs.map(async (conv) => {
+      const [{ data: msgs }, { count }] = await Promise.all([
+        supabase
+          .from('messages')
+          .select('id, sender_id, content, image_url, is_read, created_at')
+          .eq('conversation_id', conv.id)
+          .order('created_at', { ascending: false })
+          .limit(1),
+        supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('conversation_id', conv.id)
+          .neq('sender_id', user.id)
+          .eq('is_read', false),
+      ])
       if (msgs && msgs.length > 0) conv.last_message = msgs[0] as any
-
-      const { count } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('conversation_id', conv.id)
-        .neq('sender_id', user.id)
-        .eq('is_read', false)
       conv.unread_count = count ?? 0
-    }
+    }))
 
     setConversations(convs)
     setLoading(false)

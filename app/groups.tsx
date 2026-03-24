@@ -222,8 +222,9 @@ export default function GroupsScreen() {
       setJoinedIds((prev) => { const n = new Set(prev); n.delete(group.id); return n })
       setSuggestedGroups((prev) => [group, ...prev])
       setMyGroups((prev) => prev.filter((g) => g.id !== group.id))
+      Alert.alert(t('common.error'), t('groups.joinError'))
     }
-  }, [currentUserId, supabase])
+  }, [currentUserId, supabase, t])
 
   // Create group
   const handleCreate = useCallback(async () => {

@@ -167,7 +167,7 @@ export default function ImageGallery({ images, initialIndex = 0, visible, onClos
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, i) => (typeof item === 'string' ? item : String(i))}
+            keyExtractor={(_, i) => String(i)}
             renderItem={renderItem}
             onMomentumScrollEnd={onScroll}
             initialScrollIndex={initialIndex}
