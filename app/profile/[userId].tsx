@@ -79,7 +79,7 @@ export default function PublicProfileScreen() {
       if (user) {
         const [followRes, blockRes, convRes, existingReviewRes] = await Promise.all([
           supabase.from('user_follows').select('id').eq('follower_id', user.id).eq('followed_id', userId).maybeSingle(),
-          supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', userId).maybeSingle(),
+          supabase.from('blocked_users').select('id').eq('user_id', user.id).eq('blocked_user_id', userId).maybeSingle(),
           // Check if there's been a conversation (transaction proxy) between users
           supabase.from('conversations').select('id').or(
             `and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`
@@ -171,11 +171,11 @@ export default function PublicProfileScreen() {
           onPress: async () => {
             if (isBlocked) {
               setIsBlocked(false)
-              await supabase.from('blocked_users').delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
+              await supabase.from('blocked_users').delete().eq('user_id', currentUserId).eq('blocked_user_id', userId)
               Alert.alert(t('common.success'), t('profile.unblocked'))
             } else {
               setIsBlocked(true)
-              await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
+              await (supabase.from('blocked_users') as any).insert({ user_id: currentUserId, blocked_user_id: userId })
               Alert.alert(t('common.success'), t('profile.blocked'))
             }
           },
