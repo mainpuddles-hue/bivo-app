@@ -302,9 +302,9 @@ export default function CreateScreen() {
           ? new Date(Date.now() + expirationDays * 86400000).toISOString()
           : null
 
-      // Create post first to get ID — only include columns guaranteed to exist
+      // Create post
       setUploadStatus(t('create.publishing'))
-      const postData: Record<string, any> = {
+      const { data: post, error } = await (supabase.from('posts') as any).insert({
         user_id: user.id,
         type: selectedType,
         title: title.trim(),
@@ -313,23 +313,16 @@ export default function CreateScreen() {
         latitude: latitude ?? null,
         longitude: longitude ?? null,
         daily_fee: selectedType === 'lainaa' && dailyFee ? parseFloat(dailyFee) : null,
+        service_price: selectedType === 'tarjoan' && servicePrice ? parseFloat(servicePrice) : null,
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt,
+        is_urgent: isUrgent || false,
+        urgency_hours: isUrgent ? urgencyHours : null,
         is_active: true,
         tags: selectedTags,
-      }
-      const { data: post, error } = await (supabase.from('posts') as any)
-        .insert(postData).select('id').single()
+      }).select('id').single()
 
       if (error) throw error
-
-      // Try to set new columns (service_price, is_urgent) — graceful if columns don't exist yet
-      const extraFields: Record<string, any> = {}
-      if (selectedType === 'tarjoan' && servicePrice) extraFields.service_price = parseFloat(servicePrice)
-      if (isUrgent) { extraFields.is_urgent = true; extraFields.urgency_hours = urgencyHours }
-      if (Object.keys(extraFields).length > 0 && post?.id) {
-        await (supabase.from('posts') as any).update(extraFields).eq('id', post.id).then(() => {}).catch(() => {})
-      }
 
       // Upload images if any
       if (images.length > 0 && post?.id) {
