@@ -155,10 +155,11 @@ export default function ConversationScreen() {
     }
   }, [id, userId, supabase])
 
-  // Extra safety: clear typing timer on unmount
+  // Extra safety: clear typing timers on unmount
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
+      if (typingDebounceRef.current) clearTimeout(typingDebounceRef.current)
     }
   }, [])
 
@@ -179,12 +180,14 @@ export default function ConversationScreen() {
     setLoadingOlder(false)
   }, [hasOlder, loadingOlder, messages, id, supabase])
 
+  const typingDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sendTyping = useCallback(() => {
-    if (!id || !userId) return
+    if (!id || !userId || typingDebounceRef.current) return
     supabase.channel(`conv-${id}`).send({
       type: 'broadcast', event: 'typing',
       payload: { userId },
-    })
+    }).catch(() => {})
+    typingDebounceRef.current = setTimeout(() => { typingDebounceRef.current = null }, 2000)
   }, [id, userId, supabase])
 
   const quickReplies = useMemo(() => [
@@ -450,11 +453,13 @@ export default function ConversationScreen() {
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={item => item.id}
+        keyExtractor={(item, index) => item.id ?? `msg-${index}`}
         renderItem={renderMessage}
         contentContainerStyle={s.msgList}
         showsVerticalScrollIndicator={false}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+        onContentSizeChange={() => {
+          if (!showScrollBtn) flatListRef.current?.scrollToEnd({ animated: false })
+        }}
         onScroll={(e) => {
           const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent
           setShowScrollBtn(contentOffset.y < contentSize.height - layoutMeasurement.height - 200)

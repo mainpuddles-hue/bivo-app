@@ -1983,7 +1983,11 @@
     "startConversation": "Starta konversationen!",
     "removeConfirm": "Ta bort denna medlem?",
     "removed": "Medlem borttagen",
-    "joinOrCreate": "Gå med i en grupp eller skapa en egen"
+    "joinOrCreate": "Gå med i en grupp eller skapa en egen",
+    "joinError": "Gick inte att gå med i gruppen",
+    "leaveError": "Gick inte att lämna gruppen",
+    "likeError": "Gillning misslyckades",
+    "removeError": "Gick inte att ta bort medlem"
   },
   "places": {
     "places": "Platser",

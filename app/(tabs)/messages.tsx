@@ -121,7 +121,8 @@ export default function MessagesScreen() {
     const conv = conversations.find(c => c.id === convId)
     if (!conv || !userId) return
     const field = conv.user1_id === userId ? 'user1_archived' : 'user2_archived'
-    const newVal = !showArchived
+    const isCurrentlyArchived = conv.user1_id === userId ? conv.user1_archived : conv.user2_archived
+    const newVal = !isCurrentlyArchived
     await (supabase.from('conversations') as any).update({ [field]: newVal }).eq('id', convId)
     await fetchConversations()
   }, [conversations, userId, showArchived, supabase, fetchConversations])
@@ -138,7 +139,7 @@ export default function MessagesScreen() {
       const bPinned = pinnedIds.includes(b.id)
       if (aPinned && !bPinned) return -1
       if (!aPinned && bPinned) return 1
-      return 0
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
     })
     return list
   }, [conversations, showArchived, searchQuery, pinnedIds])

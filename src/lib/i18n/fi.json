@@ -2010,7 +2010,11 @@
     "startConversation": "Aloita keskustelu!",
     "removeConfirm": "Haluatko poistaa jäsenen?",
     "removed": "Jäsen poistettu",
-    "joinOrCreate": "Liity ryhmään tai luo oma"
+    "joinOrCreate": "Liity ryhmään tai luo oma",
+    "joinError": "Ryhmään liittyminen epäonnistui",
+    "leaveError": "Ryhmästä poistuminen epäonnistui",
+    "likeError": "Tykkäys epäonnistui",
+    "removeError": "Jäsenen poistaminen epäonnistui"
   },
   "places": {
     "places": "Paikat",

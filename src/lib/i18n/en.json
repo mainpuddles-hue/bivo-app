@@ -1983,7 +1983,11 @@
     "startConversation": "Start the conversation!",
     "removeConfirm": "Remove this member?",
     "removed": "Member removed",
-    "joinOrCreate": "Join a group or create your own"
+    "joinOrCreate": "Join a group or create your own",
+    "joinError": "Failed to join group",
+    "leaveError": "Failed to leave group",
+    "likeError": "Like failed",
+    "removeError": "Failed to remove member"
   },
   "places": {
     "places": "Places",

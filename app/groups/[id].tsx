@@ -327,22 +327,16 @@ export default function GroupDetailScreen() {
       if (postImage) {
         const ext = postImage.split('.').pop() || 'jpg'
         const fileName = `group_${id}_${Date.now()}.${ext}`
-        const formData = new FormData()
-        formData.append('file', {
-          uri: postImage,
-          name: fileName,
-          type: `image/${ext}`,
-        } as any)
 
-        const { data: uploadData } = await supabase.storage
+        const response = await fetch(postImage)
+        const blob = await response.blob()
+        const arrayBuffer = await blob.arrayBuffer()
+        const { error: uploadError } = await supabase.storage
           .from('group-images')
-          .upload(fileName, formData, { upsert: true })
-
-        if (uploadData?.path) {
-          const { data: urlData } = supabase.storage
-            .from('group-images')
-            .getPublicUrl(uploadData.path)
-          imageUrl = urlData?.publicUrl || null
+          .upload(fileName, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('group-images').getPublicUrl(fileName)
+          imageUrl = urlData.publicUrl
         }
       }
 

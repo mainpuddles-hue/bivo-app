@@ -307,7 +307,7 @@ export default function CommunityScreen() {
                     <Pressable
                       key={group.id}
                       style={[s.card, { backgroundColor: colors.card }]}
-                      onPress={() => router.push('/groups' as any)}
+                      onPress={() => router.push(`/groups/${group.id}` as any)}
                     >
                       <View style={s.cardRow}>
                         <View style={[s.dotIcon, { backgroundColor: catColor }]}>
