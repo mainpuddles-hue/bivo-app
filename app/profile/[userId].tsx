@@ -154,7 +154,8 @@ export default function PublicProfileScreen() {
         .insert({ user1_id: currentUserId, user2_id: userId })
         .select('id')
         .single()
-      if (error || !newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+      if (error) { console.log('[conv] create error:', JSON.stringify(error)); Alert.alert(t('common.error'), error.message || t('messages.conversationCreateFailed')); return }
+      if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
       router.push(`/messages/${newConv.id}`)
     }
   }, [currentUserId, userId, supabase, router, t])
