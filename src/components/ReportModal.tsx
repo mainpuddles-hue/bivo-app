@@ -53,10 +53,11 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
 
       const payload: Record<string, unknown> = {
         reporter_id: user.id,
-        target_type: type,
-        target_id: targetId,
         reason,
         description: description.trim() || null,
+        ...(type === 'post' ? { post_id: targetId } : { user_id: targetId, reported_id: targetId }),
+        target_type: type,
+        target_id: targetId,
       }
 
       const { error } = await (supabase.from('reports') as any).insert(payload)

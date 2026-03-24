@@ -9,7 +9,7 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 
 interface BlockedUser {
-  blocked_user_id: string
+  blocked_id: string
   blocked_user: {
     id: string
     name: string | null
@@ -38,8 +38,8 @@ export default function BlockedUsersScreen() {
 
       const { data } = await supabase
         .from('blocked_users')
-        .select('blocked_user_id, blocked_user:profiles!blocked_users_blocked_user_id_fkey(id, name, avatar_url, naapurusto)')
-        .eq('user_id', user.id)
+        .select('blocked_id, blocked_user:profiles!blocked_users_blocked_id_fkey(id, name, avatar_url, naapurusto)')
+        .eq('blocker_id', user.id)
 
       setBlockedUsers((data ?? []) as unknown as BlockedUser[])
       setLoading(false)
@@ -62,13 +62,13 @@ export default function BlockedUsersScreen() {
             const { error } = await supabase
               .from('blocked_users')
               .delete()
-              .eq('user_id', userId)
-              .eq('blocked_user_id', blockedUserId)
+              .eq('blocker_id', userId)
+              .eq('blocked_id', blockedUserId)
 
             if (error) {
               Alert.alert(t('common.error'), t('blocked.unblockFailed'))
             } else {
-              setBlockedUsers(prev => prev.filter(b => b.blocked_user_id !== blockedUserId))
+              setBlockedUsers(prev => prev.filter(b => b.blocked_id !== blockedUserId))
             }
             setUnblocking(null)
           },
@@ -100,7 +100,7 @@ export default function BlockedUsersScreen() {
             {blockedUsers.map((item) => {
               const user = item.blocked_user
               return (
-                <View key={item.blocked_user_id} style={[s.row, { borderBottomColor: colors.border }]}>
+                <View key={item.blocked_id} style={[s.row, { borderBottomColor: colors.border }]}>
                   {user?.avatar_url ? (
                     <Image source={{ uri: user.avatar_url }} style={s.avatar} />
                   ) : (
@@ -123,11 +123,11 @@ export default function BlockedUsersScreen() {
                   </View>
 
                   <Pressable
-                    onPress={() => handleUnblock(item.blocked_user_id, user?.name ?? null)}
-                    disabled={unblocking === item.blocked_user_id}
-                    style={[s.unblockBtn, { backgroundColor: colors.destructive, opacity: unblocking === item.blocked_user_id ? 0.5 : 1 }]}
+                    onPress={() => handleUnblock(item.blocked_id, user?.name ?? null)}
+                    disabled={unblocking === item.blocked_id}
+                    style={[s.unblockBtn, { backgroundColor: colors.destructive, opacity: unblocking === item.blocked_id ? 0.5 : 1 }]}
                   >
-                    {unblocking === item.blocked_user_id ? (
+                    {unblocking === item.blocked_id ? (
                       <ActivityIndicator size="small" color="#FFFFFF" />
                     ) : (
                       <Text style={s.unblockText}>{t('blocked.removeBlock')}</Text>
