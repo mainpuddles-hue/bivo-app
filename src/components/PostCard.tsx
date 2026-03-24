@@ -56,17 +56,20 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
     if (!userId) return
     // Skip DB check if the post already carries like/save state
     if (post.is_liked !== undefined && post.is_saved !== undefined) return
+    let mounted = true
     const supabase = createClient()
 
     if (post.is_liked === undefined) {
       supabase.from('post_likes').select('id').eq('post_id', post.id).eq('user_id', userId).maybeSingle()
-        .then(({ data }) => { if (data) setLiked(true) })
+        .then(({ data }) => { if (data && mounted) setLiked(true) })
     }
 
     if (post.is_saved === undefined) {
       supabase.from('saved_posts').select('id').eq('post_id', post.id).eq('user_id', userId).maybeSingle()
-        .then(({ data }) => { if (data) setSaved(true) })
+        .then(({ data }) => { if (data && mounted) setSaved(true) })
     }
+
+    return () => { mounted = false }
   }, [userId, post.id, post.is_liked, post.is_saved])
 
   const category = CATEGORIES[post.type as PostType]
@@ -108,16 +111,16 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
         router.push(`/post/${post.id}`)
       }}
-      onLongPress={() => {
+      onLongPress={async () => {
         if (!userId) { router.push('/(auth)/login'); return }
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy) } catch {}
         const supabase = createClient()
         if (saved) {
-          (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
           setSaved(false)
+          await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
         } else {
-          (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
           setSaved(true)
+          await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
         }
       }}
       delayLongPress={400}

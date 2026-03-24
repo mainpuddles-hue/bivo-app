@@ -27,6 +27,7 @@ export const SmartMatchBanner = memo(function SmartMatchBanner({ matches, onDism
 
   return (
     <Pressable
+      accessibilityLabel={t('smartMatch.neighborNeeds', { name: match.posterName })}
       onPress={() => router.push(`/post/${match.postId}`)}
       style={[styles.banner, { backgroundColor: `${colors.primary}14`, borderColor: `${colors.primary}33` }]}
     >

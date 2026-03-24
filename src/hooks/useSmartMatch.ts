@@ -53,7 +53,7 @@ export function useSmartMatch(userId: string | null) {
             postId: newPost.id,
             postTitle: newPost.title,
             matchedTags,
-            posterName: (poster as any)?.name ?? 'Naapuri',
+            posterName: (poster as any)?.name ?? '?',
           }])
         }
       })
