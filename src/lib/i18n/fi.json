@@ -2130,6 +2130,13 @@
     "errorMessage": "Suomi.fi-tunnistautuminen ei onnistunut. Tämä voi johtua keskeytetystä prosessista tai teknisestä virheestä. Yritä uudelleen.",
     "tryAgain": "Yritä uudelleen",
     "suomifiInfo": "Tunnistaudut turvallisesti Suomi.fi-palvelussa omilla pankkitunnuksillasi tai mobiilivarmenteellasi. TackBird ei tallenna henkilötunnustasi.",
-    "startButton": "Tunnistaudu Suomi.fi:llä"
+    "startButton": "Tunnistaudu Suomi.fi:llä",
+    "modalTitle": "Vahvista henkilöllisyytesi",
+    "step1": "Vahva tunnistautuminen",
+    "step1Desc": "Tunnistaudu pankkitunnuksillasi (OP, Nordea, Danske jne.)",
+    "step2": "Tai mobiilivarmenne",
+    "step2Desc": "Voit käyttää myös mobiilivarmentetta tai tunnistuskorttia",
+    "step3": "Tietojasi ei tallenneta",
+    "step3Desc": "TackBird tallentaa vain vahvistuksen ajankohdan — ei henkilötunnustasi tai pankkitietojasi"
   }
 }

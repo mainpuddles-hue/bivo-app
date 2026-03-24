@@ -18,6 +18,7 @@ import { PostCard } from '@/components/PostCard'
 import { TrustBadge, TrustProgress } from '@/components/TrustBadge'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { useIdentityVerification } from '@/hooks/useIdentityVerification'
+import { VerificationModal } from '@/components/VerificationModal'
 import { fonts } from '@/lib/fonts'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
@@ -551,6 +552,16 @@ export default function ProfileScreen() {
           />
         </View>
       </Modal>
+
+      {/* Suomi.fi Verification Modal */}
+      <VerificationModal
+        visible={identity.showModal}
+        onClose={() => identity.setShowModal(false)}
+        onConfirm={identity.confirmVerification}
+        loading={identity.loading}
+        error={identity.error}
+        isSuccess={identity.status === 'success'}
+      />
     </View>
   )
 }

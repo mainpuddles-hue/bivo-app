@@ -2103,6 +2103,13 @@
     "errorMessage": "Suomi.fi-identifiering lyckades inte. Detta kan bero på en avbruten process eller ett tekniskt fel. Försök igen.",
     "tryAgain": "Försök igen",
     "suomifiInfo": "Du autentiserar dig säkert via Suomi.fi-tjänsten med dina bankuppgifter eller mobilt certifikat. TackBird lagrar inte ditt personnummer.",
-    "startButton": "Identifiera med Suomi.fi"
+    "startButton": "Identifiera med Suomi.fi",
+    "modalTitle": "Verifiera din identitet",
+    "step1": "Stark autentisering",
+    "step1Desc": "Autentisera med dina bankuppgifter (OP, Nordea, Danske etc.)",
+    "step2": "Eller mobilt certifikat",
+    "step2Desc": "Du kan också använda ett mobilt certifikat eller ID-kort",
+    "step3": "Dina uppgifter sparas inte",
+    "step3Desc": "TackBird sparar bara verifieringstidsstämpeln — inte ditt personnummer eller bankuppgifter"
   }
 }

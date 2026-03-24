@@ -13,6 +13,7 @@ import { fonts } from '@/lib/fonts'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { TrustGateModal } from '@/components/TrustGate'
+import { VerificationModal } from '@/components/VerificationModal'
 import { TrustBadge } from '@/components/TrustBadge'
 import type { PostType, TrustLevel } from '@/lib/types'
 
@@ -409,6 +410,15 @@ export default function CreateScreen() {
           currentLevel={trust.level}
           featureName={t('categories.lainaa')}
           onVerifyPress={identity.startVerification}
+        />
+
+        <VerificationModal
+          visible={identity.showModal}
+          onClose={() => identity.setShowModal(false)}
+          onConfirm={identity.confirmVerification}
+          loading={identity.loading}
+          error={identity.error}
+          isSuccess={identity.status === 'success'}
         />
       </View>
     )
