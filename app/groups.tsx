@@ -244,10 +244,13 @@ export default function GroupsScreen() {
           description: newDescription.trim() || null,
           category: newCategory,
           neighborhood: newNeighborhood,
+          naapurusto: newNeighborhood,
           is_public: newIsPublic,
+          is_private: !newIsPublic,
           member_count: 1,
           new_post_count: 0,
           created_by: currentUserId,
+          creator_id: currentUserId,
         })
         .select()
         .single()
