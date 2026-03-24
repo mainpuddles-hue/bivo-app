@@ -2116,5 +2116,20 @@
     "markedComplete": "Palvelu merkitty suoritetuksi! Rahat vapautetaan pian.",
     "cancelBooking": "Peru varaus",
     "cancelConfirm": "Haluatko varmasti perua tämän palveluvarauksen?"
+  },
+  "verification": {
+    "successTitle": "Henkilöllisyys vahvistettu!",
+    "successMessage": "Suomi.fi-tunnistautuminen onnistui. Olet nyt vahvistettu käyttäjä ja uudet ominaisuudet ovat käytössäsi.",
+    "unlockedTitle": "Avatut ominaisuudet",
+    "featureBorrow": "Lainaa ja vuokraa",
+    "featureBorrowDesc": "Lainaa tavaroita naapureilta (max 50€/pv)",
+    "featureServices": "Tarjoa maksullisia palveluita",
+    "featureServicesDesc": "Myy palveluita kuten siivous, korjaus, koiranulkoilutus",
+    "backToApp": "Takaisin sovellukseen",
+    "errorTitle": "Tunnistautuminen epäonnistui",
+    "errorMessage": "Suomi.fi-tunnistautuminen ei onnistunut. Tämä voi johtua keskeytetystä prosessista tai teknisestä virheestä. Yritä uudelleen.",
+    "tryAgain": "Yritä uudelleen",
+    "suomifiInfo": "Tunnistaudut turvallisesti Suomi.fi-palvelussa omilla pankkitunnuksillasi tai mobiilivarmenteellasi. TackBird ei tallenna henkilötunnustasi.",
+    "startButton": "Tunnistaudu Suomi.fi:llä"
   }
 }

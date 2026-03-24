@@ -2089,5 +2089,20 @@
     "markedComplete": "Tjänsten markerad som klar! Pengarna frigörs snart.",
     "cancelBooking": "Avboka",
     "cancelConfirm": "Är du säker på att du vill avboka denna tjänstbokning?"
+  },
+  "verification": {
+    "successTitle": "Identitet verifierad!",
+    "successMessage": "Suomi.fi-identifiering lyckades. Du är nu en verifierad användare med tillgång till nya funktioner.",
+    "unlockedTitle": "Upplåsta funktioner",
+    "featureBorrow": "Låna och hyr ut",
+    "featureBorrowDesc": "Låna saker från grannar (max 50€/dag)",
+    "featureServices": "Erbjud betaltjänster",
+    "featureServicesDesc": "Sälj tjänster som städning, reparationer, hundpromenader",
+    "backToApp": "Tillbaka till appen",
+    "errorTitle": "Identifiering misslyckades",
+    "errorMessage": "Suomi.fi-identifiering lyckades inte. Detta kan bero på en avbruten process eller ett tekniskt fel. Försök igen.",
+    "tryAgain": "Försök igen",
+    "suomifiInfo": "Du autentiserar dig säkert via Suomi.fi-tjänsten med dina bankuppgifter eller mobilt certifikat. TackBird lagrar inte ditt personnummer.",
+    "startButton": "Identifiera med Suomi.fi"
   }
 }

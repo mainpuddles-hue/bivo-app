@@ -2089,5 +2089,20 @@
     "markedComplete": "Service marked complete! Funds will be released soon.",
     "cancelBooking": "Cancel booking",
     "cancelConfirm": "Are you sure you want to cancel this service booking?"
+  },
+  "verification": {
+    "successTitle": "Identity verified!",
+    "successMessage": "Suomi.fi identification successful. You are now a verified user with access to new features.",
+    "unlockedTitle": "Unlocked features",
+    "featureBorrow": "Borrow and lend",
+    "featureBorrowDesc": "Borrow items from neighbors (max 50€/day)",
+    "featureServices": "Offer paid services",
+    "featureServicesDesc": "Sell services like cleaning, repairs, dog walking",
+    "backToApp": "Back to app",
+    "errorTitle": "Identification failed",
+    "errorMessage": "Suomi.fi identification was unsuccessful. This may be due to a cancelled process or a technical error. Please try again.",
+    "tryAgain": "Try again",
+    "suomifiInfo": "You authenticate securely via the Suomi.fi service using your bank credentials or mobile certificate. TackBird does not store your personal identity code.",
+    "startButton": "Identify with Suomi.fi"
   }
 }

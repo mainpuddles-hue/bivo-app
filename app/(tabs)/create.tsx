@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
+import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { TrustGateModal } from '@/components/TrustGate'
 import { TrustBadge } from '@/components/TrustBadge'
 import type { PostType, TrustLevel } from '@/lib/types'
@@ -127,6 +128,7 @@ export default function CreateScreen() {
   }, [supabase, router])
 
   const trust = useTrustLevel(currentUserId)
+  const identity = useIdentityVerification(currentUserId)
 
   // Auto-expand details for categories that have required detail fields
   useEffect(() => {
@@ -406,6 +408,7 @@ export default function CreateScreen() {
           requiredLevel={2}
           currentLevel={trust.level}
           featureName={t('categories.lainaa')}
+          onVerifyPress={identity.startVerification}
         />
       </View>
     )

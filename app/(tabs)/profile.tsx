@@ -17,6 +17,7 @@ import { formatTimeAgo } from '@/lib/format'
 import { PostCard } from '@/components/PostCard'
 import { TrustBadge, TrustProgress } from '@/components/TrustBadge'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
+import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { fonts } from '@/lib/fonts'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
@@ -67,6 +68,7 @@ export default function ProfileScreen() {
   const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null)
   const [followList, setFollowList] = useState<{ id: string; name: string; avatar_url: string | null }[]>([])
   const trust = useTrustLevel(profile?.id)
+  const identity = useIdentityVerification(profile?.id ?? null)
 
   useEffect(() => {
     async function load() {
@@ -365,7 +367,7 @@ export default function ProfileScreen() {
 
         {/* Trust Level Progress */}
         {!trust.loading && trust.level < 3 && (
-          <TrustProgress level={trust.level} nextTierHints={trust.nextTierHints} />
+          <TrustProgress level={trust.level} nextTierHints={trust.nextTierHints} onVerifyPress={identity.startVerification} />
         )}
 
         {/* Tabs */}
