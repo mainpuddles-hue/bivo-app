@@ -1933,7 +1933,14 @@
     "categoryRequired": "Välj en kategori",
     "publishError": "Publicering misslyckades",
     "replyError": "Kunde inte skicka svar",
-    "startDiscussion": "Starta en diskussion med grannar"
+    "startDiscussion": "Starta en diskussion med grannar",
+    "voteError": "Röstning misslyckades",
+    "deletePost": "Radera diskussion",
+    "deletePostConfirm": "Är du säker på att du vill radera denna diskussion och alla svar?",
+    "deleteReply": "Kunde inte radera svar",
+    "sortNewest": "Senaste",
+    "sortPopular": "Populära",
+    "newPosts": "Nya diskussioner — uppdatera"
   },
   "about": {
     "title": "Om",
@@ -1987,7 +1994,16 @@
     "joinError": "Gick inte att gå med i gruppen",
     "leaveError": "Gick inte att lämna gruppen",
     "likeError": "Gillning misslyckades",
-    "removeError": "Gick inte att ta bort medlem"
+    "removeError": "Gick inte att ta bort medlem",
+    "deletePost": "Radera inlägg",
+    "deletePostConfirm": "Är du säker på att du vill radera detta inlägg och alla kommentarer?",
+    "deleteComment": "Kunde inte radera kommentar",
+    "editGroup": "Redigera grupp",
+    "saveChanges": "Spara ändringar",
+    "deleteGroup": "Radera grupp",
+    "deleteGroupConfirm": "Bekräfta gruppradering",
+    "deleteGroupWarning": "Är du säker på att du vill radera denna grupp? Alla inlägg och medlemskap tas bort permanent.",
+    "typeDeleteToConfirm": "Skriv RADERA för att bekräfta"
   },
   "places": {
     "places": "Platser",

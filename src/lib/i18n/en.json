@@ -1933,7 +1933,14 @@
     "categoryRequired": "Select a category",
     "publishError": "Failed to publish",
     "replyError": "Failed to send reply",
-    "startDiscussion": "Start a discussion with neighbors"
+    "startDiscussion": "Start a discussion with neighbors",
+    "voteError": "Vote failed",
+    "deletePost": "Delete discussion",
+    "deletePostConfirm": "Are you sure you want to delete this discussion and all replies?",
+    "deleteReply": "Failed to delete reply",
+    "sortNewest": "Newest",
+    "sortPopular": "Popular",
+    "newPosts": "New discussions — refresh"
   },
   "about": {
     "title": "About",
@@ -1987,7 +1994,16 @@
     "joinError": "Failed to join group",
     "leaveError": "Failed to leave group",
     "likeError": "Like failed",
-    "removeError": "Failed to remove member"
+    "removeError": "Failed to remove member",
+    "deletePost": "Delete post",
+    "deletePostConfirm": "Are you sure you want to delete this post and all comments?",
+    "deleteComment": "Failed to delete comment",
+    "editGroup": "Edit group",
+    "saveChanges": "Save changes",
+    "deleteGroup": "Delete group",
+    "deleteGroupConfirm": "Confirm group deletion",
+    "deleteGroupWarning": "Are you sure you want to delete this group? All posts and memberships will be permanently removed.",
+    "typeDeleteToConfirm": "Type DELETE to confirm"
   },
   "places": {
     "places": "Places",

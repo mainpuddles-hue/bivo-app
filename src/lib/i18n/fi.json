@@ -1960,7 +1960,14 @@
     "categoryRequired": "Valitse kategoria",
     "publishError": "Julkaisu epäonnistui",
     "replyError": "Vastauksen lähetys epäonnistui",
-    "startDiscussion": "Aloita keskustelu naapureiden kanssa"
+    "startDiscussion": "Aloita keskustelu naapureiden kanssa",
+    "voteError": "Äänestys epäonnistui",
+    "deletePost": "Poista keskustelu",
+    "deletePostConfirm": "Haluatko varmasti poistaa tämän keskustelun ja kaikki vastaukset?",
+    "deleteReply": "Vastauksen poisto epäonnistui",
+    "sortNewest": "Uusimmat",
+    "sortPopular": "Suositut",
+    "newPosts": "Uusia keskusteluja — päivitä"
   },
   "about": {
     "title": "Tietoja",
@@ -2014,7 +2021,16 @@
     "joinError": "Ryhmään liittyminen epäonnistui",
     "leaveError": "Ryhmästä poistuminen epäonnistui",
     "likeError": "Tykkäys epäonnistui",
-    "removeError": "Jäsenen poistaminen epäonnistui"
+    "removeError": "Jäsenen poistaminen epäonnistui",
+    "deletePost": "Poista viesti",
+    "deletePostConfirm": "Haluatko varmasti poistaa tämän viestin ja kaikki kommentit?",
+    "deleteComment": "Kommentin poisto epäonnistui",
+    "editGroup": "Muokkaa ryhmää",
+    "saveChanges": "Tallenna muutokset",
+    "deleteGroup": "Poista ryhmä",
+    "deleteGroupConfirm": "Vahvista ryhmän poisto",
+    "deleteGroupWarning": "Haluatko varmasti poistaa tämän ryhmän? Kaikki viestit ja jäsenyydet poistetaan pysyvästi.",
+    "typeDeleteToConfirm": "Kirjoita POISTA vahvistaaksesi"
   },
   "places": {
     "places": "Paikat",

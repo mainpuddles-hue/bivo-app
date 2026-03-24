@@ -11,7 +11,7 @@ import * as Haptics from 'expo-haptics'
 import * as ImagePicker from 'expo-image-picker'
 import {
   ArrowLeft, Heart, MessageCircle, Send, ImagePlus, X,
-  Settings, Users, LogOut, UserPlus, Shield, User,
+  Settings, Users, LogOut, UserPlus, Shield, User, Trash2, Pencil,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -143,6 +143,17 @@ export default function GroupDetailScreen() {
   const [showMembers, setShowMembers] = useState(false)
   const [members, setMembers] = useState<GroupMember[]>([])
   const [loadingMembers, setLoadingMembers] = useState(false)
+
+  // Edit group modal (admin)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editNeighborhood, setEditNeighborhood] = useState('')
+  const [editIsPublic, setEditIsPublic] = useState(true)
+  const [savingEdit, setSavingEdit] = useState(false)
+
+  // Delete group (admin)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
   // Fetch current user
   useEffect(() => {
@@ -537,6 +548,144 @@ export default function GroupDetailScreen() {
     )
   }, [isAdmin, id, group, supabase, t])
 
+  // ── Delete own group post ──
+  const handleDeleteGroupPost = useCallback(async (postId: string) => {
+    Alert.alert(
+      t('groups.deletePost'),
+      t('groups.deletePostConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Delete comments first
+              await (supabase.from('group_post_comments') as any).delete().eq('post_id', postId)
+              // Delete likes
+              await (supabase.from('group_post_likes') as any).delete().eq('post_id', postId)
+              // Delete the post
+              await (supabase.from('group_posts') as any).delete().eq('id', postId)
+              // Remove from local state
+              setPosts(prev => prev.filter(p => p.id !== postId))
+              // Close comments if expanded
+              if (expandedPostId === postId) {
+                setExpandedPostId(null)
+                setComments([])
+              }
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+            } catch {
+              Alert.alert(t('common.error'), t('groups.sendError'))
+            }
+          },
+        },
+      ]
+    )
+  }, [supabase, t, expandedPostId])
+
+  // ── Delete own comment ──
+  const handleDeleteComment = useCallback(async (comment: GroupComment) => {
+    try {
+      await (supabase.from('group_post_comments') as any).delete().eq('id', comment.id)
+
+      // Decrement comment_count on parent post
+      const parentPost = posts.find(p => p.id === comment.post_id)
+      if (parentPost) {
+        const newCount = Math.max(0, parentPost.comment_count - 1)
+        await (supabase.from('group_posts') as any)
+          .update({ comment_count: newCount })
+          .eq('id', comment.post_id)
+
+        setPosts(prev => prev.map(p =>
+          p.id === comment.post_id ? { ...p, comment_count: newCount } : p
+        ))
+      }
+
+      // Remove from local state
+      setComments(prev => prev.filter(c => c.id !== comment.id))
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    } catch {
+      Alert.alert(t('common.error'), t('groups.sendError'))
+    }
+  }, [supabase, posts, t])
+
+  // ── Edit group info (admin) ──
+  const handleOpenEditModal = useCallback(() => {
+    if (!group) return
+    setEditName(group.name)
+    setEditDescription(group.description ?? '')
+    setEditNeighborhood(group.neighborhood ?? '')
+    setEditIsPublic(group.is_public)
+    setShowEditModal(true)
+  }, [group])
+
+  const handleSaveGroupEdit = useCallback(async () => {
+    if (!id || !editName.trim()) return
+    setSavingEdit(true)
+    try {
+      await (supabase.from('groups') as any)
+        .update({
+          name: editName.trim(),
+          description: editDescription.trim() || null,
+          neighborhood: editNeighborhood.trim() || null,
+          naapurusto: editNeighborhood.trim() || null,
+          is_public: editIsPublic,
+          is_private: !editIsPublic,
+        })
+        .eq('id', id)
+
+      setGroup(prev => prev ? {
+        ...prev,
+        name: editName.trim(),
+        description: editDescription.trim() || null,
+        neighborhood: editNeighborhood.trim() || null,
+        is_public: editIsPublic,
+      } : prev)
+
+      setShowEditModal(false)
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    } catch {
+      Alert.alert(t('common.error'), t('groups.createError'))
+    } finally {
+      setSavingEdit(false)
+    }
+  }, [id, editName, editDescription, editNeighborhood, editIsPublic, supabase, t])
+
+  // ── Delete group (admin) ──
+  const handleDeleteGroup = useCallback(async () => {
+    if (!id) return
+    Alert.alert(
+      t('groups.deleteGroup'),
+      t('groups.deleteGroupWarning'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Delete in order: comments, likes, posts, members, group
+              await (supabase.from('group_post_comments') as any)
+                .delete()
+                .in('post_id', posts.map(p => p.id).length > 0 ? posts.map(p => p.id) : ['__none__'])
+              await (supabase.from('group_post_likes') as any)
+                .delete()
+                .in('post_id', posts.map(p => p.id).length > 0 ? posts.map(p => p.id) : ['__none__'])
+              await (supabase.from('group_posts') as any).delete().eq('group_id', id)
+              await (supabase.from('group_members') as any).delete().eq('group_id', id)
+              await (supabase.from('groups') as any).delete().eq('id', id)
+
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+              router.back()
+            } catch {
+              Alert.alert(t('common.error'), t('groups.sendError'))
+            }
+          },
+        },
+      ]
+    )
+  }, [id, supabase, posts, t, router])
+
   const catColor = CATEGORY_COLORS[group?.category ?? 'general'] || colors.primary
 
   // ── Coming soon ──
@@ -592,6 +741,15 @@ export default function GroupDetailScreen() {
                 {formatTimeAgo(item.created_at, t, locale)}
               </Text>
             </View>
+            {item.user_id === currentUserId && (
+              <Pressable
+                onPress={() => handleDeleteGroupPost(item.id)}
+                hitSlop={6}
+                style={{ padding: 4 }}
+              >
+                <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
+              </Pressable>
+            )}
           </View>
 
           {/* Content */}
@@ -649,9 +807,20 @@ export default function GroupDetailScreen() {
                       </View>
                     )}
                     <View style={ps.commentBody}>
-                      <Text style={[ps.commentUser, { color: colors.foreground }]}>
-                        {c.user?.name || t('common.user')}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={[ps.commentUser, { color: colors.foreground }]}>
+                          {c.user?.name || t('common.user')}
+                        </Text>
+                        {c.user_id === currentUserId && (
+                          <Pressable
+                            onPress={() => handleDeleteComment(c)}
+                            hitSlop={6}
+                            style={{ padding: 2 }}
+                          >
+                            <X size={12} color={colors.destructive} strokeWidth={1.8} />
+                          </Pressable>
+                        )}
+                      </View>
                       <Text style={[ps.commentContent, { color: colors.foreground }]}>
                         {c.content}
                       </Text>
@@ -793,8 +962,8 @@ export default function GroupDetailScreen() {
           )}
         </View>
         {isAdmin ? (
-          <Pressable style={ps.headerBtn} hitSlop={8}>
-            <Settings size={20} color={colors.mutedForeground} strokeWidth={1.8} />
+          <Pressable style={ps.headerBtn} hitSlop={8} onPress={handleOpenEditModal}>
+            <Pencil size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
         ) : (
           <View style={ps.headerBtn} />
@@ -926,6 +1095,99 @@ export default function GroupDetailScreen() {
               />
             )}
           </View>
+        </View>
+      </Modal>
+
+      {/* Edit Group Modal (admin) */}
+      <Modal visible={showEditModal} animationType="slide" transparent>
+        <View style={[ps.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={[ps.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20 }]}
+          >
+            <View style={ps.modalHeader}>
+              <Text style={[ps.modalTitle, { color: colors.foreground }]}>
+                {t('groups.editGroup')}
+              </Text>
+              <Pressable onPress={() => setShowEditModal(false)} hitSlop={8}>
+                <X size={22} color={colors.mutedForeground} strokeWidth={1.8} />
+              </Pressable>
+            </View>
+
+            <View style={{ paddingHorizontal: 20, gap: 12 }}>
+              <TextInput
+                style={[ps.editInput, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border }]}
+                placeholder={t('groups.name')}
+                placeholderTextColor={colors.mutedForeground}
+                value={editName}
+                onChangeText={setEditName}
+                maxLength={100}
+              />
+              <TextInput
+                style={[ps.editInput, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border, minHeight: 80 }]}
+                placeholder={t('groups.description')}
+                placeholderTextColor={colors.mutedForeground}
+                value={editDescription}
+                onChangeText={setEditDescription}
+                multiline
+                textAlignVertical="top"
+                maxLength={500}
+              />
+              <TextInput
+                style={[ps.editInput, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border }]}
+                placeholder={t('groups.neighborhood')}
+                placeholderTextColor={colors.mutedForeground}
+                value={editNeighborhood}
+                onChangeText={setEditNeighborhood}
+                maxLength={100}
+              />
+
+              {/* Public/Private toggle */}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Pressable
+                  onPress={() => setEditIsPublic(true)}
+                  style={[ps.toggleChip, { backgroundColor: editIsPublic ? colors.primary : colors.muted }]}
+                >
+                  <Text style={{ color: editIsPublic ? '#FFFFFF' : colors.mutedForeground, fontSize: 13, fontFamily: fonts.bodySemi }}>
+                    {t('groups.public')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setEditIsPublic(false)}
+                  style={[ps.toggleChip, { backgroundColor: !editIsPublic ? colors.primary : colors.muted }]}
+                >
+                  <Text style={{ color: !editIsPublic ? '#FFFFFF' : colors.mutedForeground, fontSize: 13, fontFamily: fonts.bodySemi }}>
+                    {t('groups.private')}
+                  </Text>
+                </Pressable>
+              </View>
+
+              <Pressable
+                onPress={handleSaveGroupEdit}
+                disabled={savingEdit || !editName.trim()}
+                style={[ps.saveBtn, { backgroundColor: colors.primary, opacity: (savingEdit || !editName.trim()) ? 0.5 : 1 }]}
+              >
+                {savingEdit ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={{ color: '#FFFFFF', fontSize: 14, fontFamily: fonts.bodySemi }}>
+                    {t('groups.saveChanges')}
+                  </Text>
+                )}
+              </Pressable>
+
+              {/* Delete group button */}
+              <Pressable
+                onPress={handleDeleteGroup}
+                style={[ps.deleteGroupBtn, { borderColor: colors.destructive }]}
+              >
+                <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
+                <Text style={{ color: colors.destructive, fontSize: 14, fontFamily: fonts.bodySemi }}>
+                  {t('groups.deleteGroup')}
+                </Text>
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </KeyboardAvoidingView>
@@ -1304,6 +1566,36 @@ const ps = StyleSheet.create({
   roleText: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
+  },
+  // Edit modal
+  editInput: {
+    fontSize: 14,
+    fontFamily: fonts.body,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  toggleChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  saveBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  deleteGroupBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 4,
   },
   // Skeleton
   skelAvatar: {

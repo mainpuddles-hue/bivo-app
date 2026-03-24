@@ -99,7 +99,7 @@ export default function ExploreScreen() {
 
   // Community preview state
   const [groups, setGroups] = useState<Array<{ id: string; name: string; category: string; member_count: number }>>([])
-  const [forumPosts, setForumPosts] = useState<Array<{ id: string; title: string; category: string; reply_count: number; created_at: string }>>([])
+  const [forumPosts, setForumPosts] = useState<Array<{ id: string; title: string; category: string; comment_count: number; created_at: string }>>([])
 
 
   // ── Fetch location ──
@@ -159,7 +159,7 @@ export default function ExploreScreen() {
         (supabase.from('groups').select('id, name, category, member_count') as any)
           .order('member_count', { ascending: false }).limit(3)
           .then((r: any) => r).catch(() => ({ data: null, error: true })),
-        (supabase.from('forum_posts').select('id, title, category, reply_count, created_at') as any)
+        (supabase.from('forum_posts').select('id, title, category, comment_count, created_at') as any)
           .order('created_at', { ascending: false }).limit(3)
           .then((r: any) => r).catch(() => ({ data: null, error: true })),
       ])
@@ -415,7 +415,7 @@ export default function ExploreScreen() {
                     <MessageCircle size={18} color={colors.primary} />
                     <View style={{ flex: 1 }}>
                       <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{p.title}</Text>
-                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.reply_count} {t('forum.replies')}</Text>
+                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.comment_count} {t('forum.replies')}</Text>
                     </View>
                     <ChevronRight size={14} color={colors.mutedForeground} />
                   </Pressable>

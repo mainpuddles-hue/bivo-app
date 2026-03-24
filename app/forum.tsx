@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import {
-  ArrowLeft, Plus, ChevronUp, MessageCircle, MapPin, X, Send,
+  ArrowLeft, Plus, ChevronUp, MessageCircle, MapPin, X, Send, Trash2,
 } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
@@ -122,6 +122,12 @@ export default function ForumScreen() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [votedPosts, setVotedPosts] = useState<Set<string>>(new Set())
 
+  // Sort state
+  const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest')
+
+  // Real-time banner state
+  const [newPostsBanner, setNewPostsBanner] = useState(false)
+
   // Create modal state
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newTitle, setNewTitle] = useState('')
@@ -158,8 +164,14 @@ export default function ForumScreen() {
       let query = supabase
         .from('forum_posts')
         .select('*, user:profiles!forum_posts_user_id_fkey(id, name, avatar_url, naapurusto)')
-        .order('created_at', { ascending: false })
-        .limit(50)
+
+      if (sortBy === 'popular') {
+        query = query.order('upvote_count', { ascending: false })
+      } else {
+        query = query.order('created_at', { ascending: false })
+      }
+
+      query = query.limit(50)
 
       if (activeCategory) query = query.eq('category', activeCategory)
       if (neighborhoodFilter) query = query.eq('neighborhood', neighborhoodFilter)
@@ -181,12 +193,33 @@ export default function ForumScreen() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [supabase, activeCategory, neighborhoodFilter])
+  }, [supabase, activeCategory, neighborhoodFilter, sortBy])
 
   useEffect(() => {
     setLoading(true)
     fetchPosts()
   }, [fetchPosts])
+
+  // ── Real-time listener for new forum posts ──
+  useEffect(() => {
+    const channel = supabase
+      .channel('forum_posts_realtime')
+      .on(
+        'postgres_changes' as any,
+        { event: 'INSERT', schema: 'public', table: 'forum_posts' },
+        (payload: any) => {
+          // Only show banner for posts from other users
+          if (payload.new && payload.new.user_id !== currentUserId) {
+            setNewPostsBanner(true)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [supabase, currentUserId])
 
   // Fetch user votes
   useEffect(() => {
@@ -394,6 +427,64 @@ export default function ForumScreen() {
     }
   }, [currentUserId, selectedPost, replyText, supabase, t])
 
+  // ── Delete post ──
+  const handleDeletePost = useCallback(async (postId: string) => {
+    Alert.alert(
+      t('forum.deletePost'),
+      t('forum.deletePostConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Delete associated replies first
+              await (supabase.from('forum_replies') as any).delete().eq('post_id', postId)
+              // Then delete the post
+              await (supabase.from('forum_posts') as any).delete().eq('id', postId)
+              // Remove from local state
+              setPosts(prev => prev.filter(p => p.id !== postId))
+              // Close detail modal if viewing this post
+              if (selectedPost?.id === postId) {
+                setSelectedPost(null)
+              }
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+            } catch {
+              Alert.alert(t('common.error'), t('post.deleteFailed'))
+            }
+          },
+        },
+      ]
+    )
+  }, [supabase, t, selectedPost])
+
+  // ── Delete reply ──
+  const handleDeleteReply = useCallback(async (reply: ForumReply) => {
+    try {
+      await (supabase.from('forum_replies') as any).delete().eq('id', reply.id)
+
+      // Decrement comment_count on the parent post
+      if (selectedPost) {
+        const newCount = Math.max(0, selectedPost.comment_count - 1)
+        await (supabase.from('forum_posts') as any)
+          .update({ comment_count: newCount })
+          .eq('id', selectedPost.id)
+
+        setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
+        setPosts(prev => prev.map(p =>
+          p.id === selectedPost.id ? { ...p, comment_count: newCount } : p
+        ))
+      }
+
+      // Remove from local state
+      setReplies(prev => prev.filter(r => r.id !== reply.id))
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    } catch {
+      Alert.alert(t('common.error'), t('forum.deleteReply'))
+    }
+  }, [supabase, selectedPost, t])
+
   // ── Create post ──
   const handleCreatePost = useCallback(async () => {
     if (!newTitle.trim()) { Alert.alert(t('common.error'), t('forum.titleRequired')); return }
@@ -524,11 +615,20 @@ export default function ForumScreen() {
                 {item.comment_count} {t('forum.replies')}
               </Text>
             </View>
+            {item.user_id === currentUserId && (
+              <Pressable
+                onPress={(e) => { e.stopPropagation?.(); handleDeletePost(item.id) }}
+                style={s.actionBtn}
+                hitSlop={4}
+              >
+                <Trash2 size={14} color={colors.destructive} strokeWidth={1.8} />
+              </Pressable>
+            )}
           </View>
         </View>
       </Pressable>
     )
-  }, [colors, t, locale, votedPosts, getCategoryColor, handleUpvotePost, openPostDetail])
+  }, [colors, t, locale, votedPosts, getCategoryColor, handleUpvotePost, openPostDetail, currentUserId, handleDeletePost])
 
   // ── Render reply ──
   const renderReply = useCallback(({ item }: { item: ForumReply }) => {
@@ -555,6 +655,15 @@ export default function ForumScreen() {
               {formatTimeAgo(item.created_at, t, locale)}
             </Text>
           </View>
+          {item.user_id === currentUserId && (
+            <Pressable
+              onPress={() => handleDeleteReply(item)}
+              hitSlop={6}
+              style={{ padding: 4 }}
+            >
+              <X size={14} color={colors.destructive} strokeWidth={1.8} />
+            </Pressable>
+          )}
         </View>
         <Text style={[s.replyContent, { color: colors.foreground }]}>
           {item.content}
@@ -579,7 +688,7 @@ export default function ForumScreen() {
         </Pressable>
       </View>
     )
-  }, [colors, t, locale, votedReplies, handleUpvoteReply])
+  }, [colors, t, locale, votedReplies, handleUpvoteReply, currentUserId, handleDeleteReply])
 
   // ── Header component ──
   const ListHeader = useMemo(() => (
@@ -705,6 +814,50 @@ export default function ForumScreen() {
           })}
         </ScrollView>
       </View>
+
+      {/* ── Sort chips ── */}
+      <View style={[s.sortRow, { borderBottomColor: colors.border }]}>
+        {(['newest', 'popular'] as const).map((opt) => {
+          const isActive = sortBy === opt
+          return (
+            <Pressable
+              key={opt}
+              onPress={() => {
+                try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+                setSortBy(opt)
+              }}
+              style={[
+                s.sortChip,
+                isActive
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: isDark ? colors.card : colors.muted },
+              ]}
+            >
+              <Text style={[
+                s.sortChipText,
+                { color: isActive ? '#FFFFFF' : colors.mutedForeground },
+                isActive && { fontFamily: fonts.bodySemi },
+              ]}>
+                {opt === 'newest' ? t('forum.sortNewest') : t('forum.sortPopular')}
+              </Text>
+            </Pressable>
+          )
+        })}
+      </View>
+
+      {/* ── New posts banner ── */}
+      {newPostsBanner && (
+        <Pressable
+          onPress={() => {
+            setNewPostsBanner(false)
+            setLoading(true)
+            fetchPosts()
+          }}
+          style={[s.newPostsBanner, { backgroundColor: colors.primary }]}
+        >
+          <Text style={s.newPostsBannerText}>{t('forum.newPosts')}</Text>
+        </Pressable>
+      )}
 
       {/* ── Post list ── */}
       <FlatList
@@ -1040,6 +1193,27 @@ const s = StyleSheet.create({
   },
   categoryChipText: {
     fontSize: 13, fontFamily: fonts.bodyMedium,
+  },
+
+  // Sort
+  sortRow: {
+    flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  sortChip: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16,
+  },
+  sortChipText: {
+    fontSize: 13, fontFamily: fonts.bodyMedium,
+  },
+
+  // New posts banner
+  newPostsBanner: {
+    marginHorizontal: 16, marginTop: 8, paddingVertical: 10,
+    borderRadius: 10, alignItems: 'center',
+  },
+  newPostsBannerText: {
+    fontSize: 13, fontFamily: fonts.bodySemi, color: '#FFFFFF',
   },
 
   // List

@@ -35,7 +35,7 @@ interface ForumPostPreview {
   title: string
   category: string
   created_at: string
-  reply_count: number
+  comment_count: number
   upvote_count: number
   user?: { name: string | null; avatar_url: string | null } | null
 }
@@ -157,7 +157,7 @@ export default function CommunityScreen() {
     try {
       const { data, error } = await (supabase
         .from('forum_posts')
-        .select('id, title, category, created_at, reply_count, upvote_count, user:profiles!forum_posts_user_id_fkey(name, avatar_url)') as any)
+        .select('id, title, category, created_at, comment_count, upvote_count, user:profiles!forum_posts_user_id_fkey(name, avatar_url)') as any)
         .order('created_at', { ascending: false })
         .limit(5)
       if (error) {
@@ -382,7 +382,7 @@ export default function CommunityScreen() {
                             {post.title}
                           </Text>
                           <Text style={[s.cardMeta, { color: colors.mutedForeground }]}>
-                            {post.reply_count} {t('forum.replies')} {'\u00B7'} {formatTimeAgo(post.created_at, t, locale)}
+                            {post.comment_count} {t('forum.replies')} {'\u00B7'} {formatTimeAgo(post.created_at, t, locale)}
                           </Text>
                         </View>
                         <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
