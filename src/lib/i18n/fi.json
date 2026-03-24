@@ -2140,7 +2140,10 @@
     "step2": "Tai mobiilivarmenne",
     "step2Desc": "Voit käyttää myös mobiilivarmentetta tai tunnistuskorttia",
     "step3": "Tietojasi ei tallenneta",
-    "step3Desc": "TackBird tallentaa vain vahvistuksen ajankohdan — ei henkilötunnustasi tai pankkitietojasi"
+    "step3Desc": "TackBird tallentaa vain vahvistuksen ajankohdan — ei henkilötunnustasi tai pankkitietojasi",
+    "error_auth_required": "Kirjaudu sisään ensin",
+    "error_already_verified": "Henkilöllisyytesi on jo vahvistettu",
+    "error_verification_failed": "Vahvistus epäonnistui — yritä uudelleen"
   },
   "urgency": {
     "juuriNyt": "Juuri nyt",

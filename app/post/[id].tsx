@@ -136,23 +136,30 @@ export default function PostDetailScreen() {
 
   const toggleLike = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
-    if (isLiked) {
+    const wasLiked = isLiked
+    const prevCount = likeCount
+    if (wasLiked) {
       setIsLiked(false); setLikeCount(c => c - 1)
-      await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', userId)
+      const { error } = await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', userId)
+      if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
     } else {
       setIsLiked(true); setLikeCount(c => c + 1)
-      await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
+      const { error } = await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
+      if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
     }
-  }, [userId, isLiked, id, supabase, router])
+  }, [userId, isLiked, likeCount, id, supabase, router])
 
   const toggleSave = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
-    if (isSaved) {
+    const wasSaved = isSaved
+    if (wasSaved) {
       setIsSaved(false)
-      await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', userId)
+      const { error } = await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', userId)
+      if (error) { setIsSaved(wasSaved) }
     } else {
       setIsSaved(true)
-      await (supabase.from('saved_posts') as any).insert({ post_id: id, user_id: userId })
+      const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: id, user_id: userId })
+      if (error) { setIsSaved(wasSaved) }
     }
   }, [userId, isSaved, id, supabase, router])
 

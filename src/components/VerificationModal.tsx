@@ -95,7 +95,9 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
           </View>
 
           {error && (
-            <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.destructive }]}>
+              {t(`verification.error_${error}`) !== `verification.error_${error}` ? t(`verification.error_${error}`) : error}
+            </Text>
           )}
 
           <Pressable

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Alert } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@/lib/supabase/client'
 
@@ -112,6 +113,7 @@ export function useNotificationPreferences() {
         AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reverted)).catch(() => {})
         return reverted
       })
+      Alert.alert('Error', 'Notification preference update failed. Please try again.')
     }
   }, [userId, supabase])
 

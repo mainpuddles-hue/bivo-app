@@ -131,7 +131,7 @@ export default function ConversationScreen() {
         setMessages(prev => [...prev, newMsg])
         // Auto-mark as read if from other user
         if (newMsg.sender_id !== userId) {
-          (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id)
+          ;(supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id).then(() => {})
         }
       })
       .on('postgres_changes', {
@@ -297,16 +297,25 @@ export default function ConversationScreen() {
     const msg = messages.find(m => m.id === selectedMessageId)
     if (!msg || msg.sender_id !== userId) return
 
-    // Soft delete
-    await (supabase.from('messages') as any)
-      .update({ is_deleted: true, deleted_at: new Date().toISOString() })
-      .eq('id', selectedMessageId)
-
+    // Optimistic update
     setMessages(prev => prev.map(m =>
       m.id === selectedMessageId ? { ...m, is_deleted: true } as any : m
     ))
+
+    try {
+      const { error } = await (supabase.from('messages') as any)
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+        .eq('id', selectedMessageId)
+      if (error) throw error
+    } catch {
+      // Revert on failure
+      setMessages(prev => prev.map(m =>
+        m.id === selectedMessageId ? { ...m, is_deleted: false } as any : m
+      ))
+      Alert.alert(t('common.error'), t('conversation.deleteFailed'))
+    }
     setSelectedMessageId(null)
-  }, [selectedMessageId, userId, messages, supabase])
+  }, [selectedMessageId, userId, messages, supabase, t])
 
   const renderMessage = useCallback(({ item, index }: { item: Message; index: number }) => {
     const isMine = item.sender_id === userId

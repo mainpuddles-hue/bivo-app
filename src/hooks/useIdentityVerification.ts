@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from 'react'
-import { Alert } from 'react-native'
 import { createClient } from '@/lib/supabase/client'
 
 type VerificationStatus = 'idle' | 'pending' | 'verifying' | 'success' | 'error'
@@ -58,11 +57,11 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
 
   const startVerification = useCallback(() => {
     if (!userId) {
-      setError('Kirjaudu sisään ensin')
+      setError('auth_required')
       return
     }
     if (isVerified) {
-      Alert.alert('', 'Henkilöllisyytesi on jo vahvistettu')
+      setError('already_verified')
       return
     }
     setError(null)
@@ -100,7 +99,7 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
         .insert({ user_id: userId, badge_type: 'verified' })
 
       if (badgeError) {
-        setError('Vahvistus epäonnistui — yritä uudelleen')
+        setError('verification_failed')
         setStatus('error')
         return
       }
@@ -118,7 +117,7 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
       setStatus('success')
       setShowModal(false)
     } catch {
-      setError('Vahvistus epäonnistui — yritä uudelleen')
+      setError('verification_failed')
       setStatus('error')
     } finally {
       setLoading(false)

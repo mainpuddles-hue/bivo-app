@@ -2113,7 +2113,10 @@
     "step2": "Or mobile certificate",
     "step2Desc": "You can also use a mobile certificate or ID card",
     "step3": "Your data is not stored",
-    "step3Desc": "TackBird only stores the verification timestamp — not your personal ID or bank details"
+    "step3Desc": "TackBird only stores the verification timestamp — not your personal ID or bank details",
+    "error_auth_required": "Please log in first",
+    "error_already_verified": "Your identity is already verified",
+    "error_verification_failed": "Verification failed — please try again"
   },
   "urgency": {
     "juuriNyt": "Right now",

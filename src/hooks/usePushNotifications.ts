@@ -16,7 +16,7 @@ function isExpoGo() {
 async function setupAndroidChannel() {
   if (Platform.OS !== 'android') return
   await Notifications.setNotificationChannelAsync('default', {
-    name: 'Oletuskanava',
+    name: 'Default',
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: '#2D6B5E',
@@ -105,8 +105,8 @@ export function usePushNotifications(userId: string | null) {
 
     if (isExpoGo()) {
       Alert.alert(
-        'Push-ilmoitukset',
-        'Push-ilmoitukset vaativat natiivi-buildin (EAS Build). Expo Go -sovelluksessa ne eivät ole käytettävissä.'
+        'Push Notifications',
+        'Push notifications require a native build (EAS Build). They are not available in Expo Go.'
       )
       return
     }
@@ -135,8 +135,8 @@ export function usePushNotifications(userId: string | null) {
         pushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data
       } catch {
         Alert.alert(
-          'Push-ilmoitukset',
-          'Push-tokenin luominen epäonnistui. Varmista, että käytät natiivi-buildia (EAS Build).'
+          'Push Notifications',
+          'Failed to create push token. Make sure you are using a native build (EAS Build).'
         )
         setIsLoading(false)
         return

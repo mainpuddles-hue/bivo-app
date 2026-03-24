@@ -2113,7 +2113,10 @@
     "step2": "Eller mobilt certifikat",
     "step2Desc": "Du kan också använda ett mobilt certifikat eller ID-kort",
     "step3": "Dina uppgifter sparas inte",
-    "step3Desc": "TackBird sparar bara verifieringstidsstämpeln — inte ditt personnummer eller bankuppgifter"
+    "step3Desc": "TackBird sparar bara verifieringstidsstämpeln — inte ditt personnummer eller bankuppgifter",
+    "error_auth_required": "Logga in först",
+    "error_already_verified": "Din identitet är redan verifierad",
+    "error_verification_failed": "Verifieringen misslyckades — försök igen"
   },
   "urgency": {
     "juuriNyt": "Just nu",

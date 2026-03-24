@@ -260,14 +260,30 @@ export default function EventsScreen() {
 
   const toggleAttend = useCallback(async (eventId: string) => {
     if (!userId) { router.push('/(auth)/login'); return }
-    if (attendingIds.has(eventId)) {
+    const wasAttending = attendingIds.has(eventId)
+    if (wasAttending) {
       setAttendingIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
-      await supabase.from('event_attendees').delete().eq('event_id', eventId).eq('user_id', userId)
     } else {
       setAttendingIds(prev => new Set(prev).add(eventId))
-      await (supabase.from('event_attendees') as any).insert({ event_id: eventId, user_id: userId })
     }
-  }, [userId, attendingIds, supabase, router])
+    try {
+      if (wasAttending) {
+        const { error } = await supabase.from('event_attendees').delete().eq('event_id', eventId).eq('user_id', userId)
+        if (error) throw error
+      } else {
+        const { error } = await (supabase.from('event_attendees') as any).insert({ event_id: eventId, user_id: userId })
+        if (error) throw error
+      }
+    } catch {
+      // Revert optimistic update
+      if (wasAttending) {
+        setAttendingIds(prev => new Set(prev).add(eventId))
+      } else {
+        setAttendingIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
+      }
+      Alert.alert(t('common.error'), t('events.attendFailed'))
+    }
+  }, [userId, attendingIds, supabase, router, t])
 
   const toggleSave = useCallback(async (eventId: string) => {
     if (!userId) { router.push('/(auth)/login'); return }
@@ -287,7 +303,7 @@ export default function EventsScreen() {
     try {
       if (act.is_member) {
         const { error } = await supabase.from('activity_members').delete().eq('activity_id', activityId).eq('user_id', userId)
-        if (error) { if (__DEV__) console.log('[activities] leave error:', error.message); return }
+        if (error) { Alert.alert(t('common.error'), t('activity.leaveFailed')); return }
         setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: false, member_count: (a.member_count ?? 1) - 1 } : a))
       } else {
         if (act.max_members && (act.member_count ?? 0) >= act.max_members) {
@@ -295,10 +311,11 @@ export default function EventsScreen() {
           return
         }
         const { error } = await (supabase.from('activity_members') as any).insert({ activity_id: activityId, user_id: userId })
-        if (error) { if (__DEV__) console.log('[activities] join error:', error.message); return }
+        if (error) { Alert.alert(t('common.error'), t('activity.joinFailed')); return }
         setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: true, member_count: (a.member_count ?? 0) + 1 } : a))
       }
     } catch (err) {
+      Alert.alert(t('common.error'), t('activity.toggleFailed'))
       if (__DEV__) console.log('[activities] toggleMember error:', err)
     }
   }, [userId, activities, supabase, router, t])
