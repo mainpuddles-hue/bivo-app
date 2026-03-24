@@ -165,19 +165,24 @@ export default function PostDetailScreen() {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post) return
     if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
-    // Find ANY existing conversation between these two users (regardless of post)
-    const { data: existing } = await supabase
-      .from('conversations').select('id')
-      .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
-      .maybeSingle()
-    if (existing) {
-      router.push(`/messages/${(existing as any).id}`)
-    } else {
-      const { data: newConv, error } = await (supabase.from('conversations') as any)
-        .insert({ user1_id: userId, user2_id: post.user_id }).select('id').single()
-      if (error) { console.log('[conv] create error:', JSON.stringify(error)); Alert.alert(t('common.error'), error.message || t('messages.conversationCreateFailed')); return }
-      if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
-      router.push(`/messages/${newConv.id}`)
+    try {
+      // Find ANY existing conversation between these two users
+      const { data: existing, error: findError } = await supabase
+        .from('conversations').select('id')
+        .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
+        .maybeSingle()
+      if (findError) { Alert.alert('Debug: find error', JSON.stringify(findError)); return }
+      if (existing) {
+        router.push(`/messages/${(existing as any).id}`)
+      } else {
+        const { data: newConv, error } = await (supabase.from('conversations') as any)
+          .insert({ user1_id: userId, user2_id: post.user_id }).select('id').single()
+        if (error) { Alert.alert('Debug: insert error', JSON.stringify(error)); return }
+        if (!newConv) { Alert.alert('Debug', 'newConv is null'); return }
+        router.push(`/messages/${newConv.id}`)
+      }
+    } catch (e: any) {
+      Alert.alert('Debug: exception', e?.message ?? String(e))
     }
   }, [userId, post, id, supabase, router, t])
 

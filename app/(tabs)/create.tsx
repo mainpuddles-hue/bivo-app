@@ -368,8 +368,9 @@ export default function CreateScreen() {
       }
 
       router.replace('/')
-    } catch (err) {
-      Alert.alert(t('common.error'), t('create.createFailed'))
+    } catch (err: any) {
+      console.log('[create] error:', JSON.stringify(err))
+      Alert.alert(t('common.error'), err?.message || t('create.createFailed'))
     } finally {
       setSubmitting(false)
       setUploadStatus('')
