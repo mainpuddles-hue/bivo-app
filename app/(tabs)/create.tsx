@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -7,7 +7,7 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { usePoints } from '@/hooks/usePoints'
@@ -81,7 +81,7 @@ export default function CreateScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const params = useLocalSearchParams<{ type?: string }>()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)

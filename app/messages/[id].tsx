@@ -10,7 +10,7 @@ import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Chec
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { ThanksButton } from '@/components/ThanksButton'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatDateHeader } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import type { Message, Profile } from '@/lib/types'
@@ -29,7 +29,7 @@ export default function ConversationScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
   const flatListRef = useRef<FlatList>(null)
 
   const [messages, setMessages] = useState<Message[]>([])

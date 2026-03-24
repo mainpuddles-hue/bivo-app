@@ -1710,7 +1710,8 @@
     "alreadyThanked": "Redan tackat",
     "loginRequired": "Logga in för att tacka",
     "count": "tack",
-    "thanksReceived": "{count} tack mottagna"
+    "thanksReceived": "{count} tack mottagna",
+    "sendFailed": "Tack kunde inte skickas"
   },
   "cityEventCategories": {
     "culture": "Kultur",

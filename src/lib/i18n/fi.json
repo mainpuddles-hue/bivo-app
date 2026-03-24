@@ -1737,7 +1737,8 @@
     "alreadyThanked": "Olet jo kiittänyt",
     "loginRequired": "Kirjaudu kiittääksesi",
     "count": "kiitosta",
-    "thanksReceived": "{count} kiitosta vastaanotettu"
+    "thanksReceived": "{count} kiitosta vastaanotettu",
+    "sendFailed": "Kiitoksen lähetys epäonnistui"
   },
   "cityEventCategories": {
     "culture": "Kulttuuri",

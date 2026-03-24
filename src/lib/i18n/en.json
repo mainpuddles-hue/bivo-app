@@ -1710,7 +1710,8 @@
     "alreadyThanked": "Already thanked",
     "loginRequired": "Sign in to thank",
     "count": "thanks",
-    "thanksReceived": "{count} thanks received"
+    "thanksReceived": "{count} thanks received",
+    "sendFailed": "Failed to send thanks"
   },
   "cityEventCategories": {
     "culture": "Culture",

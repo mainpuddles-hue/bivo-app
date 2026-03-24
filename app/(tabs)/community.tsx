@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
   Pressable, Animated,
@@ -13,7 +13,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatEventDateShort } from '@/lib/format'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import type { CityEvent } from '@/lib/types'
@@ -97,7 +97,7 @@ export default function CommunityScreen() {
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [activeTab, setActiveTab] = useState<SubTab>('groups')
   const [refreshing, setRefreshing] = useState(false)

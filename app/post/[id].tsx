@@ -13,7 +13,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { shareContent } from '@/lib/share'
 import { ReportModal } from '@/components/ReportModal'
 import { ThanksButton } from '@/components/ThanksButton'
@@ -32,7 +32,7 @@ export default function PostDetailScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
@@ -716,7 +716,7 @@ export default function PostDetailScreen() {
       )}
 
       {/* Edit Modal */}
-      <Modal visible={editModalVisible} animationType="slide" transparent>
+      <Modal visible={editModalVisible} animationType="slide" transparent onRequestClose={() => setEditModalVisible(false)}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
@@ -737,7 +737,7 @@ export default function PostDetailScreen() {
       </Modal>
 
       {/* Booking Modal */}
-      <Modal visible={bookingModalVisible} animationType="slide" transparent>
+      <Modal visible={bookingModalVisible} animationType="slide" transparent onRequestClose={() => setBookingModalVisible(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setBookingModalVisible(false)}>
           <Pressable style={[styles.modalContent, { backgroundColor: colors.card }]} onPress={() => {}}>
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
@@ -776,7 +776,7 @@ export default function PostDetailScreen() {
       </Modal>
 
       {/* Service Booking Modal */}
-      <Modal visible={serviceModalVisible} animationType="slide" transparent>
+      <Modal visible={serviceModalVisible} animationType="slide" transparent onRequestClose={() => setServiceModalVisible(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setServiceModalVisible(false)}>
           <Pressable style={[styles.modalContent, { backgroundColor: colors.card }]} onPress={() => {}}>
             <View style={styles.modalHeader}>

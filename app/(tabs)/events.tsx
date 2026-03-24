@@ -12,7 +12,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { shareContent } from '@/lib/share'
 import { formatEventDateShort, formatEventDate } from '@/lib/format'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
@@ -190,7 +190,7 @@ export default function EventsScreen() {
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [tab, setTab] = useState<Tab>('community')
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')

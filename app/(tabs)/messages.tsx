@@ -8,7 +8,7 @@ import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { Avatar } from '@/components/Avatar'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import type { Conversation } from '@/lib/types'
@@ -20,7 +20,7 @@ export default function MessagesScreen() {
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)

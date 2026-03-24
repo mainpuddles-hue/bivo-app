@@ -16,7 +16,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 
 // ── Category colors ──
@@ -114,7 +114,7 @@ export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   // State
   const [group, setGroup] = useState<GroupInfo | null>(null)

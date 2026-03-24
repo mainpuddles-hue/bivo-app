@@ -16,7 +16,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
 import { fonts } from '@/lib/fonts'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 
 // ── Forum categories ──
@@ -111,7 +111,7 @@ export default function ForumScreen() {
   const { awardPoints } = usePoints()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   // State
   const [posts, setPosts] = useState<ForumPost[]>([])

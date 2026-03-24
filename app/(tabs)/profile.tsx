@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -11,7 +11,7 @@ import {
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { PostCard } from '@/components/PostCard'
 import { TrustBadge, TrustProgress } from '@/components/TrustBadge'
@@ -37,7 +37,7 @@ export default function ProfileScreen() {
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)

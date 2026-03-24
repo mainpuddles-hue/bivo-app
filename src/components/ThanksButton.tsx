@@ -119,7 +119,7 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
       setThanksCount(c => c - 1)
       scaleAnim.setValue(1)
       colorAnim.setValue(0)
-      Alert.alert(t('common.error'))
+      Alert.alert(t('common.error'), t('thanks.sendFailed'))
     } finally {
       setSending(false)
     }
