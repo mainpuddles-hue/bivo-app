@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
-import { formatPrice } from '@/lib/format'
+import { formatPrice, formatDateRange } from '@/lib/format'
 
 const TARJOAN_COLOR = '#7C5CBF'
 
@@ -76,13 +76,6 @@ function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useThem
   }
 }
 
-function formatDateRange(start: string, end: string, locale: string): string {
-  const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
-  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
-  const s = new Date(start).toLocaleDateString(localeStr, opts)
-  const e = new Date(end).toLocaleDateString(localeStr, opts)
-  return `${s} — ${e}`
-}
 
 export default function BookingsScreen() {
   const { colors, isDark } = useTheme()

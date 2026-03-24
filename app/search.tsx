@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
-import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, Star, Trash2 } from 'lucide-react-native'
+import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, Star, Trash2, Heart } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SearchSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
@@ -15,11 +15,8 @@ import { POST_SELECT, CATEGORIES } from '@/lib/constants'
 import { PostCard } from '@/components/PostCard'
 import { BoardIllustration } from '@/components/illustrations'
 import { SearchFilters, EMPTY_FILTERS, countActiveFilters, type SearchFilterValues, type SortOption } from '@/components/SearchFilters'
+import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import type { Post, PostType } from '@/lib/types'
-
-const CAT_ICON_MAP: Record<string, React.ComponentType<any>> = {
-  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
-}
 
 const HISTORY_KEY = 'tackbird-search-history'
 const RECENT_SEARCHES_KEY = 'tackbird_recent_searches'
@@ -563,7 +560,7 @@ export default function SearchScreen() {
         </View>
         <View style={s.categoryGrid}>
           {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
-            const CatIcon = CAT_ICON_MAP[cat.icon]
+            const CatIcon = CATEGORY_ICON_MAP[cat.icon]
             return (
               <Pressable
                 key={type}

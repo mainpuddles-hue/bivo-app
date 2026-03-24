@@ -70,3 +70,17 @@ export function formatEventDateShort(dateStr: string, locale = 'fi'): string {
     month: 'numeric',
   })
 }
+
+export function formatDateHeader(dateStr: string, locale: string): string {
+  return new Date(dateStr).toLocaleDateString(resolveLocale(locale), {
+    weekday: 'long', day: 'numeric', month: 'long',
+  })
+}
+
+export function formatDateRange(start: string, end: string, locale: string): string {
+  const localeStr = resolveLocale(locale)
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
+  const s = new Date(start).toLocaleDateString(localeStr, opts)
+  const e = new Date(end).toLocaleDateString(localeStr, opts)
+  return `${s} \u2014 ${e}`
+}

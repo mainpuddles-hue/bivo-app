@@ -18,12 +18,6 @@ import {
   ChevronRight,
   MapPin,
   Check,
-  HandHelping,
-  Gift,
-  Heart,
-  Zap,
-  BookOpen,
-  CalendarDays,
   CheckCircle,
   AlertTriangle,
   Loader2,
@@ -36,19 +30,11 @@ import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
+import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import type { PostType } from '@/lib/types'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const TOTAL_PAGES = 3
-
-const ICON_MAP: Record<string, typeof HandHelping> = {
-  HandHelping,
-  Gift,
-  Heart,
-  Zap,
-  BookOpen,
-  CalendarDays,
-}
 
 const CATEGORY_ORDER: PostType[] = [
   'tarvitsen',
@@ -189,7 +175,7 @@ export default function OnboardingScreen() {
         <View style={s.categoryGrid}>
           {CATEGORY_ORDER.map((key) => {
             const cat = CATEGORIES[key]
-            const IconComponent = ICON_MAP[cat.icon]
+            const IconComponent = CATEGORY_ICON_MAP[cat.icon]
             const bgColor = isDark ? cat.bgDark : cat.bgLight
 
             return (

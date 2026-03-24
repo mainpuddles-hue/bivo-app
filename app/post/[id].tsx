@@ -7,7 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
-  HandHelping, Gift, Zap, BookOpen, CalendarDays, BadgeCheck, Send, Flag,
+  BadgeCheck, Send, Flag,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
   ShoppingBag,
 } from 'lucide-react-native'
@@ -21,11 +21,8 @@ import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import { useStripePayment } from '@/hooks/useStripePayment'
 import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
+import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import type { Post, PostType, PostComment } from '@/lib/types'
-
-const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string }>> = {
-  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
-}
 
 export default function PostDetailScreen() {
   const { colors, isDark } = useTheme()
@@ -472,7 +469,7 @@ export default function PostDetailScreen() {
   }
 
   const category = CATEGORIES[post.type as PostType]
-  const CategoryIcon = category ? ICON_MAP[category.icon] : null
+  const CategoryIcon = category ? CATEGORY_ICON_MAP[category.icon] : null
   const user = post.user
   const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
   const allImages = [post.image_url, ...(post.images ?? []).map(i => i.image_url)].filter(Boolean) as string[]
@@ -638,7 +635,7 @@ export default function PostDetailScreen() {
                     <Pressable key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card }]}>
                       {rp.image_url ? (<Image source={{ uri: rp.image_url }} style={styles.relatedImage} contentFit="cover" />) : (
                         <View style={[styles.relatedImage, { backgroundColor: rpCat ? (isDark ? rpCat.bgDark : rpCat.bgLight) : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                          {rpCat && ICON_MAP[rpCat.icon] && (() => { const I = ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
+                          {rpCat && CATEGORY_ICON_MAP[rpCat.icon] && (() => { const I = CATEGORY_ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
                         </View>
                       )}
                       <View style={styles.relatedCardBody}>

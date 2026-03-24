@@ -10,7 +10,7 @@ import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Chec
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
-import { formatTimeAgo } from '@/lib/format'
+import { formatTimeAgo, formatDateHeader } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import type { Message, Profile } from '@/lib/types'
 
@@ -20,12 +20,6 @@ const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
 function isSameDay(a: string, b: string) {
   return new Date(a).toDateString() === new Date(b).toDateString()
-}
-
-function formatDateHeader(dateStr: string, locale: string) {
-  return new Date(dateStr).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  })
 }
 
 export default function ConversationScreen() {

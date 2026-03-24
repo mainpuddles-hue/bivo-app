@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, MapPin, Star, MessageCircle, UserPlus, UserMinus,
-  Flag, ShieldBan, Crown, BadgeCheck, Shield, Flame, PenLine,
+  Flag, ShieldBan, Crown, PenLine,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -16,14 +16,8 @@ import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
 import { TrustBadge } from '@/components/TrustBadge'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
+import { BADGE_ICONS } from '@/lib/badgeIcons'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
-
-const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
-  verified: { icon: BadgeCheck, color: '#3B82F6' },
-  pro: { icon: Crown, color: '#F59E0B' },
-  trusted: { icon: Shield, color: '#10B981' },
-  active: { icon: Flame, color: '#EF4444' },
-}
 
 export default function PublicProfileScreen() {
   const { colors } = useTheme()

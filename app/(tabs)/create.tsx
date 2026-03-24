@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock } from 'lucide-react-native'
+import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -15,11 +15,8 @@ import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { TrustGateModal } from '@/components/TrustGate'
 import { VerificationModal } from '@/components/VerificationModal'
 import { TrustBadge } from '@/components/TrustBadge'
+import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import type { PostType, TrustLevel } from '@/lib/types'
-
-const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string }>> = {
-  HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
-}
 
 const POST_TAGS: Record<string, { id: string; label: string }[]> = {
   tarvitsen: [
@@ -388,7 +385,7 @@ export default function CreateScreen() {
         </View>
         <ScrollView contentContainerStyle={styles.categoryGrid}>
           {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
-            const Icon = ICON_MAP[cat.icon]
+            const Icon = CATEGORY_ICON_MAP[cat.icon]
             const isLocked = type === 'lainaa' && !trust.permissions.canLainaa
             return (
               <Pressable
@@ -454,7 +451,7 @@ export default function CreateScreen() {
           </Pressable>
           {cat && (
             <View style={[styles.headerBadge, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}>
-              {ICON_MAP[cat.icon] && React.createElement(ICON_MAP[cat.icon], { size: 14, color: cat.color })}
+              {CATEGORY_ICON_MAP[cat.icon] && React.createElement(CATEGORY_ICON_MAP[cat.icon], { size: 14, color: cat.color })}
               <Text style={[styles.headerBadgeText, { color: cat.color }]}>{t(cat.label)}</Text>
             </View>
           )}
