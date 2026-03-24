@@ -234,6 +234,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                 </Text>
               </View>
             )}
+            {post.service_price != null && (
+              <View style={[styles.priceBadge, { backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }]}>
+                <Text style={[styles.priceText, { color: '#7C5CBF' }]}>
+                  {formatPrice(post.service_price, locale)}
+                </Text>
+              </View>
+            )}
             {distanceText && (
               <View style={styles.distanceRow}>
                 <MapPin size={11} color={colors.primary} />

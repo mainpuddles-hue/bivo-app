@@ -9,13 +9,14 @@ import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
   HandHelping, Gift, Zap, BookOpen, CalendarDays, BadgeCheck, Send, Flag,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
+  ShoppingBag,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { shareContent } from '@/lib/share'
 import { ReportModal } from '@/components/ReportModal'
-import { CATEGORIES, POST_SELECT } from '@/lib/constants'
+import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import { useStripePayment } from '@/hooks/useStripePayment'
 import DateRangePicker from '@/components/DateRangePicker'
@@ -69,7 +70,10 @@ export default function PostDetailScreen() {
   const [blockedDates, setBlockedDates] = useState<string[]>([])
   const { createPayment, loading: paymentLoading, error: paymentError } = useStripePayment()
 
-  const SERVICE_FEE_RATE = 0.10
+  // Service booking state (for tarjoan posts with service_price)
+  const [serviceModalVisible, setServiceModalVisible] = useState(false)
+  const [serviceNotes, setServiceNotes] = useState('')
+  const [sendingService, setSendingService] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -353,6 +357,62 @@ export default function PostDetailScreen() {
     finally { setSendingBooking(false) }
   }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, createPayment])
 
+  // Service pricing
+  const svcFee = useMemo(() => {
+    if (!post?.service_price) return 0
+    return Math.round(post.service_price * SERVICE_FEE_RATE * 100) / 100
+  }, [post?.service_price])
+  const svcTotal = useMemo(() => (post?.service_price ?? 0) + svcFee, [post?.service_price, svcFee])
+
+  const handlePayForService = useCallback(async () => {
+    if (!userId) { router.push('/(auth)/login'); return }
+    if (!post || sendingService || paymentLoading) return
+    if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
+    setSendingService(true)
+    try {
+      // 1. Create service_bookings record
+      const { data: booking, error: bookingError } = await (supabase.from('service_bookings') as any)
+        .insert({
+          post_id: id,
+          buyer_id: userId,
+          provider_id: post.user_id,
+          service_price: post.service_price,
+          service_fee: svcFee,
+          total_amount: svcTotal,
+          notes: serviceNotes.trim() || null,
+          status: 'pending',
+        })
+        .select('id').single()
+      if (bookingError || !booking) { Alert.alert(t('common.error'), t('service.bookingFailed')); setSendingService(false); return }
+
+      // 2. Stripe Checkout
+      const amountCents = Math.round(svcTotal * 100)
+      const sessionId = await createPayment({
+        amount: amountCents,
+        description: post.title,
+        type: 'service',
+        postId: id,
+        sellerId: post.user_id,
+        metadata: { booking_id: booking.id, booking_type: 'service' },
+      })
+
+      // 3. Store stripe session
+      if (sessionId) {
+        await (supabase.from('service_bookings') as any)
+          .update({ stripe_session_id: sessionId })
+          .eq('id', booking.id)
+      }
+
+      setServiceModalVisible(false)
+      setServiceNotes('')
+      if (!sessionId) { Alert.alert(t('common.success'), t('service.bookingCreated')) }
+    } catch {
+      Alert.alert(t('common.error'), t('service.bookingFailed'))
+    } finally {
+      setSendingService(false)
+    }
+  }, [userId, post, sendingService, paymentLoading, svcFee, svcTotal, serviceNotes, id, supabase, router, t, createPayment])
+
   const renderCommentItem = (c: PostComment, isReply: boolean) => (
     <View key={c.id} style={[styles.commentRow, isReply && styles.replyRow]}>
       {isReply && <View style={[styles.replyLine, { backgroundColor: colors.border }]} />}
@@ -488,10 +548,21 @@ export default function PostDetailScreen() {
             <Text style={[styles.price, { color: '#C98B2E' }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>
           )}
 
+          {post.service_price != null && (
+            <Text style={[styles.price, { color: '#7C5CBF' }]}>{formatPrice(post.service_price, locale)}</Text>
+          )}
+
           {post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (
             <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
+            </Pressable>
+          )}
+
+          {post.type === 'tarjoan' && post.service_price != null && !isAuthor && (
+            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: '#7C5CBF' }]}>
+              <ShoppingBag size={16} color="#FFFFFF" />
+              <Text style={[styles.bookingBtnText, { color: '#FFFFFF' }]}>{t('service.buyService')}</Text>
             </Pressable>
           )}
 
@@ -675,6 +746,87 @@ export default function PostDetailScreen() {
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
               </Pressable>
             </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Service Booking Modal */}
+      <Modal visible={serviceModalVisible} animationType="slide" transparent>
+        <Pressable style={styles.modalOverlay} onPress={() => setServiceModalVisible(false)}>
+          <Pressable style={[styles.modalContent, { backgroundColor: colors.card }]} onPress={() => {}}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('service.bookService')}</Text>
+              <Pressable onPress={() => setServiceModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
+            </View>
+
+            <Text style={[styles.bookingPostTitle, { color: colors.foreground }]}>{post?.title}</Text>
+
+            {/* Provider info */}
+            {user && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+                {user.avatar_url ? (
+                  <Image source={{ uri: user.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} />
+                ) : (
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground }}>{user.name?.charAt(0)?.toUpperCase()}</Text>
+                  </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>{user.name}</Text>
+                  <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('service.provider')}</Text>
+                </View>
+              </View>
+            )}
+
+            {/* Notes */}
+            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('service.notesLabel')}</Text>
+            <TextInput
+              style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background, minHeight: 80 }]}
+              value={serviceNotes}
+              onChangeText={setServiceNotes}
+              placeholder={t('service.notesPlaceholder')}
+              placeholderTextColor={colors.mutedForeground}
+              multiline
+              maxLength={500}
+            />
+
+            {/* Pricing breakdown */}
+            {post?.service_price != null && (
+              <View style={[styles.pricingBreakdown, { borderColor: colors.border }]}>
+                <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('service.pricingBreakdown')}</Text>
+                <View style={styles.pricingRow}>
+                  <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('service.servicePrice')}</Text>
+                  <Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(post.service_price, locale)}</Text>
+                </View>
+                <View style={styles.pricingRow}>
+                  <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('service.platformFee')}</Text>
+                  <Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(svcFee, locale)}</Text>
+                </View>
+                <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}>
+                  <Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text>
+                  <Text style={[styles.bookingTotalPrice, { color: '#7C5CBF' }]}>{formatPrice(svcTotal, locale)}</Text>
+                </View>
+              </View>
+            )}
+
+            <Text style={{ fontSize: 12, color: colors.mutedForeground, lineHeight: 17, marginTop: 4 }}>{t('service.escrowNote')}</Text>
+
+            {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
+
+            <Pressable
+              onPress={handlePayForService}
+              disabled={sendingService || paymentLoading}
+              style={[styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : '#7C5CBF', marginTop: 16, marginBottom: 8 }]}
+            >
+              {sendingService || paymentLoading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <ShoppingBag size={16} color="#FFFFFF" />
+                  <Text style={[styles.saveBtnText, { color: '#FFFFFF' }]}>{t('service.payAndBook')}</Text>
+                </>
+              )}
+            </Pressable>
           </Pressable>
         </Pressable>
       </Modal>

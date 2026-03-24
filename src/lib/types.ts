@@ -25,7 +25,9 @@ export interface TrustTierInfo {
 
 export interface TrustPermissions {
   canLainaa: boolean
+  canOfferPaidServices: boolean
   maxDailyFee: number | null       // null = unlimited
+  maxServicePrice: number | null   // null = unlimited
   priorityInFeed: boolean
   trustedBadge: boolean
 }
@@ -93,6 +95,7 @@ export interface Post {
   hub_pickup_id: string | null
   expires_at: string | null
   daily_fee: number | null
+  service_price: number | null
   event_date: string | null
   latitude: number | null
   longitude: number | null
@@ -195,6 +198,26 @@ export interface Review {
   comment: string | null
   created_at: string
   reviewer?: Profile
+}
+
+export type ServiceBookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
+
+export interface ServiceBooking {
+  id: string
+  post_id: string
+  buyer_id: string
+  provider_id: string
+  service_price: number
+  service_fee: number
+  total_amount: number
+  notes: string | null
+  status: ServiceBookingStatus
+  stripe_session_id: string | null
+  completed_at: string | null
+  created_at: string
+  post?: { id: string; title: string; image_url: string | null }
+  buyer?: { id: string; name: string; avatar_url: string | null }
+  provider?: { id: string; name: string; avatar_url: string | null }
 }
 
 export interface CityEvent {

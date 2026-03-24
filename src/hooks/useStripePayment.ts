@@ -8,7 +8,7 @@ interface PaymentOptions {
   amount: number // cents (499 = 4.99€)
   description: string
   metadata?: Record<string, string>
-  type: 'rental' | 'ad_campaign'
+  type: 'rental' | 'service' | 'ad_campaign'
   postId?: string
   sellerId?: string
 }
@@ -36,9 +36,12 @@ export function useStripePayment() {
       }
 
       // Determine the correct API endpoint
-      const endpoint = options.type === 'rental'
-        ? `${WEB_BACKEND}/api/stripe/rental-checkout`
-        : `${WEB_BACKEND}/api/stripe/ad-checkout`
+      const endpointMap: Record<string, string> = {
+        rental: `${WEB_BACKEND}/api/stripe/rental-checkout`,
+        service: `${WEB_BACKEND}/api/stripe/service-checkout`,
+        ad_campaign: `${WEB_BACKEND}/api/stripe/ad-checkout`,
+      }
+      const endpoint = endpointMap[options.type] ?? endpointMap.service
 
       // Create Stripe Checkout session via web backend
       const res = await fetch(endpoint, {

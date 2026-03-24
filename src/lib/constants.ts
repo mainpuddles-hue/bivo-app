@@ -2,13 +2,15 @@ import type { PostType } from './types'
 
 export const POST_SELECT = `
   id, user_id, type, title, description, location, image_url,
-  hub_pickup_id, expires_at, daily_fee, event_date,
+  hub_pickup_id, expires_at, daily_fee, service_price, event_date,
   latitude, longitude, is_pro_listing, is_active, tags,
   like_count, comment_count,
   created_at, updated_at,
   user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, user_badges(badge_type)),
   images:post_images(id, image_url, sort_order)
 `
+
+export const SERVICE_FEE_RATE = 0.10 // 10% platform fee
 
 export const CATEGORIES: Record<PostType, {
   label: string
@@ -77,7 +79,9 @@ export const TRUST_TIERS = {
     icon: 'Shield' as const,
     permissions: {
       canLainaa: false,
+      canOfferPaidServices: false,
       maxDailyFee: 0,
+      maxServicePrice: 0,
       priorityInFeed: false,
       trustedBadge: false,
     },
@@ -89,7 +93,9 @@ export const TRUST_TIERS = {
     icon: 'ShieldCheck' as const,
     permissions: {
       canLainaa: true,
+      canOfferPaidServices: true,
       maxDailyFee: 50,
+      maxServicePrice: 200,   // max 200€ per service
       priorityInFeed: false,
       trustedBadge: false,
     },
@@ -101,7 +107,9 @@ export const TRUST_TIERS = {
     icon: 'ShieldPlus' as const,
     permissions: {
       canLainaa: true,
+      canOfferPaidServices: true,
       maxDailyFee: null, // unlimited
+      maxServicePrice: null, // unlimited
       priorityInFeed: true,
       trustedBadge: true,
     },

@@ -92,6 +92,7 @@ export default function CreateScreen() {
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
   const [dailyFee, setDailyFee] = useState('')
+  const [servicePrice, setServicePrice] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [eventStartTime, setEventStartTime] = useState('')
   const [eventEndTime, setEventEndTime] = useState('')
@@ -129,7 +130,7 @@ export default function CreateScreen() {
 
   // Auto-expand details for categories that have required detail fields
   useEffect(() => {
-    if (selectedType === 'lainaa' || selectedType === 'tapahtuma') {
+    if (selectedType === 'lainaa' || selectedType === 'tapahtuma' || selectedType === 'tarjoan') {
       setShowDetails(true)
     }
   }, [selectedType])
@@ -274,6 +275,11 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
       return
     }
+    // Trust tier: max service price check
+    if (selectedType === 'tarjoan' && servicePrice && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
+      Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
+      return
+    }
     if (selectedType === 'tapahtuma' && !eventDate) {
       Alert.alert(t('common.error'), t('events.titleDateRequired'))
       return
@@ -299,6 +305,7 @@ export default function CreateScreen() {
         latitude: latitude ?? null,
         longitude: longitude ?? null,
         daily_fee: selectedType === 'lainaa' && dailyFee ? parseFloat(dailyFee) : null,
+        service_price: selectedType === 'tarjoan' && servicePrice ? parseFloat(servicePrice) : null,
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt,
         is_active: true,
@@ -536,6 +543,27 @@ export default function CreateScreen() {
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="decimal-pad"
                   />
+                </View>
+              )}
+
+              {/* Service price for tarjoan */}
+              {selectedType === 'tarjoan' && (
+                <View style={styles.field}>
+                  <Text style={[styles.label, { color: colors.foreground }]}>{t('service.price')}</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    value={servicePrice}
+                    onChangeText={setServicePrice}
+                    placeholder={t('service.pricePlaceholder')}
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="decimal-pad"
+                  />
+                  <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{t('service.priceHint')}</Text>
+                  {!trust.permissions.canOfferPaidServices && servicePrice ? (
+                    <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.requiresVerification')}</Text>
+                  ) : trust.permissions.maxServicePrice !== null && servicePrice && parseFloat(servicePrice) > trust.permissions.maxServicePrice ? (
+                    <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice })}</Text>
+                  ) : null}
                 </View>
               )}
 
