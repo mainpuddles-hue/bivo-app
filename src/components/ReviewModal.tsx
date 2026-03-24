@@ -4,6 +4,7 @@ import { Star, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
+import { StarRating } from '@/components/StarRating'
 
 interface ReviewModalProps {
   visible: boolean
@@ -112,15 +113,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
               {/* Star rating */}
               <Text style={[s.label, { color: colors.mutedForeground }]}>{t('profile.rating')}</Text>
               <View style={s.starRow}>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Pressable key={i} onPress={() => setRating(i)} hitSlop={12}>
-                    <Star
-                      size={36}
-                      color={i <= rating ? colors.pro : colors.border}
-                      fill={i <= rating ? colors.pro : 'transparent'}
-                    />
-                  </Pressable>
-                ))}
+                <StarRating rating={rating} onRatingChange={setRating} size={36} gap={8} />
               </View>
 
               {/* Comment */}

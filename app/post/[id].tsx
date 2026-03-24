@@ -16,6 +16,7 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { shareContent } from '@/lib/share'
 import { ReportModal } from '@/components/ReportModal'
+import { Avatar } from '@/components/Avatar'
 import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import { useStripePayment } from '@/hooks/useStripePayment'
@@ -605,9 +606,7 @@ export default function PostDetailScreen() {
           {/* Author card */}
           <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              {user?.avatar_url ? (<Image source={{ uri: user.avatar_url }} style={styles.authorAvatar} />) : (
-                <View style={[styles.authorAvatar, styles.avatarFb, { backgroundColor: colors.muted }]}><Text style={[styles.avatarInit, { color: colors.mutedForeground }]}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text></View>
-              )}
+              <Avatar url={user?.avatar_url} name={user?.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <View style={styles.authorNameRow}>
                   <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name}</Text>

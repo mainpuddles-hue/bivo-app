@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
@@ -21,6 +20,8 @@ import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { VerificationModal } from '@/components/VerificationModal'
 import { fonts } from '@/lib/fonts'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
+import { Avatar } from '@/components/Avatar'
+import { StarRating } from '@/components/StarRating'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 interface ActivityItem {
@@ -204,14 +205,6 @@ export default function ProfileScreen() {
     )
   }
 
-  const renderStars = (rating: number) => (
-    <View style={{ flexDirection: 'row', gap: 2 }}>
-      {[1, 2, 3, 4, 5].map(i => (
-        <Star key={i} size={12} color={i <= rating ? colors.pro : colors.muted} fill={i <= rating ? colors.pro : 'transparent'} />
-      ))}
-    </View>
-  )
-
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'post': return <FileText size={16} color={colors.primary} />
@@ -234,23 +227,12 @@ export default function ProfileScreen() {
         {/* Hero */}
         <View style={s.hero}>
           <Pressable onPress={handleAvatarUpload}>
-            {profile.avatar_url ? (
-              <View>
-                <Image source={{ uri: profile.avatar_url }} style={[s.bigAvatar, profile.is_pro && { borderWidth: 3, borderColor: colors.pro }]} />
-                <View style={[s.cameraBtn, { backgroundColor: colors.primary }]}>
-                  <Camera size={12} color={colors.primaryForeground} />
-                </View>
+            <View>
+              <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />
+              <View style={[s.cameraBtn, { backgroundColor: colors.primary }]}>
+                <Camera size={12} color={colors.primaryForeground} />
               </View>
-            ) : (
-              <View>
-                <View style={[s.bigAvatar, s.bigAvatarFb, { backgroundColor: colors.muted }]}>
-                  <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-                </View>
-                <View style={[s.cameraBtn, { backgroundColor: colors.primary }]}>
-                  <Camera size={12} color={colors.primaryForeground} />
-                </View>
-              </View>
-            )}
+            </View>
           </Pressable>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
@@ -439,16 +421,10 @@ export default function ProfileScreen() {
               reviews.map((rev) => (
                 <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
                   <View style={s.reviewHeader}>
-                    {rev.reviewer?.avatar_url ? (
-                      <Image source={{ uri: rev.reviewer.avatar_url }} style={s.reviewAvatar} />
-                    ) : (
-                      <View style={[s.reviewAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600', fontFamily: fonts.bodySemi }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-                      </View>
-                    )}
+                    <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={[s.reviewName, { color: colors.foreground }]}>{rev.reviewer?.name}</Text>
-                      {renderStars(rev.rating)}
+                      <StarRating rating={rev.rating} size={12} />
                     </View>
                     <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
                   </View>
@@ -521,13 +497,7 @@ export default function ProfileScreen() {
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
               <View style={s.followItem}>
-                {item.avatar_url ? (
-                  <Image source={{ uri: item.avatar_url }} style={s.followAvatar} />
-                ) : (
-                  <View style={[s.followAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-                  </View>
-                )}
+                <Avatar url={item.avatar_url} name={item.name} size={40} />
                 <Text style={[s.followName, { color: colors.foreground }]}>{item.name}</Text>
               </View>
             )}

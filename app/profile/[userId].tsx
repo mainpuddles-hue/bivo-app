@@ -2,9 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Image } from 'expo-image'
 import {
-  ArrowLeft, MapPin, Star, MessageCircle, UserPlus, UserMinus,
+  ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
   Flag, ShieldBan, Crown, PenLine,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -15,6 +14,8 @@ import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
 import { TrustBadge } from '@/components/TrustBadge'
+import { Avatar } from '@/components/Avatar'
+import { StarRating } from '@/components/StarRating'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
@@ -188,14 +189,6 @@ export default function PublicProfileScreen() {
     setShowReportModal(true)
   }, [currentUserId, router])
 
-  const renderStars = (rating: number) => (
-    <View style={{ flexDirection: 'row', gap: 2 }}>
-      {[1, 2, 3, 4, 5].map(i => (
-        <Star key={i} size={12} color={i <= rating ? colors.pro : colors.muted} fill={i <= rating ? colors.pro : 'transparent'} />
-      ))}
-    </View>
-  )
-
   if (loading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -236,13 +229,7 @@ export default function PublicProfileScreen() {
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {/* Hero */}
         <View style={s.hero}>
-          {profile.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={[s.bigAvatar, profile.is_pro && { borderWidth: 3, borderColor: colors.pro }]} />
-          ) : (
-            <View style={[s.bigAvatar, s.bigAvatarFb, { backgroundColor: colors.muted }]}>
-              <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-            </View>
-          )}
+          <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
             {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
@@ -364,16 +351,10 @@ export default function PublicProfileScreen() {
               reviews.map((rev) => (
                 <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
                   <View style={s.reviewHeader}>
-                    {rev.reviewer?.avatar_url ? (
-                      <Image source={{ uri: rev.reviewer.avatar_url }} style={s.reviewAvatar} />
-                    ) : (
-                      <View style={[s.reviewAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600' }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-                      </View>
-                    )}
+                    <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={[s.reviewName, { color: colors.foreground }]}>{rev.reviewer?.name}</Text>
-                      {renderStars(rev.rating)}
+                      <StarRating rating={rev.rating} size={12} />
                     </View>
                     <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
                   </View>

@@ -75,6 +75,47 @@ export function SearchSkeleton() {
   )
 }
 
+// ── Post Card Skeleton ──
+export function PostCardSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={[postSkel.card, { backgroundColor: colors.card }]}>
+      <Animated.View style={[postSkel.image, { backgroundColor: colors.muted, opacity }]} />
+      <View style={postSkel.body}>
+        <Animated.View style={[skel.line, postSkel.lineShort, { backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skel.line, postSkel.lineLong, { backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skel.line, postSkel.lineMed, { backgroundColor: colors.muted, opacity }]} />
+        <View style={postSkel.userRow}>
+          <Animated.View style={[postSkel.avatar, { backgroundColor: colors.muted, opacity }]} />
+          <Animated.View style={[skel.line, postSkel.lineName, { backgroundColor: colors.muted, opacity }]} />
+        </View>
+      </View>
+    </View>
+  )
+}
+
+// ── Section Skeleton (for Explore) ──
+export function SectionSkeleton({ count = 3 }: { count?: number }) {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={{ gap: 10 }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <View key={i} style={[sectionSkel.card, { backgroundColor: colors.card }]}>
+          <View style={sectionSkel.cardRow}>
+            <Animated.View style={[sectionSkel.circle, { backgroundColor: colors.muted, opacity }]} />
+            <View style={sectionSkel.content}>
+              <Animated.View style={[skel.line, { width: '60%', height: 14, backgroundColor: colors.muted, opacity }]} />
+              <Animated.View style={[skel.line, { width: '40%', height: 10, backgroundColor: colors.muted, opacity, marginTop: 6 }]} />
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+}
+
 const skel = StyleSheet.create({
   // Message
   messageRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
@@ -91,4 +132,23 @@ const skel = StyleSheet.create({
   searchRow: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 12 },
   searchImage: { width: 60, height: 60, borderRadius: 8 },
   searchInfo: { flex: 1, gap: 8, justifyContent: 'center' },
+})
+
+const postSkel = StyleSheet.create({
+  card: { borderRadius: 12, overflow: 'hidden' },
+  image: { width: '100%', aspectRatio: 16 / 9, borderRadius: 0 },
+  body: { padding: 16, gap: 10 },
+  lineShort: { width: '40%' },
+  lineLong: { width: '90%' },
+  lineMed: { width: '65%' },
+  lineName: { width: '30%', height: 10 },
+  userRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8 },
+  avatar: { width: 24, height: 24, borderRadius: 12 },
+})
+
+const sectionSkel = StyleSheet.create({
+  card: { borderRadius: 12, overflow: 'hidden' },
+  cardRow: { flexDirection: 'row', padding: 14, gap: 12, alignItems: 'center' },
+  circle: { width: 40, height: 40, borderRadius: 20 },
+  content: { flex: 1, gap: 3 },
 })

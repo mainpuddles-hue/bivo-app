@@ -3,9 +3,9 @@ declare const __DEV__: boolean
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
-  Pressable, Linking, Animated,
+  Pressable, Linking,
 } from 'react-native'
-import { useShimmer } from '@/components/SkeletonLoaders'
+import { SectionSkeleton } from '@/components/SkeletonLoaders'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
@@ -72,27 +72,6 @@ function PlaceCategoryIcon({ category, size, color }: { category: string; size: 
 
 function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
-}
-
-// ── Shimmer skeleton ──
-function SectionSkeleton({ colors, count = 3 }: { colors: ReturnType<typeof useTheme>['colors']; count?: number }) {
-  const opacity = useShimmer()
-
-  return (
-    <View style={{ gap: 10 }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <View key={i} style={[s.card, { backgroundColor: colors.card }]}>
-          <View style={s.cardRow}>
-            <Animated.View style={[s.skelCircle, { backgroundColor: colors.muted, opacity }]} />
-            <View style={s.cardContent}>
-              <Animated.View style={[s.skelLine, { width: '60%', height: 14, backgroundColor: colors.muted, opacity }]} />
-              <Animated.View style={[s.skelLine, { width: '40%', height: 10, backgroundColor: colors.muted, opacity, marginTop: 6 }]} />
-            </View>
-          </View>
-        </View>
-      ))}
-    </View>
-  )
 }
 
 // ══════════════════════════════════════════════
@@ -453,7 +432,7 @@ export default function ExploreScreen() {
               )}
             </View>
 
-            {loading && <SectionSkeleton colors={colors} count={2} />}
+            {loading && <SectionSkeleton count={2} />}
 
             {/* Error state */}
             {fetchError && !loading && cityEvents.length === 0 && places.length === 0 && (
@@ -470,7 +449,7 @@ export default function ExploreScreen() {
         {activeTab === 'events' && (
           <>
             {loading ? (
-              <SectionSkeleton colors={colors} count={5} />
+              <SectionSkeleton count={5} />
             ) : allEvents.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
                 <CalendarDays size={36} color={colors.mutedForeground} strokeWidth={1.4} />
@@ -523,7 +502,7 @@ export default function ExploreScreen() {
         {activeTab === 'places' && (
           <>
             {loading ? (
-              <SectionSkeleton colors={colors} count={5} />
+              <SectionSkeleton count={5} />
             ) : sortedPlaces.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
                 <MapPin size={36} color={colors.mutedForeground} strokeWidth={1.4} />
@@ -760,14 +739,4 @@ const s = StyleSheet.create({
   },
   errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
 
-  // Skeleton
-  skelCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  skelLine: {
-    height: 10,
-    borderRadius: 5,
-  },
 })

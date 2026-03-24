@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, Animated } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
@@ -13,45 +13,13 @@ import { PostCard } from '@/components/PostCard'
 import { AlertBanner } from '@/components/AlertBanner'
 import { SmartMatchBanner } from '@/components/SmartMatchBanner'
 import { DiscoverySection } from '@/components/DiscoverySection'
-import { useShimmer } from '@/components/SkeletonLoaders'
+import { PostCardSkeleton } from '@/components/SkeletonLoaders'
 import { HeroEventCard } from '@/components/HeroEventCard'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { FeedContextHeader } from '@/components/FeedContextHeader'
 import { JuuriNytStrip } from '@/components/JuuriNytStrip'
 import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
-
-// ── Skeleton ──
-function PostCardSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
-  const opacity = useShimmer()
-  return (
-    <View style={[skelStyles.card, { backgroundColor: colors.card }]}>
-      <Animated.View style={[skelStyles.image, { backgroundColor: colors.muted, opacity }]} />
-      <View style={skelStyles.body}>
-        <Animated.View style={[skelStyles.line, skelStyles.lineShort, { backgroundColor: colors.muted, opacity }]} />
-        <Animated.View style={[skelStyles.line, skelStyles.lineLong, { backgroundColor: colors.muted, opacity }]} />
-        <Animated.View style={[skelStyles.line, skelStyles.lineMed, { backgroundColor: colors.muted, opacity }]} />
-        <View style={skelStyles.userRow}>
-          <Animated.View style={[skelStyles.avatar, { backgroundColor: colors.muted, opacity }]} />
-          <Animated.View style={[skelStyles.line, skelStyles.lineName, { backgroundColor: colors.muted, opacity }]} />
-        </View>
-      </View>
-    </View>
-  )
-}
-
-const skelStyles = StyleSheet.create({
-  card: { borderRadius: 12, overflow: 'hidden' },
-  image: { width: '100%', aspectRatio: 16 / 9, borderRadius: 0 },
-  body: { padding: 16, gap: 10 },
-  line: { height: 12, borderRadius: 6 },
-  lineShort: { width: '40%' },
-  lineLong: { width: '90%' },
-  lineMed: { width: '65%' },
-  lineName: { width: '30%', height: 10 },
-  userRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8 },
-  avatar: { width: 24, height: 24, borderRadius: 12 },
-})
 
 // ══════════════════════════════════════════════
 // ── Feed Screen ──
@@ -179,7 +147,7 @@ export default function FeedScreen() {
     if (feed.loading) {
       return (
         <View style={{ gap: 16 }}>
-          {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} colors={colors} />)}
+          {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
         </View>
       )
     }

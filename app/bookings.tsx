@@ -8,6 +8,7 @@ import { Image } from 'expo-image'
 import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, ShoppingBag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { Avatar } from '@/components/Avatar'
 import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
 import { formatPrice, formatDateRange } from '@/lib/format'
@@ -282,15 +283,7 @@ export default function BookingsScreen() {
             </View>
             {otherUser && (
               <View style={styles.userRow}>
-                {otherUser.avatar_url ? (
-                  <Image source={{ uri: otherUser.avatar_url }} style={styles.tinyAvatar} />
-                ) : (
-                  <View style={[styles.tinyAvatar, styles.tinyAvatarFb, { backgroundColor: colors.muted }]}>
-                    <Text style={{ fontSize: 8, fontWeight: '600', color: colors.mutedForeground }}>
-                      {otherUser.name?.charAt(0)?.toUpperCase() ?? '?'}
-                    </Text>
-                  </View>
-                )}
+                <Avatar url={otherUser.avatar_url} name={otherUser.name} size={18} />
                 <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {otherUser.name}
                 </Text>
@@ -407,15 +400,7 @@ export default function BookingsScreen() {
             </Text>
             {otherUser && (
               <View style={styles.userRow}>
-                {otherUser.avatar_url ? (
-                  <Image source={{ uri: otherUser.avatar_url }} style={styles.tinyAvatar} />
-                ) : (
-                  <View style={[styles.tinyAvatar, styles.tinyAvatarFb, { backgroundColor: colors.muted }]}>
-                    <Text style={{ fontSize: 8, fontWeight: '600', color: colors.mutedForeground }}>
-                      {otherUser.name?.charAt(0)?.toUpperCase() ?? '?'}
-                    </Text>
-                  </View>
-                )}
+                <Avatar url={otherUser.avatar_url} name={otherUser.name} size={18} />
                 <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {otherUser.name}
                 </Text>
