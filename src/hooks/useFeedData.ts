@@ -8,6 +8,7 @@ import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
 import { getSeedPosts } from '@/lib/seedContent'
+import { rankFeed } from '@/lib/feedAlgorithm'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type { PostType }
@@ -187,19 +188,25 @@ export function useFeedData() {
         })
       }
 
+      // Client-side relevance ranking
+      const ranked = rankFeed(newPosts, {
+        userNeighborhood: userNeighborhood ?? null,
+        followedIds,
+      })
+
       if (reset) {
-        if (newPosts.length === 0) {
+        if (ranked.length === 0) {
           // Show seed content for empty neighborhoods
           const seeds = getSeedPosts(userNeighborhood ?? 'Helsinki') as Post[]
           setPosts(seeds)
         } else {
-          setPosts(newPosts)
+          setPosts(ranked)
         }
         offsetRef.current = newPosts.length
       } else {
         setPosts(prev => {
           const ids = new Set(prev.map(p => p.id))
-          const unique = newPosts.filter(p => !ids.has(p.id))
+          const unique = ranked.filter(p => !ids.has(p.id))
           return [...prev, ...unique]
         })
         offsetRef.current = offset + newPosts.length

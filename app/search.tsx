@@ -16,6 +16,7 @@ import { PostCard } from '@/components/PostCard'
 import { BoardIllustration } from '@/components/illustrations'
 import { SearchFilters, EMPTY_FILTERS, countActiveFilters, type SearchFilterValues, type SortOption } from '@/components/SearchFilters'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
+import { rankSearchResults } from '@/lib/searchAlgorithm'
 import type { Post, PostType } from '@/lib/types'
 
 const HISTORY_KEY = 'tackbird-search-history'
@@ -72,6 +73,7 @@ export default function SearchScreen() {
   const [filtersVisible, setFiltersVisible] = useState(false)
   const [filters, setFilters] = useState<SearchFilterValues>({ ...EMPTY_FILTERS })
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
+  const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
 
   // Debounce + abort refs
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -90,6 +92,20 @@ export default function SearchScreen() {
       .then(({ data }) => {
         if (data) setTrendingPosts((data ?? []) as any[])
       })
+  }, [supabase])
+
+  // Fetch current user's neighborhood for search ranking
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      ;(supabase.from('profiles') as any)
+        .select('naapurusto')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }: any) => {
+          if (data?.naapurusto) setUserNeighborhood(data.naapurusto)
+        })
+    })
   }, [supabase])
 
   // Load search history + saved searches + recent searches
@@ -310,6 +326,7 @@ export default function SearchScreen() {
 
       let postResults = (posts ?? []) as unknown as Post[]
       postResults = sortByDistance(postResults, f)
+      postResults = rankSearchResults(postResults, { query: q, userNeighborhood })
       setResults(postResults)
       setHasMore((posts ?? []).length >= 20)
 
@@ -329,7 +346,7 @@ export default function SearchScreen() {
         setLoading(false)
       }
     }
-  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, saveRecentSearch, buildFilteredQuery, sortByDistance])
+  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, saveRecentSearch, buildFilteredQuery, sortByDistance, userNeighborhood])
 
   // Keep the ref in sync so loadSavedSearch can use the latest executeSearch
   executeSearchRef.current = executeSearch
