@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff } from 'lucide-react-native'
+import { ArrowLeft, HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -10,7 +10,10 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
-import type { PostType } from '@/lib/types'
+import { useTrustLevel } from '@/hooks/useTrustLevel'
+import { TrustGateModal } from '@/components/TrustGate'
+import { TrustBadge } from '@/components/TrustBadge'
+import type { PostType, TrustLevel } from '@/lib/types'
 
 const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string }>> = {
   HandHelping, Gift, Heart, Zap, BookOpen, CalendarDays,
@@ -81,6 +84,8 @@ export default function CreateScreen() {
   const supabase = useMemo(() => createClient(), [])
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [showTrustGate, setShowTrustGate] = useState(false)
   const [step, setStep] = useState<'category' | 'form'>('category')
   const [selectedType, setSelectedType] = useState<PostType | null>(null)
   const [title, setTitle] = useState('')
@@ -115,9 +120,12 @@ export default function CreateScreen() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setIsAuthenticated(!!user)
+      setCurrentUserId(user?.id ?? null)
       if (!user) router.replace('/(auth)/login')
     })
   }, [supabase, router])
+
+  const trust = useTrustLevel(currentUserId)
 
   // Auto-expand details for categories that have required detail fields
   useEffect(() => {
@@ -127,6 +135,11 @@ export default function CreateScreen() {
   }, [selectedType])
 
   const handleCategorySelect = (type: PostType) => {
+    // Gate lainaa behind trust level 2
+    if (type === 'lainaa' && !trust.permissions.canLainaa) {
+      setShowTrustGate(true)
+      return
+    }
     setSelectedType(type)
     setSelectedTags([])
     setStep('form')
@@ -256,6 +269,11 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('create.dailyFeeRequired'))
       return
     }
+    // Trust tier: max daily fee check for tier 2
+    if (selectedType === 'lainaa' && trust.permissions.maxDailyFee !== null && parseFloat(dailyFee) > trust.permissions.maxDailyFee) {
+      Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
+      return
+    }
     if (selectedType === 'tapahtuma' && !eventDate) {
       Alert.alert(t('common.error'), t('events.titleDateRequired'))
       return
@@ -344,24 +362,44 @@ export default function CreateScreen() {
         <ScrollView contentContainerStyle={styles.categoryGrid}>
           {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
             const Icon = ICON_MAP[cat.icon]
+            const isLocked = type === 'lainaa' && !trust.permissions.canLainaa
             return (
               <Pressable
                 key={type}
                 onPress={() => handleCategorySelect(type)}
-                style={({ pressed }) => [styles.categoryCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => [styles.categoryCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }, isLocked && { opacity: 0.6 }]}
               >
                 <View style={[styles.categoryIcon, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}>
                   {Icon && <Icon size={24} color={cat.color} />}
+                  {isLocked && (
+                    <View style={styles.lockOverlay}>
+                      <Lock size={14} color="#FFFFFF" />
+                    </View>
+                  )}
                 </View>
                 <View style={styles.categoryTextWrap}>
                   <Text style={[styles.categoryName, { color: colors.foreground }]}>{t(cat.label)}</Text>
-                  <Text style={[styles.categorySub, { color: colors.mutedForeground }]}>{t(cat.subtitle)}</Text>
+                  <Text style={[styles.categorySub, { color: colors.mutedForeground }]}>
+                    {isLocked ? t('trust.requiresTier2Short') : t(cat.subtitle)}
+                  </Text>
                 </View>
-                <ChevronRight size={16} color={colors.mutedForeground} />
+                {isLocked ? (
+                  <TrustBadge level={2} size="small" showLabel />
+                ) : (
+                  <ChevronRight size={16} color={colors.mutedForeground} />
+                )}
               </Pressable>
             )
           })}
         </ScrollView>
+
+        <TrustGateModal
+          visible={showTrustGate}
+          onClose={() => setShowTrustGate(false)}
+          requiredLevel={2}
+          currentLevel={trust.level}
+          featureName={t('categories.lainaa')}
+        />
       </View>
     )
   }
@@ -856,6 +894,12 @@ const styles = StyleSheet.create({
   },
   categoryIcon: {
     width: 48, height: 48, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  lockOverlay: {
+    position: 'absolute', top: -4, right: -4,
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: 'rgba(0,0,0,0.6)',
     alignItems: 'center', justifyContent: 'center',
   },
   categoryTextWrap: { flex: 1, gap: 2 },

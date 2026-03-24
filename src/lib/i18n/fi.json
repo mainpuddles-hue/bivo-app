@@ -2058,5 +2058,32 @@
   "smartMatch": {
     "neighborNeeds": "Naapurisi {name} tarvitsee apua",
     "youCanHelp": "Voit auttaa — sinulla on kokemusta tästä!"
+  },
+  "trust": {
+    "tier1": "Peruskäyttäjä",
+    "tier2": "Vahvistettu",
+    "tier3": "Luotettu kumppani",
+    "featureLocked": "Ominaisuus lukittu",
+    "requiresLevel": "{feature} vaatii tason: {level}",
+    "requiresTier2Short": "Vaatii vahvistuksen",
+    "yourLevel": "Tasosi",
+    "required": "Vaadittu",
+    "howToUnlock": "Näin avaat tason:",
+    "step1VerifyId": "Vahvista henkilöllisyytesi",
+    "step2WaitDays": "Tilin ikä vähintään 7 päivää",
+    "step3Reviews": "Vähintään 3 arvostelua",
+    "step3Rating": "Keskiarvo vähintään 4.0 tähteä",
+    "step3Response": "Vastausprosentti yli 90%",
+    "verifyNow": "Vahvista nyt",
+    "hintVerifyId": "Vahvista henkilöllisyytesi avataksesi lainausominaisuudet",
+    "hintAccountAge": "Tilisi on liian uusi — odota muutama päivä",
+    "hintMoreReviews": "Kerää lisää arvosteluja naapureilta",
+    "hintBetterRating": "Paranna arvostelujesi keskiarvoa",
+    "hintResponseRate": "Vastaa viesteihin nopeammin — tavoite 90%",
+    "hintNoReports": "Sinulla on avoimia ilmoituksia — ratkaise ne ensin",
+    "maxDailyFeeExceeded": "Luottamustasollasi päivähinta voi olla enintään {max}€. Nosta tasoasi saadaksesi rajattoman hinnoittelun.",
+    "tier1Desc": "Perusominaisuudet — ilmoita, etsi, viesti",
+    "tier2Desc": "Lainaa ja vuokraa tavaroita (max 50€/pv)",
+    "tier3Desc": "Rajaton hinnoittelu, prioriteetti syötteessä, luotettu-merkki"
   }
 }

@@ -16,6 +16,8 @@ import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import { haversineKm } from '@/lib/geo'
+import { TrustBadge } from '@/components/TrustBadge'
+import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import type { Post, PostType } from '@/lib/types'
 
 const APP_URL = 'https://tackbird-v2.vercel.app'
@@ -79,6 +81,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const hasImage = post.image_url && !imgError
   const CategoryIcon = category ? ICON_MAP[category.icon] : null
   const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
+  const userTrustLevel = computeTrustLevelFromBadges(user?.user_badges)
 
   const isAnonymous = (post as any).is_anonymous === true
   const [showMore, setShowMore] = useState(false)
@@ -399,7 +402,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                   <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
                     {user?.name ?? t('postCard.anonymousUser')}
                   </Text>
-                  {isVerified && <BadgeCheck size={14} color={colors.info} />}
+                  {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
                   {isPro && (
                     <View style={styles.proMicroBadge}>
                       <Crown size={10} color="#F59E0B" />

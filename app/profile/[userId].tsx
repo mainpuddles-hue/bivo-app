@@ -14,6 +14,8 @@ import { formatTimeAgo } from '@/lib/format'
 import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
+import { TrustBadge } from '@/components/TrustBadge'
+import { useTrustLevel } from '@/hooks/useTrustLevel'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
@@ -48,6 +50,7 @@ export default function PublicProfileScreen() {
   const [showReportModal, setShowReportModal] = useState(false)
   const [hasTransaction, setHasTransaction] = useState(false)
   const [hasExistingReview, setHasExistingReview] = useState(false)
+  const trust = useTrustLevel(userId)
 
   useEffect(() => {
     async function load() {
@@ -246,7 +249,10 @@ export default function PublicProfileScreen() {
               <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase()}</Text>
             </View>
           )}
-          <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
+            {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
+          </View>
           {profile.naapurusto && (
             <View style={s.nhRow}>
               <MapPin size={14} color={colors.primary} />

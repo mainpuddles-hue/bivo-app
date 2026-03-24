@@ -15,6 +15,8 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
 import { PostCard } from '@/components/PostCard'
+import { TrustBadge, TrustProgress } from '@/components/TrustBadge'
+import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { fonts } from '@/lib/fonts'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
@@ -64,6 +66,7 @@ export default function ProfileScreen() {
   const [bioText, setBioText] = useState('')
   const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null)
   const [followList, setFollowList] = useState<{ id: string; name: string; avatar_url: string | null }[]>([])
+  const trust = useTrustLevel(profile?.id)
 
   useEffect(() => {
     async function load() {
@@ -259,7 +262,10 @@ export default function ProfileScreen() {
               </View>
             )}
           </Pressable>
-          <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
+            {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
+          </View>
           {profile.naapurusto && (
             <View style={s.nhRow}>
               <MapPin size={14} color={colors.primary} />
@@ -356,6 +362,11 @@ export default function ProfileScreen() {
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.karma')}</Text>
           </View>
         </View>
+
+        {/* Trust Level Progress */}
+        {!trust.loading && trust.level < 3 && (
+          <TrustProgress level={trust.level} nextTierHints={trust.nextTierHints} />
+        )}
 
         {/* Tabs */}
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>

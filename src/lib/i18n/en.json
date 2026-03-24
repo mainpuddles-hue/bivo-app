@@ -2031,5 +2031,32 @@
   "smartMatch": {
     "neighborNeeds": "Your neighbor {name} needs help",
     "youCanHelp": "You can help — you have experience with this!"
+  },
+  "trust": {
+    "tier1": "Basic user",
+    "tier2": "Verified",
+    "tier3": "Trusted partner",
+    "featureLocked": "Feature locked",
+    "requiresLevel": "{feature} requires level: {level}",
+    "requiresTier2Short": "Requires verification",
+    "yourLevel": "Your level",
+    "required": "Required",
+    "howToUnlock": "How to unlock:",
+    "step1VerifyId": "Verify your identity",
+    "step2WaitDays": "Account age at least 7 days",
+    "step3Reviews": "At least 3 reviews",
+    "step3Rating": "Average rating at least 4.0 stars",
+    "step3Response": "Response rate above 90%",
+    "verifyNow": "Verify now",
+    "hintVerifyId": "Verify your identity to unlock borrowing features",
+    "hintAccountAge": "Your account is too new — wait a few days",
+    "hintMoreReviews": "Collect more reviews from neighbors",
+    "hintBetterRating": "Improve your average review rating",
+    "hintResponseRate": "Respond to messages faster — target 90%",
+    "hintNoReports": "You have open reports — resolve them first",
+    "maxDailyFeeExceeded": "Your trust level limits daily fee to {max}€. Level up for unlimited pricing.",
+    "tier1Desc": "Basic features — post, search, message",
+    "tier2Desc": "Borrow and lend items (max 50€/day)",
+    "tier3Desc": "Unlimited pricing, feed priority, trusted badge"
   }
 }

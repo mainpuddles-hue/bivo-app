@@ -2031,5 +2031,32 @@
   "smartMatch": {
     "neighborNeeds": "Din granne {name} behöver hjälp",
     "youCanHelp": "Du kan hjälpa — du har erfarenhet av detta!"
+  },
+  "trust": {
+    "tier1": "Grundanvändare",
+    "tier2": "Verifierad",
+    "tier3": "Betrodd partner",
+    "featureLocked": "Funktion låst",
+    "requiresLevel": "{feature} kräver nivå: {level}",
+    "requiresTier2Short": "Kräver verifiering",
+    "yourLevel": "Din nivå",
+    "required": "Krävs",
+    "howToUnlock": "Så här låser du upp:",
+    "step1VerifyId": "Verifiera din identitet",
+    "step2WaitDays": "Kontots ålder minst 7 dagar",
+    "step3Reviews": "Minst 3 omdömen",
+    "step3Rating": "Genomsnittsbetyg minst 4.0 stjärnor",
+    "step3Response": "Svarsfrekvens över 90%",
+    "verifyNow": "Verifiera nu",
+    "hintVerifyId": "Verifiera din identitet för att låsa upp lånefunktioner",
+    "hintAccountAge": "Ditt konto är för nytt — vänta några dagar",
+    "hintMoreReviews": "Samla fler omdömen från grannar",
+    "hintBetterRating": "Förbättra ditt genomsnittsbetyg",
+    "hintResponseRate": "Svara på meddelanden snabbare — mål 90%",
+    "hintNoReports": "Du har öppna anmälningar — lös dem först",
+    "maxDailyFeeExceeded": "Din förtroendenivå begränsar dagspriset till {max}€. Nivå upp för obegränsad prissättning.",
+    "tier1Desc": "Grundfunktioner — publicera, sök, meddela",
+    "tier2Desc": "Låna och hyr ut saker (max 50€/dag)",
+    "tier3Desc": "Obegränsad prissättning, flödesprioritet, betrott märke"
   }
 }

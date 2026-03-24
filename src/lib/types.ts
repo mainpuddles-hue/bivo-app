@@ -12,6 +12,34 @@ export type ProfileVisibility = 'everyone' | 'neighbors' | 'hidden'
 export type LocationAccuracy = 'exact' | 'area' | 'city'
 export type BadgeType = 'verified' | 'pro' | 'trusted' | 'active' | 'first_post' | 'helper' | 'popular' | 'lender' | 'event_creator' | 'weekly_active' | 'neighborhood_hero'
 
+// Three-tier trust system
+export type TrustLevel = 1 | 2 | 3
+
+export interface TrustTierInfo {
+  level: TrustLevel
+  name: string
+  color: string
+  icon: 'Shield' | 'ShieldCheck' | 'ShieldPlus'
+  permissions: TrustPermissions
+}
+
+export interface TrustPermissions {
+  canLainaa: boolean
+  maxDailyFee: number | null       // null = unlimited
+  priorityInFeed: boolean
+  trustedBadge: boolean
+}
+
+export interface TrustSignals {
+  emailVerified: boolean
+  idVerified: boolean              // has 'verified' badge
+  reviewCount: number
+  avgRating: number
+  responseRate: number             // 0-100
+  accountAgeDays: number
+  hasActiveReports: boolean
+}
+
 export interface Profile {
   id: string
   email: string | null

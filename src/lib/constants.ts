@@ -68,6 +68,61 @@ export const CATEGORIES: Record<PostType, {
   },
 }
 
+// Three-tier trust configuration
+export const TRUST_TIERS = {
+  1: {
+    level: 1 as const,
+    nameKey: 'trust.tier1',
+    color: '#9CA3AF',
+    icon: 'Shield' as const,
+    permissions: {
+      canLainaa: false,
+      maxDailyFee: 0,
+      priorityInFeed: false,
+      trustedBadge: false,
+    },
+  },
+  2: {
+    level: 2 as const,
+    nameKey: 'trust.tier2',
+    color: '#3B82F6',
+    icon: 'ShieldCheck' as const,
+    permissions: {
+      canLainaa: true,
+      maxDailyFee: 50,
+      priorityInFeed: false,
+      trustedBadge: false,
+    },
+  },
+  3: {
+    level: 3 as const,
+    nameKey: 'trust.tier3',
+    color: '#10B981',
+    icon: 'ShieldPlus' as const,
+    permissions: {
+      canLainaa: true,
+      maxDailyFee: null, // unlimited
+      priorityInFeed: true,
+      trustedBadge: true,
+    },
+  },
+} as const
+
+// Tier 2 requirements
+export const TIER_2_REQUIREMENTS = {
+  idVerified: true,
+  minAccountAgeDays: 7,
+}
+
+// Tier 3 requirements
+export const TIER_3_REQUIREMENTS = {
+  minReviews: 3,
+  minAvgRating: 4.0,
+  minResponseRate: 90,
+  minAccountAgeDays: 30,
+  noActiveReports: true,
+}
+
 export const NEIGHBORHOODS = [
   'Kallio', 'Sörnäinen', 'Vallila', 'Hermanni', 'Alppiharju',
   'Pasila', 'Käpylä', 'Kumpula', 'Toukola', 'Arabia',
