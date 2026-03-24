@@ -92,6 +92,7 @@ export default function OnboardingScreen() {
   }, [])
 
   const handleComplete = useCallback(async () => {
+    if (!selectedNeighborhood) return
     setSaving(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -101,16 +102,16 @@ export default function OnboardingScreen() {
         return
       }
 
-      // Save selected neighborhood
-      if (selectedNeighborhood) {
-        const updateData: Record<string, any> = { naapurusto: selectedNeighborhood }
-        // location_verified column not yet in database — skip for now
-        await (supabase.from('profiles') as any)
-          .update(updateData)
-          .eq('id', user.id)
+      // Save selected neighborhood + mark onboarding completed in profile
+      const updateData: Record<string, any> = {
+        naapurusto: selectedNeighborhood,
+        onboarding_completed: true,
       }
+      await (supabase.from('profiles') as any)
+        .update(updateData)
+        .eq('id', user.id)
 
-      // Mark onboarding complete
+      // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
       router.replace('/')
     } catch (err) {
@@ -320,7 +321,7 @@ export default function OnboardingScreen() {
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <Pressable
           onPress={handleComplete}
-          disabled={saving}
+          disabled={saving || !selectedNeighborhood}
           style={[
             s.primaryBtn,
             {

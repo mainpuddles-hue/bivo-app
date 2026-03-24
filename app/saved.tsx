@@ -59,8 +59,8 @@ export default function SavedScreen() {
             post_id,
             posts(
               id, user_id, type, title, description, location, image_url,
-              daily_fee, is_pro_listing, tags, is_active, created_at, updated_at,
-              like_count, comment_count
+              daily_fee, service_price, is_pro_listing, tags, is_active, created_at, updated_at,
+              like_count, comment_count, expires_at, is_urgent, urgency_hours
             )
           `)
           .eq('user_id', user.id)
@@ -69,7 +69,14 @@ export default function SavedScreen() {
           .from('saved_events')
           .select('event_id, event_type')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .then(res => {
+            if (res.error) {
+              if (__DEV__) console.log('[saved] saved_events error:', res.error.message)
+              return { ...res, data: [] }
+            }
+            return res
+          }),
         supabase
           .from('saved_places')
           .select('place_id')

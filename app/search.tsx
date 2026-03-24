@@ -153,10 +153,18 @@ export default function SearchScreen() {
     await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
   }, [savedSearches])
 
+  // Note: executeSearch is defined below but will be available by the time
+  // the setTimeout callback runs. We use a ref to avoid stale closures.
+  const executeSearchRef = useRef<((...args: any[]) => void) | null>(null)
+
   const loadSavedSearch = useCallback((saved: SavedSearch) => {
     setQuery(saved.query)
     setFilters(saved.filters)
-    setTimeout(() => executeSearch(saved.query, saved.filters), 0)
+    setTimeout(() => {
+      if (executeSearchRef.current) {
+        executeSearchRef.current(saved.query, saved.filters)
+      }
+    }, 0)
   }, [])
 
   /**
@@ -325,6 +333,9 @@ export default function SearchScreen() {
       }
     }
   }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, saveRecentSearch, buildFilteredQuery, sortByDistance])
+
+  // Keep the ref in sync so loadSavedSearch can use the latest executeSearch
+  executeSearchRef.current = executeSearch
 
   /**
    * Debounced search triggered on text input change.

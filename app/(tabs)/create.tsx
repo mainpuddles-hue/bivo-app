@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -377,7 +377,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, images, supabase, router, t])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, images, supabase, router, t])
 
   // ── Category selection step ──
   if (step === 'category') {
@@ -969,9 +969,6 @@ function LeafletMapPicker({ coords, onCoordsChange, colors }: {
     </View>
   )
 }
-
-// Need React for createElement
-import React from 'react'
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

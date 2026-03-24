@@ -92,7 +92,8 @@ export function useTrustLevel(userId?: string | null): TrustResult {
           supabase.from('profiles').select('response_rate, created_at, email').eq('id', userId!).single(),
           supabase.from('user_badges').select('badge_type').eq('user_id', userId!),
           supabase.from('reviews').select('rating').eq('reviewed_id', userId!),
-          supabase.from('reports').select('id').eq('reported_id', userId!).eq('status', 'open'),
+          supabase.from('reports').select('id').eq('reported_id', userId!).eq('status', 'open')
+            .then(res => res.error ? { data: [], error: res.error } : res),
         ])
 
         if (!mounted) return

@@ -9,6 +9,8 @@ import { createClient } from '@/lib/supabase/client'
 
 const PROJECT_ID = '504a9107-9e8e-4e5d-90fe-ea7564166e33'
 
+const isWeb = Platform.OS === 'web'
+
 function isExpoGo() {
   return Constants.executionEnvironment === ExecutionEnvironment.StoreClient
 }
@@ -47,18 +49,10 @@ export function usePushNotifications(userId: string | null) {
   const [token, setToken] = useState<string | null>(null)
   const notificationListener = useRef<Notifications.EventSubscription | null>(null)
 
-  if (Platform.OS === 'web') {
-    return {
-      isSupported: false,
-      isSubscribed: false,
-      isLoading: false,
-      token: null,
-      subscribe: async () => {},
-      unsubscribe: async () => {},
-    }
-  }
-
   useEffect(() => {
+    // Skip on web — push notifications are not supported
+    if (isWeb) return
+
     const supported = !isExpoGo()
     setIsSupported(supported)
     if (!userId || !supported) return
@@ -101,7 +95,7 @@ export function usePushNotifications(userId: string | null) {
   }, [userId])
 
   const subscribe = useCallback(async () => {
-    if (!userId) return
+    if (isWeb || !userId) return
 
     if (isExpoGo()) {
       Alert.alert(
@@ -153,7 +147,7 @@ export function usePushNotifications(userId: string | null) {
   }, [userId])
 
   const unsubscribe = useCallback(async () => {
-    if (!userId) return
+    if (isWeb || !userId) return
     setIsLoading(true)
     try {
       await saveTokenToBackend(userId, null)

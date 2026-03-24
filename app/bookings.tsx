@@ -125,7 +125,7 @@ export default function BookingsScreen() {
       }
 
       // Also fetch service bookings
-      const { data: svcData } = await supabase
+      const { data: svcData, error: svcError } = await supabase
         .from('service_bookings')
         .select(`
           id, post_id, buyer_id, provider_id, service_price, service_fee,
@@ -136,6 +136,9 @@ export default function BookingsScreen() {
         `)
         .or(`buyer_id.eq.${user.id},provider_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
+      if (svcError) {
+        if (__DEV__) console.log('[bookings] service_bookings error:', svcError.message)
+      }
       setServiceBookings((svcData ?? []) as any[])
     } catch (err) {
       if (__DEV__) console.log('[bookings] fetchBookings error:', err)

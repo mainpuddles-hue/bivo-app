@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react'
-import { View, Text, ScrollView, StyleSheet } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native'
+import { useRouter } from 'expo-router'
 import { Zap } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -25,6 +26,7 @@ function getTimeLeft(expiresAt: string, t: (key: string, params?: Record<string,
 function NappaaUrgencyStripInner({ posts }: NappaaUrgencyStripProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
+  const router = useRouter()
 
   const urgentPosts = useMemo(() => {
     const now = Date.now()
@@ -50,7 +52,11 @@ function NappaaUrgencyStripInner({ posts }: NappaaUrgencyStripProps) {
         contentContainerStyle={styles.scrollContent}
       >
         {urgentPosts.map(post => (
-          <View key={post.id} style={[styles.card, { backgroundColor: colors.card }]}>
+          <Pressable
+            key={post.id}
+            onPress={() => router.push(`/post/${post.id}` as any)}
+            style={[styles.card, { backgroundColor: colors.card }]}
+          >
             <View style={[styles.accentBar, { backgroundColor: NAPPAA_COLOR }]} />
             <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
               {post.title}
@@ -63,7 +69,7 @@ function NappaaUrgencyStripInner({ posts }: NappaaUrgencyStripProps) {
                 {post.location}
               </Text>
             ) : null}
-          </View>
+          </Pressable>
         ))}
       </ScrollView>
     </View>
