@@ -1,9 +1,12 @@
 import type { PostType } from './types'
 
+// Core SELECT — only columns guaranteed to exist in the posts table.
+// New columns (service_price, is_urgent, urgency_hours) are fetched separately
+// via POST_SELECT_EXTENDED to avoid breaking the feed if DB schema is outdated.
 export const POST_SELECT = `
   id, user_id, type, title, description, location, image_url,
-  hub_pickup_id, expires_at, daily_fee, service_price, event_date,
-  latitude, longitude, is_pro_listing, is_active, is_urgent, urgency_hours, tags,
+  hub_pickup_id, expires_at, daily_fee, event_date,
+  latitude, longitude, is_pro_listing, is_active, tags,
   like_count, comment_count,
   created_at, updated_at,
   user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, user_badges(badge_type)),
