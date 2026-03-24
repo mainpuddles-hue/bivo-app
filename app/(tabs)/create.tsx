@@ -281,17 +281,17 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('create.titleAndDescRequired'))
       return
     }
-    if (selectedType === 'lainaa' && (!dailyFee || parseFloat(dailyFee) <= 0)) {
+    if (selectedType === 'lainaa' && (!dailyFee || isNaN(parseFloat(dailyFee)) || parseFloat(dailyFee) <= 0)) {
       Alert.alert(t('common.error'), t('create.dailyFeeRequired'))
       return
     }
     // Trust tier: max daily fee check for tier 2
-    if (selectedType === 'lainaa' && trust.permissions.maxDailyFee !== null && parseFloat(dailyFee) > trust.permissions.maxDailyFee) {
+    if (selectedType === 'lainaa' && trust.permissions.maxDailyFee !== null && !isNaN(parseFloat(dailyFee)) && parseFloat(dailyFee) > trust.permissions.maxDailyFee) {
       Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
       return
     }
     // Trust tier: max service price check
-    if (selectedType === 'tarjoan' && servicePrice && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
+    if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
       Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
       return
     }
@@ -322,8 +322,8 @@ export default function CreateScreen() {
         location: location.trim() || null,
         latitude: latitude ?? null,
         longitude: longitude ?? null,
-        daily_fee: selectedType === 'lainaa' && dailyFee ? parseFloat(dailyFee) : null,
-        service_price: selectedType === 'tarjoan' && servicePrice ? parseFloat(servicePrice) : null,
+        daily_fee: selectedType === 'lainaa' && dailyFee && !isNaN(parseFloat(dailyFee)) ? parseFloat(dailyFee) : null,
+        service_price: selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) ? parseFloat(servicePrice) : null,
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt,
         is_urgent: isUrgent || false,

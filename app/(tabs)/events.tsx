@@ -669,7 +669,7 @@ export default function EventsScreen() {
                     <Image source={{ uri: selectedEvent.creator.avatar_url }} style={ev.detailCreatorAvatar} />
                   ) : (
                     <View style={[ev.detailCreatorAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{selectedEvent.creator.name?.charAt(0)?.toUpperCase()}</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{selectedEvent.creator.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
                     </View>
                   )}
                   <Text style={[ev.detailCreatorName, { color: colors.foreground }]}>{selectedEvent.creator.name}</Text>

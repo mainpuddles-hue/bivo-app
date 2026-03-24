@@ -104,7 +104,7 @@ export default function ProfileScreen() {
         .limit(10)
       setReviews((revs ?? []) as unknown as Review[])
       if (revs && revs.length > 0) {
-        const avg = (revs as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revs.length
+        const avg = revs.length > 0 ? (revs as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revs.length : 0
         setAvgRating(Math.round(avg * 10) / 10)
       }
 
@@ -257,7 +257,7 @@ export default function ProfileScreen() {
             ) : (
               <View>
                 <View style={[s.bigAvatar, s.bigAvatarFb, { backgroundColor: colors.muted }]}>
-                  <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase()}</Text>
+                  <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
                 </View>
                 <View style={[s.cameraBtn, { backgroundColor: colors.primary }]}>
                   <Camera size={12} color={colors.primaryForeground} />
@@ -456,7 +456,7 @@ export default function ProfileScreen() {
                       <Image source={{ uri: rev.reviewer.avatar_url }} style={s.reviewAvatar} />
                     ) : (
                       <View style={[s.reviewAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600', fontFamily: fonts.bodySemi }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase()}</Text>
+                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600', fontFamily: fonts.bodySemi }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
                       </View>
                     )}
                     <View style={{ flex: 1, gap: 2 }}>
@@ -538,7 +538,7 @@ export default function ProfileScreen() {
                   <Image source={{ uri: item.avatar_url }} style={s.followAvatar} />
                 ) : (
                   <View style={[s.followAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase()}</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
                   </View>
                 )}
                 <Text style={[s.followName, { color: colors.foreground }]}>{item.name}</Text>
@@ -572,7 +572,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   content: { padding: 16, gap: 16, paddingBottom: 100 },
   hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
@@ -583,25 +583,25 @@ const s = StyleSheet.create({
     width: 24, height: 24, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
   },
-  profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading },
+  profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 28 },
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
   bioEditWrap: { width: '100%', gap: 8, paddingHorizontal: 8 },
   bioInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 60, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
   bioSaveBtn: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8 },
   badgesSection: { alignItems: 'center', gap: 6, width: '100%' },
-  badgesSectionTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  badgesSectionTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
   proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statNum: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading },
-  statLabel: { fontSize: 11, fontFamily: fonts.body },
+  statNum: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 23 },
+  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   statDiv: { width: 1 },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
@@ -645,7 +645,7 @@ const impactStyles = StyleSheet.create({
   statsRow: { flexDirection: 'row', justifyContent: 'space-around' },
   statItem: { alignItems: 'center', gap: 4 },
   statNumber: { fontSize: 24, fontFamily: fonts.heading },
-  statLabel: { fontSize: 11, fontFamily: fonts.body },
+  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   streakRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
   streakText: { fontSize: 13, fontFamily: fonts.bodySemi },
   pointsText: { fontSize: 13, fontFamily: fonts.body },

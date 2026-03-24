@@ -6,6 +6,7 @@ import { Image } from 'expo-image'
 import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
 import type { Notification } from '@/lib/types'
@@ -233,17 +234,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   headerBadge: {
     minWidth: 22, height: 22, borderRadius: 11,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
   },
-  headerBadgeText: { fontSize: 11, fontWeight: '700' },
+  headerBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 14 },
   filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
-  filterText: { fontSize: 12, fontWeight: '500' },
+  filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
   sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
-  sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase' },
+  sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 17 },
   notifRow: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     paddingHorizontal: 16, paddingVertical: 14, position: 'relative',
@@ -260,9 +261,9 @@ const styles = StyleSheet.create({
   },
   notifContent: { flex: 1, gap: 3 },
   notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19 },
-  notifBody: { fontSize: 13 },
-  notifTime: { fontSize: 11, marginTop: 2 },
+  notifBody: { fontSize: 13, lineHeight: 17 },
+  notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14 },
   unreadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
   empty: { alignItems: 'center', paddingTop: 80, gap: 12 },
-  emptyText: { fontSize: 14 },
+  emptyText: { fontSize: 14, lineHeight: 20 },
 })

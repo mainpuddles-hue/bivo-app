@@ -775,7 +775,7 @@ export default function SearchScreen() {
                 <Image source={{ uri: item.avatar_url }} style={s.userAvatar} />
               ) : (
                 <View style={[s.userAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase()}</Text>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
                 </View>
               )}
               <View style={{ flex: 1, gap: 2 }}>

@@ -107,7 +107,7 @@ export default function PublicProfileScreen() {
         .limit(10)
       setReviews((revs ?? []) as unknown as Review[])
       if (revs && revs.length > 0) {
-        const avg = (revs as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revs.length
+        const avg = revs.length > 0 ? (revs as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revs.length : 0
         setAvgRating(Math.round(avg * 10) / 10)
       }
 
@@ -246,7 +246,7 @@ export default function PublicProfileScreen() {
             <Image source={{ uri: profile.avatar_url }} style={[s.bigAvatar, profile.is_pro && { borderWidth: 3, borderColor: colors.pro }]} />
           ) : (
             <View style={[s.bigAvatar, s.bigAvatarFb, { backgroundColor: colors.muted }]}>
-              <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase()}</Text>
+              <Text style={[s.bigAvatarInit, { color: colors.mutedForeground }]}>{profile.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
             </View>
           )}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -374,7 +374,7 @@ export default function PublicProfileScreen() {
                       <Image source={{ uri: rev.reviewer.avatar_url }} style={s.reviewAvatar} />
                     ) : (
                       <View style={[s.reviewAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600' }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase()}</Text>
+                        <Text style={{ fontSize: 10, color: colors.mutedForeground, fontWeight: '600' }}>{rev.reviewer?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
                       </View>
                     )}
                     <View style={{ flex: 1, gap: 2 }}>
@@ -424,7 +424,7 @@ export default function PublicProfileScreen() {
             .then(({ data }) => {
               if (data) {
                 setReviews(data as unknown as Review[])
-                const avg = (data as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / data.length
+                const avg = data.length > 0 ? (data as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / data.length : 0
                 setAvgRating(Math.round(avg * 10) / 10)
               }
             })
@@ -457,7 +457,7 @@ const s = StyleSheet.create({
   profileName: { fontSize: 20, fontWeight: '700' },
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   nhText: { fontSize: 14, fontWeight: '500' },
-  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, color: '#888' },
+  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
   badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   badgeText: { fontSize: 11, fontWeight: '600' },

@@ -433,7 +433,7 @@ export default function ConversationScreen() {
           <Image source={{ uri: otherUser.avatar_url }} style={s.headerAvatar} />
         ) : (
           <View style={[s.headerAvatar, { backgroundColor: colors.muted, justifyContent: 'center', alignItems: 'center' }]}>
-            <Text style={{ color: colors.mutedForeground, fontWeight: '600' }}>{otherUser?.name?.charAt(0)?.toUpperCase()}</Text>
+            <Text style={{ color: colors.mutedForeground, fontWeight: '600' }}>{otherUser?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
           </View>
         )}
         <View>

@@ -8,8 +8,11 @@ import { Image } from 'expo-image'
 import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, ShoppingBag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
 import { formatPrice } from '@/lib/format'
+
+const TARJOAN_COLOR = '#7C5CBF'
 
 type BookingStatus = 'pending' | 'confirmed' | 'paid' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
@@ -288,7 +291,7 @@ export default function BookingsScreen() {
                 ) : (
                   <View style={[styles.tinyAvatar, styles.tinyAvatarFb, { backgroundColor: colors.muted }]}>
                     <Text style={{ fontSize: 8, fontWeight: '600', color: colors.mutedForeground }}>
-                      {otherUser.name?.charAt(0)?.toUpperCase()}
+                      {otherUser.name?.charAt(0)?.toUpperCase() ?? '?'}
                     </Text>
                   </View>
                 )}
@@ -403,7 +406,7 @@ export default function BookingsScreen() {
             <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
               {item.post?.title ?? t('service.deletedPost')}
             </Text>
-            <Text style={{ fontSize: 11, color: '#7C5CBF', fontWeight: '600' }}>
+            <Text style={{ fontSize: 11, color: TARJOAN_COLOR, fontWeight: '600' }}>
               {isBuyer ? t('service.youBought') : t('service.youProvide')}
             </Text>
             {otherUser && (
@@ -413,7 +416,7 @@ export default function BookingsScreen() {
                 ) : (
                   <View style={[styles.tinyAvatar, styles.tinyAvatarFb, { backgroundColor: colors.muted }]}>
                     <Text style={{ fontSize: 8, fontWeight: '600', color: colors.mutedForeground }}>
-                      {otherUser.name?.charAt(0)?.toUpperCase()}
+                      {otherUser.name?.charAt(0)?.toUpperCase() ?? '?'}
                     </Text>
                   </View>
                 )}
@@ -429,7 +432,7 @@ export default function BookingsScreen() {
                 {t(STATUS_KEYS[safeStatus])}
               </Text>
             </View>
-            <Text style={[styles.priceText, { color: '#7C5CBF' }]}>
+            <Text style={[styles.priceText, { color: TARJOAN_COLOR }]}>
               {formatPrice(item.total_amount, locale)}
             </Text>
           </View>
@@ -503,9 +506,9 @@ export default function BookingsScreen() {
         </Pressable>
         <Pressable
           onPress={() => setActiveTab('services')}
-          style={[styles.tab, activeTab === 'services' && { borderBottomColor: '#7C5CBF', borderBottomWidth: 2 }]}
+          style={[styles.tab, activeTab === 'services' && { borderBottomColor: TARJOAN_COLOR, borderBottomWidth: 2 }]}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'services' ? '#7C5CBF' : colors.mutedForeground }]}>
+          <Text style={[styles.tabText, { color: activeTab === 'services' ? TARJOAN_COLOR : colors.mutedForeground }]}>
             {t('service.services')} ({serviceCount})
           </Text>
         </Pressable>
@@ -555,7 +558,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   tabRow: {
     flexDirection: 'row',
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -565,7 +568,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
   },
-  tabText: { fontSize: 14, fontWeight: '600' },
+  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   listContent: { padding: 16, gap: 12, paddingBottom: 40 },
   bookingCard: {
     borderRadius: 12,
@@ -594,6 +597,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     lineHeight: 20,
+    fontFamily: fonts.bodySemi,
   },
   dateRow: {
     flexDirection: 'row',
@@ -602,6 +606,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
+    lineHeight: 17,
   },
   userRow: {
     flexDirection: 'row',
@@ -621,6 +626,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 12,
     flex: 1,
+    lineHeight: 17,
   },
   cardRight: {
     alignItems: 'flex-end',
@@ -636,10 +642,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 14,
   },
   priceText: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: fonts.headingSemi,
+    lineHeight: 23,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -661,6 +671,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   empty: {
     alignItems: 'center',
@@ -670,10 +682,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 23,
   },
   emptyHint: {
     fontSize: 13,
     textAlign: 'center',
     paddingHorizontal: 40,
+    lineHeight: 17,
   },
 })

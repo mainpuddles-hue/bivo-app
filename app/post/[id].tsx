@@ -609,7 +609,7 @@ export default function PostDetailScreen() {
           <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               {user?.avatar_url ? (<Image source={{ uri: user.avatar_url }} style={styles.authorAvatar} />) : (
-                <View style={[styles.authorAvatar, styles.avatarFb, { backgroundColor: colors.muted }]}><Text style={[styles.avatarInit, { color: colors.mutedForeground }]}>{user?.name?.charAt(0)?.toUpperCase()}</Text></View>
+                <View style={[styles.authorAvatar, styles.avatarFb, { backgroundColor: colors.muted }]}><Text style={[styles.avatarInit, { color: colors.mutedForeground }]}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text></View>
               )}
               <View style={{ flex: 1, gap: 2 }}>
                 <View style={styles.authorNameRow}>
@@ -785,7 +785,7 @@ export default function PostDetailScreen() {
                   <Image source={{ uri: user.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} />
                 ) : (
                   <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground }}>{user.name?.charAt(0)?.toUpperCase()}</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground }}>{user.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
                   </View>
                 )}
                 <View style={{ flex: 1 }}>

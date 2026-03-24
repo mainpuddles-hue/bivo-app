@@ -982,10 +982,11 @@ export default function MapScreen() {
       {/* ── ERROR STATE ── */}
       {fetchError && !loading && (
         <View style={[ms.empty, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {/* TODO: i18n — replace hardcoded Finnish strings with t() calls */}
           <Text style={[ms.emptyTitle, { color: colors.foreground }]}>Virhe ladattaessa karttadataa</Text>
           <Text style={[ms.emptyHint, { color: colors.mutedForeground }]}>Tarkista verkkoyhteys ja yritä uudelleen.</Text>
           <Pressable onPress={() => { setFetchError(false); setLoading(true); /* re-trigger fetch by changing dep */ }} style={[ms.emptyBtn, { backgroundColor: colors.primary }]}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFF' }}>Yritä uudelleen</Text>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFF' }}>Yritä uudelleen</Text>{/* TODO: i18n */}
           </Pressable>
         </View>
       )}

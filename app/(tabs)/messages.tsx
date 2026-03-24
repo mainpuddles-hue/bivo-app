@@ -204,7 +204,7 @@ export default function MessagesScreen() {
                     </Text>
                   </View>
                 )}
-                {online && <View style={[styles.onlineDot, { borderColor: colors.background }]} />}
+                {online && <View style={[styles.onlineDot, { borderColor: colors.background, backgroundColor: colors.success }]} />}
               </View>
               <View style={styles.convContent}>
                 <View style={styles.convNameRow}>
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   onlineDot: {
     position: 'absolute', bottom: 0, right: 0,
     width: 14, height: 14, borderRadius: 7,
-    backgroundColor: '#22C55E', borderWidth: 2,
+    borderWidth: 2,
   },
   convContent: { flex: 1, gap: 3 },
   convNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },

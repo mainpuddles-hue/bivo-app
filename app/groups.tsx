@@ -306,7 +306,7 @@ export default function GroupsScreen() {
       >
         <View style={[s.groupAvatar, { backgroundColor: catColor }]}>
           <Text style={s.groupAvatarText}>
-            {group.name.charAt(0).toUpperCase()}
+            {(group.name || '?').charAt(0).toUpperCase()}
           </Text>
         </View>
         <View style={s.groupCardMiddle}>

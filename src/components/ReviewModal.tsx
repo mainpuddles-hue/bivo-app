@@ -113,7 +113,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
               <Text style={[s.label, { color: colors.mutedForeground }]}>{t('profile.rating')}</Text>
               <View style={s.starRow}>
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Pressable key={i} onPress={() => setRating(i)} hitSlop={4}>
+                  <Pressable key={i} onPress={() => setRating(i)} hitSlop={12}>
                     <Star
                       size={36}
                       color={i <= rating ? colors.pro : colors.border}

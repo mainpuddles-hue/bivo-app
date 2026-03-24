@@ -311,7 +311,7 @@ export default function CommunityScreen() {
                     >
                       <View style={s.cardRow}>
                         <View style={[s.dotIcon, { backgroundColor: catColor }]}>
-                          <Text style={s.dotIconText}>{group.name.charAt(0).toUpperCase()}</Text>
+                          <Text style={s.dotIconText}>{(group.name || '?').charAt(0).toUpperCase()}</Text>
                         </View>
                         <View style={s.cardContent}>
                           <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={1}>

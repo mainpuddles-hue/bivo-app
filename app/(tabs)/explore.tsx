@@ -400,7 +400,7 @@ export default function ExploreScreen() {
                 groups.map(g => (
                   <Pressable key={g.id} onPress={() => router.push('/groups' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
                     <View style={[s.groupDot, { backgroundColor: GROUP_COLORS[g.category] ?? colors.primary }]}>
-                      <Text style={s.groupDotText}>{g.name.charAt(0)}</Text>
+                      <Text style={s.groupDotText}>{(g.name || '?').charAt(0)}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{g.name}</Text>

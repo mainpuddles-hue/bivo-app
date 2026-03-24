@@ -26,6 +26,7 @@ function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: R
   if (!expiresAt) return null
   const now = new Date()
   const expires = new Date(expiresAt)
+  if (isNaN(expires.getTime())) return null
   const diffMs = expires.getTime() - now.getTime()
   if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
   const diffDays = Math.ceil(diffMs / 86400000)
@@ -49,6 +50,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const [liked, setLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
   const [saved, setSaved] = useState(post.is_saved ?? false)
+  const likingRef = useRef(false)
+  const savingRef = useRef(false)
 
   // Animated like heart
   const likeAnim = useRef(new Animated.Value(1)).current
@@ -117,15 +120,19 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
       }}
       onLongPress={async () => {
         if (!userId) { router.push('/(auth)/login'); return }
-        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy) } catch {}
-        const supabase = createClient()
-        if (saved) {
-          setSaved(false)
-          await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-        } else {
-          setSaved(true)
-          await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
-        }
+        if (savingRef.current) return
+        savingRef.current = true
+        try {
+          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy) } catch {}
+          const supabase = createClient()
+          if (saved) {
+            setSaved(false)
+            await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+          } else {
+            setSaved(true)
+            await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+          }
+        } finally { savingRef.current = false }
       }}
       delayLongPress={400}
       style={({ pressed }) => [
@@ -268,23 +275,27 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               onPress={async (e) => {
                 e.stopPropagation?.()
                 if (!userId) { router.push('/(auth)/login'); return }
-                try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-                const supabase = createClient()
-                if (liked) {
-                  setLiked(false)
-                  setLikeCount(c => Math.max(0, c - 1))
-                  const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                  if (error) { setLiked(true); setLikeCount(c => c + 1) }
-                } else {
-                  setLiked(true)
-                  setLikeCount(c => c + 1)
-                  Animated.sequence([
-                    Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
-                    Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
-                  ]).start()
-                  const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
-                  if (error) { setLiked(false); setLikeCount(c => Math.max(0, c - 1)) }
-                }
+                if (likingRef.current) return
+                likingRef.current = true
+                try {
+                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+                  const supabase = createClient()
+                  if (liked) {
+                    setLiked(false)
+                    setLikeCount(c => Math.max(0, c - 1))
+                    const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                    if (error) { setLiked(true); setLikeCount(c => c + 1) }
+                  } else {
+                    setLiked(true)
+                    setLikeCount(c => c + 1)
+                    Animated.sequence([
+                      Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
+                      Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+                    ]).start()
+                    const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
+                    if (error) { setLiked(false); setLikeCount(c => Math.max(0, c - 1)) }
+                  }
+                } finally { likingRef.current = false }
               }}
               style={styles.engagementItem}
             >
@@ -309,15 +320,19 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
             onPress={async (e) => {
               e.stopPropagation?.()
               if (!userId) { router.push('/(auth)/login'); return }
-              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
-              const supabase = createClient()
-              if (saved) {
-                await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                setSaved(false)
-              } else {
-                await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
-                setSaved(true)
-              }
+              if (savingRef.current) return
+              savingRef.current = true
+              try {
+                try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+                const supabase = createClient()
+                if (saved) {
+                  await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                  setSaved(false)
+                } else {
+                  await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+                  setSaved(true)
+                }
+              } finally { savingRef.current = false }
             }}
             style={styles.engagementItem}
           >
