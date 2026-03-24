@@ -1420,7 +1420,8 @@
     "reengagementD7": "Naapurisi kaipaavat sinua!",
     "reengagementD30": "Oletko vielä siellä?",
     "badgeEarned": "Uusi ansaitsemasi tunnus!",
-    "streakMilestone": "Putki jatkuu!"
+    "streakMilestone": "Putki jatkuu!",
+    "forumReplyTitle": "Uusi vastaus keskusteluusi"
   },
   "map": {
     "locate": "Paikanna minut",
@@ -1967,7 +1968,12 @@
     "deleteReply": "Vastauksen poisto epäonnistui",
     "sortNewest": "Uusimmat",
     "sortPopular": "Suositut",
-    "newPosts": "Uusia keskusteluja — päivitä"
+    "newPosts": "Uusia keskusteluja — päivitä",
+    "editPost": "Muokkaa",
+    "editPostTitle": "Muokkaa keskustelua",
+    "saveEdit": "Tallenna",
+    "loadMore": "Lataa lisää",
+    "noMorePosts": "Ei enempää keskusteluja"
   },
   "about": {
     "title": "Tietoja",
@@ -2030,7 +2036,13 @@
     "deleteGroup": "Poista ryhmä",
     "deleteGroupConfirm": "Vahvista ryhmän poisto",
     "deleteGroupWarning": "Haluatko varmasti poistaa tämän ryhmän? Kaikki viestit ja jäsenyydet poistetaan pysyvästi.",
-    "typeDeleteToConfirm": "Kirjoita POISTA vahvistaaksesi"
+    "typeDeleteToConfirm": "Kirjoita POISTA vahvistaaksesi",
+    "newPostsBanner": "Uusia postauksia",
+    "editPost": "Muokkaa viestiä",
+    "saveEdit": "Tallenna",
+    "cancelEdit": "Peruuta",
+    "searchPosts": "Hae viestejä...",
+    "searchResults": "tulosta"
   },
   "places": {
     "places": "Paikat",

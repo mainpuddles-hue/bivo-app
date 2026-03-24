@@ -1399,7 +1399,8 @@
     "reengagementD7": "Your neighbors miss you!",
     "reengagementD30": "Are you still there?",
     "badgeEarned": "You earned a new badge!",
-    "streakMilestone": "Your streak continues!"
+    "streakMilestone": "Your streak continues!",
+    "forumReplyTitle": "New reply to your discussion"
   },
   "map": {
     "locate": "Locate me",
@@ -1940,7 +1941,12 @@
     "deleteReply": "Failed to delete reply",
     "sortNewest": "Newest",
     "sortPopular": "Popular",
-    "newPosts": "New discussions — refresh"
+    "newPosts": "New discussions — refresh",
+    "editPost": "Edit",
+    "editPostTitle": "Edit discussion",
+    "saveEdit": "Save",
+    "loadMore": "Load more",
+    "noMorePosts": "No more discussions"
   },
   "about": {
     "title": "About",
@@ -2003,7 +2009,13 @@
     "deleteGroup": "Delete group",
     "deleteGroupConfirm": "Confirm group deletion",
     "deleteGroupWarning": "Are you sure you want to delete this group? All posts and memberships will be permanently removed.",
-    "typeDeleteToConfirm": "Type DELETE to confirm"
+    "typeDeleteToConfirm": "Type DELETE to confirm",
+    "newPostsBanner": "New posts available",
+    "editPost": "Edit post",
+    "saveEdit": "Save",
+    "cancelEdit": "Cancel",
+    "searchPosts": "Search posts...",
+    "searchResults": "results"
   },
   "places": {
     "places": "Places",

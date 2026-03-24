@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import {
-  ArrowLeft, Plus, ChevronUp, MessageCircle, MapPin, X, Send, Trash2,
+  ArrowLeft, Plus, ChevronUp, MessageCircle, MapPin, X, Send, Trash2, Pencil,
 } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
@@ -125,6 +125,17 @@ export default function ForumScreen() {
   // Sort state
   const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest')
 
+  // Pagination state
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  // Edit post state
+  const [editingPost, setEditingPost] = useState<ForumPost | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
+
   // Real-time banner state
   const [newPostsBanner, setNewPostsBanner] = useState(false)
 
@@ -158,9 +169,10 @@ export default function ForumScreen() {
     fetchUser()
   }, [supabase])
 
-  // Fetch posts
-  const fetchPosts = useCallback(async () => {
+  // Fetch posts (with pagination)
+  const fetchPosts = useCallback(async (pageNum: number = 0) => {
     try {
+      const pageSize = 20
       let query = supabase
         .from('forum_posts')
         .select('*, user:profiles!forum_posts_user_id_fkey(id, name, avatar_url, naapurusto)')
@@ -171,7 +183,7 @@ export default function ForumScreen() {
         query = query.order('created_at', { ascending: false })
       }
 
-      query = query.limit(50)
+      query = query.range(pageNum * pageSize, (pageNum + 1) * pageSize - 1)
 
       if (activeCategory) query = query.eq('category', activeCategory)
       if (neighborhoodFilter) query = query.eq('neighborhood', neighborhoodFilter)
@@ -182,22 +194,30 @@ export default function ForumScreen() {
         if (error.code === '42P01' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
           setTableExists(false)
         }
-        setPosts([])
+        if (pageNum === 0) setPosts([])
         return
       }
       setTableExists(true)
-      setPosts((data ?? []) as unknown as ForumPost[])
+      const newData = (data ?? []) as unknown as ForumPost[]
+      setHasMore(newData.length >= pageSize)
+      if (pageNum === 0) {
+        setPosts(newData)
+      } else {
+        setPosts(prev => [...prev, ...newData])
+      }
     } catch {
-      setPosts([])
+      if (pageNum === 0) setPosts([])
     } finally {
       setLoading(false)
       setRefreshing(false)
+      setLoadingMore(false)
     }
   }, [supabase, activeCategory, neighborhoodFilter, sortBy])
 
   useEffect(() => {
+    setPage(0)
     setLoading(true)
-    fetchPosts()
+    fetchPosts(0)
   }, [fetchPosts])
 
   // ── Real-time listener for new forum posts ──
@@ -250,8 +270,18 @@ export default function ForumScreen() {
   const handleRefresh = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
     setRefreshing(true)
-    fetchPosts()
+    setPage(0)
+    fetchPosts(0)
   }, [fetchPosts])
+
+  // Load more (pagination)
+  const handleLoadMore = useCallback(() => {
+    if (!hasMore || loadingMore || loading) return
+    setLoadingMore(true)
+    const nextPage = page + 1
+    setPage(nextPage)
+    fetchPosts(nextPage)
+  }, [hasMore, loadingMore, loading, page, fetchPosts])
 
   // ── Upvote post ──
   const handleUpvotePost = useCallback(async (post: ForumPost) => {
@@ -417,6 +447,19 @@ export default function ForumScreen() {
         await (supabase.from('forum_posts') as any)
           .update({ comment_count: newCount })
           .eq('id', selectedPost.id)
+
+        // Send notification to post author (don't notify yourself)
+        if (selectedPost.user_id !== currentUserId) {
+          await (supabase.from('notifications') as any).insert({
+            user_id: selectedPost.user_id,
+            from_user_id: currentUserId,
+            type: 'forum_reply',
+            title: t('notifications.forumReplyTitle'),
+            body: replyText.trim().slice(0, 100),
+            link_type: 'forum_post',
+            link_id: selectedPost.id,
+          }).catch(() => {}) // Don't fail the reply if notification fails
+        }
       }
       setReplyText('')
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
@@ -484,6 +527,36 @@ export default function ForumScreen() {
       Alert.alert(t('common.error'), t('forum.deleteReply'))
     }
   }, [supabase, selectedPost, t])
+
+  // ── Edit post ──
+  const handleEditPost = useCallback((post: ForumPost) => {
+    setEditingPost(post)
+    setEditTitle(post.title)
+    setEditContent(post.content)
+  }, [])
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!editingPost || !editTitle.trim() || !editContent.trim()) return
+    setSavingEdit(true)
+    try {
+      await (supabase.from('forum_posts') as any)
+        .update({ title: editTitle.trim(), content: editContent.trim() })
+        .eq('id', editingPost.id)
+
+      // Update local state
+      const updated = { ...editingPost, title: editTitle.trim(), content: editContent.trim() }
+      setPosts(prev => prev.map(p => p.id === editingPost.id ? updated : p))
+      if (selectedPost?.id === editingPost.id) {
+        setSelectedPost(updated)
+      }
+      setEditingPost(null)
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    } catch {
+      Alert.alert(t('common.error'), t('forum.publishError'))
+    } finally {
+      setSavingEdit(false)
+    }
+  }, [editingPost, editTitle, editContent, supabase, selectedPost, t])
 
   // ── Create post ──
   const handleCreatePost = useCallback(async () => {
@@ -616,19 +689,28 @@ export default function ForumScreen() {
               </Text>
             </View>
             {item.user_id === currentUserId && (
-              <Pressable
-                onPress={(e) => { e.stopPropagation?.(); handleDeletePost(item.id) }}
-                style={s.actionBtn}
-                hitSlop={4}
-              >
-                <Trash2 size={14} color={colors.destructive} strokeWidth={1.8} />
-              </Pressable>
+              <>
+                <Pressable
+                  onPress={(e) => { e.stopPropagation?.(); handleEditPost(item) }}
+                  style={s.actionBtn}
+                  hitSlop={4}
+                >
+                  <Pencil size={14} color={colors.primary} strokeWidth={1.8} />
+                </Pressable>
+                <Pressable
+                  onPress={(e) => { e.stopPropagation?.(); handleDeletePost(item.id) }}
+                  style={s.actionBtn}
+                  hitSlop={4}
+                >
+                  <Trash2 size={14} color={colors.destructive} strokeWidth={1.8} />
+                </Pressable>
+              </>
             )}
           </View>
         </View>
       </Pressable>
     )
-  }, [colors, t, locale, votedPosts, getCategoryColor, handleUpvotePost, openPostDetail, currentUserId, handleDeletePost])
+  }, [colors, t, locale, votedPosts, getCategoryColor, handleUpvotePost, openPostDetail, currentUserId, handleDeletePost, handleEditPost])
 
   // ── Render reply ──
   const renderReply = useCallback(({ item }: { item: ForumReply }) => {
@@ -850,8 +932,9 @@ export default function ForumScreen() {
         <Pressable
           onPress={() => {
             setNewPostsBanner(false)
+            setPage(0)
             setLoading(true)
-            fetchPosts()
+            fetchPosts(0)
           }}
           style={[s.newPostsBanner, { backgroundColor: colors.primary }]}
         >
@@ -872,9 +955,19 @@ export default function ForumScreen() {
         }
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         showsVerticalScrollIndicator={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.3}
         ListFooterComponent={
           !loading && posts.length > 0 ? (
-            <View style={{ height: 100 }} />
+            <View style={{ height: 100, alignItems: 'center', paddingTop: 16 }}>
+              {loadingMore ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : !hasMore ? (
+                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>
+                  {t('forum.noMorePosts')}
+                </Text>
+              ) : null}
+            </View>
           ) : null
         }
       />
@@ -983,6 +1076,69 @@ export default function ForumScreen() {
               placeholderTextColor={colors.mutedForeground}
               value={newContent}
               onChangeText={setNewContent}
+              multiline
+              textAlignVertical="top"
+              maxLength={5000}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Edit Post Modal ── */}
+      <Modal
+        visible={!!editingPost}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setEditingPost(null)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={[s.modalContainer, { backgroundColor: colors.background }]}
+        >
+          {/* Modal header */}
+          <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
+            <Pressable onPress={() => setEditingPost(null)} hitSlop={8}>
+              <X size={22} color={colors.foreground} />
+            </Pressable>
+            <Text style={[s.modalTitle, { color: colors.foreground }]}>
+              {t('forum.editPostTitle')}
+            </Text>
+            <Pressable
+              onPress={handleSaveEdit}
+              disabled={savingEdit}
+              style={[s.publishBtn, { backgroundColor: colors.primary, opacity: savingEdit ? 0.5 : 1 }]}
+            >
+              {savingEdit ? (
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
+              ) : (
+                <Text style={[s.publishBtnText, { color: colors.primaryForeground }]}>
+                  {t('forum.saveEdit')}
+                </Text>
+              )}
+            </Pressable>
+          </View>
+
+          {/* Title input */}
+          <View style={s.modalSection}>
+            <TextInput
+              style={[s.titleInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: isDark ? colors.card : '#FFFFFF' }]}
+              placeholder={t('forum.postTitle')}
+              placeholderTextColor={colors.mutedForeground}
+              value={editTitle}
+              onChangeText={setEditTitle}
+              maxLength={200}
+              autoFocus
+            />
+          </View>
+
+          {/* Content input */}
+          <View style={[s.modalSection, { flex: 1 }]}>
+            <TextInput
+              style={[s.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: isDark ? colors.card : '#FFFFFF' }]}
+              placeholder={t('forum.postContent')}
+              placeholderTextColor={colors.mutedForeground}
+              value={editContent}
+              onChangeText={setEditContent}
               multiline
               textAlignVertical="top"
               maxLength={5000}

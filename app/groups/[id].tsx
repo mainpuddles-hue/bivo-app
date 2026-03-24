@@ -11,7 +11,7 @@ import * as Haptics from 'expo-haptics'
 import * as ImagePicker from 'expo-image-picker'
 import {
   ArrowLeft, Heart, MessageCircle, Send, ImagePlus, X,
-  Settings, Users, LogOut, UserPlus, Shield, User, Trash2, Pencil,
+  Settings, Users, LogOut, UserPlus, Shield, User, Trash2, Pencil, Search,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -131,6 +131,17 @@ export default function GroupDetailScreen() {
   const [postText, setPostText] = useState('')
   const [postImage, setPostImage] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
+
+  // Edit post state
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
+  const [editPostContent, setEditPostContent] = useState('')
+  const [savingPostEdit, setSavingPostEdit] = useState(false)
+
+  // Search posts
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Realtime banner
+  const [newPostsBanner, setNewPostsBanner] = useState(false)
 
   // Comments
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null)
@@ -271,6 +282,36 @@ export default function GroupDetailScreen() {
       fetchPosts()
     }
   }, [fetchPosts, id])
+
+  // ── Realtime listener for new group posts ──
+  useEffect(() => {
+    if (!id) return
+    const channel = supabase
+      .channel(`group_posts_realtime_${id}`)
+      .on(
+        'postgres_changes' as any,
+        { event: 'INSERT', schema: 'public', table: 'group_posts', filter: `group_id=eq.${id}` },
+        (payload: any) => {
+          if (payload.new && payload.new.user_id !== currentUserId) {
+            setNewPostsBanner(true)
+          }
+        }
+      )
+      .on(
+        'postgres_changes' as any,
+        { event: 'DELETE', schema: 'public', table: 'group_posts', filter: `group_id=eq.${id}` },
+        (payload: any) => {
+          if (payload.old?.id) {
+            setPosts(prev => prev.filter(p => p.id !== payload.old.id))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [supabase, id, currentUserId])
 
   const handleRefresh = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
@@ -609,6 +650,38 @@ export default function GroupDetailScreen() {
     }
   }, [supabase, posts, t])
 
+  // ── Edit group post (own posts) ──
+  const handleStartEditPost = useCallback((post: GroupPost) => {
+    setEditingPostId(post.id)
+    setEditPostContent(post.content)
+  }, [])
+
+  const handleSaveGroupPostEdit = useCallback(async () => {
+    if (!editingPostId || !editPostContent.trim()) return
+    setSavingPostEdit(true)
+    try {
+      await (supabase.from('group_posts') as any)
+        .update({ content: editPostContent.trim() })
+        .eq('id', editingPostId)
+
+      setPosts(prev => prev.map(p =>
+        p.id === editingPostId ? { ...p, content: editPostContent.trim() } : p
+      ))
+      setEditingPostId(null)
+      setEditPostContent('')
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    } catch {
+      Alert.alert(t('common.error'), t('groups.sendError'))
+    } finally {
+      setSavingPostEdit(false)
+    }
+  }, [editingPostId, editPostContent, supabase, t])
+
+  const handleCancelEditPost = useCallback(() => {
+    setEditingPostId(null)
+    setEditPostContent('')
+  }, [])
+
   // ── Edit group info (admin) ──
   const handleOpenEditModal = useCallback(() => {
     if (!group) return
@@ -742,20 +815,66 @@ export default function GroupDetailScreen() {
               </Text>
             </View>
             {item.user_id === currentUserId && (
-              <Pressable
-                onPress={() => handleDeleteGroupPost(item.id)}
-                hitSlop={6}
-                style={{ padding: 4 }}
-              >
-                <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
-              </Pressable>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable
+                  onPress={() => handleStartEditPost(item)}
+                  hitSlop={6}
+                  style={{ padding: 4 }}
+                >
+                  <Pencil size={16} color={colors.primary} strokeWidth={1.8} />
+                </Pressable>
+                <Pressable
+                  onPress={() => handleDeleteGroupPost(item.id)}
+                  hitSlop={6}
+                  style={{ padding: 4 }}
+                >
+                  <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
+                </Pressable>
+              </View>
             )}
           </View>
 
-          {/* Content */}
-          <Text style={[ps.postContent, { color: colors.foreground }]}>
-            {item.content}
-          </Text>
+          {/* Content (inline edit or read-only) */}
+          {editingPostId === item.id ? (
+            <View style={{ gap: 8 }}>
+              <TextInput
+                style={[ps.editInput, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border }]}
+                value={editPostContent}
+                onChangeText={setEditPostContent}
+                multiline
+                textAlignVertical="top"
+                maxLength={2000}
+                autoFocus
+              />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable
+                  onPress={handleSaveGroupPostEdit}
+                  disabled={savingPostEdit || !editPostContent.trim()}
+                  style={[ps.saveBtn, { backgroundColor: colors.primary, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.5 : 1, paddingVertical: 8 }]}
+                >
+                  {savingPostEdit ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={{ color: '#FFFFFF', fontSize: 13, fontFamily: fonts.bodySemi, textAlign: 'center' }}>
+                      {t('groups.saveEdit')}
+                    </Text>
+                  )}
+                </Pressable>
+                <Pressable
+                  onPress={handleCancelEditPost}
+                  style={[ps.saveBtn, { backgroundColor: colors.muted, flex: 1, paddingVertical: 8 }]}
+                >
+                  <Text style={{ color: colors.foreground, fontSize: 13, fontFamily: fonts.bodySemi, textAlign: 'center' }}>
+                    {t('groups.cancelEdit')}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Text style={[ps.postContent, { color: colors.foreground }]}>
+              {item.content}
+            </Text>
+          )}
 
           {/* Image */}
           {item.image_url && (
@@ -970,6 +1089,50 @@ export default function GroupDetailScreen() {
         )}
       </View>
 
+      {/* Search bar */}
+      {isMember && (
+        <View style={[ps.searchBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <Search size={16} color={colors.mutedForeground} strokeWidth={1.8} />
+          <TextInput
+            style={[ps.searchInput, { color: colors.foreground }]}
+            placeholder={t('groups.searchPosts')}
+            placeholderTextColor={colors.mutedForeground}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+              <X size={16} color={colors.mutedForeground} strokeWidth={1.8} />
+            </Pressable>
+          )}
+        </View>
+      )}
+
+      {/* Search results count */}
+      {searchQuery.length > 0 && (
+        <View style={{ paddingHorizontal: 16, paddingVertical: 6, backgroundColor: colors.background }}>
+          <Text style={{ fontSize: 12, fontFamily: fonts.bodyMedium, color: colors.mutedForeground }}>
+            {posts.filter(p => p.content.toLowerCase().includes(searchQuery.toLowerCase())).length} {t('groups.searchResults')}
+          </Text>
+        </View>
+      )}
+
+      {/* New posts banner */}
+      {newPostsBanner && (
+        <Pressable
+          onPress={() => {
+            setNewPostsBanner(false)
+            setLoading(true)
+            fetchPosts()
+          }}
+          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 10, alignItems: 'center', backgroundColor: colors.primary }}
+        >
+          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: '#FFFFFF' }}>
+            {t('groups.newPostsBanner')}
+          </Text>
+        </Pressable>
+      )}
+
       {/* Posts list */}
       {loading ? (
         <View style={ps.loadingContainer}>
@@ -977,7 +1140,7 @@ export default function GroupDetailScreen() {
         </View>
       ) : (
         <FlatList
-          data={posts}
+          data={searchQuery ? posts.filter(p => p.content.toLowerCase().includes(searchQuery.toLowerCase())) : posts}
           keyExtractor={(item) => item.id}
           renderItem={renderPost}
           contentContainerStyle={[ps.listContent, { paddingBottom: isMember ? 80 + insets.bottom : 20 + insets.bottom }]}
@@ -1596,6 +1759,21 @@ const ps = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     marginTop: 4,
+  },
+  // Search bar
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: fonts.body,
+    paddingVertical: 4,
   },
   // Skeleton
   skelAvatar: {

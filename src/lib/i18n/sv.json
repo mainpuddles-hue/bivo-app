@@ -1399,7 +1399,8 @@
     "reengagementD7": "Dina grannar saknar dig!",
     "reengagementD30": "Är du fortfarande där?",
     "badgeEarned": "Du fick ett nytt märke!",
-    "streakMilestone": "Din svit fortsätter!"
+    "streakMilestone": "Din svit fortsätter!",
+    "forumReplyTitle": "Nytt svar på din diskussion"
   },
   "map": {
     "locate": "Hitta mig",
@@ -1940,7 +1941,12 @@
     "deleteReply": "Kunde inte radera svar",
     "sortNewest": "Senaste",
     "sortPopular": "Populära",
-    "newPosts": "Nya diskussioner — uppdatera"
+    "newPosts": "Nya diskussioner — uppdatera",
+    "editPost": "Redigera",
+    "editPostTitle": "Redigera diskussion",
+    "saveEdit": "Spara",
+    "loadMore": "Ladda fler",
+    "noMorePosts": "Inga fler diskussioner"
   },
   "about": {
     "title": "Om",
@@ -2003,7 +2009,13 @@
     "deleteGroup": "Radera grupp",
     "deleteGroupConfirm": "Bekräfta gruppradering",
     "deleteGroupWarning": "Är du säker på att du vill radera denna grupp? Alla inlägg och medlemskap tas bort permanent.",
-    "typeDeleteToConfirm": "Skriv RADERA för att bekräfta"
+    "typeDeleteToConfirm": "Skriv RADERA för att bekräfta",
+    "newPostsBanner": "Nya inlägg tillgängliga",
+    "editPost": "Redigera inlägg",
+    "saveEdit": "Spara",
+    "cancelEdit": "Avbryt",
+    "searchPosts": "Sök inlägg...",
+    "searchResults": "resultat"
   },
   "places": {
     "places": "Platser",
