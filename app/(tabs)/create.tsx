@@ -234,6 +234,7 @@ export default function CreateScreen() {
     setUploadStatus(t('create.uploadingImages'))
 
     const uploadedUrls: string[] = []
+    let failedCount = 0
     for (let i = 0; i < images.length; i++) {
       const uri = images[i]
       const ext = uri.split('.').pop() ?? 'jpg'
@@ -250,6 +251,8 @@ export default function CreateScreen() {
       if (!error) {
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)
         uploadedUrls.push(urlData.publicUrl)
+      } else {
+        failedCount++
       }
     }
 
@@ -261,6 +264,13 @@ export default function CreateScreen() {
         sort_order: idx + 1,
       }))
       await (supabase.from('post_images') as any).insert(extras)
+    }
+
+    if (failedCount > 0) {
+      Alert.alert(
+        t('common.error'),
+        t('create.imageUploadPartialFail', { count: failedCount }),
+      )
     }
 
     return uploadedUrls[0] ?? null
@@ -352,8 +362,8 @@ export default function CreateScreen() {
           description: description.trim(),
           event_date: eventDateISO,
           location_name: location.trim() || null,
-          latitude: latitude ?? null,
-          longitude: longitude ?? null,
+          location_lat: latitude ?? null,
+          location_lng: longitude ?? null,
           max_attendees: (maxAtt && maxAtt > 0) ? maxAtt : null,
           icon: 'CalendarDays',
           is_active: true,

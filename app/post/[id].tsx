@@ -181,14 +181,24 @@ export default function PostDetailScreen() {
     const parentId = replyToComment?.id ?? null
     setCommentText('')
     setReplyToComment(null)
-    await (supabase.from('post_comments') as any).insert({
-      post_id: id, user_id: userId, content, parent_id: parentId,
-    })
-    if (parentId) {
-      setExpandedReplies(prev => { const next = new Set(prev); next.add(parentId); return next })
+    try {
+      const { error } = await (supabase.from('post_comments') as any).insert({
+        post_id: id, user_id: userId, content, parent_id: parentId,
+      })
+      if (error) throw error
+      if (parentId) {
+        setExpandedReplies(prev => { const next = new Set(prev); next.add(parentId); return next })
+      }
+    } catch (err) {
+      // Restore comment text so the user doesn't lose their input
+      setCommentText(content)
+      if (parentId) setReplyToComment(replyToComment)
+      Alert.alert(t('common.error'), t('engagement.commentFailed'))
+      if (__DEV__) console.error('[post] comment insert failed:', err)
+    } finally {
+      setSendingComment(false)
     }
-    setSendingComment(false)
-  }, [userId, commentText, sendingComment, id, supabase, replyToComment])
+  }, [userId, commentText, sendingComment, id, supabase, replyToComment, t])
 
   const handleShare = () => {
     if (!post) return

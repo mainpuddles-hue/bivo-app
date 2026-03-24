@@ -388,7 +388,9 @@
     "quickThanks": "Tack för meddelandet! 👋",
     "quickHelp": "Jag kan hjälpa! När passar?",
     "quickAvailable": "Finns detta fortfarande?",
-    "aboutPost": "Gäller annons"
+    "aboutPost": "Gäller annons",
+    "sendFailed": "Kunde inte skicka meddelande",
+    "imageSendFailed": "Kunde inte skicka bild"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -1149,6 +1151,7 @@
     "maxAttendees": "Deltagarantal",
     "maxAttendeesPlaceholder": "Obegränsat",
     "uploadingImages": "Laddar upp bilder...",
+    "imageUploadPartialFail": "{count} bild(er) kunde inte laddas upp",
     "camera": "Kamera",
     "gallery": "Galleri",
     "cameraPermissionRequired": "Kameratillstånd krävs",

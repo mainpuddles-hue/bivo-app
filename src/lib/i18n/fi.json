@@ -388,7 +388,9 @@
     "quickThanks": "Kiitos viestistä! 👋",
     "quickHelp": "Voin auttaa! Milloin sopii?",
     "quickAvailable": "Onko tämä vielä saatavilla?",
-    "aboutPost": "Liittyy ilmoitukseen"
+    "aboutPost": "Liittyy ilmoitukseen",
+    "sendFailed": "Viestin lähetys epäonnistui",
+    "imageSendFailed": "Kuvan lähetys epäonnistui"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -1166,6 +1168,7 @@
     "maxAttendees": "Osallistujaraja",
     "maxAttendeesPlaceholder": "Rajaton",
     "uploadingImages": "Ladataan kuvia...",
+    "imageUploadPartialFail": "{count} kuvan lataus epäonnistui",
     "camera": "Kamera",
     "gallery": "Galleria",
     "cameraPermissionRequired": "Kameralupa vaaditaan",

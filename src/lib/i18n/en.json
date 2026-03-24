@@ -388,7 +388,9 @@
     "quickThanks": "Thanks for the message! 👋",
     "quickHelp": "I can help! When works?",
     "quickAvailable": "Is this still available?",
-    "aboutPost": "About listing"
+    "aboutPost": "About listing",
+    "sendFailed": "Failed to send message",
+    "imageSendFailed": "Failed to send image"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -1149,6 +1151,7 @@
     "maxAttendees": "Attendee limit",
     "maxAttendeesPlaceholder": "Unlimited",
     "uploadingImages": "Uploading images...",
+    "imageUploadPartialFail": "{count} image(s) failed to upload",
     "camera": "Camera",
     "gallery": "Gallery",
     "cameraPermissionRequired": "Camera permission required",

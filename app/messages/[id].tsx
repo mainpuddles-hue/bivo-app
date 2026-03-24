@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView } from 'react-native'
+import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -199,10 +199,18 @@ export default function ConversationScreen() {
     setShowQuickReplies(false)
     const content = input.trim()
     setInput('')
-    await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content })
-    await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
-    setSending(false)
-  }, [input, userId, id, supabase, sending])
+    try {
+      const { error } = await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content })
+      if (error) throw error
+      await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
+    } catch (err) {
+      setInput(content)
+      Alert.alert(t('common.error'), t('messages.sendFailed'))
+      if (__DEV__) console.error('[conversation] message send failed:', err)
+    } finally {
+      setSending(false)
+    }
+  }, [input, userId, id, supabase, sending, t])
 
   const handleSendImage = useCallback(async () => {
     if (!userId) return
@@ -227,9 +235,10 @@ export default function ConversationScreen() {
       })
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
     } catch (err) {
+      Alert.alert(t('common.error'), t('messages.imageSendFailed'))
       if (__DEV__) console.error('[conversation] image send failed:', err)
     } finally { setSending(false) }
-  }, [userId, id, supabase])
+  }, [userId, id, supabase, t])
 
   const handleLongPress = useCallback((messageId: string) => {
     setSelectedMessageId(messageId)

@@ -32,6 +32,7 @@ export default function PaymentSuccessScreen() {
     if (!session_id) return
 
     async function fetchBooking() {
+      // Try rental_bookings first
       const { data } = await (supabase
         .from('rental_bookings') as any)
         .select('id, start_date, end_date, total_amount, status, post:posts!rental_bookings_post_id_fkey(title)')
@@ -47,7 +48,32 @@ export default function PaymentSuccessScreen() {
           total_amount: (data as any).total_amount,
           status: (data as any).status,
         })
+        setLoading(false)
+        return
       }
+
+      // Fallback: try service_bookings
+      try {
+        const { data: serviceData } = await (supabase
+          .from('service_bookings') as any)
+          .select('id, booking_date, total_amount, status, post:posts!service_bookings_post_id_fkey(title)')
+          .eq('stripe_session_id', session_id!)
+          .maybeSingle()
+
+        if (serviceData) {
+          setBooking({
+            id: (serviceData as any).id,
+            post_title: (serviceData as any).post?.title ?? '',
+            start_date: (serviceData as any).booking_date,
+            end_date: (serviceData as any).booking_date,
+            total_amount: (serviceData as any).total_amount,
+            status: (serviceData as any).status,
+          })
+        }
+      } catch {
+        // service_bookings table may not exist yet — ignore
+      }
+
       setLoading(false)
     }
 
