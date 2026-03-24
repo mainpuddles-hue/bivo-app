@@ -212,8 +212,11 @@ export function useFeedData() {
         offsetRef.current = offset + newPosts.length
       }
       setHasMore(newPosts.length >= PAGE_SIZE)
-    } catch {
-      if (!controller.signal.aborted) setError(t('feed.loadError'))
+    } catch (err: any) {
+      if (!controller.signal.aborted) {
+        const isOffline = err?.message?.includes('Network') || err?.message?.includes('fetch') || err?.code === 'NETWORK_ERROR'
+        setError(isOffline ? t('feed.offlineError') : t('feed.loadError'))
+      }
     } finally {
       loadingRef.current = false
       if (!controller.signal.aborted) {

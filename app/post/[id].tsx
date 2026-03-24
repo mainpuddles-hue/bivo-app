@@ -172,18 +172,18 @@ export default function PostDetailScreen() {
         .from('conversations').select('id')
         .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
         .maybeSingle()
-      if (findError) { Alert.alert('Debug: find error', JSON.stringify(findError)); return }
+      if (findError) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
       if (existing) {
         router.push(`/messages/${(existing as any).id}`)
       } else {
         const { data: newConv, error } = await (supabase.from('conversations') as any)
           .insert({ user1_id: userId, user2_id: post.user_id }).select('id').single()
-        if (error) { Alert.alert('Debug: insert error', JSON.stringify(error)); return }
-        if (!newConv) { Alert.alert('Debug', 'newConv is null'); return }
+        if (error) { Alert.alert(t('common.error'), error?.message || t('messages.conversationCreateFailed')); return }
+        if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
         router.push(`/messages/${newConv.id}`)
       }
     } catch (e: any) {
-      Alert.alert('Debug: exception', e?.message ?? String(e))
+      Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
     }
   }, [userId, post, id, supabase, router, t])
 
@@ -765,6 +765,7 @@ export default function PostDetailScreen() {
               )}
               {bookingDays > 0 && (<Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>{t('rental.confirmationNote')}</Text>)}
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
+              <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15 }}>{t('payment.opensInBrowser')}</Text>
               <Pressable onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
                 style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }]}>
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
@@ -836,6 +837,8 @@ export default function PostDetailScreen() {
             <Text style={{ fontSize: 12, color: colors.mutedForeground, lineHeight: 17, marginTop: 4 }}>{t('service.escrowNote')}</Text>
 
             {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
+
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15 }}>{t('payment.opensInBrowser')}</Text>
 
             <Pressable
               onPress={handlePayForService}

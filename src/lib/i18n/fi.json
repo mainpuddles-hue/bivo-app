@@ -60,6 +60,7 @@
     "noPostsHint": "Kokeile eri suodatinta tai luo ensimmäinen ilmoitus naapurustollesi!",
     "searchPlaceholder": "Hae ilmoituksia...",
     "loadError": "Ilmoitusten lataaminen ei onnistunut. Yritä uudelleen.",
+    "offlineError": "Ei internet-yhteyttä. Tarkista verkkoasetukset.",
     "filterLoadError": "Suodatettujen ilmoitusten lataaminen ei onnistunut. Yritä uudelleen.",
     "latestListings": "Uusimmat ilmoitukset",
     "recommended": "Suositellut",
@@ -982,7 +983,8 @@
     "statusPending": "Odottaa",
     "statusFailed": "Epäonnistui",
     "receipt": "Kuitti",
-    "fetchFailed": "Maksujen haku epäonnistui"
+    "fetchFailed": "Maksujen haku epäonnistui",
+    "opensInBrowser": "Maksu avautuu selaimessa"
   },
   "push": {
     "permissionDenied": "Ilmoituslupa evätty",
@@ -1421,7 +1423,10 @@
     "reengagementD30": "Oletko vielä siellä?",
     "badgeEarned": "Uusi ansaitsemasi tunnus!",
     "streakMilestone": "Putki jatkuu!",
-    "forumReplyTitle": "Uusi vastaus keskusteluusi"
+    "forumReplyTitle": "Uusi vastaus keskusteluusi",
+    "andOthers": "ja {count} muuta",
+    "likedYourPost": "tykkäsi postauksestasi",
+    "groupedLikes": "{name} ja {count} muuta tykkäsivät"
   },
   "map": {
     "locate": "Paikanna minut",

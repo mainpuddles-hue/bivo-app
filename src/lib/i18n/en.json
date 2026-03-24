@@ -60,6 +60,7 @@
     "noPostsHint": "Try a different filter or create the first post for your neighborhood!",
     "searchPlaceholder": "Search posts...",
     "loadError": "Failed to load feed",
+    "offlineError": "No internet connection. Check your network settings.",
     "filterLoadError": "Failed to load filtered posts",
     "latestListings": "Latest listings",
     "recommended": "Recommended",
@@ -977,7 +978,8 @@
     "statusPending": "Pending",
     "statusFailed": "Failed",
     "receipt": "Receipt",
-    "fetchFailed": "Failed to load payments"
+    "fetchFailed": "Failed to load payments",
+    "opensInBrowser": "Payment opens in browser"
   },
   "push": {
     "permissionDenied": "Notification permission denied",
@@ -1400,7 +1402,10 @@
     "reengagementD30": "Are you still there?",
     "badgeEarned": "You earned a new badge!",
     "streakMilestone": "Your streak continues!",
-    "forumReplyTitle": "New reply to your discussion"
+    "forumReplyTitle": "New reply to your discussion",
+    "andOthers": "and {count} others",
+    "likedYourPost": "liked your post",
+    "groupedLikes": "{name} and {count} others liked"
   },
   "map": {
     "locate": "Locate me",

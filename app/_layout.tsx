@@ -163,6 +163,8 @@ function RootLayoutInner() {
         <Stack.Screen name="verification/success" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="verification/error" options={{ animation: 'fade' }} />
         <Stack.Screen name="saved" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="leaderboard" options={{ headerShown: false }} />
+        <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
       </Stack>
     </View>
   )

@@ -126,7 +126,9 @@ export default function LoginScreen() {
           options: { data: { name: name.trim() } },
         })
         if (error) throw error
-        Alert.alert(t('common.success'), t('auth.checkEmail'))
+        Alert.alert(t('common.success'), t('auth.checkEmail'), [
+          { text: 'OK', onPress: () => { setMode('login'); setPassword('') } }
+        ])
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),

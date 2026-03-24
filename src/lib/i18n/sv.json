@@ -60,6 +60,7 @@
     "noPostsHint": "Prova ett annat filter eller skapa den forsta annonsen for ditt grannskap!",
     "searchPlaceholder": "Sök inlägg...",
     "loadError": "Kunde inte ladda flödet",
+    "offlineError": "Ingen internetanslutning. Kontrollera nätverksinställningarna.",
     "filterLoadError": "Kunde inte ladda filtrerade inlägg",
     "latestListings": "Senaste annonser",
     "recommended": "Rekommenderat",
@@ -977,7 +978,8 @@
     "statusPending": "Väntar",
     "statusFailed": "Misslyckades",
     "receipt": "Kvitto",
-    "fetchFailed": "Kunde inte ladda betalningar"
+    "fetchFailed": "Kunde inte ladda betalningar",
+    "opensInBrowser": "Betalning öppnas i webbläsaren"
   },
   "push": {
     "permissionDenied": "Aviseringsbehörighet nekad",
@@ -1400,7 +1402,10 @@
     "reengagementD30": "Är du fortfarande där?",
     "badgeEarned": "Du fick ett nytt märke!",
     "streakMilestone": "Din svit fortsätter!",
-    "forumReplyTitle": "Nytt svar på din diskussion"
+    "forumReplyTitle": "Nytt svar på din diskussion",
+    "andOthers": "och {count} andra",
+    "likedYourPost": "gillade ditt inlägg",
+    "groupedLikes": "{name} och {count} andra gillade"
   },
   "map": {
     "locate": "Hitta mig",
