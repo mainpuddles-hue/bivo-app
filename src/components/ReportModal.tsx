@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { Flag, X, Check } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -24,6 +24,8 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const mountedRef = useRef(true)
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
 
   const reasonLabels: Record<ReportReason, string> = {
     spam: t('report.spam'),
@@ -62,6 +64,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
 
       setSuccess(true)
       setTimeout(() => {
+        if (!mountedRef.current) return
         setSuccess(false)
         setReason(null)
         setDescription('')

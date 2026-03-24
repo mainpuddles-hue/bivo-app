@@ -100,14 +100,19 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
         .insert({ user_id: userId, badge_type: 'verified' })
 
       if (badgeError) {
-        // Badge may fail if table doesn't exist yet — try gracefully
-        console.log('[verification] badge insert:', badgeError.message)
+        setError('Vahvistus epäonnistui — yritä uudelleen')
+        setStatus('error')
+        return
       }
 
       // Set identity_verified_at on profile
-      await (supabase.from('profiles') as any)
+      const { error: profileError } = await (supabase.from('profiles') as any)
         .update({ identity_verified_at: new Date().toISOString() })
         .eq('id', userId)
+
+      if (profileError) {
+        console.log('[verification] profile update failed:', profileError.message)
+      }
 
       setIsVerified(true)
       setStatus('success')

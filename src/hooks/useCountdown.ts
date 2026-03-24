@@ -48,8 +48,8 @@ export function useCountdown(expiresAt: string | null | undefined, totalHours?: 
     label = `${seconds}s`
   }
 
-  const totalMs = (totalHours ?? hours + 1) * 3600000
-  const progress = Math.min(1, Math.max(0, diff / totalMs))
+  const totalMs = (totalHours ?? Math.max(1, hours + 1)) * 3600000
+  const progress = totalMs > 0 ? Math.min(1, Math.max(0, diff / totalMs)) : 0
 
   return { hours, minutes, seconds, isExpired, label, progress }
 }

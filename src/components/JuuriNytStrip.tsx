@@ -35,10 +35,10 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
   const { t } = useI18n()
   const router = useRouter()
 
-  // Tick every 30s to update countdowns
+  // Tick every 10s to keep countdowns fresh
   const [, setTick] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), 30000)
+    const id = setInterval(() => setTick(t => t + 1), 10000)
     return () => clearInterval(id)
   }, [])
 

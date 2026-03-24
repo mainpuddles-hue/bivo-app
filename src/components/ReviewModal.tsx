@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { Star, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -22,6 +22,8 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const mountedRef = useRef(true)
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
 
   const handleSubmit = useCallback(async () => {
     if (rating === 0) {
@@ -65,6 +67,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
 
       setSuccess(true)
       setTimeout(() => {
+        if (!mountedRef.current) return
         setSuccess(false)
         setRating(0)
         setComment('')

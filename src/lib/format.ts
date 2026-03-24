@@ -11,9 +11,12 @@ export function resolveLocale(locale: string): string {
 }
 
 export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): string {
+  if (!dateStr) return ''
   const now = new Date()
   const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
   const diffMs = now.getTime() - date.getTime()
+  if (diffMs < 0) return t('time.justNow') // future dates
   const diffSec = Math.floor(diffMs / 1000)
   const diffMin = Math.floor(diffSec / 60)
   const diffHour = Math.floor(diffMin / 60)
@@ -59,7 +62,9 @@ export function formatEventDate(dateStr: string, locale = 'fi'): string {
 }
 
 export function formatEventDateShort(dateStr: string, locale = 'fi'): string {
-  return new Date(dateStr).toLocaleDateString(resolveLocale(locale), {
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  return date.toLocaleDateString(resolveLocale(locale), {
     weekday: 'short',
     day: 'numeric',
     month: 'numeric',

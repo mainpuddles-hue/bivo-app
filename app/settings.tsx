@@ -132,7 +132,7 @@ export default function SettingsScreen() {
     setExportProgress('1/5')
     try {
       // Batch 1: posts, messages, reviews
-      const [postsRes, msgsRes, reviewsRes] = await Promise.all([
+      const [postsRes, msgsRes, reviewsRes] = await Promise.allSettled([
         supabase.from('posts').select('*').eq('user_id', profile.id),
         supabase.from('messages').select('*').eq('sender_id', profile.id),
         supabase.from('reviews').select('*').eq('reviewer_id', profile.id),
@@ -140,7 +140,7 @@ export default function SettingsScreen() {
 
       setExportProgress('2/5')
       // Batch 2: saved posts, saved events, post likes
-      const [savedPostsRes, savedEventsRes, postLikesRes] = await Promise.all([
+      const [savedPostsRes, savedEventsRes, postLikesRes] = await Promise.allSettled([
         supabase.from('saved_posts').select('*').eq('user_id', profile.id),
         supabase.from('saved_events').select('*').eq('user_id', profile.id),
         supabase.from('post_likes').select('*').eq('user_id', profile.id),
@@ -148,7 +148,7 @@ export default function SettingsScreen() {
 
       setExportProgress('3/5')
       // Batch 3: comments, follows (both directions)
-      const [commentsRes, followersRes, followingRes] = await Promise.all([
+      const [commentsRes, followersRes, followingRes] = await Promise.allSettled([
         supabase.from('post_comments').select('*').eq('user_id', profile.id),
         supabase.from('user_follows').select('*').eq('followed_id', profile.id),
         supabase.from('user_follows').select('*').eq('follower_id', profile.id),
@@ -156,27 +156,28 @@ export default function SettingsScreen() {
 
       setExportProgress('4/5')
       // Batch 4: notification preferences, conversations, badges
-      const [notifPrefsRes, conversationsRes, badgesRes] = await Promise.all([
+      const [notifPrefsRes, conversationsRes, badgesRes] = await Promise.allSettled([
         supabase.from('notification_preferences').select('*').eq('user_id', profile.id),
         supabase.from('conversations').select('id, user1_id, user2_id, post_id, created_at, updated_at').or(`user1_id.eq.${profile.id},user2_id.eq.${profile.id}`),
         supabase.from('user_badges').select('*').eq('user_id', profile.id),
       ])
 
       setExportProgress('5/5')
+      const r = (res: PromiseSettledResult<any>) => res.status === 'fulfilled' ? (res.value?.data ?? []) : []
       const exportData = {
         profile,
-        posts: postsRes.data ?? [],
-        messages: msgsRes.data ?? [],
-        reviews: reviewsRes.data ?? [],
-        saved_posts: savedPostsRes.data ?? [],
-        saved_events: savedEventsRes.data ?? [],
-        post_likes: postLikesRes.data ?? [],
-        post_comments: commentsRes.data ?? [],
-        followers: followersRes.data ?? [],
-        following: followingRes.data ?? [],
-        notification_preferences: notifPrefsRes.data ?? [],
-        conversations: conversationsRes.data ?? [],
-        user_badges: badgesRes.data ?? [],
+        posts: r(postsRes),
+        messages: r(msgsRes),
+        reviews: r(reviewsRes),
+        saved_posts: r(savedPostsRes),
+        saved_events: r(savedEventsRes),
+        post_likes: r(postLikesRes),
+        post_comments: r(commentsRes),
+        followers: r(followersRes),
+        following: r(followingRes),
+        notification_preferences: r(notifPrefsRes),
+        conversations: r(conversationsRes),
+        user_badges: r(badgesRes),
         exported_at: new Date().toISOString(),
       }
 

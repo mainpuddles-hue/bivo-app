@@ -159,7 +159,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
             onError={() => setImgError(true)}
           />
           {/* Multi-image badge */}
-          {post.images && post.images.length > 0 && (
+          {post.images && post.images.length > 1 && (
             <View style={styles.multiImageBadge}>
               <ImageIcon size={12} color="#FFFFFF" />
               <Text style={styles.multiImageText}>{post.images.length + 1}</Text>
@@ -271,17 +271,19 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                 try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
                 const supabase = createClient()
                 if (liked) {
-                  await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
                   setLiked(false)
                   setLikeCount(c => Math.max(0, c - 1))
+                  const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                  if (error) { setLiked(true); setLikeCount(c => c + 1) }
                 } else {
-                  await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
                   setLiked(true)
                   setLikeCount(c => c + 1)
                   Animated.sequence([
                     Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
                     Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
                   ]).start()
+                  const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
+                  if (error) { setLiked(false); setLikeCount(c => Math.max(0, c - 1)) }
                 }
               }}
               style={styles.engagementItem}

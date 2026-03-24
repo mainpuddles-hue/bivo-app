@@ -106,9 +106,9 @@ export function useNotificationPreferences() {
         { onConflict: 'user_id,type' }
       )
     } catch {
-      // Revert on failure
+      // Revert on failure — flip back to opposite of what we set
       setPreferences((prev) => {
-        const reverted = { ...prev, [type]: !enabled }
+        const reverted = { ...prev, [type]: !prev[type] }
         AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reverted)).catch(() => {})
         return reverted
       })
