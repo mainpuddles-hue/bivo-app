@@ -2163,5 +2163,22 @@
     "speedBadgeSalamanopea": "Blixtsnabb",
     "speedBadgeNopea": "Snabb svarare",
     "respondedIn": "Svarade på {minutes} minuter"
+  },
+  "thanks": {
+    "button": "Tack",
+    "alreadyThanked": "Redan tackat",
+    "sent": "Tack skickat!",
+    "notification": "{name} tackade dig"
+  },
+  "leaderboard": {
+    "title": "Mest aktiva grannar",
+    "allNeighborhoods": "Alla",
+    "yourRank": "Din placering",
+    "points": "poäng",
+    "thisMonth": "Denna månad",
+    "noData": "Inga poäng ännu"
+  },
+  "points": {
+    "earned": "+{points} poäng!"
   }
 }

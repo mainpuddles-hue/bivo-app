@@ -2163,5 +2163,22 @@
     "speedBadgeSalamanopea": "Lightning fast",
     "speedBadgeNopea": "Quick responder",
     "respondedIn": "Responded in {minutes} minutes"
+  },
+  "thanks": {
+    "button": "Thanks",
+    "alreadyThanked": "Already thanked",
+    "sent": "Thanks sent!",
+    "notification": "{name} thanked you"
+  },
+  "leaderboard": {
+    "title": "Most active neighbors",
+    "allNeighborhoods": "All",
+    "yourRank": "Your rank",
+    "points": "points",
+    "thisMonth": "This month",
+    "noData": "No points yet"
+  },
+  "points": {
+    "earned": "+{points} points!"
   }
 }

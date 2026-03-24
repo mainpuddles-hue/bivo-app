@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package,
-  Zap, Flame,
+  Zap, Flame, Trophy,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
@@ -328,12 +328,18 @@ export default function ProfileScreen() {
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{(postCount * 5) + (reviews.length * 10) + (thanksCount * 3) + (followerCount * 2)}</Text>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{profile?.total_points ?? 0}</Text>
               <Zap size={12} color={colors.pro} fill={colors.pro} />
             </View>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.karma')}</Text>
           </View>
         </View>
+
+        {/* Leaderboard button */}
+        <Pressable onPress={() => router.push('/leaderboard')} style={[s.overviewCard, { backgroundColor: colors.card }]}>
+          <Trophy size={18} color={colors.pro} />
+          <Text style={[s.overviewText, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
+        </Pressable>
 
         {/* Trust Level Progress */}
         {!trust.loading && trust.level < 3 && (

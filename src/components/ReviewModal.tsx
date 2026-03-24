@@ -3,6 +3,7 @@ import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator,
 import { Star, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { usePoints } from '@/hooks/usePoints'
 import { createClient } from '@/lib/supabase/client'
 import { StarRating } from '@/components/StarRating'
 
@@ -21,6 +22,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
 
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
+  const { awardPoints } = usePoints()
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const mountedRef = useRef(true)
@@ -66,6 +68,9 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
 
       if (error) throw error
 
+      // Award points for writing a review
+      awardPoints(user.id, 'review_written', reviewedUserId).catch(() => {})
+
       setSuccess(true)
       setTimeout(() => {
         if (!mountedRef.current) return
@@ -80,7 +85,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
     } finally {
       setLoading(false)
     }
-  }, [rating, comment, reviewedUserId, postId, supabase, t, onClose, onReviewSubmitted])
+  }, [rating, comment, reviewedUserId, postId, supabase, t, onClose, onReviewSubmitted, awardPoints])
 
   const handleClose = useCallback(() => {
     if (!loading) {

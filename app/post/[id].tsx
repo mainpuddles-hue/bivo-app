@@ -16,6 +16,7 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { shareContent } from '@/lib/share'
 import { ReportModal } from '@/components/ReportModal'
+import { ThanksButton } from '@/components/ThanksButton'
 import { Avatar } from '@/components/Avatar'
 import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
@@ -626,6 +627,9 @@ export default function PostDetailScreen() {
               <MessageCircle size={16} color={colors.primaryForeground} />
               <Text style={[styles.messageBtnText, { color: colors.primaryForeground }]}>{t('post.message')}</Text>
             </Pressable>
+            {!isAuthor && (
+              <ThanksButton toUserId={post.user_id} postId={post.id} fromUserId={userId} />
+            )}
           </View>
 
           <Text style={[styles.timestamp, { color: colors.mutedForeground }]}>{formatTimeAgo(post.created_at, t, locale)}</Text>

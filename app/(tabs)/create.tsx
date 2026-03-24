@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
+import { usePoints } from '@/hooks/usePoints'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { TrustGateModal } from '@/components/TrustGate'
@@ -127,6 +128,7 @@ export default function CreateScreen() {
     })
   }, [supabase, router])
 
+  const { awardPoints } = usePoints()
   const trust = useTrustLevel(currentUserId)
   const identity = useIdentityVerification(currentUserId)
 
@@ -365,6 +367,11 @@ export default function CreateScreen() {
           icon: 'CalendarDays',
           is_active: true,
         })
+      }
+
+      // Award points for creating a post
+      if (post?.id && user.id) {
+        awardPoints(user.id, 'post_created', post.id).catch(() => {})
       }
 
       router.replace('/')

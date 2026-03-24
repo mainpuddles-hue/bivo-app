@@ -14,6 +14,7 @@ import {
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { usePoints } from '@/hooks/usePoints'
 import { fonts } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo } from '@/lib/format'
@@ -107,6 +108,7 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
 export default function ForumScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
+  const { awardPoints } = usePoints()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
@@ -447,6 +449,11 @@ export default function ForumScreen() {
         await (supabase.from('forum_posts') as any)
           .update({ comment_count: newCount })
           .eq('id', selectedPost.id)
+
+        // Award points for reply
+        if (currentUserId && data) {
+          awardPoints(currentUserId, 'reply_created', (data as any).id).catch(() => {})
+        }
 
         // Send notification to post author (don't notify yourself)
         if (selectedPost.user_id !== currentUserId) {

@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { ThanksButton } from '@/components/ThanksButton'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeAgo, formatDateHeader } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
@@ -433,7 +434,7 @@ export default function ConversationScreen() {
             <Text style={{ color: colors.mutedForeground, fontWeight: '600' }}>{otherUser?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
           </View>
         )}
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={[s.headerName, { color: colors.foreground }]}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
           {otherTyping ? (
             <Text style={[s.headerSub, { color: colors.primary }]}>{t('messages.typing')}</Text>
@@ -441,6 +442,9 @@ export default function ConversationScreen() {
             <Text style={[s.headerSub, { color: colors.mutedForeground }]}>{otherUser.naapurusto}</Text>
           ) : null}
         </View>
+        {otherUser && (
+          <ThanksButton toUserId={otherUser.id} fromUserId={userId} size="small" />
+        )}
       </View>
 
       {/* Messages */}

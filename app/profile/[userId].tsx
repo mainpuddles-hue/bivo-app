@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
-  Flag, ShieldBan, Crown, PenLine,
+  Flag, ShieldBan, Crown, PenLine, Zap,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -317,6 +317,14 @@ export default function PublicProfileScreen() {
           <View style={s.stat}>
             <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating ?? '\u2013'}</Text>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <View style={s.stat}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{(profile as any)?.total_points ?? 0}</Text>
+              <Zap size={12} color="#F59E0B" fill="#F59E0B" />
+            </View>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('leaderboard.points')}</Text>
           </View>
         </View>
 

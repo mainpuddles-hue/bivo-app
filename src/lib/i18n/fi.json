@@ -2190,5 +2190,22 @@
     "speedBadgeSalamanopea": "Salamanopea",
     "speedBadgeNopea": "Nopea vastaaja",
     "respondedIn": "Vastasi {minutes} minuutissa"
+  },
+  "thanks": {
+    "button": "Kiitos",
+    "alreadyThanked": "Olet jo kiittänyt",
+    "sent": "Kiitos lähetetty!",
+    "notification": "{name} kiitti sinua"
+  },
+  "leaderboard": {
+    "title": "Aktiivisimmat naapurit",
+    "allNeighborhoods": "Kaikki",
+    "yourRank": "Sinun sijasi",
+    "points": "pistettä",
+    "thisMonth": "Tässä kuussa",
+    "noData": "Ei vielä pisteitä"
+  },
+  "points": {
+    "earned": "+{points} pistettä!"
   }
 }
