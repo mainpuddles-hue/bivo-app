@@ -165,15 +165,16 @@ export default function PostDetailScreen() {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post) return
     if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
+    // Find ANY existing conversation between these two users (regardless of post)
     const { data: existing } = await supabase
       .from('conversations').select('id')
       .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
-      .eq('post_id', id).maybeSingle()
+      .maybeSingle()
     if (existing) {
       router.push(`/messages/${(existing as any).id}`)
     } else {
       const { data: newConv, error } = await (supabase.from('conversations') as any)
-        .insert({ user1_id: userId, user2_id: post.user_id, post_id: id }).select('id').single()
+        .insert({ user1_id: userId, user2_id: post.user_id }).select('id').single()
       if (error || !newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
       router.push(`/messages/${newConv.id}`)
     }
