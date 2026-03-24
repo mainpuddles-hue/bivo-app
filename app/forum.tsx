@@ -59,7 +59,7 @@ interface ForumPost {
   neighborhood: string | null
   created_at: string
   upvote_count: number
-  reply_count: number
+  comment_count: number
   user?: ForumPostUser | null
 }
 
@@ -376,13 +376,13 @@ export default function ForumScreen() {
       if (data) {
         setReplies(prev => [...prev, data as unknown as ForumReply])
         // Update reply count
-        const newCount = selectedPost.reply_count + 1
-        setSelectedPost(prev => prev ? { ...prev, reply_count: newCount } : prev)
+        const newCount = selectedPost.comment_count + 1
+        setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
         setPosts(prev => prev.map(p =>
-          p.id === selectedPost.id ? { ...p, reply_count: newCount } : p
+          p.id === selectedPost.id ? { ...p, comment_count: newCount } : p
         ))
         await (supabase.from('forum_posts') as any)
-          .update({ reply_count: newCount })
+          .update({ comment_count: newCount })
           .eq('id', selectedPost.id)
       }
       setReplyText('')
@@ -411,7 +411,7 @@ export default function ForumScreen() {
           category: newCategory,
           neighborhood: userNeighborhood,
           upvote_count: 0,
-          reply_count: 0,
+          comment_count: 0,
         })
         .select('*, user:profiles!forum_posts_user_id_fkey(id, name, avatar_url, naapurusto)')
         .single()
@@ -521,7 +521,7 @@ export default function ForumScreen() {
             <View style={s.actionBtn}>
               <MessageCircle size={14} color={colors.mutedForeground} strokeWidth={1.8} />
               <Text style={[s.actionText, { color: colors.mutedForeground }]}>
-                {item.reply_count} {t('forum.replies')}
+                {item.comment_count} {t('forum.replies')}
               </Text>
             </View>
           </View>
@@ -942,7 +942,7 @@ export default function ForumScreen() {
                       <View style={s.detailActionBtn}>
                         <MessageCircle size={16} color={colors.mutedForeground} strokeWidth={1.8} />
                         <Text style={[s.detailActionText, { color: colors.mutedForeground }]}>
-                          {selectedPost.reply_count} {t('forum.replies')}
+                          {selectedPost.comment_count} {t('forum.replies')}
                         </Text>
                       </View>
                     </View>
