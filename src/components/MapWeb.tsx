@@ -1,140 +1,30 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, Platform, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, ScrollView, StyleSheet, Platform, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
-  ArrowLeft, Search, X, MapPin, Navigation, ChevronDown,
+  ArrowLeft, Search, MapPin, Navigation, ChevronDown,
   Newspaper, CalendarDays, Coffee, Crosshair, Loader2,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
-import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
+import { NEIGHBORHOODS } from '@/lib/constants'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
+import { MapSearchBar, type SearchResult } from '@/components/map/MapSearchBar'
+import { MapFilterChips } from '@/components/map/MapFilterChips'
+import { MapErrorState, MapEmptyState } from '@/components/map/MapErrorState'
+import { LeafletMap } from '@/components/map/LeafletMap'
 
-const HELSINKI_CENTER: [number, number] = [60.1699, 24.9384]
-const DEFAULT_ZOOM = 13
-
-// Helsinki municipal bounds — tighter than backend HELSINKI_BOUNDS to exclude
-// Espoo/Vantaa border areas that fall inside the rectangle.
+// Helsinki municipal bounds — shared with filtering logic
 const HKI = { south: 60.14, north: 60.27, west: 24.83, east: 25.20 } as const
 
-/**
- * Refined Helsinki boundary check with zone-based exclusions.
- * A simple bounding box includes parts of Vantaa (Myyrmäki 60.26/24.85)
- * and Espoo (Otaniemi 60.19/24.83). This adds exclusion zones.
- */
 const isInHelsinki = (lat: number, lng: number): boolean => {
   if (lat < HKI.south || lat > HKI.north || lng < HKI.west || lng > HKI.east) return false
-  // NW corner: Vantaa (Myyrmäki, Martinlaakso) — above 60.24 & west of 24.88
   if (lat > 60.24 && lng < 24.88) return false
-  // North-central: Vantaa border — above 60.26 & west of 24.96
   if (lat > 60.26 && lng < 24.96) return false
   return true
 }
-
-/** Escape HTML entities to prevent XSS in Leaflet popup content */
-function esc(str: string | null | undefined): string {
-  if (!str) return ''
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
-}
-
-/** Validate URL scheme — only allow http/https in popup links */
-function safeUrl(url: string | null | undefined): string | null {
-  if (!url) return null
-  try { const p = new URL(url); return (p.protocol === 'http:' || p.protocol === 'https:') ? url : null }
-  catch { return null }
-}
-
-const NEIGHBORHOOD_COORDS: Record<string, [number, number]> = {
-  'Kallio': [60.1844, 24.9496], 'Sörnäinen': [60.1870, 24.9700],
-  'Vallila': [60.1930, 24.9530], 'Kamppi': [60.1686, 24.9316],
-  'Töölö': [60.1810, 24.9220], 'Kruununhaka': [60.1730, 24.9560],
-  'Katajanokka': [60.1673, 24.9625], 'Punavuori': [60.1609, 24.9406],
-  'Arabia': [60.2037, 24.9756], 'Herttoniemi': [60.1950, 25.0320],
-  'Hakaniemi': [60.1790, 24.9510], 'Pasila': [60.1985, 24.9310],
-  'Lauttasaari': [60.1580, 24.8770], 'Ruoholahti': [60.1620, 24.9080],
-  'Jätkäsaari': [60.1570, 24.9120], 'Hermanni': [60.1880, 24.9620],
-  'Alppiharju': [60.1890, 24.9510], 'Käpylä': [60.2100, 24.9490],
-  'Kumpula': [60.2060, 24.9600], 'Toukola': [60.2000, 24.9670],
-  'Ullanlinna': [60.1570, 24.9480], 'Eira': [60.1550, 24.9380],
-  'Munkkiniemi': [60.1970, 24.8770], 'Vuosaari': [60.2090, 25.1450],
-  'Malmi': [60.2490, 25.0110], 'Oulunkylä': [60.2290, 24.9590],
-}
-
-// Place categories with SVG icons + colors (matching web's marker-icons.ts)
-const PLACE_CATS: Record<string, { color: string; icon: string; label: string }> = {
-  restaurant: { color: '#E74C3C', icon: 'UtensilsCrossed', label: 'Ravintola' },
-  cafe: { color: '#8B5E3C', icon: 'Coffee', label: 'Kahvila' },
-  bar: { color: '#9B59B6', icon: 'Coffee', label: 'Baari' },
-  shop: { color: '#3498DB', icon: 'Store', label: 'Kauppa' },
-  library: { color: '#27AE60', icon: 'BookOpen', label: 'Kirjasto' },
-  health: { color: '#E91E63', icon: 'Heart', label: 'Terveys' },
-  sport: { color: '#F39C12', icon: 'Dumbbell', label: 'Urheilu' },
-  culture: { color: '#8E44AD', icon: 'Palette', label: 'Kulttuuri' },
-  hotel: { color: '#2C3E50', icon: 'MapPin', label: 'Hotelli' },
-  attraction: { color: '#F1C40F', icon: 'MapPin', label: 'Nähtävyys' },
-  service: { color: '#607D8B', icon: 'MapPin', label: 'Palvelu' },
-  fast_food: { color: '#FF5722', icon: 'UtensilsCrossed', label: 'Pikaruoka' },
-  pub: { color: '#795548', icon: 'Coffee', label: 'Pubi' },
-  other: { color: '#78716C', icon: 'MapPin', label: 'Muu' },
-}
-
-// City event category config matching web exactly
-const CITY_EVENT_CATS: Record<string, { color: string; icon: string }> = {
-  culture: { color: '#8E44AD', icon: 'Palette' },
-  music: { color: '#E91E63', icon: 'Music' },
-  sport: { color: '#27AE60', icon: 'Dumbbell' },
-  family: { color: '#FF9800', icon: 'Users' },
-  food: { color: '#E74C3C', icon: 'UtensilsCrossed' },
-  nature: { color: '#4CAF50', icon: 'Leaf' },
-  education: { color: '#2196F3', icon: 'GraduationCap' },
-  theatre: { color: '#9C27B0', icon: 'Drama' },
-  exhibition: { color: '#795548', icon: 'Frame' },
-  festival: { color: '#FF5722', icon: 'PartyPopper' },
-  market: { color: '#FF9800', icon: 'Store' },
-  other: { color: '#607D8B', icon: 'CalendarDays' },
-}
-
-// Lucide SVG paths for markers (white stroke, matching web's MARKER_SVG)
-const MARKER_SVG: Record<string, string> = {
-  HandHelping: '<path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14"/><path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 13 6 6"/>',
-  Gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
-  Heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
-  Zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
-  BookOpen: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
-  CalendarDays: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
-  Music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
-  Dumbbell: '<path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>',
-  Users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-  UtensilsCrossed: '<path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/>',
-  Leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 2c1 2 2 4.5 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
-  GraduationCap: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
-  Drama: '<path d="M10 11h.01"/><path d="M14 6h.01"/><path d="M18 6h.01"/><path d="M6.5 13.1h.01"/><path d="M22 5c0 9-4 12-6 12s-6-3-6-12c0-2 2-3 6-3s6 1 6 3"/><path d="M17.4 12.9c-.8 6-2.7 8.1-4.2 9.1-1 .6-2.4-.3-2.6-1.5a43.7 43.7 0 0 1-.4-5.5"/><path d="M2 5c0 9 4 12 6 12s6-3 6-12c0-2-2-3-6-3S2 3 2 5"/>',
-  Frame: '<line x1="22" x2="2" y1="6" y2="6"/><line x1="22" x2="2" y1="18" y2="18"/><line x1="6" x2="6" y1="2" y2="22"/><line x1="18" x2="18" y1="2" y2="22"/>',
-  PartyPopper: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/>',
-  Store: '<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/>',
-  Palette: '<circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
-  Coffee: '<path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>',
-  MapPin: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
-}
-
-function svgMarker(iconName: string, size: number): string {
-  const paths = MARKER_SVG[iconName]
-  if (paths) return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>`
-}
-
-const PLACE_CATEGORIES = [
-  { key: null, label: 'common.all' },
-  { key: 'restaurant', label: 'places.restaurant' },
-  { key: 'cafe', label: 'places.cafe' },
-  { key: 'bar', label: 'places.bar' },
-  { key: 'shop', label: 'places.shop' },
-  { key: 'culture', label: 'places.culture' },
-  { key: 'service', label: 'places.service' },
-  { key: 'library', label: 'places.library' },
-]
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371
@@ -142,395 +32,6 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   const dLng = (lng2 - lng1) * Math.PI / 180
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-}
-
-function formatDistance(km: number): string {
-  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
-}
-
-// ── Leaflet Map (web only) ──
-// Split into two effects: (1) map init (once), (2) marker updates (on data change)
-function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, radiusKm, flyTo, onFlyComplete, onMapInteraction, isDark, t }: {
-  posts: Post[]; events: Event[]; cityEvents: CityEvent[]; places: LocalPlace[]
-  selectedArea: string | null; userPos: [number, number] | null; radiusKm: number | null
-  flyTo: { lat: number; lng: number; zoom: number } | null
-  onFlyComplete?: () => void
-  onMapInteraction?: () => void
-  isDark: boolean; t: (key: string) => string
-}) {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<any>(null)
-  const leafletRef = useRef<any>(null)
-  const tileLayerRef = useRef<any>(null)
-  const layersRef = useRef<any[]>([])
-  const userLayerRef = useRef<any>(null)
-  const initialFitDone = useRef(false)
-  const [mapReady, setMapReady] = useState(false)
-
-  // Load script with error handling
-  const loadScript = useCallback((src: string) =>
-    new Promise<void>((resolve, reject) => {
-      const s = document.createElement('script')
-      s.src = src
-      s.onload = () => resolve()
-      s.onerror = () => reject(new Error(`Failed to load ${src}`))
-      document.head.appendChild(s)
-    }), [])
-
-  // (1) Map init — runs once
-  useEffect(() => {
-    if (Platform.OS !== 'web' || !mapRef.current || typeof window === 'undefined') return
-    let cancelled = false
-
-    // CSS
-    if (!document.getElementById('leaflet-css')) {
-      const link = document.createElement('link')
-      link.id = 'leaflet-css'; link.rel = 'stylesheet'
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-      document.head.appendChild(link)
-    }
-    if (!document.getElementById('leaflet-cluster-css')) {
-      const link2 = document.createElement('link')
-      link2.id = 'leaflet-cluster-css'; link2.rel = 'stylesheet'
-      link2.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css'
-      document.head.appendChild(link2)
-      const link3 = document.createElement('link')
-      link3.id = 'leaflet-cluster-css2'; link3.rel = 'stylesheet'
-      link3.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css'
-      document.head.appendChild(link3)
-    }
-    if (!document.getElementById('pulse-css')) {
-      const style = document.createElement('style')
-      style.id = 'pulse-css'
-      style.textContent = '@keyframes userPulse{0%{transform:scale(1);opacity:0.6}100%{transform:scale(2.5);opacity:0}}.leaflet-popup-styled .leaflet-popup-content-wrapper{padding:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}.leaflet-popup-styled .leaflet-popup-content{margin:13px 20px;}.leaflet-popup-styled .leaflet-popup-tip{display:none;}'
-      document.head.appendChild(style)
-    }
-
-    const init = async () => {
-      try {
-        if (!(window as any).L) await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
-        if (!(window as any).L?.MarkerClusterGroup) await loadScript('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js')
-      } catch { return } // CDN unavailable — degrade gracefully
-      if (cancelled || !mapRef.current) return
-      const L = (window as any).L
-      leafletRef.current = L
-
-      const map = L.map(mapRef.current, { zoomControl: false }).setView(HELSINKI_CENTER, DEFAULT_ZOOM)
-      tileLayerRef.current = L.tileLayer(isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
-      L.control.zoom({ position: 'bottomright' }).addTo(map)
-
-      // Listen for popup link clicks — route via Expo Router instead of full navigation
-      map.on('popupopen', () => {
-        setTimeout(() => {
-          const links = document.querySelectorAll('.leaflet-popup-content a[data-route]')
-          links.forEach((a: Element) => {
-            a.addEventListener('click', (ev: globalThis.Event) => {
-              ev.preventDefault()
-              const route = (a as HTMLElement).getAttribute('data-route')
-              if (route) window.dispatchEvent(new CustomEvent('map-navigate', { detail: route }))
-            })
-          })
-        }, 50)
-      })
-
-      if (onMapInteraction) {
-        const handler = () => onMapInteraction()
-        map.on('movestart', handler)
-        map.on('zoomstart', handler)
-      }
-
-      mapInstanceRef.current = map
-      setMapReady(true)
-    }
-    init()
-
-    return () => { cancelled = true; setMapReady(false); if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null; leafletRef.current = null; tileLayerRef.current = null; initialFitDone.current = false } }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Init once — tile layer swapped via separate effect
-
-  // (1b) Swap tile layer on dark mode change (without destroying map)
-  useEffect(() => {
-    const map = mapInstanceRef.current
-    const L = leafletRef.current
-    if (!map || !L || !tileLayerRef.current) return
-    map.removeLayer(tileLayerRef.current)
-    tileLayerRef.current = L.tileLayer(isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
-  }, [isDark])
-
-  // (2) Update markers — runs when filtered data changes OR map becomes ready
-  useEffect(() => {
-    const map = mapInstanceRef.current
-    const L = leafletRef.current
-    if (!map || !L || !mapReady) return
-
-    // Clear old marker layers
-    for (const layer of layersRef.current) { map.removeLayer(layer) }
-    layersRef.current = []
-
-    const bdr = isDark ? '#121212' : 'white'
-    const createClusterIcon = (color: string) => (cluster: any) => {
-      const count = cluster.getChildCount()
-      const size = count < 10 ? 32 : count < 50 ? 40 : 48
-      const ring = count < 10 ? 4 : count < 50 ? 5 : 6
-      return L.divIcon({
-        className: '',
-        html: `<div style="width:${size+ring*2}px;height:${size+ring*2}px;border-radius:50%;background:${color}33;display:flex;align-items:center;justify-content:center;">
-          <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;border:2px solid ${bdr};box-shadow:0 2px 6px rgba(0,0,0,0.25);">
-            <span style="color:white;font-size:${count<10?12:count<50?13:14}px;font-weight:700;">${count}</span>
-          </div>
-        </div>`,
-        iconSize: [size+ring*2, size+ring*2], iconAnchor: [(size+ring*2)/2, (size+ring*2)/2],
-      })
-    }
-
-    // ── Post markers (clustered) ──
-    const postCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 50, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(45,107,94,0.9)') }) : L.layerGroup()
-    posts.forEach((p) => {
-      if (!p.latitude || !p.longitude) return
-      const cat = CATEGORIES[p.type as PostType]
-      const color = cat?.color ?? '#2D6B5E'
-      const svgIcon = svgMarker(cat?.icon ?? 'MapPin', 16)
-      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], p.latitude, p.longitude)) : ''
-      const icon = L.divIcon({
-        className: '',
-        html: `<div style="position:relative;width:36px;height:44px">
-          <div style="position:absolute;top:0;left:1px;width:34px;height:34px;border-radius:50%;background:${color};border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${svgIcon}</div>
-          <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid ${bdr}"></div>
-        </div>`,
-        iconSize: [36, 44], iconAnchor: [18, 44],
-      })
-      const marker = L.marker([p.latitude, p.longitude], { icon })
-      marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;">
-        ${p.image_url ? `<img src="${esc(p.image_url)}" style="width:calc(100%+40px);height:120px;object-fit:cover;margin:-20px -20px 10px;border-radius:8px 8px 0 0;" onerror="this.style.display='none'" />` : ''}
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-          <span style="width:10px;height:10px;border-radius:5px;background:${color};display:inline-block;"></span>
-          <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${color};">${esc(t(cat?.label ?? ''))}</span>
-        </div>
-        <div style="font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3;">${esc(p.title)}</div>
-        ${p.description ? `<div style="font-size:12px;color:#6B7280;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.description.slice(0, 100))}</div>` : ''}
-        ${p.location ? `<div style="font-size:11px;color:#9CA3AF;margin-bottom:2px;">📍 ${esc(p.location)}</div>` : ''}
-        ${dist ? `<div style="font-size:11px;color:#9CA3AF;">🧭 ${dist}</div>` : ''}
-        ${p.user ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid ${isDark ? '#333' : '#eee'};">
-          ${p.user.avatar_url ? `<img src="${esc(p.user.avatar_url)}" style="width:22px;height:22px;border-radius:11px;border:1px solid ${isDark ? '#444' : '#ddd'};" onerror="this.style.display='none'" />` : ''}
-          <span style="font-size:12px;color:#6B7280;">${esc(p.user.name ?? '')}</span>
-          ${p.user.naapurusto ? `<span style="font-size:10px;color:#9CA3AF;margin-left:auto;">${esc(p.user.naapurusto)}</span>` : ''}
-        </div>` : ''}
-        ${p.daily_fee ? `<div style="margin-top:6px;"><span style="background:#FDF6E8;color:#C98B2E;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${p.daily_fee} €/pv</span></div>` : ''}
-        <a href="#" data-route="/post/${esc(p.id)}" style="display:block;margin-top:10px;background:${color};color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Katso ilmoitus →</a>
-      </div>`, { maxWidth: 300, autoPanPadding: [80, 60] })
-      postCluster.addLayer(marker)
-    })
-    map.addLayer(postCluster)
-    layersRef.current.push(postCluster)
-
-    // ── Event markers (clustered) ──
-    const eventCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 45, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(43,138,98,0.9)') }) : L.layerGroup()
-    events.forEach((e) => {
-      if (!e.location_lat || !e.location_lng) return
-      const day = new Date(e.event_date).getDate()
-      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], e.location_lat, e.location_lng)) : ''
-      const dateStr = new Date(e.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
-      const ac = (e as any).attendee_count as number | undefined
-      const attendeeBar = e.max_attendees && ac != null
-        ? `<div style="margin-top:6px;"><div style="display:flex;justify-content:space-between;font-size:10px;color:#6B7280;margin-bottom:2px;"><span>${ac}/${e.max_attendees}</span><span>${Math.round((ac/e.max_attendees)*100)}%</span></div><div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${Math.min((ac/e.max_attendees)*100,100)}%;background:${(ac/e.max_attendees)>=0.9?'#dc2626':(ac/e.max_attendees)>=0.7?'#d97706':'#2B8A62'};border-radius:2px;"></div></div></div>` : ''
-
-      const calSvg = svgMarker('CalendarDays', 18)
-      const icon = L.divIcon({
-        className: '',
-        html: `<div style="position:relative;width:36px;height:44px">
-          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1B9E6B,#3AE6A0);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${calSvg}</div>
-          <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
-        </div>`,
-        iconSize: [36, 44], iconAnchor: [18, 44],
-      })
-      const evS = isDark
-        ? { bg: '#1E1E1E', text: '#E8E6E0', muted: '#9CA3AF' }
-        : { bg: '#FFFFFF', text: '#1A1A1A', muted: '#9CA3AF' }
-      const evMarker = L.marker([e.location_lat, e.location_lng], { icon })
-      evMarker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;margin:-13px -20px;border-radius:12px;overflow:hidden;background:${evS.bg};">
-          <div style="background:linear-gradient(135deg,#2B8A62,#34D399);padding:10px 14px;display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);display:flex;flex-direction:column;align-items:center;justify-content:center;">
-              <span style="color:white;font-size:18px;font-weight:800;line-height:1;">${day}</span>
-            </div>
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.95);font-weight:600;">${dateStr}</div>
-              <div style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;">Tapahtuma</div>
-            </div>
-          </div>
-          <div style="padding:10px 14px 12px;">
-            <div style="font-size:14px;font-weight:600;color:${evS.text};margin-bottom:4px;line-height:1.3;">${esc(e.title)}</div>
-            ${e.creator ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-              ${e.creator.avatar_url ? `<img src="${esc(e.creator.avatar_url)}" style="width:16px;height:16px;border-radius:8px;" onerror="this.style.display='none'" />` : ''}
-              <span style="font-size:11px;color:${evS.muted};">${esc(e.creator.name ?? '')}</span>
-            </div>` : ''}
-            ${e.description ? `<div style="font-size:11px;color:${evS.muted};margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(e.description)}</div>` : ''}
-            ${e.location_name ? `<div style="font-size:11px;color:${evS.muted};">${esc(e.location_name)}</div>` : ''}
-            ${dist ? `<div style="font-size:10px;color:${evS.muted};">${dist}</div>` : ''}
-            ${attendeeBar}
-            <a href="#" data-route="/events" style="display:inline-flex;align-items:center;justify-content:center;margin-top:10px;background:linear-gradient(135deg,#2B8A62,#34D399);color:white;padding:0 18px;min-height:36px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Katso tapahtuma →</a>
-          </div>
-        </div>`, { maxWidth: 300, className: 'leaflet-popup-styled' })
-      eventCluster.addLayer(evMarker)
-    })
-    map.addLayer(eventCluster)
-    layersRef.current.push(eventCluster)
-
-    // ── City event markers (clustered) ──
-    const cityCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 45, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(142,68,173,0.9)') }) : L.layerGroup()
-    cityEvents.forEach((ce) => {
-      if (!ce.latitude || !ce.longitude) return
-      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude)) : ''
-      const catCfg = CITY_EVENT_CATS[ce.category] ?? CITY_EVENT_CATS.other
-      const catColor = catCfg.color
-      const catSvg = svgMarker(catCfg.icon, 16)
-      const icon = L.divIcon({
-        className: '',
-        html: `<div style="position:relative;width:36px;height:44px">
-          <div style="width:36px;height:36px;border-radius:14px;background:linear-gradient(135deg,${catColor},${catColor}dd);border:2.5px solid ${bdr};display:flex;align-items:center;justify-content:center">${catSvg}</div>
-          <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid ${bdr}"></div>
-        </div>`,
-        iconSize: [36, 44], iconAnchor: [18, 44],
-      })
-      const ceMarker = L.marker([ce.latitude, ce.longitude], { icon })
-      const ceInfoUrl = safeUrl(ce.info_url)
-      const ceDate = new Date(ce.start_time)
-      const ceDateStr = ceDate.toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })
-      const ceDay = ceDate.getDate()
-      const ceS = isDark
-        ? { bg: '#1E1E1E', text: '#E8E6E0', muted: '#9CA3AF', link: '#6FCF97' }
-        : { bg: '#FFFFFF', text: '#1A1A1A', muted: '#9CA3AF', link: '#2D6B5E' }
-      ceMarker
-        .bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:280px;margin:-13px -20px;border-radius:12px;overflow:hidden;background:${ceS.bg};">
-          ${ce.image_url ? `<img src="${esc(ce.image_url)}" style="width:100%;height:100px;object-fit:cover;" onerror="this.style.display='none'" />` : ''}
-          <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:10px 14px;display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;border-radius:14px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;">
-              <span style="color:white;font-size:18px;font-weight:800;">${ceDay}</span>
-            </div>
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.95);font-weight:600;">${ceDateStr}</div>
-              <div style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;">${esc(ce.category)}</div>
-            </div>
-          </div>
-          <div style="padding:10px 14px 12px;">
-            <span style="display:inline-block;border-radius:20px;padding:2px 9px;font-size:9px;font-weight:600;color:white;background:${catColor};text-transform:uppercase;margin-bottom:6px;">${esc(ce.category)}</span>
-            <div style="font-size:14px;font-weight:600;color:${ceS.text};margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(ce.name_fi)}</div>
-            ${ce.description_fi ? `<div style="font-size:11px;color:${ceS.muted};margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(ce.description_fi.slice(0, 120))}</div>` : ''}
-            ${ce.location_name ? `<div style="font-size:11px;color:${ceS.muted};">${esc(ce.location_name)}</div>` : ''}
-            ${dist ? `<div style="font-size:10px;color:${ceS.muted};">${dist}</div>` : ''}
-            ${ce.is_free ? `<div style="margin-top:6px;"><span style="font-size:11px;font-weight:600;color:${isDark?'#34d399':'#2B8A62'};background:${isDark?'rgba(52,211,153,0.15)':'rgba(43,138,98,0.1)'};padding:2px 8px;border-radius:6px;">Ilmainen</span></div>` : ce.price_info ? `<div style="font-size:11px;color:${ceS.muted};margin-top:4px;">${esc(ce.price_info.slice(0, 40))}</div>` : ''}
-            ${ceInfoUrl ? `<a href="${esc(ceInfoUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;background:linear-gradient(135deg,#2D6B5E,#4CAF6A);color:white;padding:0 18px;min-height:36px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Lisätietoja →</a>` : `<a href="https://www.google.com/maps/dir/?api=1&amp;destination=${ce.latitude},${ce.longitude}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;margin-top:10px;background:${catColor};color:white;padding:0 18px;min-height:36px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet →</a>`}
-          </div>
-        </div>`, { maxWidth: 300, className: 'leaflet-popup-styled' })
-      cityCluster.addLayer(ceMarker)
-    })
-    map.addLayer(cityCluster)
-    layersRef.current.push(cityCluster)
-
-    // ── Place markers (clustered) ──
-    const placeCluster = L.MarkerClusterGroup ? new L.MarkerClusterGroup({ maxClusterRadius: 60, spiderfyOnMaxZoom: true, iconCreateFunction: createClusterIcon('rgba(201,139,46,0.9)') }) : L.layerGroup()
-    places.forEach((pl) => {
-      if (!pl.latitude || !pl.longitude) return
-      const pCat = PLACE_CATS[pl.category] ?? PLACE_CATS.other
-      const pColor = pCat.color
-      const pSvg = svgMarker(pCat.icon, 13)
-      const dist = userPos ? formatDistance(haversineKm(userPos[0], userPos[1], pl.latitude, pl.longitude)) : ''
-      const icon = L.divIcon({
-        className: '',
-        html: `<div style="position:relative;width:30px;height:36px;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.2));">
-          <div style="width:26px;height:26px;border-radius:6px;background:${pColor};opacity:${isDark?'0.9':'0.85'};border:2px solid ${bdr};display:flex;align-items:center;justify-content:center;margin:0 auto;">${pSvg}</div>
-          <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid ${pColor};margin:-1px auto 0;opacity:0.85;"></div>
-        </div>`,
-        iconSize: [30, 36], iconAnchor: [15, 36],
-      })
-      const marker = L.marker([pl.latitude, pl.longitude], { icon })
-      const plWebsite = safeUrl(pl.website)
-      const s = isDark
-        ? { bg: '#1E1E1E', text: '#E8E6E0', muted: '#9CA3AF', link: '#6FCF97', border: '#2A2A2A' }
-        : { bg: '#FFFFFF', text: '#1A1A1A', muted: '#9CA3AF', link: '#2D6B5E', border: '#E5E7EB' }
-      marker.bindPopup(`<div style="font-family:system-ui;min-width:220px;max-width:300px;margin:-13px -20px;border-radius:12px;overflow:hidden;background:${s.bg};">
-        <div style="background:linear-gradient(135deg,${pColor},${pColor}cc);padding:8px 14px;display:flex;align-items:center;gap:8px;">
-          ${svgMarker(pCat.icon, 14)}
-          <div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.95);font-weight:600;">${esc(pCat.label)}</div>
-            ${pl.subcategory ? `<div style="font-size:9px;color:rgba(255,255,255,0.7);">${esc(pl.subcategory)}</div>` : ''}
-          </div>
-        </div>
-        <div style="padding:10px 14px 12px;">
-          <div style="font-size:14px;font-weight:600;color:${s.text};margin-bottom:6px;line-height:1.3;">${esc(pl.name)}</div>
-          ${pl.address ? `<div style="font-size:11px;color:${s.muted};margin-bottom:2px;">${esc(pl.address)}</div>` : ''}
-          ${dist ? `<div style="font-size:10px;color:${s.muted};">${dist}</div>` : ''}
-          ${pl.opening_hours ? `<div style="font-size:10px;color:${s.muted};margin-top:4px;">${esc(pl.opening_hours)}</div>` : ''}
-          ${pl.phone ? `<div style="margin-top:6px;"><a href="tel:${esc(pl.phone)}" style="color:${s.link};font-size:12px;text-decoration:none;">${esc(pl.phone)}</a></div>` : ''}
-          <div style="display:flex;gap:8px;margin-top:10px;">
-            ${plWebsite ? `<a href="${esc(plWebsite)}" target="_blank" rel="noopener" style="flex:1;display:block;background:${s.link};color:white;text-align:center;padding:8px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Verkkosivut</a>` : ''}
-            <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${pl.latitude},${pl.longitude}" target="_blank" rel="noopener" style="flex:1;display:block;background:${pColor};color:white;text-align:center;padding:8px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">Reittiohjeet</a>
-          </div>
-        </div>
-      </div>`, { maxWidth: 320, className: 'leaflet-popup-styled' })
-      placeCluster.addLayer(marker)
-    })
-    map.addLayer(placeCluster)
-    layersRef.current.push(placeCluster)
-
-    // ── Fit bounds on first data load only ──
-    if (!initialFitDone.current) {
-      const allLatLngs: [number, number][] = [
-        ...posts.filter(p => p.latitude && p.longitude && isInHelsinki(p.latitude, p.longitude)).map(p => [p.latitude!, p.longitude!] as [number, number]),
-        ...events.filter(e => e.location_lat && e.location_lng && isInHelsinki(e.location_lat, e.location_lng)).map(e => [e.location_lat!, e.location_lng!] as [number, number]),
-        ...cityEvents.filter(c => c.latitude && c.longitude && isInHelsinki(c.latitude!, c.longitude!)).map(c => [c.latitude!, c.longitude!] as [number, number]),
-        ...places.filter(p => isInHelsinki(p.latitude, p.longitude)).slice(0, 50).map(p => [p.latitude, p.longitude] as [number, number]),
-      ]
-      if (allLatLngs.length > 2) {
-        try { map.fitBounds(L.latLngBounds(allLatLngs), { padding: [40, 40], maxZoom: 14 }) } catch {}
-      }
-      initialFitDone.current = true
-    }
-  }, [posts, events, cityEvents, places, userPos, radiusKm, isDark, t, mapReady])
-
-  // (3) User position + radius circle — separate layer so it doesn't flicker
-  useEffect(() => {
-    const map = mapInstanceRef.current
-    const L = leafletRef.current
-    if (!map || !L) return
-    if (userLayerRef.current) { map.removeLayer(userLayerRef.current); userLayerRef.current = null }
-    if (!userPos) return
-
-    const group = L.layerGroup()
-    const userIcon = L.divIcon({
-      className: '',
-      html: `<div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
-        <div style="width:18px;height:18px;border-radius:50%;background:#3B82F4;border:3px solid white;box-shadow:0 1px 6px rgba(59,130,244,0.4);"></div>
-        <div style="position:absolute;width:36px;height:36px;border-radius:50%;background:rgba(59,130,244,0.15);animation:userPulse 2.5s ease-out infinite;"></div>
-      </div>`,
-      iconSize: [40, 40], iconAnchor: [20, 20],
-    })
-    L.marker(userPos, { icon: userIcon, interactive: false }).addTo(group)
-    if (radiusKm) {
-      L.circle(userPos, { radius: radiusKm * 1000, color: '#4285F4', weight: 2, dashArray: '6 4', fillColor: '#4285F4', fillOpacity: isDark ? 0.12 : 0.08, interactive: false }).addTo(group)
-    }
-    group.addTo(map)
-    userLayerRef.current = group
-  }, [userPos, radiusKm, isDark])
-
-  // Fly to selected area
-  useEffect(() => {
-    if (!selectedArea || !mapInstanceRef.current) return
-    const coords = NEIGHBORHOOD_COORDS[selectedArea]
-    if (coords) mapInstanceRef.current.flyTo(coords, 15, { duration: 1 })
-  }, [selectedArea])
-
-  // Fly to search result, then reset after animation
-  useEffect(() => {
-    if (!flyTo || !mapInstanceRef.current) return
-    const map = mapInstanceRef.current
-    map.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom, { duration: 1 })
-    const done = () => { onFlyComplete?.(); map.off('moveend', done) }
-    map.on('moveend', done)
-    return () => { map.off('moveend', done) }
-  }, [flyTo, onFlyComplete])
-
-  if (Platform.OS !== 'web') return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text>Kartta vaatii web-ympäristön</Text></View>
-  return <div ref={mapRef as any} style={{ width: '100%', height: '100%' }} />
 }
 
 // ── Main Screen ──
@@ -564,6 +65,7 @@ export default function MapScreen() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [fetchError, setFetchError] = useState(false)
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom: number } | null>(null)
+  const [activeSubFilter, setActiveSubFilter] = useState<'posts' | 'events' | 'places' | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Debounce search 200ms
@@ -581,8 +83,7 @@ export default function MapScreen() {
         supabase.from('posts')
           .select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)')
           .eq('is_active', true)
-          .not('latitude', 'is', null)
-          .not('longitude', 'is', null)
+          .not('latitude', 'is', null).not('longitude', 'is', null)
           .gte('latitude', HKI.south).lte('latitude', HKI.north)
           .gte('longitude', HKI.west).lte('longitude', HKI.east)
           .limit(200),
@@ -590,12 +91,9 @@ export default function MapScreen() {
           .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, attendees:event_attendees(count), creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
           .gte('event_date', new Date().toISOString())
-          .not('location_lat', 'is', null)
-          .not('location_lng', 'is', null)
+          .not('location_lat', 'is', null).not('location_lng', 'is', null)
           .order('event_date', { ascending: true })
           .limit(200),
-        // Use wider bounds at query level (matching web's HELSINKI_BOUNDS);
-        // client-side isInHelsinki does the precise zone-based filtering
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
           .gte('start_time', new Date().toISOString())
@@ -616,7 +114,6 @@ export default function MapScreen() {
       const cData = cityRes.status === 'fulfilled' ? (cityRes.value.data ?? []) : []
       const plData = placesRes.status === 'fulfilled' ? (placesRes.value.data ?? []) : []
 
-      // Show error if ALL queries failed
       if (!pData.length && !eData.length && !cData.length && !plData.length &&
           postsRes.status === 'rejected' && eventsRes.status === 'rejected') {
         setFetchError(true)
@@ -630,7 +127,6 @@ export default function MapScreen() {
       })) as unknown as Event[])
       setCityEvents(cData as unknown as CityEvent[])
       setPlaces(plData as unknown as LocalPlace[])
-
       setLoading(false)
     }
     fetchData()
@@ -647,11 +143,9 @@ export default function MapScreen() {
     return () => window.removeEventListener('map-navigate', handler)
   }, [router])
 
-  // GPS: 1st click = locate + radius, 2nd click = fly to position, 3rd click = toggle radius
   const handleGeolocate = useCallback(() => {
     if (geoLoading) return
     if (userPos) {
-      // Fly to user position + toggle radius
       setFlyTo({ lat: userPos[0], lng: userPos[1], zoom: 15 })
       setRadiusKm(prev => prev ? null : 0.5)
       return
@@ -666,9 +160,7 @@ export default function MapScreen() {
     } else { setGeoLoading(false) }
   }, [geoLoading, userPos])
 
-  // ── Filtering chains (matching web logic) ──
-
-  // 1. Posts: category + search + radius
+  // ── Filtering chains ──
   const filteredPosts = useMemo(() => {
     if (!showPosts) return []
     let p = posts.filter(x => x.latitude && x.longitude && isInHelsinki(x.latitude, x.longitude))
@@ -678,7 +170,6 @@ export default function MapScreen() {
     return p
   }, [posts, showPosts, postFilter, debouncedSearch, userPos, radiusKm])
 
-  // 2. Community events: source + search + radius
   const filteredEvents = useMemo(() => {
     if (!showEvents || eventSource === 'city') return []
     let e = events.filter(x => x.location_lat && x.location_lng && isInHelsinki(x.location_lat, x.location_lng))
@@ -687,7 +178,6 @@ export default function MapScreen() {
     return e
   }, [events, showEvents, eventSource, debouncedSearch, userPos, radiusKm])
 
-  // 3. City events: source + category + search + radius + Helsinki only
   const filteredCityEvents = useMemo(() => {
     if (!showEvents || eventSource === 'community') return []
     let c = cityEvents.filter(x => x.latitude && x.longitude && isInHelsinki(x.latitude!, x.longitude!))
@@ -697,7 +187,6 @@ export default function MapScreen() {
     return c
   }, [cityEvents, showEvents, eventSource, cityEventCategory, debouncedSearch, userPos, radiusKm])
 
-  // 4. Places: category + search + radius
   const filteredPlaces = useMemo(() => {
     if (!showPlaces) return []
     let p = places.filter(x => isInHelsinki(x.latitude, x.longitude))
@@ -707,7 +196,6 @@ export default function MapScreen() {
     return p
   }, [places, showPlaces, placeFilter, debouncedSearch, userPos, radiusKm])
 
-  // 5. Layer count badges
   const layerCounts = useMemo(() => ({
     posts: filteredPosts.length,
     events: filteredEvents.length + filteredCityEvents.length,
@@ -716,46 +204,40 @@ export default function MapScreen() {
 
   const totalVisible = layerCounts.posts + layerCounts.events + layerCounts.places
 
-  // 6. Search results for fly-to (max 8)
-  const searchResults = useMemo(() => {
+  const searchResults = useMemo((): SearchResult[] => {
     if (!debouncedSearch || debouncedSearch.length < 2) return []
     const q = debouncedSearch.toLowerCase()
-    const results: { type: string; name: string; lat: number; lng: number; category?: string }[] = []
+    const results: SearchResult[] = []
     for (const p of filteredPosts) {
       if (results.length >= 8) break
-      if (p.latitude && p.longitude && (p.title.toLowerCase().includes(q) || p.location?.toLowerCase().includes(q))) {
+      if (p.latitude && p.longitude && (p.title.toLowerCase().includes(q) || p.location?.toLowerCase().includes(q)))
         results.push({ type: 'post', name: p.title, lat: p.latitude, lng: p.longitude, category: p.type })
-      }
     }
     for (const e of filteredEvents) {
       if (results.length >= 8) break
-      if (e.location_lat && e.location_lng && (e.title.toLowerCase().includes(q) || e.location_name?.toLowerCase().includes(q))) {
+      if (e.location_lat && e.location_lng && (e.title.toLowerCase().includes(q) || e.location_name?.toLowerCase().includes(q)))
         results.push({ type: 'event', name: e.title, lat: e.location_lat, lng: e.location_lng })
-      }
     }
     for (const ce of filteredCityEvents) {
       if (results.length >= 8) break
-      if (ce.latitude && ce.longitude && (ce.name_fi.toLowerCase().includes(q) || ce.location_name?.toLowerCase().includes(q))) {
+      if (ce.latitude && ce.longitude && (ce.name_fi.toLowerCase().includes(q) || ce.location_name?.toLowerCase().includes(q)))
         results.push({ type: 'city_event', name: ce.name_fi, lat: ce.latitude, lng: ce.longitude, category: ce.category })
-      }
     }
     for (const pl of filteredPlaces) {
       if (results.length >= 8) break
-      if (pl.name.toLowerCase().includes(q) || pl.address?.toLowerCase().includes(q)) {
+      if (pl.name.toLowerCase().includes(q) || pl.address?.toLowerCase().includes(q))
         results.push({ type: 'place', name: pl.name, lat: pl.latitude, lng: pl.longitude, category: pl.category })
-      }
     }
     return results
   }, [debouncedSearch, filteredPosts, filteredEvents, filteredCityEvents, filteredPlaces])
 
-  const handleSearchResultClick = useCallback((result: { lat: number; lng: number }) => {
+  const handleSearchResultClick = useCallback((result: SearchResult) => {
     setFlyTo({ lat: result.lat, lng: result.lng, zoom: 17 })
     setShowSearch(false)
     setSearchQuery('')
     setActiveSubFilter(null)
   }, [])
 
-  // 7. City event category counts
   const cityEventCategoryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     const source = eventSource === 'community' ? [] : cityEvents
@@ -766,9 +248,6 @@ export default function MapScreen() {
     }
     return counts
   }, [cityEvents, eventSource, userPos, radiusKm])
-
-  // Track which layer's sub-filter is open (null = none, tap layer pill to toggle)
-  const [activeSubFilter, setActiveSubFilter] = useState<'posts' | 'events' | 'places' | null>(null)
 
   const toggleLayer = (layer: 'posts' | 'events' | 'places') => {
     if (layer === 'posts') setShowPosts(!showPosts)
@@ -782,12 +261,22 @@ export default function MapScreen() {
     setShowSearch(false)
   }
 
+  const handleResetFilters = useCallback(() => {
+    setShowPosts(true); setShowEvents(true); setShowPlaces(true)
+    setPostFilter(null); setPlaceFilter(null); setEventSource('all')
+    setCityEventCategory(null); setRadiusKm(null); setActiveSubFilter(null)
+  }, [])
+
+  const dismissOverlays = useCallback(() => {
+    setActiveSubFilter(null); setShowAreaPicker(false); setShowSearch(false)
+  }, [])
+
   return (
     <View style={[ms.container, { backgroundColor: colors.background }]}>
       {/* ── Map ── */}
       <View style={ms.mapWrap}>
         {loading ? <View style={ms.loadingWrap}><ActivityIndicator size="large" color={colors.primary} /></View> : (
-          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onFlyComplete={() => setFlyTo(null)} onMapInteraction={() => { setActiveSubFilter(null); setShowAreaPicker(false); setShowSearch(false) }} isDark={isDark} t={t} />
+          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onFlyComplete={() => setFlyTo(null)} onMapInteraction={dismissOverlays} isDark={isDark} t={t} />
         )}
       </View>
 
@@ -806,101 +295,42 @@ export default function MapScreen() {
         </Pressable>
       </View>
 
-      {/* ── LAYER PILLS: tap=toggle, long press=sub-filters ── */}
+      {/* ── LAYER PILLS ── */}
       <View style={[ms.layerRow, { top: insets.top + 52 }]}>
-        {/* Posts */}
-        <Pressable
-          onPress={() => toggleLayer('posts')}
-          onLongPress={() => toggleSubFilter('posts')}
-          delayLongPress={300}
-          style={[ms.layerPill, { backgroundColor: showPosts ? colors.primary : colors.card }]}
-        >
+        <Pressable onPress={() => toggleLayer('posts')} onLongPress={() => toggleSubFilter('posts')} delayLongPress={300} style={[ms.layerPill, { backgroundColor: showPosts ? colors.primary : colors.card }]}>
           <Newspaper size={14} color={showPosts ? '#FFF' : colors.mutedForeground} />
           <Text style={[ms.layerText, { color: showPosts ? '#FFF' : colors.mutedForeground }]}>{t('map.layerPosts')}</Text>
-          <View style={[ms.badge, { backgroundColor: showPosts ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
-            <Text style={[ms.badgeNum, { color: showPosts ? '#FFF' : colors.mutedForeground }]}>{filteredPosts.length}</Text>
-          </View>
+          <View style={[ms.badge, { backgroundColor: showPosts ? 'rgba(255,255,255,0.3)' : colors.muted }]}><Text style={[ms.badgeNum, { color: showPosts ? '#FFF' : colors.mutedForeground }]}>{filteredPosts.length}</Text></View>
         </Pressable>
-        {/* Events */}
-        <Pressable
-          onPress={() => toggleLayer('events')}
-          onLongPress={() => toggleSubFilter('events')}
-          delayLongPress={300}
-          style={[ms.layerPill, { backgroundColor: showEvents ? '#2B8A62' : colors.card }]}
-        >
+        <Pressable onPress={() => toggleLayer('events')} onLongPress={() => toggleSubFilter('events')} delayLongPress={300} style={[ms.layerPill, { backgroundColor: showEvents ? '#2B8A62' : colors.card }]}>
           <CalendarDays size={14} color={showEvents ? '#FFF' : colors.mutedForeground} />
           <Text style={[ms.layerText, { color: showEvents ? '#FFF' : colors.mutedForeground }]}>{t('map.layerEvents')}</Text>
-          <View style={[ms.badge, { backgroundColor: showEvents ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
-            <Text style={[ms.badgeNum, { color: showEvents ? '#FFF' : colors.mutedForeground }]}>{filteredEvents.length + filteredCityEvents.length}</Text>
-          </View>
+          <View style={[ms.badge, { backgroundColor: showEvents ? 'rgba(255,255,255,0.3)' : colors.muted }]}><Text style={[ms.badgeNum, { color: showEvents ? '#FFF' : colors.mutedForeground }]}>{filteredEvents.length + filteredCityEvents.length}</Text></View>
         </Pressable>
-        {/* Places */}
-        <Pressable
-          onPress={() => toggleLayer('places')}
-          onLongPress={() => toggleSubFilter('places')}
-          delayLongPress={300}
-          style={[ms.layerPill, { backgroundColor: showPlaces ? '#78716C' : colors.card }]}
-        >
+        <Pressable onPress={() => toggleLayer('places')} onLongPress={() => toggleSubFilter('places')} delayLongPress={300} style={[ms.layerPill, { backgroundColor: showPlaces ? '#78716C' : colors.card }]}>
           <Coffee size={14} color={showPlaces ? '#FFF' : colors.mutedForeground} />
           <Text style={[ms.layerText, { color: showPlaces ? '#FFF' : colors.mutedForeground }]}>{t('map.layerPlaces')}</Text>
-          <View style={[ms.badge, { backgroundColor: showPlaces ? 'rgba(255,255,255,0.3)' : colors.muted }]}>
-            <Text style={[ms.badgeNum, { color: showPlaces ? '#FFF' : colors.mutedForeground }]}>{filteredPlaces.length}</Text>
-          </View>
+          <View style={[ms.badge, { backgroundColor: showPlaces ? 'rgba(255,255,255,0.3)' : colors.muted }]}><Text style={[ms.badgeNum, { color: showPlaces ? '#FFF' : colors.mutedForeground }]}>{filteredPlaces.length}</Text></View>
         </Pressable>
       </View>
 
-      {/* ── SUB-FILTER (slides from under active layer pill) ── */}
+      {/* ── SUB-FILTER CHIPS ── */}
       {activeSubFilter && (
-        <View style={[ms.subPanel, { top: insets.top + 92, backgroundColor: colors.card, borderColor: colors.border }]}>
-          {activeSubFilter === 'posts' && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
-              <Pressable onPress={() => setPostFilter(null)} style={[ms.chip, !postFilter ? { backgroundColor: colors.primary } : { backgroundColor: colors.muted }]}>
-                <Text style={[ms.chipText, { color: !postFilter ? '#FFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
-              </Pressable>
-              {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => (
-                <Pressable key={type} onPress={() => setPostFilter(postFilter === type ? null : type)} style={[ms.chip, postFilter === type ? { backgroundColor: cat.color } : { backgroundColor: colors.muted }]}>
-                  <Text style={[ms.chipText, { color: postFilter === type ? '#FFF' : colors.mutedForeground }]}>{t(cat.label)}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          )}
-          {activeSubFilter === 'events' && (
-            <View style={{ gap: 8 }}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
-                {(['all', 'community', 'city'] as const).map(src => (
-                  <Pressable key={src} onPress={() => setEventSource(src)} style={[ms.chip, eventSource === src ? { backgroundColor: '#2B8A62' } : { backgroundColor: colors.muted }]}>
-                    <Text style={[ms.chipText, { color: eventSource === src ? '#FFF' : colors.mutedForeground }]}>
-                      {src === 'all' ? t('common.all') : src === 'community' ? t('events.communityTab') : 'Helsinki'}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-              {(eventSource === 'all' || eventSource === 'city') && Object.keys(cityEventCategoryCounts).length > 0 && (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
-                  <Pressable onPress={() => setCityEventCategory(null)} style={[ms.chip, !cityEventCategory ? { backgroundColor: '#3B7DD8' } : { backgroundColor: colors.muted }]}>
-                    <Text style={[ms.chipText, { color: !cityEventCategory ? '#FFF' : colors.mutedForeground }]}>{t('common.all')}</Text>
-                  </Pressable>
-                  {Object.entries(cityEventCategoryCounts).map(([cat, count]) => {
-                    const cfg = CITY_EVENT_CATS[cat]
-                    return (
-                      <Pressable key={cat} onPress={() => setCityEventCategory(cityEventCategory === cat ? null : cat)} style={[ms.chip, cityEventCategory === cat ? { backgroundColor: cfg?.color ?? '#3B7DD8' } : { backgroundColor: colors.muted }]}>
-                        <Text style={[ms.chipText, { color: cityEventCategory === cat ? '#FFF' : colors.mutedForeground }]}>{cat} ({count})</Text>
-                      </Pressable>
-                    )
-                  })}
-                </ScrollView>
-              )}
-            </View>
-          )}
-          {activeSubFilter === 'places' && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ms.chipRow}>
-              {PLACE_CATEGORIES.map(({ key, label }) => (
-                <Pressable key={key ?? 'all'} onPress={() => setPlaceFilter(key)} style={[ms.chip, placeFilter === key ? { backgroundColor: '#78716C' } : { backgroundColor: colors.muted }]}>
-                  <Text style={[ms.chipText, { color: placeFilter === key ? '#FFF' : colors.mutedForeground }]}>{t(label)}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          )}
+        <View style={{ position: 'absolute', left: 12, right: 12, top: insets.top + 92, zIndex: 9 }}>
+          <MapFilterChips
+            activeSubFilter={activeSubFilter}
+            postFilter={postFilter}
+            onPostFilterChange={setPostFilter}
+            eventSource={eventSource}
+            onEventSourceChange={setEventSource}
+            cityEventCategory={cityEventCategory}
+            onCityEventCategoryChange={setCityEventCategory}
+            cityEventCategoryCounts={cityEventCategoryCounts}
+            placeFilter={placeFilter}
+            onPlaceFilterChange={setPlaceFilter}
+            colors={colors}
+            t={t}
+          />
         </View>
       )}
 
@@ -923,34 +353,25 @@ export default function MapScreen() {
       {/* ── SEARCH + RESULTS ── */}
       {showSearch && (
         <View style={{ position: 'absolute', left: 12, right: 12, top: insets.top + 52, zIndex: 20 }}>
-          <View style={[ms.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Search size={16} color={colors.mutedForeground} />
-            <TextInput style={[ms.searchInput, { color: colors.foreground }]} value={searchQuery} onChangeText={setSearchQuery} placeholder={t('feed.searchPlaceholder')} placeholderTextColor={colors.mutedForeground} autoFocus />
-            {searchQuery.length > 0 && <Pressable onPress={() => setSearchQuery('')} hitSlop={8}><X size={16} color={colors.mutedForeground} /></Pressable>}
-          </View>
-          {searchResults.length > 0 && (
-            <ScrollView style={[ms.searchResults, { backgroundColor: colors.card, borderColor: colors.border }]} keyboardShouldPersistTaps="handled">
-              {searchResults.map((r, i) => (
-                <Pressable key={i} onPress={() => handleSearchResultClick(r)} style={[ms.searchItem, i < searchResults.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}>
-                  <View style={[ms.searchBadge, { backgroundColor: r.type === 'post' ? `${colors.primary}20` : r.type === 'event' ? '#2B8A6220' : r.type === 'city_event' ? '#8E44AD20' : '#78716C20' }]}>
-                    <Text style={[ms.searchBadgeText, { color: r.type === 'post' ? colors.primary : r.type === 'event' ? '#2B8A62' : r.type === 'city_event' ? '#8E44AD' : '#78716C' }]}>
-                      {r.type === 'post' ? t('map.layerPosts') : r.type === 'event' ? t('map.layerEvents') : r.type === 'city_event' ? 'Helsinki' : t('map.layerPlaces')}
-                    </Text>
-                  </View>
-                  <Text style={[ms.searchName, { color: colors.foreground }]} numberOfLines={1}>{r.name}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          )}
+          <MapSearchBar
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+            onClear={() => setSearchQuery('')}
+            placeholder={t('feed.searchPlaceholder')}
+            results={searchResults}
+            onResultPress={handleSearchResultClick}
+            colors={colors}
+            t={t}
+          />
         </View>
       )}
 
-      {/* ── GPS BUTTON (right side) ── */}
+      {/* ── GPS BUTTON ── */}
       <Pressable onPress={handleGeolocate} disabled={geoLoading} style={[ms.gpsBtn, { bottom: insets.bottom + (userPos ? 140 : 70), backgroundColor: userPos ? colors.primary : colors.card }]}>
         {geoLoading ? <Loader2 size={20} color={colors.foreground} /> : <Crosshair size={20} color={userPos ? '#FFF' : colors.foreground} />}
       </Pressable>
 
-      {/* ── RADIUS PANEL (above count bar, only when GPS active) ── */}
+      {/* ── RADIUS PANEL ── */}
       {userPos && (
         <View style={[ms.radiusPanel, { bottom: insets.bottom + 70, backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={ms.radiusRow}>
@@ -973,7 +394,7 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* ── COUNT BAR (bottom center) ── */}
+      {/* ── COUNT BAR ── */}
       <View style={[ms.countBar, { bottom: insets.bottom + 24, backgroundColor: colors.card, borderColor: colors.border }]}>
         <MapPin size={14} color={colors.mutedForeground} />
         <Text style={[ms.countText, { color: colors.foreground }]}>{totalVisible} {t('map.visible')}</Text>
@@ -981,27 +402,24 @@ export default function MapScreen() {
 
       {/* ── ERROR STATE ── */}
       {fetchError && !loading && (
-        <View style={[ms.empty, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {/* TODO: i18n — replace hardcoded Finnish strings with t() calls */}
-          <Text style={[ms.emptyTitle, { color: colors.foreground }]}>Virhe ladattaessa karttadataa</Text>
-          <Text style={[ms.emptyHint, { color: colors.mutedForeground }]}>Tarkista verkkoyhteys ja yritä uudelleen.</Text>
-          <Pressable onPress={() => { setFetchError(false); setLoading(true); /* re-trigger fetch by changing dep */ }} style={[ms.emptyBtn, { backgroundColor: colors.primary }]}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFF' }}>Yritä uudelleen</Text>{/* TODO: i18n */}
-          </Pressable>
-        </View>
+        <MapErrorState
+          error="Virhe ladattaessa karttadataa"
+          hint="Tarkista verkkoyhteys ja yrit\u00E4 uudelleen."
+          onRetry={() => { setFetchError(false); setLoading(true) }}
+          retryLabel="Yrit\u00E4 uudelleen"
+          colors={colors}
+        />
       )}
 
       {/* ── EMPTY STATE ── */}
       {!loading && !fetchError && totalVisible === 0 && (
-        <View style={[ms.empty, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-          <Text style={[ms.emptyTitle, { color: colors.foreground }]}>{t('map.noResults')}</Text>
-          <Text style={[ms.emptyHint, { color: colors.mutedForeground }]}>{t('map.resetFiltersHint')}</Text>
-          <Pressable onPress={() => { setShowPosts(true); setShowEvents(true); setShowPlaces(true); setPostFilter(null); setPlaceFilter(null); setEventSource('all'); setCityEventCategory(null); setRadiusKm(null); setActiveSubFilter(null) }}
-            style={[ms.emptyBtn, { backgroundColor: colors.primary }]}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFF' }}>{t('map.resetFilters')}</Text>
-          </Pressable>
-        </View>
+        <MapEmptyState
+          title={t('map.noResults')}
+          hint={t('map.resetFiltersHint')}
+          onReset={handleResetFilters}
+          resetLabel={t('map.resetFilters')}
+          colors={colors}
+        />
       )}
     </View>
   )
@@ -1013,37 +431,19 @@ const ms = StyleSheet.create({
   container: { flex: 1 },
   mapWrap: { ...StyleSheet.absoluteFillObject },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  // Top bar
   topBar: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingBottom: 8 },
   pill: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', ...shadow },
   areaPill: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, borderRadius: 12, paddingHorizontal: 12, ...shadow },
   areaPillText: { fontSize: 14, fontWeight: '600', flex: 1 },
-  // Layer row
   layerRow: { position: 'absolute', left: 12, right: 12, zIndex: 10, flexDirection: 'row', gap: 6 },
   layerPill: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, height: 36, borderRadius: 18, ...shadow },
   layerText: { fontSize: 11, fontWeight: '600' },
   badge: { minWidth: 20, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   badgeNum: { fontSize: 10, fontWeight: '700' },
-  // Sub-filter panel
-  subPanel: { position: 'absolute', left: 12, right: 12, zIndex: 9, borderRadius: 12, borderWidth: 1, padding: 10, ...shadow },
-  chipRow: { flexDirection: 'row', gap: 6 },
-  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
-  chipText: { fontSize: 11, fontWeight: '500' },
-  // Overlay (area picker)
   overlay: { position: 'absolute', left: 12, right: 12, zIndex: 20, borderRadius: 12, borderWidth: 1, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
   overlayItem: { paddingHorizontal: 16, paddingVertical: 12 },
   overlayText: { fontSize: 14 },
-  // Search
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, height: 44, ...shadow },
-  searchInput: { flex: 1, fontSize: 14 },
-  searchResults: { marginTop: 4, borderRadius: 12, borderWidth: 1, maxHeight: 240, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
-  searchItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
-  searchBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  searchBadgeText: { fontSize: 10, fontWeight: '600' },
-  searchName: { fontSize: 14, flex: 1 },
-  // GPS
   gpsBtn: { position: 'absolute', right: 12, zIndex: 10, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', ...shadow },
-  // Radius panel
   radiusPanel: { position: 'absolute', left: 16, right: 16, zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 14, gap: 10, ...shadow },
   radiusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   radiusLabel: { fontSize: 13, fontWeight: '600', flex: 1 },
@@ -1053,12 +453,6 @@ const ms = StyleSheet.create({
   presets: { flexDirection: 'row', gap: 6, justifyContent: 'center' },
   preset: { width: 40, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   presetText: { fontSize: 12, fontWeight: '600' },
-  // Count bar
   countBar: { position: 'absolute', left: 60, right: 60, zIndex: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18, borderWidth: 1, ...shadow },
   countText: { fontSize: 13, fontWeight: '500' },
-  // Empty state
-  empty: { position: 'absolute', left: 40, right: 40, top: '40%', zIndex: 10, borderRadius: 16, borderWidth: 1, padding: 24, alignItems: 'center', gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5 },
-  emptyTitle: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
-  emptyHint: { fontSize: 13, textAlign: 'center', lineHeight: 18 },
-  emptyBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, marginTop: 4 },
 })
