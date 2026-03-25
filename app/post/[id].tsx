@@ -27,6 +27,7 @@ import ImageGallery from '@/components/ImageGallery'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
+import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -55,6 +56,11 @@ function PostDetailScreenInner() {
 
   // Report modal state
   const [reportModalVisible, setReportModalVisible] = useState(false)
+
+  // Likers modal state
+  const [showLikersModal, setShowLikersModal] = useState(false)
+  const [likers, setLikers] = useState<{ id: string; name: string; avatar_url: string | null }[]>([])
+  const [loadingLikers, setLoadingLikers] = useState(false)
 
   // Image gallery state
   const [galleryVisible, setGalleryVisible] = useState(false)
@@ -187,6 +193,10 @@ function PostDetailScreenInner() {
         if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
         router.push(`/messages/${newConv.id}`)
       }
+      // Speed badge check for urgent posts
+      if (post.is_urgent && userId && post.user_id) {
+        checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})
+      }
     } catch (e: any) {
       Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
     }
@@ -206,6 +216,10 @@ function PostDetailScreenInner() {
       if (error) throw error
       if (parentId) {
         setExpandedReplies(prev => { const next = new Set(prev); next.add(parentId); return next })
+      }
+      // Speed badge check for urgent posts
+      if (post?.is_urgent && userId && post.user_id) {
+        checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})
       }
     } catch (err) {
       // Restore comment text so the user doesn't lose their input
@@ -299,6 +313,22 @@ function PostDetailScreenInner() {
     if (!post) return
     setReportModalVisible(true)
   }, [userId, post, router])
+
+  const fetchLikers = useCallback(async () => {
+    if (!id) return
+    setLoadingLikers(true)
+    try {
+      const { data } = await supabase
+        .from('post_likes')
+        .select('user_id, user:profiles!post_likes_user_id_fkey(id, name, avatar_url)')
+        .eq('post_id', id)
+        .limit(50)
+      setLikers((data ?? []).map((d: any) => d.user).filter(Boolean))
+    } catch {
+      // Graceful — keep empty
+    }
+    setLoadingLikers(false)
+  }, [id, supabase])
 
   const openGallery = useCallback((index: number) => {
     setGalleryInitialIndex(index); setGalleryVisible(true)
@@ -609,11 +639,12 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {/* TODO: ENHANCEMENT — add "who liked this post" modal (tap likeCount to see likers list) */}
           <View style={styles.engRow}>
             <Pressable onPress={toggleLike} style={styles.engItem}>
               <Heart size={18} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
-              <Text style={[styles.engText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>
+            </Pressable>
+            <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={6}>
+              <Text style={[styles.engText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount} {t('post.likes')}</Text>
             </Pressable>
             <View style={styles.engItem}>
               <MessageCircle size={18} color={colors.mutedForeground} />
@@ -886,6 +917,33 @@ function PostDetailScreenInner() {
           </Pressable>
         </View>
       )}
+
+      {/* Likers Modal */}
+      <Modal visible={showLikersModal} animationType="slide" transparent onRequestClose={() => setShowLikersModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setShowLikersModal(false)}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.likedBy')}</Text>
+              <Pressable onPress={() => setShowLikersModal(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
+            </View>
+            {loadingLikers ? (
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
+            ) : (
+              <FlatList
+                data={likers}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => (
+                  <Pressable onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 }}>
+                    <Avatar url={item.avatar_url} name={item.name} size={40} />
+                    <Text style={{ fontSize: 15, fontWeight: '500', color: colors.foreground, flex: 1 }}>{item.name}</Text>
+                  </Pressable>
+                )}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', color: colors.mutedForeground, paddingVertical: 20 }}>{t('post.noLikes')}</Text>}
+              />
+            )}
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* Report Modal */}
       {post && (

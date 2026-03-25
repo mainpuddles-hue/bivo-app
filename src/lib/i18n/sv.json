@@ -160,7 +160,10 @@
     "writeReply": "Skriv ett svar...",
     "showReplies": "Visa {count} svar",
     "hideReplies": "Dölj svar",
-    "viewPost": "Visa inlägg"
+    "viewPost": "Visa inlägg",
+    "likedBy": "Gillad av",
+    "noLikes": "Inga gillningar ännu",
+    "likes": "gillningar"
   },
   "events": {
     "title": "Evenemang",
@@ -1005,6 +1008,18 @@
   "bookings": {
     "title": "Bokningar",
     "empty": "Inga bokningar ännu"
+  },
+  "booking": {
+    "details": "Bokningsdetaljer",
+    "statusTimeline": "Status",
+    "sendMessage": "Skicka meddelande",
+    "priceBreakdown": "Prisuppdelning",
+    "notFound": "Bokning hittades inte",
+    "serviceFee": "Serviceavgift",
+    "total": "Totalt",
+    "notes": "Anteckningar",
+    "dates": "Datum",
+    "otherParty": "Motpart"
   },
   "payment": {
     "success": "Betalning lyckades!",
@@ -2198,7 +2213,8 @@
     "markDone": "Markera klar",
     "markedComplete": "Tjänsten markerad som klar! Pengarna frigörs snart.",
     "cancelBooking": "Avboka",
-    "cancelConfirm": "Är du säker på att du vill avboka denna tjänstbokning?"
+    "cancelConfirm": "Är du säker på att du vill avboka denna tjänstbokning?",
+    "statusInProgress": "Pågår"
   },
   "verification": {
     "successTitle": "Identitet verifierad!",

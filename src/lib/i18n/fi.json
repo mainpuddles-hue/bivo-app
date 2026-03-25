@@ -160,7 +160,10 @@
     "writeReply": "Kirjoita vastaus...",
     "showReplies": "Näytä {count} vastausta",
     "hideReplies": "Piilota vastaukset",
-    "viewPost": "Katso ilmoitus"
+    "viewPost": "Katso ilmoitus",
+    "likedBy": "Tykkääjät",
+    "noLikes": "Ei vielä tykkäyksiä",
+    "likes": "tykkäystä"
   },
   "events": {
     "title": "Tapahtumat",
@@ -1005,6 +1008,18 @@
   "bookings": {
     "title": "Varaukset",
     "empty": "Ei varauksia vielä"
+  },
+  "booking": {
+    "details": "Varauksen tiedot",
+    "statusTimeline": "Tila",
+    "sendMessage": "Lähetä viesti",
+    "priceBreakdown": "Hintaerittely",
+    "notFound": "Varausta ei löytynyt",
+    "serviceFee": "Palvelumaksu",
+    "total": "Yhteensä",
+    "notes": "Muistiinpanot",
+    "dates": "Päivämäärät",
+    "otherParty": "Toinen osapuoli"
   },
   "payment": {
     "success": "Maksu onnistui!",
@@ -2198,7 +2213,8 @@
     "markDone": "Valmis",
     "markedComplete": "Palvelu merkitty suoritetuksi! Rahat vapautetaan pian.",
     "cancelBooking": "Peru varaus",
-    "cancelConfirm": "Haluatko varmasti perua tämän palveluvarauksen?"
+    "cancelConfirm": "Haluatko varmasti perua tämän palveluvarauksen?",
+    "statusInProgress": "Käynnissä"
   },
   "verification": {
     "successTitle": "Henkilöllisyys vahvistettu!",

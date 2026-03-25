@@ -160,7 +160,10 @@
     "writeReply": "Написать ответ...",
     "showReplies": "Показать {count} ответов",
     "hideReplies": "Скрыть ответы",
-    "viewPost": "Посмотреть объявление"
+    "viewPost": "Посмотреть объявление",
+    "likedBy": "Понравилось",
+    "noLikes": "Пока нет лайков",
+    "likes": "лайков"
   },
   "events": {
     "title": "События",
@@ -1005,6 +1008,18 @@
   "bookings": {
     "title": "Бронирования",
     "empty": "Бронирований пока нет"
+  },
+  "booking": {
+    "details": "Детали бронирования",
+    "statusTimeline": "Статус",
+    "sendMessage": "Отправить сообщение",
+    "priceBreakdown": "Разбивка цены",
+    "notFound": "Бронирование не найдено",
+    "serviceFee": "Сервисный сбор",
+    "total": "Итого",
+    "notes": "Заметки",
+    "dates": "Даты",
+    "otherParty": "Другая сторона"
   },
   "payment": {
     "success": "Оплата прошла!",
@@ -2198,7 +2213,8 @@
     "markDone": "Готово",
     "markedComplete": "Услуга выполнена! Деньги будут переведены.",
     "cancelBooking": "Отменить бронирование",
-    "cancelConfirm": "Отменить бронирование услуги?"
+    "cancelConfirm": "Отменить бронирование услуги?",
+    "statusInProgress": "В процессе"
   },
   "verification": {
     "successTitle": "Личность подтверждена!",

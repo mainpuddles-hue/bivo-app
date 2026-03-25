@@ -10,7 +10,7 @@ export type PostType =
 
 export type ProfileVisibility = 'everyone' | 'neighbors' | 'hidden'
 export type LocationAccuracy = 'exact' | 'area' | 'city'
-export type BadgeType = 'verified' | 'pro' | 'trusted' | 'active' | 'first_post' | 'helper' | 'popular' | 'lender' | 'event_creator' | 'weekly_active' | 'neighborhood_hero' | 'first_invite' | 'community_builder'
+export type BadgeType = 'verified' | 'pro' | 'trusted' | 'active' | 'first_post' | 'helper' | 'popular' | 'lender' | 'event_creator' | 'weekly_active' | 'neighborhood_hero' | 'first_invite' | 'community_builder' | 'salamanopea' | 'nopea'
 
 // Three-tier trust system
 export type TrustLevel = 1 | 2 | 3

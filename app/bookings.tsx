@@ -286,7 +286,7 @@ export default function BookingsScreen() {
 
     return (
       <Pressable
-        onPress={() => item.post?.id ? router.push(`/post/${item.post.id}` as any) : undefined}
+        onPress={() => router.push(`/booking/${item.id}` as any)}
         style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>
@@ -406,7 +406,7 @@ export default function BookingsScreen() {
 
     return (
       <Pressable
-        onPress={() => item.post?.id ? router.push(`/post/${item.post.id}` as any) : undefined}
+        onPress={() => router.push(`/booking/${item.id}` as any)}
         style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>

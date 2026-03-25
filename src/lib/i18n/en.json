@@ -160,7 +160,10 @@
     "writeReply": "Write a reply...",
     "showReplies": "Show {count} replies",
     "hideReplies": "Hide replies",
-    "viewPost": "View post"
+    "viewPost": "View post",
+    "likedBy": "Liked by",
+    "noLikes": "No likes yet",
+    "likes": "likes"
   },
   "events": {
     "title": "Events",
@@ -1005,6 +1008,18 @@
   "bookings": {
     "title": "Bookings",
     "empty": "No bookings yet"
+  },
+  "booking": {
+    "details": "Booking details",
+    "statusTimeline": "Status",
+    "sendMessage": "Send message",
+    "priceBreakdown": "Price breakdown",
+    "notFound": "Booking not found",
+    "serviceFee": "Service fee",
+    "total": "Total",
+    "notes": "Notes",
+    "dates": "Dates",
+    "otherParty": "Other party"
   },
   "payment": {
     "success": "Payment successful!",
@@ -2198,7 +2213,8 @@
     "markDone": "Mark done",
     "markedComplete": "Service marked complete! Funds will be released soon.",
     "cancelBooking": "Cancel booking",
-    "cancelConfirm": "Are you sure you want to cancel this service booking?"
+    "cancelConfirm": "Are you sure you want to cancel this service booking?",
+    "statusInProgress": "In progress"
   },
   "verification": {
     "successTitle": "Identity verified!",

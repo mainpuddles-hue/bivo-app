@@ -160,7 +160,10 @@
     "writeReply": "Kirjuta vastus...",
     "showReplies": "Näita {count} vastust",
     "hideReplies": "Peida vastused",
-    "viewPost": "Vaata kuulutust"
+    "viewPost": "Vaata kuulutust",
+    "likedBy": "Meeldimised",
+    "noLikes": "Veel pole meeldimisi",
+    "likes": "meeldimist"
   },
   "events": {
     "title": "Sündmused",
@@ -1005,6 +1008,18 @@
   "bookings": {
     "title": "Broneeringud",
     "empty": "Broneeringuid veel pole"
+  },
+  "booking": {
+    "details": "Broneeringu üksikasjad",
+    "statusTimeline": "Staatus",
+    "sendMessage": "Saada sõnum",
+    "priceBreakdown": "Hinna jaotus",
+    "notFound": "Broneeringut ei leitud",
+    "serviceFee": "Teenustasu",
+    "total": "Kokku",
+    "notes": "Märkmed",
+    "dates": "Kuupäevad",
+    "otherParty": "Teine osapool"
   },
   "payment": {
     "success": "Makse õnnestus!",
@@ -2198,7 +2213,8 @@
     "markDone": "Valmis",
     "markedComplete": "Teenus märgitud valminuks! Raha vabastatakse peagi.",
     "cancelBooking": "Tühista broneering",
-    "cancelConfirm": "Kas soovid kindlasti selle teenuse broneeringu tühistada?"
+    "cancelConfirm": "Kas soovid kindlasti selle teenuse broneeringu tühistada?",
+    "statusInProgress": "Käimas"
   },
   "verification": {
     "successTitle": "Isik kinnitatud!",

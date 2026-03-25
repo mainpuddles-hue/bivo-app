@@ -149,6 +149,7 @@ function RootLayoutInner() {
         <Stack.Screen name="auth/callback" options={{ animation: 'fade' }} />
         <Stack.Screen name="map" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="bookings" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="booking/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="payment/success" options={{ animation: 'fade' }} />
         <Stack.Screen name="payment/cancel" options={{ animation: 'fade' }} />
         <Stack.Screen name="payment-settings" options={{ animation: 'slide_from_right' }} />
