@@ -527,7 +527,9 @@
     "helped": "Помогли",
     "shared": "Поделились",
     "impactSaved": "Сохранено",
-    "streakDays": "{count} дней подряд",
+    "streak": "Серия",
+    "streakDays": "{count} дней",
+    "multiplier": "{x}x очков",
     "points": "баллов",
     "writeReview": "Написать отзыв",
     "rating": "Оценка",
@@ -670,7 +672,15 @@
     "notifLikes": "Лайки",
     "notifComments": "Комментарии",
     "notifFollows": "Подписки",
-    "notifNappaa": "Уведомления Хватай!"
+    "notifNappaa": "Уведомления Хватай!",
+    "privacySection": "Конфиденциальность",
+    "locationAccuracy": "Точность местоположения",
+    "locationExact": "Точное местоположение",
+    "locationExactDesc": "Показывает точное местоположение",
+    "locationArea": "Район (~1км)",
+    "locationAreaDesc": "Показывает район проживания",
+    "locationCity": "Только город",
+    "locationCityDesc": "Показывает только Хельсинки"
   },
   "postCard": {
     "viewListing": "Смотреть объявление",
@@ -797,7 +807,17 @@
     "verifyingLocation": "Проверка местоположения...",
     "locationVerified": "Местоположение подтверждено",
     "locationNotVerified": "Вы в {distance} км от выбранного района",
-    "locationCheckFailed": "Не удалось проверить местоположение"
+    "locationCheckFailed": "Не удалось проверить местоположение",
+    "howItWorks": "Как это работает",
+    "askHelp": "Попросите помощь у соседей",
+    "offerServices": "Предлагайте услуги и вещи",
+    "borrowSafely": "Одалживайте и арендуйте безопасно",
+    "trustSafety": "Доверие и безопасность",
+    "suomifiDesc": "Верификация Suomi.fi для безопасных сделок",
+    "trustTiers": "Трёхуровневая система доверия",
+    "securePayments": "Безопасные платежи через Stripe",
+    "next": "Далее",
+    "start": "Поехали!"
   },
   "resetPassword": {
     "title": "Смена пароля",

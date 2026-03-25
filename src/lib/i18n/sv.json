@@ -527,7 +527,9 @@
     "helped": "Hjälpt",
     "shared": "Delat",
     "impactSaved": "Sparat",
-    "streakDays": "{count} dagars svit",
+    "streak": "Svit",
+    "streakDays": "{count} dagar",
+    "multiplier": "{x}x poäng",
     "points": "poäng",
     "writeReview": "Skriv en recension",
     "rating": "Betyg",
@@ -670,7 +672,15 @@
     "notifLikes": "Gillningar på dina inlägg",
     "notifComments": "Kommentarer på dina inlägg",
     "notifFollows": "Nya följare",
-    "notifNappaa": "Fånga-aviseringar (24h)"
+    "notifNappaa": "Fånga-aviseringar (24h)",
+    "privacySection": "Integritet",
+    "locationAccuracy": "Platsnoggrannhet",
+    "locationExact": "Exakt plats",
+    "locationExactDesc": "Visar din exakta plats",
+    "locationArea": "Grannskap (~1km)",
+    "locationAreaDesc": "Visar ditt grannskapsområde",
+    "locationCity": "Bara stad",
+    "locationCityDesc": "Visar bara Helsingfors"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -797,7 +807,17 @@
     "verifyingLocation": "Kontrollerar plats...",
     "locationVerified": "Plats verifierad",
     "locationNotVerified": "Du är {distance} km från det valda grannskapet",
-    "locationCheckFailed": "Platskontroll misslyckades"
+    "locationCheckFailed": "Platskontroll misslyckades",
+    "howItWorks": "Så fungerar det",
+    "askHelp": "Be grannar om hjälp",
+    "offerServices": "Erbjud tjänster och saker",
+    "borrowSafely": "Låna och hyr tryggt",
+    "trustSafety": "Tillit och säkerhet",
+    "suomifiDesc": "Suomi.fi-verifiering för trygga transaktioner",
+    "trustTiers": "Trestegs tillitssystem",
+    "securePayments": "Säkra betalningar via Stripe",
+    "next": "Nästa",
+    "start": "Sätt igång!"
   },
   "resetPassword": {
     "title": "Byt lösenord",

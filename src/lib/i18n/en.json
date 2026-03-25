@@ -527,7 +527,9 @@
     "helped": "Helped",
     "shared": "Shared",
     "impactSaved": "Saved",
-    "streakDays": "{count} day streak",
+    "streak": "Streak",
+    "streakDays": "{count} days",
+    "multiplier": "{x}x points",
     "points": "points",
     "writeReview": "Write a review",
     "rating": "Rating",
@@ -670,7 +672,15 @@
     "notifLikes": "Likes on your posts",
     "notifComments": "Comments on your posts",
     "notifFollows": "New followers",
-    "notifNappaa": "Grab-it alerts (24h)"
+    "notifNappaa": "Grab-it alerts (24h)",
+    "privacySection": "Privacy",
+    "locationAccuracy": "Location accuracy",
+    "locationExact": "Exact location",
+    "locationExactDesc": "Shows your exact location",
+    "locationArea": "Neighborhood (~1km)",
+    "locationAreaDesc": "Shows your neighborhood area",
+    "locationCity": "City only",
+    "locationCityDesc": "Shows only Helsinki"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -797,7 +807,17 @@
     "verifyingLocation": "Verifying location...",
     "locationVerified": "Location verified",
     "locationNotVerified": "You are {distance} km from the selected neighborhood",
-    "locationCheckFailed": "Location check failed"
+    "locationCheckFailed": "Location check failed",
+    "howItWorks": "How it works",
+    "askHelp": "Ask neighbors for help",
+    "offerServices": "Offer services and items",
+    "borrowSafely": "Borrow and rent safely",
+    "trustSafety": "Trust & Safety",
+    "suomifiDesc": "Suomi.fi verification for safe transactions",
+    "trustTiers": "Three-tier trust system",
+    "securePayments": "Secure payments via Stripe",
+    "next": "Next",
+    "start": "Let's go!"
   },
   "resetPassword": {
     "title": "Change password",

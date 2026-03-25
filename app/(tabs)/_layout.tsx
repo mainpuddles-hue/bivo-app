@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Tabs } from 'expo-router'
 import { View, Text, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -5,13 +6,16 @@ import { Newspaper, CalendarDays, Plus, MessageCircle, User, UsersRound, Compass
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Header } from '@/components/Header'
+import { useSupabase } from '@/hooks/useSupabase'
+import { useUnreadCount } from '@/hooks/useUnreadCount'
 
-function TabIcon({ icon: Icon, label, focused, isCreate, colors }: {
+function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
   icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
   label: string
   focused: boolean
   isCreate?: boolean
   colors: ReturnType<typeof useTheme>['colors']
+  badge?: number
 }) {
   if (isCreate) {
     return (
@@ -32,6 +36,11 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors }: {
           color={focused ? colors.primary : colors.mutedForeground}
           strokeWidth={focused ? 2.25 : 1.6}
         />
+        {badge != null && badge > 0 && (
+          <View style={s.badge}>
+            <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
+          </View>
+        )}
       </View>
       <Text numberOfLines={1} style={[
         s.tabLabel,
@@ -48,6 +57,17 @@ export default function TabLayout() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const tabBarBg = isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)'
+  const supabase = useSupabase()
+  const [userId, setUserId] = useState<string | null>(null)
+  const unreadCount = useUnreadCount(userId)
+
+  useEffect(() => {
+    let mounted = true
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (mounted && user) setUserId(user.id)
+    })
+    return () => { mounted = false }
+  }, [supabase])
 
   return (
     <View style={{ flex: 1 }}>
@@ -82,7 +102,7 @@ export default function TabLayout() {
         tabBarIcon: ({ focused }) => <TabIcon icon={Plus} label={t('nav.create')} focused={focused} isCreate colors={colors} />,
       }} />
       <Tabs.Screen name="messages" options={{
-        tabBarIcon: ({ focused }) => <TabIcon icon={MessageCircle} label={t('nav.messages')} focused={focused} colors={colors} />,
+        tabBarIcon: ({ focused }) => <TabIcon icon={MessageCircle} label={t('nav.messages')} focused={focused} colors={colors} badge={unreadCount} />,
       }} />
       <Tabs.Screen name="profile" options={{
         tabBarIcon: ({ focused }) => <TabIcon icon={User} label={t('nav.profile')} focused={focused} colors={colors} />,
@@ -105,6 +125,26 @@ const s = StyleSheet.create({
     shadowOpacity: 0.15, shadowRadius: 4, elevation: 4,
   },
   tabLabel: { fontSize: 10, fontWeight: '500' },
+  badge: {
+    position: 'absolute' as const,
+    top: -4,
+    right: -8,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#D94F4F',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700' as const,
+    lineHeight: 12,
+  },
   activeBar: {
     position: 'absolute', bottom: -6,
     width: 20, height: 3, borderRadius: 1.5,

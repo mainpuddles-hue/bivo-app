@@ -527,7 +527,9 @@
     "helped": "Autettu",
     "shared": "Jaettu",
     "impactSaved": "Tallennettu",
-    "streakDays": "{count} päivän putki",
+    "streak": "Putki",
+    "streakDays": "{count} päivää",
+    "multiplier": "{x}x pisteet",
     "points": "pistettä",
     "writeReview": "Kirjoita arvostelu",
     "rating": "Arvosana",
@@ -670,7 +672,15 @@
     "notifLikes": "Tykkäykset",
     "notifComments": "Kommentit",
     "notifFollows": "Seuraaminen",
-    "notifNappaa": "Nappaa! hälytykset"
+    "notifNappaa": "Nappaa! hälytykset",
+    "privacySection": "Yksityisyys",
+    "locationAccuracy": "Sijainnin tarkkuus",
+    "locationExact": "Tarkka sijainti",
+    "locationExactDesc": "Näyttää tarkan sijainnin",
+    "locationArea": "Naapurusto (~1km)",
+    "locationAreaDesc": "Näyttää naapuruston alueen",
+    "locationCity": "Vain kaupunki",
+    "locationCityDesc": "Näyttää vain Helsinki"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -797,7 +807,17 @@
     "verifyingLocation": "Tarkistetaan sijaintia...",
     "locationVerified": "Sijainti vahvistettu",
     "locationNotVerified": "Sijaintisi on {distance} km valitsemastasi naapurustosta",
-    "locationCheckFailed": "Sijainnin tarkistus ei onnistunut"
+    "locationCheckFailed": "Sijainnin tarkistus ei onnistunut",
+    "howItWorks": "Näin se toimii",
+    "askHelp": "Pyydä apua naapureilta",
+    "offerServices": "Tarjoa palveluksia ja tavaroita",
+    "borrowSafely": "Lainaa ja vuokraa turvallisesti",
+    "trustSafety": "Luottamus ja turvallisuus",
+    "suomifiDesc": "Suomi.fi-vahvistus turvallisiin transaktioihin",
+    "trustTiers": "Kolmiportainen luottamusjärjestelmä",
+    "securePayments": "Turvalliset maksut Stripen kautta",
+    "next": "Seuraava",
+    "start": "Aloita!"
   },
   "resetPassword": {
     "title": "Vaihda salasana",

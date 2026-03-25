@@ -527,7 +527,9 @@
     "helped": "Aidatud",
     "shared": "Jagatud",
     "impactSaved": "Salvestatud",
-    "streakDays": "{count} päeva järjest",
+    "streak": "Seeria",
+    "streakDays": "{count} päeva",
+    "multiplier": "{x}x punktid",
     "points": "punkti",
     "writeReview": "Kirjuta arvustus",
     "rating": "Hinne",
@@ -670,7 +672,15 @@
     "notifLikes": "Meeldimised",
     "notifComments": "Kommentaarid",
     "notifFollows": "Jälgimised",
-    "notifNappaa": "Nappaa! hoiatused"
+    "notifNappaa": "Nappaa! hoiatused",
+    "privacySection": "Privaatsus",
+    "locationAccuracy": "Asukoha täpsus",
+    "locationExact": "Täpne asukoht",
+    "locationExactDesc": "Näitab sinu täpset asukohta",
+    "locationArea": "Naabruskond (~1km)",
+    "locationAreaDesc": "Näitab sinu naabruskonna ala",
+    "locationCity": "Ainult linn",
+    "locationCityDesc": "Näitab ainult Helsinki"
   },
   "postCard": {
     "viewListing": "Vaata kuulutust",
@@ -797,7 +807,17 @@
     "verifyingLocation": "Asukoha kontrollimine...",
     "locationVerified": "Asukoht kinnitatud",
     "locationNotVerified": "Sinu asukoht on {distance} km kaugusel valitud naabruskonnast",
-    "locationCheckFailed": "Asukoha kontrollimine ebaõnnestus"
+    "locationCheckFailed": "Asukoha kontrollimine ebaõnnestus",
+    "howItWorks": "Kuidas see toimib",
+    "askHelp": "Küsi naabritelt abi",
+    "offerServices": "Paku teenuseid ja asju",
+    "borrowSafely": "Laenuta ja rendi turvaliselt",
+    "trustSafety": "Usaldus ja turvalisus",
+    "suomifiDesc": "Suomi.fi kinnitus turvalisteks tehinguteks",
+    "trustTiers": "Kolmeastmeline usaldussüsteem",
+    "securePayments": "Turvalised maksed Stripe'i kaudu",
+    "next": "Järgmine",
+    "start": "Alustame!"
   },
   "resetPassword": {
     "title": "Vaheta parool",

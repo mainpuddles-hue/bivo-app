@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View, Text, Pressable, SectionList,
   StyleSheet, ActivityIndicator, RefreshControl, TextInput,
@@ -17,6 +17,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { NEIGHBORHOODS } from '@/lib/constants'
 
+import { clusterMarkers, isCluster, type Cluster } from '@/lib/mapClustering'
 import type { ListItem, Section } from './map/types'
 import { EventCard } from './map/EventCard'
 import { PlaceRow } from './map/PlaceRow'
@@ -58,6 +59,28 @@ export default function MapScreen() {
     handleMarkerPress, handleGPSSelect, handleNeighborhoodSelect,
     handleCenterOnUser, openDirections,
   } = useMapData(t, locale)
+
+  // ── Clustering ──
+  const [zoomLevel, setZoomLevel] = useState(14)
+
+  const clusteredMarkers = useMemo(() => {
+    const items = renderedMarkers.map(m => ({
+      id: m.key,
+      latitude: m.latitude,
+      longitude: m.longitude,
+      type: 'marker' as const,
+      pinColor: m.pinColor,
+      title: m.title,
+      description: m.description,
+    }))
+    return clusterMarkers(items, zoomLevel)
+  }, [renderedMarkers, zoomLevel])
+
+  const handleRegionChange = useCallback((region: { latitudeDelta: number; longitudeDelta: number }) => {
+    // Approximate zoom level from latitudeDelta
+    const zoom = Math.round(Math.log2(360 / region.latitudeDelta))
+    setZoomLevel(zoom)
+  }, [])
 
   // ── Animate map on item navigate (wraps hook handler) ──
   const onItemPress = useCallback((item: ListItem) => {
@@ -195,18 +218,44 @@ export default function MapScreen() {
           showsCompass={false}
           pitchEnabled={false}
           rotateEnabled={false}
+          onRegionChangeComplete={handleRegionChange}
         >
-          {renderedMarkers.map(m => (
-            <Marker
-              key={m.key}
-              coordinate={{ latitude: m.latitude, longitude: m.longitude }}
-              pinColor={m.pinColor}
-              title={m.title}
-              description={m.description}
-              tracksViewChanges={false}
-              onPress={() => handleMarkerPress(m)}
-            />
-          ))}
+          {clusteredMarkers.map(item => {
+            if (isCluster(item)) {
+              return (
+                <Marker
+                  key={item.id}
+                  coordinate={{ latitude: item.latitude, longitude: item.longitude }}
+                  tracksViewChanges={false}
+                  onPress={() => {
+                    // Zoom in on cluster
+                    mapRef.current?.animateToRegion({
+                      latitude: item.latitude,
+                      longitude: item.longitude,
+                      latitudeDelta: 0.008,
+                      longitudeDelta: 0.008,
+                    }, 400)
+                  }}
+                >
+                  <View style={styles.clusterMarker}>
+                    <Text style={styles.clusterText}>{item.count}</Text>
+                  </View>
+                </Marker>
+              )
+            }
+            const m = item
+            return (
+              <Marker
+                key={m.id}
+                coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+                pinColor={m.pinColor}
+                title={m.title}
+                description={m.description}
+                tracksViewChanges={false}
+                onPress={() => handleMarkerPress({ key: m.id, latitude: m.latitude, longitude: m.longitude, pinColor: m.pinColor ?? '', title: m.title ?? '', description: m.description ?? '' })}
+              />
+            )
+          })}
         </MapView>
         {(loading || neighborhoodLoading) && (
           <View style={styles.mapOverlay}>
@@ -598,5 +647,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     textAlign: 'center',
+  },
+  clusterMarker: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#2D6B5E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  clusterText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    fontFamily: fonts.headingSemi,
+    lineHeight: 16,
   },
 })

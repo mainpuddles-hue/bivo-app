@@ -13,7 +13,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInAppPurchase } from '@/hooks/useInAppPurchase'
 import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
 import { isValidUUID } from '@/lib/validation'
-import type { Profile, ProfileVisibility } from '@/lib/types'
+import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
   { key: 'light', label: 'settings.themeLight', icon: Sun },
@@ -25,6 +25,12 @@ const VISIBILITY_OPTIONS: { key: ProfileVisibility; label: string }[] = [
   { key: 'everyone', label: 'settings.visibilityEveryone' },
   { key: 'neighbors', label: 'settings.visibilityNeighbors' },
   { key: 'hidden', label: 'settings.visibilityHidden' },
+]
+
+const LOCATION_ACCURACY_OPTIONS: { key: LocationAccuracy; label: string; desc: string }[] = [
+  { key: 'exact', label: 'settings.locationExact', desc: 'settings.locationExactDesc' },
+  { key: 'area', label: 'settings.locationArea', desc: 'settings.locationAreaDesc' },
+  { key: 'city', label: 'settings.locationCity', desc: 'settings.locationCityDesc' },
 ]
 
 export default function SettingsScreen() {
@@ -39,6 +45,7 @@ export default function SettingsScreen() {
   const iap = useInAppPurchase(profile?.id ?? null)
   const notifPrefs = useNotificationPreferences()
   const [visibility, setVisibility] = useState<ProfileVisibility>('everyone')
+  const [locationAccuracy, setLocationAccuracy] = useState<LocationAccuracy>('exact')
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -69,6 +76,7 @@ export default function SettingsScreen() {
         const p = data as unknown as Profile
         setProfile(p)
         setVisibility(p.profile_visibility)
+        setLocationAccuracy(p.location_accuracy ?? 'exact')
       }
       // Theme is handled by ThemeProvider
     }
@@ -81,6 +89,7 @@ export default function SettingsScreen() {
     try {
       await (supabase.from('profiles') as any).update({
         profile_visibility: visibility,
+        location_accuracy: locationAccuracy,
         notifications_enabled: notifPrefs.preferences.messages,
       }).eq('id', profile.id)
       setDirty(false)
@@ -88,7 +97,7 @@ export default function SettingsScreen() {
     } catch {
       Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
     } finally { setSaving(false) }
-  }, [profile, visibility, notifPrefs.preferences.messages, theme, supabase, t])
+  }, [profile, visibility, locationAccuracy, notifPrefs.preferences.messages, theme, supabase, t])
 
   const handleChangePassword = useCallback(async () => {
     if (!currentPw) {
@@ -345,6 +354,21 @@ export default function SettingsScreen() {
               <Eye size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[visibility === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Location Accuracy */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.locationAccuracy')}</Text>
+        <View style={[s.card, { backgroundColor: colors.card }]}>
+          {LOCATION_ACCURACY_OPTIONS.map(({ key, label, desc }) => (
+            <Pressable key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={s.row}>
+              <MapPin size={18} color={colors.mutedForeground} />
+              <View style={{ flex: 1 }}>
+                <Text style={[s.rowText, { color: colors.foreground, flex: undefined }]}>{t(label)}</Text>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2 }}>{t(desc)}</Text>
+              </View>
+              <View style={[locationAccuracy === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
             </Pressable>
           ))}
         </View>
