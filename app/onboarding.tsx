@@ -22,30 +22,22 @@ import {
   CheckCircle,
   AlertTriangle,
   Loader2,
+  Shield,
+  Handshake,
+  Gift,
+  Package,
 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
-import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
+import { NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
-import { useReferral } from '@/hooks/useReferral'
-import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
-import type { PostType } from '@/lib/types'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
-const TOTAL_PAGES = 3
-
-const CATEGORY_ORDER: PostType[] = [
-  'tarvitsen',
-  'tarjoan',
-  'ilmaista',
-  'nappaa',
-  'lainaa',
-  'tapahtuma',
-]
+const TOTAL_PAGES = 4
 
 export default function OnboardingScreen() {
   const { colors, isDark } = useTheme()
@@ -62,9 +54,9 @@ export default function OnboardingScreen() {
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
   const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
 
-  // Auto-verify when neighborhood is selected on page 3
+  // Auto-verify when neighborhood is selected on page 4 (index 3)
   useEffect(() => {
-    if (selectedNeighborhood && currentPage === 2) {
+    if (selectedNeighborhood && currentPage === 3) {
       verify(selectedNeighborhood)
     }
   }, [selectedNeighborhood, currentPage, verify])
@@ -103,11 +95,6 @@ export default function OnboardingScreen() {
 
       // Apply referral code if entered
       if (referralInput.trim()) {
-        const { applyInviteCode } = await import('@/hooks/useReferral').then(() => {
-          // We can't call hooks here, so do direct Supabase calls
-          return { applyInviteCode: null }
-        }).catch(() => ({ applyInviteCode: null }))
-
         // Direct Supabase referral code application
         const code = referralInput.trim().toUpperCase()
         const { data: inviter } = await supabase
@@ -157,7 +144,7 @@ export default function OnboardingScreen() {
     </View>
   )
 
-  // ── Page 1: Welcome ──
+  // ── Slide 1: Welcome ──
   const renderWelcome = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <View style={s.welcomeContent}>
@@ -169,12 +156,12 @@ export default function OnboardingScreen() {
           TackBird
         </Text>
 
-        <Text style={[s.tagline, { color: colors.foreground, fontFamily: fonts.body }]}>
-          {t('onboarding.subtitle')}
+        <Text style={[s.tagline, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+          {t('onboarding.welcome')}
         </Text>
 
         <Text style={[s.slogan, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-          {t('feed.slogan')}
+          {t('onboarding.welcomeSubtitle')}
         </Text>
       </View>
 
@@ -184,7 +171,7 @@ export default function OnboardingScreen() {
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
         >
           <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
-            {t('onboarding.getStarted')}
+            {t('onboarding.next')}
           </Text>
           <ArrowRight size={18} color={colors.primaryForeground} />
         </Pressable>
@@ -193,46 +180,43 @@ export default function OnboardingScreen() {
     </View>
   )
 
-  // ── Page 2: Categories ──
-  const renderCategories = () => (
+  // ── Slide 2: How it works ──
+  const renderHowItWorks = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
-      <ScrollView
-        contentContainerStyle={s.categoriesScrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading }]}>
-          {t('onboarding.categoriesTitle')}
+      <View style={s.howItWorksContent}>
+        <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }]}>
+          {t('onboarding.howItWorks')}
         </Text>
 
-        <View style={s.categoryGrid}>
-          {CATEGORY_ORDER.map((key) => {
-            const cat = CATEGORIES[key]
-            const IconComponent = CATEGORY_ICON_MAP[cat.icon]
-            const bgColor = isDark ? cat.bgDark : cat.bgLight
+        <View style={s.featureList}>
+          <View style={s.featureRow}>
+            <View style={[s.featureIconCircle, { backgroundColor: '#2D6B5E20' }]}>
+              <Handshake size={28} color={colors.primary} />
+            </View>
+            <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
+              {t('onboarding.askHelp')}
+            </Text>
+          </View>
 
-            return (
-              <View
-                key={key}
-                style={[s.categoryCard, { backgroundColor: bgColor }]}
-              >
-                <View style={[s.categoryIconCircle, { backgroundColor: cat.color }]}>
-                  {IconComponent && (
-                    <IconComponent size={22} color="#FFFFFF" />
-                  )}
-                </View>
-                <View style={s.categoryTextArea}>
-                  <Text style={[s.categoryName, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
-                    {t(cat.label)}
-                  </Text>
-                  <Text style={[s.categorySub, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                    {t(cat.subtitle)}
-                  </Text>
-                </View>
-              </View>
-            )
-          })}
+          <View style={s.featureRow}>
+            <View style={[s.featureIconCircle, { backgroundColor: '#7C5CBF20' }]}>
+              <Gift size={28} color="#7C5CBF" />
+            </View>
+            <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
+              {t('onboarding.offerServices')}
+            </Text>
+          </View>
+
+          <View style={s.featureRow}>
+            <View style={[s.featureIconCircle, { backgroundColor: '#C98B2E20' }]}>
+              <Package size={28} color="#C98B2E" />
+            </View>
+            <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
+              {t('onboarding.borrowSafely')}
+            </Text>
+          </View>
         </View>
-      </ScrollView>
+      </View>
 
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <Pressable
@@ -240,20 +224,79 @@ export default function OnboardingScreen() {
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
         >
           <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
-            {t('onboarding.continue')}
+            {t('onboarding.next')}
           </Text>
           <ChevronRight size={18} color={colors.primaryForeground} />
+        </Pressable>
+        <Pressable onPress={() => goToPage(3)} hitSlop={8}>
+          <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {t('onboarding.skip')}
+          </Text>
         </Pressable>
         {renderDots()}
       </View>
     </View>
   )
 
-  // ── Page 3: Neighborhood ──
+  // ── Slide 3: Trust & Safety ──
+  const renderTrustSafety = () => (
+    <View style={[s.page, { width: SCREEN_WIDTH }]}>
+      <View style={s.trustContent}>
+        <View style={[s.trustIconCircle, { backgroundColor: '#2D6B5E15' }]}>
+          <Shield size={48} color={colors.primary} />
+        </View>
+
+        <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }]}>
+          {t('onboarding.trustSafety')}
+        </Text>
+
+        <View style={s.trustList}>
+          <View style={s.trustItem}>
+            <CheckCircle size={18} color={colors.primary} />
+            <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
+              {t('onboarding.suomifiDesc')}
+            </Text>
+          </View>
+          <View style={s.trustItem}>
+            <CheckCircle size={18} color={colors.primary} />
+            <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
+              {t('onboarding.trustTiers')}
+            </Text>
+          </View>
+          <View style={s.trustItem}>
+            <CheckCircle size={18} color={colors.primary} />
+            <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
+              {t('onboarding.securePayments')}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
+        <Pressable
+          onPress={() => goToPage(3)}
+          style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+        >
+          <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
+            {t('onboarding.next')}
+          </Text>
+          <ChevronRight size={18} color={colors.primaryForeground} />
+        </Pressable>
+        <Pressable onPress={() => goToPage(3)} hitSlop={8}>
+          <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {t('onboarding.skip')}
+          </Text>
+        </Pressable>
+        {renderDots()}
+      </View>
+    </View>
+  )
+
+  // ── Slide 4: Choose Neighborhood ──
   const renderNeighborhood = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 24 }]}>
-        {t('onboarding.neighborhoodTitle')}
+        {t('onboarding.chooseNeighborhood')}
       </Text>
       <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24 }]}>
         {t('onboarding.neighborhoodSubtitle')}
@@ -390,7 +433,7 @@ export default function OnboardingScreen() {
                   },
                 ]}
               >
-                {t('onboarding.done')}
+                {t('onboarding.start')}
               </Text>
               <Check
                 size={18}
@@ -416,7 +459,8 @@ export default function OnboardingScreen() {
         bounces={false}
       >
         {renderWelcome()}
-        {renderCategories()}
+        {renderHowItWorks()}
+        {renderTrustSafety()}
         {renderNeighborhood()}
       </ScrollView>
     </View>
@@ -454,16 +498,15 @@ const s = StyleSheet.create({
     letterSpacing: 2,
   },
   tagline: {
-    fontSize: 18,
+    fontSize: 20,
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 28,
   },
   slogan: {
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
     marginTop: 4,
-    fontStyle: 'italic',
   },
 
   // Page titles
@@ -479,40 +522,71 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Categories
-  categoriesScrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 16,
+  // How it works
+  howItWorksContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 32,
+    paddingHorizontal: 32,
   },
-  categoryGrid: {
-    gap: 12,
-    marginTop: 20,
+  featureList: {
+    gap: 24,
+    width: '100%',
   },
-  categoryCard: {
+  featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 16,
   },
-  categoryIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  featureIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  categoryTextArea: {
-    flex: 1,
-    gap: 2,
-  },
-  categoryName: {
+  featureText: {
     fontSize: 16,
+    flex: 1,
+    lineHeight: 22,
   },
-  categorySub: {
-    fontSize: 13,
-    lineHeight: 18,
+
+  // Trust & Safety
+  trustContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
+    paddingHorizontal: 32,
+  },
+  trustIconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  trustList: {
+    gap: 16,
+    width: '100%',
+  },
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  trustItemText: {
+    fontSize: 15,
+    flex: 1,
+    lineHeight: 22,
+  },
+
+  // Skip text
+  skipText: {
+    fontSize: 14,
+    textAlign: 'center',
+    paddingVertical: 4,
   },
 
   // Neighborhood
@@ -577,7 +651,7 @@ const s = StyleSheet.create({
   // Bottom area
   bottomArea: {
     paddingHorizontal: 24,
-    gap: 16,
+    gap: 12,
   },
   primaryBtn: {
     flexDirection: 'row',

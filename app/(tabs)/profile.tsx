@@ -20,6 +20,7 @@ import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { VerificationModal } from '@/components/VerificationModal'
 import { fonts } from '@/lib/fonts'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
+import { useStreak } from '@/hooks/useStreak'
 import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
 import { ReferralCard } from '@/components/ReferralCard'
@@ -59,6 +60,7 @@ export default function ProfileScreen() {
   const [followList, setFollowList] = useState<{ id: string; name: string; avatar_url: string | null }[]>([])
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
+  const streakData = useStreak(profile?.id ?? null)
 
   useEffect(() => {
     async function load() {
@@ -339,6 +341,21 @@ export default function ProfileScreen() {
             </View>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.karma')}</Text>
           </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <View style={s.stat}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{streakData.currentStreak}</Text>
+              <Flame size={12} color="#E8A050" fill="#E8A050" />
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.streak')}</Text>
+              {streakData.multiplier > 1 && (
+                <View style={[s.multiplierBadge, { backgroundColor: streakData.multiplier >= 3 ? '#E8A050' : colors.primary }]}>
+                  <Text style={s.multiplierText}>{streakData.multiplier}x</Text>
+                </View>
+              )}
+            </View>
+          </View>
         </View>
 
         {/* Leaderboard button */}
@@ -613,6 +630,8 @@ const s = StyleSheet.create({
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
   followName: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  multiplierBadge: { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 6 },
+  multiplierText: { fontSize: 9, fontWeight: '800', color: '#FFFFFF', fontFamily: fonts.bodySemi },
 })
 
 const impactStyles = StyleSheet.create({

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle } from 'lucide-react-native'
@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useFeedData } from '@/hooks/useFeedData'
 import { useSmartMatch } from '@/hooks/useSmartMatch'
+import { useStreak } from '@/hooks/useStreak'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
 import { AlertBanner } from '@/components/AlertBanner'
@@ -33,6 +34,8 @@ function FeedScreenInner() {
 
   const feed = useFeedData()
   const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
+  const { recordActivity } = useStreak(feed.currentUserId)
+  useEffect(() => { recordActivity() }, [recordActivity])
 
   // ── Computed: hero events ──
   const { displayEvents, eventSectionTitle } = useMemo(() => {
