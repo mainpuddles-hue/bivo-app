@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated, Alert } from 'react-native'
 import { Heart } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
@@ -63,6 +64,7 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
     if (fromUserId === toUserId) return
 
     setSending(true)
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
 
     // Optimistic update
     setHasThanked(true)

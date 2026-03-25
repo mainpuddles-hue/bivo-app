@@ -13,6 +13,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS } from '@/lib/constants'
 
@@ -302,9 +303,7 @@ export default function GroupsScreen() {
         key={group.id}
         style={[s.groupCard, {
           backgroundColor: colors.card,
-          shadowColor: isDark ? '#000' : '#000',
-          shadowOpacity: isDark ? 0.12 : 0.06,
-        }]}
+        }, isDark ? cardShadowDark : cardShadow]}
         onPress={() => router.push(`/groups/${group.id}`)}
       >
         <View style={[s.groupAvatar, { backgroundColor: catColor }]}>
@@ -676,9 +675,6 @@ const s = StyleSheet.create({
     padding: 14,
     borderRadius: 14,
     marginBottom: 10,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 2,
     gap: 12,
   },
   groupAvatar: {

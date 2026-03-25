@@ -3,6 +3,7 @@ import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, Activi
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -280,6 +281,7 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('create.titleAndDescRequired'))
       return
     }
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
     if (selectedType === 'lainaa' && (!dailyFee || isNaN(parseFloat(dailyFee)) || parseFloat(dailyFee) <= 0)) {
       Alert.alert(t('common.error'), t('create.dailyFeeRequired'))
       return

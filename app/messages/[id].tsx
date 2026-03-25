@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2 } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { ThanksButton } from '@/components/ThanksButton'
@@ -195,6 +196,7 @@ function ConversationScreenInner() {
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !userId || sending) return
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     setSending(true)
     setShowQuickReplies(false)
     const content = input.trim()

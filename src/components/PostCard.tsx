@@ -11,6 +11,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { CATEGORIES } from '@/lib/constants'
 import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -139,6 +140,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.card },
+        isDark ? cardShadowDark : cardShadow,
         isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: '#E8A050' },
         isUrgentPost && { borderWidth: 2, borderColor: '#EF4444' },
         isPro && { borderWidth: 1.5, borderColor: colors.pro },

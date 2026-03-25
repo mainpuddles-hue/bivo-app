@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet } from 'react-native'
+import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -7,6 +7,8 @@ import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, Ca
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { EmptyState } from '@/components/EmptyState'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import type { Notification } from '@/lib/types'
@@ -90,6 +92,21 @@ function getGroupedTitle(item: PrioritizedNotification, t: (k: string, p?: Recor
 
   // Generic grouped: "Name and N others"
   return `${firstName} ${t('notifications.andOthers', { count: othersCount })} — ${item.title}`
+}
+
+function NotificationSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={styles.notifRow}>
+      <Animated.View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.muted, opacity }} />
+      <View style={styles.notifContent}>
+        <Animated.View style={{ width: '80%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={{ width: '60%', height: 11, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 4 }} />
+        <Animated.View style={{ width: '30%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 4 }} />
+      </View>
+    </View>
+  )
 }
 
 export default function NotificationsScreen() {
@@ -192,6 +209,11 @@ export default function NotificationsScreen() {
       </ScrollView>
 
       {/* Notification list */}
+      {loading ? (
+        <View style={{ padding: 16, gap: 4 }}>
+          {[0, 1, 2, 3, 4, 5].map(i => <NotificationSkeleton key={i} />)}
+        </View>
+      ) : (
       <SectionList
         sections={sections}
         keyExtractor={item => item.id}
@@ -243,14 +265,15 @@ export default function NotificationsScreen() {
         }}
         ListEmptyComponent={
           !loading ? (
-            <View style={styles.empty}>
-              <Bell size={40} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t('notifications.empty')}</Text>
-            </View>
+            <EmptyState
+              icon={<Bell size={36} color={colors.primary} />}
+              title={t('notifications.empty')}
+            />
           ) : null
         }
         showsVerticalScrollIndicator={false}
       />
+      )}
     </View>
   )
 }

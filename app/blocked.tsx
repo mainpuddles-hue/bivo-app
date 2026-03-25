@@ -6,6 +6,7 @@ import { ArrowLeft, ShieldOff } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
+import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
 
 interface BlockedUser {
@@ -90,10 +91,10 @@ export default function BlockedUsersScreen() {
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} />
       ) : blockedUsers.length === 0 ? (
-        <View style={s.emptyState}>
-          <ShieldOff size={48} color={colors.mutedForeground} />
-          <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('blocked.noBlocked')}</Text>
-        </View>
+        <EmptyState
+          icon={<ShieldOff size={36} color={colors.primary} />}
+          title={t('blocked.noBlocked')}
+        />
       ) : (
         <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
           <View style={[s.card, { backgroundColor: colors.card }]}>

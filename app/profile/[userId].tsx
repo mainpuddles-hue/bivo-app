@@ -6,6 +6,7 @@ import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
   Flag, ShieldBan, Crown, PenLine, Zap,
 } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -127,6 +128,7 @@ export default function PublicProfileScreen() {
 
   const handleFollow = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     if (isFollowing) {
       setIsFollowing(false)
       setFollowerCount(c => c - 1)

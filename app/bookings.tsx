@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -9,9 +9,33 @@ import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, Sh
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Avatar } from '@/components/Avatar'
+import { EmptyState } from '@/components/EmptyState'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { fonts } from '@/lib/fonts'
+import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatPrice, formatDateRange } from '@/lib/format'
+
+function BookingCardSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={styles.cardTop}>
+        <Animated.View style={{ width: 64, height: 64, borderRadius: 10, backgroundColor: colors.muted, opacity }} />
+        <View style={styles.cardInfo}>
+          <Animated.View style={{ width: '70%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
+          <Animated.View style={{ width: '50%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
+          <Animated.View style={{ width: '40%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
+        </View>
+        <View style={styles.cardRight}>
+          <Animated.View style={{ width: 60, height: 18, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
+          <Animated.View style={{ width: 50, height: 16, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
+        </View>
+      </View>
+    </View>
+  )
+}
 
 const TARJOAN_COLOR = '#7C5CBF'
 
@@ -261,7 +285,7 @@ export default function BookingsScreen() {
     return (
       <Pressable
         onPress={() => item.post?.id ? router.push(`/post/${item.post.id}` as any) : undefined}
-        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>
           {item.post?.image_url ? (
@@ -381,7 +405,7 @@ export default function BookingsScreen() {
     return (
       <Pressable
         onPress={() => item.post?.id ? router.push(`/post/${item.post.id}` as any) : undefined}
-        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>
           {item.post?.image_url ? (
@@ -497,7 +521,11 @@ export default function BookingsScreen() {
 
       {/* Booking list */}
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} />
+        <View style={styles.listContent}>
+          <BookingCardSkeleton />
+          <BookingCardSkeleton />
+          <BookingCardSkeleton />
+        </View>
       ) : (
         <FlatList
           data={activeTab === 'services' ? serviceBookings : filteredBookings}
@@ -512,19 +540,14 @@ export default function BookingsScreen() {
             />
           }
           ListEmptyComponent={
-            <View style={styles.empty}>
-              {activeTab === 'services' ? (
-                <ShoppingBag size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-              ) : (
-                <Package size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-              )}
-              <Text style={[styles.emptyTitle, { color: colors.mutedForeground }]}>
-                {activeTab === 'services' ? t('service.noBookings') : t('rental.noBookings')}
-              </Text>
-              <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
-                {activeTab === 'services' ? t('service.noBookingsHint') : activeTab === 'borrower' ? t('rental.noBookingsHint') : t('rental.noLendingHint')}
-              </Text>
-            </View>
+            <EmptyState
+              icon={activeTab === 'services'
+                ? <ShoppingBag size={36} color={colors.primary} />
+                : <Package size={36} color={colors.primary} />
+              }
+              title={activeTab === 'services' ? t('service.noBookings') : t('rental.noBookings')}
+              description={activeTab === 'services' ? t('service.noBookingsHint') : activeTab === 'borrower' ? t('rental.noBookingsHint') : t('rental.noLendingHint')}
+            />
           }
           showsVerticalScrollIndicator={false}
         />

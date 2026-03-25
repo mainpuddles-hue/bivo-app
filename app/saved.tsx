@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -12,6 +12,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { PostCard } from '@/components/PostCard'
+import { EmptyState } from '@/components/EmptyState'
+import { PostCardSkeleton } from '@/components/SkeletonLoaders'
 import type { Post } from '@/lib/types'
 
 type SavedTab = 'posts' | 'events' | 'places'
@@ -242,20 +244,23 @@ export default function SavedScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} />
+        <View style={s.content}>
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </View>
       ) : (
         <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
           {/* Posts tab */}
           {activeTab === 'posts' && (
             posts.length === 0 ? (
-              <View style={s.emptyState}>
-                <Bookmark size={48} color={colors.muted} />
-                <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('saved.empty')}</Text>
-                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('saved.emptyHint')}</Text>
-                <Pressable onPress={() => router.push('/')} style={[s.browseBtn, { backgroundColor: colors.primary }]}>
-                  <Text style={[s.browseBtnText, { color: colors.primaryForeground }]}>{t('saved.browse')}</Text>
-                </Pressable>
-              </View>
+              <EmptyState
+                icon={<Bookmark size={36} color={colors.primary} />}
+                title={t('saved.empty')}
+                description={t('saved.emptyHint')}
+                actionLabel={t('saved.browse')}
+                onAction={() => router.push('/')}
+              />
             ) : (
               posts.map((post) => (
                 <View key={post.id} style={s.savedItem}>
@@ -275,11 +280,11 @@ export default function SavedScreen() {
           {/* Events tab */}
           {activeTab === 'events' && (
             events.length === 0 ? (
-              <View style={s.emptyState}>
-                <CalendarDays size={48} color={colors.muted} />
-                <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('saved.emptyEvents')}</Text>
-                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('saved.emptyEventsHint')}</Text>
-              </View>
+              <EmptyState
+                icon={<CalendarDays size={36} color={colors.primary} />}
+                title={t('saved.emptyEvents')}
+                description={t('saved.emptyEventsHint')}
+              />
             ) : (
               events.map((event) => (
                 <View key={event.id} style={[s.eventCard, { backgroundColor: colors.card }]}>
@@ -311,11 +316,11 @@ export default function SavedScreen() {
           {/* Places tab */}
           {activeTab === 'places' && (
             places.length === 0 ? (
-              <View style={s.emptyState}>
-                <MapPin size={48} color={colors.muted} />
-                <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('saved.emptyPlaces')}</Text>
-                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('saved.emptyPlacesHint')}</Text>
-              </View>
+              <EmptyState
+                icon={<MapPin size={36} color={colors.primary} />}
+                title={t('saved.emptyPlaces')}
+                description={t('saved.emptyPlacesHint')}
+              />
             ) : (
               places.map((place) => (
                 <View key={place.id} style={[s.eventCard, { backgroundColor: colors.card }]}>

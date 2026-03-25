@@ -6,6 +6,7 @@ import { ChevronUp, MessageCircle, MapPin, Pencil, Trash2 } from 'lucide-react-n
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 
@@ -86,7 +87,7 @@ function ForumPostCardInner({
   return (
     <Pressable
       onPress={() => onSelect(post)}
-      style={[styles.card, { backgroundColor: colors.card }]}
+      style={[styles.card, { backgroundColor: colors.card }, isDark ? cardShadowDark : cardShadow]}
     >
       <View style={[styles.categoryBar, { backgroundColor: catColor }]} />
       <View style={styles.cardBody}>
@@ -183,8 +184,6 @@ export const ForumPostCard = memo(ForumPostCardInner)
 const styles = StyleSheet.create({
   card: {
     borderRadius: 12, overflow: 'hidden', flexDirection: 'row',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
   categoryBar: {
     width: 4,

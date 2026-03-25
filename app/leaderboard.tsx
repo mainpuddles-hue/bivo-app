@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator } from 'react-native'
+import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Zap, Trophy } from 'lucide-react-native'
@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { fonts } from '@/lib/fonts'
 
 interface LeaderboardUser {
@@ -15,6 +16,22 @@ interface LeaderboardUser {
   avatar_url: string | null
   naapurusto: string | null
   total_points: number
+}
+
+function LeaderboardRowSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={[s.row, { backgroundColor: colors.card }]}>
+      <Animated.View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.muted, opacity }} />
+      <Animated.View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.muted, opacity }} />
+      <View style={s.info}>
+        <Animated.View style={{ width: '60%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={{ width: '40%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 4 }} />
+      </View>
+      <Animated.View style={{ width: 50, height: 16, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
+    </View>
+  )
 }
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'] // gold, silver, bronze
@@ -232,7 +249,9 @@ export default function LeaderboardScreen() {
       <Text style={[s.monthLabel, { color: colors.mutedForeground }]}>{t('leaderboard.thisMonth')}</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} />
+        <View style={s.list}>
+          {[0, 1, 2, 3, 4, 5, 6, 7].map(i => <LeaderboardRowSkeleton key={i} />)}
+        </View>
       ) : (
         <FlatList
           data={users}
