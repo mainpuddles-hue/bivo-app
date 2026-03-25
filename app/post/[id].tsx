@@ -24,9 +24,10 @@ import { useStripePayment } from '@/hooks/useStripePayment'
 import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
-export default function PostDetailScreen() {
+function PostDetailScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -996,3 +997,11 @@ const ctaStyles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
 })
+
+export default function PostDetailScreen() {
+  return (
+    <ScreenErrorBoundary screenName="PostDetail">
+      <PostDetailScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

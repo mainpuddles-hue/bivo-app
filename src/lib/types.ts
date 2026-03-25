@@ -251,6 +251,36 @@ export interface CityEvent {
   created_at: string
 }
 
+export interface Activity {
+  id: string
+  creator_id: string
+  title: string
+  description: string | null
+  category: string
+  naapurusto: string
+  location_name: string | null
+  location_lat: number | null
+  location_lng: number | null
+  schedule_type: string
+  schedule_day: number | null
+  schedule_time: string | null
+  max_members: number | null
+  icon: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  member_count?: number
+  is_member?: boolean
+  creator?: { id: string; name: string; avatar_url: string | null }
+}
+
+export interface ActivityMember {
+  id: string
+  activity_id: string
+  user_id: string
+  joined_at: string
+}
+
 export interface LocalPlace {
   id: string
   source: 'osm' | 'palvelukartta'

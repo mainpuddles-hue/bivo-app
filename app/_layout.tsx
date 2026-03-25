@@ -10,6 +10,7 @@ import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600
 import { I18nProvider } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
 import { createClient } from '@/lib/supabase/client'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 // Configure how notifications are handled when the app is in the foreground
 if (Platform.OS !== 'web') {
@@ -163,6 +164,7 @@ function RootLayoutInner() {
         <Stack.Screen name="verification/success" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="verification/error" options={{ animation: 'fade' }} />
         <Stack.Screen name="saved" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="activities" options={{ headerShown: false }} />
         <Stack.Screen name="leaderboard" options={{ headerShown: false }} />
         <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
       </Stack>
@@ -183,12 +185,14 @@ export default function RootLayout() {
   if (!fontsLoaded) return null
 
   return (
-    <I18nProvider>
-      <ThemeProvider>
-        <SafeAreaProvider>
-          <RootLayoutInner />
-        </SafeAreaProvider>
-      </ThemeProvider>
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <ThemeProvider>
+          <SafeAreaProvider>
+            <RootLayoutInner />
+          </SafeAreaProvider>
+        </ThemeProvider>
+      </I18nProvider>
+    </ErrorBoundary>
   )
 }

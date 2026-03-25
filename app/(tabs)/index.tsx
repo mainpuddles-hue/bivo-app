@@ -18,6 +18,7 @@ import { HeroEventCard } from '@/components/HeroEventCard'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { FeedContextHeader } from '@/components/FeedContextHeader'
 import { JuuriNytStrip } from '@/components/JuuriNytStrip'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
@@ -25,7 +26,7 @@ import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpe
 // ── Feed Screen ──
 // ══════════════════════════════════════════════
 
-export default function FeedScreen() {
+function FeedScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
@@ -288,3 +289,11 @@ const styles = StyleSheet.create({
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   allLoadedText: { fontSize: 11, fontWeight: '500' },
 })
+
+export default function FeedScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Feed">
+      <FeedScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

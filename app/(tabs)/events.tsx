@@ -598,6 +598,15 @@ export default function EventsScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData() }} tintColor={colors.primary} />}
           renderItem={(tab === 'community' ? renderEvent : tab === 'city' ? renderCityEvent : renderActivity) as any}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          ListHeaderComponent={tab === 'activities' ? (
+            <Pressable
+              onPress={() => router.push('/activities' as any)}
+              style={ev.showAllRow}
+            >
+              <Text style={[ev.showAllText, { color: colors.primary }]}>{t('feed.showAll')} {t('activities.title').toLowerCase()}</Text>
+              <ChevronRight size={16} color={colors.primary} strokeWidth={2} />
+            </Pressable>
+          ) : null}
           ListEmptyComponent={!loading ? (
             <View style={ev.empty}>
               <CalendarDays size={48} color={colors.mutedForeground} />
@@ -848,4 +857,6 @@ const ev = StyleSheet.create({
   detailShareBtn: { width: 48, height: 48, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   calDayTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, textTransform: 'capitalize', fontFamily: fonts.headingSemi },
   calNoEvents: { fontSize: 14, textAlign: 'center', paddingTop: 20, fontFamily: fonts.body },
+  showAllRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, marginBottom: 4 },
+  showAllText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 })

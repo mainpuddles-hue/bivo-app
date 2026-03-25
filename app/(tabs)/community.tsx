@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
-  Users, MessageCircle, CalendarDays, ChevronRight, Plus, MapPin,
+  Users, MessageCircle, CalendarDays, ChevronRight, Plus, MapPin, RefreshCw,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -507,6 +507,27 @@ export default function CommunityScreen() {
                 )}
               </View>
             )}
+
+            {/* Activities link */}
+            <Pressable
+              style={[s.card, { backgroundColor: colors.card, marginTop: 12 }]}
+              onPress={() => router.push('/activities' as any)}
+            >
+              <View style={s.cardRow}>
+                <View style={[s.eventIconBox, { backgroundColor: isDark ? '#1A102D' : '#F0EBFE' }]}>
+                  <RefreshCw size={18} color="#8B5CF6" />
+                </View>
+                <View style={s.cardContent}>
+                  <Text style={[s.cardTitle, { color: colors.foreground }]}>
+                    {t('activities.title')}
+                  </Text>
+                  <Text style={[s.cardMeta, { color: colors.mutedForeground }]}>
+                    {t('activity.noActivitiesHint')}
+                  </Text>
+                </View>
+                <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+              </View>
+            </Pressable>
 
             {/* Bottom actions */}
             <View style={s.bottomActions}>

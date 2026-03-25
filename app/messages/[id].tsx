@@ -14,6 +14,7 @@ import { Avatar } from '@/components/Avatar'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatDateHeader } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
@@ -24,7 +25,7 @@ function isSameDay(a: string, b: string) {
   return new Date(a).toDateString() === new Date(b).toDateString()
 }
 
-export default function ConversationScreen() {
+function ConversationScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -681,3 +682,11 @@ const contextStyles = StyleSheet.create({
   label: { fontSize: 10, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
   title: { fontSize: 13, fontFamily: fonts.bodySemi },
 })
+
+export default function ConversationScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Conversation">
+      <ConversationScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

@@ -24,6 +24,7 @@ import * as Location from 'expo-location'
 import type { CityEvent, LocalPlace } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
 import { haversineKm } from '@/lib/geo'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 // ── Types ──
 
@@ -78,7 +79,7 @@ function formatDistance(km: number): string {
 // ── Explore Screen ──
 // ══════════════════════════════════════════════
 
-export default function ExploreScreen() {
+function ExploreScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -740,3 +741,11 @@ const s = StyleSheet.create({
   errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
 
 })
+
+export default function ExploreScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Explore">
+      <ExploreScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

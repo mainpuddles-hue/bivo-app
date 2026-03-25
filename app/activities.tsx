@@ -1,0 +1,1083 @@
+declare const __DEV__: boolean
+
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import {
+  View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
+  Pressable, Modal, TextInput, Alert, KeyboardAvoidingView,
+  Platform, Animated, ActivityIndicator,
+} from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import * as Haptics from 'expo-haptics'
+import {
+  ArrowLeft, Plus, MapPin, Users, X, Clock,
+  Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2,
+  RefreshCw, Check,
+} from 'lucide-react-native'
+import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
+import { useSupabase } from '@/hooks/useSupabase'
+
+// ── Types ──
+
+interface Activity {
+  id: string
+  creator_id: string
+  title: string
+  description: string | null
+  category: string
+  naapurusto: string
+  location_name: string | null
+  location_lat: number | null
+  location_lng: number | null
+  schedule_type: string
+  schedule_day: number | null
+  schedule_time: string | null
+  max_members: number | null
+  icon: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  member_count?: number
+  is_member?: boolean
+  creator?: { id: string; name: string; avatar_url: string | null }
+}
+
+// ── Category config ──
+
+type ActivityCategory = 'sport' | 'social' | 'hobby' | 'childcare' | 'neighborhood' | 'creative' | 'health' | 'other'
+
+interface CategoryDef {
+  key: ActivityCategory
+  labelKey: string
+  color: string
+  Icon: React.ComponentType<any>
+}
+
+const CATEGORIES: CategoryDef[] = [
+  { key: 'sport', labelKey: 'activity.categorySport', color: '#EF4444', Icon: Dumbbell },
+  { key: 'social', labelKey: 'activity.categorySocial', color: '#8B5CF6', Icon: Users },
+  { key: 'hobby', labelKey: 'activity.categoryHobby', color: '#F59E0B', Icon: Palette },
+  { key: 'childcare', labelKey: 'activity.categoryChildcare', color: '#EC4899', Icon: Baby },
+  { key: 'neighborhood', labelKey: 'activity.categoryNeighborhood', color: '#10B981', Icon: Home },
+  { key: 'creative', labelKey: 'activity.categoryCreative', color: '#6366F1', Icon: Sparkles },
+  { key: 'health', labelKey: 'activity.categoryHealth', color: '#14B8A6', Icon: HeartPulse },
+  { key: 'other', labelKey: 'activity.categoryOther', color: '#6B7280', Icon: Grid2x2 },
+]
+
+const CATEGORY_COLOR_MAP: Record<string, string> = Object.fromEntries(CATEGORIES.map(c => [c.key, c.color]))
+const CATEGORY_ICON_MAP: Record<string, React.ComponentType<any>> = Object.fromEntries(CATEGORIES.map(c => [c.key, c.Icon]))
+
+// ── Filter chips (includes "all") ──
+
+const FILTER_CHIPS: { key: string; labelKey: string }[] = [
+  { key: 'all', labelKey: 'common.all' },
+  { key: 'sport', labelKey: 'activity.categorySport' },
+  { key: 'social', labelKey: 'activity.categorySocial' },
+  { key: 'hobby', labelKey: 'activity.categoryHobby' },
+  { key: 'childcare', labelKey: 'activity.categoryChildcare' },
+  { key: 'neighborhood', labelKey: 'activity.categoryNeighborhood' },
+  { key: 'creative', labelKey: 'activity.categoryCreative' },
+  { key: 'health', labelKey: 'activity.categoryHealth' },
+  { key: 'other', labelKey: 'activity.categoryOther' },
+]
+
+// ── Schedule types ──
+
+interface ScheduleTypeDef {
+  key: string
+  labelKey: string
+}
+
+const SCHEDULE_TYPES: ScheduleTypeDef[] = [
+  { key: 'daily', labelKey: 'activities.daily' },
+  { key: 'weekly', labelKey: 'activity.scheduleWeekly' },
+  { key: 'biweekly', labelKey: 'activity.scheduleBiweekly' },
+  { key: 'monthly', labelKey: 'activities.monthly' },
+]
+
+// ── Days of week ──
+
+const DAYS_OF_WEEK: { key: number; labelKey: string; shortKey: string }[] = [
+  { key: 1, labelKey: 'time.monday', shortKey: 'days.monShort' },
+  { key: 2, labelKey: 'time.tuesday', shortKey: 'days.tueShort' },
+  { key: 3, labelKey: 'time.wednesday', shortKey: 'days.wedShort' },
+  { key: 4, labelKey: 'time.thursday', shortKey: 'days.thuShort' },
+  { key: 5, labelKey: 'time.friday', shortKey: 'days.friShort' },
+  { key: 6, labelKey: 'time.saturday', shortKey: 'days.satShort' },
+  { key: 0, labelKey: 'time.sunday', shortKey: 'days.sunShort' },
+]
+
+// ── Schedule display helper ──
+
+function formatSchedule(
+  scheduleType: string,
+  scheduleDay: number | null,
+  scheduleTime: string | null,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  const dayNames: Record<number, string> = {
+    0: t('time.sunday'),
+    1: t('time.monday'),
+    2: t('time.tuesday'),
+    3: t('time.wednesday'),
+    4: t('time.thursday'),
+    5: t('time.friday'),
+    6: t('time.saturday'),
+  }
+  const dayName = scheduleDay != null ? dayNames[scheduleDay] ?? '' : ''
+  const timeStr = scheduleTime ?? ''
+
+  switch (scheduleType) {
+    case 'daily':
+      return t('activities.daily') + (timeStr ? ` klo ${timeStr}` : '')
+    case 'weekly':
+      return t('activity.scheduleWeeklyFormat', { day: dayName, time: timeStr })
+    case 'biweekly':
+      return t('activity.scheduleBiweeklyFormat', { day: dayName, time: timeStr })
+    case 'monthly':
+      return t('activities.monthly') + (timeStr ? ` klo ${timeStr}` : '')
+    default:
+      return timeStr ? `klo ${timeStr}` : ''
+  }
+}
+
+// ── Skeleton ──
+
+function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors'] }) {
+  const shimmer = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
+      ])
+    )
+    anim.start()
+    return () => anim.stop()
+  }, [shimmer])
+  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+
+  return (
+    <View style={{ gap: 12 }}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <View key={i} style={[st.card, { backgroundColor: colors.card }]}>
+          <View style={st.cardTop}>
+            <Animated.View style={[{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.muted }, { opacity }]} />
+            <View style={st.cardContent}>
+              <Animated.View style={[{ width: '70%', height: 14, borderRadius: 4, backgroundColor: colors.muted }, { opacity }]} />
+              <Animated.View style={[{ width: '50%', height: 10, borderRadius: 4, backgroundColor: colors.muted, marginTop: 6 }, { opacity }]} />
+              <Animated.View style={[{ width: '40%', height: 10, borderRadius: 4, backgroundColor: colors.muted, marginTop: 4 }, { opacity }]} />
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+}
+
+// ══════════════════════════════════════════════════════
+//  Main screen
+// ══════════════════════════════════════════════════════
+
+export default function ActivitiesScreen() {
+  const { colors, isDark } = useTheme()
+  const { t } = useI18n()
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const supabase = useSupabase()
+
+  // ── State ──
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [showCreateModal, setShowCreateModal] = useState(false)
+
+  // ── Create form state ──
+  const [createTitle, setCreateTitle] = useState('')
+  const [createDescription, setCreateDescription] = useState('')
+  const [createCategory, setCreateCategory] = useState<string>('')
+  const [createScheduleType, setCreateScheduleType] = useState<string>('')
+  const [createScheduleDay, setCreateScheduleDay] = useState<number | null>(null)
+  const [createScheduleTime, setCreateScheduleTime] = useState('')
+  const [createLocation, setCreateLocation] = useState('')
+  const [createMaxMembers, setCreateMaxMembers] = useState('')
+  const [creating, setCreating] = useState(false)
+
+  // ── Fetch activities ──
+  const fetchActivities = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) setUserId(user.id)
+
+      const { data, error } = await supabase
+        .from('activities')
+        .select('*, creator:profiles!activities_creator_id_fkey(id, name, avatar_url)')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        if (__DEV__) console.log('[activities] fetch error:', error.message)
+        return
+      }
+
+      let activityList = (data ?? []) as unknown as Activity[]
+
+      // Fetch member counts
+      if (activityList.length > 0) {
+        const ids = activityList.map(a => a.id)
+        const { data: memberData } = await supabase
+          .from('activity_members')
+          .select('activity_id')
+          .in('activity_id', ids)
+
+        const countMap: Record<string, number> = {}
+        ;(memberData ?? []).forEach((m: any) => {
+          countMap[m.activity_id] = (countMap[m.activity_id] ?? 0) + 1
+        })
+
+        // Check which ones the user is a member of
+        let memberSet = new Set<string>()
+        if (user) {
+          const { data: myMemberships } = await supabase
+            .from('activity_members')
+            .select('activity_id')
+            .eq('user_id', user.id)
+            .in('activity_id', ids)
+
+          memberSet = new Set((myMemberships ?? []).map((m: any) => m.activity_id))
+        }
+
+        activityList = activityList.map(a => ({
+          ...a,
+          member_count: countMap[a.id] ?? 0,
+          is_member: memberSet.has(a.id),
+        }))
+      }
+
+      setActivities(activityList)
+    } catch (err) {
+      if (__DEV__) console.log('[activities] fetchActivities error:', err)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [supabase])
+
+  useEffect(() => { fetchActivities() }, [fetchActivities])
+
+  // ── Toggle membership ──
+  const toggleMembership = useCallback(async (activityId: string) => {
+    if (!userId) { router.push('/(auth)/login'); return }
+
+    const act = activities.find(a => a.id === activityId)
+    if (!act) return
+
+    try {
+      if (Platform.OS !== 'web') {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+      }
+
+      if (act.is_member) {
+        // Leave
+        const { error } = await supabase
+          .from('activity_members')
+          .delete()
+          .eq('activity_id', activityId)
+          .eq('user_id', userId)
+        if (error) throw error
+        setActivities(prev => prev.map(a =>
+          a.id === activityId
+            ? { ...a, is_member: false, member_count: Math.max(0, (a.member_count ?? 1) - 1) }
+            : a
+        ))
+      } else {
+        // Join — check if full
+        if (act.max_members && (act.member_count ?? 0) >= act.max_members) {
+          Alert.alert(t('activity.activityFull'))
+          return
+        }
+        const { error } = await (supabase.from('activity_members') as any).insert({
+          activity_id: activityId,
+          user_id: userId,
+        })
+        if (error) throw error
+        setActivities(prev => prev.map(a =>
+          a.id === activityId
+            ? { ...a, is_member: true, member_count: (a.member_count ?? 0) + 1 }
+            : a
+        ))
+      }
+    } catch (err) {
+      if (__DEV__) console.log('[activities] toggleMembership error:', err)
+      Alert.alert(t('common.error'), act.is_member ? t('activity.leaveFailed') : t('activity.joinFailed'))
+    }
+  }, [userId, activities, supabase, router, t])
+
+  // ── Create activity ──
+  const handleCreate = useCallback(async () => {
+    if (!userId) { router.push('/(auth)/login'); return }
+
+    // Validation
+    if (!createTitle.trim()) {
+      Alert.alert(t('activity.titleRequired'))
+      return
+    }
+    if (!createCategory) {
+      Alert.alert(t('activity.categoryRequired'))
+      return
+    }
+    if (!createScheduleType) {
+      Alert.alert(t('activities.scheduleRequired'))
+      return
+    }
+
+    setCreating(true)
+    try {
+      // Get user's profile for naapurusto
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('naapurusto')
+        .eq('id', userId)
+        .single()
+
+      const maxMembersNum = createMaxMembers.trim() ? parseInt(createMaxMembers, 10) : null
+
+      const { error } = await (supabase.from('activities') as any).insert({
+        creator_id: userId,
+        title: createTitle.trim(),
+        description: createDescription.trim() || null,
+        category: createCategory,
+        naapurusto: (profile as any)?.naapurusto ?? 'kallio',
+        location_name: createLocation.trim() || null,
+        schedule_type: createScheduleType,
+        schedule_day: (createScheduleType === 'weekly' || createScheduleType === 'biweekly') ? createScheduleDay : null,
+        schedule_time: createScheduleTime.trim() || null,
+        max_members: maxMembersNum && maxMembersNum > 0 ? maxMembersNum : null,
+        icon: createCategory,
+        is_active: true,
+      })
+
+      if (error) throw error
+
+      if (Platform.OS !== 'web') {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      }
+
+      Alert.alert(t('activity.created'))
+      setShowCreateModal(false)
+      resetForm()
+      await fetchActivities()
+    } catch (err) {
+      if (__DEV__) console.log('[activities] create error:', err)
+      Alert.alert(t('common.error'), t('activity.createFailed'))
+    } finally {
+      setCreating(false)
+    }
+  }, [userId, createTitle, createDescription, createCategory, createScheduleType, createScheduleDay, createScheduleTime, createLocation, createMaxMembers, supabase, router, t, fetchActivities])
+
+  const resetForm = () => {
+    setCreateTitle('')
+    setCreateDescription('')
+    setCreateCategory('')
+    setCreateScheduleType('')
+    setCreateScheduleDay(null)
+    setCreateScheduleTime('')
+    setCreateLocation('')
+    setCreateMaxMembers('')
+  }
+
+  // ── Filtered activities ──
+  const filteredActivities = useMemo(() => {
+    if (filterCategory === 'all') return activities
+    return activities.filter(a => a.category === filterCategory)
+  }, [activities, filterCategory])
+
+  // ── Render Activity Card ──
+  const renderActivity = useCallback(({ item }: { item: Activity }) => {
+    const catColor = CATEGORY_COLOR_MAP[item.category] ?? '#6B7280'
+    const CatIcon = CATEGORY_ICON_MAP[item.category] ?? Grid2x2
+    const isFull = item.max_members ? (item.member_count ?? 0) >= item.max_members : false
+
+    return (
+      <View style={[st.card, { backgroundColor: colors.card }]}>
+        <View style={st.cardTop}>
+          <View style={[st.iconBox, { backgroundColor: `${catColor}20` }]}>
+            <CatIcon size={20} color={catColor} />
+          </View>
+          <View style={st.cardContent}>
+            <Text style={[st.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <View style={st.scheduleRow}>
+              <Clock size={12} color={colors.mutedForeground} />
+              <Text style={[st.scheduleText, { color: colors.mutedForeground }]}>
+                {formatSchedule(item.schedule_type, item.schedule_day, item.schedule_time, t)}
+              </Text>
+            </View>
+            {item.location_name && (
+              <View style={st.metaRow}>
+                <MapPin size={12} color={colors.mutedForeground} />
+                <Text style={[st.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {item.location_name}
+                </Text>
+              </View>
+            )}
+            <View style={st.metaRow}>
+              <Users size={12} color={colors.mutedForeground} />
+              <Text style={[st.metaText, { color: colors.mutedForeground }]}>
+                {item.max_members
+                  ? t('activity.membersOfMax', { count: item.member_count ?? 0, max: item.max_members })
+                  : t('activity.members', { count: item.member_count ?? 0 })}
+              </Text>
+            </View>
+          </View>
+          {/* Category badge */}
+          <View style={[st.categoryBadge, { backgroundColor: `${catColor}15` }]}>
+            <Text style={[st.categoryBadgeText, { color: catColor }]}>
+              {t(CATEGORIES.find(c => c.key === item.category)?.labelKey ?? 'activity.categoryOther')}
+            </Text>
+          </View>
+        </View>
+
+        <View style={st.cardBottom}>
+          {isFull && !item.is_member ? (
+            <View style={[st.joinBtn, { backgroundColor: colors.muted }]}>
+              <Text style={[st.joinBtnText, { color: colors.mutedForeground }]}>{t('activity.full')}</Text>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => toggleMembership(item.id)}
+              style={[
+                st.joinBtn,
+                item.is_member
+                  ? { backgroundColor: catColor }
+                  : { borderWidth: 1, borderColor: catColor },
+              ]}
+            >
+              {item.is_member && <Check size={14} color="#FFFFFF" strokeWidth={2.5} />}
+              <Text style={[st.joinBtnText, { color: item.is_member ? '#FFFFFF' : catColor }]}>
+                {item.is_member ? t('activity.joined') : t('activity.joinActivity')}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      </View>
+    )
+  }, [colors, isDark, t, toggleMembership])
+
+  // ── Need weekly/biweekly day picker? ──
+  const needsDayPicker = createScheduleType === 'weekly' || createScheduleType === 'biweekly'
+
+  return (
+    <View style={[st.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      {/* ── Header ── */}
+      <View style={[st.header, { borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={st.backBtn}>
+          <ArrowLeft size={22} color={colors.foreground} />
+        </Pressable>
+        <Text style={[st.headerTitle, { color: colors.foreground }]}>
+          {t('activities.title')}
+        </Text>
+        <Pressable
+          onPress={() => {
+            if (!userId) { router.push('/(auth)/login'); return }
+            setShowCreateModal(true)
+          }}
+          style={[st.addBtn, { backgroundColor: colors.primary }]}
+        >
+          <Plus size={18} color={colors.primaryForeground} strokeWidth={2.5} />
+        </Pressable>
+      </View>
+
+      {/* ── Filter chips ── */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={st.filterRow}
+      >
+        {FILTER_CHIPS.map((chip) => {
+          const isActive = filterCategory === chip.key
+          return (
+            <Pressable
+              key={chip.key}
+              onPress={() => setFilterCategory(chip.key)}
+              style={[
+                st.filterChip,
+                isActive
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: isDark ? colors.card : colors.muted },
+              ]}
+            >
+              <Text style={[
+                st.filterChipText,
+                { color: isActive ? colors.primaryForeground : colors.mutedForeground },
+              ]}>
+                {t(chip.labelKey)}
+              </Text>
+            </Pressable>
+          )
+        })}
+      </ScrollView>
+
+      {/* ── Activity list ── */}
+      {loading ? (
+        <View style={st.listPad}>
+          <ActivitySkeleton colors={colors} />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredActivities}
+          keyExtractor={item => item.id}
+          renderItem={renderActivity}
+          contentContainerStyle={[st.list, { paddingBottom: insets.bottom + 20 }]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => { setRefreshing(true); fetchActivities() }}
+              tintColor={colors.primary}
+            />
+          }
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={st.empty}>
+              <RefreshCw size={48} color={colors.mutedForeground} />
+              <Text style={[st.emptyTitle, { color: colors.foreground }]}>
+                {t('activity.noActivities')}
+              </Text>
+              <Text style={[st.emptyHint, { color: colors.mutedForeground }]}>
+                {t('activity.noActivitiesHint')}
+              </Text>
+              <Pressable
+                onPress={() => {
+                  if (!userId) { router.push('/(auth)/login'); return }
+                  setShowCreateModal(true)
+                }}
+                style={[st.emptyBtn, { backgroundColor: colors.primary }]}
+              >
+                <Plus size={16} color={colors.primaryForeground} strokeWidth={2.5} />
+                <Text style={[st.emptyBtnText, { color: colors.primaryForeground }]}>
+                  {t('activities.create')}
+                </Text>
+              </Pressable>
+            </View>
+          }
+        />
+      )}
+
+      {/* ── FAB ── */}
+      <Pressable
+        onPress={() => {
+          if (!userId) { router.push('/(auth)/login'); return }
+          setShowCreateModal(true)
+        }}
+        style={[st.fab, { backgroundColor: colors.primary, bottom: insets.bottom + 16 }]}
+      >
+        <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
+      </Pressable>
+
+      {/* ══════════════════════════════════════════════════
+           Create Activity Modal
+         ══════════════════════════════════════════════════ */}
+      <Modal
+        visible={showCreateModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowCreateModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={[st.modalContainer, { backgroundColor: colors.background }]}>
+            {/* Modal header */}
+            <View style={[st.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[st.modalTitle, { color: colors.foreground }]}>
+                {t('activities.create')}
+              </Text>
+              <Pressable onPress={() => setShowCreateModal(false)} hitSlop={12}>
+                <X size={24} color={colors.foreground} />
+              </Pressable>
+            </View>
+
+            <ScrollView
+              contentContainerStyle={st.modalBody}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Title */}
+              <View style={st.field}>
+                <Text style={[st.label, { color: colors.foreground }]}>{t('activity.title')} *</Text>
+                <TextInput
+                  value={createTitle}
+                  onChangeText={setCreateTitle}
+                  placeholder={t('activity.titlePlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  maxLength={100}
+                />
+              </View>
+
+              {/* Description */}
+              <View style={st.field}>
+                <Text style={[st.label, { color: colors.foreground }]}>{t('activity.description')}</Text>
+                <TextInput
+                  value={createDescription}
+                  onChangeText={setCreateDescription}
+                  placeholder={t('activity.descriptionPlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[st.textArea, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  multiline
+                  numberOfLines={3}
+                  maxLength={500}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* Category */}
+              <View style={st.field}>
+                <Text style={[st.label, { color: colors.foreground }]}>{t('activity.selectCategory')} *</Text>
+                <View style={st.chipGrid}>
+                  {CATEGORIES.map((cat) => {
+                    const isSelected = createCategory === cat.key
+                    return (
+                      <Pressable
+                        key={cat.key}
+                        onPress={() => setCreateCategory(cat.key)}
+                        style={[
+                          st.catChip,
+                          isSelected
+                            ? { backgroundColor: cat.color }
+                            : { backgroundColor: `${cat.color}15`, borderWidth: 1, borderColor: `${cat.color}40` },
+                        ]}
+                      >
+                        <cat.Icon size={14} color={isSelected ? '#FFFFFF' : cat.color} />
+                        <Text style={[st.catChipText, { color: isSelected ? '#FFFFFF' : cat.color }]}>
+                          {t(cat.labelKey)}
+                        </Text>
+                      </Pressable>
+                    )
+                  })}
+                </View>
+              </View>
+
+              {/* Schedule type */}
+              <View style={st.field}>
+                <Text style={[st.label, { color: colors.foreground }]}>{t('activity.selectSchedule')} *</Text>
+                <View style={st.chipGrid}>
+                  {SCHEDULE_TYPES.map((sched) => {
+                    const isSelected = createScheduleType === sched.key
+                    return (
+                      <Pressable
+                        key={sched.key}
+                        onPress={() => setCreateScheduleType(sched.key)}
+                        style={[
+                          st.schedChip,
+                          isSelected
+                            ? { backgroundColor: colors.primary }
+                            : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: colors.border },
+                        ]}
+                      >
+                        <Text style={[st.schedChipText, { color: isSelected ? colors.primaryForeground : colors.mutedForeground }]}>
+                          {t(sched.labelKey)}
+                        </Text>
+                      </Pressable>
+                    )
+                  })}
+                </View>
+              </View>
+
+              {/* Day picker (for weekly/biweekly) */}
+              {needsDayPicker && (
+                <View style={st.field}>
+                  <Text style={[st.label, { color: colors.foreground }]}>{t('activity.selectDay')}</Text>
+                  <View style={st.dayRow}>
+                    {DAYS_OF_WEEK.map((day) => {
+                      const isSelected = createScheduleDay === day.key
+                      return (
+                        <Pressable
+                          key={day.key}
+                          onPress={() => setCreateScheduleDay(day.key)}
+                          style={[
+                            st.dayChip,
+                            isSelected
+                              ? { backgroundColor: colors.primary }
+                              : { backgroundColor: isDark ? colors.card : colors.muted },
+                          ]}
+                        >
+                          <Text style={[st.dayChipText, { color: isSelected ? colors.primaryForeground : colors.mutedForeground }]}>
+                            {t(day.labelKey).slice(0, 2).toUpperCase()}
+                          </Text>
+                        </Pressable>
+                      )
+                    })}
+                  </View>
+                </View>
+              )}
+
+              {/* Time */}
+              <View style={st.field}>
+                <Text style={[st.label, { color: colors.foreground }]}>{t('activity.selectTime')}</Text>
+                <TextInput
+                  value={createScheduleTime}
+                  onChangeText={setCreateScheduleTime}
+                  placeholder="18:00"
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  keyboardType="numbers-and-punctuation"
+                  maxLength={5}
+                />
+              </View>
+
+              {/* Location */}
+              <View style={st.field}>
+                <Text style={[st.label, { color: colors.foreground }]}>{t('activity.location')}</Text>
+                <TextInput
+                  value={createLocation}
+                  onChangeText={setCreateLocation}
+                  placeholder={t('activity.locationPlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  maxLength={200}
+                />
+              </View>
+
+              {/* Max members */}
+              <View style={st.field}>
+                <Text style={[st.label, { color: colors.foreground }]}>{t('activities.maxMembers')}</Text>
+                <TextInput
+                  value={createMaxMembers}
+                  onChangeText={setCreateMaxMembers}
+                  placeholder={t('activity.maxMembersPlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  keyboardType="number-pad"
+                  maxLength={5}
+                />
+              </View>
+
+              {/* Create button */}
+              <Pressable
+                onPress={handleCreate}
+                disabled={creating}
+                style={[st.createBtn, { backgroundColor: creating ? colors.muted : colors.primary }]}
+              >
+                {creating ? (
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
+                ) : (
+                  <>
+                    <Plus size={18} color={colors.primaryForeground} strokeWidth={2.5} />
+                    <Text style={[st.createBtnText, { color: colors.primaryForeground }]}>
+                      {t('activities.create')}
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </View>
+  )
+}
+
+// ══════════════════════════════════════════════════════
+//  Styles
+// ══════════════════════════════════════════════════════
+
+const st = StyleSheet.create({
+  container: { flex: 1 },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 12,
+  },
+  backBtn: { padding: 2 },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    fontFamily: fonts.headingSemi,
+  },
+  addBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Filters
+  filterRow: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  filterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+  },
+
+  // List
+  list: {
+    paddingHorizontal: 16,
+    paddingTop: 4,
+  },
+  listPad: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+
+  // Card
+  card: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  cardTop: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardContent: {
+    flex: 1,
+    gap: 4,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 20,
+    fontFamily: fonts.headingSemi,
+  },
+  scheduleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  scheduleText: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: 12,
+    flex: 1,
+    fontFamily: fonts.body,
+  },
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  categoryBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  cardBottom: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    gap: 8,
+    alignItems: 'center',
+  },
+  joinBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    minWidth: 90,
+    justifyContent: 'center',
+  },
+  joinBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+
+  // Empty state
+  empty: {
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 12,
+    paddingHorizontal: 32,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    fontFamily: fonts.headingSemi,
+  },
+  emptyHint: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontFamily: fonts.body,
+  },
+  emptyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  emptyBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+
+  // FAB
+  fab: {
+    position: 'absolute',
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+
+  // Modal
+  modalContainer: { flex: 1 },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: fonts.headingSemi,
+  },
+  modalBody: {
+    padding: 16,
+    gap: 20,
+    paddingBottom: 40,
+  },
+
+  // Form fields
+  field: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: fonts.body,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: fonts.body,
+    minHeight: 80,
+  },
+  chipGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  catChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  catChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
+  },
+  schedChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 10,
+  },
+  schedChipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  dayChip: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  dayChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  createBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  createBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+})
