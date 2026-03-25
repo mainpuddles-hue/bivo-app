@@ -21,6 +21,7 @@ import { Avatar } from '@/components/Avatar'
 import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import { useStripePayment } from '@/hooks/useStripePayment'
+import { useTrustLevel } from '@/hooks/useTrustLevel'
 import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
@@ -69,6 +70,7 @@ function PostDetailScreenInner() {
   const [sendingBooking, setSendingBooking] = useState(false)
   const [blockedDates, setBlockedDates] = useState<string[]>([])
   const { createPayment, loading: paymentLoading, error: paymentError } = useStripePayment()
+  const trust = useTrustLevel(userId)
 
   // Service booking state (for tarjoan posts with service_price)
   const [serviceModalVisible, setServiceModalVisible] = useState(false)
@@ -363,6 +365,11 @@ function PostDetailScreenInner() {
     if (!post || sendingBooking || paymentLoading) return
     if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
     if (bookingDays <= 0 || !bookingStartDate || !bookingEndDate) { Alert.alert(t('common.error'), t('rental.endDateAfterStart')); return }
+    // Trust tier enforcement on buyer side
+    if (trust.permissions.maxDailyFee !== null && post.daily_fee && post.daily_fee > trust.permissions.maxDailyFee) {
+      Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
+      return
+    }
     setSendingBooking(true)
     try {
       const { data: booking, error: bookingError } = await (supabase.from('rental_bookings') as any)
@@ -392,6 +399,11 @@ function PostDetailScreenInner() {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post || sendingService || paymentLoading) return
     if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
+    // Trust tier enforcement on buyer side
+    if (trust.permissions.maxServicePrice !== null && post.service_price && post.service_price > trust.permissions.maxServicePrice) {
+      Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
+      return
+    }
     setSendingService(true)
     try {
       // 1. Create service_bookings record

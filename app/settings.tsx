@@ -446,9 +446,14 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* Payment History */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.paymentHistory')}</Text>
+        {/* Payment Settings */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.settings')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
+          <Pressable onPress={() => router.push('/payment-settings' as any)} style={s.row}>
+            <CreditCard size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.settings')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
           <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row}>
             <CreditCard size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.paymentHistory')}</Text>

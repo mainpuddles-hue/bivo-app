@@ -151,6 +151,7 @@ function RootLayoutInner() {
         <Stack.Screen name="bookings" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="payment/success" options={{ animation: 'fade' }} />
         <Stack.Screen name="payment/cancel" options={{ animation: 'fade' }} />
+        <Stack.Screen name="payment-settings" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="payment-history" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="pro" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="privacy" options={{ animation: 'slide_from_right' }} />

@@ -56,6 +56,8 @@ export function useStripePayment() {
           post_id: options.postId,
           seller_id: options.sellerId,
           metadata: options.metadata,
+          // Commission: 10% to Puddles Oy via Stripe Connect
+          application_fee_amount: Math.round(options.amount * 0.10),
           // Return URLs
           success_url: Platform.OS === 'web'
             ? `${window.location.origin}/payment/success`
