@@ -1,70 +1,349 @@
-import { useState, useEffect, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useSupabase } from '@/hooks/useSupabase'
+
+// ── Types ──
 
 interface SmartMatch {
   postId: string
   postTitle: string
   matchedTags: string[]
   posterName: string
+  matchScore: number // 0-100 percentage
+  matchedNeedId: string // which tarvitsen post it matched
+  matchedNeedTitle: string
 }
+
+interface ScoredCandidate {
+  post: TarjoanPost
+  needPost: TarvitsenPost
+  score: number
+  matchedTags: string[]
+}
+
+interface TarvitsenPost {
+  id: string
+  title: string
+  tags: string[]
+  location: string | null
+  created_at: string
+}
+
+interface TarjoanPost {
+  id: string
+  title: string
+  tags: string[]
+  location: string | null
+  user_id: string
+  created_at: string
+  user?: {
+    name: string
+    naapurusto: string
+    response_rate: number
+  } | null
+  user_badges?: { badge_type: string }[]
+}
+
+// ── Scoring helpers ──
+
+/** Jaccard similarity: |A ∩ B| / |A ∪ B| */
+function jaccardSimilarity(a: string[], b: string[]): number {
+  if (a.length === 0 && b.length === 0) return 0
+  const setA = new Set(a.map(s => s.toLowerCase()))
+  const setB = new Set(b.map(s => s.toLowerCase()))
+  let intersection = 0
+  for (const item of setA) {
+    if (setB.has(item)) intersection++
+  }
+  const union = new Set([...setA, ...setB]).size
+  return union === 0 ? 0 : intersection / union
+}
+
+/** Extract meaningful words (3+ chars) from a title for fuzzy matching */
+function extractTitleWords(title: string): Set<string> {
+  const stopWords = new Set([
+    'ja', 'tai', 'on', 'ei', 'se', 'the', 'and', 'or', 'is', 'not',
+    'ett', 'och', 'for', 'med', 'som', 'att', 'den', 'det', 'har',
+    'olen', 'olen', 'haluan', 'tarvitsen', 'tarjoan', 'haen', 'etsin',
+  ])
+  return new Set(
+    title
+      .toLowerCase()
+      .replace(/[^a-zäöåA-ZÄÖÅ0-9\s]/g, '')
+      .split(/\s+/)
+      .filter(w => w.length >= 3 && !stopWords.has(w))
+  )
+}
+
+/** Category match bonus: check if tarjoan tags contain words from tarvitsen title */
+function categoryMatchScore(needTitle: string, offerTags: string[]): number {
+  if (offerTags.length === 0) return 0
+  const titleWords = extractTitleWords(needTitle)
+  if (titleWords.size === 0) return 0
+  const tagWords = new Set(offerTags.map(t => t.toLowerCase()))
+  let matches = 0
+  for (const word of titleWords) {
+    for (const tag of tagWords) {
+      if (tag.includes(word) || word.includes(tag)) {
+        matches++
+        break
+      }
+    }
+  }
+  return Math.min(1, matches / titleWords.size)
+}
+
+/** Neighborhood proximity: 1.0 if same, 0.0 if different */
+function neighborhoodProximity(needLocation: string | null, offerLocation: string | null): number {
+  if (!needLocation || !offerLocation) return 0
+  return needLocation.toLowerCase().trim() === offerLocation.toLowerCase().trim() ? 1.0 : 0.0
+}
+
+/** Poster quality: trust_level/3 + response_rate/100 (capped at 1.0) */
+function posterQualityScore(
+  badges: { badge_type: string }[] | undefined,
+  responseRate: number
+): number {
+  // Derive trust level from badges
+  let trustLevel = 1
+  if (badges?.some(b => b.badge_type === 'trusted')) trustLevel = 3
+  else if (badges?.some(b => b.badge_type === 'verified')) trustLevel = 2
+
+  const trustScore = trustLevel / 3
+  const responseScore = Math.min(100, Math.max(0, responseRate)) / 100
+  return Math.min(1.0, (trustScore + responseScore) / 2)
+}
+
+/** Recency: 1/(1 + days_old/7) — half-life of 7 days */
+function recencyScore(createdAt: string): number {
+  const daysOld = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
+  return 1 / (1 + daysOld / 7)
+}
+
+// ── Weights ──
+const WEIGHT_TAG_OVERLAP = 0.30
+const WEIGHT_CATEGORY_MATCH = 0.25
+const WEIGHT_NEIGHBORHOOD = 0.20
+const WEIGHT_POSTER_QUALITY = 0.15
+const WEIGHT_RECENCY = 0.10
+
+const MIN_SCORE_THRESHOLD = 0.3
+const MAX_MATCHES = 5
+
+function scoreCandidate(need: TarvitsenPost, offer: TarjoanPost): ScoredCandidate {
+  const needTags = need.tags ?? []
+  const offerTags = offer.tags ?? []
+
+  // Individual signal scores (all 0-1)
+  const tagOverlap = jaccardSimilarity(needTags, offerTags)
+  const catMatch = categoryMatchScore(need.title, offerTags)
+  const neighborhoodScore = neighborhoodProximity(need.location, offer.user?.naapurusto ?? offer.location)
+  const posterQuality = posterQualityScore(offer.user_badges, offer.user?.response_rate ?? 0)
+  const recency = recencyScore(offer.created_at)
+
+  // Weighted sum
+  const score =
+    tagOverlap * WEIGHT_TAG_OVERLAP +
+    catMatch * WEIGHT_CATEGORY_MATCH +
+    neighborhoodScore * WEIGHT_NEIGHBORHOOD +
+    posterQuality * WEIGHT_POSTER_QUALITY +
+    recency * WEIGHT_RECENCY
+
+  // Compute matched tags for display
+  const needTagsLower = new Set(needTags.map(t => t.toLowerCase()))
+  const matchedTags = offerTags.filter(t => needTagsLower.has(t.toLowerCase()))
+
+  return { post: offer, needPost: need, score, matchedTags }
+}
+
+// ── Hook ──
 
 export function useSmartMatch(userId: string | null) {
   const [matches, setMatches] = useState<SmartMatch[]>([])
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
+  const dismissedRef = useRef(new Set<string>())
+
+  const evaluateMatches = useCallback(async (
+    userNeeds: TarvitsenPost[],
+    offers: TarjoanPost[],
+    dismissed: Set<string>
+  ) => {
+    if (userNeeds.length === 0 || offers.length === 0) return
+
+    const allCandidates: ScoredCandidate[] = []
+
+    for (const need of userNeeds) {
+      for (const offer of offers) {
+        // Skip own posts
+        if (offer.user_id === need.id) continue
+        // Skip dismissed
+        if (dismissed.has(offer.id)) continue
+
+        const candidate = scoreCandidate(need, offer)
+        if (candidate.score >= MIN_SCORE_THRESHOLD) {
+          allCandidates.push(candidate)
+        }
+      }
+    }
+
+    // Sort by score descending, take top N
+    allCandidates.sort((a, b) => b.score - a.score)
+
+    // Deduplicate by offer post id (keep best score)
+    const seen = new Set<string>()
+    const deduped: ScoredCandidate[] = []
+    for (const c of allCandidates) {
+      if (!seen.has(c.post.id)) {
+        seen.add(c.post.id)
+        deduped.push(c)
+      }
+    }
+
+    const topMatches = deduped.slice(0, MAX_MATCHES).map<SmartMatch>(c => ({
+      postId: c.post.id,
+      postTitle: c.post.title,
+      matchedTags: c.matchedTags,
+      posterName: c.post.user?.name ?? '?',
+      matchScore: Math.round(c.score * 100),
+      matchedNeedId: c.needPost.id,
+      matchedNeedTitle: c.needPost.title,
+    }))
+
+    setMatches(topMatches)
+  }, [])
 
   useEffect(() => {
     if (!userId) return
 
-    // Subscribe to new "tarvitsen" posts and check for tag matches
-    // with the current user's "tarjoan" posts
+    let cancelled = false
+    let userNeeds: TarvitsenPost[] = []
+
+    const fetchAndEvaluate = async () => {
+      // 1. Fetch user's recent tarvitsen posts (last 7 days)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+      const { data: needs } = await (supabase
+        .from('posts')
+        .select('id, title, tags, location, created_at')
+        .eq('user_id', userId)
+        .eq('type', 'tarvitsen')
+        .eq('is_active', true)
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(10) as any)
+
+      if (cancelled) return
+      if (!needs?.length) {
+        setMatches([])
+        return
+      }
+
+      userNeeds = needs as TarvitsenPost[]
+
+      // 2. Fetch tarjoan posts from last 14 days
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000).toISOString()
+      const { data: offers } = await (supabase
+        .from('posts')
+        .select(`
+          id, title, tags, location, user_id, created_at,
+          user:profiles!posts_user_id_fkey(name, naapurusto, response_rate),
+          user_badges:user_badges!user_badges_user_id_fkey(badge_type)
+        `)
+        .eq('type', 'tarjoan')
+        .eq('is_active', true)
+        .neq('user_id', userId)
+        .gte('created_at', fourteenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(100) as any)
+
+      if (cancelled) return
+
+      const offerPosts = (offers ?? []).map((o: any) => ({
+        ...o,
+        user: Array.isArray(o.user) ? o.user[0] : o.user,
+        user_badges: Array.isArray(o.user_badges) ? o.user_badges : [],
+      })) as TarjoanPost[]
+
+      await evaluateMatches(userNeeds, offerPosts, dismissedRef.current)
+    }
+
+    fetchAndEvaluate()
+
+    // 3. Subscribe to realtime new tarjoan posts and re-evaluate
     const channel = supabase
-      .channel('smart-match')
+      .channel('smart-match-v2')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'posts',
-        filter: 'type=eq.tarvitsen',
+        filter: 'type=eq.tarjoan',
       }, async (payload) => {
+        if (cancelled) return
         const newPost = payload.new as any
-        if (!newPost?.tags?.length || newPost.user_id === userId) return
+        if (!newPost || newPost.user_id === userId) return
 
-        // Check if current user has tarjoan posts with matching tags
-        const { data: userPosts } = await (supabase
-          .from('posts')
-          .select('id, tags')
-          .eq('user_id', userId)
-          .eq('type', 'tarjoan')
-          .eq('is_active', true) as any)
+        // Fetch poster info for the new post
+        const { data: posterData } = await supabase
+          .from('profiles')
+          .select('name, naapurusto, response_rate')
+          .eq('id', newPost.user_id)
+          .single()
 
-        if (!userPosts?.length) return
+        const { data: badgeData } = await (supabase
+          .from('user_badges')
+          .select('badge_type')
+          .eq('user_id', newPost.user_id) as any)
 
-        const userTags = new Set(userPosts.flatMap((p: any) => p.tags ?? []))
-        const matchedTags = (newPost.tags as string[]).filter(t => userTags.has(t))
+        if (cancelled) return
 
-        if (matchedTags.length > 0) {
-          // Fetch poster name
-          const { data: poster } = await supabase
-            .from('profiles')
-            .select('name')
-            .eq('id', newPost.user_id)
-            .single()
-
-          setMatches(prev => [...prev, {
-            postId: newPost.id,
-            postTitle: newPost.title,
-            matchedTags,
-            posterName: (poster as any)?.name ?? '?',
-          }])
+        const offer: TarjoanPost = {
+          ...newPost,
+          user: posterData as any,
+          user_badges: (badgeData ?? []) as { badge_type: string }[],
         }
+
+        // Re-evaluate with the new offer added
+        setMatches(prev => {
+          // Score new offer against all user needs
+          const newCandidates: ScoredCandidate[] = []
+          for (const need of userNeeds) {
+            if (dismissedRef.current.has(offer.id)) continue
+            const candidate = scoreCandidate(need, offer)
+            if (candidate.score >= MIN_SCORE_THRESHOLD) {
+              newCandidates.push(candidate)
+            }
+          }
+
+          if (newCandidates.length === 0) return prev
+
+          // Merge with existing matches
+          const best = newCandidates.sort((a, b) => b.score - a.score)[0]
+          const newMatch: SmartMatch = {
+            postId: best.post.id,
+            postTitle: best.post.title,
+            matchedTags: best.matchedTags,
+            posterName: best.post.user?.name ?? '?',
+            matchScore: Math.round(best.score * 100),
+            matchedNeedId: best.needPost.id,
+            matchedNeedTitle: best.needPost.title,
+          }
+
+          // Add to list, deduplicate, sort, and cap
+          const merged = [...prev.filter(m => m.postId !== newMatch.postId), newMatch]
+          merged.sort((a, b) => b.matchScore - a.matchScore)
+          return merged.slice(0, MAX_MATCHES)
+        })
       })
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
-  }, [userId, supabase])
+    return () => {
+      cancelled = true
+      supabase.removeChannel(channel)
+    }
+  }, [userId, supabase, evaluateMatches])
 
-  const dismissMatch = (postId: string) => {
+  const dismissMatch = useCallback((postId: string) => {
+    dismissedRef.current.add(postId)
     setMatches(prev => prev.filter(m => m.postId !== postId))
-  }
+  }, [])
 
   return { matches, dismissMatch }
 }

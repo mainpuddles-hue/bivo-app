@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useFocusEffect } from 'expo-router'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT } from '@/lib/constants'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
@@ -17,7 +17,7 @@ const PAGE_SIZE = 20
 
 export function useFeedData() {
   const { t } = useI18n()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   // ── State ──
   const [posts, setPosts] = useState<Post[]>([])

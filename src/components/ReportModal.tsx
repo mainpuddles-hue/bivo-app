@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { Flag, X, Check } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 
 const REPORT_REASONS = ['spam', 'inappropriate', 'harassment', 'scam', 'fake', 'other'] as const
 type ReportReason = typeof REPORT_REASONS[number]
@@ -18,7 +18,7 @@ interface ReportModalProps {
 export function ReportModal({ visible, onClose, type, targetId }: ReportModalProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [reason, setReason] = useState<ReportReason | null>(null)
   const [description, setDescription] = useState('')

@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 
 type PointAction = 'post_created' | 'reply_created' | 'thanks_given' | 'thanks_received' | 'event_attended' | 'review_written' | 'first_post_bonus'
 
@@ -14,8 +14,8 @@ const POINT_VALUES: Record<PointAction, number> = {
 }
 
 export function usePoints() {
+  const supabase = useSupabase()
   const awardPoints = useCallback(async (userId: string, action: PointAction, referenceId?: string) => {
-    const supabase = createClient()
     const points = POINT_VALUES[action]
 
     // Insert point record
@@ -39,7 +39,7 @@ export function usePoints() {
           // Silently fail — points just won't update
         }
       })
-  }, [])
+  }, [supabase])
 
   return { awardPoints, POINT_VALUES }
 }

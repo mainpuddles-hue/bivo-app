@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import {
   View,
   Text,
@@ -25,7 +25,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
@@ -50,7 +50,7 @@ export default function OnboardingScreen() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
   const scrollRef = useRef<ScrollView>(null)
 
   const [currentPage, setCurrentPage] = useState(0)

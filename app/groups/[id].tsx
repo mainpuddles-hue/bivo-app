@@ -17,6 +17,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 
 // ── Category colors ──
@@ -795,17 +796,7 @@ export default function GroupDetailScreen() {
         <View style={ps.postBody}>
           {/* User row */}
           <View style={ps.postUserRow}>
-            {item.user?.avatar_url ? (
-              <Image
-                source={{ uri: item.user.avatar_url }}
-                style={ps.avatar}
-                contentFit="cover"
-              />
-            ) : (
-              <View style={[ps.avatarPlaceholder, { backgroundColor: colors.muted }]}>
-                <User size={16} color={colors.mutedForeground} strokeWidth={1.8} />
-              </View>
-            )}
+            <Avatar url={item.user?.avatar_url} name={item.user?.name} size={36} />
             <View style={ps.postUserInfo}>
               <Text style={[ps.postUserName, { color: colors.foreground }]} numberOfLines={1}>
                 {item.user?.name || t('common.user')}
@@ -918,13 +909,7 @@ export default function GroupDetailScreen() {
               ) : (
                 comments.map((c) => (
                   <View key={c.id} style={ps.commentRow}>
-                    {c.user?.avatar_url ? (
-                      <Image source={{ uri: c.user.avatar_url }} style={ps.commentAvatar} contentFit="cover" />
-                    ) : (
-                      <View style={[ps.commentAvatarPlaceholder, { backgroundColor: colors.muted }]}>
-                        <User size={10} color={colors.mutedForeground} strokeWidth={1.8} />
-                      </View>
-                    )}
+                    <Avatar url={c.user?.avatar_url} name={c.user?.name} size={24} />
                     <View style={ps.commentBody}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Text style={[ps.commentUser, { color: colors.foreground }]}>
@@ -1228,13 +1213,7 @@ export default function GroupDetailScreen() {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <View style={ps.memberRow}>
-                    {item.user?.avatar_url ? (
-                      <Image source={{ uri: item.user.avatar_url }} style={ps.memberAvatar} contentFit="cover" />
-                    ) : (
-                      <View style={[ps.memberAvatarPlaceholder, { backgroundColor: colors.muted }]}>
-                        <User size={16} color={colors.mutedForeground} strokeWidth={1.8} />
-                      </View>
-                    )}
+                    <Avatar url={item.user?.avatar_url} name={item.user?.name} size={36} />
                     <Text style={[ps.memberName, { color: colors.foreground }]} numberOfLines={1}>
                       {item.user?.name || t('common.user')}
                     </Text>

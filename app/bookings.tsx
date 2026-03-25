@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Avatar } from '@/components/Avatar'
 import { fonts } from '@/lib/fonts'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatPrice, formatDateRange } from '@/lib/format'
 
 const TARJOAN_COLOR = '#7C5CBF'
@@ -83,7 +83,7 @@ export default function BookingsScreen() {
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [userId, setUserId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'borrower' | 'lender' | 'services'>('borrower')

@@ -1,10 +1,10 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { Star, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { StarRating } from '@/components/StarRating'
 
 interface ReviewModalProps {
@@ -18,7 +18,7 @@ interface ReviewModalProps {
 export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReviewSubmitted }: ReviewModalProps) {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')

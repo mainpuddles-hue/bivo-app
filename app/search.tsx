@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, Star, Trash2, Heart } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -10,9 +9,10 @@ import { SearchSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT, CATEGORIES } from '@/lib/constants'
 import { PostCard } from '@/components/PostCard'
+import { Avatar } from '@/components/Avatar'
 import { BoardIllustration } from '@/components/illustrations'
 import { SearchFilters, EMPTY_FILTERS, countActiveFilters, type SearchFilterValues, type SortOption } from '@/components/SearchFilters'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
@@ -53,7 +53,7 @@ export default function SearchScreen() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Post[]>([])
@@ -796,13 +796,7 @@ export default function SearchScreen() {
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
             <Pressable style={[s.userCard, { backgroundColor: colors.card }]}>
-              {item.avatar_url ? (
-                <Image source={{ uri: item.avatar_url }} style={s.userAvatar} />
-              ) : (
-                <View style={[s.userAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{item.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-                </View>
-              )}
+              <Avatar url={item.avatar_url} name={item.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
                 {item.naapurusto && (

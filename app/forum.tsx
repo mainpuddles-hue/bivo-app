@@ -17,6 +17,7 @@ import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 
 // ── Forum categories ──
@@ -625,15 +626,7 @@ export default function ForumScreen() {
         <View style={s.cardBody}>
           {/* User row */}
           <View style={s.cardUserRow}>
-            {user?.avatar_url ? (
-              <Image source={{ uri: user.avatar_url }} style={s.avatar} contentFit="cover" />
-            ) : (
-              <View style={[s.avatarFallback, { backgroundColor: `${colors.primary}20` }]}>
-                <Text style={[s.avatarFallbackText, { color: colors.primary }]}>
-                  {(user?.name ?? '?').charAt(0).toUpperCase()}
-                </Text>
-              </View>
-            )}
+            <Avatar url={user?.avatar_url} name={user?.name} size={32} />
             <View style={s.cardUserInfo}>
               <Text style={[s.cardUserName, { color: colors.foreground }]} numberOfLines={1}>
                 {user?.name ?? t('common.user')}
@@ -727,15 +720,7 @@ export default function ForumScreen() {
     return (
       <View style={[s.replyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={s.cardUserRow}>
-          {user?.avatar_url ? (
-            <Image source={{ uri: user.avatar_url }} style={s.replyAvatar} contentFit="cover" />
-          ) : (
-            <View style={[s.replyAvatarFallback, { backgroundColor: `${colors.primary}20` }]}>
-              <Text style={[s.replyAvatarText, { color: colors.primary }]}>
-                {(user?.name ?? '?').charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
+          <Avatar url={user?.avatar_url} name={user?.name} size={28} />
           <View style={s.cardUserInfo}>
             <Text style={[s.replyUserName, { color: colors.foreground }]} numberOfLines={1}>
               {user?.name ?? t('common.user')}
@@ -1189,15 +1174,7 @@ export default function ForumScreen() {
                   <View style={s.detailPostSection}>
                     {/* Author */}
                     <View style={s.cardUserRow}>
-                      {selectedPost.user?.avatar_url ? (
-                        <Image source={{ uri: selectedPost.user.avatar_url }} style={s.avatar} contentFit="cover" />
-                      ) : (
-                        <View style={[s.avatarFallback, { backgroundColor: `${colors.primary}20` }]}>
-                          <Text style={[s.avatarFallbackText, { color: colors.primary }]}>
-                            {(selectedPost.user?.name ?? '?').charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
-                      )}
+                      <Avatar url={selectedPost.user?.avatar_url} name={selectedPost.user?.name} size={32} />
                       <View style={s.cardUserInfo}>
                         <Text style={[s.cardUserName, { color: colors.foreground }]}>
                           {selectedPost.user?.name ?? t('common.user')}

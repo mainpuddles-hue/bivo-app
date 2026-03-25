@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { TRUST_TIERS, TIER_2_REQUIREMENTS, TIER_3_REQUIREMENTS } from '@/lib/constants'
 import type { TrustLevel, TrustSignals, TrustPermissions } from '@/lib/types'
 
@@ -81,10 +81,11 @@ export function useTrustLevel(userId?: string | null): TrustResult {
   const [signals, setSignals] = useState<TrustSignals>(DEFAULT_SIGNALS)
   const [loading, setLoading] = useState(true)
 
+  const supabase = useSupabase()
+
   useEffect(() => {
     if (!userId) { setLoading(false); return }
     let mounted = true
-    const supabase = createClient()
 
     async function fetchSignals() {
       try {
@@ -129,7 +130,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
 
     fetchSignals()
     return () => { mounted = false }
-  }, [userId])
+  }, [userId, supabase])
 
   const level = useMemo(() => computeTrustLevel(signals), [signals])
   const tier = TRUST_TIERS[level]

@@ -13,7 +13,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
 import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import { haversineKm } from '@/lib/geo'
 import { TrustBadge } from '@/components/TrustBadge'
@@ -46,6 +46,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
+  const supabase = useSupabase()
   const [imgError, setImgError] = useState(false)
   const [liked, setLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
@@ -62,7 +63,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
     // Skip DB check if the post already carries like/save state
     if (post.is_liked !== undefined && post.is_saved !== undefined) return
     let mounted = true
-    const supabase = createClient()
+
 
     if (post.is_liked === undefined) {
       supabase.from('post_likes').select('id').eq('post_id', post.id).eq('user_id', userId).maybeSingle()
@@ -124,7 +125,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
         savingRef.current = true
         try {
           try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy) } catch {}
-          const supabase = createClient()
+      
           if (saved) {
             setSaved(false)
             await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
@@ -279,7 +280,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                 likingRef.current = true
                 try {
                   try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-                  const supabase = createClient()
+              
                   if (liked) {
                     setLiked(false)
                     setLikeCount(c => Math.max(0, c - 1))
@@ -324,7 +325,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
               savingRef.current = true
               try {
                 try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
-                const supabase = createClient()
+            
                 if (saved) {
                   await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
                   setSaved(false)

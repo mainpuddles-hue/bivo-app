@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Platform } from 'react-native'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 
 // Product IDs — must match App Store Connect / Google Play Console
 const PRO_MONTHLY = 'com.tackbird.mobile.pro_monthly'
@@ -26,6 +26,7 @@ export function useInAppPurchase(userId: string | null) {
   const [purchasing, setPurchasing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isAvailable, setIsAvailable] = useState(false)
+  const supabase = useSupabase()
 
   // Init IAP connection + fetch products
   useEffect(() => {
@@ -58,7 +59,6 @@ export function useInAppPurchase(userId: string | null) {
           if (purchase.productId === PRO_MONTHLY) {
             // Verify and activate Pro
             try {
-              const supabase = createClient()
               await (supabase.from('profiles') as any)
                 .update({ is_pro: true, pro_since: new Date().toISOString() })
                 .eq('id', userId)
@@ -86,7 +86,7 @@ export function useInAppPurchase(userId: string | null) {
       purchaseListener?.remove?.()
       IAP?.endConnection?.()
     }
-  }, [userId])
+  }, [userId, supabase])
 
   // Purchase Pro subscription
   const purchase = useCallback(async () => {
@@ -113,7 +113,6 @@ export function useInAppPurchase(userId: string | null) {
       const available = await IAP.getAvailablePurchases()
       const hasPro = available.some((p: any) => p.productId === PRO_MONTHLY)
       if (hasPro) {
-        const supabase = createClient()
         await (supabase.from('profiles') as any)
           .update({ is_pro: true })
           .eq('id', userId)
@@ -125,7 +124,7 @@ export function useInAppPurchase(userId: string | null) {
       setError('Palautus epäonnistui')
     }
     setPurchasing(false)
-  }, [isAvailable, userId])
+  }, [isAvailable, userId, supabase])
 
   return { products, isPro, purchasing, purchase, restore, error, isAvailable }
 }

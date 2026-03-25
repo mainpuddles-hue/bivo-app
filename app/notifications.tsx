@@ -7,9 +7,10 @@ import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, Ca
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import type { Notification } from '@/lib/types'
+import { prioritizeNotifications, type PrioritizedNotification } from '@/lib/notificationPriority'
 
 const FILTERS = [
   { key: 'all', label: 'common.all' },
@@ -52,13 +53,13 @@ function getFilterForType(type: string): string {
   return 'system'
 }
 
-function groupByTime(items: Notification[], t: (k: string) => string) {
+function groupByTime(items: PrioritizedNotification[], t: (k: string) => string) {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const yesterdayStart = new Date(todayStart.getTime() - 86400000)
   const weekStart = new Date(todayStart.getTime() - 7 * 86400000)
 
-  const groups: { title: string; data: Notification[] }[] = [
+  const groups: { title: string; data: PrioritizedNotification[] }[] = [
     { title: t('notifications.today'), data: [] },
     { title: t('notifications.yesterday'), data: [] },
     { title: t('notifications.thisWeek'), data: [] },
@@ -76,13 +77,28 @@ function groupByTime(items: Notification[], t: (k: string) => string) {
   return groups.filter(g => g.data.length > 0)
 }
 
+/** Build grouped notification display text */
+function getGroupedTitle(item: PrioritizedNotification, t: (k: string, p?: Record<string, string | number>) => string): string {
+  if (!item.isGrouped || !item.groupCount || item.groupCount <= 1) return item.title
+
+  const firstName = item.groupNames?.[0] ?? item.from_user?.name ?? '?'
+  const othersCount = item.groupCount - 1
+
+  if (item.type === 'post_like') {
+    return t('notifications.groupedLikes', { name: firstName, count: othersCount })
+  }
+
+  // Generic grouped: "Name and N others"
+  return `${firstName} ${t('notifications.andOthers', { count: othersCount })} — ${item.title}`
+}
+
 export default function NotificationsScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const supabase = useSupabase()
+  const [notifications, setNotifications] = useState<PrioritizedNotification[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState('all')
@@ -96,7 +112,9 @@ export default function NotificationsScreen() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(100)
-    setNotifications((data ?? []) as unknown as Notification[])
+    const raw = (data ?? []) as unknown as Notification[]
+    const prioritized = prioritizeNotifications(raw)
+    setNotifications(prioritized)
     setLoading(false)
     setRefreshing(false)
   }, [supabase])
@@ -110,7 +128,7 @@ export default function NotificationsScreen() {
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
   }, [supabase])
 
-  const handleTap = useCallback(async (item: Notification) => {
+  const handleTap = useCallback(async (item: PrioritizedNotification) => {
     // Mark as read
     if (!item.is_read) {
       await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
@@ -204,11 +222,20 @@ export default function NotificationsScreen() {
                 </View>
               </View>
               <View style={styles.notifContent}>
-                <Text style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && { fontWeight: '600' }]} numberOfLines={2}>{item.title}</Text>
-                {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={1}>{item.body}</Text>}
-                <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
-                  {formatTimeAgo(item.created_at, t, locale)}
+                <Text style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && { fontWeight: '600' }]} numberOfLines={2}>
+                  {getGroupedTitle(item, t)}
                 </Text>
+                {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={1}>{item.body}</Text>}
+                <View style={styles.notifMeta}>
+                  <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
+                    {formatTimeAgo(item.created_at, t, locale)}
+                  </Text>
+                  {item.isGrouped && item.groupCount && item.groupCount > 1 && (
+                    <View style={[styles.groupBadge, { backgroundColor: `${colors.primary}1A` }]}>
+                      <Text style={[styles.groupBadgeText, { color: colors.primary }]}>{item.groupCount}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
               {!item.is_read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
             </Pressable>
@@ -263,6 +290,12 @@ const styles = StyleSheet.create({
   notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19 },
   notifBody: { fontSize: 13, lineHeight: 17 },
   notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14 },
+  notifMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  groupBadge: {
+    minWidth: 18, height: 18, borderRadius: 9,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+  },
+  groupBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
   unreadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
   empty: { alignItems: 'center', paddingTop: 80, gap: 12 },
   emptyText: { fontSize: 14, lineHeight: 20 },

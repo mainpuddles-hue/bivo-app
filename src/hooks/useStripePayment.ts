@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Platform, Linking } from 'react-native'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 
 const WEB_BACKEND = 'https://tackbird-v2.vercel.app'
 
@@ -21,13 +21,13 @@ interface PaymentOptions {
 export function useStripePayment() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const supabase = useSupabase()
 
   const createPayment = useCallback(async (options: PaymentOptions): Promise<string | null> => {
     setLoading(true)
     setError(null)
 
     try {
-      const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
         setError('Kirjaudu sisään maksaaksesi')
@@ -91,7 +91,7 @@ export function useStripePayment() {
       setLoading(false)
       return null
     }
-  }, [])
+  }, [supabase])
 
   return { createPayment, loading, error }
 }

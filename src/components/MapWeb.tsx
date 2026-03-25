@@ -8,7 +8,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 
@@ -539,7 +539,7 @@ export default function MapScreen() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [posts, setPosts] = useState<Post[]>([])
   const [events, setEvents] = useState<Event[]>([])

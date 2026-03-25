@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { CheckCircle, Calendar, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { formatPrice } from '@/lib/format'
 
 interface BookingSummary {
@@ -23,7 +23,7 @@ export default function PaymentSuccessScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { session_id } = useLocalSearchParams<{ session_id?: string }>()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [booking, setBooking] = useState<BookingSummary | null>(null)
   const [loading, setLoading] = useState(!!session_id)

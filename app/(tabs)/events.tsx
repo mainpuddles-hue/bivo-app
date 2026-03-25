@@ -13,6 +13,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
+import { Avatar } from '@/components/Avatar'
 import { shareContent } from '@/lib/share'
 import { formatEventDateShort, formatEventDate } from '@/lib/format'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
@@ -413,9 +414,7 @@ export default function EventsScreen() {
           </Pressable>
           {item.creator && (
             <View style={ev.creatorRow}>
-              {item.creator.avatar_url ? (
-                <Image source={{ uri: item.creator.avatar_url }} style={ev.creatorAvatar} />
-              ) : null}
+              <Avatar url={item.creator.avatar_url} name={item.creator.name} size={20} />
               <Text style={[ev.creatorName, { color: colors.mutedForeground }]}>{item.creator.name}</Text>
             </View>
           )}
@@ -665,13 +664,7 @@ export default function EventsScreen() {
               {/* Creator info */}
               {selectedEvent.creator && (
                 <View style={ev.detailCreatorRow}>
-                  {selectedEvent.creator.avatar_url ? (
-                    <Image source={{ uri: selectedEvent.creator.avatar_url }} style={ev.detailCreatorAvatar} />
-                  ) : (
-                    <View style={[ev.detailCreatorAvatar, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{selectedEvent.creator.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-                    </View>
-                  )}
+                  <Avatar url={selectedEvent.creator.avatar_url} name={selectedEvent.creator.name} size={32} />
                   <Text style={[ev.detailCreatorName, { color: colors.foreground }]}>{selectedEvent.creator.name}</Text>
                 </View>
               )}

@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Alert } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 
 export type NotificationType = 'messages' | 'reviews' | 'rentals' | 'system' | 'marketing' | 'nearby_posts' | 'events' | 'likes' | 'comments' | 'follows' | 'nappaa'
 
@@ -36,7 +36,7 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
 const CACHE_KEY = 'tackbird-notification-prefs'
 
 export function useNotificationPreferences() {
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
   const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFERENCES)
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)

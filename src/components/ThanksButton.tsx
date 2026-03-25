@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated, Alert } from 'react-native'
 import { Heart } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 
 interface ThanksButtonProps {
@@ -18,7 +18,7 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
   const { colors } = useTheme()
   const { t } = useI18n()
   const { awardPoints } = usePoints()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [hasThanked, setHasThanked] = useState(false)
   const [thanksCount, setThanksCount] = useState(0)

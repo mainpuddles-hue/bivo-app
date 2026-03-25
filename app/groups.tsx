@@ -13,7 +13,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS } from '@/lib/constants'
 
 // ── Group categories ──
@@ -92,7 +92,7 @@ export default function GroupsScreen() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   // State
   const [myGroups, setMyGroups] = useState<Group[]>([])

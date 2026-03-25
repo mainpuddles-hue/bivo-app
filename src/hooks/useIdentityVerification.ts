@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 
 type VerificationStatus = 'idle' | 'pending' | 'verifying' | 'success' | 'error'
 
@@ -34,12 +34,12 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const supabase = useSupabase()
 
   // Check existing verification on mount
   useEffect(() => {
     if (!userId) return
     let mounted = true
-    const supabase = createClient()
     supabase
       .from('user_badges')
       .select('badge_type')
@@ -53,7 +53,7 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
         }
       })
     return () => { mounted = false }
-  }, [userId])
+  }, [userId, supabase])
 
   const startVerification = useCallback(() => {
     if (!userId) {
@@ -76,8 +76,6 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
     setStatus('verifying')
 
     try {
-      const supabase = createClient()
-
       // Check not already verified (race condition guard)
       const { data: existing } = await supabase
         .from('user_badges')
@@ -122,7 +120,7 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
     } finally {
       setLoading(false)
     }
-  }, [userId, isVerified])
+  }, [userId, isVerified, supabase])
 
   return { status, isVerified, startVerification, confirmVerification, showModal, setShowModal, loading, error }
 }

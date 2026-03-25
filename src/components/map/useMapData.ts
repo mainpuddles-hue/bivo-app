@@ -8,7 +8,7 @@ import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import * as Location from 'expo-location'
 import { CATEGORIES } from '@/lib/constants'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { isToday, isTomorrow, isWithinDays } from '@/lib/dateHelpers'
 import { haversineKm } from '@/lib/geo'
 import type { ListItem, StableMarker, FilterKey, Section, ItemKind } from './types'
@@ -101,7 +101,7 @@ function isPast(dateStr: string): boolean {
 // ══════════════════════════════════════════════════════════════
 
 export function useMapData(t: (key: string, params?: Record<string, string | number>) => string, locale: string) {
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   // ── State ──
   const [posts, setPosts] = useState<Post[]>([])

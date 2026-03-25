@@ -439,13 +439,7 @@ export default function PostDetailScreen() {
   const renderCommentItem = (c: PostComment, isReply: boolean) => (
     <View key={c.id} style={[styles.commentRow, isReply && styles.replyRow]}>
       {isReply && <View style={[styles.replyLine, { backgroundColor: colors.border }]} />}
-      {c.user?.avatar_url ? (
-        <Image source={{ uri: c.user.avatar_url }} style={isReply ? styles.replyAvatar : styles.commentAvatar} />
-      ) : (
-        <View style={[isReply ? styles.replyAvatar : styles.commentAvatar, styles.avatarFb, { backgroundColor: colors.muted }]}>
-          <Text style={{ fontSize: isReply ? 9 : 10, color: colors.mutedForeground, fontWeight: '600' }}>{c.user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-        </View>
-      )}
+      <Avatar url={c.user?.avatar_url} name={c.user?.name} size={isReply ? 24 : 32} />
       <View style={styles.commentBody}>
         <View style={styles.commentHeader}>
           <Text style={[styles.commentName, { color: colors.foreground }]}>{c.user?.name ?? t('common.user')}</Text>
@@ -789,13 +783,7 @@ export default function PostDetailScreen() {
             {/* Provider info */}
             {user && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
-                {user.avatar_url ? (
-                  <Image source={{ uri: user.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} />
-                ) : (
-                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.mutedForeground }}>{user.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-                  </View>
-                )}
+                <Avatar url={user.avatar_url} name={user.name} size={36} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>{user.name}</Text>
                   <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('service.provider')}</Text>

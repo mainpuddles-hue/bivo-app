@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, ShieldOff } from 'lucide-react-native'
-import { Image } from 'expo-image'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
+import { Avatar } from '@/components/Avatar'
 
 interface BlockedUser {
   blocked_id: string
@@ -23,7 +23,7 @@ export default function BlockedUsersScreen() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([])
   const [loading, setLoading] = useState(true)
@@ -101,15 +101,7 @@ export default function BlockedUsersScreen() {
               const user = item.blocked_user
               return (
                 <View key={item.blocked_id} style={[s.row, { borderBottomColor: colors.border }]}>
-                  {user?.avatar_url ? (
-                    <Image source={{ uri: user.avatar_url }} style={s.avatar} />
-                  ) : (
-                    <View style={[s.avatar, s.avatarFb, { backgroundColor: colors.muted }]}>
-                      <Text style={[s.avatarInit, { color: colors.mutedForeground }]}>
-                        {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                      </Text>
-                    </View>
-                  )}
+                  <Avatar url={user?.avatar_url} name={user?.name} size={44} />
 
                   <View style={s.userInfo}>
                     <Text style={[s.userName, { color: colors.foreground }]} numberOfLines={1}>

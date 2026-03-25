@@ -6,15 +6,15 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { TackBirdLogo } from './TackBirdLogo'
-import { useState, useEffect, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
+import { useSupabase } from '@/hooks/useSupabase'
 
 export function Header() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {

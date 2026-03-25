@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n, type Locale } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { downloadAsFile } from '@/lib/share'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInAppPurchase } from '@/hooks/useInAppPurchase'
@@ -31,7 +31,7 @@ export default function SettingsScreen() {
   const { t, locale, setLocale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const push = usePushNotifications(profile?.id ?? null)

@@ -10,6 +10,7 @@ import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Chec
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { ThanksButton } from '@/components/ThanksButton'
+import { Avatar } from '@/components/Avatar'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatDateHeader } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
@@ -343,8 +344,10 @@ export default function ConversationScreen() {
           </Text>
         )}
         <View style={[s.msgRow, isMine ? s.msgRowMine : s.msgRowTheirs]}>
-          {!isMine && !sameAuthorAsPrev && otherUser?.avatar_url ? (
-            <Image source={{ uri: otherUser.avatar_url }} style={s.msgAvatar} />
+          {!isMine && !sameAuthorAsPrev ? (
+            <View style={{ marginTop: 2 }}>
+              <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={28} />
+            </View>
           ) : !isMine ? (
             <View style={{ width: 28 }} />
           ) : null}
@@ -427,13 +430,7 @@ export default function ConversationScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
-        {otherUser?.avatar_url ? (
-          <Image source={{ uri: otherUser.avatar_url }} style={s.headerAvatar} />
-        ) : (
-          <View style={[s.headerAvatar, { backgroundColor: colors.muted, justifyContent: 'center', alignItems: 'center' }]}>
-            <Text style={{ color: colors.mutedForeground, fontWeight: '600' }}>{otherUser?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
-          </View>
-        )}
+        <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
         <View style={{ flex: 1 }}>
           <Text style={[s.headerName, { color: colors.foreground }]}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
           {otherTyping ? (
