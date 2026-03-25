@@ -251,7 +251,7 @@ export default function SettingsScreen() {
 
   const markDirty = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setDirty(true) }
 
-  const langLabel = (l: Locale) => ({ fi: 'Suomi', en: 'English', sv: 'Svenska' }[l])
+  const langLabel = (l: Locale) => ({ fi: 'Suomi', en: 'English', sv: 'Svenska', et: 'Eesti', ru: 'Русский' }[l])
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0'
 
@@ -299,7 +299,7 @@ export default function SettingsScreen() {
         {/* Language */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          {(['fi', 'en', 'sv'] as Locale[]).map((l) => (
+          {(['fi', 'en', 'sv', 'et', 'ru'] as Locale[]).map((l) => (
             <Pressable key={l} onPress={() => setLocale(l)} style={s.row}>
               <Globe size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{langLabel(l)}</Text>
