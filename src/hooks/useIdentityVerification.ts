@@ -92,7 +92,10 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
         return
       }
 
-      // Insert verified badge
+      // SECURITY NOTE: In production, badge insertion must happen server-side
+      // via Suomi.fi OIDC callback Edge Function. Client-side insertion is
+      // enabled only for development/testing until DVV credentials are obtained.
+      // TODO: Replace with Edge Function call when Suomi.fi is live
       const { error: badgeError } = await (supabase.from('user_badges') as any)
         .insert({ user_id: userId, badge_type: 'verified' })
 

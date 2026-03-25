@@ -19,6 +19,7 @@ import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { isValidUUID } from '@/lib/validation'
+import { isProfileVisible } from '@/lib/privacyUtils'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
@@ -47,6 +48,7 @@ export default function PublicProfileScreen() {
   const [showReportModal, setShowReportModal] = useState(false)
   const [hasTransaction, setHasTransaction] = useState(false)
   const [hasExistingReview, setHasExistingReview] = useState(false)
+  const [profileHidden, setProfileHidden] = useState(false)
   const trust = useTrustLevel(userId)
 
   useEffect(() => {
@@ -65,7 +67,29 @@ export default function PublicProfileScreen() {
       // Fetch profile
       const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).single()
       if (!p) { setLoading(false); return }
-      setProfile(p as unknown as Profile)
+      const prof = p as unknown as Profile
+
+      // Check profile visibility before rendering
+      let viewerNeighborhood: string | null = null
+      if (user) {
+        const { data: viewerProfile } = await (supabase.from('profiles') as any)
+          .select('naapurusto')
+          .eq('id', user.id)
+          .single()
+        viewerNeighborhood = viewerProfile?.naapurusto ?? null
+      }
+      if (!isProfileVisible(
+        (prof as any).profile_visibility,
+        prof.naapurusto,
+        viewerNeighborhood,
+        user?.id === userId,
+      )) {
+        setProfileHidden(true)
+        setLoading(false)
+        return
+      }
+
+      setProfile(prof)
 
       // Parallel fetches
       const [postsRes, followersRes, followingRes] = await Promise.all([
@@ -203,6 +227,20 @@ export default function PublicProfileScreen() {
           </Pressable>
         </View>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+      </View>
+    )
+  }
+
+  if (profileHidden) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={12}>
+            <ArrowLeft size={24} color={colors.foreground} />
+          </Pressable>
+          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+        </View>
+        <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.profileHidden') ?? 'Profiili ei ole julkinen'}</Text>
       </View>
     )
   }

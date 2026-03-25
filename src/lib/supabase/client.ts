@@ -1,6 +1,6 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
+import { secureStorage } from './secureStorage'
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -12,7 +12,7 @@ export function createClient() {
 
   _client = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      storage: AsyncStorage,
+      storage: secureStorage,
       autoRefreshToken: true,
       persistSession: true,
       // On web, detect OAuth tokens in URL hash (#access_token=...)

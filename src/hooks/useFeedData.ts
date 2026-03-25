@@ -4,6 +4,7 @@ import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
 import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT } from '@/lib/constants'
+import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
@@ -187,6 +188,17 @@ export function useFeedData() {
           ;(p as any).is_saved = savedSet.has(p.id)
         })
       }
+
+      // Apply location privacy based on user's location_accuracy setting
+      newPosts.forEach(p => {
+        const accuracy = (p.user as any)?.location_accuracy
+        if (accuracy && accuracy !== 'exact') {
+          const result = applyLocationAccuracy(accuracy, p.latitude, p.longitude, p.location)
+          ;(p as any).latitude = result.latitude
+          ;(p as any).longitude = result.longitude
+          ;(p as any).location = result.location
+        }
+      })
 
       // Client-side relevance ranking
       const ranked = rankFeed(newPosts, {

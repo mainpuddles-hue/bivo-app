@@ -6,7 +6,7 @@ export const POST_SELECT = `
   latitude, longitude, is_pro_listing, is_active, is_urgent, urgency_hours, tags,
   like_count, comment_count,
   created_at, updated_at,
-  user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, user_badges(badge_type)),
+  user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, location_accuracy, user_badges(badge_type)),
   images:post_images(id, image_url, sort_order)
 `
 

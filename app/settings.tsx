@@ -130,7 +130,7 @@ export default function SettingsScreen() {
   const handleExport = useCallback(async () => {
     if (!profile) return
     setExporting(true)
-    setExportProgress('1/5')
+    setExportProgress('1/6')
     try {
       // Batch 1: posts, messages, reviews
       const [postsRes, msgsRes, reviewsRes] = await Promise.allSettled([
@@ -139,7 +139,7 @@ export default function SettingsScreen() {
         supabase.from('reviews').select('*').eq('reviewer_id', profile.id),
       ])
 
-      setExportProgress('2/5')
+      setExportProgress('2/6')
       // Batch 2: saved posts, saved events, post likes
       const [savedPostsRes, savedEventsRes, postLikesRes] = await Promise.allSettled([
         supabase.from('saved_posts').select('*').eq('user_id', profile.id),
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
         supabase.from('post_likes').select('*').eq('user_id', profile.id),
       ])
 
-      setExportProgress('3/5')
+      setExportProgress('3/6')
       // Batch 3: comments, follows (both directions)
       const [commentsRes, followersRes, followingRes] = await Promise.allSettled([
         supabase.from('post_comments').select('*').eq('user_id', profile.id),
@@ -155,7 +155,7 @@ export default function SettingsScreen() {
         supabase.from('user_follows').select('*').eq('follower_id', profile.id),
       ])
 
-      setExportProgress('4/5')
+      setExportProgress('4/6')
       // Batch 4: notification preferences, conversations, badges
       const [notifPrefsRes, conversationsRes, badgesRes] = await Promise.allSettled([
         supabase.from('notification_preferences').select('*').eq('user_id', profile.id),
@@ -163,7 +163,18 @@ export default function SettingsScreen() {
         supabase.from('user_badges').select('*').eq('user_id', profile.id),
       ])
 
-      setExportProgress('5/5')
+      setExportProgress('5/6')
+      // Batch 5: payments, bookings, thanks, points
+      if (!isValidUUID(profile.id)) throw new Error('Invalid profile ID')
+      const [paymentsRes, rentalBookingsRes, serviceBookingsRes, thanksRes, pointsRes] = await Promise.allSettled([
+        supabase.from('payments').select('*').eq('user_id', profile.id),
+        supabase.from('rental_bookings').select('*').or(`borrower_id.eq.${profile.id},lender_id.eq.${profile.id}`),
+        supabase.from('service_bookings').select('*').or(`buyer_id.eq.${profile.id},provider_id.eq.${profile.id}`),
+        supabase.from('thanks').select('*').or(`from_user_id.eq.${profile.id},to_user_id.eq.${profile.id}`),
+        supabase.from('user_points').select('*').eq('user_id', profile.id),
+      ])
+
+      setExportProgress('6/6')
       const r = (res: PromiseSettledResult<any>) => res.status === 'fulfilled' ? (res.value?.data ?? []) : []
       const exportData = {
         profile,
@@ -179,6 +190,11 @@ export default function SettingsScreen() {
         notification_preferences: r(notifPrefsRes),
         conversations: r(conversationsRes),
         user_badges: r(badgesRes),
+        payments: r(paymentsRes),
+        rental_bookings: r(rentalBookingsRes),
+        service_bookings: r(serviceBookingsRes),
+        thanks: r(thanksRes),
+        user_points: r(pointsRes),
         exported_at: new Date().toISOString(),
       }
 
