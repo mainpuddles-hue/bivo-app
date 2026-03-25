@@ -292,9 +292,24 @@ export default function CreateScreen() {
     return uploadedUrls[0] ?? null
   }
 
+  const quickContentCheck = useCallback((checkTitle: string, checkDescription: string): string | null => {
+    const text = `${checkTitle} ${checkDescription}`.toLowerCase()
+    if (/https?:\/\//.test(text)) return t('create.noExternalLinks')
+    if (/whatsapp|telegram/.test(text)) return t('create.noExternalApps')
+    if (text.length < 10) return t('create.tooShort')
+    return null // passed
+  }, [t])
+
   const handleSubmit = useCallback(async () => {
     if (!selectedType || !title.trim() || !description.trim()) {
       Alert.alert(t('common.error'), t('create.titleAndDescRequired'))
+      return
+    }
+
+    // Pre-submit content moderation check
+    const contentWarning = quickContentCheck(title, description)
+    if (contentWarning) {
+      Alert.alert(t('common.error'), contentWarning)
       return
     }
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
@@ -401,6 +416,20 @@ export default function CreateScreen() {
         }).catch(() => {}) // Non-blocking
       }
 
+      // Moderate content (non-blocking)
+      if (post?.id) {
+        fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/moderate-content`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: title.trim(),
+            description: description.trim(),
+            post_id: post.id,
+            user_id: user.id,
+          }),
+        }).catch(() => {})
+      }
+
       // Push notification for urgent posts (broadcast)
       if (isUrgent && post?.id) {
         triggerPush({
@@ -420,7 +449,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, images, supabase, router, t])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, images, supabase, router, t, quickContentCheck])
 
   // ── Category selection step ──
   if (step === 'category') {

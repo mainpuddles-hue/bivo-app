@@ -47,36 +47,68 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress }
 interface TrustProgressProps {
   level: TrustLevel
   nextTierHints: string[]
+  score?: number
+  factors?: Record<string, number>
   onVerifyPress?: () => void
 }
 
-export function TrustProgress({ level, nextTierHints, onVerifyPress }: TrustProgressProps) {
+function getScoreColor(score: number): string {
+  if (score < 40) return '#D94F4F'
+  if (score < 75) return '#F59E0B'
+  return '#2D6B5E'
+}
+
+export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, onVerifyPress }: TrustProgressProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
 
-  if (level >= 3) return null
-
-  const nextLevel = (level + 1) as TrustLevel
-  const nextTier = TRUST_TIERS[nextLevel]
+  const scoreColor = getScoreColor(score)
+  const factorEntries = Object.entries(factors)
 
   return (
     <View style={[styles.progress, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={styles.progressHeader}>
+      {/* Score display */}
+      <View style={styles.scoreRow}>
         <TrustBadge level={level} size="medium" showLabel />
-        <View style={styles.progressArrow}>
-          <Text style={[styles.arrowText, { color: colors.mutedForeground }]}>{'\u2192'}</Text>
-        </View>
-        <TrustBadge level={nextLevel} size="medium" showLabel />
+        <Text style={[styles.scoreLabel, { color: colors.foreground }]}>
+          {t('trust.score')}
+        </Text>
+        <Text style={[styles.scoreValue, { color: scoreColor }]}>
+          {score}/100
+        </Text>
       </View>
 
+      {/* Score progress bar */}
       <View style={styles.progressBar}>
         <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
           <View style={[
             styles.progressFill,
-            { backgroundColor: nextTier.color, width: `${Math.max(10, ((3 - nextTierHints.length) / 3) * 100)}%` },
+            { backgroundColor: scoreColor, width: `${Math.max(2, score)}%` },
           ]} />
         </View>
       </View>
+
+      {/* Factor breakdown */}
+      {factorEntries.length > 0 && (
+        <View style={styles.factors}>
+          {factorEntries.map(([key, value]) => (
+            <Text key={key} style={[styles.factorText, { color: colors.mutedForeground }]}>
+              {key}: {typeof value === 'number' ? value.toFixed(0) : value}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {/* Next tier hints */}
+      {level < 3 && (
+        <View style={styles.progressHeader}>
+          <TrustBadge level={level} size="small" showLabel />
+          <View style={styles.progressArrow}>
+            <Text style={[styles.arrowText, { color: colors.mutedForeground }]}>{'\u2192'}</Text>
+          </View>
+          <TrustBadge level={(level + 1) as TrustLevel} size="small" showLabel />
+        </View>
+      )}
 
       {nextTierHints.length > 0 && (
         <View style={styles.hints}>
@@ -145,6 +177,31 @@ const styles = StyleSheet.create({
   progressFill: {
     height: 6,
     borderRadius: 3,
+  },
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  scoreLabel: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
+  },
+  scoreValue: {
+    fontSize: 15,
+    fontFamily: fonts.headingSemi,
+    fontWeight: '700',
+  },
+  factors: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  factorText: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 14,
   },
   hints: {
     gap: 3,

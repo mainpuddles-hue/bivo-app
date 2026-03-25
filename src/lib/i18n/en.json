@@ -1279,7 +1279,10 @@
     "expires14": "14 days",
     "expires30": "30 days",
     "priceSuggestion": "In your area {min}–{max}€ ({count} services)",
-    "priceSuggestionDaily": "In your area {min}–{max}€/day ({count} listings)"
+    "priceSuggestionDaily": "In your area {min}–{max}€/day ({count} listings)",
+    "noExternalLinks": "External links are not allowed",
+    "noExternalApps": "Keep conversations within TackBird",
+    "tooShort": "Please write a longer description"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1423,7 +1426,8 @@
     "timeAll": "All",
     "recent": "Recent searches",
     "noResultsQuery": "No results for \"{query}\"",
-    "resultCount": "{count} results"
+    "resultCount": "{count} results",
+    "semanticMatch": "Similar match"
   },
   "saved": {
     "title": "Saved",
@@ -2205,7 +2209,9 @@
     "maxDailyFeeExceeded": "Your trust level limits daily fee to {max}€. Level up for unlimited pricing.",
     "tier1Desc": "Basic features — post, search, message",
     "tier2Desc": "Borrow and lend items (max 50€/day)",
-    "tier3Desc": "Unlimited pricing, feed priority, trusted badge"
+    "tier3Desc": "Unlimited pricing, feed priority, trusted badge",
+    "score": "Trust score",
+    "scoreOf": "{score}/100"
   },
   "service": {
     "price": "Service price (€)",

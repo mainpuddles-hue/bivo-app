@@ -1279,7 +1279,10 @@
     "showDetails": "Lisää tietoja",
     "hideDetails": "Piilota tiedot",
     "priceSuggestion": "Alueella {min}–{max}€ ({count} palvelua)",
-    "priceSuggestionDaily": "Alueella {min}–{max}€/pv ({count} ilmoitusta)"
+    "priceSuggestionDaily": "Alueella {min}–{max}€/pv ({count} ilmoitusta)",
+    "noExternalLinks": "Ulkoiset linkit eivät ole sallittuja",
+    "noExternalApps": "Ohjaa keskustelut TackBirdin sisällä",
+    "tooShort": "Kirjoita pidempi kuvaus"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -1423,7 +1426,8 @@
     "timeAll": "Kaikki",
     "recent": "Viimeisimmät haut",
     "noResultsQuery": "Ei tuloksia haulle \"{query}\"",
-    "resultCount": "{count} tulosta"
+    "resultCount": "{count} tulosta",
+    "semanticMatch": "Samankaltainen osuma"
   },
   "saved": {
     "title": "Tallennetut",
@@ -2205,7 +2209,9 @@
     "maxDailyFeeExceeded": "Luottamustasollasi päivähinta voi olla enintään {max}€. Nosta tasoasi saadaksesi rajattoman hinnoittelun.",
     "tier1Desc": "Perusominaisuudet — ilmoita, etsi, viesti",
     "tier2Desc": "Lainaa ja vuokraa tavaroita (max 50€/pv)",
-    "tier3Desc": "Rajaton hinnoittelu, prioriteetti syötteessä, luotettu-merkki"
+    "tier3Desc": "Rajaton hinnoittelu, prioriteetti syötteessä, luotettu-merkki",
+    "score": "Luottamuspisteet",
+    "scoreOf": "{score}/100"
   },
   "service": {
     "price": "Palvelun hinta (€)",

@@ -1279,7 +1279,10 @@
     "expires14": "14 dagar",
     "expires30": "30 dagar",
     "priceSuggestion": "I ditt område {min}–{max}€ ({count} tjänster)",
-    "priceSuggestionDaily": "I ditt område {min}–{max}€/dag ({count} annonser)"
+    "priceSuggestionDaily": "I ditt område {min}–{max}€/dag ({count} annonser)",
+    "noExternalLinks": "Externa länkar är inte tillåtna",
+    "noExternalApps": "Håll konversationer inom TackBird",
+    "tooShort": "Skriv en längre beskrivning"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1423,7 +1426,8 @@
     "timeAll": "Alla",
     "recent": "Senaste sökningar",
     "noResultsQuery": "Inga resultat för \"{query}\"",
-    "resultCount": "{count} resultat"
+    "resultCount": "{count} resultat",
+    "semanticMatch": "Liknande träff"
   },
   "saved": {
     "title": "Sparade",
@@ -2205,7 +2209,9 @@
     "maxDailyFeeExceeded": "Din förtroendenivå begränsar dagspriset till {max}€. Nivå upp för obegränsad prissättning.",
     "tier1Desc": "Grundfunktioner — publicera, sök, meddela",
     "tier2Desc": "Låna och hyr ut saker (max 50€/dag)",
-    "tier3Desc": "Obegränsad prissättning, flödesprioritet, betrott märke"
+    "tier3Desc": "Obegränsad prissättning, flödesprioritet, betrott märke",
+    "score": "Förtroendepoäng",
+    "scoreOf": "{score}/100"
   },
   "service": {
     "price": "Tjänstens pris (€)",

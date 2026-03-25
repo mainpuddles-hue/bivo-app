@@ -1279,7 +1279,10 @@
     "showDetails": "Rohkem teavet",
     "hideDetails": "Peida teave",
     "priceSuggestion": "Piirkonnas {min}–{max}€ ({count} teenust)",
-    "priceSuggestionDaily": "Piirkonnas {min}–{max}€/päev ({count} kuulutust)"
+    "priceSuggestionDaily": "Piirkonnas {min}–{max}€/päev ({count} kuulutust)",
+    "noExternalLinks": "Välislingid ei ole lubatud",
+    "noExternalApps": "Hoia vestlused TackBirdi sees",
+    "tooShort": "Palun kirjuta pikem kirjeldus"
   },
   "locationPicker": {
     "useCurrentLocation": "Kasuta praegust asukohta",
@@ -1423,7 +1426,8 @@
     "timeAll": "Kõik",
     "recent": "Viimased otsingud",
     "noResultsQuery": "Otsingule \"{query}\" tulemusi pole",
-    "resultCount": "{count} tulemust"
+    "resultCount": "{count} tulemust",
+    "semanticMatch": "Sarnane vaste"
   },
   "saved": {
     "title": "Salvestatud",
@@ -2205,7 +2209,9 @@
     "maxDailyFeeExceeded": "Sinu usalduse tasemel saab päevahind olla maksimaalselt {max}€. Tõsta taset piiramatuks hinnapoliitikaks.",
     "tier1Desc": "Põhifunktsioonid — kuuluta, otsi, sõnumi",
     "tier2Desc": "Laenuta ja üüri asju (max 50€/p)",
-    "tier3Desc": "Piiramatu hinnapoliitika, prioriteet voos, usaldusväärne märk"
+    "tier3Desc": "Piiramatu hinnapoliitika, prioriteet voos, usaldusväärne märk",
+    "score": "Usalduspunktid",
+    "scoreOf": "{score}/100"
   },
   "service": {
     "price": "Teenuse hind (€)",

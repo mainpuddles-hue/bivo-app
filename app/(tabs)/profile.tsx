@@ -365,8 +365,8 @@ export default function ProfileScreen() {
         </Pressable>
 
         {/* Trust Level Progress */}
-        {!trust.loading && trust.level < 3 && (
-          <TrustProgress level={trust.level} nextTierHints={trust.nextTierHints} onVerifyPress={identity.startVerification} />
+        {!trust.loading && (
+          <TrustProgress level={trust.level} nextTierHints={trust.nextTierHints} score={trust.score} factors={trust.factors} onVerifyPress={identity.startVerification} />
         )}
 
         {/* Referral Program */}

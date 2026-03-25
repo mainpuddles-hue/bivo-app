@@ -11,6 +11,10 @@ interface TrustResult {
   loading: boolean
   /** What the user needs to reach the next tier */
   nextTierHints: string[]
+  /** Continuous trust score 0-100 from server RPC */
+  score: number
+  /** Factor breakdown from server RPC */
+  factors: Record<string, number>
 }
 
 function computeTrustLevel(signals: TrustSignals): TrustLevel {
@@ -80,6 +84,9 @@ const DEFAULT_SIGNALS: TrustSignals = {
 export function useTrustLevel(userId?: string | null): TrustResult {
   const [signals, setSignals] = useState<TrustSignals>(DEFAULT_SIGNALS)
   const [loading, setLoading] = useState(true)
+  const [score, setScore] = useState(0)
+  const [factors, setFactors] = useState<Record<string, number>>({})
+  const [serverTier, setServerTier] = useState<TrustLevel | null>(null)
 
   const supabase = useSupabase()
 
@@ -121,8 +128,25 @@ export function useTrustLevel(userId?: string | null): TrustResult {
           accountAgeDays,
           hasActiveReports: reports.length > 0,
         })
+
+        // After existing signal fetching, call the DB function for comprehensive score
+        const { data: trustData } = await (supabase.rpc as any)('calculate_trust_score', { p_user_id: userId })
+        if (mounted && trustData && (trustData as any[]).length > 0) {
+          const result = (trustData as any[])[0]
+          // Use server-computed tier instead of client-side if/else
+          // This handles downgrades (score drops below threshold -> tier drops)
+          if (typeof result.score === 'number') {
+            setScore(result.score)
+          }
+          if (result.factors && typeof result.factors === 'object') {
+            setFactors(result.factors)
+          }
+          if (result.tier && (result.tier === 1 || result.tier === 2 || result.tier === 3)) {
+            setServerTier(result.tier as TrustLevel)
+          }
+        }
       } catch {
-        // Graceful fallback — keep default signals (tier 1)
+        // Graceful fallback — keep default signals (tier 1) and score 0
       } finally {
         if (mounted) setLoading(false)
       }
@@ -132,10 +156,12 @@ export function useTrustLevel(userId?: string | null): TrustResult {
     return () => { mounted = false }
   }, [userId, supabase])
 
-  const level = useMemo(() => computeTrustLevel(signals), [signals])
+  const clientLevel = useMemo(() => computeTrustLevel(signals), [signals])
+  // Prefer server-computed tier when available (handles downgrades)
+  const level = serverTier ?? clientLevel
   const tier = TRUST_TIERS[level]
   const permissions = tier.permissions
   const nextTierHints = useMemo(() => getNextTierHints(level, signals), [level, signals])
 
-  return { level, signals, permissions, tier, loading, nextTierHints }
+  return { level, signals, permissions, tier, loading, nextTierHints, score, factors }
 }

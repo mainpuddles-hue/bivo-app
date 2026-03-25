@@ -19,6 +19,8 @@ import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { rankSearchResults } from '@/lib/searchAlgorithm'
 import type { Post, PostType } from '@/lib/types'
 
+const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+
 const HISTORY_KEY = 'tackbird-search-history'
 const RECENT_SEARCHES_KEY = 'tackbird_recent_searches'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
@@ -282,6 +284,28 @@ export default function SearchScreen() {
   )
 
   /**
+   * Fetch semantic search results from Edge Function.
+   */
+  const fetchSemanticResults = useCallback(async (searchQuery: string): Promise<{ post_id: string; similarity: number }[]> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return []
+
+      const res = await fetch(`${FUNCTIONS_URL}/semantic-search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ query: searchQuery, limit: 20 }),
+      })
+      if (!res.ok) return []
+      const { results } = await res.json()
+      return results ?? []
+    } catch { return [] }
+  }, [supabase])
+
+  /**
    * Core search execution — called by debounce and direct triggers.
    */
   const executeSearch = useCallback(async (
@@ -327,6 +351,32 @@ export default function SearchScreen() {
       let postResults = (posts ?? []) as unknown as Post[]
       postResults = sortByDistance(postResults, f)
       postResults = rankSearchResults(postResults, { query: q, userNeighborhood })
+
+      // Fetch semantic results in parallel with user search below
+      const textResultIds = new Set(postResults.map(p => p.id))
+      const semanticResults = await fetchSemanticResults(q)
+      if (controller.signal.aborted) return
+
+      // Merge semantic-only results
+      const semanticOnlyIds = semanticResults
+        .filter(s => !textResultIds.has(s.post_id))
+        .map(s => s.post_id)
+
+      if (semanticOnlyIds.length > 0) {
+        const { data: extraPosts } = await supabase
+          .from('posts')
+          .select(POST_SELECT)
+          .in('id', semanticOnlyIds)
+          .eq('is_active', true)
+        if (!controller.signal.aborted && extraPosts) {
+          const semanticPosts = (extraPosts as unknown as Post[]).map(p => ({
+            ...p,
+            _semanticMatch: true,
+          }))
+          postResults = [...postResults, ...semanticPosts]
+        }
+      }
+
       setResults(postResults)
       setHasMore((posts ?? []).length >= 20)
 
@@ -346,7 +396,7 @@ export default function SearchScreen() {
         setLoading(false)
       }
     }
-  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, saveRecentSearch, buildFilteredQuery, sortByDistance, userNeighborhood])
+  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, saveRecentSearch, buildFilteredQuery, sortByDistance, userNeighborhood, fetchSemanticResults])
 
   // Keep the ref in sync so loadSavedSearch can use the latest executeSearch
   executeSearchRef.current = executeSearch
@@ -780,7 +830,16 @@ export default function SearchScreen() {
         <FlatList
           data={results}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <PostCard post={item} />}
+          renderItem={({ item }) => (
+            <View>
+              {(item as any)._semanticMatch && (
+                <Text style={[s.semanticLabel, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>
+                  {t('search.semanticMatch')}
+                </Text>
+              )}
+              <PostCard post={item} />
+            </View>
+          )}
           contentContainerStyle={s.list}
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
           onEndReached={loadMore}
@@ -917,4 +976,5 @@ const s = StyleSheet.create({
   trendingCat: { fontSize: 11, marginTop: 1 },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   trendingLikeCount: { fontSize: 12, fontWeight: '500' },
+  semanticLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, paddingLeft: 2 },
 })

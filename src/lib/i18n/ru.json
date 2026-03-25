@@ -1279,7 +1279,10 @@
     "showDetails": "Подробнее",
     "hideDetails": "Скрыть детали",
     "priceSuggestion": "В районе {min}–{max}€ ({count} услуг)",
-    "priceSuggestionDaily": "В районе {min}–{max}€/день ({count} объявлений)"
+    "priceSuggestionDaily": "В районе {min}–{max}€/день ({count} объявлений)",
+    "noExternalLinks": "Внешние ссылки не разрешены",
+    "noExternalApps": "Ведите общение внутри TackBird",
+    "tooShort": "Напишите более подробное описание"
   },
   "locationPicker": {
     "useCurrentLocation": "Использовать текущее местоположение",
@@ -1423,7 +1426,8 @@
     "timeAll": "Все",
     "recent": "Последние запросы",
     "noResultsQuery": "По запросу \"{query}\" ничего не найдено",
-    "resultCount": "{count} результатов"
+    "resultCount": "{count} результатов",
+    "semanticMatch": "Похожее совпадение"
   },
   "saved": {
     "title": "Сохранённые",
@@ -2205,7 +2209,9 @@
     "maxDailyFeeExceeded": "На вашем уровне макс. цена {max}€/д. Повысьте уровень.",
     "tier1Desc": "Базовые функции — объявления, поиск, сообщения",
     "tier2Desc": "Прокат вещей (макс. 50€/д)",
-    "tier3Desc": "Без ограничений, приоритет в ленте, значок надёжности"
+    "tier3Desc": "Без ограничений, приоритет в ленте, значок надёжности",
+    "score": "Баллы доверия",
+    "scoreOf": "{score}/100"
   },
   "service": {
     "price": "Цена услуги (€)",
