@@ -200,10 +200,30 @@ export function useFeedData() {
         }
       })
 
+      // Fetch personalization scores
+      let personalScores = new Map<string, number>()
+      if (currentUserId) {
+        try {
+          const { data: scores } = await (supabase.rpc as any)('get_personalized_feed', {
+            p_user_id: currentUserId,
+            p_limit: 50,
+            p_offset: 0,
+          })
+          if (scores) {
+            for (const s of scores as any[]) {
+              personalScores.set(s.post_id, s.personalization_score ?? 0)
+            }
+          }
+        } catch {
+          // Personalization unavailable — continue with default ranking
+        }
+      }
+
       // Client-side relevance ranking
       const ranked = rankFeed(newPosts, {
         userNeighborhood: userNeighborhood ?? null,
         followedIds,
+        personalScores,
       })
 
       if (reset) {

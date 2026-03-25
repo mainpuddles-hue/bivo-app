@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator } from 'react-native'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
@@ -9,6 +9,7 @@ import { fonts } from '@/lib/fonts'
 import { useFeedData } from '@/hooks/useFeedData'
 import { useSmartMatch } from '@/hooks/useSmartMatch'
 import { useStreak } from '@/hooks/useStreak'
+import { useInteractionTracker } from '@/hooks/useInteractionTracker'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
 import { AlertBanner } from '@/components/AlertBanner'
@@ -35,7 +36,18 @@ function FeedScreenInner() {
   const feed = useFeedData()
   const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
   const { recordActivity } = useStreak(feed.currentUserId)
+  const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
+
+  // ── Track post views via viewability ──
+  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50, minimumViewTime: 1000 }).current
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    for (const token of viewableItems) {
+      if (token.isViewable && token.item?.id) {
+        trackInteraction(token.item.id, 'view')
+      }
+    }
+  }).current
 
   // ── Computed: hero events ──
   const { displayEvents, eventSectionTitle } = useMemo(() => {
@@ -71,10 +83,10 @@ function FeedScreenInner() {
             <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
           </View>
         ) : null}
-        <PostCard post={item} userLocation={feed.userLocation} userId={feed.currentUserId} />
+        <PostCard post={item} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} />
       </View>
     )
-  }, [feed.userLocation, feed.currentUserId, colors.mutedForeground, colors.border, t])
+  }, [feed.userLocation, feed.currentUserId, colors.mutedForeground, colors.border, t, trackInteraction])
 
   // ── ListHeader ──
   const ListHeader = useMemo(() => (
@@ -233,6 +245,8 @@ function FeedScreenInner() {
         scrollEventThrottle={16}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         showsVerticalScrollIndicator={false}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
       />
 
       <NeighborhoodPicker

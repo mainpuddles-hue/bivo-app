@@ -5,17 +5,19 @@ interface FeedContext {
   userNeighborhood: string | null
   followedIds: string[]
   now?: number
+  personalScores?: Map<string, number> // post_id -> personalization score from DB
 }
 
 /**
  * Score a post for feed ranking. Higher = more relevant.
  *
  * Factors (weights sum to 1.0):
- * - Recency decay (0.30): 1/(1 + hours/24) — half-life 24h
- * - Engagement (0.25): normalized likes + comments
+ * - Recency decay (0.25): 1/(1 + hours/24) — half-life 24h
+ * - Engagement (0.20): normalized likes + comments
  * - Urgency (0.20): is_urgent or nappaa expiring soon
- * - Proximity (0.15): same neighborhood bonus
+ * - Proximity (0.10): same neighborhood bonus
  * - Trust + social (0.10): trust level + following bonus
+ * - Personalization (0.15): from collaborative filtering / interaction history
  */
 export function scorePost(post: Post, ctx: FeedContext): number {
   const now = ctx.now ?? Date.now()
@@ -50,8 +52,11 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   const isPro = post.is_pro_listing ? 0.2 : 0
   const social = Math.min(1, trustScore * 0.5 + isFollowed + isPro)
 
+  // Personalization: from collaborative filtering
+  const personalScore = ctx.personalScores?.get(post.id) ?? 0
+
   // Weighted sum
-  return recency * 0.30 + engagement * 0.25 + urgency * 0.20 + proximity * 0.15 + social * 0.10
+  return recency * 0.25 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15
 }
 
 /**

@@ -383,6 +383,15 @@ export default function CreateScreen() {
         awardPoints(user.id, 'post_created', post.id).catch(() => {})
       }
 
+      // Trigger semantic embedding for the new post (fire-and-forget)
+      if (post?.id) {
+        fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/embed-post`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: post.id }),
+        }).catch(() => {}) // Non-blocking
+      }
+
       router.replace('/')
     } catch (err: any) {
       if (__DEV__) console.log('[create] error:', JSON.stringify(err))

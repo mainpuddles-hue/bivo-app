@@ -41,9 +41,10 @@ interface PostCardProps {
   post: Post
   userLocation?: { latitude: number; longitude: number } | null
   userId?: string | null
+  onInteraction?: (postId: string, type: 'view' | 'click' | 'like' | 'save' | 'message' | 'skip' | 'hide') => void
 }
 
-export const PostCard = memo(function PostCard({ post, userLocation, userId }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction }: PostCardProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
@@ -118,6 +119,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
       accessibilityLabel={post.title}
       onPress={() => {
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+        onInteraction?.(post.id, 'click')
         router.push(`/post/${post.id}`)
       }}
       onLongPress={async () => {
@@ -297,6 +299,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                     ]).start()
                     const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
                     if (error) { setLiked(false); setLikeCount(c => Math.max(0, c - 1)) }
+                    else { onInteraction?.(post.id, 'like') }
                   }
                 } finally { likingRef.current = false }
               }}
@@ -334,6 +337,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId }: P
                 } else {
                   await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
                   setSaved(true)
+                  onInteraction?.(post.id, 'save')
                 }
               } finally { savingRef.current = false }
             }}

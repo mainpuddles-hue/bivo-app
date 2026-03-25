@@ -119,6 +119,49 @@ function recencyScore(createdAt: string): number {
   return 1 / (1 + daysOld / 7)
 }
 
+// ── Semantic matching via Edge Function ──
+
+const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+
+interface SemanticMatch {
+  post_id: string
+  score: number
+  title?: string
+  user_name?: string
+}
+
+async function fetchSemanticMatches(
+  supabase: ReturnType<typeof import('@/lib/supabase/client').createClient>,
+  postId: string,
+  neighborhood: string | null,
+): Promise<SemanticMatch[]> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) return []
+
+    const res = await fetch(`${FUNCTIONS_URL}/semantic-match`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        post_id: postId,
+        match_type: 'tarjoan',
+        threshold: 0.5,
+        limit: 5,
+        neighborhood,
+      }),
+    })
+
+    if (!res.ok) return []
+    const { matches } = await res.json()
+    return (matches ?? []) as SemanticMatch[]
+  } catch {
+    return []
+  }
+}
+
 // ── Weights ──
 const WEIGHT_TAG_OVERLAP = 0.30
 const WEIGHT_CATEGORY_MATCH = 0.25
@@ -165,7 +208,8 @@ export function useSmartMatch(userId: string | null) {
   const evaluateMatches = useCallback(async (
     userNeeds: TarvitsenPost[],
     offers: TarjoanPost[],
-    dismissed: Set<string>
+    dismissed: Set<string>,
+    neighborhood?: string | null,
   ) => {
     if (userNeeds.length === 0 || offers.length === 0) return
 
@@ -183,6 +227,60 @@ export function useSmartMatch(userId: string | null) {
           allCandidates.push(candidate)
         }
       }
+    }
+
+    // Enhance with semantic matches from the edge function (non-blocking)
+    try {
+      const semanticResults = await Promise.all(
+        userNeeds.slice(0, 3).map(need =>
+          fetchSemanticMatches(supabase, need.id, neighborhood ?? null)
+            .then(matches => matches.map(m => ({ ...m, needId: need.id, needTitle: need.title })))
+        )
+      )
+
+      for (const results of semanticResults) {
+        for (const sm of results) {
+          if (dismissed.has(sm.post_id)) continue
+          // Check if we already have this candidate with a higher score
+          const existing = allCandidates.find(c => c.post.id === sm.post_id)
+          if (existing && existing.score >= sm.score) continue
+
+          // If semantic match found a post not in our tag-based results, add it
+          if (!existing) {
+            const matchedOffer = offers.find(o => o.id === sm.post_id)
+            if (matchedOffer) {
+              allCandidates.push({
+                post: matchedOffer,
+                needPost: { id: sm.needId, title: sm.needTitle, tags: [], location: null, created_at: '' },
+                score: sm.score,
+                matchedTags: [],
+              })
+            } else {
+              // Semantic match found a post we didn't fetch — create a placeholder
+              allCandidates.push({
+                post: {
+                  id: sm.post_id,
+                  title: sm.title ?? '',
+                  tags: [],
+                  location: null,
+                  user_id: '',
+                  created_at: '',
+                  user: { name: sm.user_name ?? '?', naapurusto: '', response_rate: 0 },
+                  user_badges: [],
+                },
+                needPost: { id: sm.needId, title: sm.needTitle, tags: [], location: null, created_at: '' },
+                score: sm.score,
+                matchedTags: [],
+              })
+            }
+          } else {
+            // Update score to the higher one from semantic matching
+            existing.score = Math.max(existing.score, sm.score)
+          }
+        }
+      }
+    } catch {
+      // Semantic matching failed — continue with tag-based matches only
     }
 
     // Sort by score descending, take top N
@@ -209,7 +307,7 @@ export function useSmartMatch(userId: string | null) {
     }))
 
     setMatches(topMatches)
-  }, [])
+  }, [supabase])
 
   useEffect(() => {
     if (!userId) return
@@ -262,7 +360,16 @@ export function useSmartMatch(userId: string | null) {
         user_badges: Array.isArray(o.user_badges) ? o.user_badges : [],
       })) as TarjoanPost[]
 
-      await evaluateMatches(userNeeds, offerPosts, dismissedRef.current)
+      // Also fetch user neighborhood for semantic matching
+      let neighborhood: string | null = null
+      const { data: profileData } = await (supabase
+        .from('profiles')
+        .select('naapurusto')
+        .eq('id', userId)
+        .single() as any)
+      if (profileData?.naapurusto) neighborhood = profileData.naapurusto
+
+      await evaluateMatches(userNeeds, offerPosts, dismissedRef.current, neighborhood)
     }
 
     fetchAndEvaluate()
