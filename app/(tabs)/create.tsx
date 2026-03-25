@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap } from 'lucide-react-native'
+import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
@@ -14,6 +14,8 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { usePoints } from '@/hooks/usePoints'
+import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
+import { triggerPush } from '@/lib/pushTrigger'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { TrustGateModal } from '@/components/TrustGate'
@@ -122,18 +124,25 @@ export default function CreateScreen() {
     }
   }, [params.type])
 
-  // Check auth on mount
+  const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
+
+  // Check auth on mount + fetch neighborhood
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setIsAuthenticated(!!user)
       setCurrentUserId(user?.id ?? null)
-      if (!user) router.replace('/(auth)/login')
+      if (!user) { router.replace('/(auth)/login'); return }
+      // Fetch user neighborhood for price suggestions
+      supabase.from('profiles').select('naapurusto').eq('id', user.id).single()
+        .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string) })
+        .then(() => {}, () => {})
     })
   }, [supabase, router])
 
   const { awardPoints } = usePoints()
   const trust = useTrustLevel(currentUserId)
   const identity = useIdentityVerification(currentUserId)
+  const { suggestion: priceSuggestion } = usePriceSuggestion(selectedType, selectedTags, userNeighborhood)
 
   // Auto-expand details for categories that have required detail fields
   useEffect(() => {
@@ -392,6 +401,17 @@ export default function CreateScreen() {
         }).catch(() => {}) // Non-blocking
       }
 
+      // Push notification for urgent posts (broadcast)
+      if (isUrgent && post?.id) {
+        triggerPush({
+          user_id: user.id,
+          title: title.trim(),
+          body: description.trim().slice(0, 100),
+          type: 'urgent_help',
+          post_id: post.id,
+        })
+      }
+
       router.replace('/')
     } catch (err: any) {
       if (__DEV__) console.log('[create] error:', JSON.stringify(err))
@@ -596,6 +616,18 @@ export default function CreateScreen() {
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="decimal-pad"
                   />
+                  {priceSuggestion && selectedType === 'lainaa' && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 4 }}>
+                      <TrendingUp size={14} color={colors.primary} />
+                      <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.bodyMedium }}>
+                        {t('create.priceSuggestionDaily', {
+                          min: priceSuggestion.min,
+                          max: priceSuggestion.max,
+                          count: priceSuggestion.count,
+                        })}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               )}
 
@@ -617,6 +649,18 @@ export default function CreateScreen() {
                   ) : trust.permissions.maxServicePrice !== null && servicePrice && parseFloat(servicePrice) > trust.permissions.maxServicePrice ? (
                     <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice })}</Text>
                   ) : null}
+                  {priceSuggestion && selectedType === 'tarjoan' && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 4 }}>
+                      <TrendingUp size={14} color={colors.primary} />
+                      <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.bodyMedium }}>
+                        {t('create.priceSuggestion', {
+                          min: priceSuggestion.min,
+                          max: priceSuggestion.max,
+                          count: priceSuggestion.count,
+                        })}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               )}
 

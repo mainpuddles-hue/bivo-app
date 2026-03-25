@@ -163,7 +163,8 @@
     "viewPost": "View post",
     "likedBy": "Liked by",
     "noLikes": "No likes yet",
-    "likes": "likes"
+    "likes": "likes",
+    "priceContext": "Typical price in area: {min}–{max}€"
   },
   "events": {
     "title": "Events",
@@ -1276,7 +1277,9 @@
     "expires3": "3 days",
     "expires7": "7 days",
     "expires14": "14 days",
-    "expires30": "30 days"
+    "expires30": "30 days",
+    "priceSuggestion": "In your area {min}–{max}€ ({count} services)",
+    "priceSuggestionDaily": "In your area {min}–{max}€/day ({count} listings)"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",

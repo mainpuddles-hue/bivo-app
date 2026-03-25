@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
 import { fonts } from '@/lib/fonts'
+import { triggerPush } from '@/lib/pushTrigger'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ForumPostCard } from '@/components/forum/ForumPostCard'
 import { ForumThreadView } from '@/components/forum/ForumThreadView'
@@ -262,6 +263,13 @@ export default function ForumScreen() {
             title: t('notifications.forumReplyTitle'), body: replyText.trim().slice(0, 100),
             link_type: 'forum_post', link_id: selectedPost.id,
           }).catch(() => {})
+          triggerPush({
+            user_id: selectedPost.user_id,
+            title: t('notifications.forumReplyTitle'),
+            body: replyText.trim().slice(0, 100),
+            type: 'forum_reply',
+            data: { screen: 'forum' },
+          })
         }
       }
       setReplyText('')

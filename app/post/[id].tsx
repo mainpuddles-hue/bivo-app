@@ -15,6 +15,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { shareContent } from '@/lib/share'
+import { triggerPush } from '@/lib/pushTrigger'
+import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
 import { ReportModal } from '@/components/ReportModal'
 import { ThanksButton } from '@/components/ThanksButton'
 import { Avatar } from '@/components/Avatar'
@@ -78,6 +80,13 @@ function PostDetailScreenInner() {
   const [blockedDates, setBlockedDates] = useState<string[]>([])
   const { createPayment, loading: paymentLoading, error: paymentError } = useStripePayment()
   const trust = useTrustLevel(userId)
+
+  // Price suggestion context for buyers
+  const { suggestion: priceContext } = usePriceSuggestion(
+    post?.type ?? null,
+    post?.tags ?? [],
+    (post as any)?.user?.naapurusto ?? null,
+  )
 
   // Service booking state (for tarjoan posts with service_price)
   const [serviceModalVisible, setServiceModalVisible] = useState(false)
@@ -196,6 +205,16 @@ function PostDetailScreenInner() {
       // Speed badge check for urgent posts
       if (post.is_urgent && userId && post.user_id) {
         checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})
+      }
+      // Push notification to post author
+      if (post.user_id !== userId) {
+        triggerPush({
+          user_id: post.user_id,
+          title: t('notifications.newMessage'),
+          body: post.title,
+          type: 'new_message',
+          data: { screen: 'messages' },
+        })
       }
     } catch (e: any) {
       Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
@@ -612,6 +631,12 @@ function PostDetailScreenInner() {
 
           {post.service_price != null && (
             <Text style={[styles.price, { color: '#7C5CBF' }]}>{formatPrice(post.service_price, locale)}</Text>
+          )}
+
+          {priceContext && (post.daily_fee != null || post.service_price != null) && (
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 15 }}>
+              {t('post.priceContext', { min: priceContext.min, max: priceContext.max })}
+            </Text>
           )}
 
           {post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (

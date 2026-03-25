@@ -163,7 +163,8 @@
     "viewPost": "Visa inlägg",
     "likedBy": "Gillad av",
     "noLikes": "Inga gillningar ännu",
-    "likes": "gillningar"
+    "likes": "gillningar",
+    "priceContext": "Typiskt pris i området: {min}–{max}€"
   },
   "events": {
     "title": "Evenemang",
@@ -1276,7 +1277,9 @@
     "expires3": "3 dagar",
     "expires7": "7 dagar",
     "expires14": "14 dagar",
-    "expires30": "30 dagar"
+    "expires30": "30 dagar",
+    "priceSuggestion": "I ditt område {min}–{max}€ ({count} tjänster)",
+    "priceSuggestionDaily": "I ditt område {min}–{max}€/dag ({count} annonser)"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",

@@ -163,7 +163,8 @@
     "viewPost": "Посмотреть объявление",
     "likedBy": "Понравилось",
     "noLikes": "Пока нет лайков",
-    "likes": "лайков"
+    "likes": "лайков",
+    "priceContext": "Типичная цена в районе: {min}–{max}€"
   },
   "events": {
     "title": "События",
@@ -1276,7 +1277,9 @@
     "anonymous": "Опубликовать анонимно",
     "anonymousHint": "Ваше имя будет скрыто",
     "showDetails": "Подробнее",
-    "hideDetails": "Скрыть детали"
+    "hideDetails": "Скрыть детали",
+    "priceSuggestion": "В районе {min}–{max}€ ({count} услуг)",
+    "priceSuggestionDaily": "В районе {min}–{max}€/день ({count} объявлений)"
   },
   "locationPicker": {
     "useCurrentLocation": "Использовать текущее местоположение",

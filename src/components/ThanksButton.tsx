@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
+import { triggerPush } from '@/lib/pushTrigger'
 
 interface ThanksButtonProps {
   toUserId: string
@@ -115,6 +116,14 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
         link_type: postId ? 'post' : 'profile',
         link_id: postId ?? fromUserId,
       }).catch(() => {})
+
+      // 4. Push notification to receiver
+      triggerPush({
+        user_id: toUserId,
+        title: t('thanks.notification', { name: '' }),
+        body: '',
+        type: 'thanks_received',
+      })
     } catch {
       // Revert on failure
       setHasThanked(false)

@@ -163,7 +163,8 @@
     "viewPost": "Katso ilmoitus",
     "likedBy": "Tykkääjät",
     "noLikes": "Ei vielä tykkäyksiä",
-    "likes": "tykkäystä"
+    "likes": "tykkäystä",
+    "priceContext": "Tyypillinen hinta alueella: {min}–{max}€"
   },
   "events": {
     "title": "Tapahtumat",
@@ -1276,7 +1277,9 @@
     "anonymous": "Julkaise nimettömänä",
     "anonymousHint": "Nimesi piilotetaan ilmoituksesta",
     "showDetails": "Lisää tietoja",
-    "hideDetails": "Piilota tiedot"
+    "hideDetails": "Piilota tiedot",
+    "priceSuggestion": "Alueella {min}–{max}€ ({count} palvelua)",
+    "priceSuggestionDaily": "Alueella {min}–{max}€/pv ({count} ilmoitusta)"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",

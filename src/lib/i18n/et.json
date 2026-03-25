@@ -163,7 +163,8 @@
     "viewPost": "Vaata kuulutust",
     "likedBy": "Meeldimised",
     "noLikes": "Veel pole meeldimisi",
-    "likes": "meeldimist"
+    "likes": "meeldimist",
+    "priceContext": "Tüüpiline hind piirkonnas: {min}–{max}€"
   },
   "events": {
     "title": "Sündmused",
@@ -1276,7 +1277,9 @@
     "anonymous": "Avalda anonüümselt",
     "anonymousHint": "Sinu nimi peidetakse kuulutusest",
     "showDetails": "Rohkem teavet",
-    "hideDetails": "Peida teave"
+    "hideDetails": "Peida teave",
+    "priceSuggestion": "Piirkonnas {min}–{max}€ ({count} teenust)",
+    "priceSuggestionDaily": "Piirkonnas {min}–{max}€/päev ({count} kuulutust)"
   },
   "locationPicker": {
     "useCurrentLocation": "Kasuta praegust asukohta",
