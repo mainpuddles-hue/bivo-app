@@ -11,6 +11,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
+import { isValidUUID } from '@/lib/validation'
 import type { Conversation } from '@/lib/types'
 
 const PINNED_KEY = 'pinned_conversations'
@@ -57,6 +58,7 @@ export default function MessagesScreen() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
     setUserId(user.id)
+    if (!isValidUUID(user.id)) { setLoading(false); return }
 
     const { data } = await supabase
       .from('conversations')

@@ -705,7 +705,7 @@
     "invalidCredentials": "Неверный email или пароль",
     "emailNotConfirmed": "Email не подтверждён. Проверьте почту.",
     "userAlreadyRegistered": "Аккаунт с этим email уже существует",
-    "tooManyAttempts": "Слишком много попыток. Подождите и попробуйте снова.",
+    "tooManyAttempts": "Слишком много попыток. Подождите 15 минут.",
     "registerFailed": "Не удалось зарегистрироваться",
     "joinTackBird": "Присоединиться к TackBird",
     "emailRequired": "Введите адрес электронной почты",

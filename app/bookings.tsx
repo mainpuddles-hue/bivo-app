@@ -15,6 +15,7 @@ import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatPrice, formatDateRange } from '@/lib/format'
+import { isValidUUID } from '@/lib/validation'
 
 function BookingCardSkeleton() {
   const { colors } = useTheme()
@@ -122,6 +123,7 @@ export default function BookingsScreen() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
       setUserId(user.id)
+      if (!isValidUUID(user.id)) { setLoading(false); return }
 
       const { data, error } = await supabase
         .from('rental_bookings')

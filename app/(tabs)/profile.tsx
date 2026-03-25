@@ -138,16 +138,21 @@ export default function ProfileScreen() {
     load()
   }, [supabase, t])
 
+  const ALLOWED_AVATAR_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+  const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
+
   const handleAvatarUpload = useCallback(async () => {
     if (!profile) return
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.7 })
     if (result.canceled || !result.assets[0]) return
     try {
       const uri = result.assets[0].uri
-      const ext = uri.split('.').pop() ?? 'jpg'
+      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
+      if (!ALLOWED_AVATAR_EXTS.includes(ext)) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       const path = `avatars/${profile.id}.${ext}`
       const response = await fetch(uri)
       const blob = await response.blob()
+      if (blob.size > MAX_AVATAR_SIZE) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       const arrayBuffer = await blob.arrayBuffer()
       await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)

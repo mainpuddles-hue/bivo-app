@@ -214,6 +214,9 @@ function ConversationScreenInner() {
     }
   }, [input, userId, id, supabase, sending, t])
 
+  const ALLOWED_MSG_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+  const MAX_MSG_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
   const handleSendImage = useCallback(async () => {
     if (!userId) return
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -224,10 +227,12 @@ function ConversationScreenInner() {
     setSending(true)
     try {
       const uri = result.assets[0].uri
-      const ext = uri.split('.').pop() ?? 'jpg'
+      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
+      if (!ALLOWED_MSG_EXTS.includes(ext)) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
       const path = `messages/${id}/${Date.now()}.${ext}`
       const response = await fetch(uri)
       const blob = await response.blob()
+      if (blob.size > MAX_MSG_FILE_SIZE) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
       const arrayBuffer = await blob.arrayBuffer()
       await supabase.storage.from('message-images').upload(path, arrayBuffer, { contentType: `image/${ext}` })
       const { data: urlData } = supabase.storage.from('message-images').getPublicUrl(path)

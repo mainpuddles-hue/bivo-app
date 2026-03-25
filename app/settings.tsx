@@ -12,6 +12,7 @@ import { downloadAsFile } from '@/lib/share'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInAppPurchase } from '@/hooks/useInAppPurchase'
 import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
+import { isValidUUID } from '@/lib/validation'
 import type { Profile, ProfileVisibility } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -158,7 +159,7 @@ export default function SettingsScreen() {
       // Batch 4: notification preferences, conversations, badges
       const [notifPrefsRes, conversationsRes, badgesRes] = await Promise.allSettled([
         supabase.from('notification_preferences').select('*').eq('user_id', profile.id),
-        supabase.from('conversations').select('id, user1_id, user2_id, post_id, created_at, updated_at').or(`user1_id.eq.${profile.id},user2_id.eq.${profile.id}`),
+        isValidUUID(profile.id) ? supabase.from('conversations').select('id, user1_id, user2_id, post_id, created_at, updated_at').or(`user1_id.eq.${profile.id},user2_id.eq.${profile.id}`) : Promise.resolve({ data: [] }),
         supabase.from('user_badges').select('*').eq('user_id', profile.id),
       ])
 

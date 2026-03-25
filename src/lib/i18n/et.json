@@ -705,7 +705,7 @@
     "invalidCredentials": "Vale e-post või parool",
     "emailNotConfirmed": "E-posti pole kinnitatud. Kontrolli oma e-posti.",
     "userAlreadyRegistered": "Selle e-postiga on juba konto olemas",
-    "tooManyAttempts": "Liiga palju katseid. Oota hetk ja proovi uuesti.",
+    "tooManyAttempts": "Liiga palju katseid. Oota 15 minutit.",
     "registerFailed": "Registreerimine ebaõnnestus",
     "joinTackBird": "Liitu TackBirdiga",
     "emailRequired": "Sisesta oma e-posti aadress",

@@ -724,7 +724,7 @@
     "invalidCredentials": "Virheellinen sähköposti tai salasana",
     "emailNotConfirmed": "Sähköpostia ei ole vahvistettu. Tarkista sähköpostisi.",
     "userAlreadyRegistered": "Tällä sähköpostilla on jo tili",
-    "tooManyAttempts": "Liian monta yritystä. Odota hetki ja yritä uudelleen.",
+    "tooManyAttempts": "Liian monta yritystä. Odota 15 minuuttia.",
     "registerFailed": "Rekisteröityminen epäonnistui",
     "joinTackBird": "Liity TackBirdiin",
     "emailRequired": "Syötä sähköpostiosoitteesi",

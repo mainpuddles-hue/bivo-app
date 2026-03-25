@@ -1,6 +1,7 @@
 // Supabase Edge Function: stripe-webhook
 // Handles Stripe webhook events to update booking statuses and create payment records.
 // Verifies webhook signature for security.
+// NOTE: No CORS headers — this endpoint is server-to-server (Stripe calling us).
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -12,8 +13,9 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 serve(async (req) => {
+  // Webhook endpoint is server-to-server only — reject OPTIONS (no browser should call this)
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
+    return new Response('Method not allowed', { status: 405 })
   }
 
   try {
@@ -61,17 +63,24 @@ serve(async (req) => {
             .eq('stripe_session_id', session.id)
         }
 
-        // Create payment record
-        await supabase.from('payments').insert({
-          user_id: buyer_id,
-          amount: session.amount_total ?? 0,
-          description: session.metadata?.description ?? `TackBird ${type}`,
-          status: 'paid',
-          type,
-          post_id: post_id || null,
-          booking_id: bookingId || null,
-          stripe_session_id: session.id,
-        })
+        // Idempotency: don't insert duplicate payment records
+        const { data: existingPayment } = await supabase
+          .from('payments')
+          .select('id')
+          .eq('stripe_session_id', session.id)
+          .maybeSingle()
+        if (!existingPayment) {
+          await supabase.from('payments').insert({
+            user_id: buyer_id,
+            amount: session.amount_total ?? 0,
+            description: session.metadata?.description ?? `TackBird ${type}`,
+            status: 'paid',
+            type,
+            post_id: post_id || null,
+            booking_id: bookingId || null,
+            stripe_session_id: session.id,
+          })
+        }
 
         // Send notification to seller
         if (seller_id) {

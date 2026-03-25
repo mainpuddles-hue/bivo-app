@@ -41,13 +41,13 @@ serve(async (req) => {
 
     const body = await req.json()
     const {
-      amount,              // cents (e.g., 2990 = 29.90€)
+      amount,              // cents (e.g., 2990 = 29.90€) — used as fallback only
       description,
       type,                // 'rental' | 'service'
       post_id,
       seller_id,
       metadata = {},
-      application_fee_amount, // 10% commission in cents
+      application_fee_amount, // ignored — recalculated server-side
       success_url,
       cancel_url,
     } = body
@@ -56,6 +56,74 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+    }
+
+    // --- Server-side amount validation — NEVER trust client ---
+    const { data: postData } = await supabase
+      .from('posts')
+      .select('daily_fee, service_price, user_id')
+      .eq('id', post_id)
+      .single()
+
+    if (!postData) {
+      return new Response(JSON.stringify({ error: 'Post not found' }), {
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Validate seller matches post owner
+    if (postData.user_id !== seller_id) {
+      return new Response(JSON.stringify({ error: 'Seller mismatch' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Recalculate amount server-side
+    let validatedAmount: number
+    if (type === 'service') {
+      if (!postData.service_price) {
+        return new Response(JSON.stringify({ error: 'No service price' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      validatedAmount = Math.round(postData.service_price * 100) // cents
+    } else if (type === 'rental') {
+      const bookingDays = metadata?.booking_days ? parseInt(metadata.booking_days) : 0
+      if (!postData.daily_fee || bookingDays <= 0) {
+        return new Response(JSON.stringify({ error: 'Invalid rental params' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const rentalFee = postData.daily_fee * bookingDays
+      const serviceFee = Math.round(rentalFee * 0.10 * 100) / 100
+      validatedAmount = Math.round((rentalFee + serviceFee) * 100) // cents
+    } else {
+      validatedAmount = amount // fallback for ad_campaign
+    }
+
+    // Enforce commission server-side (10%)
+    const validatedFee = Math.round(validatedAmount * 0.10)
+
+    // --- Idempotency: check if booking already has a session ---
+    if (metadata?.booking_id) {
+      const table = type === 'rental' ? 'rental_bookings' : 'service_bookings'
+      const { data: existing } = await supabase
+        .from(table)
+        .select('stripe_session_id, status')
+        .eq('id', metadata.booking_id)
+        .single()
+      if (existing?.stripe_session_id && existing.status !== 'cancelled') {
+        // Return existing session — don't create duplicate
+        try {
+          const existingSession = await stripe.checkout.sessions.retrieve(existing.stripe_session_id)
+          if (existingSession.status === 'open') {
+            return new Response(
+              JSON.stringify({ url: existingSession.url, session_id: existingSession.id }),
+              { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+            )
+          }
+        } catch {} // Session expired, create new one
+      }
     }
 
     // Get or create Stripe customer for the buyer
@@ -85,7 +153,7 @@ serve(async (req) => {
       .eq('id', seller_id)
       .single()
 
-    // Build Checkout Session params
+    // Build Checkout Session params — uses validatedAmount instead of client amount
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       customer: customerId,
@@ -93,7 +161,7 @@ serve(async (req) => {
       line_items: [{
         price_data: {
           currency: 'eur',
-          unit_amount: amount,
+          unit_amount: validatedAmount,
           product_data: { name: description || 'TackBird Transaction' },
         },
         quantity: 1,
@@ -111,10 +179,10 @@ serve(async (req) => {
       payment_method_types: ['card'],
     }
 
-    // If provider has Connect account, use destination charges with commission
+    // If provider has Connect account, use destination charges with validated commission
     if (sellerProfile?.stripe_connect_account_id) {
       sessionParams.payment_intent_data = {
-        application_fee_amount: application_fee_amount ?? Math.round(amount * 0.10),
+        application_fee_amount: validatedFee,
         transfer_data: {
           destination: sellerProfile.stripe_connect_account_id,
         },

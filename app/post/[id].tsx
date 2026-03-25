@@ -26,6 +26,7 @@ import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { isValidUUID } from '@/lib/validation'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -169,6 +170,7 @@ function PostDetailScreenInner() {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post) return
     if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
+    if (!isValidUUID(userId) || !isValidUUID(post.user_id)) return
     try {
       // Find ANY existing conversation between these two users
       const { data: existing, error: findError } = await supabase
@@ -377,7 +379,7 @@ function PostDetailScreenInner() {
         .select('id').single()
       if (bookingError || !booking) { Alert.alert(t('common.error'), t('rental.bookingFailed')); setSendingBooking(false); return }
       const amountCents = Math.round(bookingTotal * 100)
-      const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate } })
+      const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
       if (sessionId) {
         const { error: updateError } = await (supabase.from('rental_bookings') as any).update({ stripe_session_id: sessionId }).eq('id', booking.id)
         if (updateError && __DEV__) console.log('[bookings] update stripe session error:', updateError.message)

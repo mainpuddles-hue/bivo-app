@@ -705,7 +705,7 @@
     "invalidCredentials": "Felaktig e-post eller lösenord",
     "emailNotConfirmed": "E-posten är inte bekräftad. Kontrollera din inkorg.",
     "userAlreadyRegistered": "Ett konto med denna e-post finns redan",
-    "tooManyAttempts": "För många försök. Vänta en stund och försök igen.",
+    "tooManyAttempts": "För många försök. Vänta 15 minuter.",
     "registerFailed": "Registrering misslyckades",
     "joinTackBird": "Gå med i TackBird",
     "passwordMinLength": "Minst 8 tecken",

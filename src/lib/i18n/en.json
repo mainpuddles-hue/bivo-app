@@ -705,7 +705,7 @@
     "invalidCredentials": "Invalid email or password",
     "emailNotConfirmed": "Email not confirmed. Check your inbox.",
     "userAlreadyRegistered": "An account with this email already exists",
-    "tooManyAttempts": "Too many attempts. Please wait a moment and try again.",
+    "tooManyAttempts": "Too many attempts. Please wait 15 minutes.",
     "registerFailed": "Registration failed",
     "joinTackBird": "Join TackBird",
     "passwordMinLength": "At least 8 characters",

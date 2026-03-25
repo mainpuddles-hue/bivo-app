@@ -73,6 +73,8 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
   const [appleAvailable, setAppleAvailable] = useState(false)
+  const [loginAttempts, setLoginAttempts] = useState(0)
+  const [lockedUntil, setLockedUntil] = useState(0)
 
   // Check Apple Sign-In availability (native only)
   useEffect(() => {
@@ -95,6 +97,12 @@ export default function LoginScreen() {
   }
 
   const handleSubmit = async () => {
+    // Client-side rate limiting
+    if (Date.now() < lockedUntil) {
+      Alert.alert(t('common.error'), t('auth.tooManyAttempts'))
+      return
+    }
+
     if (!email.trim()) { Alert.alert(t('common.error'), t('auth.emailRequired')); return }
 
     if (mode === 'forgot') {
@@ -135,9 +143,16 @@ export default function LoginScreen() {
           password,
         })
         if (error) throw error
+        setLoginAttempts(0)
         router.replace('/')
       }
     } catch (err: any) {
+      const attempts = loginAttempts + 1
+      setLoginAttempts(attempts)
+      if (attempts >= 5) {
+        setLockedUntil(Date.now() + 15 * 60 * 1000) // 15 min lockout
+        setLoginAttempts(0)
+      }
       Alert.alert(t('common.error'), translateError(err.message))
     } finally { setLoading(false) }
   }

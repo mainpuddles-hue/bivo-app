@@ -229,6 +229,9 @@ export default function CreateScreen() {
     })
   }
 
+  const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
   const uploadImages = async (userId: string, postId: string): Promise<string | null> => {
     if (images.length === 0) return null
     setUploadStatus(t('create.uploadingImages'))
@@ -237,11 +240,13 @@ export default function CreateScreen() {
     let failedCount = 0
     for (let i = 0; i < images.length; i++) {
       const uri = images[i]
-      const ext = uri.split('.').pop() ?? 'jpg'
+      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
+      if (!ALLOWED_EXTS.includes(ext)) { failedCount++; continue } // skip invalid types
       const path = `${userId}/${postId}/${i}.${ext}`
 
       const response = await fetch(uri)
       const blob = await response.blob()
+      if (blob.size > MAX_FILE_SIZE) { failedCount++; continue } // skip too-large files
       const arrayBuffer = await blob.arrayBuffer()
 
       const { error } = await supabase.storage

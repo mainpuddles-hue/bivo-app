@@ -18,6 +18,7 @@ import { TrustBadge } from '@/components/TrustBadge'
 import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
+import { isValidUUID } from '@/lib/validation'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
@@ -142,6 +143,7 @@ export default function PublicProfileScreen() {
 
   const handleMessage = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
+    if (!isValidUUID(currentUserId) || !isValidUUID(userId)) return
     // Find existing conversation or create new one
     const { data: existing } = await supabase
       .from('conversations')
