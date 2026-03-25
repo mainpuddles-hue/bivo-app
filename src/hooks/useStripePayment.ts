@@ -2,7 +2,9 @@ import { useState, useCallback } from 'react'
 import { Platform, Linking } from 'react-native'
 import { useSupabase } from '@/hooks/useSupabase'
 
-const WEB_BACKEND = 'https://tackbird-v2.vercel.app'
+// All Stripe operations go through Supabase Edge Functions (no web backend dependency)
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
 interface PaymentOptions {
   amount: number // cents (499 = 4.99€)
@@ -14,9 +16,10 @@ interface PaymentOptions {
 }
 
 /**
- * Stripe payment hook for physical goods/services (rentals, ads).
- * Creates a Checkout session via the web backend and opens it in browser.
- * Works on iOS, Android, and web — no native Stripe SDK required.
+ * Stripe payment hook for marketplace transactions.
+ * Creates Checkout sessions via Supabase Edge Functions.
+ * Supports card + Apple Pay + Google Pay via Stripe Checkout.
+ * Commission: 10% to Puddles Oy platform, 90% to provider.
  */
 export function useStripePayment() {
   const [loading, setLoading] = useState(false)
@@ -35,15 +38,9 @@ export function useStripePayment() {
         return null
       }
 
-      // Determine the correct API endpoint
-      const endpointMap: Record<string, string> = {
-        rental: `${WEB_BACKEND}/api/stripe/rental-checkout`,
-        service: `${WEB_BACKEND}/api/stripe/service-checkout`,
-        ad_campaign: `${WEB_BACKEND}/api/stripe/ad-checkout`,
-      }
-      const endpoint = endpointMap[options.type] ?? endpointMap.service
+      // Single Edge Function handles all payment types
+      const endpoint = `${FUNCTIONS_URL}/stripe-checkout`
 
-      // Create Stripe Checkout session via web backend
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -53,18 +50,14 @@ export function useStripePayment() {
         body: JSON.stringify({
           amount: options.amount,
           description: options.description,
+          type: options.type,
           post_id: options.postId,
           seller_id: options.sellerId,
           metadata: options.metadata,
-          // Commission: 10% to Puddles Oy via Stripe Connect
+          // Commission: 10% to Puddles Oy via Stripe Connect destination charges
           application_fee_amount: Math.round(options.amount * 0.10),
-          // Return URLs
-          success_url: Platform.OS === 'web'
-            ? `${window.location.origin}/payment/success`
-            : 'tackbird://payment/success',
-          cancel_url: Platform.OS === 'web'
-            ? `${window.location.origin}/payment/cancel`
-            : 'tackbird://payment/cancel',
+          success_url: 'tackbird://payment/success',
+          cancel_url: 'tackbird://payment/cancel',
         }),
       })
 
@@ -77,13 +70,9 @@ export function useStripePayment() {
 
       const { url, session_id } = await res.json()
 
-      // Open Stripe Checkout in browser
+      // Open Stripe Checkout in browser (supports card + Apple Pay + Google Pay)
       if (url) {
-        if (Platform.OS === 'web') {
-          window.location.href = url
-        } else {
-          await Linking.openURL(url)
-        }
+        await Linking.openURL(url)
       }
 
       setLoading(false)

@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { Platform, Linking } from 'react-native'
 import { useSupabase } from '@/hooks/useSupabase'
 
-const WEB_BACKEND = 'https://tackbird-v2.vercel.app'
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
 export function usePaymentMethods(userId: string | null) {
   const supabase = useSupabase()
@@ -36,7 +37,7 @@ export function usePaymentMethods(userId: string | null) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) return
 
-      const res = await fetch(`${WEB_BACKEND}/api/stripe/connect-onboard`, {
+      const res = await fetch(`${FUNCTIONS_URL}/stripe-connect-onboard`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,9 +45,7 @@ export function usePaymentMethods(userId: string | null) {
         },
         body: JSON.stringify({
           user_id: userId,
-          return_url: Platform.OS === 'web'
-            ? `${(typeof window !== 'undefined' ? window.location.origin : '')}/payment-settings`
-            : 'tackbird://payment-settings',
+          return_url: 'tackbird://payment-settings',
         }),
       })
 
