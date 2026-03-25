@@ -3,6 +3,7 @@ import {
   View,
   Text,
   ScrollView,
+  TextInput,
   Pressable,
   StyleSheet,
   Dimensions,
@@ -30,6 +31,7 @@ import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { CATEGORIES, NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
+import { useReferral } from '@/hooks/useReferral'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import type { PostType } from '@/lib/types'
 
@@ -56,6 +58,8 @@ export default function OnboardingScreen() {
   const [currentPage, setCurrentPage] = useState(0)
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [referralInput, setReferralInput] = useState('')
+  const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
   const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
 
   // Auto-verify when neighborhood is selected on page 3
@@ -97,6 +101,34 @@ export default function OnboardingScreen() {
         .update(updateData)
         .eq('id', user.id)
 
+      // Apply referral code if entered
+      if (referralInput.trim()) {
+        const { applyInviteCode } = await import('@/hooks/useReferral').then(() => {
+          // We can't call hooks here, so do direct Supabase calls
+          return { applyInviteCode: null }
+        }).catch(() => ({ applyInviteCode: null }))
+
+        // Direct Supabase referral code application
+        const code = referralInput.trim().toUpperCase()
+        const { data: inviter } = await supabase
+          .from('profiles')
+          .select('id, invite_count')
+          .eq('invite_code', code)
+          .single()
+        if (inviter && (inviter as any).id !== user.id) {
+          await (supabase.from('profiles') as any)
+            .update({ invited_by: (inviter as any).id })
+            .eq('id', user.id)
+          const newCount = ((inviter as any).invite_count ?? 0) + 1
+          await (supabase.from('profiles') as any)
+            .update({ invite_count: newCount })
+            .eq('id', (inviter as any).id)
+          setReferralStatus('applied')
+        } else if (referralInput.trim()) {
+          setReferralStatus('invalid')
+        }
+      }
+
       // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
       router.replace('/')
@@ -105,7 +137,7 @@ export default function OnboardingScreen() {
     } finally {
       setSaving(false)
     }
-  }, [supabase, selectedNeighborhood, router, t])
+  }, [supabase, selectedNeighborhood, referralInput, router, t])
 
   // ── Dots indicator ──
   const renderDots = () => (
@@ -304,6 +336,35 @@ export default function OnboardingScreen() {
         </View>
       )}
 
+      {/* Referral code input */}
+      <View style={s.referralInputRow}>
+        <TextInput
+          value={referralInput}
+          onChangeText={(text) => { setReferralInput(text); setReferralStatus('idle') }}
+          placeholder={t('referral.codeInput')}
+          placeholderTextColor={colors.mutedForeground}
+          style={[s.referralInput, {
+            backgroundColor: colors.card,
+            borderColor: referralStatus === 'invalid' ? '#D94F4F' : referralStatus === 'applied' ? '#2B8A62' : colors.border,
+            color: colors.foreground,
+            fontFamily: fonts.body,
+          }]}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={12}
+        />
+        {referralStatus === 'applied' && (
+          <Text style={[s.referralFeedback, { color: '#2B8A62', fontFamily: fonts.body }]}>
+            {t('referral.codeApplied')}
+          </Text>
+        )}
+        {referralStatus === 'invalid' && (
+          <Text style={[s.referralFeedback, { color: '#D94F4F', fontFamily: fonts.body }]}>
+            {t('referral.invalidCode')}
+          </Text>
+        )}
+      </View>
+
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <Pressable
           onPress={handleComplete}
@@ -492,6 +553,25 @@ const s = StyleSheet.create({
     fontSize: 13,
     fontFamily: fonts.body,
     flex: 1,
+  },
+
+  // Referral code input
+  referralInputRow: {
+    paddingHorizontal: 24,
+    marginBottom: 8,
+    gap: 4,
+  },
+  referralInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  referralFeedback: {
+    fontSize: 12,
+    marginTop: 2,
+    paddingHorizontal: 4,
   },
 
   // Bottom area

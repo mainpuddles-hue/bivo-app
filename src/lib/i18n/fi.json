@@ -2251,5 +2251,23 @@
   },
   "points": {
     "earned": "+{points} pistettä!"
+  },
+  "referral": {
+    "title": "Kutsu naapureita",
+    "yourCode": "Kutsukoodisi",
+    "copied": "Kopioitu!",
+    "share": "Jaa kutsu",
+    "shareText": "Liity naapurustoosi TackBirdissä! Käytä koodia {code}",
+    "progress": "{count}/{target} kutsua",
+    "tier1": "Ensimmäinen kutsu",
+    "tier3": "Yhteisön rakentaja",
+    "tier5": "7 päivää Pro-kokeilua",
+    "tier10": "Naapuruston sankari",
+    "tier25": "1 kuukausi Pro ilmaiseksi",
+    "invitesLeft": "{count} kutsua seuraavaan tasoon",
+    "allTiersUnlocked": "Kaikki tasot avattu!",
+    "codeInput": "Kutsukoodi (valinnainen)",
+    "invalidCode": "Virheellinen kutsukoodi",
+    "codeApplied": "Kutsukoodi käytetty!"
   }
 }

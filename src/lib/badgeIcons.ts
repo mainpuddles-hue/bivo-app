@@ -1,6 +1,6 @@
 import {
   BadgeCheck, Crown, Shield, Flame, Star, HandHelping,
-  TrendingUp, BookOpen, CalendarDays, Award,
+  TrendingUp, BookOpen, CalendarDays, Award, UserPlus, Users,
 } from 'lucide-react-native'
 
 export const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
@@ -15,4 +15,6 @@ export const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color
   event_creator: { icon: CalendarDays, color: '#2B8A62' },
   weekly_active: { icon: Flame, color: '#EF4444' },
   neighborhood_hero: { icon: Award, color: '#8E44AD' },
+  first_invite: { icon: UserPlus, color: '#10B981' },
+  community_builder: { icon: Users, color: '#3B82F6' },
 }

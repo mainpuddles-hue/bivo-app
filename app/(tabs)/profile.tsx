@@ -22,6 +22,7 @@ import { fonts } from '@/lib/fonts'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
 import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
+import { ReferralCard } from '@/components/ReferralCard'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 interface ActivityItem {
@@ -344,6 +345,13 @@ export default function ProfileScreen() {
         {/* Trust Level Progress */}
         {!trust.loading && trust.level < 3 && (
           <TrustProgress level={trust.level} nextTierHints={trust.nextTierHints} onVerifyPress={identity.startVerification} />
+        )}
+
+        {/* Referral Program */}
+        {profile && (
+          <View style={{ paddingHorizontal: 16 }}>
+            <ReferralCard userId={profile.id} />
+          </View>
         )}
 
         {/* Tabs */}

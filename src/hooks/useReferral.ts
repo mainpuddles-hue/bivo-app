@@ -1,0 +1,119 @@
+import { useState, useEffect, useCallback } from 'react'
+import { Alert } from 'react-native'
+import { useSupabase } from './useSupabase'
+import { usePoints } from './usePoints'
+
+interface ReferralTier {
+  invites: number
+  rewardKey: string
+  badgeType: string | null
+  proTrialDays: number
+  points: number
+}
+
+const REFERRAL_TIERS: ReferralTier[] = [
+  { invites: 1, rewardKey: 'referral.tier1', badgeType: 'first_invite', proTrialDays: 0, points: 50 },
+  { invites: 3, rewardKey: 'referral.tier3', badgeType: 'community_builder', proTrialDays: 0, points: 150 },
+  { invites: 5, rewardKey: 'referral.tier5', badgeType: null, proTrialDays: 7, points: 300 },
+  { invites: 10, rewardKey: 'referral.tier10', badgeType: 'neighborhood_hero', proTrialDays: 0, points: 500 },
+  { invites: 25, rewardKey: 'referral.tier25', badgeType: null, proTrialDays: 30, points: 1000 },
+]
+
+export function useReferral(userId: string | null) {
+  const supabase = useSupabase()
+  const { awardPoints } = usePoints()
+  const [inviteCode, setInviteCode] = useState<string | null>(null)
+  const [inviteCount, setInviteCount] = useState(0)
+  const [currentTier, setCurrentTier] = useState<ReferralTier | null>(null)
+  const [nextTier, setNextTier] = useState<ReferralTier | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Fetch user's invite code and count on mount
+  useEffect(() => {
+    if (!userId) return
+    async function load() {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('invite_code, invite_count')
+        .eq('id', userId!)
+        .single()
+      if (profile) {
+        setInviteCode((profile as any).invite_code)
+        setInviteCount((profile as any).invite_count ?? 0)
+      }
+      setLoading(false)
+    }
+    load()
+  }, [userId, supabase])
+
+  // Calculate tiers
+  useEffect(() => {
+    const achieved = REFERRAL_TIERS.filter(t => inviteCount >= t.invites)
+    setCurrentTier(achieved.length > 0 ? achieved[achieved.length - 1] : null)
+    const next = REFERRAL_TIERS.find(t => inviteCount < t.invites)
+    setNextTier(next ?? null)
+  }, [inviteCount])
+
+  // Generate invite code if user doesn't have one
+  const generateCode = useCallback(async () => {
+    if (!userId || inviteCode) return inviteCode
+    const code = userId.slice(0, 4).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase()
+    await (supabase.from('profiles') as any)
+      .update({ invite_code: code })
+      .eq('id', userId)
+    setInviteCode(code)
+    return code
+  }, [userId, inviteCode, supabase])
+
+  // Apply invite code during onboarding (called by the invited user)
+  const applyInviteCode = useCallback(async (code: string) => {
+    if (!userId) return false
+    // Find the inviter
+    const { data: inviter } = await supabase
+      .from('profiles')
+      .select('id, invite_count')
+      .eq('invite_code', code.toUpperCase().trim())
+      .single()
+    if (!inviter) return false
+    if ((inviter as any).id === userId) return false // Can't invite yourself
+
+    // Update invited user's profile
+    await (supabase.from('profiles') as any)
+      .update({ invited_by: (inviter as any).id })
+      .eq('id', userId)
+
+    // Increment inviter's count
+    const newCount = ((inviter as any).invite_count ?? 0) + 1
+    await (supabase.from('profiles') as any)
+      .update({ invite_count: newCount })
+      .eq('id', (inviter as any).id)
+
+    // Award points to both
+    await awardPoints(userId, 'first_post_bonus') // 20pts for joining via invite
+    await awardPoints((inviter as any).id, 'thanks_received') // 10pts for inviter
+
+    // Check if inviter unlocked a new tier
+    const newTier = REFERRAL_TIERS.filter(t => newCount >= t.invites).pop()
+    const oldTier = REFERRAL_TIERS.filter(t => newCount - 1 >= t.invites).pop()
+    if (newTier && newTier !== oldTier) {
+      // Award tier bonus points
+      await awardPoints((inviter as any).id, 'first_post_bonus') // Reuse action for bonus
+      // Award badge if tier has one
+      if (newTier.badgeType) {
+        await (supabase.from('user_badges') as any)
+          .insert({ user_id: (inviter as any).id, badge_type: newTier.badgeType })
+      }
+      // Grant Pro trial if tier has one
+      if (newTier.proTrialDays > 0) {
+        const proExpires = new Date(Date.now() + newTier.proTrialDays * 86400000).toISOString()
+        await (supabase.from('profiles') as any)
+          .update({ is_pro: true, pro_expires_at: proExpires })
+          .eq('id', (inviter as any).id)
+      }
+    }
+
+    return true
+  }, [userId, supabase, awardPoints])
+
+  return { inviteCode, inviteCount, currentTier, nextTier, loading, generateCode, applyInviteCode, REFERRAL_TIERS }
+}
