@@ -12,6 +12,7 @@ interface SmartMatchBannerProps {
     postTitle: string
     posterName: string
     matchedTags: string[]
+    matchScore?: number
   }>
   onDismiss: (postId: string) => void
 }
@@ -35,9 +36,16 @@ export const SmartMatchBanner = memo(function SmartMatchBanner({ matches, onDism
         <Zap size={18} color={colors.primary} fill={colors.primary} />
       </View>
       <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={1}>
-          {t('smartMatch.neighborNeeds', { name: match.posterName })}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.foreground, flex: 1 }]} numberOfLines={1}>
+            {t('smartMatch.neighborNeeds', { name: match.posterName })}
+          </Text>
+          {match.matchScore != null && match.matchScore > 0 && (
+            <View style={[styles.scoreBadge, { backgroundColor: `${colors.primary}20` }]}>
+              <Text style={[styles.scoreText, { color: colors.primary }]}>{match.matchScore}%</Text>
+            </View>
+          )}
+        </View>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]} numberOfLines={1}>
           {match.postTitle}
         </Text>
@@ -61,6 +69,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(45,107,94,0.12)',
   },
   content: { flex: 1, gap: 2 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   title: { fontSize: 13, fontFamily: fonts.bodySemi },
   subtitle: { fontSize: 12, fontFamily: fonts.body },
+  scoreBadge: {
+    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8,
+  },
+  scoreText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi },
 })

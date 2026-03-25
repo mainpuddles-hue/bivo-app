@@ -34,7 +34,8 @@
     "remove": "Удалить",
     "scrollToBottom": "Вниз",
     "offline": "Нет связи",
-    "loginRequired": "Войдите в систему"
+    "loginRequired": "Войдите в систему",
+    "you": "вы"
   },
   "nav": {
     "feed": "Главная",
@@ -158,7 +159,8 @@
     "replyingTo": "Ответ пользователю @{name}",
     "writeReply": "Написать ответ...",
     "showReplies": "Показать {count} ответов",
-    "hideReplies": "Скрыть ответы"
+    "hideReplies": "Скрыть ответы",
+    "viewPost": "Посмотреть объявление"
   },
   "events": {
     "title": "События",
@@ -259,7 +261,8 @@
     "eventsOnDay": "{count} событий",
     "shareEventTitle": "Событие: {title}",
     "openInMaps": "Открыть на карте",
-    "description": "Описание"
+    "description": "Описание",
+    "creator": "Организатор"
   },
   "activity": {
     "activities": "Вместе",
@@ -373,7 +376,26 @@
     "hotel": "Гостиницы",
     "attraction": "Достопримечательности",
     "service": "Услуги",
-    "other": "Другое"
+    "other": "Другое",
+    "all": "Все",
+    "bars": "Бары",
+    "cafes": "Кафе",
+    "dataSource": "Данные: OpenStreetMap & Helsinki Palvelukartta",
+    "directions": "Маршрут",
+    "noPlaces": "Нет мест",
+    "openingHours": "Часы работы",
+    "posts": "Объявления",
+    "restaurants": "Рестораны",
+    "save": "Сохранить место",
+    "saved": "Место сохранено",
+    "services": "Услуги",
+    "shops": "Магазины",
+    "showLess": "Меньше",
+    "showMore": "Ещё",
+    "title": "Места",
+    "unsave": "Убрать из сохраненных",
+    "unsaved": "Место убрано из сохраненных",
+    "website": "Сайт"
   },
   "messages": {
     "title": "Сообщения",
@@ -512,7 +534,8 @@
     "reviewSubmitted": "Отзыв отправлен!",
     "reviewFailed": "Не удалось отправить отзыв",
     "selectRating": "Выберите оценку",
-    "alreadyReviewed": "Вы уже оставили отзыв"
+    "alreadyReviewed": "Вы уже оставили отзыв",
+    "profileHidden": "Профиль не является публичным"
   },
   "settings": {
     "title": "Настройки",
@@ -717,7 +740,8 @@
     "passwordUppercase": "Заглавная буква",
     "passwordNumber": "Цифра",
     "passwordTooShort": "Пароль должен быть не менее 8 символов",
-    "invalidPassword": "Введите корректный пароль"
+    "invalidPassword": "Введите корректный пароль",
+    "loginRequired": "Войдите в систему"
   },
   "onboarding": {
     "welcome": "Добро пожаловать в TackBird!",
@@ -1752,7 +1776,13 @@
     "button": "Спасибо",
     "alreadyThanked": "Вы уже поблагодарили",
     "sent": "Благодарность отправлена!",
-    "notification": "{name} поблагодарил(а) вас"
+    "notification": "{name} поблагодарил(а) вас",
+    "count": "благодарностей",
+    "loginRequired": "Войдите, чтобы поблагодарить",
+    "removed": "Благодарность удалена",
+    "sendFailed": "Не удалось отправить благодарность",
+    "thanksReceived": "{count} благодарностей получено",
+    "title": "Благодарность"
   },
   "cityEventCategories": {
     "culture": "Культура",
@@ -1800,7 +1830,25 @@
     "allTiersUnlocked": "Все уровни открыты!",
     "codeInput": "Введите код приглашения",
     "invalidCode": "Неверный код",
-    "codeApplied": "Код применён!"
+    "codeApplied": "Код применён!",
+    "applyCode": "Применить код",
+    "applyCodeAlreadyReferred": "Вы уже использовали код приглашения",
+    "applyCodeDesc": "Введите 6-значный код приглашения друга",
+    "applyCodeError": "Не удалось применить код приглашения",
+    "applyCodeInvalid": "Введите 6-значный код",
+    "applyCodeNotFound": "Код приглашения не найден",
+    "applyCodePlaceholder": "напр. ABC123",
+    "applyCodeSelfReferral": "Нельзя использовать свой код",
+    "applyCodeSubmit": "Применить код",
+    "applyCodeSuccess": "Код приглашения применён!",
+    "applyCodeTitle": "Применить код приглашения",
+    "codeCopied": "Код скопирован!",
+    "copyCode": "Копировать код",
+    "freeNoCreditCard": "Бесплатно — без кредитной карты",
+    "inviteCount": "Приглашённые соседи",
+    "inviteDesc": "Поделитесь кодом и расширьте соседство",
+    "inviteTitle": "Пригласите соседей",
+    "invitedYou": "{inviterName} пригласил(а) вас!"
   },
   "pwa": {
     "installTitle": "Добавьте TackBird на главный экран",

@@ -34,7 +34,8 @@
     "remove": "Eemalda",
     "scrollToBottom": "Keri alla",
     "offline": "Ühendus puudub",
-    "loginRequired": "Palun logi sisse"
+    "loginRequired": "Palun logi sisse",
+    "you": "sina"
   },
   "nav": {
     "feed": "Kodu",
@@ -158,7 +159,8 @@
     "replyingTo": "Vastad kasutajale @{name}",
     "writeReply": "Kirjuta vastus...",
     "showReplies": "Näita {count} vastust",
-    "hideReplies": "Peida vastused"
+    "hideReplies": "Peida vastused",
+    "viewPost": "Vaata kuulutust"
   },
   "events": {
     "title": "Sündmused",
@@ -259,7 +261,8 @@
     "eventsOnDay": "{count} sündmust",
     "shareEventTitle": "Sündmus: {title}",
     "openInMaps": "Ava kaardil",
-    "description": "Kirjeldus"
+    "description": "Kirjeldus",
+    "creator": "Korraldaja"
   },
   "activity": {
     "activities": "Koos",
@@ -373,7 +376,26 @@
     "hotel": "Majutus",
     "attraction": "Vaatamisväärsus",
     "service": "Teenus",
-    "other": "Muu"
+    "other": "Muu",
+    "all": "Kõik",
+    "bars": "Baarid",
+    "cafes": "Kohvikud",
+    "dataSource": "Andmed: OpenStreetMap & Helsinki Palvelukartta",
+    "directions": "Juhised",
+    "noPlaces": "Kohti pole",
+    "openingHours": "Lahtiolekuajad",
+    "posts": "Kuulutused",
+    "restaurants": "Restoranid",
+    "save": "Salvesta koht",
+    "saved": "Koht salvestatud",
+    "services": "Teenused",
+    "shops": "Poed",
+    "showLess": "Vähem",
+    "showMore": "Rohkem",
+    "title": "Kohad",
+    "unsave": "Eemalda salvestatud",
+    "unsaved": "Koht eemaldatud salvestatutest",
+    "website": "Veebileht"
   },
   "messages": {
     "title": "Sõnumid",
@@ -512,7 +534,8 @@
     "reviewSubmitted": "Arvustus saadetud!",
     "reviewFailed": "Arvustuse saatmine ebaõnnestus",
     "selectRating": "Vali hinne",
-    "alreadyReviewed": "Oled selle kasutaja juba hinnanud"
+    "alreadyReviewed": "Oled selle kasutaja juba hinnanud",
+    "profileHidden": "Profiil pole avalik"
   },
   "settings": {
     "title": "Seaded",
@@ -717,7 +740,8 @@
     "passwordUppercase": "Suurtäht",
     "passwordNumber": "Number",
     "passwordTooShort": "Parool peab olema vähemalt 8 tähemärki",
-    "invalidPassword": "Sisesta kehtiv parool"
+    "invalidPassword": "Sisesta kehtiv parool",
+    "loginRequired": "Palun logi sisse"
   },
   "onboarding": {
     "welcome": "Tere tulemast TackBirdi!",
@@ -1752,7 +1776,13 @@
     "button": "Aitäh",
     "alreadyThanked": "Oled juba tänanud",
     "sent": "Tänu saadetud!",
-    "notification": "{name} tänas sind"
+    "notification": "{name} tänas sind",
+    "count": "tänu",
+    "loginRequired": "Logi sisse tänamiseks",
+    "removed": "Tänu eemaldatud",
+    "sendFailed": "Tänu saatmine ebaõnnestus",
+    "thanksReceived": "{count} tänu saadud",
+    "title": "Tänu"
   },
   "cityEventCategories": {
     "culture": "Kultuur",
@@ -1800,7 +1830,25 @@
     "allTiersUnlocked": "Kõik tasemed avatud!",
     "codeInput": "Sisesta kutsekood",
     "invalidCode": "Vigane kutsekood",
-    "codeApplied": "Kutsekood rakendatud!"
+    "codeApplied": "Kutsekood rakendatud!",
+    "applyCode": "Kasuta koodi",
+    "applyCodeAlreadyReferred": "Oled juba kasutanud kutsekoodi",
+    "applyCodeDesc": "Sisesta sõbra 6-kohaline kutsekood",
+    "applyCodeError": "Kutsekoodi kasutamine ebaõnnestus",
+    "applyCodeInvalid": "Sisesta 6-kohaline kood",
+    "applyCodeNotFound": "Kutsekoodi ei leitud",
+    "applyCodePlaceholder": "nt ABC123",
+    "applyCodeSelfReferral": "Ei saa kasutada oma koodi",
+    "applyCodeSubmit": "Kasuta koodi",
+    "applyCodeSuccess": "Kutsekood kasutatud!",
+    "applyCodeTitle": "Kasuta kutsekoodi",
+    "codeCopied": "Kood kopeeritud!",
+    "copyCode": "Kopeeri kood",
+    "freeNoCreditCard": "Tasuta — krediitkaarti pole vaja",
+    "inviteCount": "Kutsutud naabrid",
+    "inviteDesc": "Jaga oma kutsekoodi ja kasvata naabruskonda",
+    "inviteTitle": "Kutsu oma naabrid",
+    "invitedYou": "{inviterName} kutsus sind!"
   },
   "pwa": {
     "installTitle": "Lisa TackBird avakuvale",

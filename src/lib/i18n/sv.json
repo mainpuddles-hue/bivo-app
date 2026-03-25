@@ -34,7 +34,8 @@
     "remove": "Ta bort",
     "scrollToBottom": "Scrolla ner",
     "offline": "Ingen anslutning",
-    "loginRequired": "Logga in"
+    "loginRequired": "Logga in",
+    "you": "du"
   },
   "nav": {
     "feed": "Hem",
@@ -158,7 +159,8 @@
     "replyingTo": "Svarar @{name}",
     "writeReply": "Skriv ett svar...",
     "showReplies": "Visa {count} svar",
-    "hideReplies": "Dölj svar"
+    "hideReplies": "Dölj svar",
+    "viewPost": "Visa inlägg"
   },
   "events": {
     "title": "Evenemang",
@@ -259,7 +261,8 @@
     "eventsOnDay": "{count} evenemang",
     "shareEventTitle": "Evenemang: {title}",
     "openInMaps": "Öppna i kartor",
-    "description": "Beskrivning"
+    "description": "Beskrivning",
+    "creator": "Arrangör"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -373,7 +376,26 @@
     "hotel": "Hotell",
     "attraction": "Sevärdhet",
     "service": "Tjänst",
-    "other": "Övrigt"
+    "other": "Övrigt",
+    "all": "Alla",
+    "bars": "Barer",
+    "cafes": "Kaféer",
+    "dataSource": "Data: OpenStreetMap & Helsingfors Servicekartan",
+    "directions": "Vägbeskrivning",
+    "noPlaces": "Inga platser",
+    "openingHours": "Öppettider",
+    "posts": "Inlägg",
+    "restaurants": "Restauranger",
+    "save": "Spara plats",
+    "saved": "Plats sparad",
+    "services": "Tjänster",
+    "shops": "Butiker",
+    "showLess": "Mindre",
+    "showMore": "Mer",
+    "title": "Platser",
+    "unsave": "Ta bort sparad",
+    "unsaved": "Plats borttagen från sparade",
+    "website": "Webbplats"
   },
   "messages": {
     "title": "Meddelanden",
@@ -512,7 +534,8 @@
     "reviewSubmitted": "Recension skickad!",
     "reviewFailed": "Kunde inte skicka recension",
     "selectRating": "Välj ett betyg",
-    "alreadyReviewed": "Du har redan recenserat denna användare"
+    "alreadyReviewed": "Du har redan recenserat denna användare",
+    "profileHidden": "Profilen är inte offentlig"
   },
   "settings": {
     "title": "Inställningar",
@@ -717,7 +740,8 @@
     "passwordRequired": "Ange ditt lösenord",
     "nameRequired": "Ange ditt namn",
     "resetPasswordHint": "Ange din e-postadress så skickar vi en återställningslänk.",
-    "continueWithGoogle": "Fortsätt med Google"
+    "continueWithGoogle": "Fortsätt med Google",
+    "loginRequired": "Logga in"
   },
   "onboarding": {
     "welcome": "Välkommen till TackBird!",
@@ -1752,7 +1776,13 @@
     "button": "Tack",
     "alreadyThanked": "Redan tackat",
     "sent": "Tack skickat!",
-    "notification": "{name} tackade dig"
+    "notification": "{name} tackade dig",
+    "count": "tack",
+    "loginRequired": "Logga in för att tacka",
+    "removed": "Tack borttaget",
+    "sendFailed": "Det gick inte att skicka tack",
+    "thanksReceived": "{count} tack mottagna",
+    "title": "Tack"
   },
   "cityEventCategories": {
     "culture": "Kultur",
@@ -1803,7 +1833,22 @@
     "applyCodeNotFound": "Inbjudningskoden hittades inte",
     "applyCodeSelfReferral": "Du kan inte använda din egen kod",
     "applyCodeInvalid": "Ange en 6-tecken kod",
-    "applyCodeError": "Det gick inte att använda inbjudningskoden"
+    "applyCodeError": "Det gick inte att använda inbjudningskoden",
+    "title": "Bjud in grannar",
+    "copied": "Kopierat!",
+    "share": "Dela inbjudan",
+    "shareText": "Gå med i ditt grannskap på TackBird! Använd kod {code}",
+    "progress": "{count}/{target} inbjudningar",
+    "tier1": "Första inbjudan",
+    "tier3": "Gemenskapsbyggare",
+    "tier5": "7 dagars Pro-provperiod",
+    "tier10": "Grannskapets hjälte",
+    "tier25": "1 månad Pro gratis",
+    "invitesLeft": "{count} inbjudningar till nästa nivå",
+    "allTiersUnlocked": "Alla nivåer upplåsta!",
+    "codeInput": "Inbjudningskod (valfritt)",
+    "invalidCode": "Ogiltig inbjudningskod",
+    "codeApplied": "Inbjudningskod använd!"
   },
   "pwa": {
     "installTitle": "Lägg till TackBird på hemskärmen",
@@ -2204,23 +2249,5 @@
   },
   "points": {
     "earned": "+{points} poäng!"
-  },
-  "referral": {
-    "title": "Bjud in grannar",
-    "yourCode": "Din inbjudningskod",
-    "copied": "Kopierat!",
-    "share": "Dela inbjudan",
-    "shareText": "Gå med i ditt grannskap på TackBird! Använd kod {code}",
-    "progress": "{count}/{target} inbjudningar",
-    "tier1": "Första inbjudan",
-    "tier3": "Gemenskapsbyggare",
-    "tier5": "7 dagars Pro-provperiod",
-    "tier10": "Grannskapets hjälte",
-    "tier25": "1 månad Pro gratis",
-    "invitesLeft": "{count} inbjudningar till nästa nivå",
-    "allTiersUnlocked": "Alla nivåer upplåsta!",
-    "codeInput": "Inbjudningskod (valfritt)",
-    "invalidCode": "Ogiltig inbjudningskod",
-    "codeApplied": "Inbjudningskod använd!"
   }
 }

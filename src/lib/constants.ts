@@ -19,6 +19,9 @@ export const URGENCY_OPTIONS = [
   { hours: 8, label: 'urgency.8hours', color: '#E8A050' },
 ] as const
 
+// TODO: ENHANCEMENT — implement speed badge awarding logic: measure response time
+// in conversation, compare against thresholds, insert into user_badges table,
+// and display on profile. Translations exist: urgency.speedBadgeSalamanopea / speedBadgeNopea
 export const SPEED_BADGE_THRESHOLDS = {
   salamanopea: 15,  // minutes — lightning fast
   nopea: 60,        // minutes — quick responder

@@ -34,7 +34,8 @@
     "remove": "Poista",
     "scrollToBottom": "Vieritä alas",
     "offline": "Ei verkkoyhteyttä",
-    "loginRequired": "Kirjaudu sisään"
+    "loginRequired": "Kirjaudu sisään",
+    "you": "sinä"
   },
   "nav": {
     "feed": "Koti",
@@ -158,7 +159,8 @@
     "replyingTo": "Vastaat käyttäjälle @{name}",
     "writeReply": "Kirjoita vastaus...",
     "showReplies": "Näytä {count} vastausta",
-    "hideReplies": "Piilota vastaukset"
+    "hideReplies": "Piilota vastaukset",
+    "viewPost": "Katso ilmoitus"
   },
   "events": {
     "title": "Tapahtumat",
@@ -259,7 +261,8 @@
     "eventsOnDay": "{count} tapahtumaa",
     "shareEventTitle": "Tapahtuma: {title}",
     "openInMaps": "Avaa kartalla",
-    "description": "Kuvaus"
+    "description": "Kuvaus",
+    "creator": "Järjestäjä"
   },
   "activity": {
     "activities": "Porukalla",
@@ -531,7 +534,8 @@
     "reviewSubmitted": "Arvostelu lähetetty!",
     "reviewFailed": "Arvostelun lähetys epäonnistui",
     "selectRating": "Valitse arvosana",
-    "alreadyReviewed": "Olet jo arvostellut tämän käyttäjän"
+    "alreadyReviewed": "Olet jo arvostellut tämän käyttäjän",
+    "profileHidden": "Profiili ei ole julkinen"
   },
   "settings": {
     "title": "Asetukset",
@@ -736,7 +740,8 @@
     "passwordUppercase": "Iso kirjain",
     "passwordNumber": "Numero",
     "passwordTooShort": "Salasanan pitää olla vähintään 8 merkkiä",
-    "invalidPassword": "Anna kelvollinen salasana"
+    "invalidPassword": "Anna kelvollinen salasana",
+    "loginRequired": "Kirjaudu sisään"
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
@@ -1223,7 +1228,6 @@
     "nappaaExpires24h": "Nappaa-ilmoitukset vanhenevat aina 24 tunnissa",
     "maxAttendees": "Osallistujaraja",
     "maxAttendeesPlaceholder": "Rajaton",
-    "uploadingImages": "Ladataan kuvia...",
     "imageUploadPartialFail": "{count} kuvan lataus epäonnistui",
     "camera": "Kamera",
     "gallery": "Galleria",
@@ -1443,10 +1447,6 @@
     "activityNewMember": "Uusi jäsen aktiviteetissa",
     "activityCancelled": "Aktiviteetti lopetettu",
     "activityNew": "Uusi aktiviteetti naapurustossa",
-    "today": "Tänään",
-    "yesterday": "Eilen",
-    "thisWeek": "Tällä viikolla",
-    "earlier": "Aiemmin",
     "eventReminder": "Tapahtuma huomenna",
     "eventReminderBody": "Muistutus: {title}",
     "neighborhoodDigest": "Naapuruston kooste",
@@ -1485,7 +1485,7 @@
   "map": {
     "locate": "Paikanna minut",
     "locationFound": "Sijainti löydetty",
-    "locationFailed": "Paikannus epäonnistui",
+    "locationFailed": "Sijaintia ei voitu hakea.",
     "geolocationNotSupported": "Paikannus ei ole tuettu selaimessasi",
     "viewPost": "Katso ilmoitus",
     "viewEvent": "Katso tapahtuma",
@@ -1495,7 +1495,7 @@
     "increaseRadius": "Suurenna säde",
     "decreaseRadius": "Pienennä säde",
     "radius": "Säde",
-    "radiusOff": "Säde pois käytöstä",
+    "radiusOff": "Pois",
     "layerToggle": "Karttatasot",
     "placeFilter": "Paikkasuodatin",
     "radiusSlider": "Säteen säätö",
@@ -1503,13 +1503,11 @@
     "radiusEnable": "Ota säderajaus käyttöön",
     "visible": "kohdetta kartalla",
     "allHelsinki": "Alue",
-    "noResults": "Ei kohteita kartalla",
+    "noResults": "Ei tuloksia kartalla",
     "resetFiltersHint": "Kokeile poistaa suodattimia tai laajenna sädettä.",
     "resetFilters": "Nollaa suodattimet",
-    "radiusOff": "Pois",
     "items": "kohdetta",
     "itemsNearby": "lähellä",
-    "noResults": "Ei tuloksia kartalla",
     "collapseFilters": "Piilota suodattimet",
     "expandFilters": "Näytä suodattimet",
     "itemsOnMap": "kohdetta kartalla",
@@ -1521,11 +1519,10 @@
     "clusterPlaces": "paikkaa",
     "myLocation": "Oma sijainti",
     "searchPlaceholder": "Hae paikkoja ja ilmoituksia...",
-    "noSearchResults": "Ei tuloksia haullasi.",
+    "noSearchResults": "Ei tuloksia haulle",
     "createPostHere": "Luo ilmoitus tähän",
     "noResultsHint": "Ota karttatasoja käyttöön nähdäksesi kohteita.",
     "noResultsFilterHint": "Kokeile eri suodattimia tai laajenna hakualuetta.",
-    "resetFilters": "Nollaa suodattimet",
     "closeSearch": "Sulje haku",
     "openSearch": "Avaa haku",
     "loadingMap": "Ladataan karttaa...",
@@ -1541,27 +1538,18 @@
     "retry": "Yritä uudelleen",
     "locationPermission": "Sijaintilupa",
     "locationPermissionDesc": "Salli sijainnin käyttö asetuksista.",
-    "viewPost": "Katso ilmoitus",
-    "viewEvent": "Katso tapahtuma",
     "moreInfo": "Lisätietoja",
     "directions": "Reittiohjeet",
     "website": "Verkkosivut",
     "free": "Ilmainen",
     "event": "Tapahtuma",
     "noEventsToday": "Ei tapahtumia tänään",
-    "locationFailed": "Sijaintia ei voitu hakea.",
-    "layerPosts": "Ilmoitukset",
-    "layerEvents": "Tapahtumat",
-    "layerPlaces": "Paikat",
-    "items": "kohdetta",
-    "noSearchResults": "Ei tuloksia haulle",
     "clearSearch": "Tyhjennä haku",
     "showAll": "Näytä kaikki",
     "noContentInArea": "Ei sisältöä alueella",
     "tryAnotherArea": "Kokeile toista naapurustoa",
     "loadMoreEvents": "Lataa lisää tapahtumia",
     "totalEvents": "yhteensä",
-    "viewPost": "Katso ilmoitus",
     "ticketEvent": "Liput",
     "communityEvent": "Yhteisö",
     "beFirstInArea": "Ole {area} ensimmäinen naapuri TackBirdissä!",
@@ -1792,7 +1780,9 @@
     "loginRequired": "Kirjaudu kiittääksesi",
     "count": "kiitosta",
     "thanksReceived": "{count} kiitosta vastaanotettu",
-    "sendFailed": "Kiitoksen lähetys epäonnistui"
+    "sendFailed": "Kiitoksen lähetys epäonnistui",
+    "button": "Kiitos",
+    "notification": "{name} kiitti sinua"
   },
   "cityEventCategories": {
     "culture": "Kulttuuri",
@@ -1843,7 +1833,22 @@
     "applyCodeNotFound": "Kutsukoodia ei löydy",
     "applyCodeSelfReferral": "Et voi käyttää omaa koodiasi",
     "applyCodeInvalid": "Syötä 6-merkkinen koodi",
-    "applyCodeError": "Kutsukoodin käyttö epäonnistui"
+    "applyCodeError": "Kutsukoodin käyttö epäonnistui",
+    "title": "Kutsu naapureita",
+    "copied": "Kopioitu!",
+    "share": "Jaa kutsu",
+    "shareText": "Liity naapurustoosi TackBirdissä! Käytä koodia {code}",
+    "progress": "{count}/{target} kutsua",
+    "tier1": "Ensimmäinen kutsu",
+    "tier3": "Yhteisön rakentaja",
+    "tier5": "7 päivää Pro-kokeilua",
+    "tier10": "Naapuruston sankari",
+    "tier25": "1 kuukausi Pro ilmaiseksi",
+    "invitesLeft": "{count} kutsua seuraavaan tasoon",
+    "allTiersUnlocked": "Kaikki tasot avattu!",
+    "codeInput": "Kutsukoodi (valinnainen)",
+    "invalidCode": "Virheellinen kutsukoodi",
+    "codeApplied": "Kutsukoodi käytetty!"
   },
   "pwa": {
     "installTitle": "Lisää TackBird kotinäytölle",
@@ -2041,7 +2046,7 @@
     "description": "TackBird on naapuruston ilmoitustaulu, joka yhdistää lähiyhteisösi asukkaat. Löydä ja tarjoa apua, lainaa tavaroita, löydä ilmaisia tavaroita ja osallistu paikallisiin tapahtumiin. Kaikki tämä yhdessä turvallisessa ja helppokäyttöisessä sovelluksessa.",
     "credits": "Tekijät",
     "creditsContent": "Suunniteltu ja kehitetty Helsingissä. Kiitos kaikille beta-testaajille ja yhteisön jäsenille, jotka ovat auttaneet tekemään TackBirdistä paremman.",
-    "copyright": "\u00a9 2024\u20132026 TackBird. Kaikki oikeudet pidätetään."
+    "copyright": "© 2024–2026 TackBird. Kaikki oikeudet pidätetään."
   },
   "groups": {
     "title": "Ryhmät",
@@ -2103,23 +2108,6 @@
     "cancelEdit": "Peruuta",
     "searchPosts": "Hae viestejä...",
     "searchResults": "tulosta"
-  },
-  "places": {
-    "places": "Paikat",
-    "restaurant": "Ravintola",
-    "cafe": "Kahvila",
-    "bar": "Baari",
-    "pub": "Pubi",
-    "fastFood": "Pikaruoka",
-    "shop": "Kauppa",
-    "library": "Kirjasto",
-    "health": "Terveys",
-    "sport": "Liikunta",
-    "culture": "Kulttuuri",
-    "hotel": "Majoitus",
-    "attraction": "Nähtävyys",
-    "service": "Palvelu",
-    "other": "Muu"
   },
   "greeting": {
     "morning": "Huomenta",
@@ -2251,12 +2239,6 @@
     "speedBadgeNopea": "Nopea vastaaja",
     "respondedIn": "Vastasi {minutes} minuutissa"
   },
-  "thanks": {
-    "button": "Kiitos",
-    "alreadyThanked": "Olet jo kiittänyt",
-    "sent": "Kiitos lähetetty!",
-    "notification": "{name} kiitti sinua"
-  },
   "leaderboard": {
     "title": "Aktiivisimmat naapurit",
     "allNeighborhoods": "Kaikki",
@@ -2267,23 +2249,5 @@
   },
   "points": {
     "earned": "+{points} pistettä!"
-  },
-  "referral": {
-    "title": "Kutsu naapureita",
-    "yourCode": "Kutsukoodisi",
-    "copied": "Kopioitu!",
-    "share": "Jaa kutsu",
-    "shareText": "Liity naapurustoosi TackBirdissä! Käytä koodia {code}",
-    "progress": "{count}/{target} kutsua",
-    "tier1": "Ensimmäinen kutsu",
-    "tier3": "Yhteisön rakentaja",
-    "tier5": "7 päivää Pro-kokeilua",
-    "tier10": "Naapuruston sankari",
-    "tier25": "1 kuukausi Pro ilmaiseksi",
-    "invitesLeft": "{count} kutsua seuraavaan tasoon",
-    "allTiersUnlocked": "Kaikki tasot avattu!",
-    "codeInput": "Kutsukoodi (valinnainen)",
-    "invalidCode": "Virheellinen kutsukoodi",
-    "codeApplied": "Kutsukoodi käytetty!"
   }
 }

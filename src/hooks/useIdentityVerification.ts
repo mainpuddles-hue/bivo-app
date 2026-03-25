@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useEffect } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
 
@@ -111,7 +113,7 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
         .eq('id', userId)
 
       if (profileError) {
-        console.log('[verification] profile update failed:', profileError.message)
+        if (__DEV__) console.log('[verification] profile update failed:', profileError.message)
       }
 
       setIsVerified(true)

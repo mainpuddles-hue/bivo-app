@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -383,7 +385,7 @@ export default function CreateScreen() {
 
       router.replace('/')
     } catch (err: any) {
-      console.log('[create] error:', JSON.stringify(err))
+      if (__DEV__) console.log('[create] error:', JSON.stringify(err))
       Alert.alert(t('common.error'), err?.message || t('create.createFailed'))
     } finally {
       setSubmitting(false)

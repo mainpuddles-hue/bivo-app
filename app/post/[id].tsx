@@ -609,6 +609,7 @@ function PostDetailScreenInner() {
             </View>
           )}
 
+          {/* TODO: ENHANCEMENT — add "who liked this post" modal (tap likeCount to see likers list) */}
           <View style={styles.engRow}>
             <Pressable onPress={toggleLike} style={styles.engItem}>
               <Heart size={18} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />

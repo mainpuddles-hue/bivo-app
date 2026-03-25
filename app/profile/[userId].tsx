@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -182,7 +184,7 @@ export default function PublicProfileScreen() {
         .insert({ user1_id: currentUserId, user2_id: userId })
         .select('id')
         .single()
-      if (error) { console.log('[conv] create error:', JSON.stringify(error)); Alert.alert(t('common.error'), error.message || t('messages.conversationCreateFailed')); return }
+      if (error) { if (__DEV__) console.log('[conv] create error:', JSON.stringify(error)); Alert.alert(t('common.error'), error.message || t('messages.conversationCreateFailed')); return }
       if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
       router.push(`/messages/${newConv.id}`)
     }
