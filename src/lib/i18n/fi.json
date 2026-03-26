@@ -1356,7 +1356,12 @@
     "benefitSupport": "Prioriteettituki",
     "vatRequired": "Y-tunnus on pakollinen",
     "validationFailed": "Yrityksen vahvistus epäonnistui",
-    "pendingReview": "Yritystilisi on lähetetty tarkistettavaksi. Saat ilmoituksen, kun se on hyväksytty."
+    "pendingReview": "Yritystilisi on lähetetty tarkistettavaksi. Saat ilmoituksen, kun se on hyväksytty.",
+    "formatFI": "Y-tunnus (1234567-8)",
+    "formatSE": "Organisationsnummer (556XXX-XXXX)",
+    "formatEE": "Registrikood (8 numeroa)",
+    "formatNO": "Organisasjonsnummer (9 numeroa)",
+    "formatDE": "Handelsregister (HRB 12345)"
   },
   "search": {
     "placeholder": "Hae ilmoituksia...",
@@ -2273,7 +2278,14 @@
     "step3Desc": "TackBird tallentaa vain vahvistuksen ajankohdan — ei henkilötunnustasi tai pankkitietojasi",
     "error_auth_required": "Kirjaudu sisään ensin",
     "error_already_verified": "Henkilöllisyytesi on jo vahvistettu",
-    "error_verification_failed": "Vahvistus epäonnistui — yritä uudelleen"
+    "error_verification_failed": "Vahvistus epäonnistui — yritä uudelleen",
+    "bankid": "BankID",
+    "bankidDesc": "Tunnistaudu BankID:llä. Turvallinen ja nopea tunnistautuminen pankkitunnuksillasi.",
+    "smartid": "Smart-ID",
+    "smartidDesc": "Tunnistaudu Smart-ID:llä. Vahvista henkilöllisyytesi mobiilisovelluksella.",
+    "eidas": "eIDAS",
+    "eidasDesc": "EU-tunnistautuminen. Käytä kansallista henkilökorttiasi tai sähköistä tunnistetta.",
+    "manualDesc": "Ota yhteyttä tukeen vahvistaaksesi henkilöllisyytesi. Lähetä kopio henkilöllisyystodistuksestasi."
   },
   "urgency": {
     "juuriNyt": "Juuri nyt",

@@ -1356,7 +1356,12 @@
     "benefitSupport": "Prioritetsstöd",
     "vatRequired": "Organisationsnummer krävs",
     "validationFailed": "Företagsvalidering misslyckades",
-    "pendingReview": "Ditt företagskonto har skickats för granskning. Du meddelas när det godkänns."
+    "pendingReview": "Ditt företagskonto har skickats för granskning. Du meddelas när det godkänns.",
+    "formatFI": "FO-nummer (1234567-8)",
+    "formatSE": "Organisationsnummer (556XXX-XXXX)",
+    "formatEE": "Registreringskod (8 siffror)",
+    "formatNO": "Organisationsnummer (9 siffror)",
+    "formatDE": "Handelsregister (HRB 12345)"
   },
   "search": {
     "placeholder": "Sök inlägg...",
@@ -2273,7 +2278,14 @@
     "step3Desc": "TackBird sparar bara verifieringstidsstämpeln — inte ditt personnummer eller bankuppgifter",
     "error_auth_required": "Logga in först",
     "error_already_verified": "Din identitet är redan verifierad",
-    "error_verification_failed": "Verifieringen misslyckades — försök igen"
+    "error_verification_failed": "Verifieringen misslyckades — försök igen",
+    "bankid": "BankID",
+    "bankidDesc": "Verifiera med BankID. Säker och snabb identifiering med dina bankuppgifter.",
+    "smartid": "Smart-ID",
+    "smartidDesc": "Verifiera med Smart-ID. Bekräfta din identitet med Smart-ID-mobilappen.",
+    "eidas": "eIDAS",
+    "eidasDesc": "EU-identifiering. Använd ditt nationella ID-kort eller elektroniska identitet.",
+    "manualDesc": "Kontakta support för att verifiera din identitet. Skicka en kopia av ditt ID-dokument."
   },
   "urgency": {
     "juuriNyt": "Just nu",

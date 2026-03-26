@@ -1353,7 +1353,12 @@
     "benefitSupport": "Prioriteetne tugi",
     "vatRequired": "Registrikood on kohustuslik",
     "validationFailed": "Ettevotte valideerimine ebaonnestus",
-    "pendingReview": "Teie ettevottekonto on saadetud ulevaatamiseks. Teid teavitatakse, kui see on kinnitatud."
+    "pendingReview": "Teie ettevottekonto on saadetud ulevaatamiseks. Teid teavitatakse, kui see on kinnitatud.",
+    "formatFI": "Ettevotte tunnus (1234567-8)",
+    "formatSE": "Organisatsiooni number (556XXX-XXXX)",
+    "formatEE": "Registrikood (8 numbrit)",
+    "formatNO": "Organisatsiooni number (9 numbrit)",
+    "formatDE": "Kaubandusregister (HRB 12345)"
   },
   "search": {
     "placeholder": "Otsi kuulutusi...",
@@ -2268,7 +2273,14 @@
     "step3Desc": "TackBird salvestab ainult kinnituse ajamärke — mitte sinu isikukoodi ega pankaandmeid",
     "error_auth_required": "Logi esmalt sisse",
     "error_already_verified": "Sinu isik on juba kinnitatud",
-    "error_verification_failed": "Kinnitus ebaõnnestus — proovi uuesti"
+    "error_verification_failed": "Kinnitus ebaõnnestus — proovi uuesti",
+    "bankid": "BankID",
+    "bankidDesc": "Tuvasta end BankID-ga. Turvaline ja kiire tuvastamine panganduskontoga.",
+    "smartid": "Smart-ID",
+    "smartidDesc": "Tuvasta end Smart-ID-ga. Kinnita oma isik Smart-ID mobiilirakendusega.",
+    "eidas": "eIDAS",
+    "eidasDesc": "EL-i tuvastamine. Kasuta oma riiklikku isikutunnistust voi elektroonilist identiteeti.",
+    "manualDesc": "Isiku tuvastamiseks vota uhendust toega. Saatke koopia isikutunnistusest."
   },
   "urgency": {
     "juuriNyt": "Kohe praegu",

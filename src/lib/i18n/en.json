@@ -1356,7 +1356,12 @@
     "benefitSupport": "Priority support",
     "vatRequired": "VAT ID is required",
     "validationFailed": "Business validation failed",
-    "pendingReview": "Your business account has been submitted for review. You will be notified when it is approved."
+    "pendingReview": "Your business account has been submitted for review. You will be notified when it is approved.",
+    "formatFI": "Business ID (1234567-8)",
+    "formatSE": "Organisation number (556XXX-XXXX)",
+    "formatEE": "Registry code (8 digits)",
+    "formatNO": "Organisation number (9 digits)",
+    "formatDE": "Trade register (HRB 12345)"
   },
   "search": {
     "placeholder": "Search posts...",
@@ -2273,7 +2278,14 @@
     "step3Desc": "TackBird only stores the verification timestamp — not your personal ID or bank details",
     "error_auth_required": "Please log in first",
     "error_already_verified": "Your identity is already verified",
-    "error_verification_failed": "Verification failed — please try again"
+    "error_verification_failed": "Verification failed — please try again",
+    "bankid": "BankID",
+    "bankidDesc": "Verify with BankID. Secure and fast identification with your bank credentials.",
+    "smartid": "Smart-ID",
+    "smartidDesc": "Verify with Smart-ID. Confirm your identity using the Smart-ID mobile app.",
+    "eidas": "eIDAS",
+    "eidasDesc": "EU identification. Use your national ID card or electronic identity.",
+    "manualDesc": "Contact support to verify your identity. Send a copy of your ID document."
   },
   "urgency": {
     "juuriNyt": "Right now",

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
+import { getBusinessAdapter } from '@/lib/adapters'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -35,6 +36,14 @@ export default function UpgradeBusinessScreen() {
   const [category, setCategory] = useState('muu')
   const [address, setAddress] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [businessValidationType, setBusinessValidationType] = useState('prh')
+
+  // Get business adapter for format hints — defaults to PRH (Finland)
+  const businessAdapter = useMemo(
+    () => getBusinessAdapter(businessValidationType),
+    [businessValidationType],
+  )
+  const idFormat = useMemo(() => businessAdapter.getIdFormat(), [businessAdapter])
 
   useEffect(() => {
     async function load() {
@@ -50,6 +59,19 @@ export default function UpgradeBusinessScreen() {
           return
         }
         setBusinessName(p.business_name ?? p.name ?? '')
+
+        // Load country-specific business validation type if available
+        try {
+          const { data: countryConfig } = await (supabase.from('country_configs') as any)
+            .select('business_validation')
+            .eq('country_id', (data as any).country_id ?? 'FI')
+            .single()
+          if (countryConfig?.business_validation) {
+            setBusinessValidationType(countryConfig.business_validation)
+          }
+        } catch {
+          // country_configs table may not exist yet — use default (prh)
+        }
       }
     }
     load()
@@ -235,12 +257,14 @@ export default function UpgradeBusinessScreen() {
           maxLength={100}
         />
 
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('business.vatId')}</Text>
+        <Text style={[styles.label, { color: colors.foreground }]}>
+          {idFormat.label !== 'business.vatId' ? t(idFormat.label) : t('business.vatId')}
+        </Text>
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
           value={vatId}
           onChangeText={setVatId}
-          placeholder="1234567-8"
+          placeholder={idFormat.placeholder}
           placeholderTextColor={colors.mutedForeground}
           maxLength={20}
         />

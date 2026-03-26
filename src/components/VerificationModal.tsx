@@ -1,10 +1,18 @@
 import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator } from 'react-native'
-import { ShieldCheck, X, Building2, Smartphone, Lock, CheckCircle } from 'lucide-react-native'
+import { ShieldCheck, X, Building2, Smartphone, Lock, CheckCircle, Globe, Mail } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import type { IdentityBranding } from '@/lib/adapters/types'
 
 const SUOMIFI_BLUE = '#003580'
+
+const ICON_MAP: Record<string, typeof ShieldCheck> = {
+  ShieldCheck,
+  Smartphone,
+  Globe,
+  Mail,
+}
 
 interface VerificationModalProps {
   visible: boolean
@@ -13,11 +21,19 @@ interface VerificationModalProps {
   loading: boolean
   error: string | null
   isSuccess: boolean
+  /** Optional adapter branding. Falls back to Suomi.fi if not provided. */
+  branding?: IdentityBranding
 }
 
-export function VerificationModal({ visible, onClose, onConfirm, loading, error, isSuccess }: VerificationModalProps) {
+export function VerificationModal({ visible, onClose, onConfirm, loading, error, isSuccess, branding }: VerificationModalProps) {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
+
+  // Use adapter branding or fall back to Suomi.fi defaults
+  const brandColor = branding?.color ?? SUOMIFI_BLUE
+  const brandTitle = branding?.title ?? 'Suomi.fi'
+  const brandDesc = branding?.description ? t(branding.description) : t('verification.suomifiInfo')
+  const BrandIcon = branding?.icon ? (ICON_MAP[branding.icon] ?? ShieldCheck) : ShieldCheck
 
   if (isSuccess) {
     return (
@@ -46,10 +62,10 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             <X size={20} color={colors.mutedForeground} />
           </Pressable>
 
-          {/* Suomi.fi header */}
-          <View style={[styles.suomifiHeader, { backgroundColor: SUOMIFI_BLUE }]}>
-            <ShieldCheck size={24} color="#FFFFFF" />
-            <Text style={styles.suomifiTitle}>Suomi.fi</Text>
+          {/* Provider header — adapts to identity adapter branding */}
+          <View style={[styles.suomifiHeader, { backgroundColor: brandColor }]}>
+            <BrandIcon size={24} color="#FFFFFF" />
+            <Text style={styles.suomifiTitle}>{brandTitle}</Text>
             <Text style={styles.suomifiSubtitle}>{t('verification.startButton')}</Text>
           </View>
 
@@ -58,8 +74,8 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
           {/* How it works */}
           <View style={styles.steps}>
             <View style={styles.stepRow}>
-              <View style={[styles.stepIcon, { backgroundColor: `${SUOMIFI_BLUE}15` }]}>
-                <Building2 size={18} color={SUOMIFI_BLUE} />
+              <View style={[styles.stepIcon, { backgroundColor: `${brandColor}15` }]}>
+                <Building2 size={18} color={brandColor} />
               </View>
               <View style={styles.stepText}>
                 <Text style={[styles.stepTitle, { color: colors.foreground }]}>{t('verification.step1')}</Text>
@@ -68,8 +84,8 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             </View>
 
             <View style={styles.stepRow}>
-              <View style={[styles.stepIcon, { backgroundColor: `${SUOMIFI_BLUE}15` }]}>
-                <Smartphone size={18} color={SUOMIFI_BLUE} />
+              <View style={[styles.stepIcon, { backgroundColor: `${brandColor}15` }]}>
+                <Smartphone size={18} color={brandColor} />
               </View>
               <View style={styles.stepText}>
                 <Text style={[styles.stepTitle, { color: colors.foreground }]}>{t('verification.step2')}</Text>
@@ -78,8 +94,8 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             </View>
 
             <View style={styles.stepRow}>
-              <View style={[styles.stepIcon, { backgroundColor: `${SUOMIFI_BLUE}15` }]}>
-                <Lock size={18} color={SUOMIFI_BLUE} />
+              <View style={[styles.stepIcon, { backgroundColor: `${brandColor}15` }]}>
+                <Lock size={18} color={brandColor} />
               </View>
               <View style={styles.stepText}>
                 <Text style={[styles.stepTitle, { color: colors.foreground }]}>{t('verification.step3')}</Text>
@@ -90,8 +106,8 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
 
           {/* Privacy note */}
           <View style={[styles.privacyNote, { backgroundColor: isDark ? '#1A1A2E' : '#F0F4FF' }]}>
-            <Lock size={14} color={SUOMIFI_BLUE} />
-            <Text style={[styles.privacyText, { color: colors.mutedForeground }]}>{t('verification.suomifiInfo')}</Text>
+            <Lock size={14} color={brandColor} />
+            <Text style={[styles.privacyText, { color: colors.mutedForeground }]}>{brandDesc}</Text>
           </View>
 
           {error && (
@@ -103,13 +119,13 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
           <Pressable
             onPress={onConfirm}
             disabled={loading}
-            style={[styles.primaryBtn, { backgroundColor: loading ? colors.muted : SUOMIFI_BLUE }]}
+            style={[styles.primaryBtn, { backgroundColor: loading ? colors.muted : brandColor }]}
           >
             {loading ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
-                <ShieldCheck size={18} color="#FFFFFF" />
+                <BrandIcon size={18} color="#FFFFFF" />
                 <Text style={styles.primaryBtnText}>{t('verification.startButton')}</Text>
               </>
             )}
