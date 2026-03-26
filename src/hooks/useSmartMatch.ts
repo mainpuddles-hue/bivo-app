@@ -172,9 +172,6 @@ const WEIGHT_RECENCY = 0.10
 const MIN_SCORE_THRESHOLD = 0.3
 const MAX_MATCHES = 5
 
-// PERF: Defer SmartMatch startup by this many ms after mount
-const DEFER_DELAY_MS = 5000
-
 function scoreCandidate(need: TarvitsenPost, offer: TarjoanPost): ScoredCandidate {
   const needTags = need.tags ?? []
   const offerTags = offer.tags ?? []
@@ -205,15 +202,8 @@ function scoreCandidate(need: TarvitsenPost, offer: TarjoanPost): ScoredCandidat
 
 export function useSmartMatch(userId: string | null) {
   const [matches, setMatches] = useState<SmartMatch[]>([])
-  const [ready, setReady] = useState(false)
   const supabase = useSupabase()
   const dismissedRef = useRef(new Set<string>())
-
-  // PERF: Defer initialization by 5 seconds so feed loads first
-  useEffect(() => {
-    const timer = setTimeout(() => setReady(true), DEFER_DELAY_MS)
-    return () => clearTimeout(timer)
-  }, [])
 
   const evaluateMatches = useCallback(async (
     userNeeds: TarvitsenPost[],
@@ -320,8 +310,7 @@ export function useSmartMatch(userId: string | null) {
   }, [supabase])
 
   useEffect(() => {
-    // PERF: Don't run until deferred timer fires
-    if (!userId || !ready) return
+    if (!userId) return
 
     let cancelled = false
     let userNeeds: TarvitsenPost[] = []
@@ -385,83 +374,78 @@ export function useSmartMatch(userId: string | null) {
 
     fetchAndEvaluate()
 
-    // 3. PERF: Defer realtime subscription — only subscribe after initial evaluation
-    let channel: ReturnType<typeof supabase.channel> | null = null
-    const realtimeTimer = setTimeout(() => {
-      if (cancelled) return
-      channel = supabase
-        .channel('smart-match-v2')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'posts',
-          filter: 'type=eq.tarjoan',
-        }, async (payload) => {
-          if (cancelled) return
-          const newPost = payload.new as any
-          if (!newPost || newPost.user_id === userId) return
+    // 3. Subscribe to realtime new tarjoan posts and re-evaluate
+    const channel = supabase
+      .channel('smart-match-v2')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'posts',
+        filter: 'type=eq.tarjoan',
+      }, async (payload) => {
+        if (cancelled) return
+        const newPost = payload.new as any
+        if (!newPost || newPost.user_id === userId) return
 
-          // Fetch poster info for the new post
-          const { data: posterData } = await supabase
-            .from('profiles')
-            .select('name, naapurusto, response_rate')
-            .eq('id', newPost.user_id)
-            .single()
+        // Fetch poster info for the new post
+        const { data: posterData } = await supabase
+          .from('profiles')
+          .select('name, naapurusto, response_rate')
+          .eq('id', newPost.user_id)
+          .single()
 
-          const { data: badgeData } = await (supabase
-            .from('user_badges')
-            .select('badge_type')
-            .eq('user_id', newPost.user_id) as any)
+        const { data: badgeData } = await (supabase
+          .from('user_badges')
+          .select('badge_type')
+          .eq('user_id', newPost.user_id) as any)
 
-          if (cancelled) return
+        if (cancelled) return
 
-          const offer: TarjoanPost = {
-            ...newPost,
-            user: posterData as any,
-            user_badges: (badgeData ?? []) as { badge_type: string }[],
+        const offer: TarjoanPost = {
+          ...newPost,
+          user: posterData as any,
+          user_badges: (badgeData ?? []) as { badge_type: string }[],
+        }
+
+        // Re-evaluate with the new offer added
+        setMatches(prev => {
+          // Score new offer against all user needs
+          const newCandidates: ScoredCandidate[] = []
+          for (const need of userNeeds) {
+            if (dismissedRef.current.has(offer.id)) continue
+            const candidate = scoreCandidate(need, offer)
+            if (candidate.score >= MIN_SCORE_THRESHOLD) {
+              newCandidates.push(candidate)
+            }
           }
 
-          // Re-evaluate with the new offer added
-          setMatches(prev => {
-            // Score new offer against all user needs
-            const newCandidates: ScoredCandidate[] = []
-            for (const need of userNeeds) {
-              if (dismissedRef.current.has(offer.id)) continue
-              const candidate = scoreCandidate(need, offer)
-              if (candidate.score >= MIN_SCORE_THRESHOLD) {
-                newCandidates.push(candidate)
-              }
-            }
+          if (newCandidates.length === 0) return prev
 
-            if (newCandidates.length === 0) return prev
+          // Merge with existing matches
+          const best = newCandidates.sort((a, b) => b.score - a.score)[0]
+          const newMatch: SmartMatch = {
+            postId: best.post.id,
+            postTitle: best.post.title,
+            matchedTags: best.matchedTags,
+            posterName: best.post.user?.name ?? '?',
+            matchScore: Math.round(best.score * 100),
+            matchedNeedId: best.needPost.id,
+            matchedNeedTitle: best.needPost.title,
+          }
 
-            // Merge with existing matches
-            const best = newCandidates.sort((a, b) => b.score - a.score)[0]
-            const newMatch: SmartMatch = {
-              postId: best.post.id,
-              postTitle: best.post.title,
-              matchedTags: best.matchedTags,
-              posterName: best.post.user?.name ?? '?',
-              matchScore: Math.round(best.score * 100),
-              matchedNeedId: best.needPost.id,
-              matchedNeedTitle: best.needPost.title,
-            }
-
-            // Add to list, deduplicate, sort, and cap
-            const merged = [...prev.filter(m => m.postId !== newMatch.postId), newMatch]
-            merged.sort((a, b) => b.matchScore - a.matchScore)
-            return merged.slice(0, MAX_MATCHES)
-          })
+          // Add to list, deduplicate, sort, and cap
+          const merged = [...prev.filter(m => m.postId !== newMatch.postId), newMatch]
+          merged.sort((a, b) => b.matchScore - a.matchScore)
+          return merged.slice(0, MAX_MATCHES)
         })
-        .subscribe()
-    }, 3000) // Additional 3s after the deferred fetch completes
+      })
+      .subscribe()
 
     return () => {
       cancelled = true
-      clearTimeout(realtimeTimer)
-      if (channel) supabase.removeChannel(channel)
+      supabase.removeChannel(channel)
     }
-  }, [userId, supabase, evaluateMatches, ready])
+  }, [userId, supabase, evaluateMatches])
 
   const dismissMatch = useCallback((postId: string) => {
     dismissedRef.current.add(postId)

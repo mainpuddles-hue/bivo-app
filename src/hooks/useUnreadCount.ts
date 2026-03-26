@@ -1,13 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useSupabase } from './useSupabase'
-
-// PERF: Defer realtime subscription by this many ms after initial fetch
-const REALTIME_DEFER_MS = 5000
 
 export function useUnreadCount(userId: string | null) {
   const supabase = useSupabase()
   const [count, setCount] = useState(0)
-  const fetchedRef = useRef(false)
 
   useEffect(() => {
     if (!userId) return
@@ -32,34 +28,23 @@ export function useUnreadCount(userId: string | null) {
         .neq('sender_id', userId)
         .eq('is_read', false)
 
-      if (mounted) {
-        setCount(unread ?? 0)
-        fetchedRef.current = true
-      }
+      if (mounted) setCount(unread ?? 0)
     }
 
     fetchUnread()
 
-    // PERF: Defer realtime subscription — badge updates can wait a few seconds
-    let channel: ReturnType<typeof supabase.channel> | null = null
-    const timer = setTimeout(() => {
-      if (!mounted) return
-      channel = supabase
-        .channel('unread-badge')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-          fetchUnread() // Refetch on any new message
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () => {
-          fetchUnread() // Refetch when messages marked read
-        })
-        .subscribe()
-    }, REALTIME_DEFER_MS)
+    // Subscribe to new messages for realtime badge
+    const channel = supabase
+      .channel('unread-badge')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        fetchUnread() // Refetch on any new message
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () => {
+        fetchUnread() // Refetch when messages marked read
+      })
+      .subscribe()
 
-    return () => {
-      mounted = false
-      clearTimeout(timer)
-      if (channel) supabase.removeChannel(channel)
-    }
+    return () => { mounted = false; supabase.removeChannel(channel) }
   }, [userId, supabase])
 
   return count

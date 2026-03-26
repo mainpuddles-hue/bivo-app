@@ -8,7 +8,6 @@ import { useI18n } from '@/lib/i18n'
 import { Header } from '@/components/Header'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useUnreadCount } from '@/hooks/useUnreadCount'
-import { getCachedUserId } from '@/lib/cachedAuth'
 
 function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
   icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
@@ -61,11 +60,10 @@ export default function TabLayout() {
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)
 
-  // PERF: Reuse cached userId instead of a separate supabase.auth.getUser() call
   useEffect(() => {
     let mounted = true
-    getCachedUserId(supabase).then((id) => {
-      if (mounted && id) setUserId(id)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (mounted && user) setUserId(user.id)
     })
     return () => { mounted = false }
   }, [supabase])

@@ -5,12 +5,11 @@ import * as Haptics from 'expo-haptics'
 import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
-import { fetchHelsinkiEvents } from '@/lib/linkedevents'
+import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
 import { getSeedPosts } from '@/lib/seedContent'
 import { rankFeed } from '@/lib/feedAlgorithm'
-import { getCachedUserId } from '@/lib/cachedAuth'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type { PostType }
@@ -46,39 +45,22 @@ export function useFeedData() {
   const lastFetchLocationRef = useRef<{ latitude: number; longitude: number } | null>(null)
   const loadingRef = useRef(false)
   const focusCountRef = useRef(0)
-  const realtimeInitRef = useRef(false)
-  const extraContentFetchedRef = useRef(false)
 
   // Ref for posts to avoid renderPost depending on posts array
   const postsRef = useRef(posts)
   postsRef.current = posts
 
-  // ── PERF: Single auth call + parallel profile/follows fetch ──
+  // ── Fetch current user ID for like functionality ──
   useEffect(() => {
-    let cancelled = false
-    async function init() {
-      const userId = await getCachedUserId(supabase)
-      if (cancelled || !userId) return
-      setCurrentUserId(userId)
-
-      // Parallel: fetch follows + profile in one go
-      const [{ data: followsData }, { data: profileData }] = await Promise.all([
-        supabase.from('user_follows').select('followed_id').eq('follower_id', userId),
-        (supabase.from('profiles') as any).select('naapurusto').eq('id', userId).single(),
-      ])
-      if (cancelled) return
-      if (followsData) setFollowedIds(followsData.map((f: any) => f.followed_id))
-      if ((profileData as any)?.naapurusto) setUserNeighborhood((profileData as any).naapurusto)
-    }
-    init()
-    return () => { cancelled = true }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id)
+    })
   }, [supabase])
 
-  // ── PERF: Defer location request — non-blocking, runs in background ──
+  // ── Request location permission once, cache result ──
   useEffect(() => {
     let cancelled = false
-    // Defer location by 1s to not block initial render
-    const timer = setTimeout(async () => {
+    async function getLocation() {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync()
         if (status !== 'granted' || cancelled) return
@@ -89,13 +71,29 @@ export function useFeedData() {
       } catch {
         // Silently fail — distance won't be shown
       }
-    }, 1000)
-    return () => { cancelled = true; clearTimeout(timer) }
+    }
+    getLocation()
+    return () => { cancelled = true }
   }, [])
 
-  // ── PERF: Defer realtime subscriptions until after initial data loads ──
+  // ── Fetch followed user IDs + user neighborhood ──
   useEffect(() => {
-    if (!currentUserId || !realtimeInitRef.current) return
+    async function fetchFollowsAndProfile() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const [{ data: followsData }, { data: profileData }] = await Promise.all([
+        supabase.from('user_follows').select('followed_id').eq('follower_id', user.id),
+        (supabase.from('profiles') as any).select('naapurusto').eq('id', user.id).single(),
+      ])
+      if (followsData) setFollowedIds(followsData.map((f: any) => f.followed_id))
+      if ((profileData as any)?.naapurusto) setUserNeighborhood((profileData as any).naapurusto)
+    }
+    fetchFollowsAndProfile()
+  }, [supabase])
+
+  // ── Real-time subscription for follows changes — scoped to current user ──
+  useEffect(() => {
+    if (!currentUserId) return
     const channel = supabase
       .channel('follows-changes')
       .on('postgres_changes', {
@@ -113,7 +111,7 @@ export function useFeedData() {
     return () => { supabase.removeChannel(channel) }
   }, [supabase, currentUserId])
 
-  // ── PERF: Defer external API calls until after first feed render ──
+  // ── Fetch city events and nearby places ──
   const fetchExtraContent = useCallback(async () => {
     const lat = userLocation?.latitude ?? 60.1699
     const lng = userLocation?.longitude ?? 24.9384
@@ -141,6 +139,8 @@ export function useFeedData() {
       setExtraLoading(false)
     }
   }, [userLocation])
+
+  useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])
 
   // ── Fetch posts ──
   const fetchPosts = useCallback(async (reset = false) => {
@@ -174,7 +174,7 @@ export function useFeedData() {
 
       const newPosts = (data ?? []) as unknown as Post[]
 
-      // PERF: Batch-fetch liked/saved in parallel (non-blocking for initial render)
+      // Batch-fetch liked/saved status to avoid N+1 queries in PostCard
       if (newPosts.length > 0 && currentUserId) {
         const postIds = newPosts.map(p => p.id)
         const [{ data: likedData }, { data: savedData }] = await Promise.all([
@@ -200,10 +200,30 @@ export function useFeedData() {
         }
       })
 
-      // PERF: Rank with basic scoring first (no personalization), show immediately
+      // Fetch personalization scores
+      let personalScores = new Map<string, number>()
+      if (currentUserId) {
+        try {
+          const { data: scores } = await (supabase.rpc as any)('get_personalized_feed', {
+            p_user_id: currentUserId,
+            p_limit: 50,
+            p_offset: 0,
+          })
+          if (scores) {
+            for (const s of scores as any[]) {
+              personalScores.set(s.post_id, s.personalization_score ?? 0)
+            }
+          }
+        } catch {
+          // Personalization unavailable — continue with default ranking
+        }
+      }
+
+      // Client-side relevance ranking
       const ranked = rankFeed(newPosts, {
         userNeighborhood: userNeighborhood ?? null,
         followedIds,
+        personalScores,
       })
 
       if (reset) {
@@ -224,21 +244,6 @@ export function useFeedData() {
         offsetRef.current = offset + newPosts.length
       }
       setHasMore(newPosts.length >= PAGE_SIZE)
-
-      // PERF: Defer personalization RPC — re-rank after it completes (non-blocking)
-      if (currentUserId && reset && newPosts.length > 0) {
-        deferPersonalization(newPosts, controller)
-      }
-
-      // PERF: After first successful load, enable realtime and fetch extra content
-      if (reset && !realtimeInitRef.current) {
-        realtimeInitRef.current = true
-        // Defer external API calls by 2s after first render
-        if (!extraContentFetchedRef.current) {
-          extraContentFetchedRef.current = true
-          setTimeout(() => { fetchExtraContent() }, 2000)
-        }
-      }
     } catch (err: any) {
       if (!controller.signal.aborted) {
         const isOffline = err?.message?.includes('Network') || err?.message?.includes('fetch') || err?.code === 'NETWORK_ERROR'
@@ -251,34 +256,7 @@ export function useFeedData() {
         setRefreshing(false)
       }
     }
-  }, [supabase, activeFilter, showFollowing, followedIds, t, currentUserId, userNeighborhood, fetchExtraContent])
-
-  // PERF: Deferred personalization — runs after posts are already shown
-  const deferPersonalization = useCallback(async (shownPosts: Post[], controller: AbortController) => {
-    try {
-      const { data: scores } = await (supabase.rpc as any)('get_personalized_feed', {
-        p_user_id: currentUserId,
-        p_limit: 50,
-        p_offset: 0,
-      })
-      if (controller.signal.aborted || !scores) return
-      const personalScores = new Map<string, number>()
-      for (const s of scores as any[]) {
-        personalScores.set(s.post_id, s.personalization_score ?? 0)
-      }
-      // Re-rank with personalization scores
-      const reranked = rankFeed(shownPosts, {
-        userNeighborhood: userNeighborhood ?? null,
-        followedIds,
-        personalScores,
-      })
-      if (!controller.signal.aborted) {
-        setPosts(reranked)
-      }
-    } catch {
-      // Personalization unavailable — keep default ranking
-    }
-  }, [supabase, currentUserId, userNeighborhood, followedIds])
+  }, [supabase, activeFilter, showFollowing, followedIds, t, currentUserId, userNeighborhood])
 
   // Ref to avoid stale closures in useFocusEffect and realtime callbacks
   const fetchPostsRef = useRef(fetchPosts)
@@ -291,9 +269,8 @@ export function useFeedData() {
     return () => { abortRef.current?.abort() }
   }, [fetchPosts])
 
-  // ── PERF: Defer realtime subscription until after first load ──
+  // ── Realtime with 2s debounce — listen for INSERT, UPDATE, and DELETE ──
   useEffect(() => {
-    if (!realtimeInitRef.current) return
     const channel = supabase
       .channel('feed-new-posts')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
@@ -314,7 +291,7 @@ export function useFeedData() {
       supabase.removeChannel(channel)
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [supabase, loading]) // re-subscribe when loading changes (first load triggers realtimeInitRef)
+  }, [supabase])
 
   // ── Auto-refresh feed when returning from another screen (e.g. create) ──
   // Uses fetchPostsRef to avoid stale closure with empty deps

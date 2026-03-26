@@ -614,9 +614,6 @@ export default function EventsScreen() {
             </View>
           ) : null}
           showsVerticalScrollIndicator={false}
-          initialNumToRender={5}
-          maxToRenderPerBatch={5}
-          removeClippedSubviews={true}
         />
       )}
 

@@ -259,9 +259,6 @@ export default function MessagesScreen() {
           )
         }
         showsVerticalScrollIndicator={false}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        removeClippedSubviews={true}
       />
     </View>
   )
