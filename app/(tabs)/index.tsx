@@ -131,6 +131,10 @@ function FeedScreenInner() {
     return result
   }, [filteredPosts, activeAds])
 
+  // Ref for visiblePosts so renderPost can access it without dependency
+  const visiblePostsRef = useRef(visiblePosts)
+  visiblePostsRef.current = visiblePosts
+
   // ── Track post views via viewability ──
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50, minimumViewTime: 1000 }).current
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -168,8 +172,15 @@ function FeedScreenInner() {
 
     const post = item as Post
     const currentGroup = post.created_at ? getDateGroup(post.created_at) : ''
-    const prevGroup = index > 0 && feed.postsRef.current[index - 1]?.created_at
-      ? getDateGroup(feed.postsRef.current[index - 1].created_at!) : ''
+    // Walk backwards to find the previous non-ad item for date group comparison
+    let prevGroup = ''
+    for (let i = index - 1; i >= 0; i--) {
+      const prev = visiblePostsRef.current[i]
+      if (prev && !('_isAd' in prev) && (prev as Post).created_at) {
+        prevGroup = getDateGroup((prev as Post).created_at!)
+        break
+      }
+    }
     const showLabel = index > 0 && currentGroup !== prevGroup
     const postIsNew = !!(lastFeedVisit && post.created_at && post.created_at > lastFeedVisit)
 

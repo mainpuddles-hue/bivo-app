@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useEffect, useRef } from 'react'
 import { View, Text, Pressable, StyleSheet, Linking } from 'react-native'
 import { Image } from 'expo-image'
 import { ExternalLink, Megaphone } from 'lucide-react-native'
@@ -61,9 +61,14 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
     }
   }, [ad.id, ad.link_url, supabase])
 
-  // Track impression on mount
-  // Using a ref-less approach: we fire once via the component key in parent
-  // The parent should use key={ad.id} to avoid duplicate tracking
+  // Track impression on mount (fire once per mount)
+  const tracked = useRef(false)
+  useEffect(() => {
+    if (!tracked.current) {
+      tracked.current = true
+      trackImpression()
+    }
+  }, [trackImpression])
 
   return (
     <Pressable
