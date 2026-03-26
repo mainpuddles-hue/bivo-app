@@ -114,14 +114,14 @@ export default function SearchScreen() {
   // Load search history + saved searches + recent searches
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY).then(stored => {
-      if (stored) setHistory(JSON.parse(stored))
-    })
+      if (stored) try { setHistory(JSON.parse(stored)) } catch {}
+    }).catch(() => {})
     AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
-      if (stored) setSavedSearches(JSON.parse(stored))
-    })
+      if (stored) try { setSavedSearches(JSON.parse(stored)) } catch {}
+    }).catch(() => {})
     AsyncStorage.getItem(RECENT_SEARCHES_KEY).then(stored => {
-      if (stored) setRecentSearches(JSON.parse(stored))
-    })
+      if (stored) try { setRecentSearches(JSON.parse(stored)) } catch {}
+    }).catch(() => {})
   }, [])
 
   const addToHistory = useCallback(async (q: string) => {

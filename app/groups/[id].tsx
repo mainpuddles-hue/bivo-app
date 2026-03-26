@@ -212,8 +212,11 @@ export default function GroupDetailScreen() {
   }, [fetchGroup, fetchPosts, checkMembership, fetchLikes, currentUserId])
 
   // ── Join / Leave ──
+  const joiningRef = useRef(false)
   const handleJoinLeave = useCallback(async () => {
     if (!id || !currentUserId || !group) return
+    if (joiningRef.current) return
+    joiningRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
     if (isMember) {
       setIsMember(false); setIsAdmin(false)
@@ -230,6 +233,7 @@ export default function GroupDetailScreen() {
         setGroup(prev => prev ? { ...prev, member_count: prev.member_count + 1 } : prev)
       } catch { setIsMember(false); Alert.alert(t('common.error'), t('groups.joinError')) }
     }
+    joiningRef.current = false
   }, [id, currentUserId, group, isMember, supabase, t])
 
   // ── Send post ──
@@ -260,10 +264,13 @@ export default function GroupDetailScreen() {
   }, [])
 
   // ── Like post ──
+  const likingGroupPostRef = useRef(false)
   const handleLikePost = useCallback(async (postId: string) => {
     if (!currentUserId) return
+    if (likingGroupPostRef.current) return
+    likingGroupPostRef.current = true
     const post = posts.find(p => p.id === postId)
-    if (!post) return
+    if (!post) { likingGroupPostRef.current = false; return }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     const alreadyLiked = likedPosts.has(postId)
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, like_count: p.like_count + (alreadyLiked ? -1 : 1) } : p))
@@ -280,7 +287,7 @@ export default function GroupDetailScreen() {
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, like_count: post.like_count } : p))
       setLikedPosts(prev => { const n = new Set(prev); if (alreadyLiked) n.add(postId); else n.delete(postId); return n })
       Alert.alert(t('common.error'), t('groups.likeError'))
-    }
+    } finally { likingGroupPostRef.current = false }
   }, [currentUserId, likedPosts, supabase, t, posts])
 
   // ── Comments ──
@@ -442,6 +449,25 @@ export default function GroupDetailScreen() {
         <View style={ps.emptyContainer}>
           <Users size={48} color={colors.mutedForeground} strokeWidth={1.2} />
           <Text style={[ps.emptyText, { color: colors.mutedForeground }]}>{t('groups.comingSoon')}</Text>
+        </View>
+      </View>
+    )
+  }
+
+  // ── Group not found (deleted or invalid ID) ──
+  if (!loading && tableExists && !group) {
+    return (
+      <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+        <View style={[ps.header, { borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
+            <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
+          </Pressable>
+          <Text style={[ps.headerTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
+          <View style={ps.headerBtn} />
+        </View>
+        <View style={ps.emptyContainer}>
+          <Users size={48} color={colors.mutedForeground} strokeWidth={1.2} />
+          <Text style={[ps.emptyText, { color: colors.mutedForeground }]}>{t('groups.notFound') ?? t('common.notFound')}</Text>
         </View>
       </View>
     )

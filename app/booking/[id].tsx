@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert,
 } from 'react-native'
@@ -201,8 +201,11 @@ function BookingDetailScreenInner() {
   }, [userId, booking, supabase, router])
 
   // Actions
+  const updatingRef = useRef(false)
   const updateBookingStatus = useCallback(async (newStatus: BookingStatus) => {
     if (!booking) return
+    if (updatingRef.current) return
+    updatingRef.current = true
     setActionLoading(true)
     try {
       const table = booking.type === 'rental' ? 'rental_bookings' : 'service_bookings'
@@ -220,6 +223,7 @@ function BookingDetailScreenInner() {
       Alert.alert(t('common.error'))
     } finally {
       setActionLoading(false)
+      updatingRef.current = false
     }
   }, [booking, supabase, t])
 

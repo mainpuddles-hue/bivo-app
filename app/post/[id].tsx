@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -56,6 +56,8 @@ function PostDetailScreenInner() {
   const [editLocation, setEditLocation] = useState('')
   const [saving, setSaving] = useState(false)
   const [relatedPosts, setRelatedPosts] = useState<{ id: string; type: string; title: string; image_url: string | null; location: string | null; created_at: string }[]>([])
+  const likingRef = useRef(false)
+  const savingRef = useRef(false)
 
   // Report modal state
   const [reportModalVisible, setReportModalVisible] = useState(false)
@@ -156,31 +158,39 @@ function PostDetailScreenInner() {
 
   const toggleLike = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
-    const wasLiked = isLiked
-    const prevCount = likeCount
-    if (wasLiked) {
-      setIsLiked(false); setLikeCount(c => c - 1)
-      const { error } = await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', userId)
-      if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
-    } else {
-      setIsLiked(true); setLikeCount(c => c + 1)
-      const { error } = await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
-      if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
-    }
+    if (likingRef.current) return
+    likingRef.current = true
+    try {
+      const wasLiked = isLiked
+      const prevCount = likeCount
+      if (wasLiked) {
+        setIsLiked(false); setLikeCount(c => c - 1)
+        const { error } = await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', userId)
+        if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
+      } else {
+        setIsLiked(true); setLikeCount(c => c + 1)
+        const { error } = await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
+        if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
+      }
+    } finally { likingRef.current = false }
   }, [userId, isLiked, likeCount, id, supabase, router])
 
   const toggleSave = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
-    const wasSaved = isSaved
-    if (wasSaved) {
-      setIsSaved(false)
-      const { error } = await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', userId)
-      if (error) { setIsSaved(wasSaved) }
-    } else {
-      setIsSaved(true)
-      const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: id, user_id: userId })
-      if (error) { setIsSaved(wasSaved) }
-    }
+    if (savingRef.current) return
+    savingRef.current = true
+    try {
+      const wasSaved = isSaved
+      if (wasSaved) {
+        setIsSaved(false)
+        const { error } = await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', userId)
+        if (error) { setIsSaved(wasSaved) }
+      } else {
+        setIsSaved(true)
+        const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: id, user_id: userId })
+        if (error) { setIsSaved(wasSaved) }
+      }
+    } finally { savingRef.current = false }
   }, [userId, isSaved, id, supabase, router])
 
   const handleMessage = useCallback(async () => {

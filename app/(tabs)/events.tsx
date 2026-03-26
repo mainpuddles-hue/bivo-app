@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, Modal, Alert, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -258,8 +258,11 @@ export default function EventsScreen() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  const attendingRef = useRef(false)
   const toggleAttend = useCallback(async (eventId: string) => {
     if (!userId) { router.push('/(auth)/login'); return }
+    if (attendingRef.current) return
+    attendingRef.current = true
     const wasAttending = attendingIds.has(eventId)
     if (wasAttending) {
       setAttendingIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
@@ -282,24 +285,32 @@ export default function EventsScreen() {
         setAttendingIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
       }
       Alert.alert(t('common.error'), t('events.attendFailed'))
-    }
+    } finally { attendingRef.current = false }
   }, [userId, attendingIds, supabase, router, t])
 
+  const eventSavingRef = useRef(false)
   const toggleSave = useCallback(async (eventId: string) => {
     if (!userId) { router.push('/(auth)/login'); return }
-    if (savedEventIds.has(eventId)) {
-      setSavedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
-      await supabase.from('saved_events').delete().eq('event_id', eventId).eq('user_id', userId)
-    } else {
-      setSavedEventIds(prev => new Set(prev).add(eventId))
-      await (supabase.from('saved_events') as any).insert({ event_id: eventId, user_id: userId })
-    }
+    if (eventSavingRef.current) return
+    eventSavingRef.current = true
+    try {
+      if (savedEventIds.has(eventId)) {
+        setSavedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
+        await supabase.from('saved_events').delete().eq('event_id', eventId).eq('user_id', userId)
+      } else {
+        setSavedEventIds(prev => new Set(prev).add(eventId))
+        await (supabase.from('saved_events') as any).insert({ event_id: eventId, user_id: userId })
+      }
+    } finally { eventSavingRef.current = false }
   }, [userId, savedEventIds, supabase, router])
 
+  const activityMemberRef = useRef(false)
   const toggleActivityMember = useCallback(async (activityId: string) => {
     if (!userId) { router.push('/(auth)/login'); return }
+    if (activityMemberRef.current) return
+    activityMemberRef.current = true
     const act = activities.find(a => a.id === activityId)
-    if (!act) return
+    if (!act) { activityMemberRef.current = false; return }
     try {
       if (act.is_member) {
         const { error } = await supabase.from('activity_members').delete().eq('activity_id', activityId).eq('user_id', userId)
@@ -317,7 +328,7 @@ export default function EventsScreen() {
     } catch (err) {
       Alert.alert(t('common.error'), t('activity.toggleFailed'))
       if (__DEV__) console.log('[activities] toggleMember error:', err)
-    }
+    } finally { activityMemberRef.current = false }
   }, [userId, activities, supabase, router, t])
 
   const shareEvent = useCallback(async (event: Event) => {

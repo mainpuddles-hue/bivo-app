@@ -200,8 +200,11 @@ export default function GroupsScreen() {
   }, [fetchGroups])
 
   // Join group
+  const joiningGroupRef = useRef(false)
   const handleJoin = useCallback(async (group: Group) => {
     if (!currentUserId) return
+    if (joiningGroupRef.current) return
+    joiningGroupRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
 
     // Optimistic
@@ -224,7 +227,7 @@ export default function GroupsScreen() {
       setSuggestedGroups((prev) => [group, ...prev])
       setMyGroups((prev) => prev.filter((g) => g.id !== group.id))
       Alert.alert(t('common.error'), t('groups.joinError'))
-    }
+    } finally { joiningGroupRef.current = false }
   }, [currentUserId, supabase, t])
 
   // Create group

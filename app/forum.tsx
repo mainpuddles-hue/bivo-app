@@ -122,6 +122,8 @@ export default function ForumScreen() {
   const [sendingReply, setSendingReply] = useState(false)
   const [votedReplies, setVotedReplies] = useState<Set<string>>(new Set())
   const [replySortNewest, setReplySortNewest] = useState(false)
+  const votingPostRef = useRef(false)
+  const votingReplyRef = useRef(false)
 
   const sortedReplies = useMemo(() => {
     if (!replySortNewest) return replies
@@ -205,6 +207,8 @@ export default function ForumScreen() {
   // ── Upvote post ──
   const handleUpvotePost = useCallback(async (post: ForumPost) => {
     if (!currentUserId) return
+    if (votingPostRef.current) return
+    votingPostRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     const alreadyVoted = votedPosts.has(post.id)
     setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: p.upvote_count + (alreadyVoted ? -1 : 1) } : p))
@@ -222,12 +226,14 @@ export default function ForumScreen() {
       setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: post.upvote_count } : p))
       setVotedPosts(prev => { const next = new Set(prev); if (alreadyVoted) next.add(post.id); else next.delete(post.id); return next })
       Alert.alert(t('common.error'), t('forum.voteError'))
-    }
+    } finally { votingPostRef.current = false }
   }, [currentUserId, supabase, votedPosts, selectedPost, t])
 
   // ── Upvote reply ──
   const handleUpvoteReply = useCallback(async (reply: ForumReply) => {
     if (!currentUserId) return
+    if (votingReplyRef.current) return
+    votingReplyRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     const alreadyVoted = votedReplies.has(reply.id)
     setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: r.upvote_count + (alreadyVoted ? -1 : 1) } : r))
@@ -244,7 +250,7 @@ export default function ForumScreen() {
       setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: reply.upvote_count } : r))
       setVotedReplies(prev => { const next = new Set(prev); if (alreadyVoted) next.add(reply.id); else next.delete(reply.id); return next })
       Alert.alert(t('common.error'), t('forum.voteError'))
-    }
+    } finally { votingReplyRef.current = false }
   }, [currentUserId, supabase, votedReplies, t])
 
   // ── Open post detail ──

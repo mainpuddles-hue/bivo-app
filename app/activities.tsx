@@ -270,11 +270,14 @@ export default function ActivitiesScreen() {
   useEffect(() => { fetchActivities() }, [fetchActivities])
 
   // ── Toggle membership ──
+  const togglingRef = useRef(false)
   const toggleMembership = useCallback(async (activityId: string) => {
     if (!userId) { router.push('/(auth)/login'); return }
+    if (togglingRef.current) return
+    togglingRef.current = true
 
     const act = activities.find(a => a.id === activityId)
-    if (!act) return
+    if (!act) { togglingRef.current = false; return }
 
     try {
       if (Platform.OS !== 'web') {
@@ -314,7 +317,7 @@ export default function ActivitiesScreen() {
     } catch (err) {
       if (__DEV__) console.log('[activities] toggleMembership error:', err)
       Alert.alert(t('common.error'), act.is_member ? t('activity.leaveFailed') : t('activity.joinFailed'))
-    }
+    } finally { togglingRef.current = false }
   }, [userId, activities, supabase, router, t])
 
   // ── Create activity ──

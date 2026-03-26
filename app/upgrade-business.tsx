@@ -86,6 +86,11 @@ export default function UpgradeBusinessScreen() {
         }),
       })
 
+      if (!validateRes.ok) {
+        const body = await validateRes.json().catch(() => ({}))
+        throw new Error(body.error ?? body.message ?? t('business.validationFailed'))
+      }
+
       const validation = await validateRes.json()
 
       if (!validation.valid) {
