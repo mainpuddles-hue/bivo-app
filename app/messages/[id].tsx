@@ -463,7 +463,7 @@ function ConversationScreenInner() {
     >
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)', borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
@@ -626,7 +626,10 @@ function ConversationScreenInner() {
         <Pressable
           onPress={handleSend}
           disabled={!input.trim() || sending}
-          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted }]}
+          hitSlop={4}
+          accessibilityRole="button"
+          accessibilityLabel={t('messages.send')}
+          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted, opacity: (!input.trim() || sending) ? 0.5 : 1 }]}
         >
           <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
         </Pressable>
@@ -712,13 +715,13 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
     paddingHorizontal: 12, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth,
   },
-  imageBtn: { paddingBottom: 10 },
+  imageBtn: { paddingBottom: 10, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   textInput: {
     flex: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10,
     fontSize: 15, maxHeight: 120, minHeight: 40,
   },
   sendBtn: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
   },
   emptyText: { textAlign: 'center', fontSize: 14, marginTop: 40 },

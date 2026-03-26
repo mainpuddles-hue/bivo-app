@@ -554,7 +554,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         </View>
         <Text style={[styles.notFound, { color: colors.mutedForeground }]}>{t('post.notFound')}</Text>
       </View>
@@ -571,14 +571,14 @@ function PostDetailScreenInner() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)', borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={toggleSave} hitSlop={8}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
-        <Pressable onPress={handleShare} hitSlop={8}><Share2 size={22} color={colors.mutedForeground} /></Pressable>
+        <Pressable onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('post.save')}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
+        <Pressable onPress={handleShare} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('post.share')}><Share2 size={22} color={colors.mutedForeground} /></Pressable>
         {isAuthor ? (
-          <Pressable onPress={handleMorePress} hitSlop={8}><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleMorePress} hitSlop={8} style={styles.headerBtn} accessibilityRole="button"><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
         ) : userId ? (
-          <Pressable onPress={handleReport} hitSlop={8}><Flag size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleReport} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('report.title')}><Flag size={22} color={colors.mutedForeground} /></Pressable>
         ) : null}
       </View>
 
@@ -795,7 +795,8 @@ function PostDetailScreenInner() {
                   placeholderTextColor={colors.mutedForeground} maxLength={500}
                 />
                 <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
-                  style={[styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted }]}>
+                  hitSlop={8}
+                  style={[styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim() || sendingComment) ? 0.5 : 1 }]}>
                   <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
                 </Pressable>
               </View>
@@ -1013,14 +1014,15 @@ function PostDetailScreenInner() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  headerBtn: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
   body: { padding: 16, gap: 12 },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
   closedBannerText: { fontSize: 13, fontWeight: '600' },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
-  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, minHeight: 36 },
   authorActionText: { fontSize: 12, fontWeight: '600' },
   categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, alignSelf: 'flex-start' },
   categoryText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
@@ -1032,8 +1034,8 @@ const styles = StyleSheet.create({
   description: { fontSize: 15, lineHeight: 22 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   locationText: { fontSize: 14 },
-  engRow: { flexDirection: 'row', gap: 20 },
-  engItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  engRow: { flexDirection: 'row', gap: 16 },
+  engItem: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 44, justifyContent: 'center' },
   engText: { fontSize: 15, fontWeight: '500' },
   authorCard: { padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
   authorAvatar: { width: 44, height: 44, borderRadius: 22 },
@@ -1043,7 +1045,7 @@ const styles = StyleSheet.create({
   authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   authorName: { fontSize: 15, fontWeight: '600' },
   authorNh: { fontSize: 13 },
-  messageBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  messageBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, minHeight: 44 },
   messageBtnText: { fontSize: 13, fontWeight: '600' },
   timestamp: { fontSize: 12, marginTop: 4 },
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100 },
@@ -1056,7 +1058,7 @@ const styles = StyleSheet.create({
   commentName: { fontSize: 13, fontWeight: '600' },
   commentTime: { fontSize: 11 },
   commentContent: { fontSize: 14, lineHeight: 19 },
-  replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, minHeight: 32, paddingVertical: 4 },
   replyBtnText: { fontSize: 11, fontWeight: '500' },
   replyRow: { marginLeft: 32, paddingLeft: 12 },
   replyLine: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, borderRadius: 1 },
@@ -1067,7 +1069,7 @@ const styles = StyleSheet.create({
   replyIndicatorText: { flex: 1, fontSize: 12, fontWeight: '500' },
   commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
   commentTextInput: { flex: 1, fontSize: 14, minHeight: 36 },
-  commentSendBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  commentSendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
   modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 8, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },

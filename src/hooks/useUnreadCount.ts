@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSupabase } from './useSupabase'
 
 export function useUnreadCount(userId: string | null) {
   const supabase = useSupabase()
   const [count, setCount] = useState(0)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!userId) return
     let mounted = true
 
     async function fetchUnread() {
-      // Count messages where user is recipient and is_read = false
-      // First get all conversations where user is participant
+      // Combine into fewer queries: get conversation IDs and unread count in parallel
       const { data: convs } = await supabase
         .from('conversations')
         .select('id')
@@ -33,18 +33,30 @@ export function useUnreadCount(userId: string | null) {
 
     fetchUnread()
 
+    // Debounced refetch to avoid rapid-fire queries from realtime events
+    function debouncedFetchUnread() {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        fetchUnread()
+      }, 500) // Wait 500ms to batch rapid message events
+    }
+
     // Subscribe to new messages for realtime badge
     const channel = supabase
       .channel('unread-badge')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        fetchUnread() // Refetch on any new message
+        debouncedFetchUnread()
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () => {
-        fetchUnread() // Refetch when messages marked read
+        debouncedFetchUnread()
       })
       .subscribe()
 
-    return () => { mounted = false; supabase.removeChannel(channel) }
+    return () => {
+      mounted = false
+      supabase.removeChannel(channel)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
   }, [userId, supabase])
 
   return count

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TRUST_TIERS, TIER_2_REQUIREMENTS, TIER_3_REQUIREMENTS } from '@/lib/constants'
 import type { TrustLevel, TrustSignals, TrustPermissions } from '@/lib/types'
@@ -81,18 +81,47 @@ const DEFAULT_SIGNALS: TrustSignals = {
   hasActiveReports: false,
 }
 
+// In-memory cache: stores trust results per userId with a 5-minute TTL.
+// This prevents redundant DB queries + RPC calls when navigating between
+// screens that all import useTrustLevel (profile, create, post detail, public profile).
+const trustCache = new Map<string, {
+  signals: TrustSignals
+  score: number
+  factors: Record<string, number>
+  serverTier: TrustLevel | null
+  fetchedAt: number
+}>()
+
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
 export function useTrustLevel(userId?: string | null): TrustResult {
   const [signals, setSignals] = useState<TrustSignals>(DEFAULT_SIGNALS)
   const [loading, setLoading] = useState(true)
   const [score, setScore] = useState(0)
   const [factors, setFactors] = useState<Record<string, number>>({})
   const [serverTier, setServerTier] = useState<TrustLevel | null>(null)
+  const fetchingRef = useRef(false) // Prevent overlapping fetches
 
   const supabase = useSupabase()
 
   useEffect(() => {
     if (!userId) { setLoading(false); return }
     let mounted = true
+
+    // Check in-memory cache first
+    const cached = trustCache.get(userId)
+    if (cached && (Date.now() - cached.fetchedAt) < CACHE_TTL_MS) {
+      setSignals(cached.signals)
+      setScore(cached.score)
+      setFactors(cached.factors)
+      setServerTier(cached.serverTier)
+      setLoading(false)
+      return
+    }
+
+    // Prevent duplicate concurrent fetches for the same userId
+    if (fetchingRef.current) return
+    fetchingRef.current = true
 
     async function fetchSignals() {
       try {
@@ -119,7 +148,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
           ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
           : 0
 
-        setSignals({
+        const newSignals: TrustSignals = {
           emailVerified: !!profile?.created_at, // email is on auth.users, not profiles; use account existence as proxy
           idVerified: badges.some(b => b.badge_type === 'verified'),
           reviewCount: reviews.length,
@@ -127,27 +156,48 @@ export function useTrustLevel(userId?: string | null): TrustResult {
           responseRate: profile?.response_rate ?? 0,
           accountAgeDays,
           hasActiveReports: reports.length > 0,
-        })
+        }
+
+        setSignals(newSignals)
 
         // After existing signal fetching, call the DB function for comprehensive score
-        const { data: trustData } = await (supabase.rpc as any)('calculate_trust_score', { p_user_id: userId })
-        if (mounted && trustData && (trustData as any[]).length > 0) {
-          const result = (trustData as any[])[0]
-          // Use server-computed tier instead of client-side if/else
-          // This handles downgrades (score drops below threshold -> tier drops)
-          if (typeof result.score === 'number') {
-            setScore(result.score)
+        let newScore = 0
+        let newFactors: Record<string, number> = {}
+        let newServerTier: TrustLevel | null = null
+
+        try {
+          const { data: trustData } = await (supabase.rpc as any)('calculate_trust_score', { p_user_id: userId })
+          if (mounted && trustData && (trustData as any[]).length > 0) {
+            const result = (trustData as any[])[0]
+            if (typeof result.score === 'number') {
+              newScore = result.score
+              setScore(newScore)
+            }
+            if (result.factors && typeof result.factors === 'object') {
+              newFactors = result.factors
+              setFactors(newFactors)
+            }
+            if (result.tier && (result.tier === 1 || result.tier === 2 || result.tier === 3)) {
+              newServerTier = result.tier as TrustLevel
+              setServerTier(newServerTier)
+            }
           }
-          if (result.factors && typeof result.factors === 'object') {
-            setFactors(result.factors)
-          }
-          if (result.tier && (result.tier === 1 || result.tier === 2 || result.tier === 3)) {
-            setServerTier(result.tier as TrustLevel)
-          }
+        } catch {
+          // RPC unavailable — use client-side computation only
         }
+
+        // Cache the result
+        trustCache.set(userId!, {
+          signals: newSignals,
+          score: newScore,
+          factors: newFactors,
+          serverTier: newServerTier,
+          fetchedAt: Date.now(),
+        })
       } catch {
         // Graceful fallback — keep default signals (tier 1) and score 0
       } finally {
+        fetchingRef.current = false
         if (mounted) setLoading(false)
       }
     }
@@ -164,4 +214,9 @@ export function useTrustLevel(userId?: string | null): TrustResult {
   const nextTierHints = useMemo(() => getNextTierHints(level, signals), [level, signals])
 
   return { level, signals, permissions, tier, loading, nextTierHints, score, factors }
+}
+
+/** Invalidate the trust cache for a specific user (e.g., after verification) */
+export function invalidateTrustCache(userId: string) {
+  trustCache.delete(userId)
 }

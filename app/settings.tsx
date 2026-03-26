@@ -325,13 +325,13 @@ export default function SettingsScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('settings.title')}</Text>
         <View style={{ flex: 1 }} />
         {dirty && (
-          <Pressable onPress={handleSave} disabled={saving} style={[s.saveBtn, { backgroundColor: colors.primary }]}>
+          <Pressable onPress={handleSave} disabled={saving} style={[s.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}>
             {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Save size={16} color={colors.primaryForeground} />}
             <Text style={[s.saveBtnText, { color: colors.primaryForeground }]}>{t('common.save')}</Text>
           </Pressable>

@@ -350,11 +350,11 @@ export default function ProfileScreen() {
               </View>
             </View>
           ) : (
-            <Pressable onPress={() => setEditingBio(true)}>
+            <Pressable onPress={() => setEditingBio(true)} style={[s.bioTapArea, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }]}>
               <Text style={[s.bio, { color: profile.bio ? colors.mutedForeground : colors.primary }]}>
                 {profile.bio || t('profile.clickToAddBio')}
               </Text>
-              <Pencil size={12} color={colors.mutedForeground} style={{ alignSelf: 'center', marginTop: 2 }} />
+              <Pencil size={12} color={profile.bio ? colors.mutedForeground : colors.primary} style={{ alignSelf: 'center', marginTop: 2 }} />
             </Pressable>
           )}
 
@@ -754,7 +754,8 @@ const s = StyleSheet.create({
   profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 28 },
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
+  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
+  bioTapArea: { alignItems: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 16 },
   bioEditWrap: { width: '100%', gap: 8, paddingHorizontal: 8 },
   bioInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 60, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
@@ -767,12 +768,12 @@ const s = StyleSheet.create({
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
   proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth },
-  stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statNum: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 23 },
-  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+  stat: { flex: 1, alignItems: 'center', gap: 4, minHeight: 48 },
+  statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
+  statLabel: { fontSize: 10, fontFamily: fonts.body, lineHeight: 13, textTransform: 'uppercase', letterSpacing: 0.3 },
   statDiv: { width: 1 },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
-  tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', minHeight: 44 },
   tabActive: { borderBottomWidth: 2 },
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   tabContent: { gap: 12 },

@@ -155,7 +155,7 @@ export default function MessagesScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
-        <Pressable onPress={() => setShowArchived(!showArchived)} hitSlop={8}>
+        <Pressable onPress={() => setShowArchived(!showArchived)} hitSlop={8} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('messages.archive')}>
           <Archive size={20} color={showArchived ? colors.primary : colors.mutedForeground} />
         </Pressable>
       </View>
@@ -174,7 +174,7 @@ export default function MessagesScreen() {
           autoCorrect={false}
         />
         {searchQuery.length > 0 && (
-          <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+          <Pressable onPress={() => setSearchQuery('')} hitSlop={8} style={{ minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}>
             <X size={16} color={colors.mutedForeground} />
           </Pressable>
         )}

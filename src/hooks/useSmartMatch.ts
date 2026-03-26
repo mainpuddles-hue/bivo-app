@@ -130,14 +130,29 @@ interface SemanticMatch {
   user_name?: string
 }
 
+// Cache semantic match results per post_id for 10 minutes to avoid calling
+// the Edge Function on every mount/re-render of the feed screen.
+const semanticCache = new Map<string, { matches: SemanticMatch[]; fetchedAt: number }>()
+const SEMANTIC_CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+
 async function fetchSemanticMatches(
   supabase: ReturnType<typeof import('@/lib/supabase/client').createClient>,
   postId: string,
   neighborhood: string | null,
 ): Promise<SemanticMatch[]> {
+  // Check cache first
+  const cached = semanticCache.get(postId)
+  if (cached && (Date.now() - cached.fetchedAt) < SEMANTIC_CACHE_TTL) {
+    return cached.matches
+  }
+
   try {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.access_token) return []
+
+    // Add timeout to avoid hanging if the Edge Function is slow
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000) // 8s timeout
 
     const res = await fetch(`${FUNCTIONS_URL}/semantic-match`, {
       method: 'POST',
@@ -152,11 +167,19 @@ async function fetchSemanticMatches(
         limit: 5,
         neighborhood,
       }),
+      signal: controller.signal,
     })
+
+    clearTimeout(timeout)
 
     if (!res.ok) return []
     const { matches } = await res.json()
-    return (matches ?? []) as SemanticMatch[]
+    const result = (matches ?? []) as SemanticMatch[]
+
+    // Cache the result
+    semanticCache.set(postId, { matches: result, fetchedAt: Date.now() })
+
+    return result
   } catch {
     return []
   }

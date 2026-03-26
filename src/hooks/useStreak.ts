@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from './useSupabase'
 
 interface StreakData {
@@ -8,20 +9,27 @@ interface StreakData {
   multiplier: number  // 1x, 2x (7+ days), 3x (30+ days)
 }
 
+const STREAK_CACHE_KEY = 'tackbird_streak_date'
+
 export function useStreak(userId: string | null) {
   const supabase = useSupabase()
   const [streak, setStreak] = useState<StreakData>({
     currentStreak: 0, longestStreak: 0, lastActiveDate: null, multiplier: 1,
   })
+  const recordingRef = useRef(false) // Prevent concurrent recordActivity calls
 
   useEffect(() => {
     if (!userId) return
-    supabase.from('profiles')
-      .select('current_streak, longest_streak, last_active_date')
-      .eq('id', userId)
-      .single()
-      .then(({ data }) => {
-        if (data) {
+    let mounted = true
+
+    async function fetchStreak() {
+      try {
+        const { data } = await supabase.from('profiles')
+          .select('current_streak, longest_streak, last_active_date')
+          .eq('id', userId!)
+          .single()
+
+        if (data && mounted) {
           const cs = (data as any).current_streak ?? 0
           setStreak({
             currentStreak: cs,
@@ -30,44 +38,76 @@ export function useStreak(userId: string | null) {
             multiplier: cs >= 30 ? 3 : cs >= 7 ? 2 : 1,
           })
         }
-      })
+      } catch {
+        // Silently fail — streak will show default values
+      }
+    }
+
+    fetchStreak()
+    return () => { mounted = false }
   }, [userId, supabase])
 
   const recordActivity = useCallback(async () => {
     if (!userId) return
-    const today = new Date().toISOString().slice(0, 10)
 
-    // If already recorded today, skip
-    if (streak.lastActiveDate === today) return
+    // Prevent concurrent calls (e.g., from multiple re-renders)
+    if (recordingRef.current) return
+    recordingRef.current = true
 
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-    let newStreak: number
+    try {
+      const today = new Date().toISOString().slice(0, 10)
 
-    if (streak.lastActiveDate === yesterday) {
-      // Continue streak
-      newStreak = streak.currentStreak + 1
-    } else if (!streak.lastActiveDate || streak.lastActiveDate < yesterday) {
-      // Streak broken — reset to 1
-      newStreak = 1
-    } else {
-      newStreak = streak.currentStreak
+      // Check AsyncStorage first — avoid unnecessary DB write if already recorded today
+      const cachedDate = await AsyncStorage.getItem(STREAK_CACHE_KEY)
+      if (cachedDate === today) {
+        recordingRef.current = false
+        return
+      }
+
+      // Also check in-memory state
+      if (streak.lastActiveDate === today) {
+        // Update cache to match state
+        await AsyncStorage.setItem(STREAK_CACHE_KEY, today).catch(() => {})
+        recordingRef.current = false
+        return
+      }
+
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+      let newStreak: number
+
+      if (streak.lastActiveDate === yesterday) {
+        // Continue streak
+        newStreak = streak.currentStreak + 1
+      } else if (!streak.lastActiveDate || streak.lastActiveDate < yesterday) {
+        // Streak broken — reset to 1
+        newStreak = 1
+      } else {
+        newStreak = streak.currentStreak
+      }
+
+      const newLongest = Math.max(streak.longestStreak, newStreak)
+      const multiplier = newStreak >= 30 ? 3 : newStreak >= 7 ? 2 : 1
+
+      await (supabase.from('profiles') as any).update({
+        current_streak: newStreak,
+        longest_streak: newLongest,
+        last_active_date: today,
+      }).eq('id', userId)
+
+      // Cache today's date to prevent redundant DB writes on subsequent feed loads
+      await AsyncStorage.setItem(STREAK_CACHE_KEY, today).catch(() => {})
+
+      setStreak({
+        currentStreak: newStreak,
+        longestStreak: newLongest,
+        lastActiveDate: today,
+        multiplier,
+      })
+    } catch {
+      // Silently fail — streak update is non-critical
+    } finally {
+      recordingRef.current = false
     }
-
-    const newLongest = Math.max(streak.longestStreak, newStreak)
-    const multiplier = newStreak >= 30 ? 3 : newStreak >= 7 ? 2 : 1
-
-    await (supabase.from('profiles') as any).update({
-      current_streak: newStreak,
-      longest_streak: newLongest,
-      last_active_date: today,
-    }).eq('id', userId)
-
-    setStreak({
-      currentStreak: newStreak,
-      longestStreak: newLongest,
-      lastActiveDate: today,
-      multiplier,
-    })
   }, [userId, streak, supabase])
 
   return { ...streak, recordActivity }

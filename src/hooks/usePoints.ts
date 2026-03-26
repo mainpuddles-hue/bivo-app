@@ -18,6 +18,20 @@ export function usePoints() {
   const awardPoints = useCallback(async (userId: string, action: PointAction, referenceId?: string) => {
     const points = POINT_VALUES[action]
 
+    // Deduplicate: check if this exact action+reference was already awarded
+    if (referenceId) {
+      try {
+        const { count } = await (supabase.from('user_points') as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('action', action)
+          .eq('reference_id', referenceId)
+        if ((count ?? 0) > 0) return // Already awarded
+      } catch {
+        // Table might not exist — continue
+      }
+    }
+
     // Insert point record
     await (supabase.from('user_points') as any).insert({
       user_id: userId,
@@ -26,18 +40,43 @@ export function usePoints() {
       reference_id: referenceId ?? null,
     }).catch(() => {})
 
-    // Update total on profile via RPC
+    // Update total on profile via RPC (atomic increment — safe from race conditions)
+    // The RPC should be: UPDATE profiles SET total_points = COALESCE(total_points, 0) + points WHERE id = user_id
     try {
-      const { error: rpcError } = await (supabase.rpc as any)('increment_points', { user_id_param: userId, points_param: points })
+      const { error: rpcError } = await (supabase.rpc as any)('increment_points', {
+        user_id_param: userId,
+        points_param: points,
+      })
       if (rpcError) throw rpcError
     } catch {
-      // Fallback: direct update if RPC doesn't exist
+      // Fallback: use increment_field RPC which is more generic
       try {
-        const { data } = await supabase.from('profiles').select('total_points').eq('id', userId).single()
-        const current = (data as any)?.total_points ?? 0
-        await (supabase.from('profiles') as any).update({ total_points: current + points }).eq('id', userId)
+        const { error: rpcError2 } = await (supabase.rpc as any)('increment_field', {
+          table_name: 'profiles',
+          field_name: 'total_points',
+          row_id: userId,
+          amount: points,
+        })
+        if (rpcError2) throw rpcError2
       } catch {
-        // Silently fail — points just won't update
+        // Last resort: direct update with read-then-write.
+        // NOTE: This is NOT atomic and susceptible to race conditions if two
+        // awards happen simultaneously. The proper fix is to ensure the
+        // increment_points RPC exists in the database:
+        //   CREATE OR REPLACE FUNCTION increment_points(user_id_param UUID, points_param INT)
+        //   RETURNS VOID AS $$
+        //     UPDATE profiles SET total_points = COALESCE(total_points, 0) + points_param
+        //     WHERE id = user_id_param;
+        //   $$ LANGUAGE sql SECURITY DEFINER;
+        try {
+          const { data } = await supabase.from('profiles').select('total_points').eq('id', userId).single()
+          const current = (data as any)?.total_points ?? 0
+          await (supabase.from('profiles') as any)
+            .update({ total_points: current + points })
+            .eq('id', userId)
+        } catch {
+          // Silently fail — points just won't update
+        }
       }
     }
   }, [supabase])

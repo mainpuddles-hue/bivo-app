@@ -564,7 +564,7 @@ export default function CreateScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setStep('category')} hitSlop={12}>
+          <Pressable onPress={() => setStep('category')} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           {cat && (
@@ -1177,13 +1177,13 @@ const styles = StyleSheet.create({
   tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 36,
   },
   tagText: { fontSize: 13, fontFamily: fonts.body },
   detailsToggle: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth, minHeight: 48,
   },
   detailsToggleText: { fontSize: 14, fontFamily: fonts.bodySemi },
   submitBtn: {

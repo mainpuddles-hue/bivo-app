@@ -58,22 +58,85 @@ serve(async (req) => {
       })
     }
 
-    // --- Server-side amount validation — NEVER trust client ---
-    const { data: postData } = await supabase
-      .from('posts')
-      .select('daily_fee, service_price, user_id')
-      .eq('id', post_id)
-      .single()
-
-    if (!postData) {
-      return new Response(JSON.stringify({ error: 'Post not found' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Validate amount is a positive integer (cents)
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+      return new Response(JSON.stringify({ error: 'Amount must be a positive number' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Validate seller matches post owner
-    if (postData.user_id !== seller_id) {
-      return new Response(JSON.stringify({ error: 'Seller mismatch' }), {
+    // Stripe minimum charge is 50 cents (0.50 EUR)
+    if (amount < 50) {
+      return new Response(JSON.stringify({ error: 'Amount below minimum (50 cents)' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Validate type is one of the allowed values
+    if (!['rental', 'service', 'ad_campaign'].includes(type)) {
+      return new Response(JSON.stringify({ error: 'Invalid transaction type' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // --- Server-side amount validation — NEVER trust client ---
+    // For ad_campaign type, post_id is optional (campaigns may not be tied to a post)
+    let postData: any = null
+    if (type === 'ad_campaign' && !post_id) {
+      // Ad campaigns without a post_id: use the client-provided amount (validated above)
+      // but still validate the seller exists
+      const { data: sellerExists } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', seller_id)
+        .single()
+      if (!sellerExists) {
+        return new Response(JSON.stringify({ error: 'Seller not found' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    } else {
+      // For rental/service, post_id is required
+      if (!post_id) {
+        return new Response(JSON.stringify({ error: 'post_id required for rental/service' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const { data, error: postError } = await supabase
+        .from('posts')
+        .select('daily_fee, service_price, user_id, is_active')
+        .eq('id', post_id)
+        .single()
+
+      if (postError || !data) {
+        return new Response(JSON.stringify({ error: 'Post not found' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Check if post was deleted or deactivated between booking creation and checkout
+      if (!data.is_active) {
+        return new Response(JSON.stringify({ error: 'Post is no longer active' }), {
+          status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      postData = data
+    }
+
+    if (postData) {
+      // Validate seller matches post owner
+      if (postData.user_id !== seller_id) {
+        return new Response(JSON.stringify({ error: 'Seller mismatch' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
+    // Prevent self-purchase
+    if (user.id === seller_id) {
+      return new Response(JSON.stringify({ error: 'Cannot purchase from yourself' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -81,7 +144,7 @@ serve(async (req) => {
     // Recalculate amount server-side
     let validatedAmount: number
     if (type === 'service') {
-      if (!postData.service_price) {
+      if (!postData?.service_price) {
         return new Response(JSON.stringify({ error: 'No service price' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -89,7 +152,7 @@ serve(async (req) => {
       validatedAmount = Math.round(postData.service_price * 100) // cents
     } else if (type === 'rental') {
       const bookingDays = metadata?.booking_days ? parseInt(metadata.booking_days) : 0
-      if (!postData.daily_fee || bookingDays <= 0) {
+      if (!postData?.daily_fee || bookingDays <= 0 || bookingDays > 365) {
         return new Response(JSON.stringify({ error: 'Invalid rental params' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -98,7 +161,15 @@ serve(async (req) => {
       const serviceFee = Math.round(rentalFee * 0.10 * 100) / 100
       validatedAmount = Math.round((rentalFee + serviceFee) * 100) // cents
     } else {
-      validatedAmount = amount // fallback for ad_campaign
+      // ad_campaign: use client amount (already validated as positive integer above)
+      validatedAmount = Math.round(amount)
+    }
+
+    // Final validation: ensure validated amount is still positive and within sane bounds
+    if (validatedAmount <= 0 || validatedAmount > 1000000) { // max 10,000 EUR
+      return new Response(JSON.stringify({ error: 'Amount out of allowed range' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Enforce commission server-side (10%)
