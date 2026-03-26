@@ -455,7 +455,8 @@
     "read": "Loetud",
     "sent": "Saadetud",
     "deleteMessage": "Kustuta sõnum",
-    "messageDeleted": "Sõnum kustutatud"
+    "messageDeleted": "Sõnum kustutatud",
+    "copyMessage": "Kopeeri"
   },
   "profile": {
     "title": "Profiil",
@@ -593,6 +594,10 @@
     "settingsSaved": "Seaded salvestatud",
     "settingsSaveFailed": "Seadete salvestamine ebaõnnestus",
     "saveSettings": "Salvesta seaded",
+    "displayName": "Nimi",
+    "accountInfo": "Konto teave",
+    "memberSince": "Liige alates",
+    "feedback": "Tagasiside / Teata veast",
     "unsavedChanges": "Sul on salvestamata muudatusi",
     "profileVisibility": "Profiili nähtavus",
     "visibilityEveryone": "Kõigile",

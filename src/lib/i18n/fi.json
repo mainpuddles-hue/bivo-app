@@ -455,7 +455,8 @@
     "read": "Luettu",
     "sent": "Lähetetty",
     "deleteMessage": "Poista viesti",
-    "messageDeleted": "Viesti poistettu"
+    "messageDeleted": "Viesti poistettu",
+    "copyMessage": "Kopioi"
   },
   "profile": {
     "title": "Profiili",
@@ -593,6 +594,10 @@
     "settingsSaved": "Asetukset tallennettu",
     "settingsSaveFailed": "Asetusten tallentaminen epäonnistui",
     "saveSettings": "Tallenna asetukset",
+    "displayName": "Nimi",
+    "accountInfo": "Tilin tiedot",
+    "memberSince": "Jäsen alkaen",
+    "feedback": "Palaute / Ilmoita virhe",
     "unsavedChanges": "Sinulla on tallentamattomia muutoksia",
     "profileVisibility": "Profiilin näkyvyys",
     "visibilityEveryone": "Kaikille",

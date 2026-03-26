@@ -31,6 +31,25 @@ const ItemSeparator12 = () => <View style={{ height: 12 }} />
 // ── Feed Screen ──
 // ══════════════════════════════════════════════
 
+// TODO: UX — FEED FATIGUE (ongoing friction for returning users):
+//
+// 1. HIDE/DISMISS POST: Add a swipe-to-dismiss or "Not interested" option on
+//    PostCard (long-press menu?). Track hidden post IDs in AsyncStorage and
+//    filter them from feed. The PostCard already accepts onInteraction with 'hide'
+//    type but nothing uses it — wire it up.
+//
+// 2. MUTE USER: Allow muting a user's posts from PostCard menu. Store muted
+//    user IDs in AsyncStorage and filter their posts from feed query results.
+//
+// 3. SEEN INDICATOR: Track which post IDs the user has scrolled past
+//    (viewability tracking exists via onViewableItemsChanged). Use this to show
+//    a subtle "new" badge on unseen posts, or dim already-seen posts.
+//
+// 4. STALE FEED ON RETURN: When user opens app after days, feed should
+//    auto-sort by newest and show a "You missed X new posts" banner with the
+//    count since last visit. Currently feed always starts fresh from newest,
+//    but there's no indication of what's new vs already seen.
+
 function FeedScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()

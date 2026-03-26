@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal } from 'react-native'
+import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap } from 'lucide-react-native'
+import { ArrowLeft, Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
@@ -66,16 +66,26 @@ export default function SettingsScreen() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [emailVerified, setEmailVerified] = useState(false)
 
+  // Name editing
+  const [editingName, setEditingName] = useState(false)
+  const [nameText, setNameText] = useState('')
+  const [savingName, setSavingName] = useState(false)
+
+  // Account info
+  const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null)
+
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       setUserEmail(user.email ?? null)
       setEmailVerified(!!user.email_confirmed_at)
+      setAccountCreatedAt(user.created_at ?? null)
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
         const p = data as unknown as Profile
         setProfile(p)
+        setNameText(p.name ?? '')
         setVisibility(p.profile_visibility)
         setLocationAccuracy(p.location_accuracy ?? 'exact')
       }
@@ -99,6 +109,19 @@ export default function SettingsScreen() {
       Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
     } finally { setSaving(false) }
   }, [profile, visibility, locationAccuracy, notifPrefs.preferences.messages, theme, supabase, t])
+
+  const handleSaveName = useCallback(async () => {
+    if (!profile || !nameText.trim()) return
+    setSavingName(true)
+    try {
+      await (supabase.from('profiles') as any).update({ name: nameText.trim() }).eq('id', profile.id)
+      setProfile(prev => prev ? { ...prev, name: nameText.trim() } : null)
+      setEditingName(false)
+      Alert.alert(t('common.success'), t('settings.settingsSaved'))
+    } catch {
+      Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
+    } finally { setSavingName(false) }
+  }, [profile, nameText, supabase, t])
 
   const handleChangePassword = useCallback(async () => {
     if (!currentPw) {
@@ -318,6 +341,63 @@ export default function SettingsScreen() {
                     <Text style={[s.verifiedText, { color: colors.pro }]}>{t('settings.emailUnverified')}</Text>
                   </View>
                 )}
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* Display name */}
+        {profile && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.displayName') ?? 'Nimi'}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              {editingName ? (
+                <View style={{ padding: 16, gap: 10 }}>
+                  <TextInput
+                    style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
+                    value={nameText}
+                    onChangeText={setNameText}
+                    placeholder={t('profile.name') ?? 'Nimi'}
+                    placeholderTextColor={colors.mutedForeground}
+                    maxLength={50}
+                    autoFocus
+                  />
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <Pressable onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: colors.muted }}>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>{t('common.cancel')}</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={handleSaveName}
+                      disabled={savingName || !nameText.trim()}
+                      style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground }}>
+                        {savingName ? '...' : t('common.save')}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                <Pressable onPress={() => setEditingName(true)} style={s.row}>
+                  <User size={18} color={colors.mutedForeground} />
+                  <Text style={[s.rowText, { color: colors.foreground }]}>{profile.name}</Text>
+                  <Pencil size={14} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* Account info */}
+        {accountCreatedAt && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.accountInfo') ?? 'Tilin tiedot'}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <View style={s.row}>
+                <CalendarDays size={18} color={colors.mutedForeground} />
+                <Text style={[s.rowText, { color: colors.foreground }]}>
+                  {t('settings.memberSince') ?? 'Jäsen alkaen'}: {new Date(accountCreatedAt).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </Text>
               </View>
             </View>
           </>
@@ -564,6 +644,11 @@ export default function SettingsScreen() {
           <Pressable onPress={() => router.push('/terms')} style={s.row}>
             <FileText size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+          <Pressable onPress={() => Linking.openURL('mailto:tuki@tackbird.fi?subject=TackBird%20palaute')} style={s.row}>
+            <Bug size={18} color={colors.mutedForeground} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
         </View>

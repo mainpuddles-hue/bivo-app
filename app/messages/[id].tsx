@@ -6,8 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2 } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2, Copy } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
+import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { ThanksButton } from '@/components/ThanksButton'
@@ -54,6 +55,10 @@ function ConversationScreenInner() {
   const [showReactionPicker, setShowReactionPicker] = useState(false)
   const [reactions, setReactions] = useState<Record<string, { emoji: string; user_id: string }[]>>({})
 
+  // TODO: UX — Handle self-conversation edge case. If user1_id === user2_id (user
+  // messages their own post), otherId will be themselves. Should either prevent
+  // self-conversations at creation time (in post/[id].tsx) or display a "notes to
+  // self" UI instead of a broken "unknown user" state.
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -386,7 +391,7 @@ function ConversationScreenInner() {
                     <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" />
                   ) : null}
                   {item.content ? (
-                    <Text style={[s.msgText, { color: isMine ? colors.primaryForeground : colors.foreground }]}>{item.content}</Text>
+                    <Text selectable style={[s.msgText, { color: isMine ? colors.primaryForeground : colors.foreground }]}>{item.content}</Text>
                   ) : null}
                 </>
               )}
@@ -431,8 +436,21 @@ function ConversationScreenInner() {
     )
   }, [userId, messages, otherUser, colors, isDark, t, locale, reactions, handleLongPress, handleReaction])
 
+  const handleCopyMessage = useCallback(async () => {
+    if (!selectedMessageId) return
+    const msg = messages.find(m => m.id === selectedMessageId)
+    if (!msg || (msg as any).is_deleted || !msg.content) return
+    try {
+      await Clipboard.setStringAsync(msg.content)
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    } catch { /* clipboard not available */ }
+    setShowReactionPicker(false)
+    setSelectedMessageId(null)
+  }, [selectedMessageId, messages])
+
   const selectedMsg = selectedMessageId ? messages.find(m => m.id === selectedMessageId) : null
   const canDelete = selectedMsg?.sender_id === userId && !(selectedMsg as any)?.is_deleted
+  const canCopy = selectedMsg && !(selectedMsg as any)?.is_deleted && !!selectedMsg.content
 
   return (
     <KeyboardAvoidingView
@@ -537,6 +555,12 @@ function ConversationScreenInner() {
                 </Pressable>
               ))}
             </View>
+            {canCopy && (
+              <Pressable onPress={handleCopyMessage} style={[s.deleteRow, { borderTopColor: colors.border }]}>
+                <Copy size={16} color={colors.foreground} />
+                <Text style={[s.deleteText, { color: colors.foreground }]}>{t('conversation.copyMessage') ?? 'Kopioi'}</Text>
+              </Pressable>
+            )}
             {canDelete && (
               <Pressable onPress={handleDeleteMessage} style={[s.deleteRow, { borderTopColor: colors.border }]}>
                 <Trash2 size={16} color={colors.destructive} />

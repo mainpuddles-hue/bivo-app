@@ -455,7 +455,8 @@
     "read": "Read",
     "sent": "Sent",
     "deleteMessage": "Delete message",
-    "messageDeleted": "Message deleted"
+    "messageDeleted": "Message deleted",
+    "copyMessage": "Copy"
   },
   "profile": {
     "title": "Profile",
@@ -593,6 +594,10 @@
     "settingsSaved": "Settings saved",
     "settingsSaveFailed": "Failed to save settings",
     "saveSettings": "Save settings",
+    "displayName": "Name",
+    "accountInfo": "Account info",
+    "memberSince": "Member since",
+    "feedback": "Feedback / Report a bug",
     "unsavedChanges": "You have unsaved changes",
     "profileVisibility": "Profile visibility",
     "visibilityEveryone": "Everyone",

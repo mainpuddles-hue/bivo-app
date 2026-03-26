@@ -455,7 +455,8 @@
     "read": "Прочитано",
     "sent": "Отправлено",
     "deleteMessage": "Удалить сообщение",
-    "messageDeleted": "Сообщение удалено"
+    "messageDeleted": "Сообщение удалено",
+    "copyMessage": "Копировать"
   },
   "profile": {
     "title": "Профиль",
@@ -593,6 +594,10 @@
     "settingsSaved": "Настройки сохранены",
     "settingsSaveFailed": "Не удалось сохранить настройки",
     "saveSettings": "Сохранить настройки",
+    "displayName": "Имя",
+    "accountInfo": "Информация об аккаунте",
+    "memberSince": "Участник с",
+    "feedback": "Отзыв / Сообщить об ошибке",
     "unsavedChanges": "У вас есть несохранённые изменения",
     "profileVisibility": "Видимость профиля",
     "visibilityEveryone": "Для всех",

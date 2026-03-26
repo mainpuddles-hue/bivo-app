@@ -103,6 +103,21 @@ function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useThem
 }
 
 
+// TODO: UX — BOOKING LIFECYCLE (friction for returning users):
+//
+// 1. REVIEW PROMPT: After booking status changes to 'completed', the "Leave
+//    review" button is subtle and easy to miss. Add a prominent review prompt
+//    card at the top of the list for completed bookings without a review.
+//    Check if a review exists for reviewer_id + reviewed_id pair.
+//
+// 2. PAST BOOKINGS FILTER: All bookings show in one list mixed together.
+//    Add a "Past" / "Active" segmented filter within each tab so users can
+//    find old bookings. Currently cancelled/completed bookings push active
+//    ones down.
+//
+// 3. BOOKING HISTORY STATS: Show a summary card at top: total spent, total
+//    earned, number of completed transactions — gives returning users a sense
+//    of their activity.
 export default function BookingsScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()

@@ -34,6 +34,25 @@ interface ActivityItem {
   meta?: string
 }
 
+// TODO: UX — CONTENT MANAGEMENT (friction for returning users after 2+ weeks):
+//
+// 1. "MY POSTS" TAB: Add a third tab ('overview' | 'activity' | 'posts') that
+//    shows ALL of the user's posts (not just recent 5) with status indicators
+//    (active/expired/archived). Currently only 5 recent posts show in overview.
+//    Users with 10+ posts have no way to find/manage older ones.
+//
+// 2. REVIEWS GIVEN: The activity tab shows "review_given" items but there's no
+//    dedicated "Reviews I wrote" view. Add a section or filter to see all reviews
+//    the user has given, not just received.
+//
+// 3. POINT HISTORY: Profile shows total_points in stats bar but NO breakdown
+//    of how points were earned. Add a "Point history" screen accessible by
+//    tapping the points stat. Query user_points table and show a chronological
+//    list with action type, amount, and date.
+//
+// 4. INVITE HISTORY: ReferralCard exists but shows only the referral code.
+//    There's no view of who was invited and whether they joined. Add an
+//    invite history list showing invited email/name + status (pending/joined).
 export default function ProfileScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -63,29 +82,28 @@ export default function ProfileScreen() {
   const identity = useIdentityVerification(profile?.id ?? null)
   const streakData = useStreak(profile?.id ?? null)
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setProfileLoading(false); return }
+  const loadProfile = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setProfileLoading(false); return }
 
-      // Profile
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (p) { setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '') }
+    // Profile
+    const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+    if (p) { setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '') }
 
-      // Counts
-      const [postsRes, followersRes, followingRes, savedRes, thanksRes] = await Promise.all([
-        supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
-        supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
-        supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
-        supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id)
-          .then(res => res.error ? { count: 0, data: null, error: res.error } : res),
-      ])
-      setPostCount(postsRes.count ?? 0)
-      setFollowerCount(followersRes.count ?? 0)
-      setFollowingCount(followingRes.count ?? 0)
-      setSavedCount(savedRes.count ?? 0)
-      setThanksCount(thanksRes.count ?? 0)
+    // Counts
+    const [postsRes, followersRes, followingRes, savedRes, thanksRes] = await Promise.all([
+      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
+      supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
+      supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
+      supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id)
+        .then(res => res.error ? { count: 0, data: null, error: res.error } : res),
+    ])
+    setPostCount(postsRes.count ?? 0)
+    setFollowerCount(followersRes.count ?? 0)
+    setFollowingCount(followingRes.count ?? 0)
+    setSavedCount(savedRes.count ?? 0)
+    setThanksCount(thanksRes.count ?? 0)
 
       // Reviews received
       const { data: revs } = await supabase
@@ -137,9 +155,9 @@ export default function ProfileScreen() {
       activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setActivity(activities.slice(0, 15))
       setProfileLoading(false)
-    }
-    load()
   }, [supabase, t])
+
+  useEffect(() => { loadProfile() }, [loadProfile])
 
   const ALLOWED_AVATAR_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
   const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
@@ -239,10 +257,8 @@ export default function ProfileScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => {
-              // TODO: UX — extract loadProfile to a reusable callback and call it here.
-              // For now, a simple reload via router is the pragmatic fix.
               setRefreshing(true)
-              setTimeout(() => setRefreshing(false), 500)
+              loadProfile().finally(() => setRefreshing(false))
             }}
             tintColor={colors.primary}
           />

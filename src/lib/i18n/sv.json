@@ -455,7 +455,8 @@
     "read": "Läst",
     "sent": "Skickat",
     "deleteMessage": "Ta bort meddelande",
-    "messageDeleted": "Meddelande borttaget"
+    "messageDeleted": "Meddelande borttaget",
+    "copyMessage": "Kopiera"
   },
   "profile": {
     "title": "Profil",
@@ -593,6 +594,10 @@
     "settingsSaved": "Inställningar sparade",
     "settingsSaveFailed": "Kunde inte spara inställningar",
     "saveSettings": "Spara inställningar",
+    "displayName": "Namn",
+    "accountInfo": "Kontoinformation",
+    "memberSince": "Medlem sedan",
+    "feedback": "Feedback / Rapportera fel",
     "unsavedChanges": "Du har osparade ändringar",
     "profileVisibility": "Profilsynlighet",
     "visibilityEveryone": "Alla",

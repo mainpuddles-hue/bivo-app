@@ -65,6 +65,18 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
   )
 }
 
+// TODO: UX — FORUM LIFECYCLE (friction for active forum users):
+//
+// 1. REPLY SORTING: Replies are always sorted by created_at ascending (oldest
+//    first). For long threads, add a sort toggle (oldest/newest/most voted)
+//    at the top of the reply list in ForumThreadView.
+//
+// 2. REPLY NOTIFICATIONS: When someone replies to a thread you commented on
+//    (not just your own post), notify the user. Currently only post authors
+//    get notifications.
+//
+// 3. THREAD BOOKMARKS: Allow users to bookmark/save forum threads for later.
+//    Currently only posts (marketplace) can be saved, not forum discussions.
 export default function ForumScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()

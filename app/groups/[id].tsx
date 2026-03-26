@@ -68,6 +68,23 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
   )
 }
 
+// TODO: UX — GROUP LIFECYCLE (friction for active group members):
+//
+// 1. PIN POST: Admin should be able to pin important posts to the top of the
+//    group feed. Add an 'is_pinned' field to group_posts table and a pin/unpin
+//    action in the post menu for admins. Pinned posts render above the regular
+//    feed with a "Pinned" badge.
+//
+// 2. GROUP ACTIVITY INDICATOR: Show "X new posts this week" or "Last activity:
+//    2 days ago" on the groups list (app/groups.tsx) so users know which groups
+//    are active without tapping into each one.
+//
+// 3. MUTE GROUP NOTIFICATIONS: Add a "Mute notifications" toggle per group.
+//    Store in group_members.notifications_muted boolean. Users in active groups
+//    get overwhelmed without per-group mute control.
+//
+// 4. SEARCH WITHIN GROUP: The searchQuery state exists but there's no visible
+//    search bar in the UI to filter posts within the group. Wire it up.
 export default function GroupDetailScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
