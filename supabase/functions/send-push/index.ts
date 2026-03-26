@@ -52,7 +52,17 @@ interface PushPayload {
   post_id?: string         // for urgent matching
 }
 
-async function sendExpoPush(token: string, title: string, body: string, data?: Record<string, string>) {
+interface ExpoPushResult {
+  success: boolean
+  tokenInvalid: boolean
+}
+
+async function sendExpoPush(token: string, title: string, body: string, data?: Record<string, string>): Promise<ExpoPushResult> {
+  // Validate token format before sending
+  if (!token || (!token.startsWith('ExponentPushToken[') && !token.startsWith('ExpoPushToken['))) {
+    return { success: false, tokenInvalid: true }
+  }
+
   const message = {
     to: token,
     sound: 'default',
@@ -62,13 +72,44 @@ async function sendExpoPush(token: string, title: string, body: string, data?: R
     badge: 1,
   }
 
-  const res = await fetch(EXPO_PUSH_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(message),
-  })
+  try {
+    const res = await fetch(EXPO_PUSH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(message),
+    })
 
-  return res.ok
+    if (!res.ok) return { success: false, tokenInvalid: false }
+
+    // Check Expo's response for token errors
+    // Expo returns { data: { status: 'ok' | 'error', message?, details? } }
+    const result = await res.json()
+    const pushResult = result?.data
+
+    if (pushResult?.status === 'error') {
+      // Expo returns 'DeviceNotRegistered' when the token is expired/invalid
+      const isDeviceNotRegistered = pushResult?.details?.error === 'DeviceNotRegistered'
+      const isInvalidToken = pushResult?.details?.error === 'InvalidCredentials'
+        || pushResult?.message?.includes('is not a registered push notification recipient')
+      return { success: false, tokenInvalid: isDeviceNotRegistered || isInvalidToken }
+    }
+
+    return { success: true, tokenInvalid: false }
+  } catch {
+    return { success: false, tokenInvalid: false }
+  }
+}
+
+/** Remove an expired/invalid push token from the user's profile */
+async function removeInvalidToken(supabase: any, userId: string) {
+  await supabase
+    .from('profiles')
+    .update({ push_token: null })
+    .eq('id', userId)
+    .catch(() => {})
 }
 
 serve(async (req) => {
@@ -110,16 +151,26 @@ serve(async (req) => {
 
         // Send push to all neighbors immediately (urgent = no quiet hours)
         const sent: string[] = []
+        const invalidTokenUserIds: string[] = []
         for (const neighbor of (neighbors ?? [])) {
           if (neighbor.push_token) {
-            const success = await sendExpoPush(
+            const result = await sendExpoPush(
               neighbor.push_token,
               `🚨 ${title}`,
               pushBody,
               { post_id: post_id!, type: 'urgent', screen: 'post' },
             )
-            if (success) sent.push(neighbor.id)
+            if (result.success) {
+              sent.push(neighbor.id)
+            } else if (result.tokenInvalid) {
+              invalidTokenUserIds.push(neighbor.id)
+            }
           }
+        }
+
+        // Clean up expired/invalid tokens in the background
+        for (const uid of invalidTokenUserIds) {
+          await removeInvalidToken(supabase, uid)
         }
 
         return new Response(
@@ -172,24 +223,33 @@ serve(async (req) => {
 
       if ((count ?? 0) > 1) {
         // Batch: send summary instead of individual
-        const success = await sendExpoPush(
+        const result = await sendExpoPush(
           profile.push_token,
           title,
           `${count} uutta ilmoitusta`,
           data,
         )
+        // Clean up invalid token if detected
+        if (result.tokenInvalid) {
+          await removeInvalidToken(supabase, user_id)
+        }
         return new Response(
-          JSON.stringify({ sent: success, type: 'batched', count }),
+          JSON.stringify({ sent: result.success, type: 'batched', count }),
           { status: 200, headers: { 'Content-Type': 'application/json' } },
         )
       }
     }
 
     // Send individual push
-    const success = await sendExpoPush(profile.push_token, title, pushBody, data)
+    const result = await sendExpoPush(profile.push_token, title, pushBody, data)
+
+    // Clean up expired/invalid push tokens so we don't keep trying to send to them
+    if (result.tokenInvalid) {
+      await removeInvalidToken(supabase, user_id)
+    }
 
     return new Response(
-      JSON.stringify({ sent: success, type: isImmediate ? 'immediate' : 'standard' }),
+      JSON.stringify({ sent: result.success, type: isImmediate ? 'immediate' : 'standard' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     )
   } catch (err: any) {
