@@ -695,7 +695,9 @@
     "locationArea": "Naapurusto (~1km)",
     "locationAreaDesc": "Näyttää naapuruston alueen",
     "locationCity": "Vain kaupunki",
-    "locationCityDesc": "Näyttää vain Helsinki"
+    "locationCityDesc": "Näyttää vain kaupunki",
+    "city": "Kaupunki",
+    "changeCity": "Vaihda kaupunki"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -833,7 +835,9 @@
     "trustTiers": "Kolmiportainen luottamusjärjestelmä",
     "securePayments": "Turvalliset maksut Stripen kautta",
     "next": "Seuraava",
-    "start": "Aloita!"
+    "start": "Aloita!",
+    "selectCity": "Valitse kaupunki",
+    "noNeighborhoods": "Naapurustoja ei löytynyt"
   },
   "resetPassword": {
     "title": "Vaihda salasana",

@@ -10,20 +10,21 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS } from '@/lib/constants'
+import { useCityConfig, type City } from '@/hooks/useCityConfig'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 import { MapSearchBar, type SearchResult } from '@/components/map/MapSearchBar'
 import { MapFilterChips } from '@/components/map/MapFilterChips'
 import { MapErrorState, MapEmptyState } from '@/components/map/MapErrorState'
 import { LeafletMap } from '@/components/map/LeafletMap'
 
-// Helsinki municipal bounds — shared with filtering logic
+// Default Helsinki bounds — used as fallback when no city config is available
 const HKI = { south: 60.14, north: 60.27, west: 24.83, east: 25.20 } as const
 
-const isInHelsinki = (lat: number, lng: number): boolean => {
-  if (lat < HKI.south || lat > HKI.north || lng < HKI.west || lng > HKI.east) return false
-  if (lat > 60.24 && lng < 24.88) return false
-  if (lat > 60.26 && lng < 24.96) return false
-  return true
+interface CityBounds { south: number; north: number; west: number; east: number }
+
+function isInCityBounds(lat: number, lng: number, bounds?: CityBounds | null): boolean {
+  const b = bounds ?? HKI
+  return lat >= b.south && lat <= b.north && lng >= b.west && lng <= b.east
 }
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -47,6 +48,15 @@ export default function MapScreen() {
   const [cityEvents, setCityEvents] = useState<CityEvent[]>([])
   const [places, setPlaces] = useState<LocalPlace[]>([])
   const [loading, setLoading] = useState(true)
+  const [userCityId, setUserCityId] = useState<string | null>(null)
+  const cityConfig = useCityConfig(userCityId)
+  const cityBounds: CityBounds = cityConfig.city ? {
+    south: cityConfig.city.bounds_south,
+    north: cityConfig.city.bounds_north,
+    west: cityConfig.city.bounds_west,
+    east: cityConfig.city.bounds_east,
+  } : HKI
+  const areaNeighborhoods = cityConfig.neighborhoods.length > 0 ? cityConfig.neighborhoods : [...NEIGHBORHOODS]
 
   const [showPosts, setShowPosts] = useState(true)
   const [showEvents, setShowEvents] = useState(true)
@@ -75,17 +85,34 @@ export default function MapScreen() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [searchQuery])
 
+  // Fetch user city on mount
+  useEffect(() => {
+    async function fetchUserCity() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      try {
+        const { data: profileData } = await (supabase.from('profiles') as any).select('city_id').eq('id', user.id).single()
+        if (profileData?.city_id) setUserCityId(profileData.city_id)
+        else setUserCityId('helsinki')
+      } catch {
+        setUserCityId('helsinki')
+      }
+    }
+    fetchUserCity()
+  }, [supabase])
+
   useEffect(() => {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser()
 
+      const bounds = cityBounds
       const [postsRes, eventsRes, cityRes, placesRes] = await Promise.allSettled([
         supabase.from('posts')
           .select('id, type, title, description, location, latitude, longitude, image_url, daily_fee, user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto)')
           .eq('is_active', true)
           .not('latitude', 'is', null).not('longitude', 'is', null)
-          .gte('latitude', HKI.south).lte('latitude', HKI.north)
-          .gte('longitude', HKI.west).lte('longitude', HKI.east)
+          .gte('latitude', bounds.south).lte('latitude', bounds.north)
+          .gte('longitude', bounds.west).lte('longitude', bounds.east)
           .limit(200),
         supabase.from('events')
           .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, attendees:event_attendees(count), creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
@@ -96,15 +123,15 @@ export default function MapScreen() {
         supabase.from('city_events')
           .select('id, name_fi, name_en, name_sv, description_fi, start_time, end_time, location_name, location_address, latitude, longitude, image_url, info_url, category, is_free, price_info, organizer')
           .gte('start_time', new Date().toISOString())
-          .gte('latitude', 60.14).lte('latitude', 60.29)
-          .gte('longitude', 24.83).lte('longitude', 25.22)
+          .gte('latitude', bounds.south).lte('latitude', bounds.north + 0.02)
+          .gte('longitude', bounds.west).lte('longitude', bounds.east + 0.02)
           .order('start_time', { ascending: true })
           .limit(200),
         supabase.from('local_places')
           .select('id, name, category, subcategory, address, latitude, longitude, phone, website, opening_hours, image_url, neighborhood, tags')
           .not('neighborhood', 'is', null)
-          .gte('latitude', HKI.south).lte('latitude', HKI.north)
-          .gte('longitude', HKI.west).lte('longitude', HKI.east)
+          .gte('latitude', bounds.south).lte('latitude', bounds.north)
+          .gte('longitude', bounds.west).lte('longitude', bounds.east)
           .limit(500),
       ])
 
@@ -129,7 +156,7 @@ export default function MapScreen() {
       setLoading(false)
     }
     fetchData()
-  }, [supabase])
+  }, [supabase, cityBounds.south, cityBounds.north, cityBounds.west, cityBounds.east])
 
   // Listen for popup link navigation events
   useEffect(() => {
@@ -162,7 +189,7 @@ export default function MapScreen() {
   // ── Filtering chains ──
   const filteredPosts = useMemo(() => {
     if (!showPosts) return []
-    let p = posts.filter(x => x.latitude && x.longitude && isInHelsinki(x.latitude, x.longitude))
+    let p = posts.filter(x => x.latitude && x.longitude && isInCityBounds(x.latitude, x.longitude, cityBounds))
     if (postFilter) p = p.filter(x => x.type === postFilter)
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); p = p.filter(x => x.title.toLowerCase().includes(q) || x.location?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) p = p.filter(x => x.latitude && x.longitude && haversineKm(userPos[0], userPos[1], x.latitude, x.longitude) <= radiusKm)
@@ -171,7 +198,7 @@ export default function MapScreen() {
 
   const filteredEvents = useMemo(() => {
     if (!showEvents || eventSource === 'city') return []
-    let e = events.filter(x => x.location_lat && x.location_lng && isInHelsinki(x.location_lat, x.location_lng))
+    let e = events.filter(x => x.location_lat && x.location_lng && isInCityBounds(x.location_lat, x.location_lng, cityBounds))
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); e = e.filter(x => x.title.toLowerCase().includes(q) || x.location_name?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) e = e.filter(x => x.location_lat && x.location_lng && haversineKm(userPos[0], userPos[1], x.location_lat, x.location_lng) <= radiusKm)
     return e
@@ -179,7 +206,7 @@ export default function MapScreen() {
 
   const filteredCityEvents = useMemo(() => {
     if (!showEvents || eventSource === 'community') return []
-    let c = cityEvents.filter(x => x.latitude && x.longitude && isInHelsinki(x.latitude!, x.longitude!))
+    let c = cityEvents.filter(x => x.latitude && x.longitude && isInCityBounds(x.latitude!, x.longitude!, cityBounds))
     if (cityEventCategory) c = c.filter(x => x.category === cityEventCategory)
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); c = c.filter(x => x.name_fi.toLowerCase().includes(q) || x.location_name?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) c = c.filter(x => x.latitude && x.longitude && haversineKm(userPos[0], userPos[1], x.latitude!, x.longitude!) <= radiusKm)
@@ -188,7 +215,7 @@ export default function MapScreen() {
 
   const filteredPlaces = useMemo(() => {
     if (!showPlaces) return []
-    let p = places.filter(x => isInHelsinki(x.latitude, x.longitude))
+    let p = places.filter(x => isInCityBounds(x.latitude, x.longitude, cityBounds))
     if (placeFilter) p = p.filter(x => x.category === placeFilter)
     if (debouncedSearch) { const q = debouncedSearch.toLowerCase(); p = p.filter(x => x.name.toLowerCase().includes(q) || x.address?.toLowerCase().includes(q)) }
     if (userPos && radiusKm) p = p.filter(x => haversineKm(userPos[0], userPos[1], x.latitude, x.longitude) <= radiusKm)
@@ -241,7 +268,7 @@ export default function MapScreen() {
     const counts: Record<string, number> = {}
     const source = eventSource === 'community' ? [] : cityEvents
     for (const ce of source) {
-      if (!ce.latitude || !ce.longitude || !isInHelsinki(ce.latitude, ce.longitude)) continue
+      if (!ce.latitude || !ce.longitude || !isInCityBounds(ce.latitude, ce.longitude, cityBounds)) continue
       if (userPos && radiusKm && haversineKm(userPos[0], userPos[1], ce.latitude, ce.longitude) > radiusKm) continue
       counts[ce.category] = (counts[ce.category] ?? 0) + 1
     }
@@ -275,7 +302,7 @@ export default function MapScreen() {
       {/* ── Map ── */}
       <View style={ms.mapWrap}>
         {loading ? <View style={ms.loadingWrap}><ActivityIndicator size="large" color={colors.primary} /></View> : (
-          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onFlyComplete={() => setFlyTo(null)} onMapInteraction={dismissOverlays} isDark={isDark} t={t} />
+          <LeafletMap posts={filteredPosts} events={filteredEvents} cityEvents={filteredCityEvents} places={filteredPlaces} selectedArea={selectedArea} userPos={userPos} radiusKm={radiusKm} flyTo={flyTo} onFlyComplete={() => setFlyTo(null)} onMapInteraction={dismissOverlays} isDark={isDark} t={t} cityCenter={cityConfig.city ? [cityConfig.city.center_lat, cityConfig.city.center_lng] : undefined} neighborhoodCoords={Object.keys(cityConfig.neighborhoodCoords).length > 0 ? Object.fromEntries(Object.entries(cityConfig.neighborhoodCoords).map(([k, v]) => [k, [v.lat, v.lng] as [number, number]])) : undefined} />
         )}
       </View>
 
@@ -286,7 +313,7 @@ export default function MapScreen() {
         </Pressable>
         <Pressable onPress={() => { setShowAreaPicker(!showAreaPicker); setShowSearch(false); setActiveSubFilter(null) }} style={[ms.areaPill, { backgroundColor: colors.card }]}>
           <Navigation size={14} color={colors.primary} />
-          <Text style={[ms.areaPillText, { color: colors.foreground }]} numberOfLines={1}>{selectedArea ?? t('map.allHelsinki')}</Text>
+          <Text style={[ms.areaPillText, { color: colors.foreground }]} numberOfLines={1}>{selectedArea ?? (cityConfig.city?.name ?? t('map.allHelsinki'))}</Text>
           <ChevronDown size={14} color={colors.mutedForeground} />
         </Pressable>
         <Pressable onPress={() => { setShowSearch(!showSearch); setShowAreaPicker(false); setActiveSubFilter(null) }} style={[ms.pill, { backgroundColor: colors.card }]}>
@@ -338,9 +365,9 @@ export default function MapScreen() {
         <View style={[ms.overlay, { top: insets.top + 52, backgroundColor: colors.card, borderColor: colors.border }]}>
           <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
             <Pressable onPress={() => { setSelectedArea(null); setShowAreaPicker(false) }} style={ms.overlayItem}>
-              <Text style={[ms.overlayText, { color: colors.foreground, fontWeight: !selectedArea ? '700' : '400' }]}>Helsinki ({t('common.all')})</Text>
+              <Text style={[ms.overlayText, { color: colors.foreground, fontWeight: !selectedArea ? '700' : '400' }]}>{cityConfig.city?.name ?? 'Helsinki'} ({t('common.all')})</Text>
             </Pressable>
-            {NEIGHBORHOODS.map((nh) => (
+            {areaNeighborhoods.map((nh) => (
               <Pressable key={nh} onPress={() => { setSelectedArea(nh); setShowAreaPicker(false) }} style={ms.overlayItem}>
                 <Text style={[ms.overlayText, { color: colors.foreground, fontWeight: selectedArea === nh ? '700' : '400' }]}>{nh}</Text>
               </Pressable>

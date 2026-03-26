@@ -2,7 +2,8 @@ declare const __DEV__: boolean
 
 import type { CityEvent } from './types'
 
-const BASE_URL = 'https://api.hel.fi/linkedevents/v1'
+const DEFAULT_BASE_URL = 'https://api.hel.fi/linkedevents/v1'
+let BASE_URL = DEFAULT_BASE_URL
 
 interface LinkedEventResponse {
   meta: { count: number; next: string | null }
@@ -83,9 +84,20 @@ const CACHE_TTL = 30 * 60 * 1000 // 30 min
 // Background fetch promise to prevent duplicate requests
 let pendingFetch: Promise<CityEvent[]> | null = null
 
-function buildUrl(page_size: number): string {
+/**
+ * Set the LinkedEvents API base URL for the current city.
+ * Pass null to reset to Helsinki default.
+ */
+export function setLinkedEventsBaseUrl(url: string | null) {
+  BASE_URL = url || DEFAULT_BASE_URL
+  // Clear caches when city changes
+  invalidateEventsCache()
+}
+
+function buildUrl(page_size: number, baseUrl?: string): string {
   const today = new Date().toISOString().split('T')[0]
-  return `${BASE_URL}/event/?start=${today}&sort=start_time&page_size=${page_size}&include=location,keywords&super_event_type=none&language=fi`
+  const url = baseUrl || BASE_URL
+  return `${url}/event/?start=${today}&sort=start_time&page_size=${page_size}&include=location,keywords&super_event_type=none&language=fi`
 }
 
 async function fetchPage(url: string): Promise<{ events: CityEvent[]; next: string | null }> {
@@ -104,8 +116,9 @@ async function fetchPage(url: string): Promise<{ events: CityEvent[]; next: stri
 /**
  * Fast first page (100 events in ~500ms), then background-load more pages.
  * Returns first page immediately, updates cache as more pages load.
+ * @param apiUrl Optional LinkedEvents API base URL. Defaults to current city's URL.
  */
-export async function fetchHelsinkiEvents(): Promise<CityEvent[]> {
+export async function fetchHelsinkiEvents(apiUrl?: string): Promise<CityEvent[]> {
   if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) {
     return cache.events
   }
@@ -116,7 +129,7 @@ export async function fetchHelsinkiEvents(): Promise<CityEvent[]> {
   pendingFetch = (async () => {
     try {
       // Fast: fetch first page only (100 events, ~500ms)
-      const first = await fetchPage(buildUrl(100))
+      const first = await fetchPage(buildUrl(100, apiUrl))
       cache = { events: first.events, fetchedAt: Date.now() }
 
       // Background: load 4 more pages without blocking
@@ -132,6 +145,9 @@ export async function fetchHelsinkiEvents(): Promise<CityEvent[]> {
 
   return pendingFetch
 }
+
+/** Alias for fetchHelsinkiEvents — fetches events for the currently configured city. */
+export const fetchCityEvents = fetchHelsinkiEvents
 
 async function loadMorePages(startUrl: string, maxPages: number) {
   let url: string | null = startUrl
@@ -203,7 +219,8 @@ export async function fetchNearbyEvents(
   try {
     const today = new Date().toISOString().split('T')[0]
     const bbox = buildBbox(lat, lng, radiusKm)
-    const url = `${BASE_URL}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
+    const baseUrl = BASE_URL
+    const url = `${baseUrl}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
 
     const res = await fetch(url)
     if (!res.ok) return []
@@ -271,8 +288,12 @@ export function getNearbyEventsTotal(lat: number, lng: number): number {
 /**
  * Pre-warm the cache. Call this early (e.g., from feed screen) so
  * the map/events screen has data ready instantly.
+ * @param apiUrl Optional LinkedEvents API base URL for the current city.
  */
-export function prefetchHelsinkiEvents() {
+export function prefetchHelsinkiEvents(apiUrl?: string) {
   if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) return
-  fetchHelsinkiEvents().catch(() => {})
+  fetchHelsinkiEvents(apiUrl).catch(() => {})
 }
+
+/** Alias for prefetchHelsinkiEvents */
+export const prefetchCityEvents = prefetchHelsinkiEvents

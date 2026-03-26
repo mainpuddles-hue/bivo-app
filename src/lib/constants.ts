@@ -146,6 +146,7 @@ export const TIER_3_REQUIREMENTS = {
   noActiveReports: true,
 }
 
+// DEPRECATED: Use useCityConfig hook instead. Kept as offline fallback for Helsinki.
 export const NEIGHBORHOODS = [
   'Kallio', 'Sörnäinen', 'Vallila', 'Hermanni', 'Alppiharju',
   'Pasila', 'Käpylä', 'Kumpula', 'Toukola', 'Arabia',

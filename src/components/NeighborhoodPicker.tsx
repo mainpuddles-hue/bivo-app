@@ -13,9 +13,11 @@ export interface NeighborhoodPickerProps {
   onClose: () => void
   selectedNeighborhood: string | null
   onSelect: (nh: string) => void
+  /** Override the default neighborhoods list (for multi-city support) */
+  neighborhoods?: string[]
 }
 
-export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onSelect }: NeighborhoodPickerProps) {
+export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onSelect, neighborhoods }: NeighborhoodPickerProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current
@@ -84,7 +86,7 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
 
         {/* List */}
         <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
-          {NEIGHBORHOODS.map(nh => {
+          {(neighborhoods ?? NEIGHBORHOODS).map(nh => {
             const isSelected = selectedNeighborhood === nh
             return (
               <Pressable

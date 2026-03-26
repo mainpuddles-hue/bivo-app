@@ -695,7 +695,9 @@
     "locationArea": "Grannskap (~1km)",
     "locationAreaDesc": "Visar ditt grannskapsområde",
     "locationCity": "Bara stad",
-    "locationCityDesc": "Visar bara Helsingfors"
+    "locationCityDesc": "Visar bara stad",
+    "city": "Stad",
+    "changeCity": "Byt stad"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -833,7 +835,9 @@
     "trustTiers": "Trestegs tillitssystem",
     "securePayments": "Säkra betalningar via Stripe",
     "next": "Nästa",
-    "start": "Sätt igång!"
+    "start": "Sätt igång!",
+    "selectCity": "Välj stad",
+    "noNeighborhoods": "Inga stadsdelar hittades"
   },
   "resetPassword": {
     "title": "Byt lösenord",

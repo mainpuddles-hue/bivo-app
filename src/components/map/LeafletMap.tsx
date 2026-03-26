@@ -60,9 +60,15 @@ export interface LeafletMapProps {
   onMapInteraction?: () => void
   isDark: boolean
   t: (key: string) => string
+  /** Override default center [lat, lng]. Falls back to Helsinki. */
+  cityCenter?: [number, number]
+  /** Override neighborhood coords. Falls back to Helsinki hardcoded coords. */
+  neighborhoodCoords?: Record<string, [number, number]>
 }
 
-export function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, radiusKm, flyTo, onFlyComplete, onMapInteraction, isDark, t }: LeafletMapProps) {
+export function LeafletMap({ posts, events, cityEvents, places, selectedArea, userPos, radiusKm, flyTo, onFlyComplete, onMapInteraction, isDark, t, cityCenter, neighborhoodCoords: neighborhoodCoordsOverride }: LeafletMapProps) {
+  const mapCenter: [number, number] = cityCenter ?? HELSINKI_CENTER
+  const nhCoords = neighborhoodCoordsOverride ?? NEIGHBORHOOD_COORDS
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const leafletRef = useRef<any>(null)
@@ -118,7 +124,7 @@ export function LeafletMap({ posts, events, cityEvents, places, selectedArea, us
       const L = (window as any).L
       leafletRef.current = L
 
-      const map = L.map(mapRef.current, { zoomControl: false }).setView(HELSINKI_CENTER, DEFAULT_ZOOM)
+      const map = L.map(mapRef.current, { zoomControl: false }).setView(mapCenter, DEFAULT_ZOOM)
       tileLayerRef.current = L.tileLayer(isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
       L.control.zoom({ position: 'bottomright' }).addTo(map)
 
@@ -318,7 +324,7 @@ export function LeafletMap({ posts, events, cityEvents, places, selectedArea, us
   // Fly to selected area
   useEffect(() => {
     if (!selectedArea || !mapInstanceRef.current) return
-    const coords = NEIGHBORHOOD_COORDS[selectedArea]
+    const coords = nhCoords[selectedArea]
     if (coords) mapInstanceRef.current.flyTo(coords, 15, { duration: 1 })
   }, [selectedArea])
 

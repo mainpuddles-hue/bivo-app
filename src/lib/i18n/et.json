@@ -695,7 +695,9 @@
     "locationArea": "Naabruskond (~1km)",
     "locationAreaDesc": "Näitab sinu naabruskonna ala",
     "locationCity": "Ainult linn",
-    "locationCityDesc": "Näitab ainult Helsinki"
+    "locationCityDesc": "Näitab ainult linna",
+    "city": "Linn",
+    "changeCity": "Vaheta linn"
   },
   "postCard": {
     "viewListing": "Vaata kuulutust",
@@ -832,7 +834,9 @@
     "trustTiers": "Kolmeastmeline usaldussüsteem",
     "securePayments": "Turvalised maksed Stripe'i kaudu",
     "next": "Järgmine",
-    "start": "Alustame!"
+    "start": "Alustame!",
+    "selectCity": "Vali linn",
+    "noNeighborhoods": "Naabruskondasid ei leitud"
   },
   "resetPassword": {
     "title": "Vaheta parool",

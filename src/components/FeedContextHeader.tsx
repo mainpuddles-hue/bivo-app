@@ -8,9 +8,10 @@ interface FeedContextHeaderProps {
   neighborhood: string | null
   postCount: number
   loading: boolean
+  cityName?: string | null
 }
 
-function FeedContextHeaderInner({ neighborhood, postCount, loading }: FeedContextHeaderProps) {
+function FeedContextHeaderInner({ neighborhood, postCount, loading, cityName }: FeedContextHeaderProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
 
@@ -22,7 +23,7 @@ function FeedContextHeaderInner({ neighborhood, postCount, loading }: FeedContex
     return t('greeting.night')
   }, [t])
 
-  const area = neighborhood || 'Helsinki'
+  const area = neighborhood || cityName || 'Helsinki'
 
   const nugget = useMemo(() => {
     if (postCount > 0 && !loading) {

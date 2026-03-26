@@ -225,6 +225,7 @@ function FeedScreenInner() {
         neighborhood={feed.userNeighborhood}
         postCount={feed.posts.length}
         loading={feed.loading}
+        cityName={feed.userCityName}
       />
 
       {/* Discovery: nearby places carousel */}
@@ -321,7 +322,7 @@ function FeedScreenInner() {
         <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={4}>
           <MapPin size={12} color={colors.mutedForeground} />
           <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
-            {feed.userNeighborhood ? `Helsinki · ${feed.userNeighborhood}` : 'Helsinki'}
+            {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
           </Text>
           <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
         </Pressable>

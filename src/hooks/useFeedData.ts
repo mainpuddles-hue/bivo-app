@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics'
 import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
-import { fetchHelsinkiEvents, prefetchHelsinkiEvents } from '@/lib/linkedevents'
+import { fetchHelsinkiEvents, prefetchHelsinkiEvents, setLinkedEventsBaseUrl } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
 import { getSeedPosts } from '@/lib/seedContent'
@@ -35,6 +35,8 @@ export function useFeedData() {
   const [extraLoading, setExtraLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
+  const [userCityId, setUserCityId] = useState<string | null>(null)
+  const [userCityName, setUserCityName] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
 
@@ -45,6 +47,13 @@ export function useFeedData() {
   const lastFetchLocationRef = useRef<{ latitude: number; longitude: number } | null>(null)
   const loadingRef = useRef(false)
   const focusCountRef = useRef(0)
+
+  // Cache for personalization RPC — avoid calling on every feed refresh
+  const personalizationCacheRef = useRef<{
+    scores: Map<string, number>
+    fetchedAt: number
+  } | null>(null)
+  const PERSONALIZATION_CACHE_TTL = 2 * 60 * 1000 // 2 minutes
 
   // Ref for posts to avoid renderPost depending on posts array
   const postsRef = useRef(posts)
@@ -76,17 +85,29 @@ export function useFeedData() {
     return () => { cancelled = true }
   }, [])
 
-  // ── Fetch followed user IDs + user neighborhood ──
+  // ── Fetch followed user IDs + user neighborhood + city ──
   useEffect(() => {
     async function fetchFollowsAndProfile() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const [{ data: followsData }, { data: profileData }] = await Promise.all([
         supabase.from('user_follows').select('followed_id').eq('follower_id', user.id),
-        (supabase.from('profiles') as any).select('naapurusto').eq('id', user.id).single(),
+        (supabase.from('profiles') as any).select('naapurusto, city_id').eq('id', user.id).single(),
       ])
       if (followsData) setFollowedIds(followsData.map((f: any) => f.followed_id))
       if ((profileData as any)?.naapurusto) setUserNeighborhood((profileData as any).naapurusto)
+      const cityId = (profileData as any)?.city_id ?? 'helsinki'
+      setUserCityId(cityId)
+      // Fetch city details (name + linkedevents URL)
+      try {
+        const { data: cityData } = await supabase.from('cities').select('name, linkedevents_url').eq('id', cityId).single()
+        if (cityData) {
+          setUserCityName((cityData as any).name ?? null)
+          setLinkedEventsBaseUrl((cityData as any).linkedevents_url ?? null)
+        }
+      } catch {
+        // City table may not exist yet — silently continue with Helsinki defaults
+      }
     }
     fetchFollowsAndProfile()
   }, [supabase])
@@ -111,10 +132,14 @@ export function useFeedData() {
     return () => { supabase.removeChannel(channel) }
   }, [supabase, currentUserId])
 
+  // ── City center fallback coords (Helsinki default) ──
+  const cityFallbackLat = userLocation?.latitude ?? 60.1699
+  const cityFallbackLng = userLocation?.longitude ?? 24.9384
+
   // ── Fetch city events and nearby places ──
   const fetchExtraContent = useCallback(async () => {
-    const lat = userLocation?.latitude ?? 60.1699
-    const lng = userLocation?.longitude ?? 24.9384
+    const lat = cityFallbackLat
+    const lng = cityFallbackLng
 
     // Skip if location hasn't moved significantly (>500m)
     if (lastFetchLocationRef.current) {
@@ -200,22 +225,28 @@ export function useFeedData() {
         }
       })
 
-      // Fetch personalization scores
+      // Fetch personalization scores (cached for 2 minutes to avoid expensive RPC on every refresh)
       let personalScores = new Map<string, number>()
       if (currentUserId) {
-        try {
-          const { data: scores } = await (supabase.rpc as any)('get_personalized_feed', {
-            p_user_id: currentUserId,
-            p_limit: 50,
-            p_offset: 0,
-          })
-          if (scores) {
-            for (const s of scores as any[]) {
-              personalScores.set(s.post_id, s.personalization_score ?? 0)
+        const cached = personalizationCacheRef.current
+        if (cached && (Date.now() - cached.fetchedAt) < PERSONALIZATION_CACHE_TTL) {
+          personalScores = cached.scores
+        } else {
+          try {
+            const { data: scores } = await (supabase.rpc as any)('get_personalized_feed', {
+              p_user_id: currentUserId,
+              p_limit: 50,
+              p_offset: 0,
+            })
+            if (scores) {
+              for (const s of scores as any[]) {
+                personalScores.set(s.post_id, s.personalization_score ?? 0)
+              }
+              personalizationCacheRef.current = { scores: personalScores, fetchedAt: Date.now() }
             }
+          } catch {
+            // Personalization unavailable — continue with default ranking
           }
-        } catch {
-          // Personalization unavailable — continue with default ranking
         }
       }
 
@@ -359,6 +390,8 @@ export function useFeedData() {
     followedIds,
     userLocation,
     userNeighborhood,
+    userCityId,
+    userCityName,
 
     // Discovery
     cityEvents,

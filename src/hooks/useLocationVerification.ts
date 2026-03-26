@@ -52,8 +52,13 @@ export function useLocationVerification() {
   const [status, setStatus] = useState<VerificationStatus>('idle')
   const [distanceKm, setDistanceKm] = useState<number | null>(null)
 
-  const verify = useCallback(async (neighborhood: string): Promise<boolean> => {
-    const center = NEIGHBORHOOD_CENTERS[neighborhood]
+  /**
+   * Verify user is near the selected neighborhood.
+   * @param neighborhood Name of the neighborhood
+   * @param coords Optional override coords from DB (for non-Helsinki cities)
+   */
+  const verify = useCallback(async (neighborhood: string, coords?: { lat: number; lng: number }): Promise<boolean> => {
+    const center = coords ?? NEIGHBORHOOD_CENTERS[neighborhood]
     if (!center) {
       setStatus('error')
       return false

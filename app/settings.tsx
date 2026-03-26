@@ -70,6 +70,12 @@ export default function SettingsScreen() {
   const [nameText, setNameText] = useState('')
   const [savingName, setSavingName] = useState(false)
 
+  // City
+  const [userCityId, setUserCityId] = useState<string>('helsinki')
+  const [userCityName, setUserCityName] = useState<string>('Helsinki')
+  const [showCityPicker, setShowCityPicker] = useState(false)
+  const [availableCities, setAvailableCities] = useState<{ id: string; name: string }[]>([])
+
   // Account info
   const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null)
 
@@ -87,7 +93,19 @@ export default function SettingsScreen() {
         setNameText(p.name ?? '')
         setVisibility(p.profile_visibility)
         setLocationAccuracy(p.location_accuracy ?? 'exact')
+        // City
+        const cid = (data as any).city_id ?? 'helsinki'
+        setUserCityId(cid)
+        try {
+          const { data: cityData } = await supabase.from('cities').select('name').eq('id', cid).single()
+          if (cityData) setUserCityName((cityData as any).name)
+        } catch { /* city table may not exist */ }
       }
+      // Fetch available cities
+      try {
+        const { data: citiesData } = await supabase.from('cities').select('id, name').order('name')
+        if (citiesData && citiesData.length > 0) setAvailableCities(citiesData as any[])
+      } catch { /* silently ignore */ }
       // Theme is handled by ThemeProvider
     }
     load()
@@ -426,6 +444,45 @@ export default function SettingsScreen() {
           ))}
         </View>
 
+        {/* City — allows user to change city */}
+        {availableCities.length > 0 && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.city')}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              {showCityPicker ? (
+                <>
+                  {availableCities.map((city) => (
+                    <Pressable
+                      key={city.id}
+                      onPress={async () => {
+                        if (city.id === userCityId) { setShowCityPicker(false); return }
+                        setUserCityId(city.id)
+                        setUserCityName(city.name)
+                        setShowCityPicker(false)
+                        if (profile) {
+                          await (supabase.from('profiles') as any).update({ city_id: city.id, naapurusto: null }).eq('id', profile.id)
+                          setProfile(prev => prev ? { ...prev, naapurusto: null as any } : null)
+                        }
+                      }}
+                      style={s.row}
+                    >
+                      <MapPin size={18} color={city.id === userCityId ? colors.primary : colors.mutedForeground} />
+                      <Text style={[s.rowText, { color: colors.foreground }]}>{city.name}</Text>
+                      <View style={[city.id === userCityId ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
+                    </Pressable>
+                  ))}
+                </>
+              ) : (
+                <Pressable onPress={() => setShowCityPicker(true)} style={s.row}>
+                  <MapPin size={18} color={colors.primary} />
+                  <Text style={[s.rowText, { color: colors.foreground }]}>{userCityName}</Text>
+                  <ChevronRight size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </View>
+          </>
+        )}
+
         {/* Neighborhood — allows user to change neighborhood after onboarding */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('onboarding.chooseNeighborhood')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
@@ -435,7 +492,7 @@ export default function SettingsScreen() {
           }} style={s.row}>
             <MapPin size={18} color={colors.primary} />
             <Text style={[s.rowText, { color: colors.foreground }]}>
-              {profile?.naapurusto ?? 'Helsinki'}
+              {profile?.naapurusto ?? userCityName}
             </Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>

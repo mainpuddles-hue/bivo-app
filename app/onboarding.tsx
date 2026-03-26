@@ -39,6 +39,16 @@ import { useLocationVerification } from '@/hooks/useLocationVerification'
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const TOTAL_PAGES = 4
 
+// City display names
+const CITY_NAMES: Record<string, string> = {
+  helsinki: 'Helsinki',
+  espoo: 'Espoo',
+  vantaa: 'Vantaa',
+  tampere: 'Tampere',
+  turku: 'Turku',
+  oulu: 'Oulu',
+}
+
 export default function OnboardingScreen() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
@@ -48,18 +58,79 @@ export default function OnboardingScreen() {
   const scrollRef = useRef<ScrollView>(null)
 
   const [currentPage, setCurrentPage] = useState(0)
+  const [selectedCity, setSelectedCity] = useState('helsinki')
+  const [cities, setCities] = useState<{ id: string; name: string }[]>([])
+  const [dynamicNeighborhoods, setDynamicNeighborhoods] = useState<string[]>([])
+  const [neighborhoodCoordsMap, setNeighborhoodCoordsMap] = useState<Record<string, { lat: number; lng: number }>>({})
+  const [neighborhoodsLoading, setNeighborhoodsLoading] = useState(false)
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
   const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
 
+  // Fetch available cities from DB
+  useEffect(() => {
+    async function fetchCities() {
+      try {
+        const { data } = await supabase.from('cities').select('id, name').order('name')
+        if (data && data.length > 0) {
+          setCities(data as any[])
+        } else {
+          // Fallback: use static city list
+          setCities(Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name })))
+        }
+      } catch {
+        setCities(Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name })))
+      }
+    }
+    fetchCities()
+  }, [supabase])
+
+  // Fetch neighborhoods when city changes
+  useEffect(() => {
+    let cancelled = false
+    async function fetchNeighborhoods() {
+      setNeighborhoodsLoading(true)
+      setSelectedNeighborhood(null) // Reset selection when city changes
+      try {
+        const { data } = await supabase
+          .from('city_neighborhoods')
+          .select('name, center_lat, center_lng')
+          .eq('city_id', selectedCity)
+          .order('name')
+        if (!cancelled && data && data.length > 0) {
+          setDynamicNeighborhoods(data.map((n: any) => n.name))
+          const coordsMap: Record<string, { lat: number; lng: number }> = {}
+          for (const n of data as any[]) {
+            coordsMap[n.name] = { lat: n.center_lat, lng: n.center_lng }
+          }
+          setNeighborhoodCoordsMap(coordsMap)
+        } else if (!cancelled) {
+          // Fallback to static Helsinki neighborhoods
+          setDynamicNeighborhoods(selectedCity === 'helsinki' ? [...NEIGHBORHOODS] : [])
+          setNeighborhoodCoordsMap({})
+        }
+      } catch {
+        if (!cancelled) {
+          setDynamicNeighborhoods(selectedCity === 'helsinki' ? [...NEIGHBORHOODS] : [])
+          setNeighborhoodCoordsMap({})
+        }
+      } finally {
+        if (!cancelled) setNeighborhoodsLoading(false)
+      }
+    }
+    fetchNeighborhoods()
+    return () => { cancelled = true }
+  }, [selectedCity, supabase])
+
   // Auto-verify when neighborhood is selected on page 4 (index 3)
   useEffect(() => {
     if (selectedNeighborhood && currentPage === 3) {
-      verify(selectedNeighborhood)
+      const coords = neighborhoodCoordsMap[selectedNeighborhood]
+      verify(selectedNeighborhood, coords)
     }
-  }, [selectedNeighborhood, currentPage, verify])
+  }, [selectedNeighborhood, currentPage, verify, neighborhoodCoordsMap])
 
   const goToPage = useCallback((page: number) => {
     scrollRef.current?.scrollTo({ x: page * SCREEN_WIDTH, animated: true })
@@ -84,9 +155,10 @@ export default function OnboardingScreen() {
         return
       }
 
-      // Save selected neighborhood + mark onboarding completed in profile
+      // Save selected city + neighborhood + mark onboarding completed in profile
       const updateData: Record<string, any> = {
         naapurusto: selectedNeighborhood,
+        city_id: selectedCity,
         onboarding_completed: true,
       }
       await (supabase.from('profiles') as any)
@@ -124,7 +196,7 @@ export default function OnboardingScreen() {
     } finally {
       setSaving(false)
     }
-  }, [supabase, selectedNeighborhood, referralInput, router, t])
+  }, [supabase, selectedNeighborhood, selectedCity, referralInput, router, t])
 
   // ── Dots indicator ──
   const renderDots = () => (
@@ -304,9 +376,41 @@ export default function OnboardingScreen() {
       </Pressable>
 
       <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 24 }]}>
-        {t('onboarding.chooseNeighborhood')}
+        {t('onboarding.selectCity')}
       </Text>
-      <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24 }]}>
+
+      {/* City picker row */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cityRow}>
+        {(cities.length > 0 ? cities : Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name }))).map((city) => {
+          const isSelected = selectedCity === city.id
+          return (
+            <Pressable
+              key={city.id}
+              onPress={() => setSelectedCity(city.id)}
+              style={[
+                s.cityChip,
+                isSelected
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+              ]}
+            >
+              <Text
+                style={[
+                  s.cityChipText,
+                  {
+                    color: isSelected ? colors.primaryForeground : colors.foreground,
+                    fontFamily: isSelected ? fonts.bodySemi : fonts.body,
+                  },
+                ]}
+              >
+                {city.name}
+              </Text>
+            </Pressable>
+          )
+        })}
+      </ScrollView>
+
+      <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, marginTop: 8 }]}>
         {t('onboarding.neighborhoodSubtitle')}
       </Text>
 
@@ -315,35 +419,43 @@ export default function OnboardingScreen() {
         showsVerticalScrollIndicator={false}
         style={s.neighborhoodScroll}
       >
-        {NEIGHBORHOODS.map((nh) => {
-          const isSelected = selectedNeighborhood === nh
-          return (
-            <Pressable
-              key={nh}
-              onPress={() => setSelectedNeighborhood(nh)}
-              style={[
-                s.neighborhoodChip,
-                isSelected
-                  ? { backgroundColor: colors.primary }
-                  : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-              ]}
-            >
-              {isSelected && <Check size={14} color={colors.primaryForeground} />}
-              <MapPin size={14} color={isSelected ? colors.primaryForeground : colors.mutedForeground} />
-              <Text
+        {neighborhoodsLoading ? (
+          <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 20 }} />
+        ) : dynamicNeighborhoods.length === 0 ? (
+          <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, paddingTop: 16 }]}>
+            {t('onboarding.noNeighborhoods')}
+          </Text>
+        ) : (
+          dynamicNeighborhoods.map((nh) => {
+            const isSelected = selectedNeighborhood === nh
+            return (
+              <Pressable
+                key={nh}
+                onPress={() => setSelectedNeighborhood(nh)}
                 style={[
-                  s.neighborhoodText,
-                  {
-                    color: isSelected ? colors.primaryForeground : colors.foreground,
-                    fontFamily: fonts.bodyMedium,
-                  },
+                  s.neighborhoodChip,
+                  isSelected
+                    ? { backgroundColor: colors.primary }
+                    : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                 ]}
               >
-                {nh}
-              </Text>
-            </Pressable>
-          )
-        })}
+                {isSelected && <Check size={14} color={colors.primaryForeground} />}
+                <MapPin size={14} color={isSelected ? colors.primaryForeground : colors.mutedForeground} />
+                <Text
+                  style={[
+                    s.neighborhoodText,
+                    {
+                      color: isSelected ? colors.primaryForeground : colors.foreground,
+                      fontFamily: fonts.bodyMedium,
+                    },
+                  ]}
+                >
+                  {nh}
+                </Text>
+              </Pressable>
+            )
+          })
+        )}
       </ScrollView>
 
       {/* Location verification status */}
@@ -608,6 +720,23 @@ const s = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 8,
     alignSelf: 'flex-start',
+  },
+
+  // City picker
+  cityRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+  },
+  cityChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  cityChipText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 
   // Neighborhood

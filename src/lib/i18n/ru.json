@@ -695,7 +695,9 @@
     "locationArea": "Район (~1км)",
     "locationAreaDesc": "Показывает район проживания",
     "locationCity": "Только город",
-    "locationCityDesc": "Показывает только Хельсинки"
+    "locationCityDesc": "Показывает только город",
+    "city": "Город",
+    "changeCity": "Сменить город"
   },
   "postCard": {
     "viewListing": "Смотреть объявление",
@@ -832,7 +834,9 @@
     "trustTiers": "Трёхуровневая система доверия",
     "securePayments": "Безопасные платежи через Stripe",
     "next": "Далее",
-    "start": "Поехали!"
+    "start": "Поехали!",
+    "selectCity": "Выберите город",
+    "noNeighborhoods": "Районы не найдены"
   },
   "resetPassword": {
     "title": "Смена пароля",

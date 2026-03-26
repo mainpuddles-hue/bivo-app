@@ -695,7 +695,9 @@
     "locationArea": "Neighborhood (~1km)",
     "locationAreaDesc": "Shows your neighborhood area",
     "locationCity": "City only",
-    "locationCityDesc": "Shows only Helsinki"
+    "locationCityDesc": "Shows only city",
+    "city": "City",
+    "changeCity": "Change city"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -833,7 +835,9 @@
     "trustTiers": "Three-tier trust system",
     "securePayments": "Secure payments via Stripe",
     "next": "Next",
-    "start": "Let's go!"
+    "start": "Let's go!",
+    "selectCity": "Select city",
+    "noNeighborhoods": "No neighborhoods found"
   },
   "resetPassword": {
     "title": "Change password",
