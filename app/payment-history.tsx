@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router'
 import { ArrowLeft, Receipt, ChevronRight, CreditCard } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatPrice } from '@/lib/format'
 
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   listContent: { padding: 16, gap: 10, paddingBottom: 40 },
   paymentRow: {
     borderRadius: 12,

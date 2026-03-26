@@ -571,6 +571,8 @@ export default function CreateScreen() {
               placeholder={t('post.titleLabel')}
               placeholderTextColor={colors.mutedForeground}
               maxLength={100}
+              returnKeyType="next"
+              autoCapitalize="sentences"
             />
             <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{title.length}/100</Text>
           </View>
@@ -1104,7 +1106,7 @@ const styles = StyleSheet.create({
   categoryTextWrap: { flex: 1, gap: 2 },
   categoryName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },
   categorySub: { fontSize: 12, fontFamily: fonts.body },
-  form: { padding: 16, gap: 20, paddingBottom: 40 },
+  form: { padding: 16, gap: 20, paddingBottom: 100 },
   field: { gap: 6 },
   label: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   input: {

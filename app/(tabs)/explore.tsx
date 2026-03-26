@@ -292,13 +292,13 @@ function ExploreScreenInner() {
                 { backgroundColor: isActive ? colors.primary : colors.muted },
               ]}
             >
-              <Icon size={16} color={isActive ? '#FFFFFF' : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
-              <Text style={[s.chipText, { color: isActive ? '#FFFFFF' : colors.mutedForeground }]}>
+              <Icon size={16} color={isActive ? colors.primaryForeground : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
+              <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
               {tabCounts[key] > 0 && (
                 <View style={[s.chipCount, { backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : `${colors.primary}20` }]}>
-                  <Text style={[s.chipCountText, { color: isActive ? '#FFFFFF' : colors.primary }]}>
+                  <Text style={[s.chipCountText, { color: isActive ? colors.primaryForeground : colors.primary }]}>
                     {tabCounts[key]}
                   </Text>
                 </View>

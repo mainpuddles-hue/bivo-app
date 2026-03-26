@@ -10,6 +10,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { PostCard } from '@/components/PostCard'
 import { EmptyState } from '@/components/EmptyState'
@@ -357,7 +358,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   tabBar: {
     flexDirection: 'row', marginHorizontal: 16, marginTop: 12, borderRadius: 12,
     padding: 4, gap: 4,
@@ -370,7 +371,7 @@ const s = StyleSheet.create({
   tabText: { fontSize: 13, fontWeight: '600' },
   tabBadge: { paddingHorizontal: 6, paddingVertical: 1, borderRadius: 10 },
   tabBadgeText: { fontSize: 11, fontWeight: '700' },
-  content: { padding: 16, gap: 12, paddingBottom: 40 },
+  content: { padding: 16, gap: 12, paddingBottom: 100 },
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 12 },
   emptyTitle: { fontSize: 16, fontWeight: '600' },
   emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 32, lineHeight: 20 },

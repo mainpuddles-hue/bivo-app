@@ -90,7 +90,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
               }}
               style={({ pressed }) => [
                 styles.card,
-                { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' },
+                { backgroundColor: colors.card },
                 pressed && { transform: [{ scale: 0.96 }] },
               ]}
             >

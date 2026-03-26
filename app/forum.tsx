@@ -481,10 +481,10 @@ export default function ForumScreen() {
             </Pressable>
           </View>
           <View style={s.modalSection}>
-            <TextInput style={[s.titleInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: isDark ? colors.card : '#FFFFFF' }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus />
+            <TextInput style={[s.titleInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
           </View>
           <View style={[s.modalSection, { flex: 1 }]}>
-            <TextInput style={[s.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: isDark ? colors.card : '#FFFFFF' }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} />
+            <TextInput style={[s.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} />
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -533,7 +533,7 @@ const s = StyleSheet.create({
   sortChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
   newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
   newPostsBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, color: '#FFFFFF' },
-  list: { paddingHorizontal: 16, paddingBottom: 20 },
+  list: { paddingHorizontal: 16, paddingBottom: 100 },
   listHeaderGap: { height: 4 },
   card: { borderRadius: 12, overflow: 'hidden', flexDirection: 'row', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   categoryBar: { width: 4 },

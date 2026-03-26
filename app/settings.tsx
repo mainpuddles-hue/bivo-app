@@ -13,6 +13,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInAppPurchase } from '@/hooks/useInAppPurchase'
 import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
 import { isValidUUID } from '@/lib/validation'
+import { fonts } from '@/lib/fonts'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -620,13 +621,13 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
   },
   saveBtnText: { fontSize: 13, fontWeight: '600' },
-  content: { padding: 16, gap: 8, paddingBottom: 40 },
+  content: { padding: 16, gap: 8, paddingBottom: 100 },
   section: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 12, paddingHorizontal: 4 },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },

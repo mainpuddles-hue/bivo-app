@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     width: 4,
   },
   cardBody: {
-    flex: 1, padding: 14, gap: 8,
+    flex: 1, padding: 16, gap: 8,
   },
   cardUserRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,

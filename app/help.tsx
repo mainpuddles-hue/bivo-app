@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { ArrowLeft, ChevronDown, ChevronUp, Mail, ExternalLink } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 interface FAQItem {
   question: string
@@ -153,7 +154,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   subtitle: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
   categoryTitle: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 6, paddingHorizontal: 4 },

@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
+import { fonts } from '@/lib/fonts'
 import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
@@ -476,8 +477,8 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, maxWidth: 250 },
-  content: { padding: 16, gap: 16, paddingBottom: 40 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, maxWidth: 250 },
+  content: { padding: 16, gap: 16, paddingBottom: 100 },
   hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
   bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },

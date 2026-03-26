@@ -534,7 +534,7 @@ export default function ActivitiesScreen() {
           data={filteredActivities}
           keyExtractor={item => item.id}
           renderItem={renderActivity}
-          contentContainerStyle={[st.list, { paddingBottom: insets.bottom + 20 }]}
+          contentContainerStyle={[st.list, { paddingBottom: insets.bottom + 80 }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

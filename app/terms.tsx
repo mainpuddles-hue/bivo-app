@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 export default function TermsScreen() {
   const { colors } = useTheme()
@@ -85,7 +86,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   card: { borderRadius: 12, padding: 20, gap: 4 },
   updated: { fontSize: 12, marginBottom: 12 },

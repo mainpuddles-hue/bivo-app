@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
-  listContent: { padding: 16, gap: 12, paddingBottom: 40 },
+  listContent: { padding: 16, gap: 12, paddingBottom: 100 },
   bookingCard: {
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,

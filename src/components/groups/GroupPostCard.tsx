@@ -7,6 +7,7 @@ import { Heart, MessageCircle, Pencil, Trash2 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 
@@ -83,7 +84,7 @@ function GroupPostCardInner({
   const isEditing = editingPostId === post.id
 
   return (
-    <View style={[styles.postCard, { backgroundColor: colors.card, shadowOpacity: isDark ? 0.12 : 0.06 }]}>
+    <View style={[styles.postCard, { backgroundColor: colors.card }, isDark ? cardShadowDark : cardShadow]}>
       <View style={[styles.categoryBar, { backgroundColor: catColor }]} />
       <View style={styles.postBody}>
         {/* User row */}
@@ -204,13 +205,9 @@ export const GroupPostCard = memo(GroupPostCardInner)
 
 const styles = StyleSheet.create({
   postCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     marginBottom: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 2,
     flexDirection: 'row',
   },
   categoryBar: {
@@ -218,7 +215,8 @@ const styles = StyleSheet.create({
   },
   postBody: {
     flex: 1,
-    padding: 14,
+    padding: 16,
+    gap: 8,
   },
   postUserRow: {
     flexDirection: 'row',

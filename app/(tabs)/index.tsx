@@ -24,6 +24,9 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
+// ── Stable separator components (avoid re-render) ──
+const ItemSeparator12 = () => <View style={{ height: 12 }} />
+
 // ══════════════════════════════════════════════
 // ── Feed Screen ──
 // ══════════════════════════════════════════════
@@ -243,7 +246,7 @@ function FeedScreenInner() {
         onEndReached={feed.handleLoadMore}
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+        ItemSeparatorComponent={ItemSeparator12}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}

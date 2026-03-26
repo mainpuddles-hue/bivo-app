@@ -271,8 +271,8 @@ export default function CommunityScreen() {
                 { backgroundColor: isActive ? colors.primary : colors.muted },
               ]}
             >
-              <Icon size={16} color={isActive ? '#FFFFFF' : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
-              <Text style={[s.chipText, { color: isActive ? '#FFFFFF' : colors.mutedForeground }]}>
+              <Icon size={16} color={isActive ? colors.primaryForeground : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
+              <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
             </Pressable>
@@ -632,7 +632,7 @@ const s = StyleSheet.create({
   dotIconText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#FFFFFF',  // Always on colored bg
     fontFamily: fonts.heading,
   },
   categoryBadge: {
@@ -691,7 +691,7 @@ const s = StyleSheet.create({
   createBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#FFFFFF',  // Always on primary bg
     fontFamily: fonts.bodySemi,
   },
   emptyState: {

@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { ArrowLeft, ShieldOff } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
@@ -142,7 +143,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: {

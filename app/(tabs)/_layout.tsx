@@ -19,11 +19,10 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
 }) {
   if (isCreate) {
     return (
-      <View style={s.tabItem}>
-        <View style={[s.createFab, { backgroundColor: colors.accent }]}>
-          <Icon size={16} color={colors.accentForeground} strokeWidth={2.5} />
+      <View style={s.createTabItem}>
+        <View style={[s.createFab, { backgroundColor: colors.primary }]}>
+          <Icon size={24} color="#FFFFFF" strokeWidth={2.5} />
         </View>
-        <Text numberOfLines={1} style={[s.tabLabel, { color: colors.accent, fontWeight: '600' }]}>{label}</Text>
       </View>
     )
   }
@@ -32,12 +31,12 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
     <View style={s.tabItem}>
       <View style={[s.iconWrap, focused && { backgroundColor: `${colors.primary}18` }]}>
         <Icon
-          size={20}
+          size={24}
           color={focused ? colors.primary : colors.mutedForeground}
-          strokeWidth={focused ? 2.25 : 1.6}
+          strokeWidth={focused ? 2.2 : 1.6}
         />
         {badge != null && badge > 0 && (
-          <View style={s.badge}>
+          <View style={[s.badge, { borderColor: colors.card }]}>
             <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
           </View>
         )}
@@ -81,7 +80,12 @@ export default function TabLayout() {
           borderTopWidth: StyleSheet.hairlineWidth,
           height: 72 + insets.bottom,
           paddingBottom: insets.bottom,
-          paddingTop: 6,
+          paddingTop: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+          elevation: 8,
         },
         tabBarShowLabel: false,
       }}
@@ -113,16 +117,20 @@ export default function TabLayout() {
 }
 
 const s = StyleSheet.create({
-  tabItem: { alignItems: 'center', gap: 3, position: 'relative', width: 64 },
+  tabItem: { alignItems: 'center', gap: 2, position: 'relative', width: 64 },
   iconWrap: {
-    width: 36, height: 28, borderRadius: 14,
+    width: 40, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
-  createFab: {
-    width: 28, height: 28, borderRadius: 14,
+  createTabItem: {
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15, shadowRadius: 4, elevation: 4,
+    position: 'relative', width: 64, marginTop: -18,
+  },
+  createFab: {
+    width: 56, height: 56, borderRadius: 28,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
   },
   tabLabel: { fontSize: 10, fontWeight: '500' },
   badge: {
@@ -137,7 +145,6 @@ const s = StyleSheet.create({
     justifyContent: 'center' as const,
     paddingHorizontal: 4,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   badgeText: {
     color: '#FFFFFF',

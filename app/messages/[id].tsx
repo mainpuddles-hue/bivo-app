@@ -374,7 +374,7 @@ function ConversationScreenInner() {
               s.bubble,
               isMine
                 ? [s.bubbleMine, { backgroundColor: colors.primary }]
-                : [s.bubbleTheirs, { backgroundColor: isDark ? colors.card : '#F0F0F0' }],
+                : [s.bubbleTheirs, { backgroundColor: isDark ? colors.card : colors.muted }],
             ]}>
               {isDeleted ? (
                 <Text style={[s.msgText, s.deletedText, { color: isMine ? `${colors.primaryForeground}88` : colors.mutedForeground }]}>
@@ -413,7 +413,7 @@ function ConversationScreenInner() {
                     }}
                     style={[
                       s.reactionBadge,
-                      { backgroundColor: isDark ? colors.card : '#F0F0F0', borderColor: colors.border },
+                      { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border },
                       r.userReacted && { borderColor: colors.primary, backgroundColor: isDark ? `${colors.primary}22` : `${colors.primary}15` },
                     ]}
                   >
@@ -571,7 +571,7 @@ function ConversationScreenInner() {
       )}
 
       {/* Input */}
-      <View style={[s.inputBar, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
+      <View style={[s.inputBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
         <Pressable onPress={handleSendImage} style={s.imageBtn} hitSlop={8}>
           <ImageIcon size={22} color={colors.mutedForeground} />
         </Pressable>
@@ -583,6 +583,7 @@ function ConversationScreenInner() {
           placeholderTextColor={colors.mutedForeground}
           multiline
           maxLength={2000}
+          blurOnSubmit={false}
         />
         <Pressable
           onPress={handleSend}

@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { ArrowLeft, Crown, Check, X, Sparkles, BarChart3, Shield, Megaphone, BadgeCheck, Zap } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useInAppPurchase } from '@/hooks/useInAppPurchase'
 import type { Profile } from '@/lib/types'
@@ -218,7 +219,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 16, paddingBottom: 60 },
   hero: { alignItems: 'center', paddingVertical: 24, gap: 8 },
   crownCircle: {

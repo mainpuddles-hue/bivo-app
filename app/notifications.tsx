@@ -218,6 +218,7 @@ export default function NotificationsScreen() {
         sections={sections}
         keyExtractor={item => item.id}
         stickySectionHeadersEnabled
+        contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchNotifications() }} tintColor={colors.primary} />}
         renderSectionHeader={({ section }) => (
           <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
@@ -239,7 +240,7 @@ export default function NotificationsScreen() {
                     <TypeIcon size={18} color={typeColor} />
                   </View>
                 )}
-                <View style={[styles.typeIconBadge, { backgroundColor: typeColor }]}>
+                <View style={[styles.typeIconBadge, { backgroundColor: typeColor, borderColor: colors.background }]}>
                   <TypeIcon size={10} color="#FFFFFF" />
                 </View>
               </View>
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   },
   headerBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 14 },
   filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36 },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
   sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
   sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 17 },
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: -2, right: -2,
     width: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: '#FFFFFF',
+    borderWidth: 2,
   },
   notifContent: { flex: 1, gap: 3 },
   notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19 },

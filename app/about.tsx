@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink, FileText, Lock, HelpCircle } from 'lucide-reac
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 export default function AboutScreen() {
   const { colors } = useTheme()
@@ -91,7 +92,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   logoSection: { alignItems: 'center', paddingVertical: 24, gap: 8 },
   logoPlaceholder: {

@@ -542,7 +542,7 @@ function PostDetailScreenInner() {
   const allImages = [post.image_url, ...(post.images ?? []).map(i => i.image_url)].filter(Boolean) as string[]
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)', borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} hitSlop={12}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
@@ -556,7 +556,7 @@ function PostDetailScreenInner() {
         ) : null}
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Image gallery — tap to open fullscreen */}
         {allImages.length > 0 && (
           allImages.length === 1 ? (
@@ -665,10 +665,10 @@ function PostDetailScreenInner() {
           )}
 
           <View style={styles.engRow}>
-            <Pressable onPress={toggleLike} style={styles.engItem}>
+            <Pressable onPress={toggleLike} style={styles.engItem} hitSlop={8}>
               <Heart size={18} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
             </Pressable>
-            <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={6}>
+            <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8}>
               <Text style={[styles.engText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount} {t('post.likes')}</Text>
             </Pressable>
             <View style={styles.engItem}>
@@ -979,7 +979,7 @@ function PostDetailScreenInner() {
           targetId={post.id}
         />
       )}
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -1045,10 +1045,10 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   modalTitle: { fontSize: 18, fontWeight: '700' },
   modalLabel: { fontSize: 13, fontWeight: '600', marginTop: 8 },
-  modalInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, marginTop: 4 },
+  modalInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, minHeight: 44, marginTop: 4 },
   modalTextArea: { minHeight: 120 },
-  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 10, marginTop: 16 },
-  saveBtnText: { fontSize: 15, fontWeight: '600' },
+  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, marginTop: 16, minHeight: 48 },
+  saveBtnText: { fontSize: 16, fontWeight: '600' },
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
   relatedTitle: { fontSize: 16, fontWeight: '700' },
   relatedScroll: { gap: 10 },
@@ -1057,7 +1057,7 @@ const styles = StyleSheet.create({
   relatedCardBody: { padding: 8, gap: 4 },
   relatedCardTitle: { fontSize: 13, fontWeight: '600', lineHeight: 17 },
   relatedCardLocation: { fontSize: 11 },
-  bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 10, alignSelf: 'flex-start' },
+  bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, alignSelf: 'flex-start' },
   bookingBtnText: { fontSize: 14, fontWeight: '600' },
   bookingPostTitle: { fontSize: 16, fontWeight: '600' },
   bookingFee: { fontSize: 15, fontWeight: '700' },
@@ -1075,7 +1075,7 @@ const styles = StyleSheet.create({
   pricingTotalLabel: { fontSize: 15, fontWeight: '600' },
   confirmNote: { fontSize: 12, textAlign: 'center', marginTop: 10, lineHeight: 17 },
   errorText: { fontSize: 13, textAlign: 'center', marginTop: 8 },
-  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 10 },
+  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, minHeight: 48 },
 })
 
 const ctaStyles = StyleSheet.create({

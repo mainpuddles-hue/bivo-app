@@ -169,6 +169,9 @@ export default function MessagesScreen() {
           onChangeText={setSearchQuery}
           placeholder={t('common.search')}
           placeholderTextColor={colors.mutedForeground}
+          returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         {searchQuery.length > 0 && (
           <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
@@ -271,7 +274,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, borderWidth: 1,
-    borderRadius: 12, paddingHorizontal: 12, height: 40,
+    borderRadius: 12, paddingHorizontal: 14, height: 44,
   },
   searchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body },
   list: { paddingBottom: 100 },

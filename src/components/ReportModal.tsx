@@ -244,13 +244,15 @@ const s = StyleSheet.create({
     marginTop: -8,
   },
   submitBtn: {
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
     marginTop: 4,
   },
   submitText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
   },
