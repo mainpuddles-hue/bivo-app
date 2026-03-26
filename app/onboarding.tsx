@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import {
   View,
   Text,
@@ -67,7 +67,15 @@ export default function OnboardingScreen() {
   const [saving, setSaving] = useState(false)
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
+  const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
   const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
+
+  // Filter neighborhoods by search query to reduce cognitive load on large lists
+  const filteredNeighborhoods = useMemo(() => {
+    if (!neighborhoodSearch.trim()) return dynamicNeighborhoods
+    const q = neighborhoodSearch.trim().toLowerCase()
+    return dynamicNeighborhoods.filter(nh => nh.toLowerCase().includes(q))
+  }, [dynamicNeighborhoods, neighborhoodSearch])
 
   // Fetch available cities from DB
   useEffect(() => {
@@ -93,6 +101,7 @@ export default function OnboardingScreen() {
     async function fetchNeighborhoods() {
       setNeighborhoodsLoading(true)
       setSelectedNeighborhood(null) // Reset selection when city changes
+      setNeighborhoodSearch('') // Reset search when city changes
       try {
         const { data } = await supabase
           .from('city_neighborhoods')
@@ -414,6 +423,26 @@ export default function OnboardingScreen() {
         {t('onboarding.neighborhoodSubtitle')}
       </Text>
 
+      {/* Search input for neighborhoods — reduces cognitive load when many neighborhoods */}
+      {dynamicNeighborhoods.length > 12 && (
+        <View style={s.neighborhoodSearchRow}>
+          <TextInput
+            value={neighborhoodSearch}
+            onChangeText={setNeighborhoodSearch}
+            placeholder={t('search.searchPlaceholder')}
+            placeholderTextColor={colors.mutedForeground}
+            style={[s.neighborhoodSearchInput, {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.foreground,
+              fontFamily: fonts.body,
+            }]}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+        </View>
+      )}
+
       <ScrollView
         contentContainerStyle={s.neighborhoodGrid}
         showsVerticalScrollIndicator={false}
@@ -425,8 +454,12 @@ export default function OnboardingScreen() {
           <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, paddingTop: 16 }]}>
             {t('onboarding.noNeighborhoods')}
           </Text>
+        ) : filteredNeighborhoods.length === 0 ? (
+          <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, paddingTop: 16 }]}>
+            {t('search.noResults')}
+          </Text>
         ) : (
-          dynamicNeighborhoods.map((nh) => {
+          filteredNeighborhoods.map((nh) => {
             const isSelected = selectedNeighborhood === nh
             return (
               <Pressable
@@ -735,6 +768,20 @@ const s = StyleSheet.create({
     borderRadius: 20,
   },
   cityChipText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  // Neighborhood search
+  neighborhoodSearchRow: {
+    paddingHorizontal: 24,
+    marginBottom: 8,
+  },
+  neighborhoodSearchInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     fontSize: 14,
     lineHeight: 20,
   },

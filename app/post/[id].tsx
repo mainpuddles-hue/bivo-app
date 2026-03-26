@@ -787,6 +787,7 @@ function PostDetailScreenInner() {
             )}
 
             {userId && (
+              <View style={{ gap: 4 }}>
               <View style={[styles.commentInput, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <TextInput
                   style={[styles.commentTextInput, { color: colors.foreground }]}
@@ -799,6 +800,12 @@ function PostDetailScreenInner() {
                   style={[styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim() || sendingComment) ? 0.5 : 1 }]}>
                   <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
                 </Pressable>
+              </View>
+              {commentText.length > 0 && (
+                <Text style={{ fontSize: 11, color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', paddingRight: 4 }}>
+                  {commentText.length}/500
+                </Text>
+              )}
               </View>
             )}
           </View>
@@ -818,10 +825,12 @@ function PostDetailScreenInner() {
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.editPost')}</Text>
               <Pressable onPress={() => setEditModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
             </View>
-            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')}</Text>
+            <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')} *</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} />
+            <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right' }}>{editTitle.length}/100</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.descriptionLabel')}</Text>
             <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} />
+            <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right' }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} />
             <Pressable onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }]}>
@@ -840,9 +849,14 @@ function PostDetailScreenInner() {
                 <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('rental.booking')}</Text>
                 <Pressable onPress={() => setBookingModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
               </View>
+              {/* Step indicator — reduces cognitive load on multi-step flow */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: colors.primary }} />
+                <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: bookingDays > 0 ? colors.primary : colors.muted }} />
+              </View>
               <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
               {post?.daily_fee != null && (<Text style={[styles.bookingFee, { color: '#C98B2E' }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
-              <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{t('rental.selectDates')}</Text>
+              <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{bookingDays > 0 ? t('rental.pricingBreakdown') : t('rental.selectDates')}</Text>
               <DateRangePicker startDate={bookingStartDate} endDate={bookingEndDate} onSelect={(start, end) => { setBookingStartDate(start); setBookingEndDate(end) }} blockedDates={blockedDates} />
               {bookingStartDate && (
                 <View style={[styles.datesSummary, { backgroundColor: colors.muted }]}>
@@ -903,6 +917,11 @@ function PostDetailScreenInner() {
               multiline
               maxLength={500}
             />
+            {serviceNotes.length > 0 && (
+              <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right' }}>
+                {serviceNotes.length}/500
+              </Text>
+            )}
 
             {/* Pricing breakdown */}
             {post?.service_price != null && (

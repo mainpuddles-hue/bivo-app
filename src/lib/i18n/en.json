@@ -627,6 +627,9 @@
     "passwordChangeFailed": "Failed to change password",
     "passwordTooShort": "Password must be at least 8 characters",
     "passwordTooWeak": "Password must contain an uppercase letter and a number",
+    "passwordNeedsUppercase": "Add an uppercase letter (A-Z)",
+    "passwordNeedsNumber": "Add a number (0-9)",
+    "passwordStrong": "Strong password",
     "changingPassword": "Changing...",
     "dataAndPrivacy": "Data & Privacy",
     "dataDownloaded": "Data downloaded",
@@ -1227,7 +1230,12 @@
     "noExternalLinks": "External links are not allowed",
     "noExternalApps": "Keep conversations within TackBird",
     "tooShort": "Please write a longer description",
-    "postPublished": "Your listing is published! Your neighbors can now see it."
+    "postPublished": "Your listing is published! Your neighbors can now see it.",
+    "discardTitle": "Discard changes?",
+    "discardMessage": "You have unsaved content. Are you sure you want to discard it?",
+    "discard": "Discard",
+    "priceCannotBeNegative": "Price cannot be negative",
+    "eventDateInPast": "Event date cannot be in the past"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",

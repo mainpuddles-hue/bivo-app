@@ -379,6 +379,9 @@ export default function SettingsScreen() {
                     maxLength={50}
                     autoFocus
                   />
+                  <Text style={{ fontSize: 11, color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2 }}>
+                    {nameText.length}/50
+                  </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Pressable onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: colors.muted }}>
                       <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>{t('common.cancel')}</Text>
@@ -633,6 +636,23 @@ export default function SettingsScreen() {
               placeholderTextColor={colors.mutedForeground}
               secureTextEntry
             />
+            {/* Inline password strength feedback (error prevention) */}
+            {newPw.length > 0 && (
+              <View style={{ gap: 2, marginTop: 2 }}>
+                {newPw.length < 8 && (
+                  <Text style={{ fontSize: 11, color: colors.destructive }}>{t('settings.passwordTooShort')}</Text>
+                )}
+                {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
+                  <Text style={{ fontSize: 11, color: '#E8A050' }}>{t('settings.passwordNeedsUppercase')}</Text>
+                )}
+                {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
+                  <Text style={{ fontSize: 11, color: '#E8A050' }}>{t('settings.passwordNeedsNumber')}</Text>
+                )}
+                {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
+                  <Text style={{ fontSize: 11, color: colors.success ?? '#2B8A62' }}>{t('settings.passwordStrong')}</Text>
+                )}
+              </View>
+            )}
             <Pressable
               onPress={handleChangePassword}
               disabled={changingPw || !newPw || !currentPw}
@@ -813,8 +833,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
   },
   saveBtnText: { fontSize: 13, fontWeight: '600' },
-  content: { padding: 16, gap: 8, paddingBottom: 100 },
-  section: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 12, paddingHorizontal: 4 },
+  content: { padding: 16, gap: 12, paddingBottom: 100 },
+  section: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, paddingHorizontal: 4 },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },

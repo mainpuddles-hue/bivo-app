@@ -627,6 +627,9 @@
     "passwordChangeFailed": "Kunde inte ändra lösenord",
     "passwordTooShort": "Lösenordet måste vara minst 8 tecken",
     "passwordTooWeak": "Lösenordet måste innehålla en stor bokstav och en siffra",
+    "passwordNeedsUppercase": "Lägg till en stor bokstav (A-Z)",
+    "passwordNeedsNumber": "Lägg till en siffra (0-9)",
+    "passwordStrong": "Starkt lösenord",
     "changingPassword": "Ändrar...",
     "dataAndPrivacy": "Data och integritet",
     "dataDownloaded": "Data nedladdad",
@@ -1227,7 +1230,12 @@
     "noExternalLinks": "Externa länkar är inte tillåtna",
     "noExternalApps": "Håll konversationer inom TackBird",
     "tooShort": "Skriv en längre beskrivning",
-    "postPublished": "Din annons är publicerad! Dina grannar kan nu se den."
+    "postPublished": "Din annons är publicerad! Dina grannar kan nu se den.",
+    "discardTitle": "Kasta bort ändringar?",
+    "discardMessage": "Du har osparade ändringar. Vill du verkligen kasta bort dem?",
+    "discard": "Kasta bort",
+    "priceCannotBeNegative": "Priset kan inte vara negativt",
+    "eventDateInPast": "Evenemangets datum kan inte vara i det förflutna"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",

@@ -342,6 +342,9 @@ export default function ProfileScreen() {
                 placeholder={t('profile.bioPlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
               />
+              <Text style={{ fontSize: 11, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2 }}>
+                {bioText.length}/200
+              </Text>
               <View style={s.bioActions}>
                 <Pressable onPress={() => setEditingBio(false)}><X size={20} color={colors.mutedForeground} /></Pressable>
                 <Pressable onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.primary }]}>

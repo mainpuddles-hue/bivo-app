@@ -627,6 +627,9 @@
     "passwordChangeFailed": "Salasanan vaihto epäonnistui",
     "passwordTooShort": "Salasanan pitää olla vähintään 8 merkkiä",
     "passwordTooWeak": "Salasanassa pitää olla iso kirjain ja numero",
+    "passwordNeedsUppercase": "Lisää iso kirjain (A-Z)",
+    "passwordNeedsNumber": "Lisää numero (0-9)",
+    "passwordStrong": "Vahva salasana",
     "changingPassword": "Vaihdetaan...",
     "dataAndPrivacy": "Tiedot ja yksityisyys",
     "dataDownloaded": "Tiedot ladattu",
@@ -1227,7 +1230,12 @@
     "noExternalLinks": "Ulkoiset linkit eivät ole sallittuja",
     "noExternalApps": "Ohjaa keskustelut TackBirdin sisällä",
     "tooShort": "Kirjoita pidempi kuvaus",
-    "postPublished": "Ilmoituksesi on julkaistu! Naapurisi voivat nyt nähdä sen."
+    "postPublished": "Ilmoituksesi on julkaistu! Naapurisi voivat nyt nähdä sen.",
+    "discardTitle": "Hylkää muutokset?",
+    "discardMessage": "Olet täyttänyt lomaketta. Haluatko varmasti hylätä muutokset?",
+    "discard": "Hylkää",
+    "priceCannotBeNegative": "Hinta ei voi olla negatiivinen",
+    "eventDateInPast": "Tapahtuman päivämäärä ei voi olla menneisyydessä"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",

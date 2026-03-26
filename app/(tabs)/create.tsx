@@ -145,12 +145,58 @@ export default function CreateScreen() {
   const identity = useIdentityVerification(currentUserId)
   const { suggestion: priceSuggestion } = usePriceSuggestion(selectedType, selectedTags, userNeighborhood)
 
+  // Smart default: auto-populate location from user's neighborhood
+  useEffect(() => {
+    if (userNeighborhood && !location && step === 'form') {
+      setLocation(userNeighborhood)
+    }
+  }, [userNeighborhood, step]) // Only runs when entering form step
+
   // Auto-expand details for categories that have required detail fields
   useEffect(() => {
     if (selectedType === 'lainaa' || selectedType === 'tapahtuma' || selectedType === 'tarjoan') {
       setShowDetails(true)
     }
   }, [selectedType])
+
+  // Discard confirmation when going back with unsaved content (error prevention)
+  const hasUnsavedContent = title.trim().length > 0 || description.trim().length > 0 || images.length > 0
+  const handleBackToCategory = useCallback(() => {
+    if (hasUnsavedContent) {
+      Alert.alert(
+        t('create.discardTitle'),
+        t('create.discardMessage'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('create.discard'),
+            style: 'destructive',
+            onPress: () => {
+              setTitle('')
+              setDescription('')
+              setImages([])
+              setLocation('')
+              setDailyFee('')
+              setServicePrice('')
+              setEventDate('')
+              setEventStartTime('')
+              setEventEndTime('')
+              setEventMaxCapacity('')
+              setSelectedTags([])
+              setExpirationDays(0)
+              setIsAnonymous(false)
+              setIsUrgent(false)
+              setLatitude(null)
+              setLongitude(null)
+              setStep('category')
+            },
+          },
+        ],
+      )
+    } else {
+      setStep('category')
+    }
+  }, [hasUnsavedContent, t])
 
   const handleCategorySelect = (type: PostType) => {
     // Gate lainaa behind trust level 2
@@ -323,6 +369,11 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
       return
     }
+    // Prevent negative service prices (error prevention)
+    if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && parseFloat(servicePrice) < 0) {
+      Alert.alert(t('common.error'), t('create.priceCannotBeNegative'))
+      return
+    }
     // Trust tier: max service price check
     if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
       Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
@@ -331,6 +382,16 @@ export default function CreateScreen() {
     if (selectedType === 'tapahtuma' && !eventDate) {
       Alert.alert(t('common.error'), t('events.titleDateRequired'))
       return
+    }
+    // Prevent past event dates (error prevention)
+    if (selectedType === 'tapahtuma' && eventDate) {
+      const eventDateObj = new Date(eventDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      if (!isNaN(eventDateObj.getTime()) && eventDateObj < today) {
+        Alert.alert(t('common.error'), t('create.eventDateInPast'))
+        return
+      }
     }
 
     setSubmitting(true)
@@ -564,7 +625,7 @@ export default function CreateScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setStep('category')} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <Pressable onPress={handleBackToCategory} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           {cat && (
@@ -615,7 +676,7 @@ export default function CreateScreen() {
               returnKeyType="next"
               autoCapitalize="sentences"
             />
-            <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{title.length}/100</Text>
+            <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? '#E8A050' : colors.mutedForeground }]}>{title.length}/100</Text>
           </View>
 
           {/* Description */}
@@ -632,7 +693,7 @@ export default function CreateScreen() {
               textAlignVertical="top"
               maxLength={2000}
             />
-            <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{description.length}/2000</Text>
+            <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? '#E8A050' : colors.mutedForeground }]}>{description.length}/2000</Text>
           </View>
 
           {/* Details toggle */}
@@ -746,7 +807,7 @@ export default function CreateScreen() {
                     style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
                     value={eventDate}
                     onChangeText={setEventDate}
-                    placeholder="2026-03-20"
+                    placeholder={(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()}
                     placeholderTextColor={colors.mutedForeground}
                   />
                 </View>
