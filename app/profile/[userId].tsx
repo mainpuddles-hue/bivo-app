@@ -277,7 +277,7 @@ export default function PublicProfileScreen() {
         <View style={s.hero}>
           <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
+            <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
             {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
           </View>
           {profile.naapurusto && (
@@ -407,7 +407,7 @@ export default function PublicProfileScreen() {
                   <View style={s.reviewHeader}>
                     <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
                     <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={[s.reviewName, { color: colors.foreground }]}>{rev.reviewer?.name}</Text>
+                      <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
                       <StarRating rating={rev.rating} size={12} />
                     </View>
                     <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>

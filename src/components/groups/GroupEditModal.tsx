@@ -56,8 +56,8 @@ function GroupEditModalInner({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <Pressable style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]} onPress={onClose}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={[styles.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20 }]}
@@ -145,7 +145,7 @@ function GroupEditModalInner({
             </Pressable>
           </View>
         </KeyboardAvoidingView>
-      </View>
+      </Pressable>
     </Modal>
   )
 }

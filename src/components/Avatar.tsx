@@ -24,6 +24,7 @@ export function Avatar({ url, name, size = 36, borderColor, borderWidth }: Avata
           { width: size, height: size, borderRadius: radius },
           borderColor ? { borderWidth: borderWidth ?? 1, borderColor } : undefined,
         ]}
+        contentFit="cover"
       />
     )
   }

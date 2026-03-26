@@ -324,7 +324,7 @@ function BookingDetailScreenInner() {
           >
             <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={44} />
             <View style={{ flex: 1, gap: 2 }}>
-              <Text style={[styles.userName, { color: colors.foreground }]}>{booking.other_user.name}</Text>
+              <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>{booking.other_user.name ?? t('common.user')}</Text>
               <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t(`booking.otherParty`)}</Text>
             </View>
           </Pressable>

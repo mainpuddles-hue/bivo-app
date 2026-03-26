@@ -198,7 +198,7 @@ export default function MessagesScreen() {
             <Pressable
               onPress={() => router.push(`/messages/${item.id}`)}
               onLongPress={() => handleTogglePin(item.id)}
-              style={[styles.convRow, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }]}
+              style={({ pressed }) => [styles.convRow, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }, pressed && { opacity: 0.7 }]}
             >
               <View style={styles.avatarWrap}>
                 <Avatar url={other?.avatar_url} name={other?.name} size={48} borderColor={unread > 0 ? colors.primary : undefined} borderWidth={unread > 0 ? 2 : undefined} />

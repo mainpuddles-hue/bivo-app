@@ -230,7 +230,7 @@ export default function NotificationsScreen() {
           const typeColor = getTypeColor(item.type, colors)
 
           return (
-            <Pressable onPress={() => handleTap(item)} style={[styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }]}>
+            <Pressable onPress={() => handleTap(item)} style={({ pressed }) => [styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }, pressed && { opacity: 0.7 }]}>
               {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
               <View style={styles.notifAvatar}>
                 {item.from_user?.avatar_url ? (

@@ -466,9 +466,9 @@ export default function GroupsScreen() {
       </Pressable>
 
       {/* Create Group Modal */}
-      <Modal visible={showCreateModal} animationType="slide" transparent>
-        <View style={[s.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[s.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20 }]}>
+      <Modal visible={showCreateModal} animationType="slide" transparent onRequestClose={() => setShowCreateModal(false)}>
+        <Pressable style={[s.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]} onPress={() => setShowCreateModal(false)}>
+          <Pressable style={[s.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20 }]} onPress={() => {}}>
             {/* Modal header */}
             <View style={s.modalHeader}>
               <Text style={[s.modalTitle, { color: colors.foreground }]}>
@@ -583,14 +583,14 @@ export default function GroupsScreen() {
                 )}
               </Pressable>
             </ScrollView>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
 
       {/* Neighborhood picker modal */}
-      <Modal visible={showNeighborhoodPicker} animationType="slide" transparent>
-        <View style={[s.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[s.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20, maxHeight: '70%' }]}>
+      <Modal visible={showNeighborhoodPicker} animationType="slide" transparent onRequestClose={() => setShowNeighborhoodPicker(false)}>
+        <Pressable style={[s.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]} onPress={() => setShowNeighborhoodPicker(false)}>
+          <Pressable style={[s.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20, maxHeight: '70%' }]} onPress={() => {}}>
             <View style={s.modalHeader}>
               <Text style={[s.modalTitle, { color: colors.foreground }]}>
                 {t('groups.neighborhood')}
@@ -620,8 +620,8 @@ export default function GroupsScreen() {
                 </Pressable>
               )}
             />
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   )

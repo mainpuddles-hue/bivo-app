@@ -506,7 +506,7 @@ function PostDetailScreenInner() {
       <Avatar url={c.user?.avatar_url} name={c.user?.name} size={isReply ? 24 : 32} />
       <View style={styles.commentBody}>
         <View style={styles.commentHeader}>
-          <Text style={[styles.commentName, { color: colors.foreground }]}>{c.user?.name ?? t('common.user')}</Text>
+          <Text style={[styles.commentName, { color: colors.foreground }]} numberOfLines={1}>{c.user?.name ?? t('common.user')}</Text>
           <Text style={[styles.commentTime, { color: colors.mutedForeground }]}>{formatTimeAgo(c.created_at, t, locale)}</Text>
         </View>
         <Text style={[styles.commentContent, { color: colors.foreground }]}>{c.content}</Text>
@@ -566,7 +566,7 @@ function PostDetailScreenInner() {
           ) : (
             <FlatList
               horizontal pagingEnabled data={allImages}
-              keyExtractor={(_, i) => String(i)}
+              keyExtractor={(item, i) => `${item}-${i}`}
               renderItem={({ item, index }) => (
                 <Pressable onPress={() => openGallery(index)}>
                   <Image source={{ uri: item }} style={styles.heroImage} contentFit="cover" />
@@ -655,7 +655,9 @@ function PostDetailScreenInner() {
 
           {post.event_date && (<Text style={[styles.eventDate, { color: colors.primary }]}>{formatEventDate(post.event_date, locale)}</Text>)}
 
-          <Text style={[styles.description, { color: colors.foreground }]}>{post.description}</Text>
+          {post.description ? (
+            <Text style={[styles.description, { color: colors.foreground }]}>{post.description}</Text>
+          ) : null}
 
           {post.location && (
             <View style={styles.locationRow}>
@@ -683,7 +685,7 @@ function PostDetailScreenInner() {
               <Avatar url={user?.avatar_url} name={user?.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <View style={styles.authorNameRow}>
-                  <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name}</Text>
+                  <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name ?? t('common.user')}</Text>
                   {isVerified && <BadgeCheck size={16} color={colors.info} />}
                 </View>
                 {user?.naapurusto && <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>}
@@ -811,7 +813,7 @@ function PostDetailScreenInner() {
                 <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('rental.booking')}</Text>
                 <Pressable onPress={() => setBookingModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
               </View>
-              <Text style={[styles.bookingPostTitle, { color: colors.foreground }]}>{post?.title}</Text>
+              <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
               {post?.daily_fee != null && (<Text style={[styles.bookingFee, { color: '#C98B2E' }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
               <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{t('rental.selectDates')}</Text>
               <DateRangePicker startDate={bookingStartDate} endDate={bookingEndDate} onSelect={(start, end) => { setBookingStartDate(start); setBookingEndDate(end) }} blockedDates={blockedDates} />
@@ -850,14 +852,14 @@ function PostDetailScreenInner() {
               <Pressable onPress={() => setServiceModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
             </View>
 
-            <Text style={[styles.bookingPostTitle, { color: colors.foreground }]}>{post?.title}</Text>
+            <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
 
             {/* Provider info */}
             {user && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
                 <Avatar url={user.avatar_url} name={user.name} size={36} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>{user.name}</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }} numberOfLines={1}>{user.name ?? t('common.user')}</Text>
                   <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('service.provider')}</Text>
                 </View>
               </View>

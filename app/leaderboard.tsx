@@ -162,10 +162,11 @@ export default function LeaderboardScreen() {
             router.push(`/profile/${item.id}` as any)
           }
         }}
-        style={[
+        style={({ pressed }) => [
           s.row,
           { backgroundColor: isCurrentUser ? `${colors.primary}10` : colors.card },
           isTop3 && { borderLeftWidth: 3, borderLeftColor: medalColor },
+          pressed && { opacity: 0.7 },
         ]}
       >
         {/* Rank */}

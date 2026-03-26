@@ -155,7 +155,7 @@ function GroupPostCardInner({
             </View>
           </View>
         ) : (
-          <Text style={[styles.postContent, { color: colors.foreground }]}>
+          <Text style={[styles.postContent, { color: colors.foreground }]} numberOfLines={8}>
             {post.content}
           </Text>
         )}

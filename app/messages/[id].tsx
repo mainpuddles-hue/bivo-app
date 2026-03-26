@@ -446,7 +446,7 @@ function ConversationScreenInner() {
         </Pressable>
         <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
         <View style={{ flex: 1 }}>
-          <Text style={[s.headerName, { color: colors.foreground }]}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
+          <Text style={[s.headerName, { color: colors.foreground }]} numberOfLines={1}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
           {otherTyping ? (
             <Text style={[s.headerSub, { color: colors.primary }]}>{t('messages.typing')}</Text>
           ) : otherUser?.naapurusto ? (

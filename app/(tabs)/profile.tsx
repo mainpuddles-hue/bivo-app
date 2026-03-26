@@ -243,7 +243,7 @@ export default function ProfileScreen() {
             </View>
           </Pressable>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[s.profileName, { color: colors.foreground }]}>{profile.name}</Text>
+            <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
             {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
           </View>
           {profile.naapurusto && (
@@ -459,7 +459,7 @@ export default function ProfileScreen() {
                   <View style={s.reviewHeader}>
                     <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
                     <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={[s.reviewName, { color: colors.foreground }]}>{rev.reviewer?.name}</Text>
+                      <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
                       <StarRating rating={rev.rating} size={12} />
                     </View>
                     <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
