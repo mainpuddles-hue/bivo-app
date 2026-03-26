@@ -84,7 +84,10 @@
     "new": "New",
     "startConversation": "Comment",
     "expiringToday": "Expiring today!",
-    "examplePost": "Example listing"
+    "examplePost": "Example listing",
+    "hidePost": "Hide",
+    "postHidden": "Post hidden",
+    "newPost": "New"
   },
   "time": {
     "justNow": "just now",
@@ -542,7 +545,13 @@
     "reviewFailed": "Failed to submit review",
     "selectRating": "Please select a rating",
     "alreadyReviewed": "You have already reviewed this user",
-    "profileHidden": "Profile is not public"
+    "profileHidden": "Profile is not public",
+    "myPosts": "Posts",
+    "pointHistory": "Point history",
+    "noPointHistory": "No points yet",
+    "allPosts": "All posts",
+    "active": "Active",
+    "expired": "Expired"
   },
   "settings": {
     "title": "Settings",
@@ -1035,7 +1044,9 @@
   },
   "bookings": {
     "title": "Bookings",
-    "empty": "No bookings yet"
+    "empty": "No bookings yet",
+    "active": "Active",
+    "past": "Past"
   },
   "booking": {
     "details": "Booking details",
@@ -2089,7 +2100,9 @@
     "editPostTitle": "Edit discussion",
     "saveEdit": "Save",
     "loadMore": "Load more",
-    "noMorePosts": "No more discussions"
+    "noMorePosts": "No more discussions",
+    "newestFirst": "Newest first",
+    "oldestFirst": "Oldest first"
   },
   "about": {
     "title": "About",
@@ -2303,6 +2316,43 @@
     "noData": "No points yet"
   },
   "points": {
-    "earned": "+{points} points!"
+    "earned": "+{points} points!",
+    "post_created": "Post created",
+    "reply_created": "Reply created",
+    "thanks_given": "Thanks given",
+    "thanks_received": "Thanks received",
+    "event_attended": "Event attended",
+    "review_written": "Review written",
+    "first_post_bonus": "First post bonus"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "flags": "Flags",
+    "users": "Users",
+    "stats": "Stats",
+    "hidePost": "Hide",
+    "allowPost": "Allow",
+    "banUser": "Ban User",
+    "unbanUser": "Unban User",
+    "totalUsers": "Total Users",
+    "activeToday": "Active Today",
+    "postsThisWeek": "Posts This Week",
+    "bookingsThisWeek": "Bookings This Week",
+    "unreviewedFlags": "Unreviewed Flags",
+    "noFlags": "No flags",
+    "searchUsers": "Search users",
+    "spam": "Spam",
+    "inappropriate": "Inappropriate",
+    "scam": "Scam",
+    "flagDetails": "Flag details",
+    "autoHidden": "Auto-hidden",
+    "reviewed": "Reviewed",
+    "notReviewed": "Not reviewed",
+    "banned": "Banned",
+    "active": "Active",
+    "trustScore": "Trust score",
+    "posts": "Posts",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "Only admins can access this view."
   }
 }

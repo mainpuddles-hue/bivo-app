@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -62,7 +62,7 @@ export default function ProfileScreen() {
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'activity'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'activity'>('overview')
   const [postCount, setPostCount] = useState(0)
   const [followerCount, setFollowerCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
@@ -78,6 +78,14 @@ export default function ProfileScreen() {
   const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null)
   const [followList, setFollowList] = useState<{ id: string; name: string; avatar_url: string | null }[]>([])
   const [refreshing, setRefreshing] = useState(false)
+  // TODO 2: My Posts tab
+  const [allPosts, setAllPosts] = useState<Post[]>([])
+  const [allPostsLoading, setAllPostsLoading] = useState(false)
+  const [allPostsLoaded, setAllPostsLoaded] = useState(false)
+  // TODO 3: Point history modal
+  const [showPointHistory, setShowPointHistory] = useState(false)
+  const [pointHistory, setPointHistory] = useState<{ action: string; points: number; created_at: string }[]>([])
+  const [pointHistoryLoading, setPointHistoryLoading] = useState(false)
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
   const streakData = useStreak(profile?.id ?? null)
@@ -201,6 +209,43 @@ export default function ProfileScreen() {
       .eq(col, profile.id)
       .limit(50)
     setFollowList((data ?? []).map((d: any) => d.user).filter(Boolean))
+  }, [profile, supabase])
+
+  // TODO 2: Load all user posts when posts tab selected
+  const loadAllPosts = useCallback(async () => {
+    if (!profile || allPostsLoaded) return
+    setAllPostsLoading(true)
+    try {
+      const { data } = await supabase
+        .from('posts')
+        .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(100)
+      setAllPosts((data ?? []) as unknown as Post[])
+      setAllPostsLoaded(true)
+    } catch { /* ignore */ }
+    finally { setAllPostsLoading(false) }
+  }, [profile, supabase, allPostsLoaded])
+
+  useEffect(() => {
+    if (activeTab === 'posts' && !allPostsLoaded) loadAllPosts()
+  }, [activeTab, allPostsLoaded, loadAllPosts])
+
+  // TODO 3: Load point history
+  const loadPointHistory = useCallback(async () => {
+    if (!profile) return
+    setPointHistoryLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('user_points')
+        .select('action, points, created_at')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      if (!error && data) setPointHistory(data as any[])
+    } catch { /* table may not exist */ }
+    finally { setPointHistoryLoading(false) }
   }, [profile, supabase])
 
   const handleLogout = async () => {
@@ -366,13 +411,13 @@ export default function ProfileScreen() {
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
+          <Pressable style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
               <Text style={[s.statNum, { color: colors.foreground }]}>{profile?.total_points ?? 0}</Text>
               <Zap size={12} color={colors.pro} fill={colors.pro} />
             </View>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.karma')}</Text>
-          </View>
+          </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
@@ -423,6 +468,9 @@ export default function ProfileScreen() {
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => setActiveTab('overview')} style={[s.tab, activeTab === 'overview' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
             <Text style={[s.tabText, { color: activeTab === 'overview' ? colors.primary : colors.mutedForeground }]}>{t('profile.overview')}</Text>
+          </Pressable>
+          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground }]}>{t('profile.myPosts')}</Text>
           </Pressable>
           <Pressable onPress={() => setActiveTab('activity')} style={[s.tab, activeTab === 'activity' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
             <Text style={[s.tabText, { color: activeTab === 'activity' ? colors.primary : colors.mutedForeground }]}>{t('profile.activity')}</Text>
@@ -524,6 +572,50 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Posts Tab */}
+        {activeTab === 'posts' && (
+          <View style={s.tabContent}>
+            {allPostsLoading ? (
+              <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
+              </View>
+            ) : allPosts.length === 0 ? (
+              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPostsYet')}</Text>
+            ) : (
+              allPosts.map((post) => (
+                <Pressable
+                  key={post.id}
+                  onPress={() => router.push(`/post/${post.id}`)}
+                  style={[s.myPostItem, { backgroundColor: colors.card, borderColor: colors.border }]}
+                >
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <Text style={[s.myPostTitle, { color: colors.foreground }]} numberOfLines={1}>{post.title}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={[s.myPostTypeBadge, { backgroundColor: `${colors.primary}14` }]}>
+                        <Text style={[s.myPostTypeText, { color: colors.primary }]}>{post.type}</Text>
+                      </View>
+                      <Text style={[s.myPostDate, { color: colors.mutedForeground }]}>
+                        {post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''}
+                      </Text>
+                      {(post.like_count ?? 0) > 0 && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                          <Heart size={10} color={colors.mutedForeground} />
+                          <Text style={[s.myPostDate, { color: colors.mutedForeground }]}>{post.like_count}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                  <View style={[s.myPostStatusBadge, { backgroundColor: post.is_active ? `${colors.success ?? colors.primary}14` : `${colors.destructive}14` }]}>
+                    <Text style={[s.myPostStatusText, { color: post.is_active ? (colors.success ?? colors.primary) : colors.destructive }]}>
+                      {post.is_active ? t('profile.active') : t('profile.expired')}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))
+            )}
+          </View>
+        )}
+
         {/* Activity Tab */}
         {activeTab === 'activity' && (
           <View style={s.tabContent}>
@@ -586,6 +678,46 @@ export default function ProfileScreen() {
               </Text>
             }
           />
+        </View>
+      </Modal>
+
+      {/* Point History Modal */}
+      <Modal visible={showPointHistory} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowPointHistory(false)}>
+        <View style={[s.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[s.modalTitle, { color: colors.foreground }]}>{t('profile.pointHistory')}</Text>
+            <Pressable onPress={() => setShowPointHistory(false)} hitSlop={12}>
+              <X size={24} color={colors.foreground} />
+            </Pressable>
+          </View>
+          {pointHistoryLoading ? (
+            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
+            </View>
+          ) : pointHistory.length === 0 ? (
+            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPointHistory')}</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={pointHistory}
+              keyExtractor={(item, idx) => `${item.created_at}-${idx}`}
+              contentContainerStyle={{ padding: 16, gap: 8 }}
+              renderItem={({ item }) => (
+                <View style={[s.pointHistoryRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Text style={[s.pointHistoryPoints, { color: colors.primary }]}>+{item.points}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.pointHistoryAction, { color: colors.foreground }]}>
+                      {t(`points.${item.action}`, undefined as any) !== `points.${item.action}` ? t(`points.${item.action}`) : item.action}
+                    </Text>
+                    <Text style={[s.pointHistoryTime, { color: colors.mutedForeground }]}>
+                      {formatTimeAgo(item.created_at, t, locale)}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            />
+          )}
         </View>
       </Modal>
 
@@ -675,6 +807,19 @@ const s = StyleSheet.create({
   followName: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
   multiplierBadge: { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 6 },
   multiplierText: { fontSize: 9, fontWeight: '800', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  // My Posts tab
+  myPostItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
+  myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  myPostTypeBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  myPostTypeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
+  myPostDate: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+  myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  myPostStatusText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
+  // Point history modal
+  pointHistoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth },
+  pointHistoryPoints: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, minWidth: 32 },
+  pointHistoryAction: { fontSize: 14, fontWeight: '500', fontFamily: fonts.body, lineHeight: 20 },
+  pointHistoryTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
 })
 
 const impactStyles = StyleSheet.create({

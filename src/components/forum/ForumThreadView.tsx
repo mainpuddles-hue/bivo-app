@@ -28,6 +28,8 @@ interface ForumThreadViewProps {
   replyText: string
   onReplyTextChange: (text: string) => void
   sendingReply: boolean
+  replySortNewest?: boolean
+  onToggleReplySort?: () => void
 }
 
 function ForumThreadViewInner({
@@ -45,6 +47,8 @@ function ForumThreadViewInner({
   replyText,
   onReplyTextChange,
   sendingReply,
+  replySortNewest,
+  onToggleReplySort,
 }: ForumThreadViewProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -212,7 +216,14 @@ function ForumThreadViewInner({
             {/* Divider */}
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-            {/* Replies header */}
+            {/* Replies header with sort toggle */}
+            {onToggleReplySort && replies.length > 1 && (
+              <Pressable onPress={onToggleReplySort} style={styles.sortToggle} hitSlop={6}>
+                <Text style={[styles.sortToggleText, { color: colors.primary }]}>
+                  {replySortNewest ? t('forum.newestFirst') : t('forum.oldestFirst')}
+                </Text>
+              </Pressable>
+            )}
             {loading && (
               <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} />
             )}
@@ -347,5 +358,15 @@ const styles = StyleSheet.create({
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 1,
+  },
+  sortToggle: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  sortToggleText: {
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
 })

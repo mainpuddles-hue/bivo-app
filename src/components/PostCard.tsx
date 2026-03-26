@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
   MessageCircle, Clock,
-  Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User, Flag,
+  Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User, Flag, EyeOff,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -42,9 +42,11 @@ interface PostCardProps {
   userLocation?: { latitude: number; longitude: number } | null
   userId?: string | null
   onInteraction?: (postId: string, type: 'view' | 'click' | 'like' | 'save' | 'message' | 'skip' | 'hide') => void
+  onHide?: (postId: string) => void
+  isNew?: boolean
 }
 
-export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction, onHide, isNew }: PostCardProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
@@ -211,6 +213,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               <Text style={[styles.categoryLabel, { color: category.color }]}>
                 {t(category.label)}
               </Text>
+              {isNew && <View style={styles.newDot} />}
             </View>
           )}
           {expirationInfo && (
@@ -387,6 +390,20 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               <Flag size={14} color={colors.mutedForeground} />
             </Pressable>
           )}
+          {showMore && userId && (
+            <Pressable
+              hitSlop={12}
+              onPress={(e) => {
+                e.stopPropagation?.()
+                setShowMore(false)
+                onInteraction?.(post.id, 'hide')
+                onHide?.(post.id)
+              }}
+              style={styles.engagementItem}
+            >
+              <EyeOff size={14} color={colors.mutedForeground} />
+            </Pressable>
+          )}
           <Pressable
             hitSlop={12}
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
@@ -535,5 +552,8 @@ const styles = StyleSheet.create({
   proMicroBadge: {
     backgroundColor: '#F59E0B18',
     borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
+  },
+  newDot: {
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#4CAF6A', marginLeft: 4,
   },
 })

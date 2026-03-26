@@ -121,6 +121,12 @@ export default function ForumScreen() {
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
   const [votedReplies, setVotedReplies] = useState<Set<string>>(new Set())
+  const [replySortNewest, setReplySortNewest] = useState(false)
+
+  const sortedReplies = useMemo(() => {
+    if (!replySortNewest) return replies
+    return [...replies].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }, [replies, replySortNewest])
 
   // ── Fetch user info ──
   useEffect(() => {
@@ -506,7 +512,7 @@ export default function ForumScreen() {
         {selectedPost && (
           <ForumThreadView
             post={selectedPost}
-            replies={replies}
+            replies={sortedReplies}
             currentUserId={currentUserId}
             votedPosts={votedPosts}
             votedReplies={votedReplies}
@@ -519,6 +525,8 @@ export default function ForumScreen() {
             replyText={replyText}
             onReplyTextChange={setReplyText}
             sendingReply={sendingReply}
+            replySortNewest={replySortNewest}
+            onToggleReplySort={() => setReplySortNewest(p => !p)}
           />
         )}
       </Modal>

@@ -132,6 +132,7 @@ export default function BookingsScreen() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<'active' | 'past'>('active')
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -187,13 +188,24 @@ export default function BookingsScreen() {
 
   useEffect(() => { fetchBookings() }, [fetchBookings])
 
+  const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active']
+  const PAST_STATUSES: BookingStatus[] = ['completed', 'cancelled', 'disputed', 'refunded']
+
   const filteredBookings = useMemo(() => {
     if (!userId) return []
-    if (activeTab === 'borrower') {
-      return bookings.filter(b => b.borrower_id === userId)
-    }
-    return bookings.filter(b => b.lender_id === userId)
-  }, [bookings, userId, activeTab])
+    const tabFiltered = activeTab === 'borrower'
+      ? bookings.filter(b => b.borrower_id === userId)
+      : bookings.filter(b => b.lender_id === userId)
+    const statusSet = statusFilter === 'active' ? ACTIVE_STATUSES : PAST_STATUSES
+    return tabFiltered.filter(b => statusSet.includes(b.status))
+  }, [bookings, userId, activeTab, statusFilter])
+
+  const filteredServiceBookings = useMemo(() => {
+    const statusSet = statusFilter === 'active'
+      ? ['pending', 'confirmed', 'paid', 'active', 'in_progress']
+      : ['completed', 'cancelled', 'disputed', 'refunded']
+    return serviceBookings.filter(b => statusSet.includes(b.status))
+  }, [serviceBookings, statusFilter])
 
   const handleConfirm = useCallback(async (booking: RentalBooking) => {
     setActionLoading(booking.id)
@@ -536,6 +548,21 @@ export default function BookingsScreen() {
         </Pressable>
       </View>
 
+      {/* Status filter chips */}
+      <View style={styles.statusFilterRow}>
+        {(['active', 'past'] as const).map(f => (
+          <Pressable
+            key={f}
+            onPress={() => setStatusFilter(f)}
+            style={[styles.statusFilterChip, { backgroundColor: statusFilter === f ? colors.primary : (isDark ? colors.card : colors.muted) }]}
+          >
+            <Text style={[styles.statusFilterText, { color: statusFilter === f ? colors.primaryForeground : colors.mutedForeground }]}>
+              {t(`bookings.${f}`)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
       {/* Booking list */}
       {loading ? (
         <View style={styles.listContent}>
@@ -545,7 +572,7 @@ export default function BookingsScreen() {
         </View>
       ) : (
         <FlatList
-          data={activeTab === 'services' ? serviceBookings : filteredBookings}
+          data={activeTab === 'services' ? filteredServiceBookings : filteredBookings}
           keyExtractor={item => item.id}
           renderItem={activeTab === 'services' ? renderServiceBooking : renderBooking}
           contentContainerStyle={styles.listContent}
@@ -710,6 +737,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     paddingHorizontal: 40,
+    lineHeight: 17,
+  },
+  statusFilterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  statusFilterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+  statusFilterText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 17,
   },
 })

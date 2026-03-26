@@ -84,7 +84,10 @@
     "new": "Uutta",
     "startConversation": "Kommentoi",
     "expiringToday": "Vanhenee tänään!",
-    "examplePost": "Esimerkki-ilmoitus"
+    "examplePost": "Esimerkki-ilmoitus",
+    "hidePost": "Piilota",
+    "postHidden": "Postaus piilotettu",
+    "newPost": "Uutta"
   },
   "time": {
     "justNow": "juuri nyt",
@@ -542,7 +545,13 @@
     "reviewFailed": "Arvostelun lähetys epäonnistui",
     "selectRating": "Valitse arvosana",
     "alreadyReviewed": "Olet jo arvostellut tämän käyttäjän",
-    "profileHidden": "Profiili ei ole julkinen"
+    "profileHidden": "Profiili ei ole julkinen",
+    "myPosts": "Postaukset",
+    "pointHistory": "Pistehistoria",
+    "noPointHistory": "Ei vielä pisteitä",
+    "allPosts": "Kaikki ilmoitukset",
+    "active": "Aktiivinen",
+    "expired": "Vanhentunut"
   },
   "settings": {
     "title": "Asetukset",
@@ -1035,7 +1044,9 @@
   },
   "bookings": {
     "title": "Varaukset",
-    "empty": "Ei varauksia vielä"
+    "empty": "Ei varauksia vielä",
+    "active": "Aktiiviset",
+    "past": "Menneet"
   },
   "booking": {
     "details": "Varauksen tiedot",
@@ -2089,7 +2100,9 @@
     "editPostTitle": "Muokkaa keskustelua",
     "saveEdit": "Tallenna",
     "loadMore": "Lataa lisää",
-    "noMorePosts": "Ei enempää keskusteluja"
+    "noMorePosts": "Ei enempää keskusteluja",
+    "newestFirst": "Uusin ensin",
+    "oldestFirst": "Vanhin ensin"
   },
   "about": {
     "title": "Tietoja",
@@ -2303,6 +2316,43 @@
     "noData": "Ei vielä pisteitä"
   },
   "points": {
-    "earned": "+{points} pistettä!"
+    "earned": "+{points} pistettä!",
+    "post_created": "Postaus luotu",
+    "reply_created": "Vastaus luotu",
+    "thanks_given": "Kiitos annettu",
+    "thanks_received": "Kiitos vastaanotettu",
+    "event_attended": "Tapahtumaan osallistuttu",
+    "review_written": "Arvostelu kirjoitettu",
+    "first_post_bonus": "Ensimmäisen postauksen bonus"
+  },
+  "admin": {
+    "title": "Hallintapaneeli",
+    "flags": "Liput",
+    "users": "Käyttäjät",
+    "stats": "Tilastot",
+    "hidePost": "Piilota",
+    "allowPost": "Salli",
+    "banUser": "Estä käyttäjä",
+    "unbanUser": "Poista esto",
+    "totalUsers": "Käyttäjiä yhteensä",
+    "activeToday": "Aktiivisia tänään",
+    "postsThisWeek": "Ilmoituksia tällä viikolla",
+    "bookingsThisWeek": "Varauksia tällä viikolla",
+    "unreviewedFlags": "Käsittelemättömät liput",
+    "noFlags": "Ei lippuja",
+    "searchUsers": "Etsi käyttäjiä",
+    "spam": "Roskaposti",
+    "inappropriate": "Sopimaton",
+    "scam": "Huijaus",
+    "flagDetails": "Lipun tiedot",
+    "autoHidden": "Automaattisesti piilotettu",
+    "reviewed": "Käsitelty",
+    "notReviewed": "Käsittelemätön",
+    "banned": "Estetty",
+    "active": "Aktiivinen",
+    "trustScore": "Luottamuspisteet",
+    "posts": "Ilmoitukset",
+    "accessDenied": "Pääsy evätty",
+    "accessDeniedDesc": "Vain ylläpitäjillä on pääsy tähän näkymään."
   }
 }

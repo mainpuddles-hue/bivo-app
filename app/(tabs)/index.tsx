@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
@@ -61,6 +62,28 @@ function FeedScreenInner() {
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
 
+  // ── TODO 1: Hidden post IDs ──
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
+  const handleHidePost = useCallback((postId: string) => {
+    setHiddenIds(prev => { const next = new Set(prev); next.add(postId); return next })
+  }, [])
+
+  // ── TODO 6: "Seen" / new indicator ──
+  const [lastFeedVisit, setLastFeedVisit] = useState<string | null>(null)
+  useEffect(() => {
+    AsyncStorage.getItem('tackbird_last_feed_visit').then(val => {
+      if (val) setLastFeedVisit(val)
+    })
+    return () => {
+      AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString())
+    }
+  }, [])
+
+  const visiblePosts = useMemo(
+    () => feed.posts.filter(p => !hiddenIds.has(p.id)),
+    [feed.posts, hiddenIds],
+  )
+
   // ── Track post views via viewability ──
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50, minimumViewTime: 1000 }).current
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -95,6 +118,7 @@ function FeedScreenInner() {
     const prevGroup = index > 0 && feed.postsRef.current[index - 1]?.created_at
       ? getDateGroup(feed.postsRef.current[index - 1].created_at!) : ''
     const showLabel = index > 0 && currentGroup !== prevGroup
+    const postIsNew = !!(lastFeedVisit && item.created_at && item.created_at > lastFeedVisit)
 
     return (
       <View>
@@ -105,10 +129,10 @@ function FeedScreenInner() {
             <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
           </View>
         ) : null}
-        <PostCard post={item} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} />
+        <PostCard post={item} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} />
       </View>
     )
-  }, [feed.userLocation, feed.currentUserId, colors.mutedForeground, colors.border, t, trackInteraction])
+  }, [feed.userLocation, feed.currentUserId, colors.mutedForeground, colors.border, t, trackInteraction, handleHidePost, lastFeedVisit])
 
   // ── ListHeader ──
   const ListHeader = useMemo(() => (
@@ -254,7 +278,7 @@ function FeedScreenInner() {
       </View>
 
       <FlatList
-        data={feed.posts}
+        data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => item.id}
         contentContainerStyle={[styles.list, { paddingTop: 76 }]}

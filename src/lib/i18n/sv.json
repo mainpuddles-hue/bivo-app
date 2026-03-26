@@ -84,7 +84,10 @@
     "new": "Nytt",
     "startConversation": "Kommentera",
     "expiringToday": "Går ut idag!",
-    "examplePost": "Exempelannons"
+    "examplePost": "Exempelannons",
+    "hidePost": "Dölj",
+    "postHidden": "Inlägg dolt",
+    "newPost": "Ny"
   },
   "time": {
     "justNow": "just nu",
@@ -542,7 +545,13 @@
     "reviewFailed": "Kunde inte skicka recension",
     "selectRating": "Välj ett betyg",
     "alreadyReviewed": "Du har redan recenserat denna användare",
-    "profileHidden": "Profilen är inte offentlig"
+    "profileHidden": "Profilen är inte offentlig",
+    "myPosts": "Inlägg",
+    "pointHistory": "Poänghistorik",
+    "noPointHistory": "Inga poäng ännu",
+    "allPosts": "Alla inlägg",
+    "active": "Aktiv",
+    "expired": "Utgången"
   },
   "settings": {
     "title": "Inställningar",
@@ -1035,7 +1044,9 @@
   },
   "bookings": {
     "title": "Bokningar",
-    "empty": "Inga bokningar ännu"
+    "empty": "Inga bokningar ännu",
+    "active": "Aktiva",
+    "past": "Tidigare"
   },
   "booking": {
     "details": "Bokningsdetaljer",
@@ -2089,7 +2100,9 @@
     "editPostTitle": "Redigera diskussion",
     "saveEdit": "Spara",
     "loadMore": "Ladda fler",
-    "noMorePosts": "Inga fler diskussioner"
+    "noMorePosts": "Inga fler diskussioner",
+    "newestFirst": "Nyaste först",
+    "oldestFirst": "Äldst först"
   },
   "about": {
     "title": "Om",
@@ -2303,6 +2316,43 @@
     "noData": "Inga poäng ännu"
   },
   "points": {
-    "earned": "+{points} poäng!"
+    "earned": "+{points} poäng!",
+    "post_created": "Inlägg skapat",
+    "reply_created": "Svar skapat",
+    "thanks_given": "Tack givet",
+    "thanks_received": "Tack mottaget",
+    "event_attended": "Evenemang deltagit",
+    "review_written": "Recension skriven",
+    "first_post_bonus": "Första inläggsbonus"
+  },
+  "admin": {
+    "title": "Adminpanel",
+    "flags": "Flaggor",
+    "users": "Användare",
+    "stats": "Statistik",
+    "hidePost": "Dölj",
+    "allowPost": "Tillåt",
+    "banUser": "Blockera användare",
+    "unbanUser": "Avblockera användare",
+    "totalUsers": "Totalt antal användare",
+    "activeToday": "Aktiva idag",
+    "postsThisWeek": "Inlägg denna vecka",
+    "bookingsThisWeek": "Bokningar denna vecka",
+    "unreviewedFlags": "Ogranskade flaggor",
+    "noFlags": "Inga flaggor",
+    "searchUsers": "Sök användare",
+    "spam": "Skräppost",
+    "inappropriate": "Olämpligt",
+    "scam": "Bedrägeri",
+    "flagDetails": "Flaggdetaljer",
+    "autoHidden": "Automatiskt dold",
+    "reviewed": "Granskad",
+    "notReviewed": "Ej granskad",
+    "banned": "Blockerad",
+    "active": "Aktiv",
+    "trustScore": "Förtroendepoäng",
+    "posts": "Inlägg",
+    "accessDenied": "Åtkomst nekad",
+    "accessDeniedDesc": "Bara administratörer har åtkomst till denna vy."
   }
 }

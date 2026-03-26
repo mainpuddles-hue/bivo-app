@@ -84,7 +84,10 @@
     "new": "Новое",
     "startConversation": "Комментировать",
     "expiringToday": "Истекает сегодня!",
-    "examplePost": "Пример объявления"
+    "examplePost": "Пример объявления",
+    "hidePost": "Скрыть",
+    "postHidden": "Публикация скрыта",
+    "newPost": "Новое"
   },
   "time": {
     "justNow": "только что",
@@ -542,7 +545,13 @@
     "reviewFailed": "Не удалось отправить отзыв",
     "selectRating": "Выберите оценку",
     "alreadyReviewed": "Вы уже оставили отзыв",
-    "profileHidden": "Профиль не является публичным"
+    "profileHidden": "Профиль не является публичным",
+    "myPosts": "Публикации",
+    "pointHistory": "История баллов",
+    "noPointHistory": "Баллов пока нет",
+    "allPosts": "Все объявления",
+    "active": "Активное",
+    "expired": "Истёкшее"
   },
   "settings": {
     "title": "Настройки",
@@ -1033,7 +1042,9 @@
   },
   "bookings": {
     "title": "Бронирования",
-    "empty": "Бронирований пока нет"
+    "empty": "Бронирований пока нет",
+    "active": "Активные",
+    "past": "Прошедшие"
   },
   "booking": {
     "details": "Детали бронирования",
@@ -2085,7 +2096,9 @@
     "editPostTitle": "Редактировать тему",
     "saveEdit": "Сохранить",
     "loadMore": "Загрузить ещё",
-    "noMorePosts": "Больше нет обсуждений"
+    "noMorePosts": "Больше нет обсуждений",
+    "newestFirst": "Сначала новые",
+    "oldestFirst": "Сначала старые"
   },
   "about": {
     "title": "О приложении",
@@ -2298,6 +2311,43 @@
     "noData": "Баллов пока нет"
   },
   "points": {
-    "earned": "+{points} баллов!"
+    "earned": "+{points} баллов!",
+    "post_created": "Публикация создана",
+    "reply_created": "Ответ создан",
+    "thanks_given": "Благодарность отправлена",
+    "thanks_received": "Благодарность получена",
+    "event_attended": "Участие в событии",
+    "review_written": "Отзыв написан",
+    "first_post_bonus": "Бонус за первую публикацию"
+  },
+  "admin": {
+    "title": "Панель администратора",
+    "flags": "Жалобы",
+    "users": "Пользователи",
+    "stats": "Статистика",
+    "hidePost": "Скрыть",
+    "allowPost": "Разрешить",
+    "banUser": "Заблокировать",
+    "unbanUser": "Разблокировать",
+    "totalUsers": "Всего пользователей",
+    "activeToday": "Активных сегодня",
+    "postsThisWeek": "Публикаций за неделю",
+    "bookingsThisWeek": "Бронирований за неделю",
+    "unreviewedFlags": "Нерассмотренные жалобы",
+    "noFlags": "Жалоб нет",
+    "searchUsers": "Поиск пользователей",
+    "spam": "Спам",
+    "inappropriate": "Неуместное",
+    "scam": "Мошенничество",
+    "flagDetails": "Детали жалобы",
+    "autoHidden": "Скрыто автоматически",
+    "reviewed": "Рассмотрено",
+    "notReviewed": "Не рассмотрено",
+    "banned": "Заблокирован",
+    "active": "Активен",
+    "trustScore": "Уровень доверия",
+    "posts": "Публикации",
+    "accessDenied": "Доступ запрещён",
+    "accessDeniedDesc": "Доступ имеют только администраторы."
   }
 }

@@ -84,7 +84,10 @@
     "new": "Uus",
     "startConversation": "Kommenteeri",
     "expiringToday": "Aegub täna!",
-    "examplePost": "Näidiskuulutus"
+    "examplePost": "Näidiskuulutus",
+    "hidePost": "Peida",
+    "postHidden": "Postitus peidetud",
+    "newPost": "Uus"
   },
   "time": {
     "justNow": "just praegu",
@@ -542,7 +545,13 @@
     "reviewFailed": "Arvustuse saatmine ebaõnnestus",
     "selectRating": "Vali hinne",
     "alreadyReviewed": "Oled selle kasutaja juba hinnanud",
-    "profileHidden": "Profiil pole avalik"
+    "profileHidden": "Profiil pole avalik",
+    "myPosts": "Postitused",
+    "pointHistory": "Punktide ajalugu",
+    "noPointHistory": "Punkte veel pole",
+    "allPosts": "Kõik kuulutused",
+    "active": "Aktiivne",
+    "expired": "Aegunud"
   },
   "settings": {
     "title": "Seaded",
@@ -1033,7 +1042,9 @@
   },
   "bookings": {
     "title": "Broneeringud",
-    "empty": "Broneeringuid veel pole"
+    "empty": "Broneeringuid veel pole",
+    "active": "Aktiivsed",
+    "past": "Möödunud"
   },
   "booking": {
     "details": "Broneeringu üksikasjad",
@@ -2085,7 +2096,9 @@
     "editPostTitle": "Muuda vestlust",
     "saveEdit": "Salvesta",
     "loadMore": "Laadi rohkem",
-    "noMorePosts": "Rohkem vestlusi pole"
+    "noMorePosts": "Rohkem vestlusi pole",
+    "newestFirst": "Uuemad enne",
+    "oldestFirst": "Vanemad enne"
   },
   "about": {
     "title": "Teave",
@@ -2298,6 +2311,43 @@
     "noData": "Punkte veel pole"
   },
   "points": {
-    "earned": "+{points} punkti!"
+    "earned": "+{points} punkti!",
+    "post_created": "Postitus loodud",
+    "reply_created": "Vastus loodud",
+    "thanks_given": "Tänu antud",
+    "thanks_received": "Tänu saadud",
+    "event_attended": "Sündmusel osaletud",
+    "review_written": "Arvustus kirjutatud",
+    "first_post_bonus": "Esimese postituse boonus"
+  },
+  "admin": {
+    "title": "Halduspaneel",
+    "flags": "Lipud",
+    "users": "Kasutajad",
+    "stats": "Statistika",
+    "hidePost": "Peida",
+    "allowPost": "Luba",
+    "banUser": "Blokeeri kasutaja",
+    "unbanUser": "Tühista blokeering",
+    "totalUsers": "Kasutajaid kokku",
+    "activeToday": "Aktiivsed täna",
+    "postsThisWeek": "Postitusi sel nädalal",
+    "bookingsThisWeek": "Broneeringuid sel nädalal",
+    "unreviewedFlags": "Ülevaatamata lipud",
+    "noFlags": "Lippe pole",
+    "searchUsers": "Otsi kasutajaid",
+    "spam": "Rämpspost",
+    "inappropriate": "Sobimatu",
+    "scam": "Pettus",
+    "flagDetails": "Lipu üksikasjad",
+    "autoHidden": "Automaatselt peidetud",
+    "reviewed": "Üle vaadatud",
+    "notReviewed": "Üle vaatamata",
+    "banned": "Blokeeritud",
+    "active": "Aktiivne",
+    "trustScore": "Usaldusskoor",
+    "posts": "Postitused",
+    "accessDenied": "Juurdepääs keelatud",
+    "accessDeniedDesc": "Ainult administraatoritel on juurdepääs sellele vaatele."
   }
 }
