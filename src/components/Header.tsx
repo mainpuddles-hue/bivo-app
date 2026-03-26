@@ -8,6 +8,7 @@ import { fonts } from '@/lib/fonts'
 import { TackBirdLogo } from './TackBirdLogo'
 import { useState, useEffect } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
+import { getCachedUserId } from '@/lib/cachedAuth'
 
 export function Header() {
   const { colors, isDark } = useTheme()
@@ -17,20 +18,22 @@ export function Header() {
   const supabase = useSupabase()
   const [unreadCount, setUnreadCount] = useState(0)
 
+  // PERF: Reuse cached userId, defer notification count fetch
   useEffect(() => {
     let mounted = true
     async function fetchUnread() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user || !mounted) return
+      const userId = await getCachedUserId(supabase)
+      if (!userId || !mounted) return
       const { count } = await supabase
         .from('notifications')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('is_read', false)
       if (mounted) setUnreadCount(count ?? 0)
     }
-    fetchUnread()
-    return () => { mounted = false }
+    // PERF: Defer by 1s — notification badge is not critical for first render
+    const timer = setTimeout(fetchUnread, 1000)
+    return () => { mounted = false; clearTimeout(timer) }
   }, [supabase])
 
   return (

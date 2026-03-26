@@ -11,6 +11,7 @@ import { I18nProvider } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { getCachedUserId } from '@/lib/cachedAuth'
 
 // Configure how notifications are handled when the app is in the foreground
 if (Platform.OS !== 'web') {
@@ -36,18 +37,19 @@ function useOnboardingGuard() {
 
     async function checkOnboarding() {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setChecked(true); return }
-
-        // Check AsyncStorage flag first (fast path)
+        // PERF: Check AsyncStorage flag FIRST (fast path, no network)
         const flag = await AsyncStorage.getItem('onboarding_complete')
-        if (flag === 'true') { setChecked(true); return }
+        if (flag === 'true') { if (mounted) setChecked(true); return }
+
+        // Only call auth if not already onboarded
+        const userId = await getCachedUserId(supabase)
+        if (!userId) { if (mounted) setChecked(true); return }
 
         // Check if profile has neighborhood set (already onboarded via web)
         const { data: profile } = await supabase
           .from('profiles')
           .select('naapurusto')
-          .eq('id', user.id)
+          .eq('id', userId)
           .single()
 
         if ((profile as any)?.naapurusto) {

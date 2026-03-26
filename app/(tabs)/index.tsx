@@ -269,6 +269,12 @@ function FeedScreenInner() {
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
+        // PERF: Render fewer items initially for faster first paint
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={7}
+        removeClippedSubviews={true}
+        updateCellsBatchingPeriod={100}
       />
 
       <NeighborhoodPicker
