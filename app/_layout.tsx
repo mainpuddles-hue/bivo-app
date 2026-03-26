@@ -212,11 +212,41 @@ function useCurrentUserId() {
   return userId
 }
 
+/**
+ * Listen for auth state changes (e.g. email verification deep link, password reset).
+ * When a user clicks a confirmation/reset link, Supabase triggers SIGNED_IN or
+ * PASSWORD_RECOVERY events. We route them to the correct screen.
+ */
+function useAuthStateListener() {
+  const supabase = useSupabase()
+  const router = useRouter()
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // User just confirmed email or signed in via deep link — go to feed
+        // Delay slightly to avoid competing with other navigation
+        setTimeout(() => {
+          router.replace('/')
+        }, 100)
+      } else if (event === 'PASSWORD_RECOVERY' && session) {
+        // User clicked password reset link — navigate to settings for pw change
+        setTimeout(() => {
+          router.replace('/settings')
+        }, 100)
+      }
+    })
+
+    return () => { subscription.unsubscribe() }
+  }, [supabase, router])
+}
+
 function RootLayoutInner() {
   const { colors, isDark } = useTheme()
   useOnboardingGuard()
   useNotificationNavigation()
   useAnalyticsSetup()
+  useAuthStateListener()
 
   // Location-aware international system
   const userId = useCurrentUserId()

@@ -271,7 +271,7 @@ export default function EventsScreen() {
     }
     try {
       if (wasAttending) {
-        const { error } = await supabase.from('event_attendees').delete().eq('event_id', eventId).eq('user_id', userId)
+        const { error } = await (supabase.from('event_attendees') as any).delete().eq('event_id', eventId).eq('user_id', userId)
         if (error) throw error
       } else {
         const { error } = await (supabase.from('event_attendees') as any).insert({ event_id: eventId, user_id: userId })
@@ -296,7 +296,7 @@ export default function EventsScreen() {
     try {
       if (savedEventIds.has(eventId)) {
         setSavedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
-        await supabase.from('saved_events').delete().eq('event_id', eventId).eq('user_id', userId)
+        await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', userId)
       } else {
         setSavedEventIds(prev => new Set(prev).add(eventId))
         await (supabase.from('saved_events') as any).insert({ event_id: eventId, user_id: userId })
@@ -313,7 +313,7 @@ export default function EventsScreen() {
     if (!act) { activityMemberRef.current = false; return }
     try {
       if (act.is_member) {
-        const { error } = await supabase.from('activity_members').delete().eq('activity_id', activityId).eq('user_id', userId)
+        const { error } = await (supabase.from('activity_members') as any).delete().eq('activity_id', activityId).eq('user_id', userId)
         if (error) { Alert.alert(t('common.error'), t('activity.leaveFailed')); return }
         setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: false, member_count: (a.member_count ?? 1) - 1 } : a))
       } else {

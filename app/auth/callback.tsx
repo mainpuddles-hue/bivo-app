@@ -51,6 +51,30 @@ export default function AuthCallbackScreen() {
           }
         }
 
+        // Method 1b: Native deep link — tokens arrive as query params
+        // Supabase email links use #fragment which Expo Router may pass as params
+        const accessTokenParam = params.access_token as string | undefined
+        const refreshTokenParam = params.refresh_token as string | undefined
+        if (accessTokenParam && refreshTokenParam) {
+          const { error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessTokenParam,
+            refresh_token: refreshTokenParam,
+          })
+          if (setSessionError) {
+            setError(setSessionError.message)
+            setProcessing(false)
+            return
+          }
+          // Check if this is a password recovery flow
+          const type = params.type as string | undefined
+          if (type === 'recovery') {
+            router.replace('/settings')
+          } else {
+            router.replace('/')
+          }
+          return
+        }
+
         // Method 2: Implicit flow — tokens in URL hash fragment
         // On web, check window.location.hash
         if (Platform.OS === 'web' && typeof window !== 'undefined') {

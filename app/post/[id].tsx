@@ -165,12 +165,20 @@ function PostDetailScreenInner() {
       const prevCount = likeCount
       if (wasLiked) {
         setIsLiked(false); setLikeCount(c => c - 1)
-        const { error } = await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', userId)
+        const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', id).eq('user_id', userId)
         if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
+        else {
+          // Update like_count on posts table (in case no DB trigger)
+          await (supabase.from('posts') as any).update({ like_count: Math.max(0, prevCount - 1) }).eq('id', id)
+        }
       } else {
         setIsLiked(true); setLikeCount(c => c + 1)
         const { error } = await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
         if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
+        else {
+          // Update like_count on posts table (in case no DB trigger)
+          await (supabase.from('posts') as any).update({ like_count: prevCount + 1 }).eq('id', id)
+        }
       }
     } finally { likingRef.current = false }
   }, [userId, isLiked, likeCount, id, supabase, router])
@@ -183,7 +191,7 @@ function PostDetailScreenInner() {
       const wasSaved = isSaved
       if (wasSaved) {
         setIsSaved(false)
-        const { error } = await supabase.from('saved_posts').delete().eq('post_id', id).eq('user_id', userId)
+        const { error } = await (supabase.from('saved_posts') as any).delete().eq('post_id', id).eq('user_id', userId)
         if (error) { setIsSaved(wasSaved) }
       } else {
         setIsSaved(true)
@@ -245,6 +253,12 @@ function PostDetailScreenInner() {
         post_id: id, user_id: userId, content, parent_id: parentId,
       })
       if (error) throw error
+      // Update comment_count on posts table (in case no DB trigger)
+      if (post) {
+        const newCount = (post.comment_count ?? 0) + 1
+        await (supabase.from('posts') as any).update({ comment_count: newCount }).eq('id', id)
+        setPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
+      }
       if (parentId) {
         setExpandedReplies(prev => { const next = new Set(prev); next.add(parentId); return next })
       }
@@ -277,7 +291,7 @@ function PostDetailScreenInner() {
       {
         text: t('post.delete'), style: 'destructive',
         onPress: async () => {
-          const { error } = await supabase.from('posts').delete().eq('id', post.id)
+          const { error } = await (supabase.from('posts') as any).delete().eq('id', post.id)
           if (error) { Alert.alert(t('common.error'), t('post.deleteFailed')) }
           else { Alert.alert(t('post.deleted')); router.back() }
         },

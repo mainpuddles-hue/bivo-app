@@ -108,7 +108,11 @@ export default function LoginScreen() {
     if (mode === 'forgot') {
       setLoading(true)
       try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: Platform.OS === 'web'
+            ? (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback'
+            : 'tackbird://auth/callback',
+        })
         if (error) throw error
         setForgotSent(true)
       } catch (err: any) {
@@ -128,12 +132,25 @@ export default function LoginScreen() {
           setLoading(false)
           return
         }
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { data: { name: name.trim() } },
+          options: {
+            data: { name: name.trim() },
+            emailRedirectTo: Platform.OS === 'web'
+              ? (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback'
+              : 'tackbird://auth/callback',
+          },
         })
         if (error) throw error
+
+        // If Supabase returned a session, email confirmation is disabled — auto-login
+        if (signUpData?.session) {
+          router.replace('/')
+          return
+        }
+
+        // Otherwise email confirmation is required — tell user to check email
         Alert.alert(t('common.success'), t('auth.checkEmail'), [
           { text: 'OK', onPress: () => { setMode('login'); setPassword('') } }
         ])

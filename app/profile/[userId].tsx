@@ -157,16 +157,20 @@ export default function PublicProfileScreen() {
   const handleFollow = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-    if (isFollowing) {
+    const wasFollowing = isFollowing
+    const prevCount = followerCount
+    if (wasFollowing) {
       setIsFollowing(false)
       setFollowerCount(c => c - 1)
-      await supabase.from('user_follows').delete().eq('follower_id', currentUserId).eq('followed_id', userId)
+      const { error } = await (supabase.from('user_follows') as any).delete().eq('follower_id', currentUserId).eq('followed_id', userId)
+      if (error) { setIsFollowing(true); setFollowerCount(prevCount) }
     } else {
       setIsFollowing(true)
       setFollowerCount(c => c + 1)
-      await (supabase.from('user_follows') as any).insert({ follower_id: currentUserId, followed_id: userId })
+      const { error } = await (supabase.from('user_follows') as any).insert({ follower_id: currentUserId, followed_id: userId })
+      if (error) { setIsFollowing(false); setFollowerCount(prevCount) }
     }
-  }, [currentUserId, isFollowing, userId, supabase, router])
+  }, [currentUserId, isFollowing, followerCount, userId, supabase, router])
 
   const handleMessage = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
@@ -203,7 +207,7 @@ export default function PublicProfileScreen() {
           onPress: async () => {
             if (isBlocked) {
               setIsBlocked(false)
-              await supabase.from('blocked_users').delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
+              await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
               Alert.alert(t('common.success'), t('profile.unblocked'))
             } else {
               setIsBlocked(true)
