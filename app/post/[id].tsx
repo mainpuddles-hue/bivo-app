@@ -262,6 +262,25 @@ function PostDetailScreenInner() {
       if (parentId) {
         setExpandedReplies(prev => { const next = new Set(prev); next.add(parentId); return next })
       }
+      // Notify post owner about the new comment
+      if (post && post.user_id && post.user_id !== userId) {
+        await (supabase.from('notifications') as any).insert({
+          user_id: post.user_id,
+          from_user_id: userId,
+          type: 'comment',
+          title: t('notifications.commentTitle'),
+          body: content.slice(0, 100),
+          link_type: 'post',
+          link_id: id,
+        }).catch(() => {})
+        triggerPush({
+          user_id: post.user_id,
+          title: t('notifications.commentTitle'),
+          body: content.slice(0, 100),
+          type: 'comment',
+          post_id: id as string,
+        })
+      }
       // Speed badge check for urgent posts
       if (post?.is_urgent && userId && post.user_id) {
         checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})

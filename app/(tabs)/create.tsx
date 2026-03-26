@@ -453,6 +453,7 @@ export default function CreateScreen() {
         expires_at: expiresAt,
         is_urgent: isUrgent || false,
         urgency_hours: isUrgent ? urgencyHours : null,
+        is_anonymous: isAnonymous || false,
         is_active: true,
         tags: selectedTags,
       }).select('id').single()
@@ -553,7 +554,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, images, supabase, router, t, quickContentCheck])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck])
 
   // ── Category selection step ──
   if (step === 'category') {

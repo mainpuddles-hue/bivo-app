@@ -124,21 +124,26 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
       onPress={() => {
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
         onInteraction?.(post.id, 'click')
+        // Seed posts have fake IDs — don't navigate to detail (would show eternal spinner)
+        if ((post as any).is_seed) return
         router.push(`/post/${post.id}`)
       }}
       onLongPress={async () => {
         if (!userId) { router.push('/(auth)/login'); return }
+        if ((post as any).is_seed) return
         if (savingRef.current) return
         savingRef.current = true
         try {
           try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy) } catch {}
-      
+
           if (saved) {
             setSaved(false)
-            await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+            const { error } = await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+            if (error) setSaved(true)
           } else {
             setSaved(true)
-            await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+            const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+            if (error) setSaved(false)
           }
         } finally { savingRef.current = false }
       }}
@@ -293,12 +298,21 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 try {
                   try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
               
+                  // Block interactions on seed posts (fake IDs cause FK violations)
+                  if ((post as any).is_seed) return
+
                   if (liked) {
+                    const prevCount = likeCount
                     setLiked(false)
                     setLikeCount(c => Math.max(0, c - 1))
                     const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                    if (error) { setLiked(true); setLikeCount(c => c + 1) }
+                    if (error) { setLiked(true); setLikeCount(prevCount) }
+                    else {
+                      // Sync like_count on posts table
+                      await (supabase.from('posts') as any).update({ like_count: Math.max(0, prevCount - 1) }).eq('id', post.id)
+                    }
                   } else {
+                    const prevCount = likeCount
                     setLiked(true)
                     setLikeCount(c => c + 1)
                     Animated.sequence([
@@ -306,8 +320,12 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                       Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
                     ]).start()
                     const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
-                    if (error) { setLiked(false); setLikeCount(c => Math.max(0, c - 1)) }
-                    else { onInteraction?.(post.id, 'like') }
+                    if (error) { setLiked(false); setLikeCount(prevCount) }
+                    else {
+                      // Sync like_count on posts table
+                      await (supabase.from('posts') as any).update({ like_count: prevCount + 1 }).eq('id', post.id)
+                      onInteraction?.(post.id, 'like')
+                    }
                   }
                 } finally { likingRef.current = false }
               }}
@@ -337,18 +355,21 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             onPress={async (e) => {
               e.stopPropagation?.()
               if (!userId) { router.push('/(auth)/login'); return }
+              if ((post as any).is_seed) return
               if (savingRef.current) return
               savingRef.current = true
               try {
                 try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
-            
+
                 if (saved) {
-                  await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
                   setSaved(false)
+                  const { error } = await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                  if (error) setSaved(true)
                 } else {
-                  await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
                   setSaved(true)
-                  onInteraction?.(post.id, 'save')
+                  const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+                  if (error) setSaved(false)
+                  else onInteraction?.(post.id, 'save')
                 }
               } finally { savingRef.current = false }
             }}

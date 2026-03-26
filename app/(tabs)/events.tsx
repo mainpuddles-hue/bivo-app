@@ -264,43 +264,74 @@ export default function EventsScreen() {
     if (attendingRef.current) return
     attendingRef.current = true
     const wasAttending = attendingIds.has(eventId)
+    // Optimistic update for attending set
     if (wasAttending) {
       setAttendingIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
     } else {
       setAttendingIds(prev => new Set(prev).add(eventId))
     }
+    // Optimistic update for attendee_count in events list
+    setEvents(prev => prev.map(e => {
+      if (e.id !== eventId) return e
+      const count = (e as any).attendee_count ?? 0
+      return { ...e, attendee_count: wasAttending ? Math.max(0, count - 1) : count + 1 } as any
+    }))
     try {
       if (wasAttending) {
         const { error } = await (supabase.from('event_attendees') as any).delete().eq('event_id', eventId).eq('user_id', userId)
         if (error) throw error
+        // Sync attendee_count on events table
+        const evt = events.find(e => e.id === eventId)
+        if (evt) {
+          const newCount = Math.max(0, ((evt as any).attendee_count ?? 1) - 1)
+          await (supabase.from('events') as any).update({ attendee_count: newCount }).eq('id', eventId)
+        }
       } else {
         const { error } = await (supabase.from('event_attendees') as any).insert({ event_id: eventId, user_id: userId })
         if (error) throw error
+        // Sync attendee_count on events table
+        const evt = events.find(e => e.id === eventId)
+        if (evt) {
+          const newCount = ((evt as any).attendee_count ?? 0) + 1
+          await (supabase.from('events') as any).update({ attendee_count: newCount }).eq('id', eventId)
+        }
       }
     } catch {
-      // Revert optimistic update
+      // Revert optimistic updates
       if (wasAttending) {
         setAttendingIds(prev => new Set(prev).add(eventId))
       } else {
         setAttendingIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
       }
+      setEvents(prev => prev.map(e => {
+        if (e.id !== eventId) return e
+        const count = (e as any).attendee_count ?? 0
+        return { ...e, attendee_count: wasAttending ? count + 1 : Math.max(0, count - 1) } as any
+      }))
       Alert.alert(t('common.error'), t('events.attendFailed'))
     } finally { attendingRef.current = false }
-  }, [userId, attendingIds, supabase, router, t])
+  }, [userId, attendingIds, events, supabase, router, t])
 
   const eventSavingRef = useRef(false)
-  const toggleSave = useCallback(async (eventId: string) => {
+  const toggleSave = useCallback(async (eventId: string, eventType: 'community' | 'city' = 'community') => {
     if (!userId) { router.push('/(auth)/login'); return }
     if (eventSavingRef.current) return
     eventSavingRef.current = true
+    const wasSaved = savedEventIds.has(eventId)
     try {
-      if (savedEventIds.has(eventId)) {
+      if (wasSaved) {
         setSavedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
-        await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', userId)
+        const { error } = await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', userId)
+        if (error) setSavedEventIds(prev => new Set(prev).add(eventId))
       } else {
         setSavedEventIds(prev => new Set(prev).add(eventId))
-        await (supabase.from('saved_events') as any).insert({ event_id: eventId, user_id: userId })
+        const { error } = await (supabase.from('saved_events') as any).insert({ event_id: eventId, user_id: userId, event_type: eventType })
+        if (error) setSavedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
       }
+    } catch {
+      // Revert on unexpected error
+      if (wasSaved) setSavedEventIds(prev => new Set(prev).add(eventId))
+      else setSavedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n })
     } finally { eventSavingRef.current = false }
   }, [userId, savedEventIds, supabase, router])
 
@@ -405,7 +436,7 @@ export default function EventsScreen() {
             )}
           </View>
           <View style={ev.cardActions}>
-            <Pressable onPress={() => toggleSave(item.id)} hitSlop={8}>
+            <Pressable onPress={() => toggleSave(item.id, 'community')} hitSlop={8}>
               {isSaved ? <BookmarkCheck size={18} color={colors.primary} /> : <Bookmark size={18} color={colors.mutedForeground} />}
             </Pressable>
             <Pressable onPress={() => shareEvent(item)} hitSlop={8}>
