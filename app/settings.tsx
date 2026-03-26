@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug } from 'lucide-react-native'
+import { ArrowLeft, Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
@@ -652,6 +652,20 @@ export default function SettingsScreen() {
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
         </View>
+
+        {/* Admin panel — only visible for admins */}
+        {(profile as any)?.is_admin && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('admin.title')}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Pressable onPress={() => router.push('/admin' as any)} style={s.row}>
+                <Shield size={18} color={colors.destructive} />
+                <Text style={[s.rowText, { color: colors.foreground }]}>{t('admin.title')}</Text>
+                <ChevronRight size={16} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
+          </>
+        )}
 
         {/* Danger zone */}
         <Text style={[s.section, { color: colors.destructive }]}>{t('settings.deleteAccount')}</Text>

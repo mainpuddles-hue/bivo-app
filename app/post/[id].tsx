@@ -30,6 +30,7 @@ import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
+import { trackEvent } from '@/lib/analytics'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -103,6 +104,7 @@ function PostDetailScreenInner() {
         const p = data as unknown as Post
         setPost(p)
         setLikeCount(p.like_count ?? 0)
+        trackEvent('post_viewed', { post_id: id as string, type: p.type })
       }
 
       if (user) {

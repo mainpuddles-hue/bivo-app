@@ -22,6 +22,7 @@ import { TrustGateModal } from '@/components/TrustGate'
 import { VerificationModal } from '@/components/VerificationModal'
 import { TrustBadge } from '@/components/TrustBadge'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
+import { trackEvent } from '@/lib/analytics'
 import type { PostType, TrustLevel } from '@/lib/types'
 
 const POST_TAGS: Record<string, { id: string; label: string }[]> = {
@@ -344,6 +345,37 @@ export default function CreateScreen() {
           ? new Date(Date.now() + expirationDays * 86400000).toISOString()
           : null
 
+      // Pre-insert content moderation — blocks spam/scam BEFORE the post appears in feed.
+      // This prevents the window where a flagged post is visible to other users.
+      try {
+        const { data: { session: modSession } } = await supabase.auth.getSession()
+        const modHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (modSession?.access_token) {
+          modHeaders['Authorization'] = `Bearer ${modSession.access_token}`
+        }
+        const modRes = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/moderate-content`, {
+          method: 'POST',
+          headers: modHeaders,
+          body: JSON.stringify({
+            title: title.trim(),
+            description: description.trim(),
+            user_id: user.id,
+          }),
+        })
+        if (modRes.ok) {
+          const modResult = await modRes.json()
+          if (modResult.action === 'block') {
+            Alert.alert(t('common.error'), t('create.contentBlocked') || 'Content blocked by moderation')
+            setSubmitting(false)
+            setUploadStatus('')
+            return
+          }
+        }
+      } catch {
+        // Moderation service unavailable — allow the post through
+        // and rely on async moderation as fallback
+      }
+
       // Create post
       setUploadStatus(t('create.publishing'))
       const { data: post, error } = await (supabase.from('posts') as any).insert({
@@ -442,6 +474,9 @@ export default function CreateScreen() {
           post_id: post.id,
         })
       }
+
+      // Analytics: track post creation
+      trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
 
       // Show success feedback before navigating — user needs to know their post was created
       Alert.alert(

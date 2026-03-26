@@ -11,6 +11,7 @@ import { I18nProvider } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { setAnalyticsUser, trackEvent } from '@/lib/analytics'
 
 // Configure how notifications are handled when the app is in the foreground
 if (Platform.OS !== 'web') {
@@ -129,10 +130,35 @@ function useNotificationNavigation() {
   }, [router])
 }
 
+function useAnalyticsSetup() {
+  const supabase = useSupabase()
+
+  useEffect(() => {
+    let mounted = true
+    async function init() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!mounted) return
+        if (user) {
+          setAnalyticsUser(user.id)
+          trackEvent('app_opened')
+        } else {
+          setAnalyticsUser(null)
+        }
+      } catch {
+        // Ignore — analytics is non-critical
+      }
+    }
+    init()
+    return () => { mounted = false }
+  }, [supabase])
+}
+
 function RootLayoutInner() {
   const { colors, isDark } = useTheme()
   useOnboardingGuard()
   useNotificationNavigation()
+  useAnalyticsSetup()
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -169,6 +195,7 @@ function RootLayoutInner() {
         <Stack.Screen name="activities" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="leaderboard" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="profile/[userId]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="admin" options={{ headerShown: false, animation: 'slide_from_right' }} />
       </Stack>
     </View>
   )

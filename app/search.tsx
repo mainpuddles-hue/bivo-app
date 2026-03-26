@@ -17,6 +17,7 @@ import { BoardIllustration } from '@/components/illustrations'
 import { SearchFilters, EMPTY_FILTERS, countActiveFilters, type SearchFilterValues, type SortOption } from '@/components/SearchFilters'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { rankSearchResults } from '@/lib/searchAlgorithm'
+import { trackEvent } from '@/lib/analytics'
 import type { Post, PostType } from '@/lib/types'
 
 const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
@@ -328,6 +329,7 @@ export default function SearchScreen() {
     setSearched(true)
     addToHistory(q)
     saveRecentSearch(q)
+    trackEvent('search_performed', { query: q })
 
     const f = overrideFilters ?? filters
     const catFilter = overrideCategory !== undefined ? overrideCategory : activeFilter
