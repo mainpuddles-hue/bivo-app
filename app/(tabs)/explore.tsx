@@ -23,8 +23,9 @@ import { formatEventDateShort } from '@/lib/format'
 import * as Location from 'expo-location'
 import type { CityEvent, LocalPlace } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
-import { haversineKm } from '@/lib/geo'
+import { haversineKm, isInCityBounds } from '@/lib/geo'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
 
 // ── Types ──
 
@@ -202,6 +203,14 @@ function ExploreScreenInner() {
 
   const placesCount = places.length
 
+  // ── Out-of-area detection ──
+  // Helsinki default bounds
+  const HKI_BOUNDS = useMemo(() => ({ south: 60.14, north: 60.27, west: 24.83, east: 25.20 }), [])
+  const isOutOfArea = useMemo(() => {
+    if (!userLocation) return false
+    return !isInCityBounds(userLocation.latitude, userLocation.longitude, HKI_BOUNDS)
+  }, [userLocation, HKI_BOUNDS])
+
   // ── Sorted places with distance ──
   const sortedPlaces = useMemo(() => {
     if (!userLocation) return places.slice(0, 20)
@@ -307,6 +316,9 @@ function ExploreScreenInner() {
           )
         })}
       </View>
+
+      {/* ── Out of Area Banner ── */}
+      <OutOfAreaBanner visible={isOutOfArea} cityName="Helsinki" />
 
       <ScrollView
         style={s.scroll}

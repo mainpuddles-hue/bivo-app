@@ -17,6 +17,8 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { NEIGHBORHOODS } from '@/lib/constants'
 
+import { isInCityBounds } from '@/lib/geo'
+import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
 import { clusterMarkers, isCluster, type Cluster } from '@/lib/mapClustering'
 import type { ListItem, Section } from './map/types'
 import { EventCard } from './map/EventCard'
@@ -59,6 +61,14 @@ export default function MapScreen() {
     handleMarkerPress, handleGPSSelect, handleNeighborhoodSelect,
     handleCenterOnUser, openDirections,
   } = useMapData(t, locale)
+
+  // ── Out-of-area detection ──
+  // Helsinki default bounds (same as MapWeb fallback)
+  const HKI_BOUNDS = useMemo(() => ({ south: 60.14, north: 60.27, west: 24.83, east: 25.20 }), [])
+  const isOutOfArea = useMemo(() => {
+    if (!userLocation) return false
+    return !isInCityBounds(userLocation.latitude, userLocation.longitude, HKI_BOUNDS)
+  }, [userLocation, HKI_BOUNDS])
 
   // ── Clustering ──
   const [zoomLevel, setZoomLevel] = useState(14)
@@ -200,6 +210,9 @@ export default function MapScreen() {
         )}
         </>
       )}
+
+      {/* ── Out of Area Banner ── */}
+      <OutOfAreaBanner visible={isOutOfArea} cityName="Helsinki" />
 
       {/* ── Mini Map ── */}
       <View style={[styles.mapContainer, mapExpanded && { height: 400 }]}>

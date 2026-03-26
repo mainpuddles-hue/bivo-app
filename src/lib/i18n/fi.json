@@ -1595,7 +1595,10 @@
     "beFirstInArea": "Ole {area} ensimmäinen naapuri TackBirdissä!",
     "createFirstPost": "Luo ensimmäinen ilmoitus",
     "nearbyEvents": "Lähellä olevia tapahtumia",
-    "showAllPlaces": "Näytä kaikki {count} paikkaa"
+    "showAllPlaces": "Näytä kaikki {count} paikkaa",
+    "outOfArea": "Olet alueen ulkopuolella",
+    "outOfAreaDesc": "Tapahtumat ja paikat näkyvät vain kaupungissa {city}",
+    "changeCity": "Vaihda kaupunki"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

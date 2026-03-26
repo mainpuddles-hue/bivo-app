@@ -1595,7 +1595,10 @@
     "showAllPlaces": "Show all {count} places",
     "visible": "items on map",
     "allHelsinki": "Area",
-    "resetFiltersHint": "Try removing filters or expanding the radius."
+    "resetFiltersHint": "Try removing filters or expanding the radius.",
+    "outOfArea": "You're outside the area",
+    "outOfAreaDesc": "Events and places are only shown in {city}",
+    "changeCity": "Change city"
   },
   "privacy": {
     "title": "Privacy Policy",

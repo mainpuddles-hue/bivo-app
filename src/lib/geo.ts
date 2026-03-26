@@ -1,3 +1,14 @@
+/**
+ * Check if coordinates are within a city's bounding box.
+ */
+export function isInCityBounds(
+  lat: number,
+  lng: number,
+  bounds: { south: number; north: number; west: number; east: number }
+): boolean {
+  return lat >= bounds.south && lat <= bounds.north && lng >= bounds.west && lng <= bounds.east
+}
+
 export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   if ([lat1, lon1, lat2, lon2].some(v => v == null || isNaN(v))) return 0
   const R = 6371

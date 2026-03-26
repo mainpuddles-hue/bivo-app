@@ -1592,7 +1592,10 @@
     "beFirstInArea": "Ole {area} esimene naaber TackBirdis!",
     "createFirstPost": "Loo esimene kuulutus",
     "nearbyEvents": "Lähedal olevad sündmused",
-    "showAllPlaces": "Näita kõik {count} kohta"
+    "showAllPlaces": "Näita kõik {count} kohta",
+    "outOfArea": "Oled piirkonnast väljas",
+    "outOfAreaDesc": "Sündmused ja kohad kuvatakse ainult linnas {city}",
+    "changeCity": "Vaheta linn"
   },
   "privacy": {
     "title": "Andmekaitseteade",

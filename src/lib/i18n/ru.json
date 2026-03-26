@@ -1592,7 +1592,10 @@
     "beFirstInArea": "Станьте первым соседом в {area} на TackBird!",
     "createFirstPost": "Создайте первое объявление",
     "nearbyEvents": "Ближайшие события",
-    "showAllPlaces": "Показать все {count} мест"
+    "showAllPlaces": "Показать все {count} мест",
+    "outOfArea": "Вы за пределами зоны",
+    "outOfAreaDesc": "События и места отображаются только в {city}",
+    "changeCity": "Сменить город"
   },
   "privacy": {
     "title": "Политика конфиденциальности",

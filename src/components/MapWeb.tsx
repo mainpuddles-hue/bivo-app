@@ -12,6 +12,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS } from '@/lib/constants'
 import { useCityConfig, type City } from '@/hooks/useCityConfig'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
+import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
 import { MapSearchBar, type SearchResult } from '@/components/map/MapSearchBar'
 import { MapFilterChips } from '@/components/map/MapFilterChips'
 import { MapErrorState, MapEmptyState } from '@/components/map/MapErrorState'
@@ -230,6 +231,12 @@ export default function MapScreen() {
 
   const totalVisible = layerCounts.posts + layerCounts.events + layerCounts.places
 
+  // ── Out-of-area detection ──
+  const isOutOfArea = useMemo(() => {
+    if (!userPos) return false
+    return !isInCityBounds(userPos[0], userPos[1], cityBounds)
+  }, [userPos, cityBounds])
+
   const searchResults = useMemo((): SearchResult[] => {
     if (!debouncedSearch || debouncedSearch.length < 2) return []
     const q = debouncedSearch.toLowerCase()
@@ -320,6 +327,13 @@ export default function MapScreen() {
           <Search size={20} color={colors.foreground} />
         </Pressable>
       </View>
+
+      {/* ── Out of Area Banner ── */}
+      {isOutOfArea && (
+        <View style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 48, zIndex: 25 }}>
+          <OutOfAreaBanner visible={isOutOfArea} cityName={cityConfig.city?.name ?? 'Helsinki'} />
+        </View>
+      )}
 
       {/* ── LAYER PILLS ── */}
       <View style={[ms.layerRow, { top: insets.top + 52 }]}>

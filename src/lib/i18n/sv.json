@@ -1595,7 +1595,10 @@
     "showAllPlaces": "Visa alla {count} platser",
     "visible": "objekt på kartan",
     "allHelsinki": "Område",
-    "resetFiltersHint": "Prova att ta bort filter eller utöka radien."
+    "resetFiltersHint": "Prova att ta bort filter eller utöka radien.",
+    "outOfArea": "Du är utanför området",
+    "outOfAreaDesc": "Evenemang och platser visas bara i {city}",
+    "changeCity": "Byt stad"
   },
   "privacy": {
     "title": "Integritetspolicy",
