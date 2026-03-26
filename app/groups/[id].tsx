@@ -23,6 +23,7 @@ import { GroupPostCard } from '@/components/groups/GroupPostCard'
 import { GroupCommentList } from '@/components/groups/GroupCommentList'
 import { GroupMembersModal } from '@/components/groups/GroupMembersModal'
 import { GroupEditModal } from '@/components/groups/GroupEditModal'
+import { ReportModal } from '@/components/ReportModal'
 import { isValidUUID } from '@/lib/validation'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
 import type { GroupMember } from '@/components/groups/GroupMembersModal'
@@ -133,6 +134,15 @@ export default function GroupDetailScreen() {
   // Edit group modal (admin)
   const [showEditModal, setShowEditModal] = useState(false)
   const [savingEdit, setSavingEdit] = useState(false)
+
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportTargetId, setReportTargetId] = useState<string>('')
+
+  const handleReportPost = useCallback((postId: string) => {
+    setReportTargetId(postId)
+    setShowReportModal(true)
+  }, [])
 
   // ── Fetch current user ──
   useEffect(() => {
@@ -486,6 +496,7 @@ export default function GroupDetailScreen() {
       onDelete={handleDeleteGroupPost}
       onEdit={handleStartEditPost}
       onToggleComments={handleToggleComments}
+      onReport={handleReportPost}
       editingPostId={editingPostId}
       editPostContent={editPostContent}
       onEditContentChange={setEditPostContent}
@@ -655,6 +666,14 @@ export default function GroupDetailScreen() {
           saving={savingEdit}
         />
       )}
+
+      {/* Report Modal */}
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        type="post"
+        targetId={reportTargetId}
+      />
     </KeyboardAvoidingView>
   )
 }

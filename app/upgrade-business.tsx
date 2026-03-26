@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Building2, MapPin, FileText, Check } from 'lucide-react-native'
+import { ArrowLeft, Building2, MapPin, FileText, Check, Info } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -175,21 +175,19 @@ export default function UpgradeBusinessScreen() {
 
         const { url } = await checkoutRes.json()
         if (url) {
-          // Mark as business after payment success (webhook will confirm)
-          await (supabase.from('profiles') as any).update({
-            is_business: true,
-          }).eq('id', profile.id)
+          // Don't set is_business here — webhook will confirm after payment
           await Linking.openURL(url)
         }
       } else {
         const { url } = await res.json()
         if (url) {
-          await (supabase.from('profiles') as any).update({
-            is_business: true,
-          }).eq('id', profile.id)
+          // Don't set is_business here — webhook will confirm after payment
           await Linking.openURL(url)
         }
       }
+
+      // Show pending message — payment must be confirmed via webhook
+      Alert.alert(t('common.success'), t('business.pendingPayment'))
 
       router.back()
     } catch (err: any) {
@@ -303,27 +301,41 @@ export default function UpgradeBusinessScreen() {
           maxLength={200}
         />
 
-        {/* Submit */}
-        <Pressable
-          onPress={handleUpgrade}
-          disabled={submitting || !businessName.trim()}
-          style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !businessName.trim() ? 0.6 : 1 }]}
-        >
-          {submitting ? (
-            <ActivityIndicator size="small" color={colors.primaryForeground} />
-          ) : (
-            <>
-              <Building2 size={18} color={colors.primaryForeground} />
-              <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
-                {t('business.subscribeCTA')} — {t('business.monthlyPrice')}
-              </Text>
-            </>
-          )}
-        </Pressable>
+        {/* Submit — Stripe flow (Android/web only) */}
+        {Platform.OS !== 'ios' && (
+          <>
+            <Pressable
+              onPress={handleUpgrade}
+              disabled={submitting || !businessName.trim()}
+              style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !businessName.trim() ? 0.6 : 1 }]}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
+              ) : (
+                <>
+                  <Building2 size={18} color={colors.primaryForeground} />
+                  <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
+                    {t('business.subscribeCTA')} — {t('business.monthlyPrice')}
+                  </Text>
+                </>
+              )}
+            </Pressable>
 
-        <Text style={[styles.terms, { color: colors.mutedForeground }]}>
-          {t('pro.cancelAnytime')}. {t('business.termsNote')}
-        </Text>
+            <Text style={[styles.terms, { color: colors.mutedForeground }]}>
+              {t('pro.cancelAnytime')}. {t('business.termsNote')}
+            </Text>
+          </>
+        )}
+
+        {/* iOS: Subscription will be available via App Store */}
+        {Platform.OS === 'ios' && (
+          <View style={[styles.iosInfoCard, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}30` }]}>
+            <Info size={20} color={colors.primary} />
+            <Text style={[styles.iosInfoText, { color: colors.foreground }]}>
+              {t('business.comingSoonIOS')}
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   )
@@ -364,4 +376,9 @@ const styles = StyleSheet.create({
   },
   submitText: { fontSize: 16, fontWeight: '700' },
   terms: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
+  iosInfoCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    padding: 16, borderRadius: 14, borderWidth: 1, marginTop: 12,
+  },
+  iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20 },
 })

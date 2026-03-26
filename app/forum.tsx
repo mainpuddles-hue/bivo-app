@@ -18,6 +18,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { ForumPostCard } from '@/components/forum/ForumPostCard'
 import { ForumThreadView } from '@/components/forum/ForumThreadView'
 import { ForumCreateModal } from '@/components/forum/ForumCreateModal'
+import { ReportModal } from '@/components/ReportModal'
 import type { ForumPost, ForumReply, ForumCategory } from '@/components/forum/ForumPostCard'
 
 // ── Forum category filter definitions ──
@@ -124,6 +125,15 @@ export default function ForumScreen() {
   const [replySortNewest, setReplySortNewest] = useState(false)
   const votingPostRef = useRef(false)
   const votingReplyRef = useRef(false)
+
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportTargetId, setReportTargetId] = useState<string>('')
+
+  const handleReport = useCallback((postId: string) => {
+    setReportTargetId(postId)
+    setShowReportModal(true)
+  }, [])
 
   const sortedReplies = useMemo(() => {
     if (!replySortNewest) return replies
@@ -378,8 +388,9 @@ export default function ForumScreen() {
       onEdit={handleEditPost}
       onDelete={handleDeletePost}
       onSelect={openPostDetail}
+      onReport={handleReport}
     />
-  ), [currentUserId, votedPosts, handleUpvotePost, handleEditPost, handleDeletePost, openPostDetail])
+  ), [currentUserId, votedPosts, handleUpvotePost, handleEditPost, handleDeletePost, openPostDetail, handleReport])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {
@@ -536,6 +547,14 @@ export default function ForumScreen() {
           />
         )}
       </Modal>
+
+      {/* Report Modal */}
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        type="post"
+        targetId={reportTargetId}
+      />
     </View>
   )
 }

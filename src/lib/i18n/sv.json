@@ -1309,7 +1309,8 @@
     "yearly": "Årsvis",
     "renewsOn": "Förnyas {date}",
     "manageSubscription": "Hantera prenumeration",
-    "termsNote": "Prenumerationen förnyas automatiskt tills du avbryter. Betalning debiteras ditt Stripe-konto."
+    "termsNote": "Prenumerationen förnyas automatiskt tills du avbryter. Betalning debiteras ditt Stripe-konto.",
+    "comingSoonIOS": "Pro-prenumerationen blir tillgänglig via App Store när appen publiceras."
   },
   "ads": {
     "create": "Skapa annons",
@@ -1330,7 +1331,8 @@
     "active": "Aktiv",
     "ended": "Avslutad",
     "noAdsYet": "Inga annonser ännu",
-    "noAdsDesc": "Skapa din första annons och nå kunder i ditt grannskap."
+    "noAdsDesc": "Skapa din första annons och nå kunder i ditt grannskap.",
+    "iosPaymentNote": "Annonskampanjbetalningar behandlas via Stripe-betaltjänsten."
   },
   "business": {
     "upgrade": "Företagskonto",
@@ -1361,7 +1363,9 @@
     "formatSE": "Organisationsnummer (556XXX-XXXX)",
     "formatEE": "Registreringskod (8 siffror)",
     "formatNO": "Organisationsnummer (9 siffror)",
-    "formatDE": "Handelsregister (HRB 12345)"
+    "formatDE": "Handelsregister (HRB 12345)",
+    "comingSoonIOS": "Företagskonto blir tillgängligt via App Store när appen publiceras.",
+    "pendingPayment": "Vänta på betalningsbekräftelse. Du meddelas när betalningen har behandlats."
   },
   "search": {
     "placeholder": "Sök inlägg...",

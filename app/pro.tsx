@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Linking } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Linking, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Crown, Check, X, Sparkles, BarChart3, Shield, Megaphone, BadgeCheck, Zap } from 'lucide-react-native'
+import { ArrowLeft, Crown, Check, X, Sparkles, BarChart3, Shield, Megaphone, BadgeCheck, Zap, Info } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -158,7 +158,7 @@ export default function ProScreen() {
         </View>
 
         {/* Pricing cards */}
-        {!isPro && (
+        {!isPro && Platform.OS !== 'ios' && (
           <>
             <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('pro.upgradeToPro').toUpperCase()}</Text>
             <View style={s.pricingRow}>
@@ -217,6 +217,16 @@ export default function ProScreen() {
               )}
             </Pressable>
           </>
+        )}
+
+        {/* iOS: Subscription will be available via App Store */}
+        {!isPro && Platform.OS === 'ios' && (
+          <View style={[s.iosInfoCard, { backgroundColor: `${colors.pro}12`, borderColor: `${colors.pro}30` }]}>
+            <Info size={20} color={colors.pro} />
+            <Text style={[s.iosInfoText, { color: colors.foreground }]}>
+              {t('pro.comingSoonIOS')}
+            </Text>
+          </View>
         )}
 
         {/* Manage subscription */}
@@ -312,4 +322,9 @@ const s = StyleSheet.create({
   manageBtnText: { fontSize: 15, fontWeight: '600' },
   errorText: { fontSize: 13, textAlign: 'center' },
   termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
+  iosInfoCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    padding: 16, borderRadius: 14, borderWidth: 1, marginTop: 8,
+  },
+  iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20 },
 })

@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, Pressable, TextInput, ActivityIndicator,
 } from 'react-native'
 import { Image } from 'expo-image'
-import { Heart, MessageCircle, Pencil, Trash2 } from 'lucide-react-native'
+import { Heart, MessageCircle, Pencil, Trash2, Flag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -50,6 +50,7 @@ interface GroupPostCardProps {
   onDelete: (postId: string) => void
   onEdit: (postId: string, content: string) => void
   onToggleComments: (postId: string) => void
+  onReport?: (postId: string) => void
   // Inline edit state (managed by parent)
   editingPostId: string | null
   editPostContent: string
@@ -71,6 +72,7 @@ function GroupPostCardInner({
   onDelete,
   onEdit,
   onToggleComments,
+  onReport,
   editingPostId,
   editPostContent,
   onEditContentChange,
@@ -98,24 +100,36 @@ function GroupPostCardInner({
               {formatTimeAgo(post.created_at, t, locale)}
             </Text>
           </View>
-          {post.user_id === currentUserId && (
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {post.user_id === currentUserId && (
+              <>
+                <Pressable
+                  onPress={() => onEdit(post.id, post.content)}
+                  hitSlop={6}
+                  style={{ padding: 4 }}
+                >
+                  <Pencil size={16} color={colors.primary} strokeWidth={1.8} />
+                </Pressable>
+                <Pressable
+                  onPress={() => onDelete(post.id)}
+                  hitSlop={6}
+                  style={{ padding: 4 }}
+                >
+                  <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
+                </Pressable>
+              </>
+            )}
+            {post.user_id !== currentUserId && currentUserId && onReport && (
               <Pressable
-                onPress={() => onEdit(post.id, post.content)}
+                onPress={() => onReport(post.id)}
                 hitSlop={6}
                 style={{ padding: 4 }}
+                accessibilityLabel={t('report.title')}
               >
-                <Pencil size={16} color={colors.primary} strokeWidth={1.8} />
+                <Flag size={16} color={colors.mutedForeground} strokeWidth={1.8} />
               </Pressable>
-              <Pressable
-                onPress={() => onDelete(post.id)}
-                hitSlop={6}
-                style={{ padding: 4 }}
-              >
-                <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
-              </Pressable>
-            </View>
-          )}
+            )}
+          </View>
         </View>
 
         {/* Content (inline edit or read-only) */}

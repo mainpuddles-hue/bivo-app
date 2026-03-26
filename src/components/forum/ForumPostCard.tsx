@@ -2,7 +2,7 @@ import { memo } from 'react'
 import {
   View, Text, StyleSheet, Pressable,
 } from 'react-native'
-import { ChevronUp, MessageCircle, MapPin, Pencil, Trash2 } from 'lucide-react-native'
+import { ChevronUp, MessageCircle, MapPin, Pencil, Trash2, Flag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -58,6 +58,7 @@ interface ForumPostCardProps {
   onEdit: (post: ForumPost) => void
   onDelete: (postId: string) => void
   onSelect: (post: ForumPost) => void
+  onReport?: (postId: string) => void
 }
 
 function ForumPostCardInner({
@@ -68,6 +69,7 @@ function ForumPostCardInner({
   onEdit,
   onDelete,
   onSelect,
+  onReport,
 }: ForumPostCardProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -172,6 +174,16 @@ function ForumPostCardInner({
                 <Trash2 size={14} color={colors.destructive} strokeWidth={1.8} />
               </Pressable>
             </>
+          )}
+          {post.user_id !== currentUserId && currentUserId && onReport && (
+            <Pressable
+              onPress={(e) => { e.stopPropagation?.(); onReport(post.id) }}
+              style={styles.actionBtn}
+              hitSlop={4}
+              accessibilityLabel={t('report.title')}
+            >
+              <Flag size={14} color={colors.mutedForeground} strokeWidth={1.8} />
+            </Pressable>
           )}
         </View>
       </View>

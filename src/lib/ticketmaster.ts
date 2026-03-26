@@ -2,6 +2,10 @@ declare const __DEV__: boolean
 
 import type { CityEvent } from './types'
 
+// TODO: Proxy Ticketmaster requests through a Supabase Edge Function
+// (supabase/functions/ticketmaster-proxy) to avoid exposing the API key
+// in the client bundle. The Edge Function should accept search params,
+// add the API key server-side, and return results.
 const API_KEY = process.env.EXPO_PUBLIC_TICKETMASTER_API_KEY ?? ''
 const BASE_URL = 'https://app.ticketmaster.com/discovery/v2'
 

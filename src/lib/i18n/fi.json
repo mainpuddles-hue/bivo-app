@@ -1309,7 +1309,8 @@
     "yearly": "Vuosittain",
     "renewsOn": "Uusitaan {date}",
     "manageSubscription": "Hallinnoi tilausta",
-    "termsNote": "Tilaus uusiutuu automaattisesti, kunnes peruutat. Maksu veloitetaan Stripe-tililtäsi."
+    "termsNote": "Tilaus uusiutuu automaattisesti, kunnes peruutat. Maksu veloitetaan Stripe-tililtäsi.",
+    "comingSoonIOS": "Pro-tilaus tulee saataville App Storen kautta kun sovellus julkaistaan."
   },
   "ads": {
     "create": "Luo mainos",
@@ -1330,7 +1331,8 @@
     "active": "Aktiivinen",
     "ended": "Päättynyt",
     "noAdsYet": "Ei mainoksia",
-    "noAdsDesc": "Luo ensimmäinen mainoksesi ja tavoita naapurustosi asiakkaat."
+    "noAdsDesc": "Luo ensimmäinen mainoksesi ja tavoita naapurustosi asiakkaat.",
+    "iosPaymentNote": "Mainoskampanjoiden maksu käsitellään Stripe-maksupalvelun kautta."
   },
   "business": {
     "upgrade": "Yritystili",
@@ -1361,7 +1363,9 @@
     "formatSE": "Organisationsnummer (556XXX-XXXX)",
     "formatEE": "Registrikood (8 numeroa)",
     "formatNO": "Organisasjonsnummer (9 numeroa)",
-    "formatDE": "Handelsregister (HRB 12345)"
+    "formatDE": "Handelsregister (HRB 12345)",
+    "comingSoonIOS": "Yritystili tulee saataville App Storen kautta kun sovellus julkaistaan.",
+    "pendingPayment": "Odota maksun vahvistusta. Saat ilmoituksen kun maksu on käsitelty."
   },
   "search": {
     "placeholder": "Hae ilmoituksia...",

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2, Copy } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
@@ -17,6 +17,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatDateHeader } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { ReportModal } from '@/components/ReportModal'
 import { isValidUUID } from '@/lib/validation'
 import type { Message, Profile } from '@/lib/types'
 
@@ -54,6 +55,9 @@ function ConversationScreenInner() {
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
   const [showReactionPicker, setShowReactionPicker] = useState(false)
   const [reactions, setReactions] = useState<Record<string, { emoji: string; user_id: string }[]>>({})
+
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false)
 
   // TODO: UX — Handle self-conversation edge case. If user1_id === user2_id (user
   // messages their own post), otherId will be themselves. Should either prevent
@@ -474,6 +478,16 @@ function ConversationScreenInner() {
         {otherUser && (
           <ThanksButton toUserId={otherUser.id} fromUserId={userId} size="small" />
         )}
+        {otherUser && (
+          <Pressable
+            onPress={() => setShowReportModal(true)}
+            hitSlop={8}
+            style={{ padding: 6 }}
+            accessibilityLabel={t('report.title')}
+          >
+            <Flag size={18} color={colors.mutedForeground} strokeWidth={1.8} />
+          </Pressable>
+        )}
       </View>
 
       {/* Messages */}
@@ -617,6 +631,16 @@ function ConversationScreenInner() {
           <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
         </Pressable>
       </View>
+
+      {/* Report Modal */}
+      {otherUser && (
+        <ReportModal
+          visible={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          type="user"
+          targetId={otherUser.id}
+        />
+      )}
     </KeyboardAvoidingView>
   )
 }

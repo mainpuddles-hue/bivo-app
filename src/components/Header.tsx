@@ -43,7 +43,7 @@ export function Header() {
       }
     ]}>
       <View style={styles.headerContent}>
-        <Pressable onPress={() => router.push('/')} style={styles.logoRow}>
+        <Pressable onPress={() => router.push('/')} style={styles.logoRow} accessibilityLabel={t('nav.feed')} accessibilityRole="button">
           <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
             <TackBirdLogo size={16} color={colors.primaryForeground} />
           </View>

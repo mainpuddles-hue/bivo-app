@@ -22,11 +22,10 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "TackBird tarvitsee kameran ilmoitusten kuvien ottamiseen.",
-        "NSPhotoLibraryUsageDescription": "TackBird tarvitsee pääsyn kuvagalleriaan ilmoitusten kuvien lisäämiseen.",
-        "NSPhotoLibraryAddUsageDescription": "TackBird tallentaa kuvia galleriaasi.",
-        "NSLocationWhenInUseUsageDescription": "TackBird näyttää lähellä olevat ilmoitukset ja paikat kartalla.",
-        "NSUserTrackingUsageDescription": "TackBird ei seuraa sinua. Tätä käytetään vain ilmoitusten toimittamiseen."
+        "NSCameraUsageDescription": "TackBird needs camera access to take photos for posts.",
+        "NSPhotoLibraryUsageDescription": "TackBird needs photo library access to add images to posts.",
+        "NSPhotoLibraryAddUsageDescription": "TackBird saves photos to your gallery.",
+        "NSLocationWhenInUseUsageDescription": "TackBird shows nearby posts and places on the map."
       },
       "associatedDomains": [
         "applinks:tackbird-v2.vercel.app"
@@ -50,8 +49,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "_googleServicesFile_TODO": "./google-services.json",
       "intentFilters": [
@@ -113,7 +111,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "TackBird näyttää lähellä olevat ilmoitukset ja paikat."
+          "locationWhenInUsePermission": "TackBird shows nearby posts and places on the map."
         }
       ],
       [
@@ -126,14 +124,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "TackBird tarvitsee pääsyn kuvagalleriaan ilmoitusten kuvien lisäämiseen.",
-          "cameraPermission": "TackBird tarvitsee kameran kuvien ottamiseen."
+          "photosPermission": "TackBird needs photo library access to add images to posts.",
+          "cameraPermission": "TackBird needs camera access to take photos for posts."
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "TackBird tarvitsee kameran kuvien ottamiseen."
+          "cameraPermission": "TackBird needs camera access to take photos for posts."
         }
       ],
       "expo-web-browser"

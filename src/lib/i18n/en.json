@@ -1309,7 +1309,8 @@
     "yearly": "Yearly",
     "renewsOn": "Renews on {date}",
     "manageSubscription": "Manage subscription",
-    "termsNote": "Subscription automatically renews until cancelled. Payment is charged to your Stripe account."
+    "termsNote": "Subscription automatically renews until cancelled. Payment is charged to your Stripe account.",
+    "comingSoonIOS": "Pro subscription will be available via the App Store when the app is published."
   },
   "ads": {
     "create": "Create ad",
@@ -1330,7 +1331,8 @@
     "active": "Active",
     "ended": "Ended",
     "noAdsYet": "No ads yet",
-    "noAdsDesc": "Create your first ad and reach customers in your neighborhood."
+    "noAdsDesc": "Create your first ad and reach customers in your neighborhood.",
+    "iosPaymentNote": "Ad campaign payments are processed via Stripe payment service."
   },
   "business": {
     "upgrade": "Business account",
@@ -1361,7 +1363,9 @@
     "formatSE": "Organisation number (556XXX-XXXX)",
     "formatEE": "Registry code (8 digits)",
     "formatNO": "Organisation number (9 digits)",
-    "formatDE": "Trade register (HRB 12345)"
+    "formatDE": "Trade register (HRB 12345)",
+    "comingSoonIOS": "Business account will be available via the App Store when the app is published.",
+    "pendingPayment": "Please wait for payment confirmation. You will be notified when the payment is processed."
   },
   "search": {
     "placeholder": "Search posts...",

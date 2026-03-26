@@ -1,11 +1,10 @@
 import { Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-// On Android, use expo-secure-store for sensitive auth tokens
-// On iOS, AsyncStorage is backed by Keychain (already encrypted)
+// On iOS and Android, use expo-secure-store for sensitive auth tokens
 // On web, AsyncStorage uses localStorage (no secure alternative)
 let SecureStore: any = null
-if (Platform.OS === 'android') {
+if (Platform.OS !== 'web') {
   try { SecureStore = require('expo-secure-store') } catch {}
 }
 

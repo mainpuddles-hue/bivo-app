@@ -355,6 +355,13 @@ export default function CreateAdScreen() {
           )}
         </View>
 
+        {/* iOS disclaimer — ad campaigns are B2B transactions via Stripe */}
+        {Platform.OS === 'ios' && (
+          <Text style={[styles.iosDisclaimer, { color: colors.mutedForeground }]}>
+            {t('ads.iosPaymentNote')}
+          </Text>
+        )}
+
         {/* Submit */}
         <Pressable
           onPress={handleSubmit}
@@ -439,4 +446,5 @@ const styles = StyleSheet.create({
     gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 8,
   },
   submitText: { fontSize: 16, fontWeight: '700' },
+  iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 4 },
 })
