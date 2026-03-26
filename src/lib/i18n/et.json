@@ -440,7 +440,12 @@
     "quickAvailable": "Kas see on veel saadaval?",
     "aboutPost": "Seotud kuulutusega",
     "sendFailed": "Sõnumi saatmine ebaõnnestus",
-    "imageSendFailed": "Pildi saatmine ebaõnnestus"
+    "imageSendFailed": "Pildi saatmine ebaõnnestus",
+    "openLink": "Ava link",
+    "photo": "Pilt",
+    "quickReplyThanks": "Aitäh!",
+    "quickReplyWhen": "Millal?",
+    "quickReplyOk": "Sobib?"
   },
   "conversation": {
     "startPrompt": "Alusta vestlust kirjutades sõnumi",
@@ -552,7 +557,28 @@
     "noPointHistory": "Punkte veel pole",
     "allPosts": "Kõik kuulutused",
     "active": "Aktiivne",
-    "expired": "Aegunud"
+    "expired": "Aegunud",
+    "postClosed": "Suletud",
+    "postSold": "Müüdud/Laenatud",
+    "reactivate": "Taasaktiveeri",
+    "closePost": "Sulge",
+    "deletePost": "Kustuta",
+    "deletePostConfirm": "Kas soovid selle postituse kindlasti kustutada?",
+    "postReactivated": "Postitus taasaktiveeritud",
+    "postClosedSuccess": "Postitus suletud",
+    "postDeleted": "Postitus kustutatud",
+    "postActionFailed": "Toiming ebaõnnestus",
+    "filterAll": "Kõik",
+    "filterActive": "Aktiivsed",
+    "filterExpired": "Aegunud",
+    "filterClosed": "Suletud",
+    "ratingsSummary": "Hinded",
+    "reviewCount": "arvustust",
+    "verified": "Suomi.fi-kinnitatud",
+    "memberSince": "Liige aastast",
+    "completedTransactions": "lõpetatud tehingut",
+    "totalPosts": "kuulutust",
+    "activitySummary": "Tegevuse kokkuvõte"
   },
   "settings": {
     "title": "Seaded",
@@ -1437,7 +1463,8 @@
     "recent": "Viimased otsingud",
     "noResultsQuery": "Otsingule \"{query}\" tulemusi pole",
     "resultCount": "{count} tulemust",
-    "semanticMatch": "Sarnane vaste"
+    "semanticMatch": "Sarnane vaste",
+    "thisMonth": "Sel kuul"
   },
   "saved": {
     "title": "Salvestatud",
@@ -1533,7 +1560,10 @@
     "forumReplyTitle": "Uus vastus sinu vestlusele",
     "andOthers": "ja {count} muud",
     "likedYourPost": "meeldis sinu postitust",
-    "groupedLikes": "{name} ja {count} muud meeldisid"
+    "groupedLikes": "{name} ja {count} muud meeldisid",
+    "deleteNotification": "Kustuta teade",
+    "expanded": "Näita kõiki",
+    "collapsed": "Peida"
   },
   "map": {
     "locate": "Leia mind",

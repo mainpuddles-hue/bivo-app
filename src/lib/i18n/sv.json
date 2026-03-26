@@ -440,7 +440,12 @@
     "quickAvailable": "Finns detta fortfarande?",
     "aboutPost": "Gäller annons",
     "sendFailed": "Kunde inte skicka meddelande",
-    "imageSendFailed": "Kunde inte skicka bild"
+    "imageSendFailed": "Kunde inte skicka bild",
+    "openLink": "Öppna länk",
+    "photo": "Bild",
+    "quickReplyThanks": "Tack!",
+    "quickReplyWhen": "När?",
+    "quickReplyOk": "Passar?"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -552,7 +557,28 @@
     "noPointHistory": "Inga poäng ännu",
     "allPosts": "Alla inlägg",
     "active": "Aktiv",
-    "expired": "Utgången"
+    "expired": "Utgången",
+    "postClosed": "Stängd",
+    "postSold": "Såld/Utlånad",
+    "reactivate": "Återaktivera",
+    "closePost": "Stäng",
+    "deletePost": "Ta bort",
+    "deletePostConfirm": "Är du säker på att du vill ta bort detta inlägg?",
+    "postReactivated": "Inlägget återaktiverat",
+    "postClosedSuccess": "Inlägget stängt",
+    "postDeleted": "Inlägget borttaget",
+    "postActionFailed": "Åtgärden misslyckades",
+    "filterAll": "Alla",
+    "filterActive": "Aktiva",
+    "filterExpired": "Utgångna",
+    "filterClosed": "Stängda",
+    "ratingsSummary": "Betyg",
+    "reviewCount": "recensioner",
+    "verified": "Suomi.fi-verifierad",
+    "memberSince": "Medlem sedan",
+    "completedTransactions": "genomförda transaktioner",
+    "totalPosts": "inlägg",
+    "activitySummary": "Aktivitetssammanfattning"
   },
   "settings": {
     "title": "Inställningar",
@@ -1451,7 +1477,8 @@
     "recent": "Senaste sökningar",
     "noResultsQuery": "Inga resultat för \"{query}\"",
     "resultCount": "{count} resultat",
-    "semanticMatch": "Liknande träff"
+    "semanticMatch": "Liknande träff",
+    "thisMonth": "Denna månad"
   },
   "saved": {
     "title": "Sparade",
@@ -1547,7 +1574,10 @@
     "forumReplyTitle": "Nytt svar på din diskussion",
     "andOthers": "och {count} andra",
     "likedYourPost": "gillade ditt inlägg",
-    "groupedLikes": "{name} och {count} andra gillade"
+    "groupedLikes": "{name} och {count} andra gillade",
+    "deleteNotification": "Ta bort avisering",
+    "expanded": "Visa alla",
+    "collapsed": "Dölj"
   },
   "map": {
     "locate": "Hitta mig",

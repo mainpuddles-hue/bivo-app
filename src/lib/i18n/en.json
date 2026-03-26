@@ -440,7 +440,12 @@
     "quickAvailable": "Is this still available?",
     "aboutPost": "About listing",
     "sendFailed": "Failed to send message",
-    "imageSendFailed": "Failed to send image"
+    "imageSendFailed": "Failed to send image",
+    "openLink": "Open link",
+    "photo": "Image",
+    "quickReplyThanks": "Thanks!",
+    "quickReplyWhen": "When?",
+    "quickReplyOk": "Works?"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -552,7 +557,28 @@
     "noPointHistory": "No points yet",
     "allPosts": "All posts",
     "active": "Active",
-    "expired": "Expired"
+    "expired": "Expired",
+    "postClosed": "Closed",
+    "postSold": "Sold/Lent",
+    "reactivate": "Reactivate",
+    "closePost": "Close",
+    "deletePost": "Delete",
+    "deletePostConfirm": "Are you sure you want to delete this post?",
+    "postReactivated": "Post reactivated",
+    "postClosedSuccess": "Post closed",
+    "postDeleted": "Post deleted",
+    "postActionFailed": "Action failed",
+    "filterAll": "All",
+    "filterActive": "Active",
+    "filterExpired": "Expired",
+    "filterClosed": "Closed",
+    "ratingsSummary": "Ratings",
+    "reviewCount": "reviews",
+    "verified": "Suomi.fi verified",
+    "memberSince": "Member since",
+    "completedTransactions": "completed transactions",
+    "totalPosts": "posts",
+    "activitySummary": "Activity summary"
   },
   "settings": {
     "title": "Settings",
@@ -1451,7 +1477,8 @@
     "recent": "Recent searches",
     "noResultsQuery": "No results for \"{query}\"",
     "resultCount": "{count} results",
-    "semanticMatch": "Similar match"
+    "semanticMatch": "Similar match",
+    "thisMonth": "This month"
   },
   "saved": {
     "title": "Saved",
@@ -1547,7 +1574,10 @@
     "forumReplyTitle": "New reply to your discussion",
     "andOthers": "and {count} others",
     "likedYourPost": "liked your post",
-    "groupedLikes": "{name} and {count} others liked"
+    "groupedLikes": "{name} and {count} others liked",
+    "deleteNotification": "Delete notification",
+    "expanded": "Show all",
+    "collapsed": "Hide"
   },
   "map": {
     "locate": "Locate me",

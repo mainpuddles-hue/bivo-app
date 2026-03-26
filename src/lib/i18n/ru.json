@@ -552,7 +552,14 @@
     "noPointHistory": "Баллов пока нет",
     "allPosts": "Все объявления",
     "active": "Активное",
-    "expired": "Истёкшее"
+    "expired": "Истёкшее",
+    "ratingsSummary": "Оценки",
+    "reviewCount": "отзывов",
+    "verified": "Suomi.fi подтверждён",
+    "memberSince": "Участник с",
+    "completedTransactions": "завершённых сделок",
+    "totalPosts": "объявлений",
+    "activitySummary": "Обзор активности"
   },
   "settings": {
     "title": "Настройки",
@@ -1437,7 +1444,8 @@
     "recent": "Последние запросы",
     "noResultsQuery": "По запросу \"{query}\" ничего не найдено",
     "resultCount": "{count} результатов",
-    "semanticMatch": "Похожее совпадение"
+    "semanticMatch": "Похожее совпадение",
+    "thisMonth": "В этом месяце"
   },
   "saved": {
     "title": "Сохранённые",

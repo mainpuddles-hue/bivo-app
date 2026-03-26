@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
-  Flag, ShieldBan, Crown, PenLine, Zap,
+  Flag, ShieldBan, Crown, PenLine, Zap, ShieldCheck, Clock, CalendarDays, CheckCircle2,
 } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
@@ -52,6 +52,9 @@ export default function PublicProfileScreen() {
   const [hasTransaction, setHasTransaction] = useState(false)
   const [hasExistingReview, setHasExistingReview] = useState(false)
   const [profileHidden, setProfileHidden] = useState(false)
+  const [ratingDistribution, setRatingDistribution] = useState<Record<number, number>>({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
+  const [totalReviewCount, setTotalReviewCount] = useState(0)
+  const [completedTransactions, setCompletedTransactions] = useState(0)
   const trust = useTrustLevel(userId)
 
   useEffect(() => {
@@ -122,18 +125,33 @@ export default function PublicProfileScreen() {
         setHasExistingReview(!!existingReviewRes.data)
       }
 
-      // Reviews received
-      const { data: revs } = await supabase
+      // Reviews received — fetch all to compute distribution
+      const { data: allRevs } = await supabase
         .from('reviews')
-        .select('*, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
+        .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
         .eq('reviewed_id', userId)
         .order('created_at', { ascending: false })
-        .limit(10)
-      setReviews((revs ?? []) as unknown as Review[])
-      if (revs && revs.length > 0) {
-        const avg = revs.length > 0 ? (revs as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revs.length : 0
+      const revsList = (allRevs ?? []) as unknown as Review[]
+      setReviews(revsList)
+      setTotalReviewCount(revsList.length)
+      if (revsList.length > 0) {
+        const avg = (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length
         setAvgRating(Math.round(avg * 10) / 10)
+        // Compute rating distribution
+        const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        for (const r of revsList as any[]) {
+          const star = Math.min(5, Math.max(1, Math.round(r.rating)))
+          dist[star] = (dist[star] ?? 0) + 1
+        }
+        setRatingDistribution(dist)
       }
+
+      // Completed transactions count (conversations as proxy)
+      const { count: txCount } = await supabase
+        .from('conversations')
+        .select('id', { count: 'exact', head: true })
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+      setCompletedTransactions(txCount ?? 0)
 
       // Badges
       const { data: bdg } = await supabase.from('user_badges').select('badge_type').eq('user_id', userId)
@@ -377,6 +395,97 @@ export default function PublicProfileScreen() {
           </View>
         </View>
 
+        {/* Rating Summary Card */}
+        {totalReviewCount > 0 && (
+          <View style={[s.ratingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[s.ratingCardTitle, { color: colors.foreground }]}>
+              {t('profile.ratingsSummary')} ({totalReviewCount} {t('profile.reviewCount')})
+            </Text>
+            <View style={s.ratingOverview}>
+              <View style={s.ratingStarsCol}>
+                <StarRating rating={Math.round(avgRating ?? 0)} size={18} />
+                <Text style={[s.ratingBigNum, { color: colors.foreground }]}>
+                  {avgRating ?? 0} / 5
+                </Text>
+              </View>
+            </View>
+            <View style={s.ratingBars}>
+              {[5, 4, 3, 2, 1].map(star => {
+                const count = ratingDistribution[star] ?? 0
+                const maxCount = Math.max(...Object.values(ratingDistribution), 1)
+                const pct = count / maxCount
+                return (
+                  <View key={star} style={s.ratingBarRow}>
+                    <Text style={[s.ratingBarLabel, { color: colors.mutedForeground }]}>{star}\u2605</Text>
+                    <View style={[s.ratingBarTrack, { backgroundColor: colors.muted }]}>
+                      <View style={[s.ratingBarFill, { width: `${pct * 100}%`, backgroundColor: colors.pro }]} />
+                    </View>
+                    <Text style={[s.ratingBarCount, { color: colors.mutedForeground }]}>{count}</Text>
+                  </View>
+                )
+              })}
+            </View>
+          </View>
+        )}
+
+        {/* Verification Badges / Trust Info */}
+        <View style={[s.verificationCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {badges.some(b => (b.badge_type as string) === 'verified' || (b.badge_type as string) === 'suomifi') && (
+            <View style={s.verifyRow}>
+              <ShieldCheck size={16} color={colors.primary} />
+              <Text style={[s.verifyText, { color: colors.foreground }]}>{t('profile.verified')}</Text>
+            </View>
+          )}
+          {(profile as any)?.response_rate != null && (
+            <View style={s.verifyRow}>
+              <Clock size={16} color={colors.primary} />
+              <Text style={[s.verifyText, { color: colors.foreground }]}>
+                {t('profile.responseRate')}: {(profile as any).response_rate}%
+              </Text>
+            </View>
+          )}
+          <View style={s.verifyRow}>
+            <CalendarDays size={16} color={colors.primary} />
+            <Text style={[s.verifyText, { color: colors.foreground }]}>
+              {t('profile.memberSince')} {new Date(profile.created_at).getFullYear()}
+            </Text>
+          </View>
+          {completedTransactions > 0 && (
+            <View style={s.verifyRow}>
+              <CheckCircle2 size={16} color={colors.primary} />
+              <Text style={[s.verifyText, { color: colors.foreground }]}>
+                {completedTransactions} {t('profile.completedTransactions')}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Activity Summary */}
+        <View style={[s.activitySummaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[s.activitySummaryTitle, { color: colors.foreground }]}>{t('profile.activitySummary')}</Text>
+          <Text style={[s.activitySummaryText, { color: colors.mutedForeground }]}>
+            {postCount} {t('profile.totalPosts')}, {totalReviewCount} {t('profile.reviewCount')}, {(profile as any)?.total_points ?? 0} {t('profile.points')}
+          </Text>
+          {/* Recent posts preview — last 3 with thumbnails */}
+          {posts.length > 0 && (
+            <View style={s.recentPostsRow}>
+              {posts.slice(0, 3).map(post => (
+                <Pressable key={post.id} onPress={() => router.push(`/post/${post.id}` as any)} style={s.recentPostThumb}>
+                  {post.image_url ? (
+                    <View style={[s.recentPostImg, { backgroundColor: colors.muted }]}>
+                      <Text style={[s.recentPostImgPlaceholder, { color: colors.mutedForeground }]} numberOfLines={1}>{post.title}</Text>
+                    </View>
+                  ) : (
+                    <View style={[s.recentPostImg, { backgroundColor: colors.muted }]}>
+                      <Text style={[s.recentPostImgPlaceholder, { color: colors.mutedForeground }]} numberOfLines={1}>{post.title}</Text>
+                    </View>
+                  )}
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+
         {/* Tabs */}
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
@@ -450,15 +559,22 @@ export default function PublicProfileScreen() {
           // Refresh reviews list
           supabase
             .from('reviews')
-            .select('*, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
+            .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
             .eq('reviewed_id', userId)
             .order('created_at', { ascending: false })
-            .limit(10)
             .then(({ data }) => {
               if (data) {
-                setReviews(data as unknown as Review[])
-                const avg = data.length > 0 ? (data as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / data.length : 0
+                const revsList = data as unknown as Review[]
+                setReviews(revsList)
+                setTotalReviewCount(revsList.length)
+                const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length : 0
                 setAvgRating(Math.round(avg * 10) / 10)
+                const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+                for (const r of revsList as any[]) {
+                  const star = Math.min(5, Math.max(1, Math.round(r.rating)))
+                  dist[star] = (dist[star] ?? 0) + 1
+                }
+                setRatingDistribution(dist)
               }
             })
         }}
@@ -536,4 +652,28 @@ const s = StyleSheet.create({
   },
   reviewBtnText: { fontSize: 14, fontWeight: '600' },
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100 },
+  // Rating summary card
+  ratingCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
+  ratingCardTitle: { fontSize: 15, fontWeight: '700' },
+  ratingOverview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  ratingStarsCol: { alignItems: 'center', gap: 4 },
+  ratingBigNum: { fontSize: 16, fontWeight: '700' },
+  ratingBars: { gap: 6 },
+  ratingBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ratingBarLabel: { fontSize: 12, fontWeight: '600', width: 24, textAlign: 'right' },
+  ratingBarTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
+  ratingBarFill: { height: 8, borderRadius: 4 },
+  ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20 },
+  // Verification card
+  verificationCard: { borderRadius: 12, padding: 16, gap: 10, borderWidth: StyleSheet.hairlineWidth },
+  verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  verifyText: { fontSize: 14, fontWeight: '500' },
+  // Activity summary
+  activitySummaryCard: { borderRadius: 12, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },
+  activitySummaryTitle: { fontSize: 15, fontWeight: '700' },
+  activitySummaryText: { fontSize: 13, lineHeight: 18 },
+  recentPostsRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  recentPostThumb: { flex: 1 },
+  recentPostImg: { height: 60, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  recentPostImgPlaceholder: { fontSize: 11, textAlign: 'center' },
 })

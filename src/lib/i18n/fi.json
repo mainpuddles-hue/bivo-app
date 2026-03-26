@@ -440,7 +440,12 @@
     "quickAvailable": "Onko tämä vielä saatavilla?",
     "aboutPost": "Liittyy ilmoitukseen",
     "sendFailed": "Viestin lähetys epäonnistui",
-    "imageSendFailed": "Kuvan lähetys epäonnistui"
+    "imageSendFailed": "Kuvan lähetys epäonnistui",
+    "openLink": "Avaa linkki",
+    "photo": "Kuva",
+    "quickReplyThanks": "Kiitos!",
+    "quickReplyWhen": "Milloin?",
+    "quickReplyOk": "Sopiiko?"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -552,7 +557,28 @@
     "noPointHistory": "Ei vielä pisteitä",
     "allPosts": "Kaikki ilmoitukset",
     "active": "Aktiivinen",
-    "expired": "Vanhentunut"
+    "expired": "Vanhentunut",
+    "postClosed": "Suljettu",
+    "postSold": "Myyty/Lainattu",
+    "reactivate": "Uudelleenaktivoi",
+    "closePost": "Sulje",
+    "deletePost": "Poista",
+    "deletePostConfirm": "Haluatko varmasti poistaa tämän ilmoituksen?",
+    "postReactivated": "Ilmoitus aktivoitu uudelleen",
+    "postClosedSuccess": "Ilmoitus suljettu",
+    "postDeleted": "Ilmoitus poistettu",
+    "postActionFailed": "Toiminto epäonnistui",
+    "filterAll": "Kaikki",
+    "filterActive": "Aktiiviset",
+    "filterExpired": "Vanheneet",
+    "filterClosed": "Suljetut",
+    "ratingsSummary": "Arvosanat",
+    "reviewCount": "arvostelua",
+    "verified": "Suomi.fi-vahvistettu",
+    "memberSince": "Jäsen vuodesta",
+    "completedTransactions": "onnistunutta transaktiota",
+    "totalPosts": "postausta",
+    "activitySummary": "Toiminnan yhteenveto"
   },
   "settings": {
     "title": "Asetukset",
@@ -1451,7 +1477,8 @@
     "recent": "Viimeisimmät haut",
     "noResultsQuery": "Ei tuloksia haulle \"{query}\"",
     "resultCount": "{count} tulosta",
-    "semanticMatch": "Samankaltainen osuma"
+    "semanticMatch": "Samankaltainen osuma",
+    "thisMonth": "Tässä kuussa"
   },
   "saved": {
     "title": "Tallennetut",
@@ -1547,7 +1574,10 @@
     "forumReplyTitle": "Uusi vastaus keskusteluusi",
     "andOthers": "ja {count} muuta",
     "likedYourPost": "tykkäsi postauksestasi",
-    "groupedLikes": "{name} ja {count} muuta tykkäsivät"
+    "groupedLikes": "{name} ja {count} muuta tykkäsivät",
+    "deleteNotification": "Poista ilmoitus",
+    "expanded": "Näytä kaikki",
+    "collapsed": "Piilota"
   },
   "map": {
     "locate": "Paikanna minut",
