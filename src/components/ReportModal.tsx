@@ -106,6 +106,9 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
             <View style={s.successContainer}>
               <Check size={48} color={colors.success} />
               <Text style={[s.successText, { color: colors.foreground }]}>{t('report.submitted')}</Text>
+              <Text style={[{ fontSize: 13, color: colors.mutedForeground, textAlign: 'center', lineHeight: 18, paddingHorizontal: 16 }]}>
+                {t('report.reviewNotice')}
+              </Text>
             </View>
           ) : (
             <>

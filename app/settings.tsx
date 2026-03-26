@@ -347,6 +347,21 @@ export default function SettingsScreen() {
           ))}
         </View>
 
+        {/* Neighborhood — allows user to change neighborhood after onboarding */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('onboarding.chooseNeighborhood')}</Text>
+        <View style={[s.card, { backgroundColor: colors.card }]}>
+          <Pressable onPress={() => {
+            // Navigate to feed where NeighborhoodPicker is accessible
+            router.push({ pathname: '/', params: { openNeighborhoodPicker: '1' } })
+          }} style={s.row}>
+            <MapPin size={18} color={colors.primary} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>
+              {profile?.naapurusto ?? 'Helsinki'}
+            </Text>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+        </View>
+
         {/* Profile Visibility */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.profileVisibility')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>

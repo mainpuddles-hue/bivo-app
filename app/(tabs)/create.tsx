@@ -443,7 +443,13 @@ export default function CreateScreen() {
         })
       }
 
-      router.replace('/')
+      // Show success feedback before navigating — user needs to know their post was created
+      Alert.alert(
+        t('common.success'),
+        t('create.postPublished'),
+        [{ text: t('post.viewPost'), onPress: () => router.replace(`/post/${post.id}`) },
+         { text: t('nav.feed'), onPress: () => router.replace('/') }],
+      )
     } catch (err: any) {
       if (__DEV__) console.log('[create] error:', JSON.stringify(err))
       Alert.alert(t('common.error'), err?.message || t('create.createFailed'))

@@ -151,9 +151,14 @@ export default function NotificationsScreen() {
       await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
       setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n))
     }
-    // Navigate
+    // Navigate based on link_type — covers all notification sources
     if (item.link_type === 'post' && item.link_id) router.push(`/post/${item.link_id}`)
     else if (item.link_type === 'conversation' && item.link_id) router.push(`/messages/${item.link_id}`)
+    else if (item.link_type === 'profile' && item.link_id) router.push(`/profile/${item.link_id}`)
+    else if (item.link_type === 'booking' && item.link_id) router.push(`/booking/${item.link_id}`)
+    else if (item.link_type === 'event' && item.link_id) router.push({ pathname: '/(tabs)/events', params: { highlight: item.link_id } })
+    // TODO: UX — notification types without a link_type still mark as read but have no navigation target.
+    // Consider adding a fallback that shows the notification body in-place or navigates to a relevant screen based on item.type.
   }, [supabase, router])
 
   const filtered = useMemo(() => {

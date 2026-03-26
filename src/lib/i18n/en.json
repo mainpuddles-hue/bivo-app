@@ -700,7 +700,8 @@
     "expiresToday": "Expires today",
     "expired": "Expired",
     "distanceKm": "{distance} km",
-    "verified": "Verified"
+    "verified": "Verified",
+    "tapToOpen": "Tap to open listing"
   },
   "auth": {
     "login": "Log in",
@@ -1019,7 +1020,8 @@
     "returnItem": "Mark as returned",
     "leaveReview": "Leave review",
     "payAndBook": "Pay & Book",
-    "bookingCreated": "Booking created",
+    "bookingCreated": "Booking created! The lender will be notified.",
+    "bookingCreatedPaymentPending": "Booking created - payment is pending. Complete it on the My Bookings page.",
     "blockedDate": "Date is booked",
     "selectDates": "Select dates",
     "pricingBreakdown": "Pricing breakdown",
@@ -1282,7 +1284,8 @@
     "priceSuggestionDaily": "In your area {min}–{max}€/day ({count} listings)",
     "noExternalLinks": "External links are not allowed",
     "noExternalApps": "Keep conversations within TackBird",
-    "tooShort": "Please write a longer description"
+    "tooShort": "Please write a longer description",
+    "postPublished": "Your listing is published! Your neighbors can now see it."
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1933,6 +1936,7 @@
     "fake": "Fake or misleading",
     "other": "Other",
     "submitted": "Report submitted",
+    "reviewNotice": "Our team will review this report within 24 hours. You will be notified of the outcome.",
     "descriptionLabel": "Additional details (optional)",
     "descriptionPlaceholder": "Describe the issue...",
     "submit": "Submit report",
@@ -2230,6 +2234,7 @@
     "escrowNote": "Payment is held securely. The provider receives funds only after the service is completed.",
     "payAndBook": "Pay and book",
     "bookingCreated": "Service booked! The provider will be notified.",
+    "bookingCreatedPaymentPending": "Service booked - payment is pending. Complete it on the My Bookings page.",
     "bookingFailed": "Service booking failed",
     "services": "Services",
     "noBookings": "No service bookings",

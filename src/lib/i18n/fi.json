@@ -700,7 +700,8 @@
     "expiresToday": "Vanhenee tänään",
     "expired": "Vanhentunut",
     "distanceKm": "{distance} km",
-    "verified": "Vahvistettu"
+    "verified": "Vahvistettu",
+    "tapToOpen": "Avaa ilmoitus napauttamalla"
   },
   "auth": {
     "login": "Kirjaudu",
@@ -1019,7 +1020,8 @@
     "returnItem": "Merkitse palautetuksi",
     "leaveReview": "Arvostele",
     "payAndBook": "Maksa ja varaa",
-    "bookingCreated": "Varaus luotu",
+    "bookingCreated": "Varaus luotu! Vuokraaja saa ilmoituksen.",
+    "bookingCreatedPaymentPending": "Varaus luotu — maksu on kesken. Suorita maksu loppuun Varaukseni-sivulla.",
     "blockedDate": "Päivä on varattu",
     "selectDates": "Valitse päivät",
     "pricingBreakdown": "Hinnan erittely",
@@ -1282,7 +1284,8 @@
     "priceSuggestionDaily": "Alueella {min}–{max}€/pv ({count} ilmoitusta)",
     "noExternalLinks": "Ulkoiset linkit eivät ole sallittuja",
     "noExternalApps": "Ohjaa keskustelut TackBirdin sisällä",
-    "tooShort": "Kirjoita pidempi kuvaus"
+    "tooShort": "Kirjoita pidempi kuvaus",
+    "postPublished": "Ilmoituksesi on julkaistu! Naapurisi voivat nyt nähdä sen."
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -1933,6 +1936,7 @@
     "fake": "Harhaanjohtava tai valheellinen",
     "other": "Muu syy",
     "submitted": "Ilmianto lähetetty",
+    "reviewNotice": "Tiimimme tarkistaa ilmiannon 24 tunnin kuluessa. Saat ilmoituksen tuloksesta.",
     "descriptionLabel": "Lisätiedot (valinnainen)",
     "descriptionPlaceholder": "Kuvaile ongelmaa...",
     "submit": "Lähetä ilmianto",
@@ -2230,6 +2234,7 @@
     "escrowNote": "Maksu pidätetään turvallisesti. Palveluntarjoaja saa rahat vasta kun palvelu on suoritettu.",
     "payAndBook": "Maksa ja varaa",
     "bookingCreated": "Palveluvaraus luotu! Palveluntarjoaja saa ilmoituksen.",
+    "bookingCreatedPaymentPending": "Palveluvaraus luotu — maksu on kesken. Suorita maksu loppuun Varaukseni-sivulla.",
     "bookingFailed": "Palveluvaraus epäonnistui",
     "services": "Palvelut",
     "noBookings": "Ei palveluvarauksia",

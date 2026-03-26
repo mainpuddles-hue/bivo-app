@@ -295,6 +295,14 @@ export default function OnboardingScreen() {
   // ── Slide 4: Choose Neighborhood ──
   const renderNeighborhood = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
+      {/* Back button so user can return to previous slides and change choices */}
+      <Pressable onPress={() => goToPage(2)} style={s.backBtn} hitSlop={12}>
+        <ArrowRight size={18} color={colors.mutedForeground} style={{ transform: [{ rotate: '180deg' }] }} />
+        <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+          {t('common.back')}
+        </Text>
+      </Pressable>
+
       <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 24 }]}>
         {t('onboarding.chooseNeighborhood')}
       </Text>
@@ -590,6 +598,16 @@ const s = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
     paddingVertical: 4,
+  },
+
+  // Back button
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    alignSelf: 'flex-start',
   },
 
   // Neighborhood

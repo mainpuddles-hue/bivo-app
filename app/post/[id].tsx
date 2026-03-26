@@ -434,7 +434,15 @@ function PostDetailScreenInner() {
         if (updateError && __DEV__) console.log('[bookings] update stripe session error:', updateError.message)
       }
       setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
-      if (!sessionId) { Alert.alert(t('common.success'), t('rental.bookingCreated')) }
+      if (!sessionId) {
+        // TODO: UX — Stripe payment not yet implemented in Expo Go. Booking is created with status='pending'.
+        // When Stripe is available, the user will be redirected to Stripe Checkout.
+        // If payment is not completed, the booking stays 'pending' — add a timeout/cleanup job
+        // and a "Retry payment" or "Cancel booking" button in /bookings screen.
+        Alert.alert(t('common.success'), t('rental.bookingCreated'))
+      } else {
+        Alert.alert(t('common.success'), t('rental.bookingCreatedPaymentPending'))
+      }
     } catch { Alert.alert(t('common.error'), t('rental.bookingFailed')) }
     finally { setSendingBooking(false) }
   }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, createPayment])
@@ -492,7 +500,13 @@ function PostDetailScreenInner() {
 
       setServiceModalVisible(false)
       setServiceNotes('')
-      if (!sessionId) { Alert.alert(t('common.success'), t('service.bookingCreated')) }
+      if (!sessionId) {
+        // TODO: UX — service booking created with status='pending'. If the provider never responds,
+        // there is no timeout mechanism. Add a 48h auto-cancel job and show countdown in /bookings screen.
+        Alert.alert(t('common.success'), t('service.bookingCreated'))
+      } else {
+        Alert.alert(t('common.success'), t('service.bookingCreatedPaymentPending'))
+      }
     } catch {
       Alert.alert(t('common.error'), t('service.bookingFailed'))
     } finally {

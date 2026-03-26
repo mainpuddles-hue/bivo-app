@@ -117,6 +117,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     <Animated.View style={{ opacity: fadeAnim }}>
     <Pressable
       accessibilityLabel={post.title}
+      accessibilityRole="button"
+      accessibilityHint={t('postCard.tapToOpen')}
       onPress={() => {
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
         onInteraction?.(post.id, 'click')
@@ -273,10 +275,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         )}
 
         {/* Engagement — like + comment visible only when engaged, share/save behind more */}
-        <View style={styles.engagementRow}>
+        <View style={styles.engagementRow} accessibilityRole="toolbar">
           {hasEngagement && (
             <Pressable
               hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
+              accessibilityState={{ selected: liked }}
               onPress={async (e) => {
                 e.stopPropagation?.()
                 if (!userId) { router.push('/(auth)/login'); return }
@@ -323,6 +328,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           )}
           <Pressable
             hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={saved ? t('post.unsave') : t('post.save')}
+            accessibilityState={{ selected: saved }}
             onPress={async (e) => {
               e.stopPropagation?.()
               if (!userId) { router.push('/(auth)/login'); return }
@@ -501,7 +509,7 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, minWidth: 44, justifyContent: 'center' },
   engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
   popularBadge: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },

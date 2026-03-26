@@ -700,7 +700,8 @@
     "expiresToday": "Går ut idag",
     "expired": "Utgången",
     "distanceKm": "{distance} km",
-    "verified": "Verifierad"
+    "verified": "Verifierad",
+    "tapToOpen": "Tryck för att öppna annons"
   },
   "auth": {
     "login": "Logga in",
@@ -1019,7 +1020,8 @@
     "returnItem": "Markera som returnerad",
     "leaveReview": "Lämna recension",
     "payAndBook": "Betala och boka",
-    "bookingCreated": "Bokning skapad",
+    "bookingCreated": "Bokning skapad! Uthyraren meddelas.",
+    "bookingCreatedPaymentPending": "Bokning skapad - betalning väntar. Slutför den på Mina bokningar.",
     "blockedDate": "Datum är bokat",
     "selectDates": "Välj datum",
     "pricingBreakdown": "Prisuppdelning",
@@ -1282,7 +1284,8 @@
     "priceSuggestionDaily": "I ditt område {min}–{max}€/dag ({count} annonser)",
     "noExternalLinks": "Externa länkar är inte tillåtna",
     "noExternalApps": "Håll konversationer inom TackBird",
-    "tooShort": "Skriv en längre beskrivning"
+    "tooShort": "Skriv en längre beskrivning",
+    "postPublished": "Din annons är publicerad! Dina grannar kan nu se den."
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1933,6 +1936,7 @@
     "fake": "Falskt eller vilseledande",
     "other": "Övrigt",
     "submitted": "Anmälan skickad",
+    "reviewNotice": "Vårt team granskar anmälan inom 24 timmar. Du får en avisering om resultatet.",
     "descriptionLabel": "Ytterligare detaljer (valfritt)",
     "descriptionPlaceholder": "Beskriv problemet...",
     "submit": "Skicka anmälan",
@@ -2230,6 +2234,7 @@
     "escrowNote": "Betalningen hålls säkert. Leverantören får pengarna först när tjänsten är utförd.",
     "payAndBook": "Betala och boka",
     "bookingCreated": "Tjänst bokad! Leverantören meddelas.",
+    "bookingCreatedPaymentPending": "Tjänst bokad - betalning väntar. Slutför den på Mina bokningar.",
     "bookingFailed": "Tjänstbokning misslyckades",
     "services": "Tjänster",
     "noBookings": "Inga tjänstbokningar",

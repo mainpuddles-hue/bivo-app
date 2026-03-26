@@ -120,11 +120,21 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
         </View>
       )}
 
+      {/* Tier description — helps new users understand what their level means */}
+      <Text style={[styles.tierDesc, { color: colors.mutedForeground }]}>
+        {t(`trust.tier${level}Desc`)}
+      </Text>
+
       {level === 1 && onVerifyPress && (
-        <Pressable onPress={onVerifyPress} style={[styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }]}>
-          <ShieldCheck size={16} color="#FFFFFF" />
-          <Text style={styles.verifyBtnText}>{t('trust.verifyNow')}</Text>
-        </Pressable>
+        <>
+          <Text style={[styles.verifyExplainer, { color: colors.mutedForeground }]}>
+            {t('trust.hintVerifyId')}
+          </Text>
+          <Pressable onPress={onVerifyPress} style={[styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }]}>
+            <ShieldCheck size={16} color="#FFFFFF" />
+            <Text style={styles.verifyBtnText}>{t('trust.verifyNow')}</Text>
+          </Pressable>
+        </>
       )}
     </View>
   )
@@ -211,6 +221,16 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   hintText: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  tierDesc: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  verifyExplainer: {
     fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
