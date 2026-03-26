@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -9,7 +9,7 @@ import { useFonts, BricolageGrotesque_500Medium, BricolageGrotesque_600SemiBold,
 import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans'
 import { I18nProvider } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 // Configure how notifications are handled when the app is in the foreground
@@ -28,7 +28,7 @@ if (Platform.OS !== 'web') {
 function useOnboardingGuard() {
   const router = useRouter()
   const segments = useSegments()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
   const [checked, setChecked] = useState(false)
 
   useEffect(() => {

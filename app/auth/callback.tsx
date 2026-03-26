@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
 
 /**
@@ -20,7 +20,7 @@ export default function AuthCallbackScreen() {
   const { t } = useI18n()
   const router = useRouter()
   const params = useLocalSearchParams()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useSupabase()
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(true)
 

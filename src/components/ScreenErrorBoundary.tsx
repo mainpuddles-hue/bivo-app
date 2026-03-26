@@ -38,7 +38,7 @@ export class ScreenErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const label = this.props.screenName ?? 'Screen'
-    console.error(`[ScreenErrorBoundary:${label}]`, error.message, errorInfo.componentStack)
+    if (__DEV__) console.error(`[ScreenErrorBoundary:${label}]`, error.message, errorInfo.componentStack)
     this.props.onError?.(error, errorInfo)
   }
 
