@@ -23,6 +23,7 @@ import { GroupPostCard } from '@/components/groups/GroupPostCard'
 import { GroupCommentList } from '@/components/groups/GroupCommentList'
 import { GroupMembersModal } from '@/components/groups/GroupMembersModal'
 import { GroupEditModal } from '@/components/groups/GroupEditModal'
+import { isValidUUID } from '@/lib/validation'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
 import type { GroupMember } from '@/components/groups/GroupMembersModal'
 
@@ -127,7 +128,7 @@ export default function GroupDetailScreen() {
 
   // ── Fetch group info ──
   const fetchGroup = useCallback(async () => {
-    if (!id) return
+    if (!id || !isValidUUID(id as string)) return
     try {
       const { data, error } = await supabase.from('groups').select('*').eq('id', id).single()
       if (error) {

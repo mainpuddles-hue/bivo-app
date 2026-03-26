@@ -136,11 +136,11 @@ function PostDetailScreenInner() {
 
       setLoading(false)
     }
-    if (id) load()
+    if (id && isValidUUID(id)) load()
   }, [id, supabase])
 
   useEffect(() => {
-    if (!id) return
+    if (!id || !isValidUUID(id)) return
     const channel = supabase
       .channel(`comments-${id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments', filter: `post_id=eq.${id}` }, (payload) => {

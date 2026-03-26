@@ -15,18 +15,23 @@ export function usePaymentMethods(userId: string | null) {
     if (!userId) { setLoading(false); return }
     let mounted = true
 
-    supabase.from('profiles')
-      .select('stripe_customer_id, stripe_connect_account_id, stripe_connect_onboarded')
-      .eq('id', userId)
-      .single()
-      .then(({ data }) => {
+    ;(async () => {
+      try {
+        const { data } = await supabase.from('profiles')
+          .select('stripe_customer_id, stripe_connect_account_id, stripe_connect_onboarded')
+          .eq('id', userId)
+          .single()
         if (!mounted) return
         if (data) {
           setIsConnectOnboarded((data as any).stripe_connect_onboarded ?? false)
           setConnectAccountId((data as any).stripe_connect_account_id ?? null)
         }
-        setLoading(false)
-      })
+      } catch {
+        // Silently fail
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    })()
 
     return () => { mounted = false }
   }, [userId, supabase])
@@ -60,13 +65,17 @@ export function usePaymentMethods(userId: string | null) {
 
   const refreshStatus = useCallback(async () => {
     if (!userId) return
-    const { data } = await supabase.from('profiles')
-      .select('stripe_connect_account_id, stripe_connect_onboarded')
-      .eq('id', userId)
-      .single()
-    if (data) {
-      setIsConnectOnboarded((data as any).stripe_connect_onboarded ?? false)
-      setConnectAccountId((data as any).stripe_connect_account_id ?? null)
+    try {
+      const { data } = await supabase.from('profiles')
+        .select('stripe_connect_account_id, stripe_connect_onboarded')
+        .eq('id', userId)
+        .single()
+      if (data) {
+        setIsConnectOnboarded((data as any).stripe_connect_onboarded ?? false)
+        setConnectAccountId((data as any).stripe_connect_account_id ?? null)
+      }
+    } catch {
+      // Silently fail — user can retry
     }
   }, [userId, supabase])
 

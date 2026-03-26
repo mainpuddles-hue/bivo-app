@@ -221,7 +221,6 @@ export default function EventsScreen() {
       supabase
         .from('events')
         .select('*, creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
-        .eq('is_active', true)
         .gte('event_date', today)
         .order('event_date', { ascending: true })
         .limit(500),

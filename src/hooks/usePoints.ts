@@ -26,19 +26,20 @@ export function usePoints() {
       reference_id: referenceId ?? null,
     }).catch(() => {})
 
-    // Update total on profile
-    await (supabase.from('profiles') as any)
-      .rpc('increment_points', { user_id_param: userId, points_param: points })
-      .catch(async () => {
-        // Fallback: direct update if RPC doesn't exist
-        try {
-          const { data } = await supabase.from('profiles').select('total_points').eq('id', userId).single()
-          const current = (data as any)?.total_points ?? 0
-          await (supabase.from('profiles') as any).update({ total_points: current + points }).eq('id', userId)
-        } catch {
-          // Silently fail — points just won't update
-        }
-      })
+    // Update total on profile via RPC
+    try {
+      const { error: rpcError } = await (supabase.rpc as any)('increment_points', { user_id_param: userId, points_param: points })
+      if (rpcError) throw rpcError
+    } catch {
+      // Fallback: direct update if RPC doesn't exist
+      try {
+        const { data } = await supabase.from('profiles').select('total_points').eq('id', userId).single()
+        const current = (data as any)?.total_points ?? 0
+        await (supabase.from('profiles') as any).update({ total_points: current + points }).eq('id', userId)
+      } catch {
+        // Silently fail — points just won't update
+      }
+    }
   }, [supabase])
 
   return { awardPoints, POINT_VALUES }

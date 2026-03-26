@@ -97,7 +97,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
     async function fetchSignals() {
       try {
         const [profileRes, badgesRes, reviewsRes, reportsRes] = await Promise.all([
-          supabase.from('profiles').select('response_rate, created_at, email').eq('id', userId!).single(),
+          supabase.from('profiles').select('response_rate, created_at').eq('id', userId!).single(),
           supabase.from('user_badges').select('badge_type').eq('user_id', userId!),
           supabase.from('reviews').select('rating').eq('reviewed_id', userId!),
           supabase.from('reports').select('id').eq('reported_id', userId!).eq('status', 'open')
@@ -120,7 +120,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
           : 0
 
         setSignals({
-          emailVerified: !!profile?.email,
+          emailVerified: !!profile?.created_at, // email is on auth.users, not profiles; use account existence as proxy
           idVerified: badges.some(b => b.badge_type === 'verified'),
           reviewCount: reviews.length,
           avgRating: Math.round(avgRating * 10) / 10,

@@ -110,7 +110,6 @@ export default function SavedScreen() {
         const { data: communityEvents } = await supabase
           .from('events')
           .select('id, title, event_date, location_name')
-          .eq('is_active', true)
           .in('id', communityEventIds)
         ;(communityEvents ?? []).forEach((e: any) => {
           allEvents.push({

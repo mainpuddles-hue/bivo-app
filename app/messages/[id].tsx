@@ -16,6 +16,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatDateHeader } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { isValidUUID } from '@/lib/validation'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
@@ -113,12 +114,12 @@ function ConversationScreenInner() {
         .neq('sender_id', user.id)
         .eq('is_read', false)
     }
-    if (id) load()
+    if (id && isValidUUID(id)) load()
   }, [id, supabase])
 
   // Realtime messages
   useEffect(() => {
-    if (!id) return
+    if (!id || !isValidUUID(id)) return
     const channel = supabase
       .channel(`conv-${id}`)
       .on('postgres_changes', {
@@ -129,7 +130,7 @@ function ConversationScreenInner() {
         setMessages(prev => [...prev, newMsg])
         // Auto-mark as read if from other user
         if (newMsg.sender_id !== userId) {
-          ;(supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id).then(() => {})
+          ;(supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id).catch(() => {})
         }
       })
       .on('postgres_changes', {
@@ -164,18 +165,23 @@ function ConversationScreenInner() {
   const loadOlder = useCallback(async () => {
     if (!hasOlder || loadingOlder || messages.length === 0) return
     setLoadingOlder(true)
-    const oldest = messages[0]
-    const { data: older } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', id)
-      .lt('created_at', oldest.created_at)
-      .order('created_at', { ascending: false })
-      .limit(PAGE_SIZE)
-    const sorted = (older ?? []).reverse() as Message[]
-    setMessages(prev => [...sorted, ...prev])
-    setHasOlder((older ?? []).length >= PAGE_SIZE)
-    setLoadingOlder(false)
+    try {
+      const oldest = messages[0]
+      const { data: older } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', id)
+        .lt('created_at', oldest.created_at)
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE)
+      const sorted = (older ?? []).reverse() as Message[]
+      setMessages(prev => [...sorted, ...prev])
+      setHasOlder((older ?? []).length >= PAGE_SIZE)
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingOlder(false)
+    }
   }, [hasOlder, loadingOlder, messages, id, supabase])
 
   const typingDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)

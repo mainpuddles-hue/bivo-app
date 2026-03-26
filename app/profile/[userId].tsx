@@ -55,7 +55,7 @@ export default function PublicProfileScreen() {
 
   useEffect(() => {
     async function load() {
-      if (!userId) return
+      if (!userId || !isValidUUID(userId)) return
 
       const { data: { user } } = await supabase.auth.getUser()
       if (user) setCurrentUserId(user.id)

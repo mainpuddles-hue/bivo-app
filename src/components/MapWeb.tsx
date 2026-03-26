@@ -89,7 +89,6 @@ export default function MapScreen() {
           .limit(200),
         supabase.from('events')
           .select('id, title, description, event_date, location_name, location_lat, location_lng, icon, max_attendees, attendees:event_attendees(count), creator:profiles!events_creator_id_fkey(id, name, avatar_url)')
-          .eq('is_active', true)
           .gte('event_date', new Date().toISOString())
           .not('location_lat', 'is', null).not('location_lng', 'is', null)
           .order('event_date', { ascending: true })

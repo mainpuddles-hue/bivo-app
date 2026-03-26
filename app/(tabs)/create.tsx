@@ -398,7 +398,6 @@ export default function CreateScreen() {
           location_lng: longitude ?? null,
           max_attendees: (maxAtt && maxAtt > 0) ? maxAtt : null,
           icon: 'CalendarDays',
-          is_active: true,
         })
       }
 
@@ -409,18 +408,21 @@ export default function CreateScreen() {
 
       // Trigger semantic embedding for the new post (fire-and-forget)
       if (post?.id) {
+        const { data: { session: authSession } } = await supabase.auth.getSession()
+        const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (authSession?.access_token) {
+          authHeaders['Authorization'] = `Bearer ${authSession.access_token}`
+        }
         fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/embed-post`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({ post_id: post.id }),
         }).catch(() => {}) // Non-blocking
-      }
 
-      // Moderate content (non-blocking)
-      if (post?.id) {
+        // Moderate content (non-blocking)
         fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/moderate-content`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             title: title.trim(),
             description: description.trim(),

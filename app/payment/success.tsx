@@ -56,7 +56,7 @@ export default function PaymentSuccessScreen() {
       try {
         const { data: serviceData } = await (supabase
           .from('service_bookings') as any)
-          .select('id, booking_date, total_amount, status, post:posts!service_bookings_post_id_fkey(title)')
+          .select('id, created_at, total_amount, status, post:posts!service_bookings_post_id_fkey(title)')
           .eq('stripe_session_id', session_id!)
           .maybeSingle()
 
@@ -64,8 +64,8 @@ export default function PaymentSuccessScreen() {
           setBooking({
             id: (serviceData as any).id,
             post_title: (serviceData as any).post?.title ?? '',
-            start_date: (serviceData as any).booking_date,
-            end_date: (serviceData as any).booking_date,
+            start_date: (serviceData as any).created_at,
+            end_date: (serviceData as any).created_at,
             total_amount: (serviceData as any).total_amount,
             status: (serviceData as any).status,
           })
