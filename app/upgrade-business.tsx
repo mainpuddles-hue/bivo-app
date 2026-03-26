@@ -60,21 +60,55 @@ export default function UpgradeBusinessScreen() {
       Alert.alert(t('common.error'), t('business.nameRequired'))
       return
     }
+    if (!vatId.trim()) {
+      Alert.alert(t('common.error'), t('business.vatRequired'))
+      return
+    }
     if (!profile) return
 
     setSubmitting(true)
     try {
-      // Update profile with business info
-      await (supabase.from('profiles') as any).update({
-        business_name: businessName.trim(),
-        business_vat_id: vatId.trim() || null,
-        business_category: category,
-        business_address: address.trim() || null,
-      }).eq('id', profile.id)
-
-      // Create Stripe subscription for business account
+      // Step 1: Validate business via PRH (Finnish Patent and Registration Office)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('Not authenticated')
+
+      const validateRes = await fetch(`${FUNCTIONS_URL}/validate-business`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          ytunnus: vatId.trim(),
+          business_name: businessName.trim(),
+          category,
+          address: address.trim(),
+        }),
+      })
+
+      const validation = await validateRes.json()
+
+      if (!validation.valid) {
+        Alert.alert(t('common.error'), validation.message || t('business.validationFailed'))
+        setSubmitting(false)
+        return
+      }
+
+      // Use official PRH name if auto-approved
+      if (validation.prh_company?.name) {
+        // Profile already updated by Edge Function
+      }
+
+      if (!validation.auto_approved) {
+        // Manual review needed — show pending message
+        Alert.alert(t('common.success'), t('business.pendingReview'))
+        setSubmitting(false)
+        router.back()
+        return
+      }
+
+      // Create Stripe subscription for business account
+      // session already fetched above for PRH validation
 
       const res = await fetch(`${FUNCTIONS_URL}/pro-subscribe`, {
         method: 'POST',
