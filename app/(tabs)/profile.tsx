@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package,
-  Zap, Flame, Trophy,
+  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
@@ -79,10 +79,11 @@ export default function ProfileScreen() {
   const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null)
   const [followList, setFollowList] = useState<{ id: string; name: string; avatar_url: string | null }[]>([])
   const [refreshing, setRefreshing] = useState(false)
-  // TODO 2: My Posts tab
+  // My Posts tab
   const [allPosts, setAllPosts] = useState<Post[]>([])
   const [allPostsLoading, setAllPostsLoading] = useState(false)
   const [allPostsLoaded, setAllPostsLoaded] = useState(false)
+  const [postFilter, setPostFilter] = useState<'all' | 'active' | 'expired' | 'closed'>('all')
   // TODO 3: Point history modal
   const [showPointHistory, setShowPointHistory] = useState(false)
   const [pointHistory, setPointHistory] = useState<{ action: string; points: number; created_at: string }[]>([])
@@ -215,14 +216,14 @@ export default function ProfileScreen() {
     setFollowList((data ?? []).map((d: any) => d.user).filter(Boolean))
   }, [profile, supabase])
 
-  // TODO 2: Load all user posts when posts tab selected
+  // Load all user posts when posts tab selected
   const loadAllPosts = useCallback(async () => {
     if (!profile || allPostsLoaded) return
     setAllPostsLoading(true)
     try {
       const { data } = await supabase
         .from('posts')
-        .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at')
+        .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at, expires_at')
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false })
         .limit(100)
@@ -235,6 +236,63 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (activeTab === 'posts' && !allPostsLoaded) loadAllPosts()
   }, [activeTab, allPostsLoaded, loadAllPosts])
+
+  // Post status helpers
+  const getPostStatus = useCallback((post: Post): 'active' | 'expired' | 'closed' => {
+    if (!post.is_active) return 'closed'
+    if (post.expires_at && new Date(post.expires_at) < new Date()) return 'expired'
+    return 'active'
+  }, [])
+
+  const filteredPosts = useMemo(() => {
+    if (postFilter === 'all') return allPosts
+    return allPosts.filter(p => getPostStatus(p) === postFilter)
+  }, [allPosts, postFilter, getPostStatus])
+
+  // Post actions
+  const handleReactivatePost = useCallback(async (postId: string) => {
+    try {
+      const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      await (supabase.from('posts') as any).update({ is_active: true, expires_at: newExpiry }).eq('id', postId)
+      setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: true, expires_at: newExpiry } : p))
+      Alert.alert(t('common.success'), t('profile.postReactivated'))
+    } catch {
+      Alert.alert(t('common.error'), t('profile.postActionFailed'))
+    }
+  }, [supabase, t])
+
+  const handleClosePost = useCallback(async (postId: string) => {
+    try {
+      await (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId)
+      setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: false } : p))
+      Alert.alert(t('common.success'), t('profile.postClosedSuccess'))
+    } catch {
+      Alert.alert(t('common.error'), t('profile.postActionFailed'))
+    }
+  }, [supabase, t])
+
+  const handleDeletePost = useCallback(async (postId: string) => {
+    Alert.alert(
+      t('profile.deletePost'),
+      t('profile.deletePostConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await (supabase.from('posts') as any).delete().eq('id', postId)
+              setAllPosts(prev => prev.filter(p => p.id !== postId))
+              Alert.alert(t('common.success'), t('profile.postDeleted'))
+            } catch {
+              Alert.alert(t('common.error'), t('profile.postActionFailed'))
+            }
+          },
+        },
+      ]
+    )
+  }, [supabase, t])
 
   // TODO 3: Load point history
   const loadPointHistory = useCallback(async () => {
@@ -583,43 +641,91 @@ export default function ProfileScreen() {
         {/* Posts Tab */}
         {activeTab === 'posts' && (
           <View style={s.tabContent}>
+            {/* 2c: Filter chips */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
+              {([
+                { key: 'all' as const, label: t('profile.filterAll') },
+                { key: 'active' as const, label: t('profile.filterActive') },
+                { key: 'expired' as const, label: t('profile.filterExpired') },
+                { key: 'closed' as const, label: t('profile.filterClosed') },
+              ]).map(f => (
+                <Pressable
+                  key={f.key}
+                  onPress={() => setPostFilter(f.key)}
+                  style={[s.postFilterChip, postFilter === f.key ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
+                >
+                  <Text style={[s.postFilterText, { color: postFilter === f.key ? colors.primaryForeground : colors.mutedForeground }]}>{f.label}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
             {allPostsLoading ? (
               <View style={{ alignItems: 'center', paddingVertical: 24 }}>
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
               </View>
-            ) : allPosts.length === 0 ? (
+            ) : filteredPosts.length === 0 ? (
               <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPostsYet')}</Text>
             ) : (
-              allPosts.map((post) => (
-                <Pressable
-                  key={post.id}
-                  onPress={() => router.push(`/post/${post.id}`)}
-                  style={[s.myPostItem, { backgroundColor: colors.card, borderColor: colors.border }]}
-                >
-                  <View style={{ flex: 1, gap: 4 }}>
-                    <Text style={[s.myPostTitle, { color: colors.foreground }]} numberOfLines={1}>{post.title}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <View style={[s.myPostTypeBadge, { backgroundColor: `${colors.primary}14` }]}>
-                        <Text style={[s.myPostTypeText, { color: colors.primary }]}>{post.type}</Text>
-                      </View>
-                      <Text style={[s.myPostDate, { color: colors.mutedForeground }]}>
-                        {post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''}
-                      </Text>
-                      {(post.like_count ?? 0) > 0 && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                          <Heart size={10} color={colors.mutedForeground} />
-                          <Text style={[s.myPostDate, { color: colors.mutedForeground }]}>{post.like_count}</Text>
+              filteredPosts.map((post) => {
+                const status = getPostStatus(post)
+                const statusColor = status === 'active' ? (colors.success ?? colors.primary)
+                  : status === 'expired' ? '#E8A050'
+                  : colors.mutedForeground
+                const statusLabel = status === 'active' ? t('profile.active')
+                  : status === 'expired' ? t('profile.expired')
+                  : t('profile.postClosed')
+
+                return (
+                  <View key={post.id} style={[s.myPostItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Pressable
+                      onPress={() => router.push(`/post/${post.id}`)}
+                      style={{ flex: 1, gap: 4 }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Text style={[s.myPostTitle, { color: colors.foreground, flex: 1 }]} numberOfLines={1}>{post.title}</Text>
+                        {/* 2a: Status badge */}
+                        <View style={[s.myPostStatusBadge, { backgroundColor: `${statusColor}14` }]}>
+                          <Text style={[s.myPostStatusText, { color: statusColor }]}>
+                            {statusLabel}
+                          </Text>
                         </View>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={[s.myPostTypeBadge, { backgroundColor: `${colors.primary}14` }]}>
+                          <Text style={[s.myPostTypeText, { color: colors.primary }]}>{post.type}</Text>
+                        </View>
+                        <Text style={[s.myPostDate, { color: colors.mutedForeground }]}>
+                          {post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''}
+                        </Text>
+                        {(post.like_count ?? 0) > 0 && (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                            <Heart size={10} color={colors.mutedForeground} />
+                            <Text style={[s.myPostDate, { color: colors.mutedForeground }]}>{post.like_count}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </Pressable>
+                    {/* 2b: Action buttons */}
+                    <View style={s.myPostActions}>
+                      {status === 'expired' && (
+                        <Pressable onPress={() => handleReactivatePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.primary}14` }]} hitSlop={4}>
+                          <RotateCcw size={13} color={colors.primary} />
+                          <Text style={[s.myPostActionText, { color: colors.primary }]}>{t('profile.reactivate')}</Text>
+                        </Pressable>
                       )}
+                      {status === 'active' && (
+                        <Pressable onPress={() => handleClosePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.mutedForeground}14` }]} hitSlop={4}>
+                          <XCircle size={13} color={colors.mutedForeground} />
+                          <Text style={[s.myPostActionText, { color: colors.mutedForeground }]}>{t('profile.closePost')}</Text>
+                        </Pressable>
+                      )}
+                      <Pressable onPress={() => handleDeletePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.destructive}14` }]} hitSlop={4}>
+                        <Trash2 size={13} color={colors.destructive} />
+                      </Pressable>
                     </View>
                   </View>
-                  <View style={[s.myPostStatusBadge, { backgroundColor: post.is_active ? `${colors.success ?? colors.primary}14` : `${colors.destructive}14` }]}>
-                    <Text style={[s.myPostStatusText, { color: post.is_active ? (colors.success ?? colors.primary) : colors.destructive }]}>
-                      {post.is_active ? t('profile.active') : t('profile.expired')}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))
+                )
+              })
             )}
           </View>
         )}
@@ -817,13 +923,18 @@ const s = StyleSheet.create({
   multiplierBadge: { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 6 },
   multiplierText: { fontSize: 9, fontWeight: '800', color: '#FFFFFF', fontFamily: fonts.bodySemi },
   // My Posts tab
-  myPostItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
+  myPostItem: { gap: 8, padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   myPostTypeBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   myPostTypeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostDate: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   myPostStatusText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
+  myPostActions: { flexDirection: 'row', gap: 6, paddingTop: 4 },
+  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, minHeight: 32 },
+  myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  postFilterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },
+  postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   // Point history modal
   pointHistoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth },
   pointHistoryPoints: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, minWidth: 32 },

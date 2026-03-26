@@ -1,12 +1,12 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert } from 'react-native'
+import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
@@ -27,6 +27,24 @@ const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
 function isSameDay(a: string, b: string) {
   return new Date(a).toDateString() === new Date(b).toDateString()
+}
+
+const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi
+
+/** Extract the first URL from a message string */
+function extractUrl(text: string | null | undefined): string | null {
+  if (!text) return null
+  const match = text.match(URL_REGEX)
+  return match ? match[0] : null
+}
+
+/** Extract domain name from a URL */
+function getDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace('www.', '')
+  } catch {
+    return url
+  }
 }
 
 function ConversationScreenInner() {
@@ -204,10 +222,27 @@ function ConversationScreenInner() {
   }, [id, userId, supabase])
 
   const quickReplies = useMemo(() => [
-    t('messages.quickThanks'),
-    t('messages.quickHelp'),
-    t('messages.quickAvailable'),
+    t('messages.quickReplyThanks'),
+    t('messages.quickReplyOk'),
+    t('messages.quickReplyWhen'),
   ], [t])
+
+  // 3c: Quick reply auto-send handler
+  const handleQuickReply = useCallback(async (text: string) => {
+    if (!userId || sending) return
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    setSending(true)
+    setShowQuickReplies(false)
+    try {
+      const { error } = await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content: text })
+      if (error) throw error
+      await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
+    } catch {
+      Alert.alert(t('common.error'), t('messages.sendFailed'))
+    } finally {
+      setSending(false)
+    }
+  }, [userId, id, supabase, sending, t])
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !userId || sending) return
@@ -403,6 +438,7 @@ function ConversationScreenInner() {
                 <Text style={[s.msgTime, { color: isMine ? `${colors.primaryForeground}99` : colors.mutedForeground }]}>
                   {formatTimeAgo(item.created_at, t, locale)}
                 </Text>
+                {/* 3d: Delivered/read indicators */}
                 {isMine && (
                   item.is_read
                     ? <CheckCheck size={12} color={`${colors.primaryForeground}99`} />
@@ -410,6 +446,23 @@ function ConversationScreenInner() {
                 )}
               </View>
             </View>
+            {/* 3a: Link preview */}
+            {!isDeleted && (() => {
+              const url = extractUrl(item.content)
+              if (!url) return null
+              return (
+                <Pressable
+                  onPress={() => Linking.openURL(url)}
+                  style={[s.linkPreview, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
+                >
+                  <ExternalLink size={14} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.linkDomain, { color: colors.foreground }]} numberOfLines={1}>{getDomain(url)}</Text>
+                    <Text style={[s.linkAction, { color: colors.primary }]}>{t('messages.openLink')}</Text>
+                  </View>
+                </Pressable>
+              )
+            })()}
             {/* Reactions display */}
             {groupedReactions.length > 0 && (
               <View style={[s.reactionsRow, isMine ? s.reactionsRowMine : s.reactionsRowTheirs]}>
@@ -585,7 +638,7 @@ function ConversationScreenInner() {
         </Pressable>
       </Modal>
 
-      {/* Quick Replies */}
+      {/* 3c: Quick Replies — auto-send on tap */}
       {showQuickReplies && (
         <ScrollView
           horizontal
@@ -596,13 +649,11 @@ function ConversationScreenInner() {
           {quickReplies.map((reply, i) => (
             <Pressable
               key={i}
-              onPress={() => {
-                setInput(reply)
-                setShowQuickReplies(false)
-              }}
-              style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted }]}
+              onPress={() => handleQuickReply(reply)}
+              style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: colors.border }]}
             >
               <Text style={[s.quickReplyText, { color: colors.foreground }]}>{reply}</Text>
+              <Send size={11} color={colors.primary} />
             </Pressable>
           ))}
         </ScrollView>
@@ -730,10 +781,19 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8,
   },
   quickReplyChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8,
     borderRadius: 16,
   },
   quickReplyText: { fontSize: 13, fontFamily: fonts.body },
+  // 3a: Link preview styles
+  linkPreview: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginTop: 4, padding: 8, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
+    maxWidth: '100%',
+  },
+  linkDomain: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodySemi },
+  linkAction: { fontSize: 11, fontFamily: fonts.body },
 })
 
 const contextStyles = StyleSheet.create({

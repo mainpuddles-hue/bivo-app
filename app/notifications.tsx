@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet, Animated } from 'react-native'
+import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays } from 'lucide-react-native'
+import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -121,6 +121,8 @@ export default function NotificationsScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState('all')
+  // 1a: Expanded groups state — tracks which grouped notifications are expanded
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   const fetchNotifications = useCallback(async () => {
     const cachedId = await getCachedUserId()
@@ -140,6 +142,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => { fetchNotifications() }, [fetchNotifications])
 
+  // 1b: Mark all as read
   const markAllRead = useCallback(async () => {
     const cachedId = await getCachedUserId()
     if (!cachedId) return
@@ -147,7 +150,47 @@ export default function NotificationsScreen() {
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
   }, [supabase])
 
+  // 1c: Delete notification
+  const deleteNotification = useCallback(async (notifId: string) => {
+    await (supabase.from('notifications') as any).delete().eq('id', notifId)
+    setNotifications(prev => prev.filter(n => n.id !== notifId))
+  }, [supabase])
+
+  const handleLongPress = useCallback((item: PrioritizedNotification) => {
+    Alert.alert(
+      t('notifications.deleteNotification'),
+      '',
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => deleteNotification(item.id),
+        },
+      ]
+    )
+  }, [t, deleteNotification])
+
+  // 1a: Toggle group expansion
+  const toggleGroup = useCallback((groupKey: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(groupKey)) next.delete(groupKey)
+      else next.add(groupKey)
+      return next
+    })
+  }, [])
+
   const handleTap = useCallback(async (item: PrioritizedNotification) => {
+    // If this is a grouped notification with multiple items, toggle expand on first tap
+    if (item.isGrouped && item.groupCount && item.groupCount > 1) {
+      const groupKey = `${item.type}:${item.link_id ?? item.id}`
+      if (!expandedGroups.has(groupKey)) {
+        toggleGroup(groupKey)
+        return
+      }
+    }
+
     // Mark as read
     if (!item.is_read) {
       await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
@@ -159,9 +202,7 @@ export default function NotificationsScreen() {
     else if (item.link_type === 'profile' && item.link_id) router.push(`/profile/${item.link_id}`)
     else if (item.link_type === 'booking' && item.link_id) router.push(`/booking/${item.link_id}`)
     else if (item.link_type === 'event' && item.link_id) router.push({ pathname: '/(tabs)/events', params: { highlight: item.link_id } })
-    // TODO: UX — notification types without a link_type still mark as read but have no navigation target.
-    // Consider adding a fallback that shows the notification body in-place or navigates to a relevant screen based on item.type.
-  }, [supabase, router])
+  }, [supabase, router, expandedGroups, toggleGroup])
 
   const filtered = useMemo(() => {
     if (activeFilter === 'all') return notifications
@@ -185,9 +226,11 @@ export default function NotificationsScreen() {
           </View>
         )}
         <View style={{ flex: 1 }} />
+        {/* 1b: Mark all as read button with label */}
         {unreadCount > 0 && (
-          <Pressable onPress={markAllRead} hitSlop={8}>
-            <CheckCheck size={20} color={colors.primary} />
+          <Pressable onPress={markAllRead} hitSlop={8} style={styles.markAllReadBtn} accessibilityRole="button" accessibilityLabel={t('notifications.markAllRead')}>
+            <CheckCheck size={18} color={colors.primary} />
+            <Text style={[styles.markAllReadText, { color: colors.primary }]}>{t('notifications.markAllRead')}</Text>
           </Pressable>
         )}
       </View>
@@ -235,40 +278,73 @@ export default function NotificationsScreen() {
         renderItem={({ item }) => {
           const TypeIcon = getTypeIcon(item.type)
           const typeColor = getTypeColor(item.type, colors)
+          const isGroupedMulti = item.isGrouped && item.groupCount && item.groupCount > 1
+          const groupKey = `${item.type}:${item.link_id ?? item.id}`
+          const isExpanded = expandedGroups.has(groupKey)
+          const ChevronIcon = isExpanded ? ChevronUp : ChevronDown
 
           return (
-            <Pressable onPress={() => handleTap(item)} style={({ pressed }) => [styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }, pressed && { opacity: 0.7 }]}>
-              {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
-              <View style={styles.notifAvatar}>
-                {item.from_user?.avatar_url ? (
-                  <Image source={{ uri: item.from_user.avatar_url }} style={styles.avatar} />
-                ) : (
-                  <View style={[styles.avatar, styles.avatarFb, { backgroundColor: `${typeColor}20` }]}>
-                    <TypeIcon size={18} color={typeColor} />
-                  </View>
-                )}
-                <View style={[styles.typeIconBadge, { backgroundColor: typeColor, borderColor: colors.background }]}>
-                  <TypeIcon size={10} color="#FFFFFF" />
-                </View>
-              </View>
-              <View style={styles.notifContent}>
-                <Text style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && { fontWeight: '600' }]} numberOfLines={2}>
-                  {getGroupedTitle(item, t)}
-                </Text>
-                {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={1}>{item.body}</Text>}
-                <View style={styles.notifMeta}>
-                  <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
-                    {formatTimeAgo(item.created_at, t, locale)}
-                  </Text>
-                  {item.isGrouped && item.groupCount && item.groupCount > 1 && (
-                    <View style={[styles.groupBadge, { backgroundColor: `${colors.primary}1A` }]}>
-                      <Text style={[styles.groupBadgeText, { color: colors.primary }]}>{item.groupCount}</Text>
+            <View>
+              <Pressable
+                onPress={() => handleTap(item)}
+                onLongPress={() => handleLongPress(item)}
+                delayLongPress={500}
+                style={({ pressed }) => [styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }, pressed && { opacity: 0.7 }]}
+              >
+                {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
+                <View style={styles.notifAvatar}>
+                  {item.from_user?.avatar_url ? (
+                    <Image source={{ uri: item.from_user.avatar_url }} style={styles.avatar} />
+                  ) : (
+                    <View style={[styles.avatar, styles.avatarFb, { backgroundColor: `${typeColor}20` }]}>
+                      <TypeIcon size={18} color={typeColor} />
                     </View>
                   )}
+                  <View style={[styles.typeIconBadge, { backgroundColor: typeColor, borderColor: colors.background }]}>
+                    <TypeIcon size={10} color="#FFFFFF" />
+                  </View>
                 </View>
-              </View>
-              {!item.is_read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
-            </Pressable>
+                <View style={styles.notifContent}>
+                  <Text style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && { fontWeight: '600' }]} numberOfLines={2}>
+                    {getGroupedTitle(item, t)}
+                  </Text>
+                  {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={1}>{item.body}</Text>}
+                  <View style={styles.notifMeta}>
+                    {/* 1d: Relative timestamps (already handled by formatTimeAgo) */}
+                    <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
+                      {formatTimeAgo(item.created_at, t, locale)}
+                    </Text>
+                    {/* 1a: Group expand chevron */}
+                    {isGroupedMulti && (
+                      <Pressable
+                        onPress={() => toggleGroup(groupKey)}
+                        hitSlop={8}
+                        style={[styles.groupExpandBtn, { backgroundColor: `${colors.primary}1A` }]}
+                      >
+                        <Text style={[styles.groupBadgeText, { color: colors.primary }]}>{item.groupCount}</Text>
+                        <ChevronIcon size={12} color={colors.primary} />
+                      </Pressable>
+                    )}
+                  </View>
+                </View>
+                {!item.is_read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
+              </Pressable>
+
+              {/* 1a: Expanded group — show individual notification names */}
+              {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (
+                <View style={[styles.expandedGroup, { backgroundColor: isDark ? `${colors.card}80` : `${colors.muted}80` }]}>
+                  {item.groupNames.map((name, idx) => (
+                    <View key={`${item.id}-${idx}`} style={styles.expandedItem}>
+                      <View style={[styles.expandedDot, { backgroundColor: typeColor }]} />
+                      <Text style={[styles.expandedName, { color: colors.foreground }]} numberOfLines={1}>{name}</Text>
+                      <Text style={[styles.expandedAction, { color: colors.mutedForeground }]}>
+                        {item.type === 'post_like' ? t('notifications.likedYourPost') : item.title}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
           )
         }}
         ListEmptyComponent={
@@ -298,6 +374,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
   },
   headerBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 14 },
+  markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  markAllReadText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36 },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
@@ -322,12 +400,19 @@ const styles = StyleSheet.create({
   notifBody: { fontSize: 13, lineHeight: 17 },
   notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14 },
   notifMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
-  groupBadge: {
-    minWidth: 18, height: 18, borderRadius: 9,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+  groupExpandBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 2,
+    minWidth: 18, height: 22, borderRadius: 11,
+    paddingHorizontal: 6,
   },
   groupBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
   unreadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
+  // 1a: Expanded group styles
+  expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 8, paddingVertical: 4, marginBottom: 4 },
+  expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  expandedDot: { width: 6, height: 6, borderRadius: 3 },
+  expandedName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, maxWidth: '40%' },
+  expandedAction: { fontSize: 12, fontFamily: fonts.body, flex: 1 },
   empty: { alignItems: 'center', paddingTop: 80, gap: 12 },
   emptyText: { fontSize: 14, lineHeight: 20 },
 })

@@ -440,7 +440,12 @@
     "quickAvailable": "Это ещё доступно?",
     "aboutPost": "По объявлению",
     "sendFailed": "Не удалось отправить сообщение",
-    "imageSendFailed": "Не удалось отправить фото"
+    "imageSendFailed": "Не удалось отправить фото",
+    "openLink": "Открыть ссылку",
+    "photo": "Фото",
+    "quickReplyThanks": "Спасибо!",
+    "quickReplyWhen": "Когда?",
+    "quickReplyOk": "Подходит?"
   },
   "conversation": {
     "startPrompt": "Начните беседу, написав сообщение",
@@ -559,7 +564,21 @@
     "memberSince": "Участник с",
     "completedTransactions": "завершённых сделок",
     "totalPosts": "объявлений",
-    "activitySummary": "Обзор активности"
+    "activitySummary": "Обзор активности",
+    "postClosed": "Закрыто",
+    "postSold": "Продано/Одолжено",
+    "reactivate": "Активировать",
+    "closePost": "Закрыть",
+    "deletePost": "Удалить",
+    "deletePostConfirm": "Вы уверены, что хотите удалить это объявление?",
+    "postReactivated": "Объявление активировано",
+    "postClosedSuccess": "Объявление закрыто",
+    "postDeleted": "Объявление удалено",
+    "postActionFailed": "Действие не удалось",
+    "filterAll": "Все",
+    "filterActive": "Активные",
+    "filterExpired": "Истекшие",
+    "filterClosed": "Закрытые"
   },
   "settings": {
     "title": "Настройки",
@@ -1541,7 +1560,10 @@
     "forumReplyTitle": "Новый ответ в беседе",
     "andOthers": "и ещё {count}",
     "likedYourPost": "понравилось ваше объявление",
-    "groupedLikes": "{name} и ещё {count} оценили"
+    "groupedLikes": "{name} и ещё {count} оценили",
+    "deleteNotification": "Удалить уведомление",
+    "expanded": "Показать все",
+    "collapsed": "Скрыть"
   },
   "map": {
     "locate": "Найти меня",
