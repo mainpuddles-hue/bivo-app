@@ -197,6 +197,11 @@ export default function ProScreen() {
               </Pressable>
             </View>
 
+            {/* Auto-renewal disclosure (Apple Guidelines 3.1.2) */}
+            <Text style={[s.autoRenewalText, { color: colors.mutedForeground }]}>
+              {t('pro.autoRenewalNotice')}
+            </Text>
+
             {/* Subscribe button */}
             <Pressable
               onPress={handleSubscribe}
@@ -217,6 +222,18 @@ export default function ProScreen() {
               )}
             </Pressable>
           </>
+        )}
+
+        {/* Restore Purchases (required by Apple for IAP) */}
+        {Platform.OS === 'ios' && (
+          <Pressable
+            onPress={() => Alert.alert(t('pro.restorePurchases'), t('pro.restorePurchasesInfo'))}
+            style={[s.restoreBtn, { borderColor: colors.border }]}
+          >
+            <Text style={[s.restoreBtnText, { color: colors.mutedForeground }]}>
+              {t('pro.restorePurchases')}
+            </Text>
+          </Pressable>
         )}
 
         {/* iOS: Subscription will be available via App Store */}
@@ -327,4 +344,10 @@ const s = StyleSheet.create({
     padding: 16, borderRadius: 14, borderWidth: 1, marginTop: 8,
   },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20 },
+  autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
+  restoreBtn: {
+    alignItems: 'center', paddingVertical: 12, borderRadius: 12,
+    borderWidth: 1,
+  },
+  restoreBtnText: { fontSize: 14, fontWeight: '500' },
 })

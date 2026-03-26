@@ -8,7 +8,7 @@ import { Image } from 'expo-image'
 import {
   CalendarDays, MapPin, Users, Plus, Bookmark, BookmarkCheck,
   ChevronRight, ChevronLeft, Globe, RefreshCw, List, Calendar, Share2, X,
-  Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2, ExternalLink,
+  Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2, ExternalLink, Flag,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -21,6 +21,7 @@ import { fonts } from '@/lib/fonts'
 import { getCachedUserId } from '@/lib/authCache'
 import type { Event, CityEvent } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
+import { ReportModal } from '@/components/ReportModal'
 
 type Tab = 'community' | 'city' | 'activities'
 type DateFilter = 'all' | 'today' | 'week'
@@ -207,6 +208,8 @@ export default function EventsScreen() {
   const [attendingIds, setAttendingIds] = useState<Set<string>>(new Set())
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedCityEvent, setSelectedCityEvent] = useState<CityEvent | null>(null)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportTargetId, setReportTargetId] = useState('')
 
   // Calendar state
   const [calendarMonth, setCalendarMonth] = useState(() => new Date())
@@ -442,6 +445,9 @@ export default function EventsScreen() {
             </Pressable>
             <Pressable onPress={() => shareEvent(item)} hitSlop={8}>
               <Share2 size={18} color={colors.mutedForeground} />
+            </Pressable>
+            <Pressable onPress={() => { setReportTargetId(item.id); setShowReportModal(true) }} hitSlop={8}>
+              <Flag size={16} color={colors.mutedForeground} />
             </Pressable>
           </View>
         </View>
@@ -741,6 +747,14 @@ export default function EventsScreen() {
           </View>
         )}
       </Modal>
+
+      {/* Report Modal */}
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        type="post"
+        targetId={reportTargetId}
+      />
 
       {/* City Event Detail Modal — enhanced */}
       <Modal visible={selectedCityEvent !== null} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedCityEvent(null)}>

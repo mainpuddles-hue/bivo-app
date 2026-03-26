@@ -35,7 +35,8 @@
     "scrollToBottom": "Scrolla ner",
     "offline": "Ingen anslutning",
     "loginRequired": "Logga in",
-    "you": "du"
+    "you": "du",
+    "and": "och"
   },
   "nav": {
     "feed": "Hem",
@@ -775,7 +776,10 @@
     "nameRequired": "Ange ditt namn",
     "resetPasswordHint": "Ange din e-postadress så skickar vi en återställningslänk.",
     "continueWithGoogle": "Fortsätt med Google",
-    "loginRequired": "Logga in"
+    "loginRequired": "Logga in",
+    "acceptTerms": "Jag accepterar",
+    "termsLink": "användarvillkoren",
+    "privacyLink": "integritetspolicyn"
   },
   "onboarding": {
     "welcome": "Välkommen till TackBird!",
@@ -1318,7 +1322,10 @@
     "renewsOn": "Förnyas {date}",
     "manageSubscription": "Hantera prenumeration",
     "termsNote": "Prenumerationen förnyas automatiskt tills du avbryter. Betalning debiteras ditt Stripe-konto.",
-    "comingSoonIOS": "Pro-prenumerationen blir tillgänglig via App Store när appen publiceras."
+    "comingSoonIOS": "Pro-prenumerationen blir tillgänglig via App Store när appen publiceras.",
+    "autoRenewalNotice": "Prenumerationen förnyas automatiskt tills den avbryts. Du kan avbryta när som helst i inställningarna. Betalning debiteras vid köpbekräftelse.",
+    "restorePurchases": "Återställ köp",
+    "restorePurchasesInfo": "App Store-köp återställs automatiskt när köp i appen blir tillgängliga."
   },
   "ads": {
     "create": "Skapa annons",

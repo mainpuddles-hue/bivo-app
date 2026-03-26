@@ -4,8 +4,12 @@
     "android": "Social"
   },
   "content_rating": {
-    "ios": "4+",
-    "android": "Everyone"
+    "ios": "12+",
+    "android": "Teen"
+  },
+  "content_descriptors": {
+    "user_generated_content": true,
+    "unrestricted_internet": true
   },
   "pricing": "Free",
   "in_app_purchases": true,

@@ -35,7 +35,8 @@
     "scrollToBottom": "Scroll to bottom",
     "offline": "No connection",
     "loginRequired": "Please log in",
-    "you": "you"
+    "you": "you",
+    "and": "and"
   },
   "nav": {
     "feed": "Home",
@@ -775,7 +776,10 @@
     "nameRequired": "Enter your name",
     "resetPasswordHint": "Enter your email and we will send you a reset link.",
     "continueWithGoogle": "Continue with Google",
-    "loginRequired": "Please log in"
+    "loginRequired": "Please log in",
+    "acceptTerms": "I accept the",
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy"
   },
   "onboarding": {
     "welcome": "Welcome to TackBird!",
@@ -1318,7 +1322,10 @@
     "renewsOn": "Renews on {date}",
     "manageSubscription": "Manage subscription",
     "termsNote": "Subscription automatically renews until cancelled. Payment is charged to your Stripe account.",
-    "comingSoonIOS": "Pro subscription will be available via the App Store when the app is published."
+    "comingSoonIOS": "Pro subscription will be available via the App Store when the app is published.",
+    "autoRenewalNotice": "Subscription automatically renews until cancelled. You can cancel anytime in settings. Payment is charged upon purchase confirmation.",
+    "restorePurchases": "Restore purchases",
+    "restorePurchasesInfo": "App Store purchases will be restored automatically when in-app purchases become available."
   },
   "ads": {
     "create": "Create ad",

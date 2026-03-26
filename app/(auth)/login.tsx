@@ -75,6 +75,7 @@ export default function LoginScreen() {
   const [appleAvailable, setAppleAvailable] = useState(false)
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState(0)
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   // Check Apple Sign-In availability (native only)
   useEffect(() => {
@@ -415,11 +416,26 @@ export default function LoginScreen() {
                 </Pressable>
               )}
 
+              {/* Terms checkbox (register mode only) */}
+              {mode === 'register' && (
+                <View style={styles.termsRow}>
+                  <Pressable onPress={() => setTermsAccepted(!termsAccepted)} style={styles.checkbox} hitSlop={8}>
+                    {termsAccepted ? <Check size={16} color={colors.primary} /> : <View style={[styles.emptyCheckbox, { borderColor: colors.border }]} />}
+                  </Pressable>
+                  <Text style={[styles.termsText, { color: colors.mutedForeground }]}>
+                    {t('auth.acceptTerms')}{' '}
+                    <Text onPress={() => router.push('/terms')} style={{ color: colors.primary }}>{t('auth.termsLink')}</Text>
+                    {' '}{t('common.and')}{' '}
+                    <Text onPress={() => router.push('/privacy')} style={{ color: colors.primary }}>{t('auth.privacyLink')}</Text>
+                  </Text>
+                </View>
+              )}
+
               {/* Submit */}
               <Pressable
                 onPress={handleSubmit}
-                disabled={loading}
-                style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: loading ? 0.6 : 1 }]}
+                disabled={loading || (mode === 'register' && !termsAccepted)}
+                style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: (loading || (mode === 'register' && !termsAccepted)) ? 0.6 : 1 }]}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -491,4 +507,8 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 24, alignItems: 'center', gap: 12,
   },
   successText: { fontSize: 15, fontWeight: '500', textAlign: 'center' },
+  termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 4 },
+  checkbox: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },
+  termsText: { fontSize: 13, flex: 1, lineHeight: 18 },
 })

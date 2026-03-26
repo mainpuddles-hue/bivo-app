@@ -35,7 +35,8 @@
     "scrollToBottom": "Vieritä alas",
     "offline": "Ei verkkoyhteyttä",
     "loginRequired": "Kirjaudu sisään",
-    "you": "sinä"
+    "you": "sinä",
+    "and": "ja"
   },
   "nav": {
     "feed": "Koti",
@@ -775,7 +776,10 @@
     "passwordNumber": "Numero",
     "passwordTooShort": "Salasanan pitää olla vähintään 8 merkkiä",
     "invalidPassword": "Anna kelvollinen salasana",
-    "loginRequired": "Kirjaudu sisään"
+    "loginRequired": "Kirjaudu sisään",
+    "acceptTerms": "Hyväksyn",
+    "termsLink": "käyttöehdot",
+    "privacyLink": "tietosuojaselosteen"
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
@@ -1318,7 +1322,10 @@
     "renewsOn": "Uusitaan {date}",
     "manageSubscription": "Hallinnoi tilausta",
     "termsNote": "Tilaus uusiutuu automaattisesti, kunnes peruutat. Maksu veloitetaan Stripe-tililtäsi.",
-    "comingSoonIOS": "Pro-tilaus tulee saataville App Storen kautta kun sovellus julkaistaan."
+    "comingSoonIOS": "Pro-tilaus tulee saataville App Storen kautta kun sovellus julkaistaan.",
+    "autoRenewalNotice": "Tilaus uusiutuu automaattisesti kunnes se peruutetaan. Tilauksen voi peruuttaa milloin tahansa asetuksista. Maksu veloitetaan ostoksen vahvistamisen yhteydessä.",
+    "restorePurchases": "Palauta ostokset",
+    "restorePurchasesInfo": "App Store -ostokset palautetaan automaattisesti kun sovelluksen sisäiset ostokset ovat käytettävissä."
   },
   "ads": {
     "create": "Luo mainos",

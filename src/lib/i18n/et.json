@@ -35,7 +35,8 @@
     "scrollToBottom": "Keri alla",
     "offline": "Ühendus puudub",
     "loginRequired": "Palun logi sisse",
-    "you": "sina"
+    "you": "sina",
+    "and": "ja"
   },
   "nav": {
     "feed": "Kodu",
@@ -771,7 +772,10 @@
     "passwordNumber": "Number",
     "passwordTooShort": "Parool peab olema vähemalt 8 tähemärki",
     "invalidPassword": "Sisesta kehtiv parool",
-    "loginRequired": "Palun logi sisse"
+    "loginRequired": "Palun logi sisse",
+    "acceptTerms": "Nõustun",
+    "termsLink": "kasutustingimused",
+    "privacyLink": "privaatsuspoliitika"
   },
   "onboarding": {
     "welcome": "Tere tulemast TackBirdi!",
@@ -1306,7 +1310,11 @@
     "yearly": "Aastane",
     "renewsOn": "Uueneb {date}",
     "manageSubscription": "Halda tellimust",
-    "termsNote": "Tellimus uueneb automaatselt kuni tühistad. Makse võetakse sinu Stripe kontolt."
+    "termsNote": "Tellimus uueneb automaatselt kuni tühistad. Makse võetakse sinu Stripe kontolt.",
+    "comingSoonIOS": "Pro-tellimus on saadaval App Store'i kaudu, kui rakendus avaldatakse.",
+    "autoRenewalNotice": "Tellimus uueneb automaatselt kuni see tühistatakse. Saad tühistada igal ajal seadetes. Makse võetakse ostu kinnitamisel.",
+    "restorePurchases": "Taasta ostud",
+    "restorePurchasesInfo": "App Store'i ostud taastatakse automaatselt, kui rakendusesisesed ostud muutuvad kättesaadavaks."
   },
   "ads": {
     "create": "Loo reklaam",
