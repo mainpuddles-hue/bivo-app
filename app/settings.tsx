@@ -10,7 +10,7 @@ import { useI18n, type Locale } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { downloadAsFile } from '@/lib/share'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
-import { useInAppPurchase } from '@/hooks/useInAppPurchase'
+// useInAppPurchase replaced by Stripe-based pro subscription
 import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
 import { isValidUUID } from '@/lib/validation'
 import { fonts } from '@/lib/fonts'
@@ -43,7 +43,6 @@ export default function SettingsScreen() {
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const push = usePushNotifications(profile?.id ?? null)
-  const iap = useInAppPurchase(profile?.id ?? null)
   const notifPrefs = useNotificationPreferences()
   const [visibility, setVisibility] = useState<ProfileVisibility>('everyone')
   const [locationAccuracy, setLocationAccuracy] = useState<LocationAccuracy>('exact')
@@ -517,27 +516,43 @@ export default function SettingsScreen() {
         {/* Pro */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.proSubscription')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <View style={s.row}>
+          <Pressable onPress={() => router.push('/pro')} style={s.row}>
             <Crown size={18} color={colors.pro} />
             <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Pro</Text>
             {profile?.is_pro ? (
               <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
-            ) : iap.isAvailable ? (
-              <Pressable onPress={iap.purchase} disabled={iap.purchasing} style={[s.upgradeBtn, { backgroundColor: colors.pro, opacity: iap.purchasing ? 0.6 : 1 }]}>
+            ) : (
+              <Pressable onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
                 <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>
-                  {iap.purchasing ? '...' : iap.products[0]?.localizedPrice ?? '4,99 \u20AC/kk'}
+                  4,99 {'\u20AC'}{t('pro.perMonth')}
                 </Text>
               </Pressable>
-            ) : (
-              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>4,99 \u20AC/kk</Text>
             )}
-          </View>
-          {!profile?.is_pro && iap.isAvailable && (
-            <Pressable onPress={iap.restore} style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-              <Text style={{ fontSize: 12, color: colors.primary }}>{t('settings.restorePurchases') ?? 'Palauta aiemmat ostot'}</Text>
-            </Pressable>
+          </Pressable>
+          {profile?.is_pro && profile?.pro_expires_at && (
+            <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12 }}>
+              {t('pro.renewsOn', { date: new Date(profile.pro_expires_at).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB') })}
+            </Text>
           )}
-          {iap.error && <Text style={{ fontSize: 12, color: colors.destructive, paddingHorizontal: 16, paddingBottom: 12 }}>{iap.error}</Text>}
+        </View>
+
+        {/* Business account */}
+        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('business.upgrade')}</Text>
+        <View style={[s.card, { backgroundColor: colors.card }]}>
+          <Pressable
+            onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
+            style={s.row}
+          >
+            <Crown size={18} color={colors.primary} />
+            <Text style={[s.rowText, { color: colors.foreground }]}>
+              {profile?.is_business ? t('business.dashboard') : t('business.upgradeCTA')}
+            </Text>
+            {profile?.is_business ? (
+              <Text style={[s.proBadge, { color: colors.success }]}>{t('business.active')}</Text>
+            ) : (
+              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('business.monthlyPrice')}</Text>
+            )}
+          </Pressable>
         </View>
 
         {/* Security */}

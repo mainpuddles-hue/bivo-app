@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { useState, useCallback, useEffect } from 'react'
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Crown, Check, X, Sparkles, BarChart3, Shield, Megaphone, BadgeCheck, Zap } from 'lucide-react-native'
@@ -7,9 +7,10 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
-import { useInAppPurchase } from '@/hooks/useInAppPurchase'
 import type { Profile } from '@/lib/types'
-import { useEffect } from 'react'
+
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
 const FEATURES = [
   { icon: Zap, free: 'Basic listings', pro: 'Priority listings' },
@@ -24,14 +25,15 @@ type Plan = 'monthly' | 'yearly'
 
 export default function ProScreen() {
   const { colors, isDark } = useTheme()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<Plan>('yearly')
-  const iap = useInAppPurchase(profile?.id ?? null)
+  const [purchasing, setPurchasing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -43,29 +45,51 @@ export default function ProScreen() {
     load()
   }, [supabase])
 
-  const handleSubscribe = async () => {
-    if (iap.isAvailable) {
-      await iap.purchase()
-    } else {
-      Alert.alert(
-        'TackBird Pro',
-        'In-app purchases are not available on this device. Please try on a native build.',
-      )
-    }
-  }
+  const handleSubscribe = useCallback(async () => {
+    setPurchasing(true)
+    setError(null)
 
-  const handleRestore = async () => {
-    if (iap.isAvailable) {
-      await iap.restore()
-    } else {
-      Alert.alert(
-        'TackBird Pro',
-        'Restore is not available on this device.',
-      )
-    }
-  }
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        Alert.alert(t('common.error'), t('common.loginRequired'))
+        setPurchasing(false)
+        return
+      }
 
-  const isPro = profile?.is_pro || iap.isPro
+      const res = await fetch(`${FUNCTIONS_URL}/pro-subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ plan: selectedPlan }),
+      })
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error ?? t('pro.checkoutError'))
+      }
+
+      const { url } = await res.json()
+      if (url) {
+        await Linking.openURL(url)
+      }
+    } catch (err: any) {
+      setError(err.message ?? t('pro.checkoutError'))
+    } finally {
+      setPurchasing(false)
+    }
+  }, [selectedPlan, supabase, t])
+
+  const isPro = profile?.is_pro
+  const proExpiresAt = profile?.pro_expires_at
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
+    return date.toLocaleDateString(localeStr, { day: 'numeric', month: 'long', year: 'numeric' })
+  }
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -93,6 +117,11 @@ export default function ProScreen() {
               <Check size={16} color={colors.pro} />
               <Text style={[s.activeBadgeText, { color: colors.pro }]}>{t('profile.proActive')}</Text>
             </View>
+          )}
+          {isPro && proExpiresAt && (
+            <Text style={[s.renewsText, { color: colors.mutedForeground }]}>
+              {t('pro.renewsOn', { date: formatDate(proExpiresAt) })}
+            </Text>
           )}
         </View>
 
@@ -141,11 +170,11 @@ export default function ProScreen() {
                   { backgroundColor: colors.card, borderColor: selectedPlan === 'monthly' ? colors.pro : colors.border },
                 ]}
               >
-                <Text style={[s.pricingLabel, { color: colors.foreground }]}>Monthly</Text>
+                <Text style={[s.pricingLabel, { color: colors.foreground }]}>{t('pro.monthly')}</Text>
                 <Text style={[s.pricingPrice, { color: selectedPlan === 'monthly' ? colors.pro : colors.foreground }]}>
                   4.99 {'\u20AC'}
                 </Text>
-                <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>/mo</Text>
+                <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>{t('pro.perMonth')}</Text>
               </Pressable>
 
               {/* Yearly */}
@@ -159,54 +188,58 @@ export default function ProScreen() {
                 <View style={[s.saveBadge, { backgroundColor: colors.pro }]}>
                   <Text style={s.saveBadgeText}>-33%</Text>
                 </View>
-                <Text style={[s.pricingLabel, { color: colors.foreground }]}>Yearly</Text>
+                <Text style={[s.pricingLabel, { color: colors.foreground }]}>{t('pro.yearly')}</Text>
                 <Text style={[s.pricingPrice, { color: selectedPlan === 'yearly' ? colors.pro : colors.foreground }]}>
                   39.99 {'\u20AC'}
                 </Text>
                 <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>/year</Text>
-                <Text style={[s.pricingSubtext, { color: colors.pro }]}>3.33 {'\u20AC'}/mo</Text>
+                <Text style={[s.pricingSubtext, { color: colors.pro }]}>3.33 {'\u20AC'}{t('pro.perMonth')}</Text>
               </Pressable>
             </View>
 
             {/* Subscribe button */}
             <Pressable
               onPress={handleSubscribe}
-              disabled={iap.purchasing}
-              style={[s.subscribeBtn, { backgroundColor: colors.pro, opacity: iap.purchasing ? 0.6 : 1 }]}
+              disabled={purchasing}
+              style={[s.subscribeBtn, { backgroundColor: colors.pro, opacity: purchasing ? 0.6 : 1 }]}
             >
-              {iap.purchasing ? (
+              {purchasing ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
                   <Crown size={20} color="#FFFFFF" />
                   <Text style={s.subscribeBtnText}>
-                    {selectedPlan === 'monthly' ? '4.99 \u20AC/mo' : '39.99 \u20AC/year'}
-                    {' \u2014 '}Subscribe
+                    {selectedPlan === 'monthly' ? '4.99 \u20AC' + t('pro.perMonth') : '39.99 \u20AC/year'}
+                    {' \u2014 '}
+                    {t('pro.subscribe')}
                   </Text>
                 </>
               )}
             </Pressable>
-
-            {/* Restore purchases */}
-            <Pressable onPress={handleRestore} disabled={iap.purchasing} style={s.restoreBtn}>
-              <Text style={[s.restoreText, { color: colors.primary }]}>
-                Restore Purchases
-              </Text>
-            </Pressable>
           </>
         )}
 
+        {/* Manage subscription */}
+        {isPro && (
+          <Pressable
+            onPress={() => router.push('/payment-settings' as any)}
+            style={[s.manageBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <Text style={[s.manageBtnText, { color: colors.foreground }]}>
+              {t('pro.manageSubscription')}
+            </Text>
+          </Pressable>
+        )}
+
         {/* Error */}
-        {iap.error && (
-          <Text style={[s.errorText, { color: colors.destructive }]}>{iap.error}</Text>
+        {error && (
+          <Text style={[s.errorText, { color: colors.destructive }]}>{error}</Text>
         )}
 
         {/* Terms */}
         <Text style={[s.termsText, { color: colors.mutedForeground }]}>
           {t('pro.cancelAnytime')}.{' '}
-          Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.
-          Payment is charged to your App Store or Google Play account.
-          By subscribing you agree to the Terms of Service and Privacy Policy.
+          {t('pro.termsNote')}
         </Text>
       </ScrollView>
     </View>
@@ -233,6 +266,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, marginTop: 8,
   },
   activeBadgeText: { fontSize: 14, fontWeight: '600' },
+  renewsText: { fontSize: 13, marginTop: 4 },
   sectionLabel: {
     fontSize: 12, fontWeight: '600', letterSpacing: 0.5,
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
@@ -271,8 +305,11 @@ const s = StyleSheet.create({
     gap: 10, paddingVertical: 16, borderRadius: 14, marginTop: 4,
   },
   subscribeBtnText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
-  restoreBtn: { alignItems: 'center', paddingVertical: 12 },
-  restoreText: { fontSize: 14, fontWeight: '500' },
+  manageBtn: {
+    alignItems: 'center', paddingVertical: 14, borderRadius: 14,
+    borderWidth: 1,
+  },
+  manageBtnText: { fontSize: 15, fontWeight: '600' },
   errorText: { fontSize: 13, textAlign: 'center' },
   termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
 })

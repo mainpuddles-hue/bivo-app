@@ -8,6 +8,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useFeedData } from '@/hooks/useFeedData'
+import { useSupabase } from '@/hooks/useSupabase'
 import { useSmartMatch } from '@/hooks/useSmartMatch'
 import { useStreak } from '@/hooks/useStreak'
 import { useInteractionTracker } from '@/hooks/useInteractionTracker'
@@ -22,6 +23,8 @@ import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { FeedContextHeader } from '@/components/FeedContextHeader'
 import { JuuriNytStrip } from '@/components/JuuriNytStrip'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { AdCard } from '@/components/AdCard'
+import type { Ad } from '@/components/AdCard'
 import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
@@ -57,10 +60,39 @@ function FeedScreenInner() {
   const router = useRouter()
 
   const feed = useFeedData()
+  const supabase = useSupabase()
   const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
   const { recordActivity } = useStreak(feed.currentUserId)
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
+
+  // ── Ads in feed ──
+  const [activeAds, setActiveAds] = useState<Ad[]>([])
+  useEffect(() => {
+    async function fetchAds() {
+      try {
+        const now = new Date().toISOString()
+        let query = (supabase.from('advertisements') as any)
+          .select('id, user_id, title, description, image_url, link_url, cta_text, target_naapurusto, start_date, end_date, status, created_at')
+          .eq('status', 'active')
+          .lte('start_date', now)
+          .gte('end_date', now)
+          .limit(5)
+
+        if (feed.userNeighborhood) {
+          query = query.or(`target_naapurusto.eq.${feed.userNeighborhood},target_naapurusto.is.null`)
+        }
+
+        const { data } = await query
+        if (data) {
+          setActiveAds(data.map((a: any) => ({ ...a, _isAd: true as const })))
+        }
+      } catch {
+        // advertisements table may not exist yet — ignore
+      }
+    }
+    fetchAds()
+  }, [supabase, feed.userNeighborhood])
 
   // ── TODO 1: Hidden post IDs ──
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
@@ -79,10 +111,25 @@ function FeedScreenInner() {
     }
   }, [])
 
-  const visiblePosts = useMemo(
+  const filteredPosts = useMemo(
     () => feed.posts.filter(p => !hiddenIds.has(p.id)),
     [feed.posts, hiddenIds],
   )
+
+  // Interleave ads every 5th post
+  const visiblePosts = useMemo(() => {
+    if (activeAds.length === 0) return filteredPosts
+    const result: (Post | Ad)[] = []
+    let adIdx = 0
+    for (let i = 0; i < filteredPosts.length; i++) {
+      result.push(filteredPosts[i])
+      if ((i + 1) % 5 === 0 && adIdx < activeAds.length) {
+        result.push(activeAds[adIdx])
+        adIdx++
+      }
+    }
+    return result
+  }, [filteredPosts, activeAds])
 
   // ── Track post views via viewability ──
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50, minimumViewTime: 1000 }).current
@@ -113,12 +160,18 @@ function FeedScreenInner() {
   }, [feed.userLocation, feed.userNeighborhood, t])
 
   // ── renderPost — uses postsRef to avoid full FlatList re-render ──
-  const renderPost = useCallback(({ item, index }: { item: Post; index: number }) => {
-    const currentGroup = item.created_at ? getDateGroup(item.created_at) : ''
+  const renderPost = useCallback(({ item, index }: { item: Post | Ad; index: number }) => {
+    // Render ad card
+    if ('_isAd' in item && item._isAd) {
+      return <AdCard ad={item as Ad} />
+    }
+
+    const post = item as Post
+    const currentGroup = post.created_at ? getDateGroup(post.created_at) : ''
     const prevGroup = index > 0 && feed.postsRef.current[index - 1]?.created_at
       ? getDateGroup(feed.postsRef.current[index - 1].created_at!) : ''
     const showLabel = index > 0 && currentGroup !== prevGroup
-    const postIsNew = !!(lastFeedVisit && item.created_at && item.created_at > lastFeedVisit)
+    const postIsNew = !!(lastFeedVisit && post.created_at && post.created_at > lastFeedVisit)
 
     return (
       <View>
@@ -129,7 +182,7 @@ function FeedScreenInner() {
             <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
           </View>
         ) : null}
-        <PostCard post={item} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} />
+        <PostCard post={post} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} />
       </View>
     )
   }, [feed.userLocation, feed.currentUserId, colors.mutedForeground, colors.border, t, trackInteraction, handleHidePost, lastFeedVisit])
@@ -280,7 +333,7 @@ function FeedScreenInner() {
       <FlatList
         data={visiblePosts}
         renderItem={renderPost}
-        keyExtractor={item => item.id}
+        keyExtractor={item => ('_isAd' in item ? `ad-${item.id}` : item.id)}
         contentContainerStyle={[styles.list, { paddingTop: 76 }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}

@@ -154,6 +154,38 @@ serve(async (req) => {
         break
       }
 
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription
+        const userId = subscription.metadata?.user_id
+        if (userId) {
+          const isActive = subscription.status === 'active' || subscription.status === 'trialing'
+          const expiresAt = new Date(subscription.current_period_end * 1000).toISOString()
+          await supabase.from('profiles').update({
+            is_pro: isActive,
+            pro_expires_at: expiresAt,
+            stripe_subscription_id: subscription.id,
+          }).eq('id', userId)
+
+          console.log(`[webhook] Subscription ${subscription.status} for user ${userId}`)
+        }
+        break
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription
+        const userId = subscription.metadata?.user_id
+        if (userId) {
+          await supabase.from('profiles').update({
+            is_pro: false,
+            pro_expires_at: null,
+          }).eq('id', userId)
+
+          console.log(`[webhook] Subscription cancelled for user ${userId}`)
+        }
+        break
+      }
+
       default:
         console.log(`[webhook] Unhandled event: ${event.type}`)
     }
