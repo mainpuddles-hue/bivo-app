@@ -2331,5 +2331,16 @@
     "posts": "Postitused",
     "accessDenied": "Juurdepääs keelatud",
     "accessDeniedDesc": "Ainult administraatoritel on juurdepääs sellele vaatele."
+  },
+  "unsupported": {
+    "title": "TackBird pole teie piirkonnas veel saadaval",
+    "yourLocation": "Oled: {city}, {country}",
+    "availableIn": "TackBird on saadaval Soomes",
+    "cities": "Helsinki, Espoo, Vantaa, Tampere, Turku, Oulu",
+    "joinWaitlist": "Liitu ootenimekirjaga",
+    "continueAnyway": "Jätka Soome režiimis",
+    "waitlistSuccess": "Aitäh! Teavitame sind, kui TackBird jõuab sinu piirkonda.",
+    "emailPlaceholder": "Sinu e-post",
+    "waitlistNote": "Teavitame sind, kui TackBird jõuab sinu piirkonda!"
   }
 }

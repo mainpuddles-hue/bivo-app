@@ -7,11 +7,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
 import { useFonts, BricolageGrotesque_500Medium, BricolageGrotesque_600SemiBold, BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque'
 import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans'
-import { I18nProvider } from '@/lib/i18n'
+import { I18nProvider, useI18n, type Locale } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
 import { useSupabase } from '@/hooks/useSupabase'
+import { useLocationDetection } from '@/hooks/useLocationDetection'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
 import { setAnalyticsUser, trackEvent } from '@/lib/analytics'
+
+const LANG_AUTO_SET_KEY = 'tackbird_lang_auto_set'
+const UNSUPPORTED_DISMISSED_KEY = 'tackbird_unsupported_dismissed'
+
+/** Map detected ISO country code to a default locale */
+function countryToLocale(country: string | null): Locale | null {
+  switch (country) {
+    case 'FI': return 'fi'
+    case 'SE': return 'sv'
+    case 'EE': return 'et'
+    default: return country ? 'en' : null
+  }
+}
 
 // Configure how notifications are handled when the app is in the foreground
 if (Platform.OS !== 'web') {
@@ -154,11 +169,103 @@ function useAnalyticsSetup() {
   }, [supabase])
 }
 
+function useAutoLanguage(detectedCountry: string | null) {
+  const { setLocale } = useI18n()
+
+  useEffect(() => {
+    if (!detectedCountry) return
+
+    let mounted = true
+
+    async function maybeAutoSet() {
+      try {
+        const alreadyAutoSet = await AsyncStorage.getItem(LANG_AUTO_SET_KEY)
+        if (alreadyAutoSet === 'true') return
+
+        const locale = countryToLocale(detectedCountry)
+        if (!locale || !mounted) return
+
+        setLocale(locale)
+        await AsyncStorage.setItem(LANG_AUTO_SET_KEY, 'true')
+      } catch {
+        // Non-critical — ignore
+      }
+    }
+
+    maybeAutoSet()
+    return () => { mounted = false }
+  }, [detectedCountry, setLocale])
+}
+
+function useCurrentUserId() {
+  const supabase = useSupabase()
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (mounted) setUserId(user?.id ?? null)
+    }).catch(() => {})
+    return () => { mounted = false }
+  }, [supabase])
+
+  return userId
+}
+
 function RootLayoutInner() {
   const { colors, isDark } = useTheme()
   useOnboardingGuard()
   useNotificationNavigation()
   useAnalyticsSetup()
+
+  // Location-aware international system
+  const userId = useCurrentUserId()
+  const detectedLocation = useLocationDetection(userId)
+  const [unsupportedDismissed, setUnsupportedDismissed] = useState<boolean | null>(null)
+
+  // Auto-set language based on detected country (once)
+  useAutoLanguage(detectedLocation.country)
+
+  // Load dismissal state from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(UNSUPPORTED_DISMISSED_KEY).then(val => {
+      setUnsupportedDismissed(val === 'true')
+    }).catch(() => {
+      setUnsupportedDismissed(false)
+    })
+  }, [])
+
+  function handleDismissUnsupported() {
+    setUnsupportedDismissed(true)
+    AsyncStorage.setItem(UNSUPPORTED_DISMISSED_KEY, 'true').catch(() => {})
+  }
+
+  // Show unsupported area overlay if:
+  // - Location detection finished
+  // - Country is NOT supported
+  // - User hasn't dismissed the overlay before
+  // - We have a user (logged in)
+  // - Dismissal state has been loaded from storage
+  if (
+    !detectedLocation.loading &&
+    !detectedLocation.isSupported &&
+    unsupportedDismissed === false &&
+    userId
+  ) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <UnsupportedAreaScreen
+          country={detectedLocation.country}
+          countryName={detectedLocation.countryName}
+          city={detectedLocation.city}
+          isWaitlist={detectedLocation.isWaitlist}
+          userId={userId}
+          onContinue={handleDismissUnsupported}
+        />
+      </View>
+    )
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>

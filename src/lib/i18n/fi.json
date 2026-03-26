@@ -2336,5 +2336,16 @@
     "posts": "Ilmoitukset",
     "accessDenied": "Pääsy evätty",
     "accessDeniedDesc": "Vain ylläpitäjillä on pääsy tähän näkymään."
+  },
+  "unsupported": {
+    "title": "TackBird ei ole vielä saatavilla alueellasi",
+    "yourLocation": "Olet: {city}, {country}",
+    "availableIn": "TackBird on käytössä Suomessa",
+    "cities": "Helsinki, Espoo, Vantaa, Tampere, Turku, Oulu",
+    "joinWaitlist": "Liity odotuslistalle",
+    "continueAnyway": "Jatka Suomen tilassa",
+    "waitlistSuccess": "Kiitos! Ilmoitamme kun TackBird saapuu alueellesi.",
+    "emailPlaceholder": "Sähköpostisi",
+    "waitlistNote": "Ilmoitamme kun TackBird saapuu alueellesi!"
   }
 }

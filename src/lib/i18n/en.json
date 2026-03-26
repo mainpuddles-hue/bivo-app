@@ -2336,5 +2336,16 @@
     "posts": "Posts",
     "accessDenied": "Access Denied",
     "accessDeniedDesc": "Only admins can access this view."
+  },
+  "unsupported": {
+    "title": "TackBird is not yet available in your area",
+    "yourLocation": "You're in: {city}, {country}",
+    "availableIn": "TackBird is available in Finland",
+    "cities": "Helsinki, Espoo, Vantaa, Tampere, Turku, Oulu",
+    "joinWaitlist": "Join waitlist",
+    "continueAnyway": "Continue in Finland mode",
+    "waitlistSuccess": "Thanks! We'll notify you when TackBird arrives in your area.",
+    "emailPlaceholder": "Your email",
+    "waitlistNote": "We'll notify you when TackBird arrives in your area!"
   }
 }

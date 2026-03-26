@@ -2336,5 +2336,16 @@
     "posts": "Inlägg",
     "accessDenied": "Åtkomst nekad",
     "accessDeniedDesc": "Bara administratörer har åtkomst till denna vy."
+  },
+  "unsupported": {
+    "title": "TackBird finns inte tillgängligt i ditt område ännu",
+    "yourLocation": "Du är i: {city}, {country}",
+    "availableIn": "TackBird finns tillgängligt i Finland",
+    "cities": "Helsinki, Espoo, Vantaa, Tampere, Turku, Oulu",
+    "joinWaitlist": "Gå med i väntelistan",
+    "continueAnyway": "Fortsätt i Finland-läge",
+    "waitlistSuccess": "Tack! Vi meddelar dig när TackBird kommer till ditt område.",
+    "emailPlaceholder": "Din e-post",
+    "waitlistNote": "Vi meddelar dig när TackBird kommer till ditt område!"
   }
 }

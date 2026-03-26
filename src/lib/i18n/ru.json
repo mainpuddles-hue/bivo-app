@@ -2331,5 +2331,16 @@
     "posts": "Публикации",
     "accessDenied": "Доступ запрещён",
     "accessDeniedDesc": "Доступ имеют только администраторы."
+  },
+  "unsupported": {
+    "title": "TackBird пока недоступен в вашем регионе",
+    "yourLocation": "Вы находитесь: {city}, {country}",
+    "availableIn": "TackBird доступен в Финляндии",
+    "cities": "Helsinki, Espoo, Vantaa, Tampere, Turku, Oulu",
+    "joinWaitlist": "Присоединиться к списку ожидания",
+    "continueAnyway": "Продолжить в режиме Финляндии",
+    "waitlistSuccess": "Спасибо! Мы сообщим, когда TackBird появится в вашем регионе.",
+    "emailPlaceholder": "Ваш email",
+    "waitlistNote": "Мы сообщим, когда TackBird появится в вашем регионе!"
   }
 }
