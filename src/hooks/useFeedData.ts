@@ -40,6 +40,7 @@ export function useFeedData() {
   const [userCityName, setUserCityName] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
+  const [cityNeighborhoods, setCityNeighborhoods] = useState<string[]>([])
 
   // ── Refs ──
   const offsetRef = useRef(0)
@@ -98,12 +99,18 @@ export function useFeedData() {
       if ((profileData as any)?.naapurusto) setUserNeighborhood((profileData as any).naapurusto)
       const cityId = (profileData as any)?.city_id ?? 'helsinki'
       setUserCityId(cityId)
-      // Fetch city details (name + linkedevents URL)
+      // Fetch city details (name + linkedevents URL) and neighborhoods
       try {
-        const { data: cityData } = await supabase.from('cities').select('name, linkedevents_url').eq('id', cityId).single()
+        const [{ data: cityData }, { data: nhData }] = await Promise.all([
+          supabase.from('cities').select('name, linkedevents_url').eq('id', cityId).single(),
+          supabase.from('city_neighborhoods').select('name').eq('city_id', cityId).order('name'),
+        ])
         if (cityData) {
           setUserCityName((cityData as any).name ?? null)
           setLinkedEventsBaseUrl((cityData as any).linkedevents_url ?? null)
+        }
+        if (nhData && nhData.length > 0) {
+          setCityNeighborhoods((nhData as any[]).map((n: any) => n.name))
         }
       } catch {
         // City table may not exist yet — silently continue with Helsinki defaults
@@ -379,6 +386,7 @@ export function useFeedData() {
     showNeighborhoodPicker,
     setShowNeighborhoodPicker,
     handleNeighborhoodSelect,
+    cityNeighborhoods,
 
     // Refs
     postsRef,

@@ -698,7 +698,9 @@
     "locationCity": "Только город",
     "locationCityDesc": "Показывает только город",
     "city": "Город",
-    "changeCity": "Сменить город"
+    "changeCity": "Сменить город",
+    "cityChanged": "Город изменён",
+    "pickNewNeighborhood": "Выберите район в новом городе"
   },
   "postCard": {
     "viewListing": "Смотреть объявление",

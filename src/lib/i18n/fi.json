@@ -701,7 +701,9 @@
     "locationCity": "Vain kaupunki",
     "locationCityDesc": "Näyttää vain kaupunki",
     "city": "Kaupunki",
-    "changeCity": "Vaihda kaupunki"
+    "changeCity": "Vaihda kaupunki",
+    "cityChanged": "Kaupunki vaihdettu",
+    "pickNewNeighborhood": "Valitse uusi naapurusto uudessa kaupungissa"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",

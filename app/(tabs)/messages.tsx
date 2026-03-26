@@ -66,6 +66,42 @@ export default function MessagesScreen() {
     if (rpcError) {
       // Fallback: if RPC doesn't exist yet, use legacy query
       console.warn('[messages] RPC fallback:', rpcError.message)
+      try {
+        const { data: fallbackData } = await supabase
+          .from('conversations')
+          .select('*, user1:profiles!conversations_user1_id_fkey(id, name, avatar_url, last_active_date), user2:profiles!conversations_user2_id_fkey(id, name, avatar_url, last_active_date)')
+          .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+          .order('updated_at', { ascending: false })
+          .limit(50)
+
+        const fallbackConvs = (fallbackData ?? []).map((row: any) => {
+          const isUser1 = row.user1_id === user.id
+          const otherProfile = isUser1 ? row.user2 : row.user1
+          return {
+            id: row.id,
+            user1_id: row.user1_id,
+            user2_id: row.user2_id,
+            post_id: row.post_id,
+            user1_archived: row.user1_archived ?? false,
+            user2_archived: row.user2_archived ?? false,
+            created_at: row.created_at,
+            updated_at: row.updated_at,
+            other_user: otherProfile ? {
+              id: otherProfile.id,
+              name: otherProfile.name,
+              avatar_url: otherProfile.avatar_url,
+              last_active_date: otherProfile.last_active_date,
+            } : undefined,
+            is_archived: isUser1 ? (row.user1_archived ?? false) : (row.user2_archived ?? false),
+            last_message: undefined,
+            unread_count: 0,
+          }
+        }) as unknown as Conversation[]
+
+        setConversations(fallbackConvs)
+      } catch {
+        // Both RPC and fallback failed — show empty state
+      }
       setLoading(false)
       setRefreshing(false)
       return

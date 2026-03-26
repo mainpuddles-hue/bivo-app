@@ -698,7 +698,9 @@
     "locationCity": "Ainult linn",
     "locationCityDesc": "Näitab ainult linna",
     "city": "Linn",
-    "changeCity": "Vaheta linn"
+    "changeCity": "Vaheta linn",
+    "cityChanged": "Linn vahetatud",
+    "pickNewNeighborhood": "Vali uues linnas uus naabruskond"
   },
   "postCard": {
     "viewListing": "Vaata kuulutust",

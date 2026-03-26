@@ -701,7 +701,9 @@
     "locationCity": "Bara stad",
     "locationCityDesc": "Visar bara stad",
     "city": "Stad",
-    "changeCity": "Byt stad"
+    "changeCity": "Byt stad",
+    "cityChanged": "Stad ändrad",
+    "pickNewNeighborhood": "Välj ett nytt grannskap i din nya stad"
   },
   "postCard": {
     "viewListing": "Visa annons",

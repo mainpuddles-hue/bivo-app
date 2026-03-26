@@ -701,7 +701,9 @@
     "locationCity": "City only",
     "locationCityDesc": "Shows only city",
     "city": "City",
-    "changeCity": "Change city"
+    "changeCity": "Change city",
+    "cityChanged": "City changed",
+    "pickNewNeighborhood": "Select a new neighborhood in your new city"
   },
   "postCard": {
     "viewListing": "View listing",

@@ -35,6 +35,7 @@ import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
+import { useReferral } from '@/hooks/useReferral'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const TOTAL_PAGES = 4
@@ -68,7 +69,16 @@ export default function OnboardingScreen() {
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
   const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
+  const [onboardingUserId, setOnboardingUserId] = useState<string | null>(null)
   const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
+  const { applyInviteCode } = useReferral(onboardingUserId)
+
+  // Fetch user ID for referral system
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setOnboardingUserId(user.id)
+    }).catch(() => {})
+  }, [supabase])
 
   // Filter neighborhoods by search query to reduce cognitive load on large lists
   const filteredNeighborhoods = useMemo(() => {
@@ -174,27 +184,11 @@ export default function OnboardingScreen() {
         .update(updateData)
         .eq('id', user.id)
 
-      // Apply referral code if entered
+      // Apply referral code if entered — uses useReferral hook which handles
+      // points, badges, tier rewards, and Pro trial grants
       if (referralInput.trim()) {
-        // Direct Supabase referral code application
-        const code = referralInput.trim().toUpperCase()
-        const { data: inviter } = await supabase
-          .from('profiles')
-          .select('id, invite_count')
-          .eq('invite_code', code)
-          .single()
-        if (inviter && (inviter as any).id !== user.id) {
-          await (supabase.from('profiles') as any)
-            .update({ invited_by: (inviter as any).id })
-            .eq('id', user.id)
-          const newCount = ((inviter as any).invite_count ?? 0) + 1
-          await (supabase.from('profiles') as any)
-            .update({ invite_count: newCount })
-            .eq('id', (inviter as any).id)
-          setReferralStatus('applied')
-        } else if (referralInput.trim()) {
-          setReferralStatus('invalid')
-        }
+        const success = await applyInviteCode(referralInput.trim())
+        setReferralStatus(success ? 'applied' : 'invalid')
       }
 
       // Mark onboarding complete locally
@@ -205,7 +199,7 @@ export default function OnboardingScreen() {
     } finally {
       setSaving(false)
     }
-  }, [supabase, selectedNeighborhood, selectedCity, referralInput, router, t])
+  }, [supabase, selectedNeighborhood, selectedCity, referralInput, router, t, applyInviteCode])
 
   // ── Dots indicator ──
   const renderDots = () => (

@@ -82,11 +82,22 @@ export function useReferral(userId: string | null) {
       .update({ invited_by: (inviter as any).id })
       .eq('id', userId)
 
-    // Increment inviter's count
+    // Increment inviter's count atomically via RPC, with read-then-write fallback
     const newCount = ((inviter as any).invite_count ?? 0) + 1
-    await (supabase.from('profiles') as any)
-      .update({ invite_count: newCount })
-      .eq('id', (inviter as any).id)
+    try {
+      const { error: rpcError } = await (supabase.rpc as any)('increment_field', {
+        table_name: 'profiles',
+        field_name: 'invite_count',
+        row_id: (inviter as any).id,
+        amount: 1,
+      })
+      if (rpcError) throw rpcError
+    } catch {
+      // Fallback: non-atomic read-then-write
+      await (supabase.from('profiles') as any)
+        .update({ invite_count: newCount })
+        .eq('id', (inviter as any).id)
+    }
 
     // Award points to both
     await awardPoints(userId, 'first_post_bonus') // 20pts for joining via invite

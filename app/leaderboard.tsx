@@ -54,19 +54,54 @@ export default function LeaderboardScreen() {
 
   const fetchLeaderboard = useCallback(async (neighborhood?: string | null) => {
     try {
-      let query = supabase
-        .from('profiles')
-        .select('id, name, avatar_url, naapurusto, total_points')
-        .order('total_points', { ascending: false })
-        .gt('total_points', 0)
-        .limit(10)
+      // Query user_points for this month's points to make the "this month" label accurate
+      const monthStart = new Date()
+      monthStart.setDate(1)
+      monthStart.setHours(0, 0, 0, 0)
+      const monthStartISO = monthStart.toISOString()
 
-      if (neighborhood) {
-        query = query.eq('naapurusto', neighborhood)
+      // Try monthly leaderboard from user_points table first
+      let monthlyUsers: LeaderboardUser[] = []
+      try {
+        const { data: monthlyData } = await (supabase.rpc as any)('get_monthly_leaderboard', {
+          p_month_start: monthStartISO,
+          p_neighborhood: neighborhood ?? null,
+          p_limit: 10,
+        })
+        if (monthlyData && monthlyData.length > 0) {
+          monthlyUsers = (monthlyData as any[]).map((row: any) => ({
+            id: row.user_id ?? row.id,
+            name: row.name,
+            avatar_url: row.avatar_url,
+            naapurusto: row.naapurusto,
+            total_points: row.month_points ?? row.total_points ?? 0,
+          }))
+        }
+      } catch {
+        // RPC may not exist — fall through to all-time query
       }
 
-      const { data } = await query
-      setUsers((data ?? []) as unknown as LeaderboardUser[])
+      // If monthly RPC worked, use it; otherwise fall back to all-time total_points
+      let data: any[]
+      if (monthlyUsers.length > 0) {
+        data = monthlyUsers
+      } else {
+        let query = supabase
+          .from('profiles')
+          .select('id, name, avatar_url, naapurusto, total_points')
+          .order('total_points', { ascending: false })
+          .gt('total_points', 0)
+          .limit(10)
+
+        if (neighborhood) {
+          query = query.eq('naapurusto', neighborhood)
+        }
+
+        const result = await query
+        data = result.data ?? []
+      }
+
+      setUsers(data as unknown as LeaderboardUser[])
 
       // Find current user's rank
       if (currentUserId) {

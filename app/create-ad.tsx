@@ -48,6 +48,7 @@ export default function CreateAdScreen() {
   const [duration, setDuration] = useState(7)
   const [submitting, setSubmitting] = useState(false)
   const [showNeighborhoods, setShowNeighborhoods] = useState(false)
+  const [cityNeighborhoods, setCityNeighborhoods] = useState<string[]>([])
 
   useEffect(() => {
     async function load() {
@@ -58,6 +59,20 @@ export default function CreateAdScreen() {
         const p = data as unknown as Profile
         setProfile(p)
         setTargetNeighborhood(p.naapurusto ?? null)
+        // Load neighborhoods for user's city
+        const cityId = (data as any).city_id ?? 'helsinki'
+        try {
+          const { data: nhData } = await supabase
+            .from('city_neighborhoods')
+            .select('name')
+            .eq('city_id', cityId)
+            .order('name')
+          if (nhData && nhData.length > 0) {
+            setCityNeighborhoods((nhData as any[]).map((n: any) => n.name))
+          }
+        } catch {
+          // city_neighborhoods table may not exist — use static fallback
+        }
       }
     }
     load()
@@ -296,7 +311,7 @@ export default function CreateAdScreen() {
                 {t('ads.allAreas')}
               </Text>
             </Pressable>
-            {NEIGHBORHOODS.map(n => (
+            {(cityNeighborhoods.length > 0 ? cityNeighborhoods : NEIGHBORHOODS).map(n => (
               <Pressable
                 key={n}
                 onPress={() => { setTargetNeighborhood(n); setShowNeighborhoods(false) }}

@@ -57,6 +57,7 @@ export default function MapScreen() {
     userLocation, center, displayNeighborhood,
     filteredItems, sections, renderedMarkers, counts, subCounts,
     hasMore, totalEvents,
+    dynamicNeighborhoods,
     handleFullRefresh, handleLoadMore, handleListItemNavigate,
     handleMarkerPress, handleGPSSelect, handleNeighborhoodSelect,
     handleCenterOnUser, openDirections,
@@ -419,7 +420,7 @@ export default function MapScreen() {
       <NeighborhoodModal
         visible={neighborhoodModalVisible}
         selected={selectedNeighborhood}
-        neighborhoods={NEIGHBORHOODS}
+        neighborhoods={dynamicNeighborhoods.length > 0 ? dynamicNeighborhoods : NEIGHBORHOODS}
         centers={NEIGHBORHOOD_CENTERS}
         userLocation={userLocation}
         colors={colors}

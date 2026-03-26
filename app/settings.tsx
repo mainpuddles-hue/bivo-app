@@ -468,6 +468,15 @@ export default function SettingsScreen() {
                         if (profile) {
                           await (supabase.from('profiles') as any).update({ city_id: city.id, naapurusto: null }).eq('id', profile.id)
                           setProfile(prev => prev ? { ...prev, naapurusto: null as any } : null)
+                          // After changing city, neighborhood is reset — prompt user to pick a new one
+                          Alert.alert(
+                            t('settings.cityChanged') ?? city.name,
+                            t('settings.pickNewNeighborhood') ?? t('onboarding.neighborhoodSubtitle'),
+                            [{
+                              text: t('common.ok') ?? 'OK',
+                              onPress: () => router.push({ pathname: '/', params: { openNeighborhoodPicker: '1' } }),
+                            }]
+                          )
                         }
                       }}
                       style={s.row}

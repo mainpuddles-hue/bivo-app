@@ -365,6 +365,7 @@ function FeedScreenInner() {
         onClose={() => feed.setShowNeighborhoodPicker(false)}
         selectedNeighborhood={feed.userNeighborhood}
         onSelect={feed.handleNeighborhoodSelect}
+        neighborhoods={feed.cityNeighborhoods.length > 0 ? feed.cityNeighborhoods : undefined}
       />
     </View>
   )

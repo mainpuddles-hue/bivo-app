@@ -103,6 +103,11 @@ function isPast(dateStr: string): boolean {
 export function useMapData(t: (key: string, params?: Record<string, string | number>) => string, locale: string) {
   const supabase = useSupabase()
 
+  // ── City bounds (dynamic, loaded from DB) ──
+  const [cityBounds, setCityBounds] = useState({ south: 60.10, north: 60.35, west: 24.75, east: 25.30 })
+  const [cityCenter, setCityCenter] = useState({ lat: 60.1699, lng: 24.9384 })
+  const [dynamicNeighborhoods, setDynamicNeighborhoods] = useState<string[]>([])
+
   // ── State ──
   const [posts, setPosts] = useState<Post[]>([])
   const [communityEvents, setCommunityEvents] = useState<Event[]>([])
@@ -138,10 +143,39 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       if (user) {
         const { data } = await (supabase
           .from('profiles') as any)
-          .select('naapurusto')
+          .select('naapurusto, city_id')
           .eq('id', user.id)
-          .single() as { data: { naapurusto?: string } | null }
-        if (!cancelled && data?.naapurusto && NEIGHBORHOOD_CENTERS[data.naapurusto]) {
+          .single() as { data: { naapurusto?: string; city_id?: string } | null }
+
+        // Load city bounds and neighborhoods for the user's city
+        const cityId = data?.city_id ?? 'helsinki'
+        try {
+          const [{ data: cityData }, { data: nhList }] = await Promise.all([
+            supabase.from('cities').select('center_lat, center_lng, bounds_south, bounds_north, bounds_west, bounds_east').eq('id', cityId).single(),
+            supabase.from('city_neighborhoods').select('name, center_lat, center_lng').eq('city_id', cityId).order('name'),
+          ])
+          if (!cancelled && cityData) {
+            const c = cityData as any
+            if (c.bounds_south != null) {
+              setCityBounds({ south: c.bounds_south, north: c.bounds_north, west: c.bounds_west, east: c.bounds_east })
+            }
+            if (c.center_lat != null) {
+              setCityCenter({ lat: c.center_lat, lng: c.center_lng })
+            }
+          }
+          if (!cancelled && nhList && nhList.length > 0) {
+            setDynamicNeighborhoods((nhList as any[]).map((n: any) => n.name))
+            for (const n of nhList as any[]) {
+              if (!NEIGHBORHOOD_CENTERS[n.name]) {
+                NEIGHBORHOOD_CENTERS[n.name] = { latitude: n.center_lat, longitude: n.center_lng }
+              }
+            }
+          }
+        } catch {
+          // Cities/neighborhoods tables may not exist — continue with Helsinki defaults
+        }
+
+        if (!cancelled && data?.naapurusto) {
           setSelectedNeighborhood(data.naapurusto)
         } else if (!cancelled) {
           try {
@@ -188,14 +222,15 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
   const fetchGlobalData = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
+      const { south, north, west, east } = cityBounds
       const [postsRes, eventsRes, cityEventsData, tmData] = await Promise.all([
         supabase.from('posts')
           .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
           .not('latitude', 'is', null)
           .not('longitude', 'is', null)
-          .gte('latitude', 60.10).lte('latitude', 60.35)
-          .gte('longitude', 24.75).lte('longitude', 25.30)
+          .gte('latitude', south).lte('latitude', north)
+          .gte('longitude', west).lte('longitude', east)
           .order('created_at', { ascending: false })
           .limit(500),
         supabase.from('events')
@@ -203,11 +238,11 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
           .gte('event_date', today)
           .not('location_lat', 'is', null)
           .not('location_lng', 'is', null)
-          .gte('location_lat', 60.10).lte('location_lat', 60.35)
-          .gte('location_lng', 24.75).lte('location_lng', 25.30)
+          .gte('location_lat', south).lte('location_lat', north)
+          .gte('location_lng', west).lte('location_lng', east)
           .order('event_date', { ascending: true })
           .limit(500),
-        fetchNearbyEvents(60.1699, 24.9384, 10),
+        fetchNearbyEvents(cityCenter.lat, cityCenter.lng, 10),
         fetchTicketmasterEvents(),
       ])
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
@@ -230,7 +265,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     } catch (err) {
       if (__DEV__) console.log('[map] global fetch error:', err)
     }
-  }, [supabase, center])
+  }, [supabase, center, cityBounds, cityCenter])
 
   const fetchPlaces = useCallback(async () => {
     try {
@@ -656,6 +691,9 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     subCounts,
     hasMore,
     totalEvents,
+
+    // Dynamic city data
+    dynamicNeighborhoods,
 
     // Actions
     handleFullRefresh,
