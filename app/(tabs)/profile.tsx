@@ -24,6 +24,7 @@ import { useStreak } from '@/hooks/useStreak'
 import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
 import { ReferralCard } from '@/components/ReferralCard'
+import { getCachedUserId, clearAuthCache } from '@/lib/authCache'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 interface ActivityItem {
@@ -91,8 +92,9 @@ export default function ProfileScreen() {
   const streakData = useStreak(profile?.id ?? null)
 
   const loadProfile = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setProfileLoading(false); return }
+    const cachedId = await getCachedUserId()
+    if (!cachedId) { setProfileLoading(false); return }
+    const user = { id: cachedId }
 
     // Profile
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -172,7 +174,7 @@ export default function ProfileScreen() {
 
   const handleAvatarUpload = useCallback(async () => {
     if (!profile) return
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.7 })
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 })
     if (result.canceled || !result.assets[0]) return
     try {
       const uri = result.assets[0].uri
@@ -251,6 +253,7 @@ export default function ProfileScreen() {
   }, [profile, supabase])
 
   const handleLogout = async () => {
+    clearAuthCache()
     await supabase.auth.signOut()
     router.replace('/(auth)/login')
   }

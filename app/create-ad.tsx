@@ -71,7 +71,7 @@ export default function CreateAdScreen() {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 0.8,
+      quality: 0.6,
     })
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri)

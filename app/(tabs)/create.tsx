@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -23,6 +24,7 @@ import { VerificationModal } from '@/components/VerificationModal'
 import { TrustBadge } from '@/components/TrustBadge'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { trackEvent } from '@/lib/analytics'
+import { getCachedUserId } from '@/lib/authCache'
 import type { PostType, TrustLevel } from '@/lib/types'
 
 const POST_TAGS: Record<string, { id: string; label: string }[]> = {
@@ -129,12 +131,12 @@ export default function CreateScreen() {
 
   // Check auth on mount + fetch neighborhood
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsAuthenticated(!!user)
-      setCurrentUserId(user?.id ?? null)
-      if (!user) { router.replace('/(auth)/login'); return }
+    getCachedUserId().then(id => {
+      setIsAuthenticated(!!id)
+      setCurrentUserId(id)
+      if (!id) { router.replace('/(auth)/login'); return }
       // Fetch user neighborhood for price suggestions
-      supabase.from('profiles').select('naapurusto').eq('id', user.id).single()
+      supabase.from('profiles').select('naapurusto').eq('id', id).single()
         .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string) })
         .then(() => {}, () => {})
     })
@@ -222,8 +224,8 @@ export default function CreateScreen() {
       }
     }
     const result = useCamera
-      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8, allowsMultipleSelection: false })
+      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.6 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.6, allowsMultipleSelection: false })
     if (!result.canceled && result.assets[0]) {
       setImages(prev => [...prev, result.assets[0].uri])
     }
@@ -535,15 +537,23 @@ export default function CreateScreen() {
         }).catch(() => {})
       }
 
-      // Push notification for urgent posts (broadcast)
+      // Push notification for urgent posts (broadcast) — rate limited to 1 per 30 min
       if (isUrgent && post?.id) {
-        triggerPush({
-          user_id: user.id,
-          title: title.trim(),
-          body: description.trim().slice(0, 100),
-          type: 'urgent_help',
-          post_id: post.id,
-        })
+        const URGENT_COOLDOWN_KEY = 'tackbird_last_urgent'
+        const URGENT_COOLDOWN_MS = 30 * 60 * 1000 // 30 minutes
+        const lastUrgent = await AsyncStorage.getItem(URGENT_COOLDOWN_KEY)
+        if (lastUrgent && Date.now() - parseInt(lastUrgent) < URGENT_COOLDOWN_MS) {
+          // Skip push broadcast — too soon after last urgent post
+        } else {
+          triggerPush({
+            user_id: user.id,
+            title: title.trim(),
+            body: description.trim().slice(0, 100),
+            type: 'urgent_help',
+            post_id: post.id,
+          })
+          await AsyncStorage.setItem(URGENT_COOLDOWN_KEY, String(Date.now()))
+        }
       }
 
       // Analytics: track post creation

@@ -130,6 +130,22 @@ serve(async (req) => {
 
     // === URGENT AUTO-MATCH: If this is an urgent post, find and notify nearby helpers ===
     if ((type === 'urgent_help' || type === 'juuri_nyt') && post_id) {
+      // Rate limit: check if this user sent an urgent broadcast in the last 30 minutes
+      const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+      const { count: recentUrgentCount } = await supabase
+        .from('posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user_id)
+        .eq('is_urgent', true)
+        .gte('created_at', thirtyMinAgo)
+
+      if ((recentUrgentCount ?? 0) > 1) {
+        return new Response(
+          JSON.stringify({ sent: 0, type: 'urgent_rate_limited', reason: 'Too many urgent posts in 30 minutes' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        )
+      }
+
       // Fetch the post to get neighborhood
       const { data: post } = await supabase
         .from('posts')
@@ -147,30 +163,64 @@ serve(async (req) => {
           .eq('naapurusto', neighborhood)
           .neq('id', (post as any).user_id)
           .not('push_token', 'is', null)
-          .limit(50)
+          .limit(200)
 
-        // Send push to all neighbors immediately (urgent = no quiet hours)
+        // Build batch messages for Expo push API (up to 100 per request)
+        const BATCH_SIZE = 100
+        const validNeighbors = (neighbors ?? []).filter((n: any) => {
+          const token = n.push_token
+          return token && (token.startsWith('ExponentPushToken[') || token.startsWith('ExpoPushToken['))
+        })
+
         const sent: string[] = []
         const invalidTokenUserIds: string[] = []
-        for (const neighbor of (neighbors ?? [])) {
-          if (neighbor.push_token) {
-            const result = await sendExpoPush(
-              neighbor.push_token,
-              `🚨 ${title}`,
-              pushBody,
-              { post_id: post_id!, type: 'urgent', screen: 'post' },
-            )
-            if (result.success) {
-              sent.push(neighbor.id)
-            } else if (result.tokenInvalid) {
-              invalidTokenUserIds.push(neighbor.id)
+
+        for (let i = 0; i < validNeighbors.length; i += BATCH_SIZE) {
+          const batch = validNeighbors.slice(i, i + BATCH_SIZE)
+          const messages = batch.map((n: any) => ({
+            to: n.push_token,
+            sound: 'default',
+            title: `🚨 ${title}`,
+            body: pushBody,
+            data: { post_id: post_id!, type: 'urgent', screen: 'post' },
+            badge: 1,
+          }))
+
+          try {
+            const res = await fetch(EXPO_PUSH_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+              body: JSON.stringify(messages),
+            })
+
+            if (res.ok) {
+              const results = await res.json()
+              // Expo returns { data: [...] } for batch requests
+              const dataArr = Array.isArray(results?.data) ? results.data : [results?.data].filter(Boolean)
+              dataArr.forEach((result: any, idx: number) => {
+                const neighbor = batch[idx]
+                if (!neighbor) return
+                if (result?.status === 'ok') {
+                  sent.push(neighbor.id)
+                } else if (
+                  result?.details?.error === 'DeviceNotRegistered' ||
+                  result?.details?.error === 'InvalidCredentials'
+                ) {
+                  invalidTokenUserIds.push(neighbor.id)
+                }
+              })
             }
+          } catch {
+            // Batch failed — continue with next batch
           }
         }
 
         // Clean up expired/invalid tokens in the background
-        for (const uid of invalidTokenUserIds) {
-          await removeInvalidToken(supabase, uid)
+        if (invalidTokenUserIds.length > 0) {
+          await Promise.all(invalidTokenUserIds.map(uid => removeInvalidToken(supabase, uid)))
         }
 
         return new Response(

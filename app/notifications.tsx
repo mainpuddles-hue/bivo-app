@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
+import { getCachedUserId } from '@/lib/authCache'
 import type { Notification } from '@/lib/types'
 import { prioritizeNotifications, type PrioritizedNotification } from '@/lib/notificationPriority'
 
@@ -122,12 +123,12 @@ export default function NotificationsScreen() {
   const [activeFilter, setActiveFilter] = useState('all')
 
   const fetchNotifications = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
+    const cachedId = await getCachedUserId()
+    if (!cachedId) { setLoading(false); return }
     const { data } = await supabase
       .from('notifications')
       .select('*, from_user:profiles!notifications_from_user_id_fkey(id, name, avatar_url)')
-      .eq('user_id', user.id)
+      .eq('user_id', cachedId)
       .order('created_at', { ascending: false })
       .limit(100)
     const raw = (data ?? []) as unknown as Notification[]
@@ -140,9 +141,9 @@ export default function NotificationsScreen() {
   useEffect(() => { fetchNotifications() }, [fetchNotifications])
 
   const markAllRead = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', user.id).eq('is_read', false)
+    const cachedId = await getCachedUserId()
+    if (!cachedId) return
+    await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', cachedId).eq('is_read', false)
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
   }, [supabase])
 

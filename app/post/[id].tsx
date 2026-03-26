@@ -31,6 +31,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
 import { trackEvent } from '@/lib/analytics'
+import { getCachedUserId } from '@/lib/authCache'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -98,8 +99,8 @@ function PostDetailScreenInner() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
+      const cachedId = await getCachedUserId()
+      if (cachedId) setUserId(cachedId)
 
       const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).single()
       if (data) {
@@ -109,10 +110,10 @@ function PostDetailScreenInner() {
         trackEvent('post_viewed', { post_id: id as string, type: p.type })
       }
 
-      if (user) {
+      if (cachedId) {
         const [likeRes, saveRes] = await Promise.all([
-          supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', user.id).maybeSingle(),
-          supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', user.id).maybeSingle(),
+          supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
+          supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
         ])
         setIsLiked(!!likeRes.data)
         setIsSaved(!!saveRes.data)

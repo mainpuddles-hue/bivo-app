@@ -236,7 +236,7 @@ function ConversationScreenInner() {
     if (!userId) return
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      quality: 0.7,
+      quality: 0.6,
     })
     if (result.canceled || !result.assets[0]) return
     setSending(true)

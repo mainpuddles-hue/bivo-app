@@ -10,6 +10,7 @@ import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
 import { getSeedPosts } from '@/lib/seedContent'
 import { rankFeed } from '@/lib/feedAlgorithm'
+import { getCachedUserId } from '@/lib/authCache'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type { PostType }
@@ -61,9 +62,7 @@ export function useFeedData() {
 
   // ── Fetch current user ID for like functionality ──
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setCurrentUserId(user.id)
-    })
+    getCachedUserId().then(id => { if (id) setCurrentUserId(id) })
   }, [supabase])
 
   // ── Request location permission once, cache result ──
@@ -88,8 +87,9 @@ export function useFeedData() {
   // ── Fetch followed user IDs + user neighborhood + city ──
   useEffect(() => {
     async function fetchFollowsAndProfile() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userId = await getCachedUserId()
+      if (!userId) return
+      const user = { id: userId }
       const [{ data: followsData }, { data: profileData }] = await Promise.all([
         supabase.from('user_follows').select('followed_id').eq('follower_id', user.id),
         (supabase.from('profiles') as any).select('naapurusto, city_id').eq('id', user.id).single(),
@@ -112,25 +112,7 @@ export function useFeedData() {
     fetchFollowsAndProfile()
   }, [supabase])
 
-  // ── Real-time subscription for follows changes — scoped to current user ──
-  useEffect(() => {
-    if (!currentUserId) return
-    const channel = supabase
-      .channel('follows-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'user_follows',
-        filter: `follower_id=eq.${currentUserId}`,
-      }, () => {
-        supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId)
-          .then(({ data }) => {
-            if (data) setFollowedIds(data.map((f: any) => f.followed_id))
-          })
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [supabase, currentUserId])
+  // Follows are refreshed on pull-to-refresh (no realtime channel needed)
 
   // ── City center fallback coords (Helsinki default) ──
   const cityFallbackLat = userLocation?.latitude ?? 60.1699
@@ -300,22 +282,13 @@ export function useFeedData() {
     return () => { abortRef.current?.abort() }
   }, [fetchPosts])
 
-  // ── Realtime with 2s debounce — listen for INSERT, UPDATE, and DELETE ──
+  // ── Realtime with 5s debounce — INSERT only (UPDATE/DELETE refresh on pull-to-refresh) ──
   useEffect(() => {
     const channel = supabase
       .channel('feed-new-posts')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          if (debounceRef.current) clearTimeout(debounceRef.current)
-          debounceRef.current = setTimeout(() => setHasNewPosts(true), 2000)
-        } else if (payload.eventType === 'DELETE' || payload.eventType === 'UPDATE') {
-          // Refresh to reflect changes
-          if (debounceRef.current) clearTimeout(debounceRef.current)
-          debounceRef.current = setTimeout(() => {
-            offsetRef.current = 0
-            fetchPostsRef.current(true)
-          }, 1000)
-        }
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => setHasNewPosts(true), 5000)
       })
       .subscribe()
     return () => {
@@ -340,9 +313,14 @@ export function useFeedData() {
     setRefreshing(true)
     setHasNewPosts(false)
     offsetRef.current = 0
+    // Refresh follows on pull-to-refresh (replaces realtime channel)
+    if (currentUserId) {
+      supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId)
+        .then(({ data }) => { if (data) setFollowedIds(data.map((f: any) => f.followed_id)) })
+    }
     fetchPosts(true)
     fetchExtraContent()
-  }, [fetchPosts, fetchExtraContent])
+  }, [fetchPosts, fetchExtraContent, currentUserId, supabase])
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore && !error) fetchPosts(false)

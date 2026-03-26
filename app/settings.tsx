@@ -14,6 +14,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
 import { isValidUUID } from '@/lib/validation'
 import { fonts } from '@/lib/fonts'
+import { clearAuthCache } from '@/lib/authCache'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -301,6 +302,7 @@ export default function SettingsScreen() {
       } catch {
         // RPC may not exist — just sign out
       }
+      clearAuthCache()
       await supabase.auth.signOut()
       setDeleteModalVisible(false)
       router.replace('/(auth)/login')
@@ -312,6 +314,7 @@ export default function SettingsScreen() {
   }, [deleteConfirmText, deletingAccount, supabase, router, t])
 
   const handleLogout = async () => {
+    clearAuthCache()
     await supabase.auth.signOut()
     router.replace('/(auth)/login')
   }

@@ -18,6 +18,7 @@ import { shareContent } from '@/lib/share'
 import { formatEventDateShort, formatEventDate } from '@/lib/format'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fonts } from '@/lib/fonts'
+import { getCachedUserId } from '@/lib/authCache'
 import type { Event, CityEvent } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
 
@@ -213,8 +214,8 @@ export default function EventsScreen() {
 
   const fetchData = useCallback(async () => {
     try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) setUserId(user.id)
+    const cachedId = await getCachedUserId()
+    if (cachedId) setUserId(cachedId)
 
     const today = new Date().toISOString().split('T')[0]
     const [evtsRes, helsinkiEvents, actRes] = await Promise.all([
@@ -239,10 +240,10 @@ export default function EventsScreen() {
     setCityEvents(helsinkiEvents)
     setActivities((actRes.data ?? []) as unknown as Activity[])
 
-    if (user) {
+    if (cachedId) {
       const [savedRes, attendRes] = await Promise.all([
-        supabase.from('saved_events').select('event_id').eq('user_id', user.id),
-        supabase.from('event_attendees').select('event_id').eq('user_id', user.id),
+        supabase.from('saved_events').select('event_id').eq('user_id', cachedId),
+        supabase.from('event_attendees').select('event_id').eq('user_id', cachedId),
       ])
       setSavedEventIds(new Set((savedRes.data ?? []).map((s: any) => s.event_id)))
       setAttendingIds(new Set((attendRes.data ?? []).map((a: any) => a.event_id)))

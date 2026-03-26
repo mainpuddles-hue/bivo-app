@@ -60,45 +60,43 @@ export default function MessagesScreen() {
     setUserId(user.id)
     if (!isValidUUID(user.id)) { setLoading(false); return }
 
-    const { data } = await supabase
-      .from('conversations')
-      .select(`
-        id, user1_id, user2_id, post_id, user1_archived, user2_archived, created_at, updated_at,
-        user1:profiles!conversations_user1_id_fkey(id, name, avatar_url, last_active_date),
-        user2:profiles!conversations_user2_id_fkey(id, name, avatar_url, last_active_date)
-      `)
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .order('updated_at', { ascending: false })
+    // Single RPC call replaces N+1 queries (1 conversations + 2N messages queries)
+    const { data, error: rpcError } = await (supabase.rpc as any)('get_conversations_with_details', { p_user_id: user.id })
 
-    // Fetch last message for each conversation
-    const convs = (data ?? []).map((c: any) => {
-      const isUser1 = c.user1_id === user.id
-      return {
-        ...c,
-        other_user: isUser1 ? c.user2 : c.user1,
-        is_archived: isUser1 ? c.user1_archived : c.user2_archived,
-      }
-    }) as Conversation[]
+    if (rpcError) {
+      // Fallback: if RPC doesn't exist yet, use legacy query
+      console.warn('[messages] RPC fallback:', rpcError.message)
+      setLoading(false)
+      setRefreshing(false)
+      return
+    }
 
-    // Fetch last messages + unread counts in parallel
-    await Promise.all(convs.map(async (conv) => {
-      const [{ data: msgs }, { count }] = await Promise.all([
-        supabase
-          .from('messages')
-          .select('id, sender_id, content, image_url, is_read, created_at')
-          .eq('conversation_id', conv.id)
-          .order('created_at', { ascending: false })
-          .limit(1),
-        supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('conversation_id', conv.id)
-          .neq('sender_id', user.id)
-          .eq('is_read', false),
-      ])
-      if (msgs && msgs.length > 0) conv.last_message = msgs[0] as any
-      conv.unread_count = count ?? 0
-    }))
+    const convs = (data ?? []).map((row: any) => ({
+      id: row.id,
+      user1_id: row.user1_id,
+      user2_id: row.user2_id,
+      post_id: row.post_id,
+      user1_archived: row.user1_archived,
+      user2_archived: row.user2_archived,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      other_user: {
+        id: row.other_user_id,
+        name: row.other_user_name,
+        avatar_url: row.other_user_avatar,
+        last_active_date: row.other_user_last_active,
+      },
+      is_archived: row.user1_id === user.id ? row.user1_archived : row.user2_archived,
+      last_message: row.last_message_id ? {
+        id: row.last_message_id,
+        content: row.last_message_content,
+        sender_id: row.last_message_sender_id,
+        image_url: row.last_message_image_url,
+        created_at: row.last_message_created_at,
+        is_read: row.last_message_is_read,
+      } : null,
+      unread_count: Number(row.unread_count ?? 0),
+    })) as Conversation[]
 
     setConversations(convs)
     setLoading(false)

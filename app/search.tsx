@@ -18,6 +18,7 @@ import { SearchFilters, EMPTY_FILTERS, countActiveFilters, type SearchFilterValu
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { rankSearchResults } from '@/lib/searchAlgorithm'
 import { trackEvent } from '@/lib/analytics'
+import { getCachedUserId } from '@/lib/authCache'
 import type { Post, PostType } from '@/lib/types'
 
 const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
@@ -99,11 +100,11 @@ export default function SearchScreen() {
 
   // Fetch current user's neighborhood for search ranking
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
+    getCachedUserId().then(id => {
+      if (!id) return
       ;(supabase.from('profiles') as any)
         .select('naapurusto')
-        .eq('id', user.id)
+        .eq('id', id)
         .single()
         .then(({ data }: any) => {
           if (data?.naapurusto) setUserNeighborhood(data.naapurusto)

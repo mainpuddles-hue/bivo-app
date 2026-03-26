@@ -15,6 +15,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { PostCard } from '@/components/PostCard'
 import { EmptyState } from '@/components/EmptyState'
 import { PostCardSkeleton } from '@/components/SkeletonLoaders'
+import { getCachedUserId } from '@/lib/authCache'
 import type { Post } from '@/lib/types'
 
 type SavedTab = 'posts' | 'events' | 'places'
@@ -51,8 +52,9 @@ export default function SavedScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/(auth)/login'); return }
+      const cachedId = await getCachedUserId()
+      if (!cachedId) { router.replace('/(auth)/login'); return }
+      const user = { id: cachedId }
 
       // Fetch saved posts, events, and places in parallel
       const [savedPostsRes, savedEventsRes, savedPlacesRes] = await Promise.all([
