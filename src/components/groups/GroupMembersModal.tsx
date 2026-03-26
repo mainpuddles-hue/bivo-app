@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontFamily: fonts.heading,
+    lineHeight: 23,
   },
   memberRow: {
     flexDirection: 'row',
@@ -131,6 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
   roleBadge: {
     flexDirection: 'row',
@@ -143,5 +145,6 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 14,
   },
 })

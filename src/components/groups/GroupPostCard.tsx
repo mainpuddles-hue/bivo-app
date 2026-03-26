@@ -230,10 +230,12 @@ const styles = StyleSheet.create({
   postUserName: {
     fontSize: 13,
     fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   postTime: {
     fontSize: 11,
     fontFamily: fonts.body,
+    lineHeight: 14,
     marginTop: 1,
   },
   postContent: {
@@ -261,10 +263,12 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 13,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 17,
   },
   editInput: {
     fontSize: 14,
     fontFamily: fonts.body,
+    lineHeight: 20,
     borderRadius: 10,
     borderWidth: 1,
     paddingHorizontal: 14,

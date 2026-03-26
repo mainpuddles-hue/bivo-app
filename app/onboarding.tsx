@@ -496,6 +496,7 @@ const s = StyleSheet.create({
   appName: {
     fontSize: 32,
     letterSpacing: 2,
+    lineHeight: 38,
   },
   tagline: {
     fontSize: 20,
@@ -513,6 +514,7 @@ const s = StyleSheet.create({
   pageTitle: {
     fontSize: 24,
     letterSpacing: -0.3,
+    lineHeight: 32,
     paddingTop: 24,
   },
   pageSubtitle: {
@@ -585,6 +587,7 @@ const s = StyleSheet.create({
   // Skip text
   skipText: {
     fontSize: 14,
+    lineHeight: 20,
     textAlign: 'center',
     paddingVertical: 4,
   },
@@ -610,6 +613,7 @@ const s = StyleSheet.create({
   },
   neighborhoodText: {
     fontSize: 14,
+    lineHeight: 20,
   },
 
   // Location verification
@@ -626,6 +630,7 @@ const s = StyleSheet.create({
   verificationText: {
     fontSize: 13,
     fontFamily: fonts.body,
+    lineHeight: 17,
     flex: 1,
   },
 
@@ -641,9 +646,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
+    lineHeight: 20,
   },
   referralFeedback: {
     fontSize: 12,
+    lineHeight: 17,
     marginTop: 2,
     paddingHorizontal: 4,
   },
@@ -658,12 +665,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    borderRadius: 14,
+    borderRadius: 12,
     paddingVertical: 16,
     minHeight: 52,
   },
   primaryBtnText: {
     fontSize: 16,
+    lineHeight: 23,
   },
   dots: {
     flexDirection: 'row',

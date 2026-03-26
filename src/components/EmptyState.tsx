@@ -50,6 +50,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
+    lineHeight: 23,
     textAlign: 'center',
     letterSpacing: -0.2,
   },
@@ -69,5 +70,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 })

@@ -206,16 +206,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   labelSmall: {
     fontSize: 11,
+    lineHeight: 14,
   },
   count: {
     fontSize: 13,
     fontWeight: '500',
-    fontFamily: fonts.body,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 17,
   },
   countSmall: {
     fontSize: 11,
+    lineHeight: 14,
   },
 })

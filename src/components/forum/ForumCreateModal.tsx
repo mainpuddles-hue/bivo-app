@@ -170,30 +170,30 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   modalTitle: {
-    fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1,
+    fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 23, flex: 1,
     textAlign: 'center', paddingHorizontal: 8,
   },
   modalSection: {
     paddingHorizontal: 16, paddingTop: 14,
   },
   modalLabel: {
-    fontSize: 12, fontFamily: fonts.bodyMedium, marginBottom: 8,
+    fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 17, marginBottom: 8,
   },
   publishBtn: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10,
     minWidth: 80, alignItems: 'center',
   },
   publishBtnText: {
-    fontSize: 14, fontFamily: fonts.bodySemi,
+    fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20,
   },
   categoryChips: {
     gap: 8, paddingRight: 4,
   },
   categoryChip: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16,
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
   },
   categoryChipText: {
-    fontSize: 13, fontFamily: fonts.bodyMedium,
+    fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17,
   },
   titleInput: {
     fontSize: 16, fontFamily: fonts.headingSemi, borderRadius: 10,

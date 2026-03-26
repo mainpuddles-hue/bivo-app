@@ -809,6 +809,7 @@ const st = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.3,
     fontFamily: fonts.headingSemi,
+    lineHeight: 28,
   },
   addBtn: {
     width: 34,
@@ -828,12 +829,13 @@ const st = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   filterChipText: {
     fontSize: 13,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 17,
   },
 
   // List
@@ -882,6 +884,7 @@ const st = StyleSheet.create({
   scheduleText: {
     fontSize: 12,
     fontFamily: fonts.body,
+    lineHeight: 17,
   },
   metaRow: {
     flexDirection: 'row',
@@ -892,6 +895,7 @@ const st = StyleSheet.create({
     fontSize: 12,
     flex: 1,
     fontFamily: fonts.body,
+    lineHeight: 17,
   },
   categoryBadge: {
     paddingHorizontal: 8,
@@ -902,6 +906,7 @@ const st = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 14,
   },
   cardBottom: {
     flexDirection: 'row',
@@ -924,6 +929,7 @@ const st = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
 
   // Empty state
@@ -938,6 +944,7 @@ const st = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
+    lineHeight: 23,
   },
   emptyHint: {
     fontSize: 14,
@@ -958,6 +965,7 @@ const st = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 
   // FAB
@@ -990,6 +998,7 @@ const st = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
+    lineHeight: 23,
   },
   modalBody: {
     padding: 16,
@@ -1004,7 +1013,8 @@ const st = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
   input: {
     borderWidth: 1,
@@ -1013,6 +1023,7 @@ const st = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     fontFamily: fonts.body,
+    lineHeight: 20,
   },
   textArea: {
     borderWidth: 1,
@@ -1021,6 +1032,7 @@ const st = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     fontFamily: fonts.body,
+    lineHeight: 20,
     minHeight: 80,
   },
   chipGrid: {
@@ -1039,7 +1051,8 @@ const st = StyleSheet.create({
   catChipText: {
     fontSize: 13,
     fontWeight: '600',
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   schedChip: {
     paddingHorizontal: 14,
@@ -1050,6 +1063,7 @@ const st = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 17,
   },
   dayRow: {
     flexDirection: 'row',
@@ -1065,6 +1079,7 @@ const st = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   createBtn: {
     flexDirection: 'row',
@@ -1079,5 +1094,6 @@ const st = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 23,
   },
 })

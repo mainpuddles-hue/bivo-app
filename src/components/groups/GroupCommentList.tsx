@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
   commentUser: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   commentContent: {
     fontSize: 13,
@@ -125,6 +126,7 @@ const styles = StyleSheet.create({
   commentTime: {
     fontSize: 10,
     fontFamily: fonts.body,
+    lineHeight: 14,
     marginTop: 2,
   },
   commentInputRow: {
@@ -138,7 +140,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: fonts.body,
-    borderRadius: 16,
+    lineHeight: 17,
+    borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
     maxHeight: 80,

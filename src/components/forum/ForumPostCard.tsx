@@ -198,19 +198,19 @@ const styles = StyleSheet.create({
     flex: 1, gap: 1,
   },
   cardUserName: {
-    fontSize: 13, fontFamily: fonts.bodySemi,
+    fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 17,
   },
   cardUserMeta: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   cardMetaText: {
-    fontSize: 11, fontFamily: fonts.body,
+    fontSize: 11, fontFamily: fonts.body, lineHeight: 14,
   },
   categoryBadge: {
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
   },
   categoryBadgeText: {
-    fontSize: 10, fontFamily: fonts.bodySemi,
+    fontSize: 10, fontFamily: fonts.bodySemi, lineHeight: 14,
   },
   cardTitle: {
     fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 21,
@@ -226,6 +226,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
   },
   actionText: {
-    fontSize: 12, fontFamily: fonts.bodyMedium,
+    fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 17,
   },
 })

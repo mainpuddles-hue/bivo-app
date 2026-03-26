@@ -173,10 +173,12 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontFamily: fonts.heading,
+    lineHeight: 23,
   },
   editInput: {
     fontSize: 14,
     fontFamily: fonts.body,
+    lineHeight: 20,
     borderRadius: 10,
     borderWidth: 1,
     paddingHorizontal: 14,
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
   toggleChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   saveBtn: {
     paddingVertical: 12,

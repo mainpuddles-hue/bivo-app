@@ -153,17 +153,21 @@ const styles = StyleSheet.create({
   suomifiTitle: {
     fontSize: 22,
     fontWeight: '700',
+    fontFamily: fonts.heading,
+    lineHeight: 28,
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   suomifiSubtitle: {
     fontSize: 13,
+    lineHeight: 17,
     color: 'rgba(255,255,255,0.8)',
     fontFamily: fonts.body,
   },
   title: {
     fontSize: 18,
     fontFamily: fonts.headingSemi,
+    lineHeight: 23,
     textAlign: 'center',
     paddingHorizontal: 24,
     paddingTop: 8,
@@ -198,6 +202,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
   stepDesc: {
     fontSize: 12,
@@ -221,6 +226,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 13,
     fontFamily: fonts.body,
+    lineHeight: 17,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -236,6 +242,8 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 23,
     color: '#FFFFFF',
   },
   cancelBtn: {
@@ -248,6 +256,8 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
   successCircle: {
     width: 80,

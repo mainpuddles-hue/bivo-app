@@ -165,6 +165,8 @@ const styles = StyleSheet.create({
   arrowText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 23,
   },
   progressBar: {
     height: 6,
@@ -186,12 +188,14 @@ const styles = StyleSheet.create({
   scoreLabel: {
     fontSize: 13,
     fontFamily: fonts.bodySemi,
+    lineHeight: 17,
     flex: 1,
   },
   scoreValue: {
     fontSize: 15,
     fontFamily: fonts.headingSemi,
     fontWeight: '700',
+    lineHeight: 20,
   },
   factors: {
     flexDirection: 'row',
@@ -223,6 +227,8 @@ const styles = StyleSheet.create({
   verifyBtnText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 20,
     color: '#FFFFFF',
   },
 })

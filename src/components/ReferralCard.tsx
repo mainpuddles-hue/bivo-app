@@ -212,7 +212,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -232,6 +232,7 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 17,
+    lineHeight: 23,
   },
   codeRow: {
     flexDirection: 'row',
@@ -245,9 +246,11 @@ const s = StyleSheet.create({
   },
   codeLabel: {
     fontSize: 12,
+    lineHeight: 17,
   },
   codeText: {
     fontSize: 20,
+    lineHeight: 28,
     letterSpacing: 2,
   },
   codeActions: {
@@ -263,6 +266,7 @@ const s = StyleSheet.create({
   },
   copiedText: {
     fontSize: 12,
+    lineHeight: 17,
     textAlign: 'center',
     marginTop: -8,
   },
@@ -276,9 +280,11 @@ const s = StyleSheet.create({
   },
   progressText: {
     fontSize: 14,
+    lineHeight: 20,
   },
   invitesLeftText: {
     fontSize: 12,
+    lineHeight: 17,
   },
   progressTrack: {
     height: 8,
@@ -314,8 +320,10 @@ const s = StyleSheet.create({
   },
   tierName: {
     fontSize: 14,
+    lineHeight: 20,
   },
   tierMeta: {
     fontSize: 11,
+    lineHeight: 14,
   },
 })

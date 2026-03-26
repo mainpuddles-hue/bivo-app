@@ -304,6 +304,7 @@ const s = StyleSheet.create({
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
+    lineHeight: 23,
   },
   filterRow: {
     flexDirection: 'row',
@@ -321,10 +322,12 @@ const s = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   monthLabel: {
     fontSize: 12,
     fontFamily: fonts.body,
+    lineHeight: 17,
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
@@ -352,6 +355,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     fontFamily: fonts.heading,
+    lineHeight: 20,
   },
   info: {
     flex: 1,
@@ -361,10 +365,12 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
   neighborhood: {
     fontSize: 12,
     fontFamily: fonts.body,
+    lineHeight: 17,
   },
   pointsWrap: {
     flexDirection: 'row',
@@ -375,6 +381,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     fontFamily: fonts.heading,
+    lineHeight: 20,
   },
   emptyWrap: {
     alignItems: 'center',
@@ -384,6 +391,7 @@ const s = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     fontFamily: fonts.body,
+    lineHeight: 20,
   },
   yourRankCard: {
     marginTop: 16,
@@ -396,6 +404,7 @@ const s = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 17,
   },
   yourRankRow: {
     flexDirection: 'row',
@@ -406,5 +415,6 @@ const s = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     fontFamily: fonts.heading,
+    lineHeight: 32,
   },
 })

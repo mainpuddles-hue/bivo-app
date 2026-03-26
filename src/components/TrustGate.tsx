@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: fonts.headingSemi,
+    lineHeight: 23,
     textAlign: 'center',
   },
   description: {
@@ -152,6 +153,8 @@ const styles = StyleSheet.create({
   arrow: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 23,
   },
   steps: {
     width: '100%',
@@ -161,6 +164,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
     marginBottom: 2,
   },
   step: {
@@ -181,6 +185,8 @@ const styles = StyleSheet.create({
   actionBtnText: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 20,
     color: '#FFFFFF',
   },
   dismissBtn: {
@@ -192,5 +198,7 @@ const styles = StyleSheet.create({
   dismissBtnText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
 })
