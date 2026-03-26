@@ -25,12 +25,12 @@ const FILTERS = [
 function getTypeIcon(type: string) {
   switch (type) {
     case 'new_message': return MessageCircle
-    case 'review_received': case 'thanks_received': return Star
+    case 'review_received': case 'thanks_received': case 'thanks': return Star
     case 'rental_update': case 'rental_request': case 'rental_confirmed':
     case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return Package
     case 'new_follower': return UserPlus
     case 'event_reminder': return CalendarDays
-    case 'post_like': case 'post_comment': return Bell
+    case 'post_like': case 'post_comment': case 'comment': return Bell
     default: return Bell
   }
 }
@@ -38,20 +38,21 @@ function getTypeIcon(type: string) {
 function getTypeColor(type: string, colors: ReturnType<typeof useTheme>['colors']) {
   switch (type) {
     case 'new_message': return colors.primary
-    case 'review_received': case 'thanks_received': return colors.pro
+    case 'review_received': case 'thanks_received': case 'thanks': return colors.pro
     case 'rental_update': case 'rental_request': case 'rental_confirmed':
     case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return '#C98B2E'
     case 'new_follower': return colors.success
     case 'event_reminder': return '#2B8A62'
-    case 'post_like': case 'post_comment': return colors.accent
+    case 'post_like': case 'post_comment': case 'comment': return colors.accent
     default: return colors.info
   }
 }
 
 function getFilterForType(type: string): string {
   if (type === 'new_message') return 'messages'
-  if (type.startsWith('review') || type === 'thanks_received') return 'reviews'
+  if (type.startsWith('review') || type === 'thanks_received' || type === 'thanks') return 'reviews'
   if (type.startsWith('rental')) return 'rentals'
+  if (type === 'post_like' || type === 'post_comment' || type === 'comment') return 'system'
   return 'system'
 }
 

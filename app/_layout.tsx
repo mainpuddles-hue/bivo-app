@@ -222,12 +222,33 @@ function useAuthStateListener() {
   const router = useRouter()
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // User just confirmed email or signed in via deep link — go to feed
-        // Delay slightly to avoid competing with other navigation
-        setTimeout(() => {
-          router.replace('/')
+        // Check if user has completed onboarding before navigating
+        // This prevents a flash where the feed loads then redirects to onboarding
+        setTimeout(async () => {
+          try {
+            const flag = await AsyncStorage.getItem('onboarding_complete')
+            if (flag === 'true') {
+              router.replace('/')
+              return
+            }
+            // Check profile for naapurusto (may have onboarded via web)
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('naapurusto')
+              .eq('id', session.user.id)
+              .single()
+            if ((profile as any)?.naapurusto) {
+              await AsyncStorage.setItem('onboarding_complete', 'true')
+              router.replace('/')
+            } else {
+              router.replace('/onboarding')
+            }
+          } catch {
+            // On error, go to feed and let the onboarding guard handle it
+            router.replace('/')
+          }
         }, 100)
       } else if (event === 'PASSWORD_RECOVERY' && session) {
         // User clicked password reset link — navigate to settings for pw change

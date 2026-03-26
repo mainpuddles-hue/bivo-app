@@ -217,7 +217,7 @@ function PostDetailScreenInner() {
         router.push(`/messages/${(existing as any).id}`)
       } else {
         const { data: newConv, error } = await (supabase.from('conversations') as any)
-          .insert({ user1_id: userId, user2_id: post.user_id }).select('id').single()
+          .insert({ user1_id: userId, user2_id: post.user_id, post_id: id }).select('id').single()
         if (error) { Alert.alert(t('common.error'), error?.message || t('messages.conversationCreateFailed')); return }
         if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
         router.push(`/messages/${newConv.id}`)
@@ -267,7 +267,7 @@ function PostDetailScreenInner() {
         await (supabase.from('notifications') as any).insert({
           user_id: post.user_id,
           from_user_id: userId,
-          type: 'comment',
+          type: 'post_comment',
           title: t('notifications.commentTitle'),
           body: content.slice(0, 100),
           link_type: 'post',
@@ -277,7 +277,7 @@ function PostDetailScreenInner() {
           user_id: post.user_id,
           title: t('notifications.commentTitle'),
           body: content.slice(0, 100),
-          type: 'comment',
+          type: 'post_comment',
           post_id: id as string,
         })
       }

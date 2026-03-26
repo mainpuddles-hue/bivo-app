@@ -325,6 +325,18 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                       // Sync like_count on posts table
                       await (supabase.from('posts') as any).update({ like_count: prevCount + 1 }).eq('id', post.id)
                       onInteraction?.(post.id, 'like')
+                      // Notify post author about the like (skip if own post)
+                      if (post.user_id && post.user_id !== userId) {
+                        (supabase.from('notifications') as any).insert({
+                          user_id: post.user_id,
+                          from_user_id: userId,
+                          type: 'post_like',
+                          title: t('post.liked'),
+                          body: post.title,
+                          link_type: 'post',
+                          link_id: post.id,
+                        }).catch(() => {})
+                      }
                     }
                   }
                 } finally { likingRef.current = false }

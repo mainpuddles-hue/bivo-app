@@ -498,6 +498,15 @@ export default function CreateScreen() {
       // Award points for creating a post
       if (post?.id && user.id) {
         awardPoints(user.id, 'post_created', post.id).catch(() => {})
+        // Check if this is the user's first post — award bonus
+        Promise.resolve(
+          supabase.from('posts').select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id).eq('is_active', true)
+        ).then(({ count }) => {
+          if (count === 1) {
+            awardPoints(user.id, 'first_post_bonus', post.id).catch(() => {})
+          }
+        }).catch(() => {})
       }
 
       // Trigger semantic embedding for the new post (fire-and-forget)
