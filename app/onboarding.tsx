@@ -21,7 +21,6 @@ import {
   Check,
   CheckCircle,
   AlertTriangle,
-  Loader2,
   Shield,
   Handshake,
   Gift,
@@ -497,7 +496,7 @@ export default function OnboardingScreen() {
         }]}>
           {verificationStatus === 'checking' && (
             <>
-              <Loader2 size={16} color={colors.mutedForeground} />
+              <ActivityIndicator size="small" color={colors.mutedForeground} />
               <Text style={[s.verificationText, { color: colors.mutedForeground }]}>
                 {t('onboarding.verifyingLocation')}
               </Text>

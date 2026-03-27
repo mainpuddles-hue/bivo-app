@@ -187,6 +187,16 @@ export function useTrustLevel(userId?: string | null): TrustResult {
           // RPC unavailable — use client-side computation only
         }
 
+        // Evict oldest entries if cache exceeds max size
+        if (trustCache.size >= 200) {
+          const keysIter = trustCache.keys()
+          for (let i = 0; i < 50; i++) {
+            const oldest = keysIter.next()
+            if (oldest.done) break
+            trustCache.delete(oldest.value)
+          }
+        }
+
         // Cache the result
         trustCache.set(userId!, {
           signals: newSignals,

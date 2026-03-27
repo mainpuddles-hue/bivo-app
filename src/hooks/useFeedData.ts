@@ -335,7 +335,7 @@ export function useFeedData() {
       supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId)
         .then(({ data }) => { if (data) setFollowedIds(data.map((f: any) => f.followed_id)) })
     }
-    fetchPosts(true)
+    fetchPosts(true).finally(() => setRefreshing(false))
     fetchExtraContent()
   }, [fetchPosts, fetchExtraContent, currentUserId, supabase])
 

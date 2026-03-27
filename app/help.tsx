@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, Linking } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet, Linking, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, ChevronDown, ChevronUp, Mail, ExternalLink } from 'lucide-react-native'
@@ -123,7 +123,7 @@ export default function HelpScreen() {
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
           <Pressable
-            onPress={() => Linking.openURL('mailto:tuki@tackbird.fi')}
+            onPress={() => Linking.openURL('mailto:tuki@tackbird.fi').catch(() => Alert.alert('Error', 'Could not open email client'))}
             style={[s.contactBtn, { backgroundColor: colors.primary }]}
           >
             <Mail size={16} color={colors.primaryForeground} />

@@ -43,7 +43,7 @@ export function useUnreadCount(userId: string | null) {
 
     // Subscribe to new messages for realtime badge
     const channel = supabase
-      .channel('unread-badge')
+      .channel(`unread-badge-${userId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
         debouncedFetchUnread()
       })

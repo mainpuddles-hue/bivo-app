@@ -125,16 +125,18 @@ export default function LoginScreen() {
 
     if (!password.trim()) { Alert.alert(t('common.error'), t('auth.passwordRequired')); return }
 
+    if (mode === 'register') {
+      if (!name.trim()) { Alert.alert(t('common.error'), t('auth.nameRequired')); return }
+      if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        Alert.alert(t('common.error'), t('settings.passwordTooWeak'))
+        return
+      }
+    }
+
     setLoading(true)
     try {
       if (mode === 'register') {
         trackEvent('auth_register_start' as any)
-        if (!name.trim()) { Alert.alert(t('common.error'), t('auth.nameRequired')); setLoading(false); return }
-        if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-          Alert.alert(t('common.error'), t('settings.passwordTooWeak'))
-          setLoading(false)
-          return
-        }
         const { data: signUpData, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,

@@ -254,8 +254,8 @@ export default function AdminScreen() {
               },
             ]}
           >
-            <Icon size={14} color={activeTab === key ? '#fff' : colors.mutedForeground} />
-            <Text style={[s.tabText, { color: activeTab === key ? '#fff' : colors.mutedForeground }]}>
+            <Icon size={14} color={activeTab === key ? colors.primaryForeground : colors.mutedForeground} />
+            <Text style={[s.tabText, { color: activeTab === key ? colors.primaryForeground : colors.mutedForeground }]}>
               {label}
             </Text>
           </Pressable>

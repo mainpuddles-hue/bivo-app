@@ -376,12 +376,15 @@ export default function ForumScreen() {
         .insert({ user_id: currentUserId, title: title.trim(), content: content.trim(), category, neighborhood: userNeighborhood, upvote_count: 0, comment_count: 0 })
         .select('*, user:profiles!forum_posts_user_id_fkey(id, name, avatar_url, naapurusto)').single()
       if (error) throw error
-      if (data) setPosts(prev => [data as unknown as ForumPost, ...prev])
+      if (data) {
+        setPosts(prev => [data as unknown as ForumPost, ...prev])
+        awardPoints(currentUserId, 'post_created', (data as any).id).catch(() => {})
+      }
       setNewTitle(''); setNewContent(''); setNewCategory(null); setShowCreateModal(false)
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
     } catch { Alert.alert(t('common.error'), t('forum.publishError')) }
     finally { setPublishing(false) }
-  }, [currentUserId, userNeighborhood, supabase, t])
+  }, [currentUserId, userNeighborhood, supabase, t, awardPoints])
 
   // ── Render post card ──
   const renderPostCard = useCallback(({ item }: { item: ForumPost }) => (

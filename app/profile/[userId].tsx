@@ -454,7 +454,7 @@ export default function PublicProfileScreen() {
           <View style={s.verifyRow}>
             <CalendarDays size={16} color={colors.primary} />
             <Text style={[s.verifyText, { color: colors.foreground }]}>
-              {t('profile.memberSince')} {new Date(profile.created_at).getFullYear()}
+              {t('profile.memberSince')} {profile.created_at ? new Date(profile.created_at).getFullYear() : ''}
             </Text>
           </View>
           {completedTransactions > 0 && (

@@ -273,7 +273,7 @@ export default function GroupDetailScreen() {
   }, [id, currentUserId, postText, postImage, supabase, fetchPosts, t])
 
   const handlePickImage = useCallback(async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.6, allowsEditing: true })
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, allowsEditing: true })
     if (!result.canceled && result.assets[0]) setPostImage(result.assets[0].uri)
   }, [])
 

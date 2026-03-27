@@ -89,7 +89,7 @@ export default function MapScreen() {
 
   const handleRegionChange = useCallback((region: { latitudeDelta: number; longitudeDelta: number }) => {
     // Approximate zoom level from latitudeDelta
-    const zoom = Math.round(Math.log2(360 / region.latitudeDelta))
+    const zoom = region.latitudeDelta > 0 ? Math.round(Math.log2(360 / region.latitudeDelta)) : 14
     setZoomLevel(zoom)
   }, [])
 
@@ -97,7 +97,7 @@ export default function MapScreen() {
   const onItemPress = useCallback((item: ListItem) => {
     handleListItemNavigate(item)
     if (!item.id.startsWith('__empty_')) {
-      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
       mapRef.current?.animateToRegion({
         latitude: item.latitude, longitude: item.longitude,
         latitudeDelta: 0.005, longitudeDelta: 0.005,
@@ -251,7 +251,7 @@ export default function MapScreen() {
                     }, 400)
                   }}
                 >
-                  <View style={styles.clusterMarker}>
+                  <View style={[styles.clusterMarker, { backgroundColor: colors.primary }]}>
                     <Text style={styles.clusterText}>{item.count}</Text>
                   </View>
                 </Marker>
@@ -272,7 +272,7 @@ export default function MapScreen() {
           })}
         </MapView>
         {(loading || neighborhoodLoading) && (
-          <View style={styles.mapOverlay}>
+          <View style={[styles.mapOverlay, { backgroundColor: isDark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)' }]}>
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
         )}
@@ -484,7 +484,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(255,255,255,0.85)',
     borderRadius: 16,
     padding: 6,
   },
@@ -666,7 +665,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#2D6B5E',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,

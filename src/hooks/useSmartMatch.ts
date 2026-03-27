@@ -176,6 +176,16 @@ async function fetchSemanticMatches(
     const { matches } = await res.json()
     const result = (matches ?? []) as SemanticMatch[]
 
+    // Evict oldest entries if cache exceeds max size
+    if (semanticCache.size >= 200) {
+      const keysIter = semanticCache.keys()
+      for (let i = 0; i < 50; i++) {
+        const oldest = keysIter.next()
+        if (oldest.done) break
+        semanticCache.delete(oldest.value)
+      }
+    }
+
     // Cache the result
     semanticCache.set(postId, { matches: result, fetchedAt: Date.now() })
 

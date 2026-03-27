@@ -113,6 +113,7 @@ function ConversationScreenInner() {
       const sorted = (msgs ?? []).reverse() as Message[]
       setMessages(sorted)
       setHasOlder((msgs ?? []).length >= PAGE_SIZE)
+      if (sorted.length > 0) setShowQuickReplies(false)
 
       // Load reactions for these messages
       const msgIds = sorted.map(m => m.id)

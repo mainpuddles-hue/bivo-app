@@ -38,7 +38,7 @@ export function usePoints() {
       action,
       points,
       reference_id: referenceId ?? null,
-    }).catch(() => {})
+    }).catch((err: unknown) => { if (__DEV__) console.warn('usePoints insert failed:', err) })
 
     // Update total on profile via RPC (atomic increment — safe from race conditions)
     // The RPC should be: UPDATE profiles SET total_points = COALESCE(total_points, 0) + points WHERE id = user_id

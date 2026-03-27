@@ -22,6 +22,7 @@ export function usePriceSuggestion(type: string | null, tags: string[], neighbor
     }
 
     setLoading(true)
+    const controller = new AbortController()
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -32,14 +33,17 @@ export function usePriceSuggestion(type: string | null, tags: string[], neighbor
         method: 'POST',
         headers,
         body: JSON.stringify({ type, tags, neighborhood }),
+        signal: controller.signal,
       })
     })
       .then(res => res.json())
       .then(data => {
-        setSuggestion(data.suggestion ?? null)
+        if (!controller.signal.aborted) setSuggestion(data.suggestion ?? null)
       })
-      .catch(() => setSuggestion(null))
-      .finally(() => setLoading(false))
+      .catch(() => { if (!controller.signal.aborted) setSuggestion(null) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+
+    return () => { controller.abort() }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, tags.join(','), neighborhood, supabase])
 
