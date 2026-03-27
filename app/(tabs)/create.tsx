@@ -368,7 +368,6 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), contentWarning)
       return
     }
-    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
     if (selectedType === 'lainaa' && (!dailyFee || isNaN(parseFloat(dailyFee)) || parseFloat(dailyFee) <= 0)) {
       Alert.alert(t('common.error'), t('create.dailyFeeRequired'))
       return
@@ -403,6 +402,8 @@ export default function CreateScreen() {
       }
     }
 
+    // All validation passed — give success haptic feedback
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
     setSubmitting(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -566,11 +567,32 @@ export default function CreateScreen() {
       // Analytics: track post creation
       trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
 
+      // Reset form state before showing alert — prevents duplicate submissions
+      // if the user dismisses the alert without tapping a button
+      const createdPostId = post.id
+      setTitle('')
+      setDescription('')
+      setImages([])
+      setLocation('')
+      setDailyFee('')
+      setServicePrice('')
+      setEventDate('')
+      setEventStartTime('')
+      setEventEndTime('')
+      setEventMaxCapacity('')
+      setSelectedTags([])
+      setExpirationDays(0)
+      setIsAnonymous(false)
+      setIsUrgent(false)
+      setLatitude(null)
+      setLongitude(null)
+      setStep('category')
+
       // Show success feedback before navigating — user needs to know their post was created
       Alert.alert(
         t('common.success'),
         t('create.postPublished'),
-        [{ text: t('post.viewPost'), onPress: () => router.replace(`/post/${post.id}`) },
+        [{ text: t('post.viewPost'), onPress: () => router.replace(`/post/${createdPostId}`) },
          { text: t('nav.feed'), onPress: () => router.replace('/') }],
       )
     } catch (err: any) {
@@ -580,7 +602,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck])
+  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints])
 
   // ── Category selection step ──
   if (step === 'category') {

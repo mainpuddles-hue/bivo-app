@@ -92,7 +92,7 @@ export default function SettingsScreen() {
         const p = data as unknown as Profile
         setProfile(p)
         setNameText(p.name ?? '')
-        setVisibility(p.profile_visibility)
+        setVisibility(p.profile_visibility ?? 'everyone')
         setLocationAccuracy(p.location_accuracy ?? 'exact')
         // City
         const cid = (data as any).city_id ?? 'helsinki'

@@ -155,7 +155,11 @@ function ConversationScreenInner() {
         filter: `conversation_id=eq.${id}`,
       }, (payload) => {
         const newMsg = payload.new as Message
-        setMessages(prev => [...prev, newMsg])
+        setMessages(prev => {
+          // Deduplicate: skip if message already exists (e.g., from reconnect replay)
+          if (prev.some(m => m.id === newMsg.id)) return prev
+          return [...prev, newMsg]
+        })
         // Auto-mark as read if from other user
         if (newMsg.sender_id !== userId) {
           ;(supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id).catch(() => {})
@@ -307,12 +311,14 @@ function ConversationScreenInner() {
     setShowReactionPicker(true)
   }, [])
 
-  const handleReaction = useCallback(async (emoji: string) => {
-    if (!selectedMessageId || !userId) return
+  const handleReaction = useCallback(async (emoji: string, messageId?: string) => {
+    // Use explicit messageId if provided, otherwise fall back to selectedMessageId
+    const targetId = messageId ?? selectedMessageId
+    if (!targetId || !userId) return
     setShowReactionPicker(false)
 
     // Check if user already reacted with this emoji
-    const existing = reactions[selectedMessageId]?.find(
+    const existing = reactions[targetId]?.find(
       r => r.user_id === userId && r.emoji === emoji
     )
 
@@ -321,7 +327,7 @@ function ConversationScreenInner() {
       try {
         await (supabase.from('message_reactions') as any)
           .delete()
-          .eq('message_id', selectedMessageId)
+          .eq('message_id', targetId)
           .eq('user_id', userId)
           .eq('emoji', emoji)
       } catch {
@@ -329,7 +335,7 @@ function ConversationScreenInner() {
       }
       setReactions(prev => ({
         ...prev,
-        [selectedMessageId]: (prev[selectedMessageId] ?? []).filter(
+        [targetId]: (prev[targetId] ?? []).filter(
           r => !(r.user_id === userId && r.emoji === emoji)
         ),
       }))
@@ -337,7 +343,7 @@ function ConversationScreenInner() {
       // Add reaction
       try {
         await (supabase.from('message_reactions') as any).insert({
-          message_id: selectedMessageId,
+          message_id: targetId,
           user_id: userId,
           emoji,
         })
@@ -346,7 +352,7 @@ function ConversationScreenInner() {
       }
       setReactions(prev => ({
         ...prev,
-        [selectedMessageId]: [...(prev[selectedMessageId] ?? []), { emoji, user_id: userId }],
+        [targetId]: [...(prev[targetId] ?? []), { emoji, user_id: userId }],
       }))
     }
     setSelectedMessageId(null)
@@ -474,10 +480,7 @@ function ConversationScreenInner() {
                 {groupedReactions.map((r) => (
                   <Pressable
                     key={r.emoji}
-                    onPress={() => {
-                      setSelectedMessageId(item.id)
-                      handleReaction(r.emoji)
-                    }}
+                    onPress={() => handleReaction(r.emoji, item.id)}
                     style={[
                       s.reactionBadge,
                       { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border },

@@ -152,7 +152,11 @@ function PostDetailScreenInner() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments', filter: `post_id=eq.${id}` }, (payload) => {
         const raw = payload.new as any
         const newComment: PostComment = { ...raw, parent_id: raw.parent_id ?? null }
-        setComments(prev => [...prev, newComment])
+        setComments(prev => {
+          // Deduplicate: skip if comment already exists (e.g., from reconnect replay)
+          if (prev.some(c => c.id === newComment.id)) return prev
+          return [...prev, newComment]
+        })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -300,7 +304,7 @@ function PostDetailScreenInner() {
     } finally {
       setSendingComment(false)
     }
-  }, [userId, commentText, sendingComment, id, supabase, replyToComment, t])
+  }, [userId, commentText, sendingComment, id, supabase, replyToComment, t, post])
 
   const handleShare = () => {
     if (!post) return
@@ -496,7 +500,7 @@ function PostDetailScreenInner() {
       }
     } catch { Alert.alert(t('common.error'), t('rental.bookingFailed')) }
     finally { setSendingBooking(false) }
-  }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, createPayment])
+  }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, createPayment, trust])
 
   // Service pricing
   const svcFee = useMemo(() => {
@@ -563,7 +567,7 @@ function PostDetailScreenInner() {
     } finally {
       setSendingService(false)
     }
-  }, [userId, post, sendingService, paymentLoading, svcFee, svcTotal, serviceNotes, id, supabase, router, t, createPayment])
+  }, [userId, post, sendingService, paymentLoading, svcFee, svcTotal, serviceNotes, id, supabase, router, t, createPayment, trust])
 
   const renderCommentItem = (c: PostComment, isReply: boolean) => (
     <View key={c.id} style={[styles.commentRow, isReply && styles.replyRow]}>
