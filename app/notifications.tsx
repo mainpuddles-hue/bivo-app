@@ -352,6 +352,7 @@ export default function NotificationsScreen() {
             <EmptyState
               icon={<Bell size={36} color={colors.primary} />}
               title={t('notifications.empty')}
+              description={t('notifications.emptyHint')}
             />
           ) : null
         }

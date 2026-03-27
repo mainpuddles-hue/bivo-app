@@ -319,8 +319,8 @@ export default function GroupsScreen() {
             {group.name}
           </Text>
           <View style={s.groupMeta}>
-            <Text style={[s.groupMetaText, { color: colors.mutedForeground }]}>
-              {group.member_count} {t('groups.members')}
+            <Text style={[s.groupMetaText, { color: group.member_count <= 1 ? colors.primary : colors.mutedForeground }]}>
+              {group.member_count <= 1 ? t('groups.inviteMembers') : `${group.member_count} ${t('groups.members')}`}
             </Text>
             {(group.new_post_count ?? 0) > 0 && (
               <Text style={[s.groupMetaText, { color: colors.accent }]}>

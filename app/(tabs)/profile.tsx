@@ -452,29 +452,34 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Stats */}
+        {/* Stats — simplified to 4 primary stats */}
         <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Pressable style={s.stat} onPress={() => openFollowList('followers')}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount}</Text>
+          <Pressable style={s.stat} onPress={() => followerCount > 0 ? openFollowList('followers') : null}>
+            <Text style={[s.statNum, { color: followerCount === 0 ? colors.primary : colors.foreground }]}>
+              {followerCount === 0 ? '\u2013' : followerCount}
+            </Text>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
           </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <Pressable style={s.stat} onPress={() => openFollowList('following')}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{followingCount}</Text>
-            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.following')}</Text>
+          <Pressable style={s.stat} onPress={() => postCount === 0 ? router.push('/(tabs)/create') : setActiveTab('posts')}>
+            <Text style={[s.statNum, { color: postCount === 0 ? colors.primary : colors.foreground }]}>
+              {postCount === 0 ? '\u2013' : postCount}
+            </Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: postCount === 0 ? colors.primary : colors.mutedForeground }]}>
+              {postCount === 0 ? t('profile.createFirst') : t('profile.posts')}
+            </Text>
           </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
-            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
-          </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{thanksCount}</Text>
-              <Heart size={12} color={colors.destructive} fill={colors.destructive} />
-            </View>
-            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
+            {avgRating != null ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating}</Text>
+                <Star size={12} color={colors.pro} fill={colors.pro} />
+              </View>
+            ) : (
+              <Text style={[s.statNum, { color: colors.mutedForeground }]}>{'\u2013'}</Text>
+            )}
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <Pressable style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }}>
@@ -484,10 +489,26 @@ export default function ProfileScreen() {
             </View>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.karma')}</Text>
           </Pressable>
+        </View>
+
+        {/* Secondary stats: thanks + streak */}
+        <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border, marginTop: -4 }]}>
+          <View style={s.stat}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{thanksCount > 0 ? thanksCount : '\u2013'}</Text>
+              <Heart size={12} color={colors.destructive} fill={colors.destructive} />
+            </View>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+          <Pressable style={s.stat} onPress={() => followingCount > 0 ? openFollowList('following') : null}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{followingCount > 0 ? followingCount : '\u2013'}</Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.following')}</Text>
+          </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{streakData.currentStreak}</Text>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{streakData.currentStreak > 0 ? streakData.currentStreak : '\u2013'}</Text>
               <Flame size={12} color="#E8A050" fill="#E8A050" />
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
@@ -664,7 +685,12 @@ export default function ProfileScreen() {
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
               </View>
             ) : filteredPosts.length === 0 ? (
-              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPostsYet')}</Text>
+              <View style={{ alignItems: 'center', paddingVertical: 24, gap: 12 }}>
+                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
+                <Pressable onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 4 }]}>
+                  <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('nav.create')}</Text>
+                </Pressable>
+              </View>
             ) : (
               filteredPosts.map((post) => {
                 const status = getPostStatus(post)

@@ -143,18 +143,20 @@ function ForumPostCardInner({
               color={isVoted ? colors.primary : colors.mutedForeground}
               strokeWidth={isVoted ? 2.5 : 1.8}
             />
-            <Text style={[
-              styles.actionText,
-              { color: isVoted ? colors.primary : colors.mutedForeground },
-              isVoted && { fontFamily: fonts.bodySemi },
-            ]}>
-              {post.upvote_count}
-            </Text>
+            {(post.upvote_count > 0 || isVoted) && (
+              <Text style={[
+                styles.actionText,
+                { color: isVoted ? colors.primary : colors.mutedForeground },
+                isVoted && { fontFamily: fonts.bodySemi },
+              ]}>
+                {post.upvote_count}
+              </Text>
+            )}
           </Pressable>
           <View style={styles.actionBtn}>
             <MessageCircle size={14} color={colors.mutedForeground} strokeWidth={1.8} />
             <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
-              {post.comment_count} {t('forum.replies')}
+              {post.comment_count > 0 ? `${post.comment_count} ${t('forum.replies')}` : t('forum.beFirstReply')}
             </Text>
           </View>
           {post.user_id === currentUserId && (

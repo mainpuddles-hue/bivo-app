@@ -730,13 +730,17 @@ function PostDetailScreenInner() {
             <Pressable onPress={toggleLike} style={styles.engItem} hitSlop={8}>
               <Heart size={18} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
             </Pressable>
-            <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8}>
-              <Text style={[styles.engText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount} {t('post.likes')}</Text>
-            </Pressable>
-            <View style={styles.engItem}>
-              <MessageCircle size={18} color={colors.mutedForeground} />
-              <Text style={[styles.engText, { color: colors.mutedForeground }]}>{comments.length}</Text>
-            </View>
+            {likeCount > 0 ? (
+              <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8}>
+                <Text style={[styles.engText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount} {t('post.likes')}</Text>
+              </Pressable>
+            ) : null}
+            {comments.length > 0 && (
+              <View style={styles.engItem}>
+                <MessageCircle size={18} color={colors.mutedForeground} />
+                <Text style={[styles.engText, { color: colors.mutedForeground }]}>{comments.length}</Text>
+              </View>
+            )}
           </View>
 
           {/* Author card */}
@@ -789,7 +793,9 @@ function PostDetailScreenInner() {
 
           {/* Threaded Comments */}
           <View style={[styles.commentSection, { borderTopColor: colors.border }]}>
-            <Text style={[styles.commentTitle, { color: colors.foreground }]}>{t('post.comments')} ({comments.length})</Text>
+            <Text style={[styles.commentTitle, { color: comments.length === 0 ? colors.mutedForeground : colors.foreground }]}>
+              {comments.length === 0 ? t('post.beFirstComment') : `${t('post.comments')} (${comments.length})`}
+            </Text>
 
             {topLevelComments.map((c) => {
               const replies = repliesByParent[c.id] ?? []

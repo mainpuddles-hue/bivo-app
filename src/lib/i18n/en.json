@@ -168,7 +168,8 @@
     "likedBy": "Liked by",
     "noLikes": "No likes yet",
     "likes": "likes",
-    "priceContext": "Typical price in area: {min}–{max}€"
+    "priceContext": "Typical price in area: {min}–{max}€",
+    "beFirstComment": "Be the first to comment!"
   },
   "events": {
     "title": "Events",
@@ -476,6 +477,8 @@
     "overview": "Overview",
     "noPosts": "No posts",
     "noPostsYet": "No posts yet. Publish your first one!",
+    "myPostsEmpty": "Create your first post!",
+    "createFirst": "Create first",
     "reviews": "Reviews",
     "badges": "Badges",
     "stats": "Stats",
@@ -2141,7 +2144,8 @@
     "loadMore": "Load more",
     "noMorePosts": "No more discussions",
     "newestFirst": "Newest first",
-    "oldestFirst": "Oldest first"
+    "oldestFirst": "Oldest first",
+    "beFirstReply": "Be the first to reply"
   },
   "about": {
     "title": "About",
@@ -2210,7 +2214,8 @@
     "saveEdit": "Save",
     "cancelEdit": "Cancel",
     "searchPosts": "Search posts...",
-    "searchResults": "results"
+    "searchResults": "results",
+    "inviteMembers": "Invite neighbors!"
   },
   "greeting": {
     "morning": "Good morning",

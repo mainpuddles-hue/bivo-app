@@ -284,7 +284,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
         {/* Engagement — like + comment visible only when engaged, share/save behind more */}
         <View style={styles.engagementRow} accessibilityRole="toolbar">
-          {hasEngagement && (
+          {hasEngagement && (likeCount > 0 || liked) && (
             <Pressable
               hitSlop={12}
               accessibilityRole="button"
@@ -297,7 +297,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 likingRef.current = true
                 try {
                   try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-              
+
                   // Block interactions on seed posts (fake IDs cause FK violations)
                   if ((post as any).is_seed) return
 
@@ -346,17 +346,19 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
                 <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
               </Animated.View>
-              <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>
+              {likeCount > 0 && <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>}
             </Pressable>
           )}
-          {hasEngagement && (
+          {hasEngagement && (post.comment_count ?? 0) > 0 && (
             <View style={styles.engagementItem}>
               <MessageCircle size={14} color={colors.mutedForeground} />
-              {post.comment_count === 0 && likeCount > 0 ? (
-                <Text style={[styles.engagementText, { color: colors.mutedForeground, fontStyle: 'italic' }]}>{t('feed.startConversation')}</Text>
-              ) : (
-                <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
-              )}
+              <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+            </View>
+          )}
+          {hasEngagement && (post.comment_count ?? 0) === 0 && (likeCount > 0 || liked) && (
+            <View style={styles.engagementItem}>
+              <MessageCircle size={14} color={colors.mutedForeground} />
+              <Text style={[styles.engagementText, { color: colors.mutedForeground, fontStyle: 'italic' }]}>{t('feed.startConversation')}</Text>
             </View>
           )}
           <Pressable

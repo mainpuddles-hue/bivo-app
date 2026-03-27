@@ -364,20 +364,15 @@ export default function PublicProfileScreen() {
           )}
         </View>
 
-        {/* Stats 4-column */}
+        {/* Stats 4-column — hide zeros, show dashes */}
         <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount}</Text>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount > 0 ? followerCount : '\u2013'}</Text>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{followingCount}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.following')}</Text>
-          </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount > 0 ? postCount : '\u2013'}</Text>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
@@ -388,7 +383,7 @@ export default function PublicProfileScreen() {
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{(profile as any)?.total_points ?? 0}</Text>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{((profile as any)?.total_points ?? 0) > 0 ? (profile as any).total_points : '\u2013'}</Text>
               <Zap size={12} color="#F59E0B" fill="#F59E0B" />
             </View>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('leaderboard.points')}</Text>

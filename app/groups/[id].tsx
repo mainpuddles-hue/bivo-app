@@ -541,7 +541,9 @@ export default function GroupDetailScreen() {
         <View style={ps.infoActions}>
           <Pressable style={ps.membersBtn} onPress={() => { setShowMembers(true); fetchMembers() }}>
             <Users size={16} color={colors.primary} strokeWidth={1.8} />
-            <Text style={[ps.membersBtnText, { color: colors.primary }]}>{group.member_count} {t('groups.members')}</Text>
+            <Text style={[ps.membersBtnText, { color: colors.primary }]}>
+              {group.member_count <= 1 ? t('groups.inviteMembers') : `${group.member_count} ${t('groups.members')}`}
+            </Text>
           </Pressable>
           <Pressable
             style={[ps.joinLeaveBtn, { backgroundColor: isMember ? 'transparent' : colors.accent, borderColor: isMember ? colors.destructive : colors.accent, borderWidth: isMember ? 1 : 0 }]}
@@ -571,7 +573,9 @@ export default function GroupDetailScreen() {
         </Pressable>
         <View style={ps.headerCenter}>
           <Text style={[ps.headerTitle, { color: colors.foreground }]} numberOfLines={1}>{group?.name || t('groups.title')}</Text>
-          {group && <Text style={[ps.headerSub, { color: colors.mutedForeground }]}>{group.member_count} {t('groups.members')}</Text>}
+          {group && <Text style={[ps.headerSub, { color: colors.mutedForeground }]}>
+            {group.member_count <= 1 ? t('groups.inviteMembers') : `${group.member_count} ${t('groups.members')}`}
+          </Text>}
         </View>
         {isAdmin ? (
           <Pressable style={ps.headerBtn} hitSlop={8} onPress={() => setShowEditModal(true)}>

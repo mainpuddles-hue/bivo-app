@@ -168,7 +168,8 @@
     "likedBy": "Tykkääjät",
     "noLikes": "Ei vielä tykkäyksiä",
     "likes": "tykkäystä",
-    "priceContext": "Tyypillinen hinta alueella: {min}–{max}€"
+    "priceContext": "Tyypillinen hinta alueella: {min}–{max}€",
+    "beFirstComment": "Ole ensimmäinen kommentoija!"
   },
   "events": {
     "title": "Tapahtumat",
@@ -476,6 +477,8 @@
     "overview": "Yhteenveto",
     "noPosts": "Ei ilmoituksia",
     "noPostsYet": "Ei vielä ilmoituksia. Julkaise ensimmäinen!",
+    "myPostsEmpty": "Luo ensimmäinen postauksesi!",
+    "createFirst": "Luo ensimmäinen",
     "reviews": "Arvostelut",
     "badges": "Kunniamerkit",
     "stats": "Tilastot",
@@ -2141,7 +2144,8 @@
     "loadMore": "Lataa lisää",
     "noMorePosts": "Ei enempää keskusteluja",
     "newestFirst": "Uusin ensin",
-    "oldestFirst": "Vanhin ensin"
+    "oldestFirst": "Vanhin ensin",
+    "beFirstReply": "Vastaa ensimmäisenä"
   },
   "about": {
     "title": "Tietoja",
@@ -2210,7 +2214,8 @@
     "saveEdit": "Tallenna",
     "cancelEdit": "Peruuta",
     "searchPosts": "Hae viestejä...",
-    "searchResults": "tulosta"
+    "searchResults": "tulosta",
+    "inviteMembers": "Kutsu naapureita!"
   },
   "greeting": {
     "morning": "Huomenta",

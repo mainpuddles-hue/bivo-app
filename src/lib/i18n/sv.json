@@ -168,7 +168,8 @@
     "likedBy": "Gillad av",
     "noLikes": "Inga gillningar ännu",
     "likes": "gillningar",
-    "priceContext": "Typiskt pris i området: {min}–{max}€"
+    "priceContext": "Typiskt pris i området: {min}–{max}€",
+    "beFirstComment": "Bli den första att kommentera!"
   },
   "events": {
     "title": "Evenemang",
@@ -476,6 +477,8 @@
     "overview": "Översikt",
     "noPosts": "Inga inlägg",
     "noPostsYet": "Inga inlägg ännu",
+    "myPostsEmpty": "Skapa ditt första inlägg!",
+    "createFirst": "Skapa första",
     "reviews": "Recensioner",
     "badges": "Märken",
     "stats": "Statistik",
@@ -2141,7 +2144,8 @@
     "loadMore": "Ladda fler",
     "noMorePosts": "Inga fler diskussioner",
     "newestFirst": "Nyaste först",
-    "oldestFirst": "Äldst först"
+    "oldestFirst": "Äldst först",
+    "beFirstReply": "Bli den första att svara"
   },
   "about": {
     "title": "Om",
@@ -2210,7 +2214,8 @@
     "saveEdit": "Spara",
     "cancelEdit": "Avbryt",
     "searchPosts": "Sök inlägg...",
-    "searchResults": "resultat"
+    "searchResults": "resultat",
+    "inviteMembers": "Bjud in grannar!"
   },
   "greeting": {
     "morning": "God morgon",
