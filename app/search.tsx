@@ -56,6 +56,209 @@ function boundingBox(lat: number, lng: number, km: number) {
   }
 }
 
+// ── Extracted components (stable identity across renders) ──
+
+interface DiscoveryViewProps {
+  query: string
+  recentSearches: string[]
+  clearRecentSearches: () => void
+  setQuery: (q: string) => void
+  saveRecentSearch: (term: string) => Promise<void>
+  executeSearch: (q?: string, f?: SearchFilterValues, cat?: PostType | null, tf?: TimeFilter) => void
+  history: string[]
+  handleHistoryChipTap: (h: string) => void
+  removeFromHistory: (q: string) => Promise<void>
+  savedSearches: SavedSearch[]
+  loadSavedSearch: (saved: SavedSearch) => void
+  removeSavedSearch: (id: string) => Promise<void>
+  trendingPosts: { id: string; title: string; type: string; like_count: number }[]
+  router: ReturnType<typeof useRouter>
+  colors: ReturnType<typeof useTheme>['colors']
+  isDark: boolean
+  t: ReturnType<typeof useI18n>['t']
+  setActiveFilter: (f: PostType | null) => void
+}
+
+function DiscoveryView({
+  query, recentSearches, clearRecentSearches, setQuery, saveRecentSearch,
+  executeSearch, history, handleHistoryChipTap, removeFromHistory,
+  savedSearches, loadSavedSearch, removeSavedSearch, trendingPosts,
+  router, colors, isDark, t, setActiveFilter,
+}: DiscoveryViewProps) {
+  return (
+    <ScrollView contentContainerStyle={s.discovery} showsVerticalScrollIndicator={false}>
+      {/* Recent searches — persistent vertical list */}
+      {!query && recentSearches.length > 0 && (
+        <View style={s.section}>
+          <View style={s.recentHeader}>
+            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recent')}</Text>
+            <Pressable onPress={clearRecentSearches}>
+              <Text style={[s.recentClear, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('common.clear')}</Text>
+            </Pressable>
+          </View>
+          {recentSearches.map((term, i) => (
+            <Pressable key={i} onPress={() => { setQuery(term); saveRecentSearch(term); executeSearch(term) }} style={s.recentItem}>
+              <Clock size={14} color={colors.mutedForeground} />
+              <Text style={[s.recentText, { color: colors.foreground, fontFamily: fonts.body }]}>{term}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
+      {/* Recent search chips */}
+      {history.length > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Clock size={16} color={colors.mutedForeground} />
+            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recentSearches')}</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
+            {history.map((h) => (
+              <Pressable
+                key={h}
+                onPress={() => handleHistoryChipTap(h)}
+                style={[s.recentChip, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
+              >
+                <Clock size={12} color={colors.mutedForeground} />
+                <Text style={[s.recentChipText, { color: colors.foreground, fontFamily: fonts.body }]}>{h}</Text>
+                <Pressable
+                  onPress={(e) => {
+                    e.stopPropagation?.()
+                    removeFromHistory(h)
+                  }}
+                  hitSlop={8}
+                >
+                  <X size={12} color={colors.mutedForeground} />
+                </Pressable>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Saved Searches */}
+      {savedSearches.length > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Star size={16} color={colors.mutedForeground} />
+            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.savedSearches')}</Text>
+          </View>
+          {savedSearches.map((saved) => {
+            const savedFilterCount = countActiveFilters(saved.filters)
+            return (
+              <View key={saved.id} style={s.historyRow}>
+                <Pressable
+                  onPress={() => loadSavedSearch(saved)}
+                  style={s.historyBtn}
+                >
+                  <SearchIcon size={14} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.historyText, { color: colors.foreground, fontFamily: fonts.body }]}>{saved.query}</Text>
+                    {savedFilterCount > 0 && (
+                      <Text style={[s.savedFilterHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                        {t('search.activeFilters', { count: savedFilterCount })}
+                      </Text>
+                    )}
+                  </View>
+                </Pressable>
+                <Pressable onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
+                  <Trash2 size={14} color={colors.mutedForeground} />
+                </Pressable>
+              </View>
+            )
+          })}
+        </View>
+      )}
+
+      {/* Trending */}
+      <View style={s.section}>
+        <View style={s.sectionHeader}>
+          <TrendingUp size={16} color={colors.mutedForeground} />
+          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.trending')}</Text>
+        </View>
+        {trendingPosts.length === 0 ? (
+          <Text style={[s.hintText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noTrending')}</Text>
+        ) : (
+          <View style={s.trendingList}>
+            {trendingPosts.map((tp) => {
+              const tpCat = CATEGORIES[tp.type as PostType]
+              return (
+                <Pressable
+                  key={tp.id}
+                  onPress={() => router.push(`/post/${tp.id}` as any)}
+                  style={[s.trendingCard, { backgroundColor: colors.card }]}
+                >
+                  {tpCat && (
+                    <View style={[s.trendingDot, { backgroundColor: tpCat.color }]} />
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.trendingTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={1}>{tp.title}</Text>
+                    {tpCat && <Text style={[s.trendingCat, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t(tpCat.label)}</Text>}
+                  </View>
+                  <View style={s.trendingLikes}>
+                    <Heart size={12} color={colors.destructive} fill={colors.destructive} />
+                    <Text style={[s.trendingLikeCount, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{tp.like_count}</Text>
+                  </View>
+                </Pressable>
+              )
+            })}
+          </View>
+        )}
+      </View>
+
+      {/* Category cards */}
+      <View style={s.section}>
+        <View style={s.sectionHeader}>
+          <LayoutGrid size={16} color={colors.mutedForeground} />
+          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.browseByCategory')}</Text>
+        </View>
+        <View style={s.categoryGrid}>
+          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
+            const CatIcon = CATEGORY_ICON_MAP[cat.icon]
+            return (
+              <Pressable
+                key={type}
+                onPress={() => {
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+                  setActiveFilter(type)
+                  setQuery(t(cat.label))
+                  executeSearch(t(cat.label), undefined, type)
+                }}
+                style={[s.categoryCard, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}
+              >
+                <View style={[s.categoryIconBox, { backgroundColor: `${cat.color}20` }]}>
+                  {CatIcon && <CatIcon size={22} color={cat.color} />}
+                </View>
+                <Text style={[s.categoryCardText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t(cat.label)}</Text>
+                <ChevronRight size={16} color={colors.mutedForeground} style={{ marginLeft: 'auto' }} />
+              </Pressable>
+            )
+          })}
+        </View>
+        <Text style={[s.hintText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 8, fontFamily: fonts.body }]}>{t('search.initialHint')}</Text>
+      </View>
+    </ScrollView>
+  )
+}
+
+interface SearchEmptyStateProps {
+  query: string
+  colors: ReturnType<typeof useTheme>['colors']
+  t: ReturnType<typeof useI18n>['t']
+}
+
+function SearchEmptyState({ query, colors, t }: SearchEmptyStateProps) {
+  return (
+    <View style={s.empty}>
+      <BoardIllustration size={100} />
+      <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+        {query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}
+      </Text>
+      <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.tryDifferent')}</Text>
+    </View>
+  )
+}
+
 export default function SearchScreen() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
@@ -598,173 +801,6 @@ export default function SearchScreen() {
     { key: 'closest', label: t('search.sortNearest') },
   ]
 
-  // -- Discovery View (no search yet) --
-  const DiscoveryView = () => (
-    <ScrollView contentContainerStyle={s.discovery} showsVerticalScrollIndicator={false}>
-      {/* Recent searches — persistent vertical list */}
-      {!query && recentSearches.length > 0 && (
-        <View style={s.section}>
-          <View style={s.recentHeader}>
-            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recent')}</Text>
-            <Pressable onPress={clearRecentSearches}>
-              <Text style={[s.recentClear, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('common.clear')}</Text>
-            </Pressable>
-          </View>
-          {recentSearches.map((term, i) => (
-            <Pressable key={i} onPress={() => { setQuery(term); saveRecentSearch(term); executeSearch(term) }} style={s.recentItem}>
-              <Clock size={14} color={colors.mutedForeground} />
-              <Text style={[s.recentText, { color: colors.foreground, fontFamily: fonts.body }]}>{term}</Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      {/* Recent search chips */}
-      {history.length > 0 && (
-        <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Clock size={16} color={colors.mutedForeground} />
-            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recentSearches')}</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
-            {history.map((h) => (
-              <Pressable
-                key={h}
-                onPress={() => handleHistoryChipTap(h)}
-                style={[s.recentChip, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
-              >
-                <Clock size={12} color={colors.mutedForeground} />
-                <Text style={[s.recentChipText, { color: colors.foreground, fontFamily: fonts.body }]}>{h}</Text>
-                <Pressable
-                  onPress={(e) => {
-                    e.stopPropagation?.()
-                    removeFromHistory(h)
-                  }}
-                  hitSlop={8}
-                >
-                  <X size={12} color={colors.mutedForeground} />
-                </Pressable>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-      {/* Saved Searches */}
-      {savedSearches.length > 0 && (
-        <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Star size={16} color={colors.mutedForeground} />
-            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.savedSearches')}</Text>
-          </View>
-          {savedSearches.map((saved) => {
-            const savedFilterCount = countActiveFilters(saved.filters)
-            return (
-              <View key={saved.id} style={s.historyRow}>
-                <Pressable
-                  onPress={() => loadSavedSearch(saved)}
-                  style={s.historyBtn}
-                >
-                  <SearchIcon size={14} color={colors.primary} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[s.historyText, { color: colors.foreground, fontFamily: fonts.body }]}>{saved.query}</Text>
-                    {savedFilterCount > 0 && (
-                      <Text style={[s.savedFilterHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                        {t('search.activeFilters', { count: savedFilterCount })}
-                      </Text>
-                    )}
-                  </View>
-                </Pressable>
-                <Pressable onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
-                  <Trash2 size={14} color={colors.mutedForeground} />
-                </Pressable>
-              </View>
-            )
-          })}
-        </View>
-      )}
-
-      {/* Trending */}
-      <View style={s.section}>
-        <View style={s.sectionHeader}>
-          <TrendingUp size={16} color={colors.mutedForeground} />
-          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.trending')}</Text>
-        </View>
-        {trendingPosts.length === 0 ? (
-          <Text style={[s.hintText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noTrending')}</Text>
-        ) : (
-          <View style={s.trendingList}>
-            {trendingPosts.map((tp) => {
-              const tpCat = CATEGORIES[tp.type as PostType]
-              return (
-                <Pressable
-                  key={tp.id}
-                  onPress={() => router.push(`/post/${tp.id}` as any)}
-                  style={[s.trendingCard, { backgroundColor: colors.card }]}
-                >
-                  {tpCat && (
-                    <View style={[s.trendingDot, { backgroundColor: tpCat.color }]} />
-                  )}
-                  <View style={{ flex: 1 }}>
-                    <Text style={[s.trendingTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={1}>{tp.title}</Text>
-                    {tpCat && <Text style={[s.trendingCat, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t(tpCat.label)}</Text>}
-                  </View>
-                  <View style={s.trendingLikes}>
-                    <Heart size={12} color={colors.destructive} fill={colors.destructive} />
-                    <Text style={[s.trendingLikeCount, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{tp.like_count}</Text>
-                  </View>
-                </Pressable>
-              )
-            })}
-          </View>
-        )}
-      </View>
-
-      {/* Category cards */}
-      <View style={s.section}>
-        <View style={s.sectionHeader}>
-          <LayoutGrid size={16} color={colors.mutedForeground} />
-          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.browseByCategory')}</Text>
-        </View>
-        <View style={s.categoryGrid}>
-          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
-            const CatIcon = CATEGORY_ICON_MAP[cat.icon]
-            return (
-              <Pressable
-                key={type}
-                onPress={() => {
-                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-                  setActiveFilter(type)
-                  setQuery(t(cat.label))
-                  executeSearch(t(cat.label), undefined, type)
-                }}
-                style={[s.categoryCard, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}
-              >
-                <View style={[s.categoryIconBox, { backgroundColor: `${cat.color}20` }]}>
-                  {CatIcon && <CatIcon size={22} color={cat.color} />}
-                </View>
-                <Text style={[s.categoryCardText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t(cat.label)}</Text>
-                <ChevronRight size={16} color={colors.mutedForeground} style={{ marginLeft: 'auto' }} />
-              </Pressable>
-            )
-          })}
-        </View>
-        <Text style={[s.hintText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 8, fontFamily: fonts.body }]}>{t('search.initialHint')}</Text>
-      </View>
-    </ScrollView>
-  )
-
-  // -- Empty state --
-  const EmptyState = () => (
-    <View style={s.empty}>
-      <BoardIllustration size={100} />
-      <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
-        {query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}
-      </Text>
-      <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.tryDifferent')}</Text>
-    </View>
-  )
-
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header with search */}
@@ -1044,7 +1080,26 @@ export default function SearchScreen() {
 
       {/* Content */}
       {!searched ? (
-        <DiscoveryView />
+        <DiscoveryView
+          query={query}
+          recentSearches={recentSearches}
+          clearRecentSearches={clearRecentSearches}
+          setQuery={setQuery}
+          saveRecentSearch={saveRecentSearch}
+          executeSearch={executeSearch}
+          history={history}
+          handleHistoryChipTap={handleHistoryChipTap}
+          removeFromHistory={removeFromHistory}
+          savedSearches={savedSearches}
+          loadSavedSearch={loadSavedSearch}
+          removeSavedSearch={removeSavedSearch}
+          trendingPosts={trendingPosts}
+          router={router}
+          colors={colors}
+          isDark={isDark}
+          t={t}
+          setActiveFilter={setActiveFilter}
+        />
       ) : loading ? (
         <SearchSkeleton />
       ) : activeTab === 'posts' ? (
@@ -1066,7 +1121,7 @@ export default function SearchScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} /> : null}
-          ListEmptyComponent={<EmptyState />}
+          ListEmptyComponent={<SearchEmptyState query={query} colors={colors} t={t} />}
           showsVerticalScrollIndicator={false}
         />
       ) : (

@@ -80,7 +80,7 @@ export default function HelpScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('help.title')}</Text>
@@ -99,7 +99,7 @@ export default function HelpScreen() {
                 return (
                   <View key={key}>
                     {qi > 0 && <View style={[s.divider, { backgroundColor: colors.border }]} />}
-                    <Pressable onPress={() => toggleItem(key)} style={s.faqRow}>
+                    <Pressable onPress={() => toggleItem(key)} style={s.faqRow} accessibilityRole="button">
                       <Text style={[s.faqQuestion, { color: colors.foreground }]}>{t(item.questionKey)}</Text>
                       {isExpanded
                         ? <ChevronUp size={18} color={colors.mutedForeground} />

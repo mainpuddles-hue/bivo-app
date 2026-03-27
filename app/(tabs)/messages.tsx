@@ -16,6 +16,12 @@ import type { Conversation } from '@/lib/types'
 
 const PINNED_KEY = 'pinned_conversations'
 
+function MessageItemSeparator() {
+  const { colors } = useTheme()
+  return <View style={[separatorStyle, { backgroundColor: colors.border }]} />
+}
+const separatorStyle = { height: StyleSheet.hairlineWidth, marginLeft: 76 } as const
+
 export default function MessagesScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -281,7 +287,7 @@ export default function MessagesScreen() {
             </Pressable>
           )
         }}
-        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
+        ItemSeparatorComponent={MessageItemSeparator}
         ListEmptyComponent={
           loading ? (
             <MessageListSkeleton />

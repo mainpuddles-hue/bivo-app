@@ -422,7 +422,7 @@ export default function EventsScreen() {
   }, [])
 
   // ── Render Event Card ──
-  const renderEvent = ({ item }: { item: Event }) => {
+  const renderEvent = useCallback(({ item }: { item: Event }) => {
     const isAttending = attendingIds.has(item.id)
     const isSaved = savedEventIds.has(item.id)
     return (
@@ -471,10 +471,10 @@ export default function EventsScreen() {
         </View>
       </Pressable>
     )
-  }
+  }, [colors, isDark, locale, attendingIds, savedEventIds, t, toggleAttend, toggleSave, shareEvent, setSelectedEvent, setReportTargetId, setShowReportModal])
 
   // ── Render City Event ──
-  const renderCityEvent = ({ item }: { item: CityEvent }) => (
+  const renderCityEvent = useCallback(({ item }: { item: CityEvent }) => (
     <Pressable onPress={() => setSelectedCityEvent(item)} style={[ev.card, { backgroundColor: colors.card }]}>
       <View style={ev.cardTop}>
         {item.image_url ? <Image source={{ uri: item.image_url }} style={ev.cityImg} contentFit="cover" /> : (
@@ -497,7 +497,7 @@ export default function EventsScreen() {
         <ChevronRight size={16} color={colors.mutedForeground} />
       </View>
     </Pressable>
-  )
+  ), [colors, isDark, locale, t, setSelectedCityEvent])
 
   // ── Render Activity ──
   const renderActivity = ({ item }: { item: Activity }) => {

@@ -110,15 +110,6 @@ export default function LeaderboardScreen() {
           setCurrentUserRank(inTop + 1)
           setCurrentUserPoints((data as any[])[inTop].total_points ?? 0)
         } else {
-          // Fetch user's rank separately
-          let countQuery = supabase
-            .from('profiles')
-            .select('id', { count: 'exact', head: true })
-
-          if (neighborhood) {
-            countQuery = countQuery.eq('naapurusto', neighborhood)
-          }
-
           // Get current user's points
           const { data: myProfile } = await supabase
             .from('profiles')

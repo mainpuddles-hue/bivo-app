@@ -69,6 +69,8 @@ const CATEGORIES: CategoryDef[] = [
 const CATEGORY_COLOR_MAP: Record<string, string> = Object.fromEntries(CATEGORIES.map(c => [c.key, c.color]))
 const CATEGORY_ICON_MAP: Record<string, React.ComponentType<any>> = Object.fromEntries(CATEGORIES.map(c => [c.key, c.Icon]))
 
+const ActivityItemSeparator = () => <View style={{ height: 12 }} />
+
 // ── Filter chips (includes "all") ──
 
 const FILTER_CHIPS: { key: string; labelKey: string }[] = [
@@ -470,7 +472,7 @@ export default function ActivitiesScreen() {
         </View>
       </View>
     )
-  }, [colors, isDark, t, toggleMembership])
+  }, [colors, t, toggleMembership])
 
   // ── Need weekly/biweekly day picker? ──
   const needsDayPicker = createScheduleType === 'weekly' || createScheduleType === 'biweekly'
@@ -545,7 +547,7 @@ export default function ActivitiesScreen() {
               tintColor={colors.primary}
             />
           }
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          ItemSeparatorComponent={ActivityItemSeparator}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={st.empty}>

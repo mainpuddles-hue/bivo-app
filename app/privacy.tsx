@@ -15,7 +15,7 @@ export default function PrivacyScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('privacy.title')}</Text>

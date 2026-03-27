@@ -22,12 +22,12 @@ export default function VerificationErrorScreen() {
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('verification.errorMessage')}</Text>
 
         <View style={styles.actions}>
-          <Pressable onPress={() => router.replace('/settings' as any)} style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
+          <Pressable onPress={() => router.replace('/settings' as any)} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
             <RotateCcw size={18} color={colors.primaryForeground} />
             <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('verification.tryAgain')}</Text>
           </Pressable>
 
-          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.secondaryBtn, { borderColor: colors.border }]}>
+          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.secondaryBtn, { borderColor: colors.border }]} accessibilityRole="button">
             <Home size={18} color={colors.foreground} />
             <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>{t('verification.backToApp')}</Text>
           </Pressable>

@@ -62,7 +62,7 @@ export default function VerificationSuccessScreen() {
         </Animated.View>
 
         <View style={styles.actions}>
-          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.primaryBtn, { backgroundColor: tier2Color }]}>
+          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.primaryBtn, { backgroundColor: tier2Color }]} accessibilityRole="button">
             <Home size={18} color="#FFFFFF" />
             <Text style={styles.primaryBtnText}>{t('verification.backToApp')}</Text>
           </Pressable>

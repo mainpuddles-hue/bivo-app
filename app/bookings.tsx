@@ -320,7 +320,7 @@ export default function BookingsScreen() {
 
   const isActionLoading = (id: string) => actionLoading === id
 
-  const renderBooking = ({ item }: { item: RentalBooking }) => {
+  const renderBooking = useCallback(({ item }: { item: RentalBooking }) => {
     const statusColor = getStatusColor(item.status, colors)
     const otherUser = activeTab === 'borrower' ? item.lender : item.borrower
     const isLender = activeTab === 'lender'
@@ -431,13 +431,13 @@ export default function BookingsScreen() {
         )}
       </Pressable>
     )
-  }
+  }, [colors, isDark, activeTab, router, t, locale, handleConfirm, handleCancel, handleMarkReturned, handleLeaveReview, actionLoading])
 
   const borrowerCount = useMemo(() => bookings.filter(b => b.borrower_id === userId).length, [bookings, userId])
   const lenderCount = useMemo(() => bookings.filter(b => b.lender_id === userId).length, [bookings, userId])
   const serviceCount = useMemo(() => serviceBookings.length, [serviceBookings])
 
-  const renderServiceBooking = ({ item }: { item: any }) => {
+  const renderServiceBooking = useCallback(({ item }: { item: any }) => {
     const safeStatus: BookingStatus = isBookingStatus(item.status) ? item.status : 'pending'
     const statusColor = getStatusColor(safeStatus, colors)
     const isBuyer = item.buyer_id === userId
@@ -525,7 +525,7 @@ export default function BookingsScreen() {
         )}
       </Pressable>
     )
-  }
+  }, [colors, isDark, userId, router, t, locale, handleServiceConfirm, handleServiceStart, handleServiceComplete, handleServiceCancel, actionLoading])
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
