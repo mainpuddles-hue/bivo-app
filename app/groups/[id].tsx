@@ -194,7 +194,11 @@ export default function GroupDetailScreen() {
   const fetchLikes = useCallback(async () => {
     if (!id || !currentUserId) return
     try {
-      const { data } = await supabase.from('group_post_likes').select('post_id').eq('user_id', currentUserId)
+      // Only fetch likes for posts in THIS group — join through group_posts to filter by group_id
+      const { data: groupPostIds } = await supabase.from('group_posts').select('id').eq('group_id', id)
+      if (!groupPostIds || groupPostIds.length === 0) { setLikedPosts(new Set()); return }
+      const postIds = (groupPostIds as any[]).map(p => p.id)
+      const { data } = await supabase.from('group_post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', postIds)
       if (data) setLikedPosts(new Set((data as any[]).map((d) => d.post_id)))
     } catch { /* Table may not exist */ }
   }, [supabase, id, currentUserId])

@@ -142,16 +142,36 @@ function PostDetailScreenInner() {
 
       setLoading(false)
     }
-    if (id && isValidUUID(id)) load()
+    if (id && isValidUUID(id)) {
+      load()
+    } else {
+      // Invalid or missing ID — stop loading and show "not found"
+      setLoading(false)
+    }
   }, [id, supabase])
 
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
     const channel = supabase
       .channel(`comments-${id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments', filter: `post_id=eq.${id}` }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments', filter: `post_id=eq.${id}` }, async (payload) => {
         const raw = payload.new as any
         const newComment: PostComment = { ...raw, parent_id: raw.parent_id ?? null }
+        // Realtime payloads don't include joined .user data — fetch it
+        if (!newComment.user && raw.user_id) {
+          try {
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('id, name, avatar_url')
+              .eq('id', raw.user_id)
+              .single()
+            if (userProfile) {
+              (newComment as any).user = userProfile
+            }
+          } catch {
+            // Fallback: comment renders without user name
+          }
+        }
         setComments(prev => {
           // Deduplicate: skip if comment already exists (e.g., from reconnect replay)
           if (prev.some(c => c.id === newComment.id)) return prev
@@ -320,9 +340,22 @@ function PostDetailScreenInner() {
       {
         text: t('post.delete'), style: 'destructive',
         onPress: async () => {
-          const { error } = await (supabase.from('posts') as any).delete().eq('id', post.id)
-          if (error) { Alert.alert(t('common.error'), t('post.deleteFailed')) }
-          else { Alert.alert(t('post.deleted')); router.back() }
+          try {
+            // Cascade-delete related data that may not have DB-level CASCADE
+            await Promise.allSettled([
+              (supabase.from('post_comments') as any).delete().eq('post_id', post.id),
+              (supabase.from('post_likes') as any).delete().eq('post_id', post.id),
+              (supabase.from('post_images') as any).delete().eq('post_id', post.id),
+              (supabase.from('saved_posts') as any).delete().eq('post_id', post.id),
+              (supabase.from('post_embeddings') as any).delete().eq('post_id', post.id),
+              (supabase.from('notifications') as any).delete().eq('link_id', post.id).eq('link_type', 'post'),
+            ])
+            const { error } = await (supabase.from('posts') as any).delete().eq('id', post.id)
+            if (error) { Alert.alert(t('common.error'), t('post.deleteFailed')) }
+            else { Alert.alert(t('post.deleted')); router.back() }
+          } catch {
+            Alert.alert(t('common.error'), t('post.deleteFailed'))
+          }
         },
       },
     ])
@@ -431,7 +464,8 @@ function PostDetailScreenInner() {
     const s = new Date(bookingStartDate); const e = new Date(bookingEndDate)
     if (isNaN(s.getTime()) || isNaN(e.getTime())) return 0
     const d = Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24))
-    return d > 0 ? d : 0
+    // Same-day booking should count as 1 day, not 0
+    return d > 0 ? d : (s.getTime() === e.getTime() ? 1 : 0)
   }, [bookingStartDate, bookingEndDate])
 
   const rentalFee = useMemo(() => {
@@ -452,10 +486,14 @@ function PostDetailScreenInner() {
         if (!data) return
         const blocked: string[] = []
         for (const booking of data as any[]) {
-          const start = new Date(booking.start_date); const end = new Date(booking.end_date); const cursor = new Date(start)
-          while (cursor <= end) {
-            blocked.push(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`)
-            cursor.setDate(cursor.getDate() + 1)
+          // Use date strings directly to avoid DST issues with setDate() iteration
+          const startParts = booking.start_date.split('T')[0].split('-').map(Number)
+          const endParts = booking.end_date.split('T')[0].split('-').map(Number)
+          const startMs = Date.UTC(startParts[0], startParts[1] - 1, startParts[2])
+          const endMs = Date.UTC(endParts[0], endParts[1] - 1, endParts[2])
+          for (let ms = startMs; ms <= endMs; ms += 86400000) {
+            const d = new Date(ms)
+            blocked.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`)
           }
         }
         setBlockedDates(blocked)

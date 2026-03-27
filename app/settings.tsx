@@ -296,11 +296,28 @@ export default function SettingsScreen() {
     if (deleteConfirmText !== t('settings.deleteConfirmWord') || deletingAccount) return
     setDeletingAccount(true)
     try {
-      // Try RPC first, fallback to signout
-      try {
-        await supabase.rpc('delete_user_account')
-      } catch {
-        // RPC may not exist — just sign out
+      // Try RPC first for server-side cascade deletion
+      const { error: rpcError } = await (supabase.rpc as any)('delete_user_account')
+      if (rpcError) {
+        // RPC failed — attempt manual cleanup of user data before signout
+        const uid = profile?.id
+        if (uid) {
+          await Promise.allSettled([
+            (supabase.from('posts') as any).update({ is_active: false }).eq('user_id', uid),
+            (supabase.from('notifications') as any).delete().eq('user_id', uid),
+            (supabase.from('user_follows') as any).delete().eq('follower_id', uid),
+            (supabase.from('user_follows') as any).delete().eq('followed_id', uid),
+            (supabase.from('saved_posts') as any).delete().eq('user_id', uid),
+            (supabase.from('saved_events') as any).delete().eq('user_id', uid),
+            (supabase.from('user_points') as any).delete().eq('user_id', uid),
+            (supabase.from('profiles') as any).update({
+              name: '[Poistettu]',
+              avatar_url: null,
+              push_token: null,
+              naapurusto: null,
+            }).eq('id', uid),
+          ])
+        }
       }
       clearAuthCache()
       await supabase.auth.signOut()
@@ -311,7 +328,7 @@ export default function SettingsScreen() {
     } finally {
       setDeletingAccount(false)
     }
-  }, [deleteConfirmText, deletingAccount, supabase, router, t])
+  }, [deleteConfirmText, deletingAccount, supabase, router, t, profile])
 
   const handleLogout = async () => {
     clearAuthCache()

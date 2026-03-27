@@ -100,7 +100,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
   const [score, setScore] = useState(0)
   const [factors, setFactors] = useState<Record<string, number>>({})
   const [serverTier, setServerTier] = useState<TrustLevel | null>(null)
-  const fetchingRef = useRef(false) // Prevent overlapping fetches
+  const fetchingForRef = useRef<string | null>(null) // Track which userId is being fetched
 
   const supabase = useSupabase()
 
@@ -119,9 +119,10 @@ export function useTrustLevel(userId?: string | null): TrustResult {
       return
     }
 
-    // Prevent duplicate concurrent fetches for the same userId
-    if (fetchingRef.current) return
-    fetchingRef.current = true
+    // Prevent duplicate concurrent fetches for the SAME userId
+    // But allow fetches for a DIFFERENT userId (e.g., navigating to another profile)
+    if (fetchingForRef.current === userId) return
+    fetchingForRef.current = userId
 
     async function fetchSignals() {
       try {
@@ -197,7 +198,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
       } catch {
         // Graceful fallback — keep default signals (tier 1) and score 0
       } finally {
-        fetchingRef.current = false
+        if (fetchingForRef.current === userId) fetchingForRef.current = null
         if (mounted) setLoading(false)
       }
     }

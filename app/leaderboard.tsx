@@ -306,7 +306,7 @@ export default function LeaderboardScreen() {
             </View>
           }
           ListFooterComponent={
-            currentUserId && !isCurrentUserInTop10 && currentUserRank ? (
+            currentUserId && !isCurrentUserInTop10 && currentUserRank != null && currentUserPoints > 0 ? (
               <View style={[s.yourRankCard, { backgroundColor: `${colors.primary}10`, borderColor: colors.primary }]}>
                 <Text style={[s.yourRankLabel, { color: colors.primary }]}>{t('leaderboard.yourRank')}</Text>
                 <View style={s.yourRankRow}>

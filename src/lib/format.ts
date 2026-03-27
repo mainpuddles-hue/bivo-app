@@ -42,8 +42,8 @@ export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): st
   })
 }
 
-export function formatPrice(amount: number, locale = 'fi'): string {
-  if (amount == null || isNaN(amount)) return '\u2013'
+export function formatPrice(amount: number | null | undefined, locale = 'fi'): string {
+  if (amount == null || typeof amount !== 'number' || !isFinite(amount)) return '\u2013'
   return amount.toLocaleString(resolveLocale(locale), {
     style: 'currency',
     currency: 'EUR',
@@ -72,15 +72,22 @@ export function formatEventDateShort(dateStr: string, locale = 'fi'): string {
 }
 
 export function formatDateHeader(dateStr: string, locale: string): string {
-  return new Date(dateStr).toLocaleDateString(resolveLocale(locale), {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  return date.toLocaleDateString(resolveLocale(locale), {
     weekday: 'long', day: 'numeric', month: 'long',
   })
 }
 
 export function formatDateRange(start: string, end: string, locale: string): string {
+  if (!start || !end) return '\u2013'
+  const startDate = new Date(start)
+  const endDate = new Date(end)
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return '\u2013'
   const localeStr = resolveLocale(locale)
   const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
-  const s = new Date(start).toLocaleDateString(localeStr, opts)
-  const e = new Date(end).toLocaleDateString(localeStr, opts)
+  const s = startDate.toLocaleDateString(localeStr, opts)
+  const e = endDate.toLocaleDateString(localeStr, opts)
   return `${s} \u2014 ${e}`
 }

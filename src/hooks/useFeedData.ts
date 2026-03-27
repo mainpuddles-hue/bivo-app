@@ -132,14 +132,11 @@ export function useFeedData() {
 
   // Follows are refreshed on pull-to-refresh (no realtime channel needed)
 
-  // ── City center fallback coords (Helsinki default) ──
-  const cityFallbackLat = userLocation?.latitude ?? 60.1699
-  const cityFallbackLng = userLocation?.longitude ?? 24.9384
-
   // ── Fetch city events and nearby places ──
   const fetchExtraContent = useCallback(async () => {
-    const lat = cityFallbackLat
-    const lng = cityFallbackLng
+    // Compute inside callback to avoid stale closure over render-time constants
+    const lat = userLocation?.latitude ?? 60.1699
+    const lng = userLocation?.longitude ?? 24.9384
 
     // Skip if location hasn't moved significantly (>500m)
     if (lastFetchLocationRef.current) {

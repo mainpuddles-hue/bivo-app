@@ -161,7 +161,7 @@ export default function MessagesScreen() {
     const newVal = !isCurrentlyArchived
     await (supabase.from('conversations') as any).update({ [field]: newVal }).eq('id', convId)
     await fetchConversations()
-  }, [conversations, userId, showArchived, supabase, fetchConversations])
+  }, [conversations, userId, supabase, fetchConversations])
 
   const filtered = useMemo(() => {
     let list = conversations.filter(c => showArchived ? c.is_archived : !c.is_archived)

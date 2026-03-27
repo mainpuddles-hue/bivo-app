@@ -27,6 +27,7 @@ export default function PaymentSuccessScreen() {
 
   const [booking, setBooking] = useState<BookingSummary | null>(null)
   const [loading, setLoading] = useState(!!session_id)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     if (!session_id) return
@@ -74,6 +75,8 @@ export default function PaymentSuccessScreen() {
         // service_bookings table may not exist yet — ignore
       }
 
+      // If we had a session_id but found no booking, mark as not found
+      if (!booking) setNotFound(true)
       setLoading(false)
     }
 
@@ -96,7 +99,12 @@ export default function PaymentSuccessScreen() {
           <Text style={[styles.title, { color: colors.foreground }]}>{t('payment.success')}</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('payment.successMessage')}</Text>
 
-          {/* Order summary */}
+          {/* Order summary — show info message when no booking found */}
+          {notFound && !booking && (
+            <Text style={[styles.subtitle, { color: colors.mutedForeground, marginBottom: 16 }]}>
+              {t('payment.bookingNotFound') ?? 'Varauksen tietoja ei löytynyt. Tarkista varauksesi.'}
+            </Text>
+          )}
           {booking && (
             <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[styles.summaryTitle, { color: colors.foreground }]}>{booking.post_title}</Text>

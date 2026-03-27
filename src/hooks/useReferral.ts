@@ -99,14 +99,14 @@ export function useReferral(userId: string | null) {
         .eq('id', (inviter as any).id)
     }
 
-    // Award points to both
-    await awardPoints(userId, 'first_post_bonus') // 20pts for joining via invite
-    await awardPoints((inviter as any).id, 'thanks_received') // 10pts for inviter
+    // Award points to both — use referenceId for dedup to prevent double-awarding
+    await awardPoints(userId, 'first_post_bonus', `referral_${code}`) // 20pts for joining via invite
+    await awardPoints((inviter as any).id, 'thanks_received', `referral_${userId}`) // 10pts for inviter
 
     // Check if inviter unlocked a new tier
     const newTier = REFERRAL_TIERS.filter(t => newCount >= t.invites).pop()
     const oldTier = REFERRAL_TIERS.filter(t => newCount - 1 >= t.invites).pop()
-    if (newTier && newTier !== oldTier) {
+    if (newTier && (!oldTier || newTier.invites !== oldTier.invites)) {
       // Award tier bonus points
       await awardPoints((inviter as any).id, 'first_post_bonus') // Reuse action for bonus
       // Award badge if tier has one

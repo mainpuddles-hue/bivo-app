@@ -31,8 +31,9 @@ function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: R
   if (isNaN(expires.getTime())) return null
   const diffMs = expires.getTime() - now.getTime()
   if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
+  const diffHours = diffMs / 3600000
+  if (diffHours < 24) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
   const diffDays = Math.ceil(diffMs / 86400000)
-  if (diffDays <= 0) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
   if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
   if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
   return null

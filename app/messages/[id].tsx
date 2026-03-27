@@ -142,7 +142,12 @@ function ConversationScreenInner() {
         .neq('sender_id', user.id)
         .eq('is_read', false)
     }
-    if (id && isValidUUID(id)) load()
+    if (id && isValidUUID(id)) {
+      load()
+    } else {
+      // Invalid conversation ID — show empty state instead of infinite spinner
+      setMessages([])
+    }
   }, [id, supabase])
 
   // Realtime messages
@@ -180,7 +185,10 @@ function ConversationScreenInner() {
         }
       })
       .subscribe()
+    // Store channel ref so sendTyping can reuse it
+    channelRef.current = channel
     return () => {
+      channelRef.current = null
       supabase.removeChannel(channel)
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
     }
@@ -194,11 +202,14 @@ function ConversationScreenInner() {
     }
   }, [])
 
+  const messagesRef = useRef(messages)
+  messagesRef.current = messages
+
   const loadOlder = useCallback(async () => {
-    if (!hasOlder || loadingOlder || messages.length === 0) return
+    if (!hasOlder || loadingOlder || messagesRef.current.length === 0) return
     setLoadingOlder(true)
     try {
-      const oldest = messages[0]
+      const oldest = messagesRef.current[0]
       const { data: older } = await supabase
         .from('messages')
         .select('*')
@@ -214,17 +225,22 @@ function ConversationScreenInner() {
     } finally {
       setLoadingOlder(false)
     }
-  }, [hasOlder, loadingOlder, messages, id, supabase])
+  }, [hasOlder, loadingOlder, id, supabase])
 
   const typingDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
   const sendTyping = useCallback(() => {
     if (!id || !userId || typingDebounceRef.current) return
-    supabase.channel(`conv-${id}`).send({
-      type: 'broadcast', event: 'typing',
-      payload: { userId },
-    }).catch(() => {})
+    // Reuse the existing channel reference instead of creating a new one
+    // supabase.channel() with the same name returns a NEW object, not the subscribed one
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast', event: 'typing',
+        payload: { userId },
+      }).catch(() => {})
+    }
     typingDebounceRef.current = setTimeout(() => { typingDebounceRef.current = null }, 2000)
-  }, [id, userId, supabase])
+  }, [id, userId])
 
   const quickReplies = useMemo(() => [
     t('messages.quickReplyThanks'),
@@ -362,7 +378,7 @@ function ConversationScreenInner() {
     if (!selectedMessageId || !userId) return
     setShowReactionPicker(false)
 
-    const msg = messages.find(m => m.id === selectedMessageId)
+    const msg = messagesRef.current.find(m => m.id === selectedMessageId)
     if (!msg || msg.sender_id !== userId) return
 
     // Optimistic update
@@ -383,11 +399,11 @@ function ConversationScreenInner() {
       Alert.alert(t('common.error'), t('conversation.deleteFailed'))
     }
     setSelectedMessageId(null)
-  }, [selectedMessageId, userId, messages, supabase, t])
+  }, [selectedMessageId, userId, supabase, t])
 
   const renderMessage = useCallback(({ item, index }: { item: Message; index: number }) => {
     const isMine = item.sender_id === userId
-    const prev = index > 0 ? messages[index - 1] : null
+    const prev = index > 0 ? messagesRef.current[index - 1] : null
     const showDateHeader = !prev || !isSameDay(prev.created_at, item.created_at)
     const sameAuthorAsPrev = prev?.sender_id === item.sender_id && !showDateHeader
     const isDeleted = (item as any).is_deleted
@@ -499,11 +515,11 @@ function ConversationScreenInner() {
         </View>
       </View>
     )
-  }, [userId, messages, otherUser, colors, isDark, t, locale, reactions, handleLongPress, handleReaction])
+  }, [userId, otherUser, colors, isDark, t, locale, reactions, handleLongPress, handleReaction])
 
   const handleCopyMessage = useCallback(async () => {
     if (!selectedMessageId) return
-    const msg = messages.find(m => m.id === selectedMessageId)
+    const msg = messagesRef.current.find(m => m.id === selectedMessageId)
     if (!msg || (msg as any).is_deleted || !msg.content) return
     try {
       await Clipboard.setStringAsync(msg.content)
@@ -511,9 +527,9 @@ function ConversationScreenInner() {
     } catch { /* clipboard not available */ }
     setShowReactionPicker(false)
     setSelectedMessageId(null)
-  }, [selectedMessageId, messages])
+  }, [selectedMessageId])
 
-  const selectedMsg = selectedMessageId ? messages.find(m => m.id === selectedMessageId) : null
+  const selectedMsg = selectedMessageId ? messagesRef.current.find(m => m.id === selectedMessageId) : null
   const canDelete = selectedMsg?.sender_id === userId && !(selectedMsg as any)?.is_deleted
   const canCopy = selectedMsg && !(selectedMsg as any)?.is_deleted && !!selectedMsg.content
 

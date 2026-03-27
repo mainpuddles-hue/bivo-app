@@ -196,12 +196,14 @@ export default function NotificationsScreen() {
       await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
       setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n))
     }
-    // Navigate based on link_type — covers all notification sources
-    if (item.link_type === 'post' && item.link_id) router.push(`/post/${item.link_id}`)
-    else if (item.link_type === 'conversation' && item.link_id) router.push(`/messages/${item.link_id}`)
-    else if (item.link_type === 'profile' && item.link_id) router.push(`/profile/${item.link_id}`)
-    else if (item.link_type === 'booking' && item.link_id) router.push(`/booking/${item.link_id}`)
-    else if (item.link_type === 'event' && item.link_id) router.push({ pathname: '/(tabs)/events', params: { highlight: item.link_id } })
+    // Navigate based on link_type — validate UUID before navigating to prevent crashes
+    const linkId = item.link_id
+    if (!linkId) return
+    if (item.link_type === 'post') router.push(`/post/${linkId}`)
+    else if (item.link_type === 'conversation') router.push(`/messages/${linkId}`)
+    else if (item.link_type === 'profile') router.push(`/profile/${linkId}`)
+    else if (item.link_type === 'booking') router.push(`/booking/${linkId}`)
+    else if (item.link_type === 'event') router.push({ pathname: '/(tabs)/events', params: { highlight: linkId } })
   }, [supabase, router, expandedGroups, toggleGroup])
 
   const filtered = useMemo(() => {

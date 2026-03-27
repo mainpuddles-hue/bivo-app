@@ -17,6 +17,8 @@ export function useStreak(userId: string | null) {
     currentStreak: 0, longestStreak: 0, lastActiveDate: null, multiplier: 1,
   })
   const recordingRef = useRef(false) // Prevent concurrent recordActivity calls
+  const streakRef = useRef(streak)
+  streakRef.current = streak
 
   useEffect(() => {
     if (!userId) return
@@ -64,8 +66,11 @@ export function useStreak(userId: string | null) {
         return
       }
 
+      // Read from ref to avoid stale closure over streak state
+      const currentStreak = streakRef.current
+
       // Also check in-memory state
-      if (streak.lastActiveDate === today) {
+      if (currentStreak.lastActiveDate === today) {
         // Update cache to match state
         await AsyncStorage.setItem(STREAK_CACHE_KEY, today).catch(() => {})
         recordingRef.current = false
@@ -75,17 +80,17 @@ export function useStreak(userId: string | null) {
       const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
       let newStreak: number
 
-      if (streak.lastActiveDate === yesterday) {
+      if (currentStreak.lastActiveDate === yesterday) {
         // Continue streak
-        newStreak = streak.currentStreak + 1
-      } else if (!streak.lastActiveDate || streak.lastActiveDate < yesterday) {
+        newStreak = currentStreak.currentStreak + 1
+      } else if (!currentStreak.lastActiveDate || currentStreak.lastActiveDate < yesterday) {
         // Streak broken — reset to 1
         newStreak = 1
       } else {
-        newStreak = streak.currentStreak
+        newStreak = currentStreak.currentStreak
       }
 
-      const newLongest = Math.max(streak.longestStreak, newStreak)
+      const newLongest = Math.max(currentStreak.longestStreak, newStreak)
       const multiplier = newStreak >= 30 ? 3 : newStreak >= 7 ? 2 : 1
 
       await (supabase.from('profiles') as any).update({
@@ -108,7 +113,7 @@ export function useStreak(userId: string | null) {
     } finally {
       recordingRef.current = false
     }
-  }, [userId, streak, supabase])
+  }, [userId, supabase])
 
   return { ...streak, recordActivity }
 }

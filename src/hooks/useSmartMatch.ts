@@ -233,6 +233,7 @@ export function useSmartMatch(userId: string | null) {
     offers: TarjoanPost[],
     dismissed: Set<string>,
     neighborhood?: string | null,
+    currentUserId?: string | null,
   ) => {
     if (userNeeds.length === 0 || offers.length === 0) return
 
@@ -240,8 +241,10 @@ export function useSmartMatch(userId: string | null) {
 
     for (const need of userNeeds) {
       for (const offer of offers) {
-        // Skip own posts
-        if (offer.user_id === need.id) continue
+        // Skip own posts — compare user IDs (need.id is the POST id, not user_id)
+        // The neq('user_id', userId) filter on the query already excludes user's own offers,
+        // but this is a safety check in case of data inconsistencies
+        if (currentUserId && offer.user_id === currentUserId) continue
         // Skip dismissed
         if (dismissed.has(offer.id)) continue
 
@@ -391,7 +394,7 @@ export function useSmartMatch(userId: string | null) {
         .single() as any)
       if (profileData?.naapurusto) neighborhood = profileData.naapurusto
 
-      await evaluateMatches(userNeeds, offerPosts, dismissedRef.current, neighborhood)
+      await evaluateMatches(userNeeds, offerPosts, dismissedRef.current, neighborhood, userId)
     }
 
     fetchAndEvaluate()

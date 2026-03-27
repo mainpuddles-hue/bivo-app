@@ -351,6 +351,8 @@ export default function CreateScreen() {
   }, [t])
 
   const handleSubmit = useCallback(async () => {
+    // Prevent double submission
+    if (submitting) return
     if (!selectedType || !title.trim() || !description.trim()) {
       Alert.alert(t('common.error'), t('create.titleAndDescRequired'))
       return
@@ -602,7 +604,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints])
+  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints])
 
   // ── Category selection step ──
   if (step === 'category') {
