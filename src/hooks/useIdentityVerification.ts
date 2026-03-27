@@ -42,18 +42,20 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
   useEffect(() => {
     if (!userId) return
     let mounted = true
-    supabase
-      .from('user_badges')
-      .select('badge_type')
-      .eq('user_id', userId)
-      .eq('badge_type', 'verified')
-      .maybeSingle()
-      .then(({ data }) => {
+    Promise.resolve(
+      supabase
+        .from('user_badges')
+        .select('badge_type')
+        .eq('user_id', userId)
+        .eq('badge_type', 'verified')
+        .maybeSingle()
+    ).then(({ data }) => {
         if (data && mounted) {
           setIsVerified(true)
           setStatus('success')
         }
       })
+      .catch(() => {})
     return () => { mounted = false }
   }, [userId, supabase])
 

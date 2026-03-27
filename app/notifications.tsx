@@ -149,16 +149,20 @@ export default function NotificationsScreen() {
 
   // 1b: Mark all as read
   const markAllRead = useCallback(async () => {
-    const cachedId = await getCachedUserId()
-    if (!cachedId) return
-    await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', cachedId).eq('is_read', false)
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    try {
+      const cachedId = await getCachedUserId()
+      if (!cachedId) return
+      await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', cachedId).eq('is_read', false)
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    } catch {}
   }, [supabase])
 
   // 1c: Delete notification
   const deleteNotification = useCallback(async (notifId: string) => {
-    await (supabase.from('notifications') as any).delete().eq('id', notifId)
-    setNotifications(prev => prev.filter(n => n.id !== notifId))
+    try {
+      await (supabase.from('notifications') as any).delete().eq('id', notifId)
+      setNotifications(prev => prev.filter(n => n.id !== notifId))
+    } catch {}
   }, [supabase])
 
   const handleLongPress = useCallback((item: PrioritizedNotification) => {

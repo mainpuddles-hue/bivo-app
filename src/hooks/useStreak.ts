@@ -57,7 +57,7 @@ export function useStreak(userId: string | null) {
     recordingRef.current = true
 
     try {
-      const today = new Date().toISOString().slice(0, 10)
+      const today = new Date().toLocaleDateString('sv-SE')
 
       // Check AsyncStorage first — avoid unnecessary DB write if already recorded today
       const cachedDate = await AsyncStorage.getItem(STREAK_CACHE_KEY)
@@ -77,7 +77,7 @@ export function useStreak(userId: string | null) {
         return
       }
 
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('sv-SE')
       let newStreak: number
 
       if (currentStreak.lastActiveDate === yesterday) {

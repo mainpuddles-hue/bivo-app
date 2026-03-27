@@ -116,19 +116,30 @@ export default function PaymentSuccessScreen() {
             <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[styles.summaryTitle, { color: colors.foreground }]}>{booking.post_title}</Text>
 
-              <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>{t('rental.startDate')}</Text>
-                <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-                  {new Date(booking.start_date).toLocaleDateString(localeStr, { day: 'numeric', month: 'long', year: 'numeric' })}
-                </Text>
-              </View>
+              {booking.start_date === booking.end_date ? (
+                <View style={styles.summaryRow}>
+                  <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>{t('payment.date')}</Text>
+                  <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                    {new Date(booking.start_date).toLocaleDateString(localeStr, { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <View style={styles.summaryRow}>
+                    <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>{t('rental.startDate')}</Text>
+                    <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                      {new Date(booking.start_date).toLocaleDateString(localeStr, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </Text>
+                  </View>
 
-              <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>{t('rental.endDate')}</Text>
-                <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-                  {new Date(booking.end_date).toLocaleDateString(localeStr, { day: 'numeric', month: 'long', year: 'numeric' })}
-                </Text>
-              </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>{t('rental.endDate')}</Text>
+                    <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                      {new Date(booking.end_date).toLocaleDateString(localeStr, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </Text>
+                  </View>
+                </>
+              )}
 
               <View style={[styles.summaryRow, styles.totalRow, { borderTopColor: colors.border }]}>
                 <Text style={[styles.totalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text>

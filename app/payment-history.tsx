@@ -58,10 +58,9 @@ export default function PaymentHistoryScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const fetchPayments = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
-
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoading(false); return }
       const { data, error } = await supabase
         .from('payments')
         .select(`

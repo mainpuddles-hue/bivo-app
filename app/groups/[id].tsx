@@ -177,7 +177,7 @@ export default function GroupDetailScreen() {
   }, [supabase, id, currentUserId])
 
   const fetchPosts = useCallback(async () => {
-    if (!id) return
+    if (!id) { setLoading(false); setRefreshing(false); return }
     try {
       const { data, error } = await supabase.from('group_posts')
         .select('*, user:profiles!group_posts_user_id_fkey(id, name, avatar_url)')

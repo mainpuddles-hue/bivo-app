@@ -297,7 +297,7 @@ export default function SettingsScreen() {
   }
 
   const handleConfirmDelete = useCallback(async () => {
-    if (deleteConfirmText !== t('settings.deleteConfirmWord') || deletingAccount) return
+    if (deleteConfirmText.toUpperCase() !== (t('settings.deleteConfirmWord') ?? '').toUpperCase() || deletingAccount) return
     setDeletingAccount(true)
     try {
       // Try RPC first for server-side cascade deletion

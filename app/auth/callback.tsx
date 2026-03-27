@@ -131,7 +131,8 @@ export default function AuthCallbackScreen() {
     }
 
     handleCallback()
-  }, []) // Run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Run once on mount — params intentionally omitted
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

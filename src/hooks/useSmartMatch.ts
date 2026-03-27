@@ -401,7 +401,7 @@ export function useSmartMatch(userId: string | null) {
 
     // Re-evaluate every 60 seconds instead of using a realtime channel
     const interval = setInterval(() => {
-      if (!cancelled) fetchAndEvaluate()
+      if (!cancelled) fetchAndEvaluate().catch(() => {})
     }, 60000)
 
     return () => {

@@ -64,6 +64,7 @@ function SimpleCalendar({
   currentMonth,
   colors,
   t,
+  locale,
 }: {
   events: Event[]
   selectedDate: string | null
@@ -72,6 +73,7 @@ function SimpleCalendar({
   currentMonth: Date
   colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors']
   t: (key: string, params?: Record<string, string | number>) => string
+  locale: string
 }) {
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
@@ -99,7 +101,7 @@ function SimpleCalendar({
     t('time.saturday').slice(0, 2),
   ]
 
-  const monthLabel = new Date(year, month).toLocaleDateString('fi-FI', { month: 'long', year: 'numeric' })
+  const monthLabel = new Date(year, month).toLocaleDateString(locale === 'en' ? 'en-GB' : locale === 'sv' ? 'sv-SE' : 'fi-FI', { month: 'long', year: 'numeric' })
 
   const goBack = () => onMonthChange(new Date(year, month - 1, 1))
   const goForward = () => onMonthChange(new Date(year, month + 1, 1))
@@ -620,6 +622,7 @@ export default function EventsScreen() {
             currentMonth={calendarMonth}
             colors={colors}
             t={t}
+            locale={locale}
           />
           {/* Events for selected day */}
           {calendarSelectedDate && (

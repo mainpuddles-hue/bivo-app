@@ -131,15 +131,15 @@ function formatSchedule(
 
   switch (scheduleType) {
     case 'daily':
-      return t('activities.daily') + (timeStr ? ` klo ${timeStr}` : '')
+      return t('activities.daily') + (timeStr ? ` ${t('time.atTime') ?? 'klo'} ${timeStr}` : '')
     case 'weekly':
       return t('activity.scheduleWeeklyFormat', { day: dayName, time: timeStr })
     case 'biweekly':
       return t('activity.scheduleBiweeklyFormat', { day: dayName, time: timeStr })
     case 'monthly':
-      return t('activities.monthly') + (timeStr ? ` klo ${timeStr}` : '')
+      return t('activities.monthly') + (timeStr ? ` ${t('time.atTime') ?? 'klo'} ${timeStr}` : '')
     default:
-      return timeStr ? `klo ${timeStr}` : ''
+      return timeStr ? `${t('time.atTime') ?? 'klo'} ${timeStr}` : ''
   }
 }
 

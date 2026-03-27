@@ -37,10 +37,12 @@ export default function ProScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (data) setProfile(data as unknown as Profile)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        if (data) setProfile(data as unknown as Profile)
+      } catch {}
     }
     load()
   }, [supabase])

@@ -24,7 +24,8 @@ function countryToLocale(country: string | null): Locale | null {
     case 'FI': return 'fi'
     case 'SE': return 'sv'
     case 'EE': return 'et'
-    default: return country ? 'en' : null
+    case 'RU': return 'ru'
+    default: return null
   }
 }
 

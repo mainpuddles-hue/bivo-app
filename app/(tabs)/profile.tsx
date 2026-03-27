@@ -108,8 +108,9 @@ export default function ProfileScreen() {
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
       supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-      supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id)
-        .then(res => res.error ? { count: 0, data: null, error: res.error } : res),
+      Promise.resolve(supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id))
+        .then(res => res.error ? { count: 0, data: null, error: res.error } : res)
+        .catch(() => ({ count: 0, data: null, error: null })),
     ])
     setPostCount(postsRes.count ?? 0)
     setFollowerCount(followersRes.count ?? 0)
@@ -203,10 +204,16 @@ export default function ProfileScreen() {
 
   const handleSaveBio = useCallback(async () => {
     if (!profile) return
-    await (supabase.from('profiles') as any).update({ bio: bioText.trim() }).eq('id', profile.id)
-    setProfile(prev => prev ? { ...prev, bio: bioText.trim() } : null)
-    setEditingBio(false)
-  }, [profile, bioText, supabase])
+    const previousBio = profile.bio ?? ''
+    try {
+      await (supabase.from('profiles') as any).update({ bio: bioText.trim() }).eq('id', profile.id)
+      setProfile(prev => prev ? { ...prev, bio: bioText.trim() } : null)
+      setEditingBio(false)
+    } catch {
+      setBioText(previousBio)
+      Alert.alert(t('common.error'), t('profile.bioUpdateFailed'))
+    }
+  }, [profile, bioText, supabase, t])
 
   const openFollowList = useCallback(async (type: 'followers' | 'following') => {
     if (!profile) return
@@ -432,7 +439,7 @@ export default function ProfileScreen() {
           {/* Badges */}
           {badges.length > 0 && (
             <View style={s.badgesSection}>
-              <Text style={[s.badgesSectionTitle, { color: colors.foreground }]}>Saavutukset</Text>
+              <Text style={[s.badgesSectionTitle, { color: colors.foreground }]}>{t('profile.badges')}</Text>
               <View style={s.badgesRow}>
                 {badges.map((b) => {
                   const cfg = BADGE_ICONS[b.badge_type]

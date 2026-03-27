@@ -603,7 +603,7 @@ export default function GroupsScreen() {
               </Pressable>
             </View>
             <FlatList
-              data={NEIGHBORHOODS as unknown as string[]}
+              data={NEIGHBORHOODS as readonly string[]}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <Pressable

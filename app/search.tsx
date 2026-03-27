@@ -367,11 +367,11 @@ export default function SearchScreen() {
       return [...posts].sort((a, b) => {
         const distA =
           a.latitude != null && a.longitude != null
-            ? Math.hypot(a.latitude - userLat, a.longitude - userLng)
+            ? haversineKm(userLat, userLng, a.latitude, a.longitude)
             : Infinity
         const distB =
           b.latitude != null && b.longitude != null
-            ? Math.hypot(b.latitude - userLat, b.longitude - userLng)
+            ? haversineKm(userLat, userLng, b.latitude, b.longitude)
             : Infinity
         return distA - distB
       })
@@ -528,22 +528,26 @@ export default function SearchScreen() {
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore) return
     setLoadingMore(true)
-    const q = query.trim()
-    let postQuery = supabase
-      .from('posts')
-      .select(POST_SELECT)
-      .eq('is_active', true)
-      .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+    try {
+      const q = query.trim()
+      let postQuery = supabase
+        .from('posts')
+        .select(POST_SELECT)
+        .eq('is_active', true)
+        .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
 
-    postQuery = buildFilteredQuery(postQuery, filters, activeFilter, timeFilter)
-    postQuery = postQuery.range(results.length, results.length + 19)
+      postQuery = buildFilteredQuery(postQuery, filters, activeFilter, timeFilter)
+      postQuery = postQuery.range(results.length, results.length + 19)
 
-    const { data } = await postQuery
-    let newPosts = (data ?? []) as unknown as Post[]
-    newPosts = sortByDistance(newPosts, filters)
-    setResults(prev => [...prev, ...newPosts])
-    setHasMore(newPosts.length >= 20)
-    setLoadingMore(false)
+      const { data } = await postQuery
+      let newPosts = (data ?? []) as unknown as Post[]
+      newPosts = sortByDistance(newPosts, filters)
+      setResults(prev => [...prev, ...newPosts])
+      setHasMore(newPosts.length >= 20)
+    } catch {
+    } finally {
+      setLoadingMore(false)
+    }
   }, [hasMore, loadingMore, query, activeFilter, timeFilter, filters, results.length, supabase, buildFilteredQuery, sortByDistance])
 
   const handleCategoryFilter = useCallback((type: PostType | null) => {
@@ -1071,7 +1075,7 @@ export default function SearchScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
-            <Pressable style={[s.userCard, { backgroundColor: colors.card }]}>
+            <Pressable onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card }]}>
               <Avatar url={item.avatar_url} name={item.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>

@@ -284,7 +284,7 @@ function BookingDetailScreenInner() {
   const basePrice = isService ? (booking.service_price ?? 0) : ((booking.daily_fee ?? 0) * (() => {
     if (!booking.start_date || !booking.end_date) return 0
     const s = new Date(booking.start_date); const e = new Date(booking.end_date)
-    const d = Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24))
+    const d = Math.max(1, Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)))
     return d > 0 ? d : 0
   })())
 

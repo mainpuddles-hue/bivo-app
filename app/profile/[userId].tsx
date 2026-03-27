@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -8,6 +8,7 @@ import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
   Flag, ShieldBan, Crown, PenLine, Zap, ShieldCheck, Clock, CalendarDays, CheckCircle2,
 } from 'lucide-react-native'
+import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -172,21 +173,28 @@ export default function PublicProfileScreen() {
     load()
   }, [userId, supabase, router])
 
+  const followingRef = useRef(false)
   const handleFollow = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
+    if (followingRef.current) return
+    followingRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     const wasFollowing = isFollowing
     const prevCount = followerCount
-    if (wasFollowing) {
-      setIsFollowing(false)
-      setFollowerCount(c => c - 1)
-      const { error } = await (supabase.from('user_follows') as any).delete().eq('follower_id', currentUserId).eq('followed_id', userId)
-      if (error) { setIsFollowing(true); setFollowerCount(prevCount) }
-    } else {
-      setIsFollowing(true)
-      setFollowerCount(c => c + 1)
-      const { error } = await (supabase.from('user_follows') as any).insert({ follower_id: currentUserId, followed_id: userId })
-      if (error) { setIsFollowing(false); setFollowerCount(prevCount) }
+    try {
+      if (wasFollowing) {
+        setIsFollowing(false)
+        setFollowerCount(c => c - 1)
+        const { error } = await (supabase.from('user_follows') as any).delete().eq('follower_id', currentUserId).eq('followed_id', userId)
+        if (error) { setIsFollowing(true); setFollowerCount(prevCount) }
+      } else {
+        setIsFollowing(true)
+        setFollowerCount(c => c + 1)
+        const { error } = await (supabase.from('user_follows') as any).insert({ follower_id: currentUserId, followed_id: userId })
+        if (error) { setIsFollowing(false); setFollowerCount(prevCount) }
+      }
+    } finally {
+      followingRef.current = false
     }
   }, [currentUserId, isFollowing, followerCount, userId, supabase, router])
 
@@ -216,21 +224,25 @@ export default function PublicProfileScreen() {
   const handleBlock = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
     Alert.alert(
-      t('post.block'),
+      isBlocked ? t('post.unblock') ?? 'Unblock' : t('post.block'),
       t('post.blockConfirm', { name: profile?.name ?? '' }),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('post.block'), style: 'destructive',
+          text: isBlocked ? t('post.unblock') ?? 'Unblock' : t('post.block'), style: 'destructive',
           onPress: async () => {
             if (isBlocked) {
               setIsBlocked(false)
-              await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
-              Alert.alert(t('common.success'), t('profile.unblocked'))
+              try {
+                await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
+                Alert.alert(t('common.success'), t('profile.unblocked'))
+              } catch { setIsBlocked(true) }
             } else {
               setIsBlocked(true)
-              await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
-              Alert.alert(t('common.success'), t('profile.blocked'))
+              try {
+                await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
+                Alert.alert(t('common.success'), t('profile.blocked'))
+              } catch { setIsBlocked(false) }
             }
           },
         },
@@ -467,9 +479,7 @@ export default function PublicProfileScreen() {
               {posts.slice(0, 3).map(post => (
                 <Pressable key={post.id} onPress={() => router.push(`/post/${post.id}` as any)} style={s.recentPostThumb}>
                   {post.image_url ? (
-                    <View style={[s.recentPostImg, { backgroundColor: colors.muted }]}>
-                      <Text style={[s.recentPostImgPlaceholder, { color: colors.mutedForeground }]} numberOfLines={1}>{post.title}</Text>
-                    </View>
+                    <Image source={{ uri: post.image_url }} style={s.recentPostImg} contentFit="cover" />
                   ) : (
                     <View style={[s.recentPostImg, { backgroundColor: colors.muted }]}>
                       <Text style={[s.recentPostImgPlaceholder, { color: colors.mutedForeground }]} numberOfLines={1}>{post.title}</Text>

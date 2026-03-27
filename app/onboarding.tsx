@@ -6,11 +6,11 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
-  Dimensions,
   Alert,
   ActivityIndicator,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  useWindowDimensions,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -38,7 +38,6 @@ import { useLocationVerification } from '@/hooks/useLocationVerification'
 import { useReferral } from '@/hooks/useReferral'
 import { trackEvent } from '@/lib/analytics'
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const TOTAL_PAGES = 4
 
 // City display names
@@ -58,6 +57,7 @@ export default function OnboardingScreen() {
   const router = useRouter()
   const supabase = useSupabase()
   const scrollRef = useRef<ScrollView>(null)
+  const { width: SCREEN_WIDTH } = useWindowDimensions()
 
   const [currentPage, setCurrentPage] = useState(0)
   const [selectedCity, setSelectedCity] = useState('helsinki')

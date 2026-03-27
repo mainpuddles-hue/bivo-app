@@ -173,19 +173,25 @@ export default function SavedScreen() {
   const handleUnsavePost = useCallback(async (postId: string) => {
     if (unsavingId) return
     setUnsavingId(postId)
-    const prev = posts
-    setPosts(p => p.filter(post => post.id !== postId))
+    let removedPost: Post | undefined
+    setPosts(current => {
+      removedPost = current.find(post => post.id === postId)
+      return current.filter(post => post.id !== postId)
+    })
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
       await (supabase.from('saved_posts') as any).delete().eq('post_id', postId).eq('user_id', user.id)
     } catch {
-      setPosts(prev)
+      if (removedPost) {
+        const restored = removedPost
+        setPosts(current => [restored, ...current])
+      }
       Alert.alert(t('common.error'))
     } finally {
       setUnsavingId(null)
     }
-  }, [unsavingId, posts, supabase, t])
+  }, [unsavingId, supabase, t])
 
   const handleUnsaveEvent = useCallback(async (eventId: string, eventType: string) => {
     const prev = events

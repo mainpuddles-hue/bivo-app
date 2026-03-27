@@ -412,7 +412,7 @@ function PostDetailScreenInner() {
     else { options.push({ text: t('post.reopen'), onPress: handleReopen }) }
     options.push({ text: t('post.delete'), style: 'destructive', onPress: handleDelete })
     options.push({ text: t('common.cancel'), style: 'cancel' })
-    Alert.alert(undefined as unknown as string, undefined as unknown as string, options)
+    Alert.alert('', '', options)
   }, [post, isAuthor, t, openEditModal, handleDelete, handleMarkClosed, handleReopen])
 
   const handleReport = useCallback(() => {

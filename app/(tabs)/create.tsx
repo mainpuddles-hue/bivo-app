@@ -284,7 +284,7 @@ export default function CreateScreen() {
 
   const toggleTag = (tagId: string) => {
     setSelectedTags(prev => {
-      if (prev.includes(tagId)) return prev.filter(t => t !== tagId)
+      if (prev.includes(tagId)) return prev.filter(tag => tag !== tagId)
       if (prev.length >= 3) return prev
       return [...prev, tagId]
     })
@@ -534,17 +534,6 @@ export default function CreateScreen() {
           body: JSON.stringify({ post_id: post.id }),
         }).catch(() => {}) // Non-blocking
 
-        // Moderate content (non-blocking)
-        fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/moderate-content`, {
-          method: 'POST',
-          headers: authHeaders,
-          body: JSON.stringify({
-            title: title.trim(),
-            description: description.trim(),
-            post_id: post.id,
-            user_id: user.id,
-          }),
-        }).catch(() => {})
       }
 
       // Push notification for urgent posts (broadcast) — rate limited to 1 per 30 min

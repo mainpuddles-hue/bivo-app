@@ -65,6 +65,7 @@ export function useLocationDetection(userId: string | null) {
             },
           }
         )
+        if (!res.ok) throw new Error(`Nominatim ${res.status}`)
         const data = await res.json()
         const countryCode =
           data?.address?.country_code?.toUpperCase() ?? null
