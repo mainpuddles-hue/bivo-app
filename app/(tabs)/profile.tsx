@@ -118,16 +118,16 @@ export default function ProfileScreen() {
     setSavedCount(savedRes.count ?? 0)
     setThanksCount(thanksRes.count ?? 0)
 
-      // Reviews received
+      // Reviews received — fetch all for correct average, display latest 10
       const { data: revs } = await supabase
         .from('reviews')
         .select('*, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
         .eq('reviewed_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(10)
-      setReviews((revs ?? []) as unknown as Review[])
-      if (revs && revs.length > 0) {
-        const avg = revs.length > 0 ? (revs as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revs.length : 0
+      const allRevs = (revs ?? []) as any[]
+      setReviews(allRevs.slice(0, 10) as unknown as Review[])
+      if (allRevs.length > 0) {
+        const avg = allRevs.reduce((sum: number, r: any) => sum + r.rating, 0) / allRevs.length
         setAvgRating(Math.round(avg * 10) / 10)
       }
 
@@ -819,10 +819,10 @@ export default function ProfileScreen() {
             data={followList}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-              <View style={s.followItem}>
+              <Pressable style={s.followItem} onPress={() => { setFollowModal(null); router.push(`/profile/${item.id}` as any) }}>
                 <Avatar url={item.avatar_url} name={item.name} size={40} />
                 <Text style={[s.followName, { color: colors.foreground }]}>{item.name}</Text>
-              </View>
+              </Pressable>
             )}
             ListEmptyComponent={
               <Text style={[s.emptyText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 40 }]}>

@@ -47,6 +47,7 @@ export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isMonthlyData, setIsMonthlyData] = useState(false)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'neighborhood'>('all')
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null)
@@ -85,7 +86,9 @@ export default function LeaderboardScreen() {
       let data: any[]
       if (monthlyUsers.length > 0) {
         data = monthlyUsers
+        setIsMonthlyData(true)
       } else {
+        setIsMonthlyData(false)
         let query = supabase
           .from('profiles')
           .select('id, name, avatar_url, naapurusto, total_points')
@@ -273,7 +276,7 @@ export default function LeaderboardScreen() {
       </View>
 
       {/* Month indicator */}
-      <Text style={[s.monthLabel, { color: colors.mutedForeground }]}>{t('leaderboard.thisMonth')}</Text>
+      <Text style={[s.monthLabel, { color: colors.mutedForeground }]}>{isMonthlyData ? t('leaderboard.thisMonth') : t('leaderboard.allTime') ?? 'All time'}</Text>
 
       {loading ? (
         <View style={s.list}>
