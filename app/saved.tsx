@@ -52,8 +52,9 @@ export default function SavedScreen() {
 
   useEffect(() => {
     async function load() {
+      try {
       const cachedId = await getCachedUserId()
-      if (!cachedId) { router.replace('/(auth)/login'); return }
+      if (!cachedId) { router.replace('/(auth)/login'); setLoading(false); return }
       const user = { id: cachedId }
 
       // Fetch saved posts, events, and places in parallel
@@ -160,7 +161,11 @@ export default function SavedScreen() {
         }
       }
 
-      setLoading(false)
+      } catch {
+        // Network error
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [supabase, router, locale])

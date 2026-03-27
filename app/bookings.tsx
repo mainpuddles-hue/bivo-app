@@ -270,24 +270,36 @@ export default function BookingsScreen() {
   // Service booking actions
   const handleServiceConfirm = useCallback(async (booking: any) => {
     setActionLoading(booking.id)
-    await (supabase.from('service_bookings') as any).update({ status: 'confirmed' }).eq('id', booking.id)
-    setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'confirmed' } : b))
-    setActionLoading(null)
-  }, [supabase])
+    try {
+      const { error } = await (supabase.from('service_bookings') as any).update({ status: 'confirmed' }).eq('id', booking.id)
+      if (error) throw error
+      setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'confirmed' } : b))
+    } catch {
+      Alert.alert(t('common.error'), t('service.updateFailed'))
+    } finally { setActionLoading(null) }
+  }, [supabase, t])
 
   const handleServiceStart = useCallback(async (booking: any) => {
     setActionLoading(booking.id)
-    await (supabase.from('service_bookings') as any).update({ status: 'in_progress' }).eq('id', booking.id)
-    setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'in_progress' } : b))
-    setActionLoading(null)
-  }, [supabase])
+    try {
+      const { error } = await (supabase.from('service_bookings') as any).update({ status: 'in_progress' }).eq('id', booking.id)
+      if (error) throw error
+      setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'in_progress' } : b))
+    } catch {
+      Alert.alert(t('common.error'), t('service.updateFailed'))
+    } finally { setActionLoading(null) }
+  }, [supabase, t])
 
   const handleServiceComplete = useCallback(async (booking: any) => {
     setActionLoading(booking.id)
-    await (supabase.from('service_bookings') as any).update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', booking.id)
-    setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'completed' } : b))
-    Alert.alert(t('common.success'), t('service.markedComplete'))
-    setActionLoading(null)
+    try {
+      const { error } = await (supabase.from('service_bookings') as any).update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', booking.id)
+      if (error) throw error
+      setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'completed' } : b))
+      Alert.alert(t('common.success'), t('service.markedComplete'))
+    } catch {
+      Alert.alert(t('common.error'), t('service.updateFailed'))
+    } finally { setActionLoading(null) }
   }, [supabase, t])
 
   const handleServiceCancel = useCallback(async (booking: any) => {
@@ -295,9 +307,13 @@ export default function BookingsScreen() {
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.confirm'), style: 'destructive', onPress: async () => {
         setActionLoading(booking.id)
-        await (supabase.from('service_bookings') as any).update({ status: 'cancelled' }).eq('id', booking.id)
-        setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'cancelled' } : b))
-        setActionLoading(null)
+        try {
+          const { error } = await (supabase.from('service_bookings') as any).update({ status: 'cancelled' }).eq('id', booking.id)
+          if (error) throw error
+          setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'cancelled' } : b))
+        } catch {
+          Alert.alert(t('common.error'), t('service.updateFailed'))
+        } finally { setActionLoading(null) }
       }},
     ])
   }, [supabase, t])

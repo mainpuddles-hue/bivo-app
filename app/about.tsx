@@ -64,11 +64,11 @@ export default function AboutScreen() {
         {/* Website */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <Pressable
-            onPress={() => Linking.openURL('https://tackbird-v2.vercel.app')}
+            onPress={() => Linking.openURL('https://tackbird.fi').catch(() => {})}
             style={s.linkRow}
           >
             <ExternalLink size={18} color={colors.primary} />
-            <Text style={[s.linkText, { color: colors.primary }]}>tackbird-v2.vercel.app</Text>
+            <Text style={[s.linkText, { color: colors.primary }]}>tackbird.fi</Text>
           </Pressable>
         </View>
 

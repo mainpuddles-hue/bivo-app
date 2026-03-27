@@ -55,10 +55,11 @@ export default function MessagesScreen() {
   }, [pinnedIds, savePinnedIds])
 
   const fetchConversations = useCallback(async () => {
+    try {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
+    if (!user) { setLoading(false); setRefreshing(false); return }
     setUserId(user.id)
-    if (!isValidUUID(user.id)) { setLoading(false); return }
+    if (!isValidUUID(user.id)) { setLoading(false); setRefreshing(false); return }
 
     // Single RPC call replaces N+1 queries (1 conversations + 2N messages queries)
     const { data, error: rpcError } = await (supabase.rpc as any)('get_conversations_with_details', { p_user_id: user.id })
@@ -137,6 +138,10 @@ export default function MessagesScreen() {
     setConversations(convs)
     setLoading(false)
     setRefreshing(false)
+    } catch {
+      setLoading(false)
+      setRefreshing(false)
+    }
   }, [supabase])
 
   useEffect(() => { fetchConversations() }, [fetchConversations])

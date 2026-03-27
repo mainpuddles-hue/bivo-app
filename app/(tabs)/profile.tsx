@@ -93,6 +93,7 @@ export default function ProfileScreen() {
   const streakData = useStreak(profile?.id ?? null)
 
   const loadProfile = useCallback(async () => {
+    try {
     const cachedId = await getCachedUserId()
     if (!cachedId) { setProfileLoading(false); return }
     const user = { id: cachedId }
@@ -165,7 +166,11 @@ export default function ProfileScreen() {
       })
       activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setActivity(activities.slice(0, 15))
+    } catch {
+      // Network error — show whatever we have
+    } finally {
       setProfileLoading(false)
+    }
   }, [supabase, t])
 
   useEffect(() => { loadProfile() }, [loadProfile])

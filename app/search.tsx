@@ -436,7 +436,7 @@ export default function SearchScreen() {
         .from('posts')
         .select(POST_SELECT)
         .eq('is_active', true)
-        .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+        .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
 
       postQuery = buildFilteredQuery(postQuery, f, catFilter, tf)
       postQuery = postQuery.limit(20)
@@ -481,7 +481,7 @@ export default function SearchScreen() {
       const { data: users } = await supabase
         .from('profiles')
         .select('id, name, avatar_url, naapurusto')
-        .ilike('name', `%${q}%`)
+        .ilike('name', `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
         .limit(10)
       if (controller.signal.aborted) return
 

@@ -55,7 +55,14 @@ export function useNotificationPreferences() {
       } catch { /* ignore cache errors */ }
 
       // Then fetch from Supabase
-      const { data: { user } } = await supabase.auth.getUser()
+      let user: any = null
+      try {
+        const { data } = await supabase.auth.getUser()
+        user = data?.user
+      } catch {
+        if (mounted) setLoading(false)
+        return
+      }
       if (!user || !mounted) {
         if (mounted) setLoading(false)
         return

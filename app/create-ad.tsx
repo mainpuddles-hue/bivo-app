@@ -168,10 +168,9 @@ export default function CreateAdScreen() {
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          amount: totalPrice,
+          amount: totalPrice, // in cents — stripe-checkout Edge Function expects cents
           description: `TackBird Ad: ${title.trim()} (${duration} days)`,
           type: 'ad_campaign',
-          seller_id: profile.id,
           metadata: {
             ad_id: ad?.id,
             duration: String(duration),
@@ -189,9 +188,9 @@ export default function CreateAdScreen() {
       const { url } = await res.json()
       if (url) {
         await Linking.openURL(url)
+        // Don't navigate away — user will return via deep link after payment
+        return
       }
-
-      router.back()
     } catch (err: any) {
       Alert.alert(t('common.error'), err.message ?? t('ads.createError'))
     } finally {

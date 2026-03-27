@@ -435,8 +435,15 @@ export default function GroupDetailScreen() {
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
         try {
-          await (supabase.from('group_post_comments') as any).delete().in('post_id', posts.map(p => p.id).length > 0 ? posts.map(p => p.id) : ['__none__'])
-          await (supabase.from('group_post_likes') as any).delete().in('post_id', posts.map(p => p.id).length > 0 ? posts.map(p => p.id) : ['__none__'])
+          // Fetch ALL post IDs for this group (no limit)
+          const { data: allPosts } = await (supabase.from('group_posts') as any)
+            .select('id')
+            .eq('group_id', id)
+          const allPostIds = (allPosts ?? []).map((p: any) => p.id)
+          if (allPostIds.length > 0) {
+            await (supabase.from('group_post_comments') as any).delete().in('post_id', allPostIds)
+            await (supabase.from('group_post_likes') as any).delete().in('post_id', allPostIds)
+          }
           await (supabase.from('group_posts') as any).delete().eq('group_id', id)
           await (supabase.from('group_members') as any).delete().eq('group_id', id)
           await (supabase.from('groups') as any).delete().eq('id', id)

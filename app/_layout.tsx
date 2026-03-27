@@ -47,17 +47,20 @@ function useOnboardingGuard() {
   const supabase = useSupabase()
   const [checked, setChecked] = useState(false)
 
+  const segmentsRef = useRef(segments)
+  segmentsRef.current = segments
+
   useEffect(() => {
     let mounted = true
 
     async function checkOnboarding() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setChecked(true); return }
+        if (!user) { if (mounted) setChecked(true); return }
 
         // Check AsyncStorage flag first (fast path)
         const flag = await AsyncStorage.getItem('onboarding_complete')
-        if (flag === 'true') { setChecked(true); return }
+        if (flag === 'true') { if (mounted) setChecked(true); return }
 
         // Check if profile has neighborhood set (already onboarded via web)
         const { data: profile } = await supabase
@@ -74,8 +77,8 @@ function useOnboardingGuard() {
         }
 
         // Not onboarded — redirect (unless already on onboarding or auth screens)
-        const currentSegment = segments[0]
-        if (currentSegment !== 'onboarding' && currentSegment !== '(auth)' && currentSegment !== 'auth') {
+        const currentSegment = segmentsRef.current[0]
+        if (mounted && currentSegment !== 'onboarding' && currentSegment !== '(auth)' && currentSegment !== 'auth') {
           router.replace('/onboarding')
         }
         if (mounted) setChecked(true)
@@ -86,7 +89,7 @@ function useOnboardingGuard() {
 
     checkOnboarding()
     return () => { mounted = false }
-  }, [supabase, segments, router])
+  }, [supabase, router])
 
   return checked
 }
@@ -223,43 +226,49 @@ function useAuthStateListener() {
   const router = useRouter()
 
   useEffect(() => {
+    let mounted = true
+    const timers: ReturnType<typeof setTimeout>[] = []
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // Check if user has completed onboarding before navigating
-        // This prevents a flash where the feed loads then redirects to onboarding
-        setTimeout(async () => {
+        const timer = setTimeout(async () => {
+          if (!mounted) return
           try {
             const flag = await AsyncStorage.getItem('onboarding_complete')
             if (flag === 'true') {
-              router.replace('/')
+              if (mounted) router.replace('/')
               return
             }
-            // Check profile for naapurusto (may have onboarded via web)
             const { data: profile } = await supabase
               .from('profiles')
               .select('naapurusto')
               .eq('id', session.user.id)
               .single()
+            if (!mounted) return
             if ((profile as any)?.naapurusto) {
               await AsyncStorage.setItem('onboarding_complete', 'true')
-              router.replace('/')
+              if (mounted) router.replace('/')
             } else {
-              router.replace('/onboarding')
+              if (mounted) router.replace('/onboarding')
             }
           } catch {
-            // On error, go to feed and let the onboarding guard handle it
-            router.replace('/')
+            if (mounted) router.replace('/')
           }
         }, 100)
+        timers.push(timer)
       } else if (event === 'PASSWORD_RECOVERY' && session) {
-        // User clicked password reset link — navigate to settings for pw change
-        setTimeout(() => {
-          router.replace('/settings')
+        const timer = setTimeout(() => {
+          if (mounted) router.replace('/settings')
         }, 100)
+        timers.push(timer)
       }
     })
 
-    return () => { subscription.unsubscribe() }
+    return () => {
+      mounted = false
+      timers.forEach(clearTimeout)
+      subscription.unsubscribe()
+    }
   }, [supabase, router])
 }
 

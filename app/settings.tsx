@@ -82,6 +82,7 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     async function load() {
+      try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       setUserEmail(user.email ?? null)
@@ -108,6 +109,9 @@ export default function SettingsScreen() {
         if (citiesData && citiesData.length > 0) setAvailableCities(citiesData as any[])
       } catch { /* silently ignore */ }
       // Theme is handled by ThemeProvider
+      } catch {
+        // Network error — show whatever we have
+      }
     }
     load()
   }, [supabase])
@@ -331,8 +335,12 @@ export default function SettingsScreen() {
   }, [deleteConfirmText, deletingAccount, supabase, router, t, profile])
 
   const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // Sign out may fail on network — proceed anyway
+    }
     clearAuthCache()
-    await supabase.auth.signOut()
     router.replace('/(auth)/login')
   }
 

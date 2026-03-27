@@ -33,26 +33,30 @@ export function useCityConfig(cityId: string | null) {
     let mounted = true
 
     async function load() {
-      const cid = cityId!
-      const [{ data: city }, { data: neighborhoods }] = await Promise.all([
-        supabase.from('cities').select('*').eq('id', cid).single(),
-        supabase.from('city_neighborhoods').select('name, center_lat, center_lng, is_dense').eq('city_id', cid).order('name'),
-      ])
+      try {
+        const cid = cityId!
+        const [{ data: city }, { data: neighborhoods }] = await Promise.all([
+          supabase.from('cities').select('*').eq('id', cid).single(),
+          supabase.from('city_neighborhoods').select('name, center_lat, center_lng, is_dense').eq('city_id', cid).order('name'),
+        ])
 
-      if (!mounted) return
+        if (!mounted) return
 
-      const names = (neighborhoods ?? []).map((n: any) => n.name)
-      const coords: Record<string, { lat: number; lng: number; isDense: boolean }> = {}
-      for (const n of (neighborhoods ?? []) as any[]) {
-        coords[n.name] = { lat: n.center_lat, lng: n.center_lng, isDense: n.is_dense ?? false }
+        const names = (neighborhoods ?? []).map((n: any) => n.name)
+        const coords: Record<string, { lat: number; lng: number; isDense: boolean }> = {}
+        for (const n of (neighborhoods ?? []) as any[]) {
+          coords[n.name] = { lat: n.center_lat, lng: n.center_lng, isDense: n.is_dense ?? false }
+        }
+
+        setConfig({
+          city: city as any as City ?? null,
+          neighborhoods: names,
+          neighborhoodCoords: coords,
+          loading: false,
+        })
+      } catch {
+        if (mounted) setConfig(c => ({ ...c, loading: false }))
       }
-
-      setConfig({
-        city: city as any as City ?? null,
-        neighborhoods: names,
-        neighborhoodCoords: coords,
-        loading: false,
-      })
     }
 
     load()

@@ -50,9 +50,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 }
 
 export function useTheme(): ThemeContextValue {
+  const scheme = useColorScheme()
   const ctx = useContext(ThemeContext)
   if (!ctx) {
-    const scheme = useColorScheme()
     const isDark = scheme === 'dark'
     return { colors: isDark ? colors.dark : colors.light, isDark, theme: 'system', setTheme: () => {} }
   }

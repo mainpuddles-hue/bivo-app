@@ -104,12 +104,13 @@ export default function AdminScreen() {
         const today = new Date().toISOString().split('T')[0]
         const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
 
+        const safeQuery = (q: any) => Promise.resolve(q).then((r: any) => r).catch(() => ({ count: 0 }))
         const [usersRes, activeRes, postsRes, bookingsRes, flagsRes] = await Promise.all([
-          supabase.from('profiles').select('id', { count: 'exact', head: true }),
-          supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('last_active_date', today),
-          supabase.from('posts').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo),
-          supabase.from('bookings').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo),
-          supabase.from('content_flags').select('id', { count: 'exact', head: true }).eq('reviewed', false),
+          safeQuery(supabase.from('profiles').select('id', { count: 'exact', head: true })),
+          safeQuery(supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('updated_at', today)),
+          safeQuery(supabase.from('posts').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo)),
+          safeQuery((supabase.from('rental_bookings') as any).select('id', { count: 'exact', head: true }).gte('created_at', weekAgo)),
+          safeQuery(supabase.from('content_flags').select('id', { count: 'exact', head: true }).eq('reviewed', false)),
         ])
 
         setStats({

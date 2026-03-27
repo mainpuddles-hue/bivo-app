@@ -25,7 +25,7 @@ export default function PaymentCancelScreen() {
         {/* Action buttons */}
         <View style={styles.actions}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.replace('/(tabs)')}
             style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
           >
             <RotateCcw size={18} color={colors.primaryForeground} />

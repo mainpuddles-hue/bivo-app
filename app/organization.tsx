@@ -33,19 +33,21 @@ export default function OrganizationScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/(auth)/login'); return }
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { router.replace('/(auth)/login'); setLoading(false); return }
 
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (!profileData) return
-      const p = profileData as unknown as Profile
-      setProfile(p)
-      setMapPresence((profileData as any).map_presence !== false)
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        if (!profileData) { setLoading(false); return }
+        const p = profileData as unknown as Profile
+        setProfile(p)
+        setMapPresence((profileData as any).map_presence !== false)
 
-      if (!p.is_business) {
-        router.replace('/upgrade-business')
-        return
-      }
+        if (!p.is_business) {
+          router.replace('/upgrade-business')
+          setLoading(false)
+          return
+        }
 
       // Fetch ads with stats
       try {
@@ -85,7 +87,10 @@ export default function OrganizationScreen() {
         // advertisements table may not exist yet
       }
 
-      setLoading(false)
+        setLoading(false)
+      } catch {
+        setLoading(false)
+      }
     }
     load()
   }, [supabase, router])

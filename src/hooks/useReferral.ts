@@ -32,16 +32,21 @@ export function useReferral(userId: string | null) {
   useEffect(() => {
     if (!userId) return
     async function load() {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('invite_code, invite_count')
-        .eq('id', userId!)
-        .single()
-      if (profile) {
-        setInviteCode((profile as any).invite_code)
-        setInviteCount((profile as any).invite_count ?? 0)
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('invite_code, invite_count')
+          .eq('id', userId!)
+          .single()
+        if (profile) {
+          setInviteCode((profile as any).invite_code)
+          setInviteCount((profile as any).invite_count ?? 0)
+        }
+      } catch {
+        // Network error or missing columns — use defaults
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     load()
   }, [userId, supabase])
@@ -68,6 +73,7 @@ export function useReferral(userId: string | null) {
   // Apply invite code during onboarding (called by the invited user)
   const applyInviteCode = useCallback(async (code: string) => {
     if (!userId) return false
+    try {
     // Find the inviter
     const { data: inviter } = await supabase
       .from('profiles')
@@ -124,6 +130,9 @@ export function useReferral(userId: string | null) {
     }
 
     return true
+    } catch {
+      return false
+    }
   }, [userId, supabase, awardPoints])
 
   return { inviteCode, inviteCount, currentTier, nextTier, loading, generateCode, applyInviteCode, REFERRAL_TIERS }

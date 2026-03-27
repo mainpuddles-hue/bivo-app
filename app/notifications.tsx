@@ -125,19 +125,24 @@ export default function NotificationsScreen() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   const fetchNotifications = useCallback(async () => {
-    const cachedId = await getCachedUserId()
-    if (!cachedId) { setLoading(false); return }
-    const { data } = await supabase
-      .from('notifications')
-      .select('*, from_user:profiles!notifications_from_user_id_fkey(id, name, avatar_url)')
-      .eq('user_id', cachedId)
-      .order('created_at', { ascending: false })
-      .limit(100)
-    const raw = (data ?? []) as unknown as Notification[]
-    const prioritized = prioritizeNotifications(raw)
-    setNotifications(prioritized)
-    setLoading(false)
-    setRefreshing(false)
+    try {
+      const cachedId = await getCachedUserId()
+      if (!cachedId) { setLoading(false); setRefreshing(false); return }
+      const { data } = await supabase
+        .from('notifications')
+        .select('*, from_user:profiles!notifications_from_user_id_fkey(id, name, avatar_url)')
+        .eq('user_id', cachedId)
+        .order('created_at', { ascending: false })
+        .limit(100)
+      const raw = (data ?? []) as unknown as Notification[]
+      const prioritized = prioritizeNotifications(raw)
+      setNotifications(prioritized)
+    } catch {
+      // Network error — show empty state
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
   }, [supabase])
 
   useEffect(() => { fetchNotifications() }, [fetchNotifications])

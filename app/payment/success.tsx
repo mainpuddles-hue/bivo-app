@@ -33,50 +33,57 @@ export default function PaymentSuccessScreen() {
     if (!session_id) return
 
     async function fetchBooking() {
+      let found = false
+
       // Try rental_bookings first
-      const { data } = await (supabase
-        .from('rental_bookings') as any)
-        .select('id, start_date, end_date, total_amount, status, post:posts!rental_bookings_post_id_fkey(title)')
-        .eq('stripe_session_id', session_id!)
-        .maybeSingle()
-
-      if (data) {
-        setBooking({
-          id: (data as any).id,
-          post_title: (data as any).post?.title ?? '',
-          start_date: (data as any).start_date,
-          end_date: (data as any).end_date,
-          total_amount: (data as any).total_amount,
-          status: (data as any).status,
-        })
-        setLoading(false)
-        return
-      }
-
-      // Fallback: try service_bookings
       try {
-        const { data: serviceData } = await (supabase
-          .from('service_bookings') as any)
-          .select('id, created_at, total_amount, status, post:posts!service_bookings_post_id_fkey(title)')
+        const { data } = await (supabase
+          .from('rental_bookings') as any)
+          .select('id, start_date, end_date, total_amount, status, post:posts!rental_bookings_post_id_fkey(title)')
           .eq('stripe_session_id', session_id!)
           .maybeSingle()
 
-        if (serviceData) {
+        if (data) {
           setBooking({
-            id: (serviceData as any).id,
-            post_title: (serviceData as any).post?.title ?? '',
-            start_date: (serviceData as any).created_at,
-            end_date: (serviceData as any).created_at,
-            total_amount: (serviceData as any).total_amount,
-            status: (serviceData as any).status,
+            id: (data as any).id,
+            post_title: (data as any).post?.title ?? '',
+            start_date: (data as any).start_date,
+            end_date: (data as any).end_date,
+            total_amount: (data as any).total_amount,
+            status: (data as any).status,
           })
+          found = true
         }
       } catch {
-        // service_bookings table may not exist yet — ignore
+        // rental_bookings table may not exist yet — ignore
       }
 
-      // If we had a session_id but found no booking, mark as not found
-      if (!booking) setNotFound(true)
+      // Fallback: try service_bookings
+      if (!found) {
+        try {
+          const { data: serviceData } = await (supabase
+            .from('service_bookings') as any)
+            .select('id, created_at, total_amount, status, post:posts!service_bookings_post_id_fkey(title)')
+            .eq('stripe_session_id', session_id!)
+            .maybeSingle()
+
+          if (serviceData) {
+            setBooking({
+              id: (serviceData as any).id,
+              post_title: (serviceData as any).post?.title ?? '',
+              start_date: (serviceData as any).created_at,
+              end_date: (serviceData as any).created_at,
+              total_amount: (serviceData as any).total_amount,
+              status: (serviceData as any).status,
+            })
+            found = true
+          }
+        } catch {
+          // service_bookings table may not exist yet — ignore
+        }
+      }
+
+      if (!found) setNotFound(true)
       setLoading(false)
     }
 

@@ -146,7 +146,7 @@ export default function GroupsScreen() {
       const { data: myData, error: myError } = await supabase
         .from('groups')
         .select('*, members:group_members!inner(user_id)')
-        .eq('group_members.user_id', currentUserId)
+        .eq('members.user_id', currentUserId)
         .order('created_at', { ascending: false })
 
       if (myError) {

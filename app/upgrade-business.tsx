@@ -186,10 +186,8 @@ export default function UpgradeBusinessScreen() {
         }
       }
 
-      // Show pending message — payment must be confirmed via webhook
+      // Don't navigate away — user will return via deep link after Stripe checkout
       Alert.alert(t('common.success'), t('business.pendingPayment'))
-
-      router.back()
     } catch (err: any) {
       Alert.alert(t('common.error'), err.message ?? t('business.upgradeError'))
     } finally {

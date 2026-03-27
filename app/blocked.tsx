@@ -34,17 +34,22 @@ export default function BlockedUsersScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      setUserId(user.id)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        setUserId(user.id)
 
-      const { data } = await supabase
-        .from('blocked_users')
-        .select('blocked_id, blocked_user:profiles!blocked_users_blocked_id_fkey(id, name, avatar_url, naapurusto)')
-        .eq('blocker_id', user.id)
+        const { data } = await supabase
+          .from('blocked_users')
+          .select('blocked_id, blocked_user:profiles!blocked_users_blocked_id_fkey(id, name, avatar_url, naapurusto)')
+          .eq('blocker_id', user.id)
 
-      setBlockedUsers((data ?? []) as unknown as BlockedUser[])
-      setLoading(false)
+        setBlockedUsers((data ?? []) as unknown as BlockedUser[])
+      } catch {
+        // Table may not exist or network error — show empty state
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [supabase])
