@@ -19,6 +19,7 @@ import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { ReportModal } from '@/components/ReportModal'
 import { isValidUUID } from '@/lib/validation'
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
@@ -246,6 +247,10 @@ function ConversationScreenInner() {
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !userId || sending) return
+    if (!await checkRateLimit('message')) {
+      Alert.alert(t('common.error'), getRateLimitMessage('message'))
+      return
+    }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     setSending(true)
     setShowQuickReplies(false)

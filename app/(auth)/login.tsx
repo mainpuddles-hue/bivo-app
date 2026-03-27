@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
+import { trackEvent } from '@/lib/analytics'
 
 function AppleLogo({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) {
   return (
@@ -127,6 +128,7 @@ export default function LoginScreen() {
     setLoading(true)
     try {
       if (mode === 'register') {
+        trackEvent('auth_register_start' as any)
         if (!name.trim()) { Alert.alert(t('common.error'), t('auth.nameRequired')); setLoading(false); return }
         if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
           Alert.alert(t('common.error'), t('settings.passwordTooWeak'))
@@ -147,10 +149,12 @@ export default function LoginScreen() {
 
         // If Supabase returned a session, email confirmation is disabled — auto-login
         if (signUpData?.session) {
+          trackEvent('auth_register_success' as any)
           router.replace('/')
           return
         }
 
+        trackEvent('auth_register_success' as any)
         // Otherwise email confirmation is required — tell user to check email
         Alert.alert(t('common.success'), t('auth.checkEmail'), [
           { text: 'OK', onPress: () => { setMode('login'); setPassword('') } }
@@ -162,6 +166,7 @@ export default function LoginScreen() {
         })
         if (error) throw error
         setLoginAttempts(0)
+        trackEvent('auth_login_success' as any)
         router.replace('/')
       }
     } catch (err: any) {

@@ -13,7 +13,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { useLocationDetection } from '@/hooks/useLocationDetection'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
-import { setAnalyticsUser, trackEvent } from '@/lib/analytics'
+import { setAnalyticsUser, trackEvent, trackRetention } from '@/lib/analytics'
 
 const LANG_AUTO_SET_KEY = 'tackbird_lang_auto_set'
 const UNSUPPORTED_DISMISSED_KEY = 'tackbird_unsupported_dismissed'
@@ -157,6 +157,7 @@ function useAnalyticsSetup() {
         if (user) {
           setAnalyticsUser(user.id)
           trackEvent('app_opened')
+          trackRetention(user.id)
         } else {
           setAnalyticsUser(null)
         }

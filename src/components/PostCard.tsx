@@ -19,6 +19,7 @@ import { formatTimeAgo, formatPrice } from '@/lib/format'
 import { haversineKm } from '@/lib/geo'
 import { TrustBadge } from '@/components/TrustBadge'
 import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
+import { isHumanAction } from '@/lib/abuseDetection'
 import type { Post, PostType } from '@/lib/types'
 
 const APP_URL = 'https://tackbird-v2.vercel.app'
@@ -129,6 +130,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         router.push(`/post/${post.id}`)
       }}
       onLongPress={async () => {
+        if (!isHumanAction()) return
         if (!userId) { router.push('/(auth)/login'); return }
         if ((post as any).is_seed) return
         if (savingRef.current) return
@@ -292,6 +294,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               accessibilityState={{ selected: liked }}
               onPress={async (e) => {
                 e.stopPropagation?.()
+                if (!isHumanAction()) return
                 if (!userId) { router.push('/(auth)/login'); return }
                 if (likingRef.current) return
                 likingRef.current = true
@@ -368,6 +371,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             accessibilityState={{ selected: saved }}
             onPress={async (e) => {
               e.stopPropagation?.()
+              if (!isHumanAction()) return
               if (!userId) { router.push('/(auth)/login'); return }
               if ((post as any).is_seed) return
               if (savingRef.current) return

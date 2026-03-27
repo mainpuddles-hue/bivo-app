@@ -36,6 +36,7 @@ import { NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
 import { useReferral } from '@/hooks/useReferral'
+import { trackEvent } from '@/lib/analytics'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const TOTAL_PAGES = 4
@@ -154,6 +155,7 @@ export default function OnboardingScreen() {
   const goToPage = useCallback((page: number) => {
     scrollRef.current?.scrollTo({ x: page * SCREEN_WIDTH, animated: true })
     setCurrentPage(page)
+    trackEvent('onboarding_slide' as any, { slide: page })
   }, [])
 
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -187,12 +189,14 @@ export default function OnboardingScreen() {
       // Apply referral code if entered — uses useReferral hook which handles
       // points, badges, tier rewards, and Pro trial grants
       if (referralInput.trim()) {
+        trackEvent('onboarding_invite_code' as any, { hasCode: true })
         const success = await applyInviteCode(referralInput.trim())
         setReferralStatus(success ? 'applied' : 'invalid')
       }
 
       // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
+      trackEvent('onboarding_completed' as any, { city: selectedCity, neighborhood: selectedNeighborhood })
       router.replace('/')
     } catch (err) {
       Alert.alert(t('common.error'), t('onboarding.saveFailed'))
@@ -389,7 +393,7 @@ export default function OnboardingScreen() {
           return (
             <Pressable
               key={city.id}
-              onPress={() => setSelectedCity(city.id)}
+              onPress={() => { setSelectedCity(city.id); trackEvent('onboarding_city_selected' as any, { city: city.id }) }}
               style={[
                 s.cityChip,
                 isSelected
@@ -458,7 +462,7 @@ export default function OnboardingScreen() {
             return (
               <Pressable
                 key={nh}
-                onPress={() => setSelectedNeighborhood(nh)}
+                onPress={() => { setSelectedNeighborhood(nh); trackEvent('onboarding_neighborhood_selected' as any, { neighborhood: nh }) }}
                 style={[
                   s.neighborhoodChip,
                   isSelected

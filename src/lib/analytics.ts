@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@/lib/supabase/client'
 
 type AnalyticsEvent =
@@ -7,6 +8,10 @@ type AnalyticsEvent =
   | 'search_performed' | 'profile_viewed'
   | 'group_joined' | 'forum_posted'
   | 'notification_opened' | 'referral_shared'
+  | 'retention_d1' | 'retention_d7' | 'retention_d30' | 'retention_d90'
+  | 'onboarding_slide' | 'onboarding_city_selected' | 'onboarding_neighborhood_selected'
+  | 'onboarding_invite_code' | 'onboarding_completed'
+  | 'auth_register_start' | 'auth_register_success' | 'auth_login_success'
 
 interface EventProps {
   [key: string]: string | number | boolean | null
@@ -32,4 +37,39 @@ export function trackEvent(event: AnalyticsEvent, props?: EventProps) {
     properties: props ?? {},
     created_at: new Date().toISOString(),
   }).then(() => {}).catch(() => {}) // Never fail
+}
+
+const RETENTION_TRACKED_KEY = 'tackbird_retention_last_tracked'
+
+/**
+ * Track D1/D7/D30/D90 retention events.
+ * Call once per day after auth resolves. Uses AsyncStorage to avoid duplicate tracking.
+ */
+export async function trackRetention(userId: string) {
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const lastTracked = await AsyncStorage.getItem(RETENTION_TRACKED_KEY)
+    if (lastTracked === today) return // Already tracked today
+
+    const supabase = createClient()
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('created_at')
+      .eq('id', userId)
+      .single()
+
+    if (!(profile as any)?.created_at) return
+
+    const regDate = new Date((profile as any).created_at)
+    const daysSinceReg = Math.floor((Date.now() - regDate.getTime()) / 86400000)
+
+    if (daysSinceReg === 1) trackEvent('retention_d1')
+    else if (daysSinceReg === 7) trackEvent('retention_d7')
+    else if (daysSinceReg === 30) trackEvent('retention_d30')
+    else if (daysSinceReg === 90) trackEvent('retention_d90')
+
+    await AsyncStorage.setItem(RETENTION_TRACKED_KEY, today)
+  } catch {
+    // Non-critical — ignore
+  }
 }

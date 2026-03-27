@@ -19,6 +19,7 @@ import { ForumPostCard } from '@/components/forum/ForumPostCard'
 import { ForumThreadView } from '@/components/forum/ForumThreadView'
 import { ForumCreateModal } from '@/components/forum/ForumCreateModal'
 import { ReportModal } from '@/components/ReportModal'
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import type { ForumPost, ForumReply, ForumCategory } from '@/components/forum/ForumPostCard'
 
 // ── Forum category filter definitions ──
@@ -365,6 +366,10 @@ export default function ForumScreen() {
     if (!title.trim()) { Alert.alert(t('common.error'), t('forum.titleRequired')); return }
     if (!content.trim()) { Alert.alert(t('common.error'), t('forum.contentRequired')); return }
     if (!currentUserId) return
+    if (!await checkRateLimit('forum_post')) {
+      Alert.alert(t('common.error'), getRateLimitMessage('forum_post'))
+      return
+    }
     setPublishing(true)
     try {
       const { data, error } = await (supabase.from('forum_posts') as any)

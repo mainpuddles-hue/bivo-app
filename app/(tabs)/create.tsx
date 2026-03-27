@@ -25,6 +25,7 @@ import { TrustBadge } from '@/components/TrustBadge'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import type { PostType, TrustLevel } from '@/lib/types'
 
 const POST_TAGS: Record<string, { id: string; label: string }[]> = {
@@ -352,6 +353,12 @@ export default function CreateScreen() {
   const handleSubmit = useCallback(async () => {
     if (!selectedType || !title.trim() || !description.trim()) {
       Alert.alert(t('common.error'), t('create.titleAndDescRequired'))
+      return
+    }
+
+    // Rate limiting
+    if (!await checkRateLimit('post_create')) {
+      Alert.alert(t('common.error'), getRateLimitMessage('post_create'))
       return
     }
 

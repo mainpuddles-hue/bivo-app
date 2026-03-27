@@ -32,6 +32,7 @@ import { isValidUUID } from '@/lib/validation'
 import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -244,6 +245,10 @@ function PostDetailScreenInner() {
 
   const handleSendComment = useCallback(async () => {
     if (!userId || !commentText.trim() || sendingComment) return
+    if (!await checkRateLimit('comment')) {
+      Alert.alert(t('common.error'), getRateLimitMessage('comment'))
+      return
+    }
     setSendingComment(true)
     const content = commentText.trim()
     const parentId = replyToComment?.id ?? null

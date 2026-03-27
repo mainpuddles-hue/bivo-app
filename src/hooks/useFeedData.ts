@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useFocusEffect } from 'expo-router'
 import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
@@ -16,6 +17,7 @@ import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 export type { PostType }
 
 const PAGE_SIZE = 20
+const FEED_CACHE_KEY = 'tackbird_feed_cache'
 
 export function useFeedData() {
   const { t } = useI18n()
@@ -60,6 +62,15 @@ export function useFeedData() {
   // Ref for posts to avoid renderPost depending on posts array
   const postsRef = useRef(posts)
   postsRef.current = posts
+
+  // ── Load cached feed data on mount for instant display ──
+  useEffect(() => {
+    AsyncStorage.getItem(FEED_CACHE_KEY).then(cached => {
+      if (cached && posts.length === 0) {
+        try { setPosts(JSON.parse(cached)) } catch {}
+      }
+    }).catch(() => {})
+  }, [])
 
   // ── Fetch current user ID for like functionality ──
   useEffect(() => {
@@ -253,6 +264,8 @@ export function useFeedData() {
           setPosts(seeds)
         } else {
           setPosts(ranked)
+          // Cache the first 20 posts for offline/instant display on next launch
+          AsyncStorage.setItem(FEED_CACHE_KEY, JSON.stringify(ranked.slice(0, 20))).catch(() => {})
         }
         offsetRef.current = newPosts.length
       } else {
