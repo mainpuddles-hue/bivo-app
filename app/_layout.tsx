@@ -14,6 +14,7 @@ import { useLocationDetection } from '@/hooks/useLocationDetection'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
 import { setAnalyticsUser, trackEvent, trackRetention } from '@/lib/analytics'
+import { clearAuthCache } from '@/lib/authCache'
 
 const LANG_AUTO_SET_KEY = 'tackbird_lang_auto_set'
 const UNSUPPORTED_DISMISSED_KEY = 'tackbird_unsupported_dismissed'
@@ -225,6 +226,9 @@ function useCurrentUserId() {
 function useAuthStateListener() {
   const supabase = useSupabase()
   const router = useRouter()
+  const segments = useSegments()
+  const authSegmentsRef = useRef(segments)
+  authSegmentsRef.current = segments
 
   useEffect(() => {
     let mounted = true
@@ -232,6 +236,9 @@ function useAuthStateListener() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        // Don't navigate if auth/callback is handling the redirect
+        if (authSegmentsRef.current[0] === 'auth') return
+
         const timer = setTimeout(async () => {
           if (!mounted) return
           try {
@@ -255,6 +262,18 @@ function useAuthStateListener() {
           } catch {
             if (mounted) router.replace('/')
           }
+        }, 100)
+        timers.push(timer)
+      } else if (event === 'SIGNED_OUT') {
+        const timer = setTimeout(async () => {
+          if (!mounted) return
+          try {
+            clearAuthCache()
+            await AsyncStorage.removeItem('onboarding_complete')
+          } catch {
+            // Non-critical — ignore
+          }
+          if (mounted) router.replace('/(auth)/login')
         }, 100)
         timers.push(timer)
       } else if (event === 'PASSWORD_RECOVERY' && session) {

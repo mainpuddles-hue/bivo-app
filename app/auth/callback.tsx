@@ -44,9 +44,15 @@ export default function AuthCallbackScreen() {
             setProcessing(false)
             return
           }
+          // Check if this is a password recovery flow
+          const type = params.type as string | undefined
+          if (type === 'recovery') {
+            router.replace('/settings')
+            return
+          }
           const { data: { session } } = await supabase.auth.getSession()
           if (session) {
-            router.replace('/')
+            router.replace('/(tabs)')
             return
           }
         }
@@ -70,7 +76,7 @@ export default function AuthCallbackScreen() {
           if (type === 'recovery') {
             router.replace('/settings')
           } else {
-            router.replace('/')
+            router.replace('/(tabs)')
           }
           return
         }
@@ -88,7 +94,7 @@ export default function AuthCallbackScreen() {
             if (session) {
               // Clear the hash to prevent re-processing
               window.location.hash = ''
-              router.replace('/')
+              router.replace('/(tabs)')
               return
             }
 
@@ -104,7 +110,7 @@ export default function AuthCallbackScreen() {
               })
               if (!setSessionError) {
                 window.location.hash = ''
-                router.replace('/')
+                router.replace('/(tabs)')
                 return
               }
               setError(setSessionError.message)
@@ -118,7 +124,7 @@ export default function AuthCallbackScreen() {
         await new Promise(resolve => setTimeout(resolve, 2000))
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
-          router.replace('/')
+          router.replace('/(tabs)')
           return
         }
 

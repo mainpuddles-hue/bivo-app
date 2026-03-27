@@ -56,6 +56,7 @@ export default function SettingsScreen() {
   const [currentPw, setCurrentPw] = useState('')
   const [newPw, setNewPw] = useState('')
   const [changingPw, setChangingPw] = useState(false)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
 
   // Delete account
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
@@ -116,6 +117,16 @@ export default function SettingsScreen() {
     load()
   }, [supabase])
 
+  // Detect if user arrived via password recovery flow
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true)
+      }
+    })
+    return () => { subscription.unsubscribe() }
+  }, [supabase])
+
   const handleSave = useCallback(async () => {
     if (!profile) return
     setSaving(true)
@@ -146,7 +157,7 @@ export default function SettingsScreen() {
   }, [profile, nameText, supabase, t])
 
   const handleChangePassword = useCallback(async () => {
-    if (!currentPw) {
+    if (!isPasswordRecovery && !currentPw) {
       Alert.alert(t('common.error'), t('settings.currentPasswordRequired'))
       return
     }
@@ -160,8 +171,8 @@ export default function SettingsScreen() {
     }
     setChangingPw(true)
     try {
-      // Verify current password by attempting to sign in
-      if (userEmail) {
+      // Skip current password verification in recovery mode
+      if (!isPasswordRecovery && userEmail) {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: userEmail,
           password: currentPw,
@@ -177,10 +188,11 @@ export default function SettingsScreen() {
       Alert.alert(t('common.success'), t('settings.passwordChanged'))
       setCurrentPw('')
       setNewPw('')
+      setIsPasswordRecovery(false)
     } catch (err: any) {
       Alert.alert(t('common.error'), err.message ?? t('settings.passwordChangeFailed'))
     } finally { setChangingPw(false) }
-  }, [currentPw, newPw, userEmail, supabase, t])
+  }, [currentPw, newPw, userEmail, supabase, t, isPasswordRecovery])
 
   const handleExport = useCallback(async () => {
     if (!profile) return
@@ -341,6 +353,7 @@ export default function SettingsScreen() {
       // Sign out may fail on network — proceed anyway
     }
     clearAuthCache()
+    await AsyncStorage.removeItem('onboarding_complete').catch(() => {})
     router.replace('/(auth)/login')
   }
 
@@ -657,14 +670,16 @@ export default function SettingsScreen() {
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <View style={{ padding: 16, gap: 10 }}>
             <Text style={[s.rowText, { color: colors.foreground, fontWeight: '600' }]}>{t('settings.changePassword')}</Text>
-            <TextInput
-              style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
-              value={currentPw}
-              onChangeText={setCurrentPw}
-              placeholder={t('settings.currentPasswordPlaceholder')}
-              placeholderTextColor={colors.mutedForeground}
-              secureTextEntry
-            />
+            {!isPasswordRecovery && (
+              <TextInput
+                style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
+                value={currentPw}
+                onChangeText={setCurrentPw}
+                placeholder={t('settings.currentPasswordPlaceholder')}
+                placeholderTextColor={colors.mutedForeground}
+                secureTextEntry
+              />
+            )}
             <TextInput
               style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
               value={newPw}
@@ -692,8 +707,8 @@ export default function SettingsScreen() {
             )}
             <Pressable
               onPress={handleChangePassword}
-              disabled={changingPw || !newPw || !currentPw}
-              style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || !currentPw ? 0.5 : 1 }]}
+              disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
+              style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
             >
               <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground }}>
                 {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}

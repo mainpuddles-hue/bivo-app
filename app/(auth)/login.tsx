@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { Eye, EyeOff, Check, X } from 'lucide-react-native'
 import Svg, { Path } from 'react-native-svg'
 import * as WebBrowser from 'expo-web-browser'
+import * as Linking from 'expo-linking'
 import { GoogleLogo } from '@/components/GoogleLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -107,13 +108,19 @@ export default function LoginScreen() {
 
     if (!email.trim()) { Alert.alert(t('common.error'), t('auth.emailRequired')); return }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert(t('common.error'), t('auth.invalidEmail') ?? 'Invalid email format')
+      return
+    }
+
     if (mode === 'forgot') {
       setLoading(true)
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: Platform.OS === 'web'
-            ? (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback'
-            : 'tackbird://auth/callback',
+            ? (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.fi') + '/auth/callback'
+            : Linking.createURL('auth/callback'),
         })
         if (error) throw error
         setForgotSent(true)
@@ -143,8 +150,8 @@ export default function LoginScreen() {
           options: {
             data: { name: name.trim() },
             emailRedirectTo: Platform.OS === 'web'
-              ? (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback'
-              : 'tackbird://auth/callback',
+              ? (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.fi') + '/auth/callback'
+              : Linking.createURL('auth/callback'),
           },
         })
         if (error) throw error
@@ -152,6 +159,17 @@ export default function LoginScreen() {
         // If Supabase returned a session, email confirmation is disabled — auto-login
         if (signUpData?.session) {
           trackEvent('auth_register_success' as any)
+          // Ensure profile exists (fallback if DB trigger fails)
+          if (signUpData.user) {
+            const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', signUpData.user.id).maybeSingle()
+            if (!existingProfile) {
+              await (supabase.from('profiles') as any).insert({
+                id: signUpData.user.id,
+                email: email.trim(),
+                name: name.trim(),
+              })
+            }
+          }
           router.replace('/')
           return
         }
@@ -172,11 +190,13 @@ export default function LoginScreen() {
         router.replace('/')
       }
     } catch (err: any) {
-      const attempts = loginAttempts + 1
-      setLoginAttempts(attempts)
-      if (attempts >= 5) {
-        setLockedUntil(Date.now() + 15 * 60 * 1000) // 15 min lockout
-        setLoginAttempts(0)
+      if (mode === 'login') {
+        const attempts = loginAttempts + 1
+        setLoginAttempts(attempts)
+        if (attempts >= 5) {
+          setLockedUntil(Date.now() + 15 * 60 * 1000) // 15 min lockout
+          setLoginAttempts(0)
+        }
       }
       Alert.alert(t('common.error'), translateError(err.message))
     } finally { setLoading(false) }
@@ -189,7 +209,7 @@ export default function LoginScreen() {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: (typeof window !== 'undefined' ? window.location.origin : 'https://dist-two-navy-29.vercel.app') + '/auth/callback',
+            redirectTo: (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.fi') + '/auth/callback',
             queryParams: { prompt: 'select_account' },
             skipBrowserRedirect: false,
           },
@@ -197,7 +217,7 @@ export default function LoginScreen() {
         if (error) Alert.alert(t('common.error'), t('auth.googleFailed'))
       } else {
         // Native: use WebBrowser to open OAuth flow and capture redirect
-        const redirectTo = 'tackbird://auth/callback'
+        const redirectTo = Linking.createURL('auth/callback')
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
