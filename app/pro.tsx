@@ -288,7 +288,7 @@ const s = StyleSheet.create({
     width: 96, height: 96, borderRadius: 48,
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
-  heroTitle: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
+  heroTitle: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
   heroSubtitle: { fontSize: 15, textAlign: 'center' },
   activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -319,8 +319,8 @@ const s = StyleSheet.create({
     flex: 1, borderRadius: 12, borderWidth: 2,
     padding: 16, alignItems: 'center', gap: 4, position: 'relative', overflow: 'hidden',
   },
-  pricingLabel: { fontSize: 14, fontWeight: '600' },
-  pricingPrice: { fontSize: 28, fontWeight: '800' },
+  pricingLabel: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  pricingPrice: { fontSize: 28, fontWeight: '800', fontFamily: fonts.heading },
   pricingPeriod: { fontSize: 13 },
   pricingSubtext: { fontSize: 12, fontWeight: '600', marginTop: 2 },
   saveBadge: {
@@ -328,14 +328,14 @@ const s = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 3,
     transform: [{ rotate: '30deg' }],
   },
-  saveBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF' },
+  saveBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF', fontFamily: fonts.bodySemi },
   subscribeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 10, paddingVertical: 16, borderRadius: 14, marginTop: 4,
+    gap: 10, paddingVertical: 16, borderRadius: 12, marginTop: 4,
   },
-  subscribeBtnText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+  subscribeBtnText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi },
   manageBtn: {
-    alignItems: 'center', paddingVertical: 14, borderRadius: 14,
+    alignItems: 'center', paddingVertical: 14, borderRadius: 12,
     borderWidth: 1,
   },
   manageBtnText: { fontSize: 15, fontWeight: '600' },

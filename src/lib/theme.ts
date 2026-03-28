@@ -7,7 +7,7 @@ export const colors = {
     card: '#FFFFFF',
     border: '#E5E5E5',
     muted: '#F0F0F0',
-    mutedForeground: '#9CA3AF',
+    mutedForeground: '#6B7280',
     destructive: '#D94F4F',
     pro: '#F59E0B',
     success: '#2B8A62',

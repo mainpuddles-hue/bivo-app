@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native'
 import { Image } from 'expo-image'
 import { useTheme } from '@/hooks/useTheme'
+import { fonts } from '@/lib/fonts'
 
 interface AvatarProps {
   url: string | null | undefined
@@ -34,7 +35,7 @@ export function Avatar({ url, name, size = 36, borderColor, borderWidth }: Avata
       { width: size, height: size, borderRadius: radius, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' },
       borderColor ? { borderWidth: borderWidth ?? 1, borderColor } : undefined,
     ]}>
-      <Text style={{ fontSize, fontWeight: '600', color: colors.mutedForeground }}>{initial}</Text>
+      <Text style={{ fontSize, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{initial}</Text>
     </View>
   )
 }

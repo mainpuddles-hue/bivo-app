@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
+import { fonts } from '@/lib/fonts'
 import { trackEvent } from '@/lib/analytics'
 
 function AppleLogo({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) {
@@ -356,7 +357,7 @@ export default function LoginScreen() {
             {mode !== 'forgot' && Platform.OS !== 'web' && appleAvailable && (
               <Pressable
                 onPress={handleAppleSignIn}
-                style={styles.appleBtn}
+                style={[styles.appleBtn, { borderWidth: 1, borderColor: isDark ? colors.border : '#000000' }]}
               >
                 <AppleLogo size={20} color="#FFFFFF" />
                 <Text style={styles.appleBtnText}>
@@ -487,33 +488,33 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: 24, paddingBottom: 60 },
+  content: { paddingHorizontal: 24, paddingBottom: 64 },
   logoSection: { alignItems: 'center', gap: 12, marginBottom: 32 },
   logoBigCircle: {
     width: 80, height: 80, borderRadius: 40,
     alignItems: 'center', justifyContent: 'center',
   },
-  appName: { fontSize: 18, fontWeight: '800', letterSpacing: 3 },
+  appName: { fontSize: 18, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
   tagline: { fontSize: 14, textAlign: 'center' },
   modeToggle: {
     flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 16,
   },
   modeBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  modeText: { fontSize: 14, fontWeight: '600' },
+  modeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     borderWidth: 1, borderRadius: 12, paddingVertical: 14, minHeight: 48, marginBottom: 8,
   },
-  googleBtnText: { fontSize: 15, fontWeight: '600' },
+  googleBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
   appleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: '#000000', borderRadius: 12, paddingVertical: 14, minHeight: 48, marginBottom: 16,
   },
-  appleBtnText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
+  appleBtnText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   dividerLine: { flex: 1, height: 1 },
   dividerText: { fontSize: 13 },
-  forgotTitle: { fontSize: 20, fontWeight: '700' },
+  forgotTitle: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading },
   forgotHint: { fontSize: 14, lineHeight: 20 },
   form: { gap: 12 },
   input: {
@@ -521,17 +522,17 @@ const styles = StyleSheet.create({
     fontSize: 15, minHeight: 48,
   },
   eyeBtn: { position: 'absolute', right: 14, top: 14 },
-  forgotLink: { fontSize: 13, fontWeight: '500', alignSelf: 'flex-end' },
+  forgotLink: { fontSize: 13, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
   submitBtn: {
     borderRadius: 12, paddingVertical: 14, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
-  submitText: { fontSize: 16, fontWeight: '600' },
-  linkText: { fontSize: 14, fontWeight: '500' },
+  submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
+  linkText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodySemi },
   successBox: {
     borderRadius: 12, padding: 24, alignItems: 'center', gap: 12,
   },
-  successText: { fontSize: 15, fontWeight: '500', textAlign: 'center' },
+  successText: { fontSize: 15, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 4 },
   checkbox: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },

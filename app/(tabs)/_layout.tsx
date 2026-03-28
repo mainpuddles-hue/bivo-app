@@ -21,7 +21,7 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
     return (
       <View style={s.createTabItem}>
         <View style={[s.createFab, { backgroundColor: colors.primary }]}>
-          <Icon size={24} color="#FFFFFF" strokeWidth={2.5} />
+          <Icon size={24} color={colors.primaryForeground} strokeWidth={2.5} />
         </View>
       </View>
     )
@@ -36,7 +36,7 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
           strokeWidth={focused ? 2.2 : 1.6}
         />
         {badge != null && badge > 0 && (
-          <View style={[s.badge, { borderColor: colors.card }]}>
+          <View style={[s.badge, { borderColor: colors.card, backgroundColor: colors.destructive }]}>
             <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
           </View>
         )}

@@ -156,7 +156,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         { backgroundColor: colors.card },
         isDark ? cardShadowDark : cardShadow,
         isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: '#E8A050' },
-        isUrgentPost && { borderWidth: 2, borderColor: '#EF4444' },
+        isUrgentPost && { borderWidth: 2, borderColor: colors.destructive },
         isPro && { borderWidth: 1.5, borderColor: colors.pro },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
@@ -166,7 +166,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
       {/* Pro banner — only when no image (crown badge handles image cards) */}
       {isPro && !hasImage && (
-        <View style={styles.proBanner}>
+        <View style={[styles.proBanner, { backgroundColor: colors.pro, shadowColor: colors.pro }]}>
           <Crown size={12} color="#FFFFFF" />
           <Text style={styles.proBannerText}>Pro</Text>
         </View>
@@ -206,7 +206,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
       {/* Fix 1: Nappaa urgency banner — expiring today */}
       {isNappaa && expirationInfo && expirationInfo.color === '#D94F4F' && (
-        <View style={styles.urgencyBanner}>
+        <View style={[styles.urgencyBanner, { backgroundColor: colors.destructive }]}>
           <Text style={styles.urgencyText}>{t('feed.expiringToday')}</Text>
         </View>
       )}
@@ -221,7 +221,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               <Text style={[styles.categoryLabel, { color: category.color }]}>
                 {t(category.label)}
               </Text>
-              {isNew && <View style={styles.newDot} />}
+              {isNew && <View style={[styles.newDot, { backgroundColor: colors.accent }]} />}
             </View>
           )}
           {expirationInfo && (
@@ -348,9 +348,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               style={styles.engagementItem}
             >
               <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
-                <Heart size={14} color={liked ? '#D94F4F' : colors.mutedForeground} fill={liked ? '#D94F4F' : 'transparent'} />
+                <Heart size={14} color={liked ? colors.destructive : colors.mutedForeground} fill={liked ? colors.destructive : 'transparent'} />
               </Animated.View>
-              {likeCount > 0 && <Text style={[styles.engagementText, { color: liked ? '#D94F4F' : colors.mutedForeground }]}>{likeCount}</Text>}
+              {likeCount > 0 && <Text style={[styles.engagementText, { color: liked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>}
             </Pressable>
           )}
           {hasEngagement && (post.comment_count ?? 0) > 0 && (
@@ -503,7 +503,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                   {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
                   {isPro && (
                     <View style={styles.proMicroBadge}>
-                      <Crown size={10} color="#F59E0B" />
+                      <Crown size={10} color={colors.pro} />
                     </View>
                   )}
                   {user?.is_business && (
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
     width: 28, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
   },
-  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14, gap: 8 },
+  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, gap: 8 },
   categoryExpRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
   expirationBadge: {
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
   popularBadge: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },
-  userRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingTop: 8 },
+  userRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingTop: 8 },
   avatarContainer: { position: 'relative' },
   avatar: { width: 36, height: 36, borderRadius: 18, borderWidth: 1 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },

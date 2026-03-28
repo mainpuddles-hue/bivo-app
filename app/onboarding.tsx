@@ -645,7 +645,7 @@ const s = StyleSheet.create({
   },
   appName: {
     fontSize: 32,
-    letterSpacing: 2,
+    letterSpacing: 1.7,
     lineHeight: 38,
   },
   tagline: {
@@ -776,7 +776,7 @@ const s = StyleSheet.create({
   },
   neighborhoodSearchInput: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -833,7 +833,7 @@ const s = StyleSheet.create({
   },
   referralInput: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
