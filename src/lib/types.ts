@@ -90,6 +90,40 @@ export interface Profile {
   updated_at: string
 }
 
+export interface CommunityEvent {
+  id: string
+  creator_id: string
+  title: string
+  description: string | null
+  image_url: string | null
+  event_date: string
+  event_end_date: string | null
+  location_name: string | null
+  location_lat: number | null
+  location_lng: number | null
+  category: 'social' | 'sports' | 'culture' | 'nature' | 'kids' | 'other'
+  max_participants: number | null
+  approval_required: boolean
+  naapurusto: string | null
+  city_id: string
+  is_active: boolean
+  created_at: string
+  // Joined fields
+  creator?: { id: string; name: string; avatar_url: string | null }
+  participant_count?: number
+  is_participant?: boolean
+  my_status?: 'joined' | 'pending' | 'approved' | 'rejected' | null
+}
+
+export interface EventParticipant {
+  id: string
+  event_id: string
+  user_id: string
+  status: 'joined' | 'pending' | 'approved' | 'rejected'
+  created_at: string
+  user?: { id: string; name: string; avatar_url: string | null }
+}
+
 export type PartialProfile = Pick<Profile, 'id' | 'name' | 'avatar_url'> & Partial<Profile>
 
 export interface UserBadge {

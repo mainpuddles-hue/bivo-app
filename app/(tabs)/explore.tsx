@@ -5,13 +5,14 @@ import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
   Pressable, Linking,
 } from 'react-native'
+import { Image } from 'expo-image'
 import { SectionSkeleton } from '@/components/SkeletonLoaders'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
   Map, CalendarDays, MapPin, ChevronRight, Navigation, Globe,
   Store, Coffee, BookOpen, Dumbbell, Heart, UtensilsCrossed,
-  Users, MessageCircle,
+  Users, MessageCircle, Plus,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -34,6 +35,17 @@ interface EventPreview {
   title: string
   event_date: string
   location_name: string | null
+}
+
+interface CommunityEventPreview {
+  id: string
+  title: string
+  image_url: string | null
+  event_date: string
+  location_name: string | null
+  category: string
+  participant_count?: number
+  max_participants: number | null
 }
 
 type SubTab = 'map' | 'events' | 'places'
@@ -89,6 +101,7 @@ function ExploreScreenInner() {
   // Community preview state
   const [groups, setGroups] = useState<Array<{ id: string; name: string; category: string; member_count: number }>>([])
   const [forumPosts, setForumPosts] = useState<Array<{ id: string; title: string; category: string; comment_count: number; created_at: string }>>([])
+  const [communityEventPreviews, setCommunityEventPreviews] = useState<CommunityEventPreview[]>([])
 
   // ── Semantic colors derived from theme ──
   const groupColors: Record<string, string> = useMemo(() => ({
@@ -156,16 +169,22 @@ function ExploreScreenInner() {
       setPlaces(placesResult)
 
       // Fetch community previews in parallel (graceful if tables don't exist)
-      const [groupsRes, forumRes] = await Promise.all([
+      const [groupsRes, forumRes, communityEvtsRes] = await Promise.all([
         (supabase.from('groups').select('id, name, category, member_count') as any)
           .order('member_count', { ascending: false }).limit(3)
           .then((r: any) => r).catch(() => ({ data: null, error: true })),
         (supabase.from('forum_posts').select('id, title, category, comment_count, created_at') as any)
           .order('created_at', { ascending: false }).limit(3)
           .then((r: any) => r).catch(() => ({ data: null, error: true })),
+        (supabase.from('community_events').select('id, title, image_url, event_date, location_name, category, participant_count, max_participants') as any)
+          .eq('is_active', true)
+          .gte('event_date', now)
+          .order('event_date', { ascending: true }).limit(4)
+          .then((r: any) => r).catch(() => ({ data: null, error: true })),
       ])
       if (!groupsRes.error && groupsRes.data) setGroups(groupsRes.data)
       if (!forumRes.error && forumRes.data) setForumPosts(forumRes.data)
+      if (!communityEvtsRes.error && communityEvtsRes.data) setCommunityEventPreviews(communityEvtsRes.data)
     } catch (err) {
       if (__DEV__) console.log('[explore] fetch error:', err)
       setFetchError(true)
@@ -386,6 +405,84 @@ function ExploreScreenInner() {
                 )}
               </View>
             )}
+
+            {/* Community Events carousel */}
+            <View style={s.communitySection}>
+              <View style={s.sectionHeader}>
+                <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
+                <Pressable
+                  onPress={() => router.push('/community-events' as any)}
+                  accessibilityRole="link"
+                  accessibilityLabel={`${t('events.communityEventsTitle')} — ${t('events.showAllEvents')}`}
+                  style={s.seeAllLink}
+                >
+                  <Text style={[s.seeAllText, { color: colors.primary }]}>{t('events.showAllEvents')}</Text>
+                  <ChevronRight size={14} color={colors.primary} />
+                </Pressable>
+              </View>
+
+              {communityEventPreviews.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={s.ceCarouselContent}
+                  style={s.ceCarousel}
+                >
+                  {communityEventPreviews.map(evt => {
+                    const catColor = ({
+                      social: '#8B5CF6', sports: '#EF4444', culture: '#F59E0B',
+                      nature: '#10B981', kids: '#EC4899', other: '#6B7280',
+                    } as Record<string, string>)[evt.category] ?? '#6B7280'
+                    const pCount = evt.participant_count ?? 0
+                    const pLabel = evt.max_participants
+                      ? `${pCount}/${evt.max_participants}`
+                      : `${pCount}`
+
+                    return (
+                      <Pressable
+                        key={evt.id}
+                        onPress={() => router.push(`/event/${evt.id}` as any)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${evt.title}, ${formatEventDateShort(evt.event_date, locale)}`}
+                        style={[s.ceCard, { backgroundColor: colors.card }]}
+                      >
+                        {evt.image_url ? (
+                          <View style={s.ceImageWrap}>
+                            <Image source={{ uri: evt.image_url }} style={s.ceImage} contentFit="cover" />
+                          </View>
+                        ) : (
+                          <View style={[s.ceImagePlaceholder, { backgroundColor: `${catColor}18` }]}>
+                            <CalendarDays size={24} color={catColor} strokeWidth={1.4} />
+                          </View>
+                        )}
+                        <View style={s.ceCardBody}>
+                          <Text style={[s.ceCardTitle, { color: colors.foreground }]} numberOfLines={2}>{evt.title}</Text>
+                          <Text style={[s.ceCardDate, { color: colors.primary }]}>{formatEventDateShort(evt.event_date, locale)}</Text>
+                          <View style={s.ceCardMeta}>
+                            <Users size={12} color={colors.mutedForeground} strokeWidth={1.6} />
+                            <Text style={[s.ceCardMetaText, { color: colors.mutedForeground }]}>{pLabel}</Text>
+                          </View>
+                        </View>
+                      </Pressable>
+                    )
+                  })}
+                </ScrollView>
+              ) : (
+                <Pressable
+                  onPress={() => router.push('/create-event' as any)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('events.createFirstEvent')}
+                  style={[s.communityCard, { backgroundColor: colors.card }]}
+                >
+                  <Plus size={20} color={colors.primary} />
+                  <View style={s.cardFlex}>
+                    <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
+                    <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('events.createFirstEvent')}</Text>
+                  </View>
+                  <ChevronRight size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </View>
 
             {/* Community: Groups */}
             <View style={s.communitySection}>
@@ -891,6 +988,58 @@ const s = StyleSheet.create({
     fontSize: 13,
     fontFamily: fonts.bodySemi,
     flex: 1,
+  },
+
+  // Community events carousel
+  ceCarousel: {
+    marginHorizontal: -16,
+  },
+  ceCarouselContent: {
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  ceCard: {
+    width: 180,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  ceImageWrap: {
+    width: 180,
+    height: 100,
+  },
+  ceImage: {
+    width: 180,
+    height: 100,
+  },
+  ceImagePlaceholder: {
+    width: 180,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ceCardBody: {
+    padding: 10,
+    gap: 3,
+  },
+  ceCardTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.headingSemi,
+    lineHeight: 17,
+  },
+  ceCardDate: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+  },
+  ceCardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ceCardMetaText: {
+    fontSize: 11,
+    fontFamily: fonts.body,
   },
 })
 
