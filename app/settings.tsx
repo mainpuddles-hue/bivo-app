@@ -15,6 +15,7 @@ import { useNotificationPreferences, type NotificationType } from '@/hooks/useNo
 import { isValidUUID } from '@/lib/validation'
 import { fonts } from '@/lib/fonts'
 import { clearAuthCache } from '@/lib/authCache'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -371,6 +372,7 @@ export default function SettingsScreen() {
   const appVersion = Constants.expoConfig?.version ?? '1.0.0'
 
   return (
+    <ScreenErrorBoundary screenName="Settings">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
@@ -877,6 +879,7 @@ export default function SettingsScreen() {
         </Pressable>
       </Modal>
     </View>
+    </ScreenErrorBoundary>
   )
 }
 

@@ -146,6 +146,43 @@ const postSkel = StyleSheet.create({
   avatar: { width: 24, height: 24, borderRadius: 12 },
 })
 
+// ── Post Detail Skeleton ──
+export function PostDetailSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={{ gap: 16 }}>
+      {/* Hero image placeholder */}
+      <Animated.View style={{ width: '100%', height: 250, backgroundColor: colors.muted, opacity }} />
+      {/* Body */}
+      <View style={{ paddingHorizontal: 16, gap: 14 }}>
+        {/* Category chip */}
+        <Animated.View style={[skel.line, { width: '25%', height: 24, borderRadius: 8, backgroundColor: colors.muted, opacity }]} />
+        {/* Title */}
+        <Animated.View style={[skel.line, { width: '70%', height: 20, backgroundColor: colors.muted, opacity }]} />
+        {/* Description lines */}
+        <Animated.View style={[skel.line, { width: '100%', height: 12, backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skel.line, { width: '90%', height: 12, backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skel.line, { width: '75%', height: 12, backgroundColor: colors.muted, opacity }]} />
+        {/* Action bar */}
+        <View style={{ flexDirection: 'row', gap: 16, paddingTop: 8 }}>
+          {[0, 1, 2, 3].map(i => (
+            <Animated.View key={i} style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.muted, opacity }} />
+          ))}
+        </View>
+        {/* Author card */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 12 }}>
+          <Animated.View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.muted, opacity }} />
+          <View style={{ flex: 1, gap: 6 }}>
+            <Animated.View style={[skel.line, { width: '40%', height: 14, backgroundColor: colors.muted, opacity }]} />
+            <Animated.View style={[skel.line, { width: '25%', height: 10, backgroundColor: colors.muted, opacity }]} />
+          </View>
+        </View>
+      </View>
+    </View>
+  )
+}
+
 const sectionSkel = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden' },
   cardRow: { flexDirection: 'row', padding: 14, gap: 12, alignItems: 'center' },

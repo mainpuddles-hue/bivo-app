@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Zap, Trophy } from 'lucide-react-native'
+import { ArrowLeft, Zap, Trophy, Crown, ChevronRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -52,6 +52,7 @@ export default function LeaderboardScreen() {
   const [filter, setFilter] = useState<'all' | 'neighborhood'>('all')
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null)
   const [currentUserPoints, setCurrentUserPoints] = useState<number>(0)
+  const [userIsPro, setUserIsPro] = useState(false)
 
   const fetchLeaderboard = useCallback(async (neighborhood?: string | null) => {
     try {
@@ -155,11 +156,14 @@ export default function LeaderboardScreen() {
         setCurrentUserId(user.id)
         const { data: profile } = await supabase
           .from('profiles')
-          .select('naapurusto')
+          .select('naapurusto, is_pro')
           .eq('id', user.id)
           .single()
         if ((profile as any)?.naapurusto) {
           setUserNeighborhood((profile as any).naapurusto)
+        }
+        if ((profile as any)?.is_pro) {
+          setUserIsPro(true)
         }
       }
     }
@@ -278,6 +282,15 @@ export default function LeaderboardScreen() {
       {/* Month indicator */}
       <Text style={[s.monthLabel, { color: colors.mutedForeground }]}>{isMonthlyData ? t('leaderboard.thisMonth') : t('leaderboard.allTime') ?? 'All time'}</Text>
 
+      {/* Pro upsell banner */}
+      {!userIsPro && (
+        <Pressable onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: `${colors.pro}12` }]}>
+          <Crown size={16} color={colors.pro} />
+          <Text style={[s.proBannerText, { color: colors.pro }]}>{t('pro.leaderboardBanner')}</Text>
+          <ChevronRight size={14} color={colors.pro} />
+        </Pressable>
+      )}
+
       {loading ? (
         <View style={s.list}>
           {[0, 1, 2, 3, 4, 5, 6, 7].map(i => <LeaderboardRowSkeleton key={i} />)}
@@ -361,6 +374,23 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
+  },
+  proBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 4,
+    marginBottom: 4,
+    padding: 10,
+    borderRadius: 10,
+  },
+  proBannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 17,
   },
   list: {
     padding: 16,

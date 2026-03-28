@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle } from 'lucide-react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, X as XIcon } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -54,17 +56,26 @@ const ItemSeparator12 = () => <View style={{ height: 12 }} />
 //    count since last visit. Currently feed always starts fresh from newest,
 //    but there's no indication of what's new vs already seen.
 
+const FILTER_BAR_BASE_HEIGHT = 76
+
 function FeedScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
+  const insets = useSafeAreaInsets()
 
   const feed = useFeedData()
   const supabase = useSupabase()
   const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
-  const { recordActivity } = useStreak(feed.currentUserId)
+  const { recordActivity, currentStreak } = useStreak(feed.currentUserId)
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
+
+  // Wrap filter change with haptic feedback
+  const handleFilterChangeWithHaptics = useCallback((type: import('@/lib/types').PostType | null) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    feed.handleFilterChange(type)
+  }, [feed.handleFilterChange])
 
   // ── Ads in feed ──
   const [activeAds, setActiveAds] = useState<Ad[]>([])
@@ -102,6 +113,8 @@ function FeedScreenInner() {
 
   // ── TODO 6: "Seen" / new indicator ──
   const [lastFeedVisit, setLastFeedVisit] = useState<string | null>(null)
+  const [missedCount, setMissedCount] = useState(0)
+  const [showMissedBanner, setShowMissedBanner] = useState(false)
   useEffect(() => {
     AsyncStorage.getItem('tackbird_last_feed_visit').then(val => {
       if (val) setLastFeedVisit(val)
@@ -110,6 +123,21 @@ function FeedScreenInner() {
       AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString())
     }
   }, [])
+
+  // ── Fix 3: "Missed posts" banner when returning after 24h+ ──
+  useEffect(() => {
+    if (!lastFeedVisit || feed.loading || feed.posts.length === 0) return
+    const lastVisitDate = new Date(lastFeedVisit)
+    const now = new Date()
+    const hoursSinceVisit = (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60)
+    if (hoursSinceVisit >= 24) {
+      const newPostCount = feed.posts.filter(p => p.created_at && p.created_at > lastFeedVisit).length
+      if (newPostCount > 0) {
+        setMissedCount(newPostCount)
+        setShowMissedBanner(true)
+      }
+    }
+  }, [lastFeedVisit, feed.loading, feed.posts])
 
   const filteredPosts = useMemo(
     () => feed.posts.filter(p => !hiddenIds.has(p.id)),
@@ -201,6 +229,18 @@ function FeedScreenInner() {
   // ── ListHeader ──
   const ListHeader = useMemo(() => (
     <View style={{ gap: 16 }}>
+      {/* Missed posts banner (Fix 3) */}
+      {showMissedBanner && missedCount > 0 && (
+        <View style={[styles.missedBanner, { backgroundColor: colors.primary }]}>
+          <Text style={styles.missedBannerText}>
+            {t('feed.missedPosts', { count: missedCount })}
+          </Text>
+          <Pressable onPress={() => setShowMissedBanner(false)} hitSlop={8}>
+            <XIcon size={16} color="#FFFFFF" />
+          </Pressable>
+        </View>
+      )}
+
       <AlertBanner />
 
       <SmartMatchBanner matches={matches} onDismiss={dismissMatch} />
@@ -267,7 +307,7 @@ function FeedScreenInner() {
     </View>
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
-    placesSectionTitle, matches, dismissMatch])
+    placesSectionTitle, matches, dismissMatch, showMissedBanner, missedCount])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {
@@ -318,16 +358,24 @@ function FeedScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar */}
-      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={4}>
-          <MapPin size={12} color={colors.mutedForeground} />
-          <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
-            {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
-          </Text>
-          <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
-        </Pressable>
+      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, top: insets.top }]}>
+        <View style={styles.neighborhoodRow}>
+          <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={4}>
+            <MapPin size={12} color={colors.mutedForeground} />
+            <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
+              {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
+            </Text>
+            <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
+          </Pressable>
+          {currentStreak > 0 && (
+            <View style={[styles.streakBadge, { backgroundColor: isDark ? '#F59E0B18' : '#FDF6E8' }]}>
+              <Text style={[styles.streakText, { color: colors.pro }]}>{currentStreak}</Text>
+              <Flame size={14} color={colors.pro} />
+            </View>
+          )}
+        </View>
         <View style={styles.filterRow}>
-          <FilterBar activeFilter={feed.activeFilter} onFilterChange={feed.handleFilterChange} />
+          <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
         </View>
         {feed.followedIds.length > 0 && (
           <Pressable
@@ -346,7 +394,7 @@ function FeedScreenInner() {
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isAd' in item ? `ad-${item.id}` : item.id)}
-        contentContainerStyle={[styles.list, { paddingTop: 76 }]}
+        contentContainerStyle={[styles.list, { paddingTop: insets.top + FILTER_BAR_BASE_HEIGHT }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
@@ -380,7 +428,10 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,
   },
+  neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, alignSelf: 'flex-start', minHeight: 32 },
+  streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  streakText: { fontSize: 13, fontWeight: '700' },
   neighborhoodText: { fontSize: 12, fontFamily: fonts.body },
   dateGroupLabel: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, paddingBottom: 10 },
   dateGroupLine: { flex: 1, height: StyleSheet.hairlineWidth },
@@ -417,6 +468,17 @@ const styles = StyleSheet.create({
   allLoadedLine: { height: 1, width: '100%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   allLoadedText: { fontSize: 11, fontWeight: '500' },
+  missedBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
+  },
+  missedBannerText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF', flex: 1 },
+  // neighborsActiveRow removed per user request
+  _neighborsActiveRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center',
+  },
+  greenDot: { width: 8, height: 8, borderRadius: 4 },
+  neighborsActiveText: { fontSize: 12, fontFamily: fonts.body },
 })
 
 export default function FeedScreen() {

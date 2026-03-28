@@ -88,7 +88,9 @@
     "examplePost": "Esimerkki-ilmoitus",
     "hidePost": "Piilota",
     "postHidden": "Postaus piilotettu",
-    "newPost": "Uutta"
+    "newPost": "Uutta",
+    "missedPosts": "{count} uutta ilmoitusta edellisen käyntisi jälkeen",
+    "neighborsActive": "{count} naapuria aktiivisena"
   },
   "time": {
     "justNow": "juuri nyt",
@@ -1282,7 +1284,10 @@
     "discardMessage": "Olet täyttänyt lomaketta. Haluatko varmasti hylätä muutokset?",
     "discard": "Hylkää",
     "priceCannotBeNegative": "Hinta ei voi olla negatiivinen",
-    "eventDateInPast": "Tapahtuman päivämäärä ei voi olla menneisyydessä"
+    "eventDateInPast": "Tapahtuman päivämäärä ei voi olla menneisyydessä",
+    "published": "Ilmoituksesi on julkaistu!",
+    "visibleTo": "Näkyy naapureille alueella {neighborhood}",
+    "share": "Jaa"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -1368,7 +1373,27 @@
     "comingSoonIOS": "Pro-tilaus tulee saataville App Storen kautta kun sovellus julkaistaan.",
     "autoRenewalNotice": "Tilaus uusiutuu automaattisesti kunnes se peruutetaan. Tilauksen voi peruuttaa milloin tahansa asetuksista. Maksu veloitetaan ostoksen vahvistamisen yhteydessä.",
     "restorePurchases": "Palauta ostokset",
-    "restorePurchasesInfo": "App Store -ostokset palautetaan automaattisesti kun sovelluksen sisäiset ostokset ovat käytettävissä."
+    "restorePurchasesInfo": "App Store -ostokset palautetaan automaattisesti kun sovelluksen sisäiset ostokset ovat käytettävissä.",
+    "freeListing": "Perusilmoitukset",
+    "proListing": "Etusija syötteessä",
+    "freeCommission": "10 % provisio",
+    "proCommission": "5 % provisio",
+    "freeAds": "Mainokset (2,99 €/pv)",
+    "proAds": "Mainokset (2,39 €/pv)",
+    "freeStats": "Perustilastot",
+    "proStats": "Yksityiskohtainen analytiikka",
+    "freeBadge": "Ei vahvistusmerkintää",
+    "proBadge": "Vahvistettu-merkki",
+    "freeSupport": "Perustuki",
+    "proSupport": "Etusijatuki",
+    "freeVsPro": "ILMAINEN vs PRO",
+    "free": "Ilmainen",
+    "proLabel": "Pro",
+    "perYear": "/vuosi",
+    "createBanner": "Pro: ilmoituksesi näkyy ensimmäisenä feedissä",
+    "profileBanner": "Pro-käyttäjät saavat 3x enemmän näkyvyyttä",
+    "leaderboardBanner": "Pro-jäsenet tienaavat 2x pisteitä",
+    "tryPro": "Kokeile Pro:ta"
   },
   "ads": {
     "create": "Luo mainos",

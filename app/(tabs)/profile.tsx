@@ -5,10 +5,11 @@ import { useRouter } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
-  Crown, Heart, FileText, CalendarDays, Package,
+  Crown, Heart, FileText, CalendarDays, Package, ChevronRight,
   Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -371,6 +372,7 @@ export default function ProfileScreen() {
   }
 
   return (
+    <ScreenErrorBoundary screenName="Profile">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
@@ -548,6 +550,18 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
+
+        {/* Pro upgrade card */}
+        {!profile.is_pro && (
+          <Pressable onPress={() => router.push('/pro')} style={[s.proUpgradeCard, { backgroundColor: `${colors.pro}12`, borderColor: `${colors.pro}30` }]}>
+            <Crown size={20} color={colors.pro} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={[s.proUpgradeTitle, { color: colors.pro }]}>{t('pro.upgradeToPro')}</Text>
+              <Text style={[s.proUpgradeSubtitle, { color: colors.mutedForeground }]}>{t('pro.profileBanner')}</Text>
+            </View>
+            <ChevronRight size={16} color={colors.pro} />
+          </Pressable>
+        )}
 
         {/* Quick action cards */}
         <Pressable onPress={() => router.push('/bookings')} style={[s.overviewCard, { backgroundColor: colors.card }]}>
@@ -898,6 +912,7 @@ export default function ProfileScreen() {
         isSuccess={identity.status === 'success'}
       />
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -945,6 +960,12 @@ const s = StyleSheet.create({
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   tabContent: { gap: 12 },
   overviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12 },
+  proUpgradeCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    padding: 14, borderRadius: 12, borderWidth: 1,
+  },
+  proUpgradeTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi },
+  proUpgradeSubtitle: { fontSize: 12, fontFamily: fonts.body },
   overviewText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.body },
   sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 4, fontFamily: fonts.headingSemi },
   reviewCard: { borderRadius: 12, padding: 14, gap: 8 },

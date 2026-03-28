@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Linking, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -12,20 +12,20 @@ import type { Profile } from '@/lib/types'
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
 const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
-const FEATURES = [
-  { icon: Zap, free: 'Basic listings', pro: 'Priority feed placement' },
-  { icon: Sparkles, free: '10% commission', pro: '5% commission' },
-  { icon: Megaphone, free: 'Ad campaigns (2.99\u20AC/day)', pro: 'Ad campaigns (2.39\u20AC/day)' },
-  { icon: BarChart3, free: 'Basic stats', pro: 'Detailed analytics' },
-  { icon: BadgeCheck, free: 'No verified badge', pro: 'Verified badge' },
-  { icon: Shield, free: 'Standard support', pro: 'Priority support' },
-] as const
-
 type Plan = 'monthly' | 'yearly'
 
 export default function ProScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
+
+  const FEATURES = useMemo(() => [
+    { icon: Zap, free: t('pro.freeListing'), pro: t('pro.proListing') },
+    { icon: Sparkles, free: t('pro.freeCommission'), pro: t('pro.proCommission') },
+    { icon: Megaphone, free: t('pro.freeAds'), pro: t('pro.proAds') },
+    { icon: BarChart3, free: t('pro.freeStats'), pro: t('pro.proStats') },
+    { icon: BadgeCheck, free: t('pro.freeBadge'), pro: t('pro.proBadge') },
+    { icon: Shield, free: t('pro.freeSupport'), pro: t('pro.proSupport') },
+  ], [t])
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
@@ -128,13 +128,13 @@ export default function ProScreen() {
         </View>
 
         {/* Feature comparison */}
-        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>FREE vs PRO</Text>
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('pro.freeVsPro')}</Text>
         <View style={[s.comparisonCard, { backgroundColor: colors.card }]}>
           {/* Table header */}
           <View style={[s.comparisonHeader, { borderBottomColor: colors.border }]}>
             <View style={s.comparisonIconCol} />
-            <Text style={[s.comparisonColLabel, s.comparisonFreeCol, { color: colors.mutedForeground }]}>Free</Text>
-            <Text style={[s.comparisonColLabel, s.comparisonProCol, { color: colors.pro }]}>Pro</Text>
+            <Text style={[s.comparisonColLabel, s.comparisonFreeCol, { color: colors.mutedForeground }]}>{t('pro.free')}</Text>
+            <Text style={[s.comparisonColLabel, s.comparisonProCol, { color: colors.pro }]}>{t('pro.proLabel')}</Text>
           </View>
           {FEATURES.map(({ icon: Icon, free, pro }, i) => (
             <View
@@ -194,7 +194,7 @@ export default function ProScreen() {
                 <Text style={[s.pricingPrice, { color: selectedPlan === 'yearly' ? colors.pro : colors.foreground }]}>
                   39.99 {'\u20AC'}
                 </Text>
-                <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>/year</Text>
+                <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>{t('pro.perYear')}</Text>
                 <Text style={[s.pricingSubtext, { color: colors.pro }]}>3.33 {'\u20AC'}{t('pro.perMonth')}</Text>
               </Pressable>
             </View>
@@ -216,7 +216,7 @@ export default function ProScreen() {
                 <>
                   <Crown size={20} color="#FFFFFF" />
                   <Text style={s.subscribeBtnText}>
-                    {selectedPlan === 'monthly' ? '4.99 \u20AC' + t('pro.perMonth') : '39.99 \u20AC/year'}
+                    {selectedPlan === 'monthly' ? '4.99 \u20AC' + t('pro.perMonth') : '39.99 \u20AC' + t('pro.perYear')}
                     {' \u2014 '}
                     {t('pro.subscribe')}
                   </Text>

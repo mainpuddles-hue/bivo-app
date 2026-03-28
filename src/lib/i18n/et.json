@@ -88,7 +88,9 @@
     "examplePost": "Näidiskuulutus",
     "hidePost": "Peida",
     "postHidden": "Postitus peidetud",
-    "newPost": "Uus"
+    "newPost": "Uus",
+    "missedPosts": "{count} uut kuulutust pärast sinu viimast külastust",
+    "neighborsActive": "{count} naabrit aktiivset"
   },
   "time": {
     "justNow": "just praegu",
@@ -1268,7 +1270,10 @@
     "priceSuggestionDaily": "Piirkonnas {min}–{max}€/päev ({count} kuulutust)",
     "noExternalLinks": "Välislingid ei ole lubatud",
     "noExternalApps": "Hoia vestlused TackBirdi sees",
-    "tooShort": "Palun kirjuta pikem kirjeldus"
+    "tooShort": "Palun kirjuta pikem kirjeldus",
+    "published": "Sinu kuulutus on avaldatud!",
+    "visibleTo": "Nähtav naabritele piirkonnas {neighborhood}",
+    "share": "Jaga"
   },
   "locationPicker": {
     "useCurrentLocation": "Kasuta praegust asukohta",
@@ -1354,7 +1359,27 @@
     "comingSoonIOS": "Pro-tellimus on saadaval App Store'i kaudu, kui rakendus avaldatakse.",
     "autoRenewalNotice": "Tellimus uueneb automaatselt kuni see tühistatakse. Saad tühistada igal ajal seadetes. Makse võetakse ostu kinnitamisel.",
     "restorePurchases": "Taasta ostud",
-    "restorePurchasesInfo": "App Store'i ostud taastatakse automaatselt, kui rakendusesisesed ostud muutuvad kättesaadavaks."
+    "restorePurchasesInfo": "App Store'i ostud taastatakse automaatselt, kui rakendusesisesed ostud muutuvad kättesaadavaks.",
+    "freeListing": "Põhikuulutused",
+    "proListing": "Eelisjärjekord voos",
+    "freeCommission": "10% komisjonitasu",
+    "proCommission": "5% komisjonitasu",
+    "freeAds": "Reklaamikampaaniad (2,99 €/p)",
+    "proAds": "Reklaamikampaaniad (2,39 €/p)",
+    "freeStats": "Põhistatistika",
+    "proStats": "Üksikasjalik analüütika",
+    "freeBadge": "Kinnitatud märki pole",
+    "proBadge": "Kinnitatud märk",
+    "freeSupport": "Tavatugi",
+    "proSupport": "Eelistugi",
+    "freeVsPro": "TASUTA vs PRO",
+    "free": "Tasuta",
+    "proLabel": "Pro",
+    "perYear": "/aasta",
+    "createBanner": "Pro: sinu kuulutus kuvatakse voos esimesena",
+    "profileBanner": "Pro-kasutajad saavad 3x rohkem nähtavust",
+    "leaderboardBanner": "Pro-liikmed teenivad 2x punkte",
+    "tryPro": "Proovi Pro-d"
   },
   "ads": {
     "create": "Loo reklaam",

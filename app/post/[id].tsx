@@ -28,6 +28,7 @@ import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PostDetailSkeleton } from '@/components/SkeletonLoaders'
 import { isValidUUID } from '@/lib/validation'
 import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
 import { trackEvent } from '@/lib/analytics'
@@ -628,7 +629,16 @@ function PostDetailScreenInner() {
   )
 
   if (loading) {
-    return (<View style={[styles.container, { backgroundColor: colors.background }]}><ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} /></View>)
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        </View>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}>
+          <PostDetailSkeleton />
+        </ScrollView>
+      </View>
+    )
   }
 
   if (!post) {

@@ -12,6 +12,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { isValidUUID } from '@/lib/validation'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Conversation } from '@/lib/types'
 
 const PINNED_KEY = 'pinned_conversations'
@@ -197,6 +198,7 @@ export default function MessagesScreen() {
   }
 
   return (
+    <ScreenErrorBoundary screenName="Messages">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
@@ -306,6 +308,7 @@ export default function MessagesScreen() {
         showsVerticalScrollIndicator={false}
       />
     </View>
+    </ScreenErrorBoundary>
   )
 }
 

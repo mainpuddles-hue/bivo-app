@@ -1,10 +1,10 @@
 declare const __DEV__: boolean
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp } from 'lucide-react-native'
+import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp, Crown, CheckCircle } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
@@ -23,6 +23,7 @@ import { TrustGateModal } from '@/components/TrustGate'
 import { VerificationModal } from '@/components/VerificationModal'
 import { TrustBadge } from '@/components/TrustBadge'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
@@ -119,6 +120,10 @@ export default function CreateScreen() {
   const [showDetails, setShowDetails] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
+  const [userIsPro, setUserIsPro] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [successNeighborhood, setSuccessNeighborhood] = useState<string | null>(null)
+  const [successPostId, setSuccessPostId] = useState<string | null>(null)
 
   // Handle pre-selected type from query params (e.g., from events screen)
   useEffect(() => {
@@ -137,8 +142,8 @@ export default function CreateScreen() {
       setCurrentUserId(id)
       if (!id) { router.replace('/(auth)/login'); return }
       // Fetch user neighborhood for price suggestions
-      supabase.from('profiles').select('naapurusto').eq('id', id).single()
-        .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string) })
+      supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).single()
+        .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) })
         .then(() => {}, () => {})
     })
   }, [supabase, router])
@@ -582,13 +587,14 @@ export default function CreateScreen() {
       setLongitude(null)
       setStep('category')
 
-      // Show success feedback before navigating — user needs to know their post was created
-      Alert.alert(
-        t('common.success'),
-        t('create.postPublished'),
-        [{ text: t('post.viewPost'), onPress: () => router.replace(`/post/${createdPostId}`) },
-         { text: t('nav.feed'), onPress: () => router.replace('/') }],
-      )
+      // Show success celebration overlay before navigating
+      setSuccessPostId(createdPostId)
+      setSuccessNeighborhood(userNeighborhood)
+      setShowSuccess(true)
+      setTimeout(() => {
+        setShowSuccess(false)
+        router.replace(`/post/${createdPostId}`)
+      }, 2000)
     } catch (err: any) {
       if (__DEV__) console.log('[create] error:', JSON.stringify(err))
       Alert.alert(t('common.error'), err?.message || t('create.createFailed'))
@@ -601,6 +607,7 @@ export default function CreateScreen() {
   // ── Category selection step ──
   if (step === 'category') {
     return (
+      <ScreenErrorBoundary screenName="Create">
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('create.selectCategory')}</Text>
@@ -657,6 +664,7 @@ export default function CreateScreen() {
           isSuccess={identity.status === 'success'}
         />
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
@@ -665,6 +673,7 @@ export default function CreateScreen() {
   const availableTags = selectedType ? (POST_TAGS[selectedType] ?? []) : []
 
   return (
+    <ScreenErrorBoundary screenName="Create">
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
@@ -680,6 +689,15 @@ export default function CreateScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {/* Pro upsell banner */}
+          {!userIsPro && (
+            <Pressable onPress={() => router.push('/pro')} style={[styles.proBanner, { backgroundColor: `${colors.pro}12` }]}>
+              <Crown size={16} color={colors.pro} />
+              <Text style={[styles.proBannerText, { color: colors.pro }]}>{t('pro.createBanner')}</Text>
+              <ChevronRight size={14} color={colors.pro} />
+            </Pressable>
+          )}
+
           {/* Images */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.foreground }]}>{t('create.images')}</Text>
@@ -1036,6 +1054,31 @@ export default function CreateScreen() {
           </Pressable>
         </ScrollView>
 
+        {/* Success celebration overlay */}
+        <Modal visible={showSuccess} transparent animationType="fade">
+          <View style={styles.successOverlay}>
+            <View style={[styles.successCard, { backgroundColor: colors.card }]}>
+              <CheckCircle size={48} color={colors.primary} />
+              <Text style={[styles.successTitle, { color: colors.foreground }]}>{t('create.published')}</Text>
+              {successNeighborhood && (
+                <Text style={[styles.successSubtitle, { color: colors.mutedForeground }]}>
+                  {t('create.visibleTo', { neighborhood: successNeighborhood })}
+                </Text>
+              )}
+              <Pressable
+                onPress={() => {
+                  if (successPostId) {
+                    Share.share({ message: `${t('create.published')} https://tackbird.fi/post/${successPostId}` }).catch(() => {})
+                  }
+                }}
+                style={[styles.shareBtn, { backgroundColor: colors.primary }]}
+              >
+                <Text style={[styles.shareBtnText, { color: colors.primaryForeground }]}>{t('create.share')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+
         {/* Map Location Picker Modal */}
         <Modal
           visible={mapModalVisible}
@@ -1124,6 +1167,7 @@ export default function CreateScreen() {
         </Modal>
       </View>
     </KeyboardAvoidingView>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -1304,6 +1348,27 @@ const styles = StyleSheet.create({
   },
   anonymousInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   anonymousHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 15, marginTop: 2 },
+
+  // Pro banner
+  proBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    padding: 12, borderRadius: 10,
+  },
+  proBannerText: { flex: 1, fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+
+  // Success celebration overlay
+  successOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center', justifyContent: 'center', padding: 32,
+  },
+  successCard: {
+    borderRadius: 20, padding: 32, alignItems: 'center', gap: 12,
+    width: '100%', maxWidth: 300,
+  },
+  successTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, textAlign: 'center' },
+  successSubtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
+  shareBtn: { borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10, marginTop: 4 },
+  shareBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // Location picker
   locationRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },

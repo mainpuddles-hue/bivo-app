@@ -88,7 +88,9 @@
     "examplePost": "Example listing",
     "hidePost": "Hide",
     "postHidden": "Post hidden",
-    "newPost": "New"
+    "newPost": "New",
+    "missedPosts": "{count} new posts since your last visit",
+    "neighborsActive": "{count} neighbors active"
   },
   "time": {
     "justNow": "just now",
@@ -1282,7 +1284,10 @@
     "discardMessage": "You have unsaved content. Are you sure you want to discard it?",
     "discard": "Discard",
     "priceCannotBeNegative": "Price cannot be negative",
-    "eventDateInPast": "Event date cannot be in the past"
+    "eventDateInPast": "Event date cannot be in the past",
+    "published": "Your listing has been published!",
+    "visibleTo": "Visible to neighbors in {neighborhood}",
+    "share": "Share"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1368,7 +1373,27 @@
     "comingSoonIOS": "Pro subscription will be available via the App Store when the app is published.",
     "autoRenewalNotice": "Subscription automatically renews until cancelled. You can cancel anytime in settings. Payment is charged upon purchase confirmation.",
     "restorePurchases": "Restore purchases",
-    "restorePurchasesInfo": "App Store purchases will be restored automatically when in-app purchases become available."
+    "restorePurchasesInfo": "App Store purchases will be restored automatically when in-app purchases become available.",
+    "freeListing": "Basic listings",
+    "proListing": "Priority feed placement",
+    "freeCommission": "10% commission",
+    "proCommission": "5% commission",
+    "freeAds": "Ad campaigns (€2.99/day)",
+    "proAds": "Ad campaigns (€2.39/day)",
+    "freeStats": "Basic stats",
+    "proStats": "Detailed analytics",
+    "freeBadge": "No verified badge",
+    "proBadge": "Verified badge",
+    "freeSupport": "Standard support",
+    "proSupport": "Priority support",
+    "freeVsPro": "FREE vs PRO",
+    "free": "Free",
+    "proLabel": "Pro",
+    "perYear": "/year",
+    "createBanner": "Pro: your listing appears first in the feed",
+    "profileBanner": "Pro users get 3x more visibility",
+    "leaderboardBanner": "Pro members earn 2x points",
+    "tryPro": "Try Pro"
   },
   "ads": {
     "create": "Create ad",

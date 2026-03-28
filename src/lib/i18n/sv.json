@@ -88,7 +88,9 @@
     "examplePost": "Exempelannons",
     "hidePost": "Dölj",
     "postHidden": "Inlägg dolt",
-    "newPost": "Ny"
+    "newPost": "Ny",
+    "missedPosts": "{count} nya inlägg sedan ditt senaste besök",
+    "neighborsActive": "{count} grannar aktiva"
   },
   "time": {
     "justNow": "just nu",
@@ -1282,7 +1284,10 @@
     "discardMessage": "Du har osparade ändringar. Vill du verkligen kasta bort dem?",
     "discard": "Kasta bort",
     "priceCannotBeNegative": "Priset kan inte vara negativt",
-    "eventDateInPast": "Evenemangets datum kan inte vara i det förflutna"
+    "eventDateInPast": "Evenemangets datum kan inte vara i det förflutna",
+    "published": "Din annons har publicerats!",
+    "visibleTo": "Synlig för grannar i {neighborhood}",
+    "share": "Dela"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1368,7 +1373,27 @@
     "comingSoonIOS": "Pro-prenumerationen blir tillgänglig via App Store när appen publiceras.",
     "autoRenewalNotice": "Prenumerationen förnyas automatiskt tills den avbryts. Du kan avbryta när som helst i inställningarna. Betalning debiteras vid köpbekräftelse.",
     "restorePurchases": "Återställ köp",
-    "restorePurchasesInfo": "App Store-köp återställs automatiskt när köp i appen blir tillgängliga."
+    "restorePurchasesInfo": "App Store-köp återställs automatiskt när köp i appen blir tillgängliga.",
+    "freeListing": "Grundläggande annonser",
+    "proListing": "Prioriterad placering i flödet",
+    "freeCommission": "10 % provision",
+    "proCommission": "5 % provision",
+    "freeAds": "Annonskampanjer (2,99 €/dag)",
+    "proAds": "Annonskampanjer (2,39 €/dag)",
+    "freeStats": "Grundläggande statistik",
+    "proStats": "Detaljerad analys",
+    "freeBadge": "Inget verifierat märke",
+    "proBadge": "Verifierat märke",
+    "freeSupport": "Standardsupport",
+    "proSupport": "Prioriterad support",
+    "freeVsPro": "GRATIS vs PRO",
+    "free": "Gratis",
+    "proLabel": "Pro",
+    "perYear": "/år",
+    "createBanner": "Pro: din annons visas först i flödet",
+    "profileBanner": "Pro-användare får 3x mer synlighet",
+    "leaderboardBanner": "Pro-medlemmar tjänar 2x poäng",
+    "tryPro": "Prova Pro"
   },
   "ads": {
     "create": "Skapa annons",
