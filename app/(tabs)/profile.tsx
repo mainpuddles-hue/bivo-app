@@ -102,7 +102,8 @@ export default function ProfileScreen() {
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     if (p) {
       // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
-      if ((p as any).is_pro && (p as any).pro_expires_at && new Date((p as any).pro_expires_at) < new Date()) {
+      const GRACE_DAYS = 3
+      if ((p as any).is_pro && (p as any).pro_expires_at && new Date((p as any).pro_expires_at).getTime() + GRACE_DAYS * 86400000 < Date.now() && !(p as any).stripe_subscription_id) {
         await (supabase.from('profiles') as any).update({ is_pro: false, pro_expires_at: null }).eq('id', user.id)
         ;(p as any).is_pro = false
         ;(p as any).pro_expires_at = null

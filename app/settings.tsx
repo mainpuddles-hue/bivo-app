@@ -92,7 +92,8 @@ export default function SettingsScreen() {
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
         // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
-        if ((data as any).is_pro && (data as any).pro_expires_at && new Date((data as any).pro_expires_at) < new Date()) {
+        const GRACE_DAYS = 3
+        if ((data as any).is_pro && (data as any).pro_expires_at && new Date((data as any).pro_expires_at).getTime() + GRACE_DAYS * 86400000 < Date.now() && !(data as any).stripe_subscription_id) {
           await (supabase.from('profiles') as any).update({ is_pro: false, pro_expires_at: null }).eq('id', user.id)
           ;(data as any).is_pro = false
           ;(data as any).pro_expires_at = null

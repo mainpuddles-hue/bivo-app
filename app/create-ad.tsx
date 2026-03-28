@@ -171,6 +171,7 @@ export default function CreateAdScreen() {
           amount: totalPrice, // in cents — stripe-checkout Edge Function expects cents
           description: `TackBird Ad: ${title.trim()} (${duration} days)`,
           type: 'ad_campaign',
+          seller_id: profile.id, // ad campaigns: advertiser is both buyer and seller
           metadata: {
             ad_id: ad?.id,
             duration: String(duration),

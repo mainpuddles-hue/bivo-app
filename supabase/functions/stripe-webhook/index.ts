@@ -211,6 +211,9 @@ serve(async (req) => {
             }).eq('id', userId)
           }
 
+          // Clear is_pro_listing on all user's posts
+          await supabase.from('posts').update({ is_pro_listing: false }).eq('user_id', userId).eq('is_pro_listing', true)
+
           console.log(`[webhook] Subscription cancelled (${isBusiness ? 'business' : 'pro'}) for user ${userId}`)
         }
         break

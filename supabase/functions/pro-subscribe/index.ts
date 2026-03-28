@@ -45,15 +45,38 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { plan } = body // 'monthly' | 'yearly'
-    const price = PRICES[plan as keyof typeof PRICES] ?? PRICES.monthly
+    const { plan } = body // 'monthly' | 'yearly' | 'business_monthly'
+    // Validate plan — only allow known plans
+    const validPlans = ['monthly', 'yearly', 'business_monthly'] as const
+    if (!validPlans.includes(plan)) {
+      return new Response(JSON.stringify({ error: 'Invalid plan' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const price = PRICES[plan as keyof typeof PRICES]
 
     // Get or create Stripe customer
     const { data: profile } = await supabase
       .from('profiles')
-      .select('stripe_customer_id, email, name')
+      .select('stripe_customer_id, stripe_subscription_id, email, name, is_pro, is_business')
       .eq('id', user.id)
       .single()
+
+    // Prevent duplicate subscriptions
+    if (profile?.stripe_subscription_id) {
+      try {
+        const existingSub = await stripe.subscriptions.retrieve(profile.stripe_subscription_id)
+        if (existingSub.status === 'active' || existingSub.status === 'trialing') {
+          return new Response(JSON.stringify({ error: 'Active subscription already exists' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      } catch {
+        // Subscription not found in Stripe — proceed
+      }
+    }
 
     let customerId = profile?.stripe_customer_id
     if (!customerId) {
@@ -80,6 +103,9 @@ serve(async (req) => {
         quantity: 1,
       }],
       metadata: { user_id: user.id, plan: plan ?? 'monthly' },
+      subscription_data: {
+        metadata: { user_id: user.id, plan: plan ?? 'monthly' },
+      },
       success_url: 'tackbird://payment/success?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'tackbird://payment/cancel',
     })

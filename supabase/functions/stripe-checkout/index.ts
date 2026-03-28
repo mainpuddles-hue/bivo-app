@@ -134,8 +134,8 @@ serve(async (req) => {
       }
     }
 
-    // Prevent self-purchase
-    if (user.id === seller_id) {
+    // Prevent self-purchase (except ad campaigns which are platform payments)
+    if (user.id === seller_id && type !== 'ad_campaign') {
       return new Response(JSON.stringify({ error: 'Cannot purchase from yourself' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
