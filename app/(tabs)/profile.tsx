@@ -520,36 +520,14 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
 
-        {/* Secondary stats: thanks + streak */}
-        <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border, marginTop: -4 }]}>
-          <View style={s.stat}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{thanksCount > 0 ? thanksCount : '\u2013'}</Text>
-              <Heart size={12} color={colors.destructive} fill={colors.destructive} />
-            </View>
-            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.thanks')}</Text>
-          </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <Pressable style={s.stat} onPress={() => followingCount > 0 ? openFollowList('following') : null}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{followingCount > 0 ? followingCount : '\u2013'}</Text>
-            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.following')}</Text>
+        {/* Following count — shown as text link, not a stat box */}
+        {followingCount > 0 && (
+          <Pressable onPress={() => openFollowList('following')} style={{ alignSelf: 'center', paddingVertical: 4 }}>
+            <Text style={[{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body }]}>
+              {followingCount} {t('profile.following').toLowerCase()}
+            </Text>
           </Pressable>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{streakData.currentStreak > 0 ? streakData.currentStreak : '\u2013'}</Text>
-              <Flame size={12} color="#E8A050" fill="#E8A050" />
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.streak')}</Text>
-              {streakData.multiplier > 1 && (
-                <View style={[s.multiplierBadge, { backgroundColor: streakData.multiplier >= 3 ? '#E8A050' : colors.primary }]}>
-                  <Text style={s.multiplierText}>{streakData.multiplier}x</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </View>
+        )}
 
         {/* Pro upgrade card */}
         {!profile.is_pro && (
