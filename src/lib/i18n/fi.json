@@ -1714,7 +1714,9 @@
     "showAllPlaces": "Näytä kaikki {count} paikkaa",
     "outOfArea": "Olet alueen ulkopuolella",
     "outOfAreaDesc": "Tapahtumat ja paikat näkyvät vain kaupungissa {city}",
-    "changeCity": "Vaihda kaupunki"
+    "changeCity": "Vaihda kaupunki",
+    "businesses": "Yritykset",
+    "showProfile": "Näytä profiili"
   },
   "privacy": {
     "title": "Tietosuojaseloste",

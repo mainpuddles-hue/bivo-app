@@ -1714,7 +1714,9 @@
     "resetFiltersHint": "Prova att ta bort filter eller utöka radien.",
     "outOfArea": "Du är utanför området",
     "outOfAreaDesc": "Evenemang och platser visas bara i {city}",
-    "changeCity": "Byt stad"
+    "changeCity": "Byt stad",
+    "businesses": "Företag",
+    "showProfile": "Visa profil"
   },
   "privacy": {
     "title": "Integritetspolicy",

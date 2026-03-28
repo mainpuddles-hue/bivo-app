@@ -9,14 +9,16 @@ import { useRouter } from 'expo-router'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
 import * as Haptics from 'expo-haptics'
 import {
-  ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X,
+  ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X, Building2,
 } from 'lucide-react-native'
+import { Image } from 'expo-image'
 import { PinIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { NEIGHBORHOODS } from '@/lib/constants'
 
+import { useSupabase } from '@/hooks/useSupabase'
 import { isInCityBounds } from '@/lib/geo'
 import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
 import { clusterMarkers, isCluster, type Cluster } from '@/lib/mapClustering'
@@ -62,6 +64,32 @@ export default function MapScreen() {
     handleMarkerPress, handleGPSSelect, handleNeighborhoodSelect,
     handleCenterOnUser, openDirections,
   } = useMapData(t, locale)
+
+  // ── Business markers ──
+  const supabase = useSupabase()
+  const [businesses, setBusinesses] = useState<any[]>([])
+  const [showBusinesses, setShowBusinesses] = useState(true)
+  const [selectedBusiness, setSelectedBusiness] = useState<any | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('id, name, business_name, business_category, business_images, business_lat, business_lng, business_address, avatar_url')
+          .eq('is_business', true)
+          .not('business_lat', 'is', null)
+          .not('business_lng', 'is', null)
+        if (!cancelled && data) {
+          setBusinesses(data)
+        }
+      } catch {
+        // Silently ignore — businesses are a non-critical layer
+      }
+    })()
+    return () => { cancelled = true }
+  }, [supabase])
 
   // ── Out-of-area detection ──
   // Helsinki default bounds (same as MapWeb fallback)
@@ -270,6 +298,21 @@ export default function MapScreen() {
               />
             )
           })}
+          {showBusinesses && businesses.map(biz => (
+            <Marker
+              key={`biz-${biz.id}`}
+              coordinate={{ latitude: biz.business_lat, longitude: biz.business_lng }}
+              tracksViewChanges={false}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+                setSelectedBusiness(biz)
+              }}
+            >
+              <View style={[styles.businessMarker, { backgroundColor: colors.primary }]}>
+                <Building2 size={14} color="#FFF" />
+              </View>
+            </Marker>
+          ))}
         </MapView>
         {(loading || neighborhoodLoading) && (
           <View style={[styles.mapOverlay, { backgroundColor: isDark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)' }]}>
@@ -299,6 +342,27 @@ export default function MapScreen() {
           ]}
         >
           <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? '#FFF' : colors.foreground} />
+        </Pressable>
+
+        {/* ── Business toggle chip ── */}
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+            setShowBusinesses(prev => !prev)
+            if (selectedBusiness && showBusinesses) setSelectedBusiness(null)
+          }}
+          style={[
+            styles.businessToggle,
+            {
+              backgroundColor: showBusinesses ? colors.primary : colors.card,
+              borderColor: showBusinesses ? colors.primary : colors.border,
+            },
+          ]}
+        >
+          <Building2 size={14} color={showBusinesses ? '#FFF' : colors.mutedForeground} />
+          <Text style={[styles.businessToggleText, { color: showBusinesses ? '#FFF' : colors.mutedForeground }]}>
+            {t('map.businesses')}
+          </Text>
         </Pressable>
 
         {/* ── Filter Pills ── */}
@@ -415,6 +479,60 @@ export default function MapScreen() {
         router={router}
         onClose={() => setSelectedItem(null)}
       />
+
+      {/* ── Business Preview Card ── */}
+      {selectedBusiness && (
+        <View style={[styles.businessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Pressable
+            onPress={() => setSelectedBusiness(null)}
+            style={styles.businessCardClose}
+            hitSlop={8}
+          >
+            <X size={16} color={colors.mutedForeground} />
+          </Pressable>
+          <View style={styles.businessCardRow}>
+            <Image
+              source={{
+                uri:
+                  (Array.isArray(selectedBusiness.business_images) && selectedBusiness.business_images.length > 0
+                    ? selectedBusiness.business_images[0]
+                    : null) ??
+                  selectedBusiness.avatar_url ??
+                  undefined,
+              }}
+              style={styles.businessCardImage}
+              contentFit="cover"
+            />
+            <View style={styles.businessCardInfo}>
+              <Text style={[styles.businessCardName, { color: colors.foreground }]} numberOfLines={1}>
+                {selectedBusiness.business_name || selectedBusiness.name}
+              </Text>
+              {selectedBusiness.business_category ? (
+                <View style={[styles.businessCategoryBadge, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.businessCategoryText, { color: colors.mutedForeground }]} numberOfLines={1}>
+                    {selectedBusiness.business_category}
+                  </Text>
+                </View>
+              ) : null}
+              {selectedBusiness.business_address ? (
+                <Text style={[styles.businessCardAddress, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {selectedBusiness.business_address}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+          <Pressable
+            onPress={() => {
+              const bizId = selectedBusiness.id
+              setSelectedBusiness(null)
+              router.push(`/profile/${bizId}` as any)
+            }}
+            style={[styles.businessCardButton, { backgroundColor: colors.primary }]}
+          >
+            <Text style={styles.businessCardButtonText}>{t('map.showProfile')}</Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* ── Neighborhood Modal ── */}
       <NeighborhoodModal
@@ -681,5 +799,117 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
     lineHeight: 16,
+  },
+  businessMarker: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  businessToggle: {
+    position: 'absolute',
+    bottom: 8,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+    zIndex: 11,
+  },
+  businessToggleText: {
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 15.6,
+  },
+  businessCard: {
+    position: 'absolute',
+    bottom: 90,
+    left: 12,
+    right: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 6,
+    zIndex: 20,
+  },
+  businessCardClose: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  businessCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  businessCardImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: '#E5E5E5',
+  },
+  businessCardInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  businessCardName: {
+    fontSize: 16,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.16,
+    lineHeight: 20,
+  },
+  businessCategoryBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  businessCategoryText: {
+    fontSize: 11,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 14.3,
+  },
+  businessCardAddress: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 15.6,
+  },
+  businessCardButton: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  businessCardButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 21,
   },
 })

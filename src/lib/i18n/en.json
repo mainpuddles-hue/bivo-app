@@ -1714,7 +1714,9 @@
     "resetFiltersHint": "Try removing filters or expanding the radius.",
     "outOfArea": "You're outside the area",
     "outOfAreaDesc": "Events and places are only shown in {city}",
-    "changeCity": "Change city"
+    "changeCity": "Change city",
+    "businesses": "Businesses",
+    "showProfile": "Show profile"
   },
   "privacy": {
     "title": "Privacy Policy",
