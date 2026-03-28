@@ -31,7 +31,7 @@ import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
 // ── Stable separator components (avoid re-render) ──
-const ItemSeparator12 = () => <View style={{ height: 12 }} />
+const ItemSeparator8 = () => <View style={{ height: 8 }} />
 
 // ══════════════════════════════════════════════
 // ── Feed Screen ──
@@ -217,9 +217,7 @@ function FeedScreenInner() {
       <View>
         {showLabel && currentGroup ? (
           <View style={styles.dateGroupLabel}>
-            <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
             <Text style={[styles.dateGroupText, { color: colors.mutedForeground }]}>{t(`feed.${currentGroup}`)}</Text>
-            <View style={[styles.dateGroupLine, { backgroundColor: `${colors.border}88` }]} />
           </View>
         ) : null}
         <PostCard post={post} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} />
@@ -230,20 +228,16 @@ function FeedScreenInner() {
   // ── ListHeader ──
   const ListHeader = useMemo(() => (
     <View style={{ gap: 12 }}>
-      {/* Greeting */}
-      <View style={{ alignItems: 'center', paddingTop: 8 }}>
-        <Text style={{ fontSize: 17, color: colors.primary, fontFamily: fonts.headingSemi, letterSpacing: -0.2 }}>
+      {/* Greeting — compact single line */}
+      <View style={{ alignItems: 'flex-start', paddingTop: 4 }}>
+        <Text style={{ fontSize: 15, color: colors.primary, fontFamily: fonts.headingSemi, letterSpacing: -0.2 }}>
           {(() => {
             const hour = new Date().getHours()
             const greetingKey = hour < 12 ? 'greeting.morning' : hour < 17 ? 'greeting.afternoon' : hour < 21 ? 'greeting.evening' : 'greeting.night'
-            return `${t(greetingKey)}, ${feed.userNeighborhood ?? feed.userCityName ?? 'Helsinki'}!`
+            const greeting = `${t(greetingKey)}, ${feed.userNeighborhood ?? feed.userCityName ?? 'Helsinki'}!`
+            return feed.posts.length > 0 ? `${greeting} \u00B7 ${t('greeting.postsInArea', { count: feed.posts.length })}` : greeting
           })()}
         </Text>
-        {feed.posts.length > 0 && (
-          <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body, marginTop: 2 }}>
-            {t('greeting.postsInArea', { count: feed.posts.length })}
-          </Text>
-        )}
       </View>
 
       {/* Missed posts banner */}
@@ -403,7 +397,7 @@ function FeedScreenInner() {
         onEndReached={feed.handleLoadMore}
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}
-        ItemSeparatorComponent={ItemSeparator12}
+        ItemSeparatorComponent={ItemSeparator8}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
@@ -434,7 +428,7 @@ const styles = StyleSheet.create({
   streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   streakText: { fontSize: 13, fontWeight: '700', fontFamily: fonts.heading },
   neighborhoodText: { fontSize: 12, fontFamily: fonts.body },
-  dateGroupLabel: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, paddingBottom: 10 },
+  dateGroupLabel: { alignItems: 'center', paddingVertical: 6 },
   dateGroupLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3 },
   list: { paddingHorizontal: 16, paddingBottom: 96 },

@@ -152,6 +152,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         styles.card,
         { backgroundColor: colors.card },
         isDark ? cardShadowDark : cardShadow,
+        category && { borderTopWidth: 3, borderTopColor: category.color },
         isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: '#E8A050' },
         isUrgentPost && { borderWidth: 2, borderColor: colors.destructive },
         isPro && { borderWidth: 1.5, borderColor: colors.pro },
