@@ -57,7 +57,7 @@ const ItemSeparator12 = () => <View style={{ height: 12 }} />
 //    but there's no indication of what's new vs already seen.
 
 const HEADER_HEIGHT = 52 // Header.tsx headerContent height
-const FILTER_BAR_BASE_HEIGHT = 76
+const FILTER_BAR_BASE_HEIGHT = 88
 
 function FeedScreenInner() {
   const { colors, isDark } = useTheme()
@@ -229,8 +229,20 @@ function FeedScreenInner() {
 
   // ── ListHeader ──
   const ListHeader = useMemo(() => (
-    <View style={{ gap: 16 }}>
-      {/* Missed posts banner (Fix 3) */}
+    <View style={{ gap: 12 }}>
+      {/* Greeting */}
+      <View style={{ alignItems: 'center', paddingTop: 8 }}>
+        <Text style={{ fontSize: 17, color: colors.primary, fontFamily: fonts.headingSemi, letterSpacing: -0.2 }}>
+          {t('feed.greeting', { area: feed.userNeighborhood ?? (feed.userCityName ?? 'Helsinki') })}
+        </Text>
+        {feed.posts.length > 0 && (
+          <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body, marginTop: 2 }}>
+            {t('feed.postCount', { count: feed.posts.length })}
+          </Text>
+        )}
+      </View>
+
+      {/* Missed posts banner */}
       {showMissedBanner && missedCount > 0 && (
         <View style={[styles.missedBanner, { backgroundColor: colors.primary }]}>
           <Text style={styles.missedBannerText}>
