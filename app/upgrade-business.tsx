@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Building2, MapPin, FileText, Check, Info } from 'lucide-react-native'
+import { ArrowLeft, Building2, MapPin, Camera, Shield, Megaphone, BarChart3, Info } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -229,17 +229,21 @@ export default function UpgradeBusinessScreen() {
 
         {/* Benefits */}
         <View style={[styles.benefitsCard, { backgroundColor: colors.card }]}>
-          {[
-            t('business.benefitAds'),
-            t('business.benefitMap'),
-            t('business.benefitDashboard'),
-            t('business.benefitSupport'),
-          ].map((benefit, i) => (
-            <View key={i} style={styles.benefitRow}>
-              <Check size={16} color={colors.success} />
-              <Text style={[styles.benefitText, { color: colors.foreground }]}>{benefit}</Text>
-            </View>
-          ))}
+          {([
+            { icon: Camera, text: t('business.benefitProfile') },
+            { icon: MapPin, text: t('business.benefitMap') },
+            { icon: Shield, text: t('business.benefitVerified') },
+            { icon: Megaphone, text: t('business.benefitAds') },
+            { icon: BarChart3, text: t('business.benefitAnalytics') },
+          ] as const).map((benefit, i) => {
+            const Icon = benefit.icon
+            return (
+              <View key={i} style={styles.benefitRow}>
+                <Icon size={16} color={colors.primary} />
+                <Text style={[styles.benefitText, { color: colors.foreground }]}>{benefit.text}</Text>
+              </View>
+            )
+          })}
         </View>
 
         {/* Form */}

@@ -1,13 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, Switch, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Switch, ActivityIndicator, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Megaphone, Eye, BarChart3, Plus, MapPin, TrendingUp } from 'lucide-react-native'
+import { Image } from 'expo-image'
+import * as ImagePicker from 'expo-image-picker'
+import { ArrowLeft, Megaphone, Eye, BarChart3, Plus, MapPin, TrendingUp, Camera, X, Phone, Globe, Save, Navigation } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import type { Profile } from '@/lib/types'
+
+const MAX_IMAGES = 10
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp']
 
 interface AdStats {
   id: string
@@ -31,6 +37,18 @@ export default function OrganizationScreen() {
   const [loading, setLoading] = useState(true)
   const [mapPresence, setMapPresence] = useState(true)
 
+  // Profile editor state
+  const [businessImages, setBusinessImages] = useState<string[]>([])
+  const [businessDescription, setBusinessDescription] = useState('')
+  const [businessAddress, setBusinessAddress] = useState('')
+  const [businessLat, setBusinessLat] = useState<number | null>(null)
+  const [businessLng, setBusinessLng] = useState<number | null>(null)
+  const [businessPhone, setBusinessPhone] = useState('')
+  const [businessWebsite, setBusinessWebsite] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [geocoding, setGeocoding] = useState(false)
+
   useEffect(() => {
     async function load() {
       try {
@@ -42,6 +60,15 @@ export default function OrganizationScreen() {
         const p = profileData as unknown as Profile
         setProfile(p)
         setMapPresence((profileData as any).map_presence !== false)
+
+        // Populate editor fields
+        setBusinessImages(p.business_images ?? [])
+        setBusinessDescription(p.business_description ?? '')
+        setBusinessAddress(p.business_address ?? '')
+        setBusinessLat(p.business_lat ?? null)
+        setBusinessLng(p.business_lng ?? null)
+        setBusinessPhone(p.business_phone ?? '')
+        setBusinessWebsite(p.business_website ?? '')
 
         if (!p.is_business) {
           router.replace('/upgrade-business')
@@ -109,6 +136,137 @@ export default function OrganizationScreen() {
     return `${((clicks / impressions) * 100).toFixed(1)}%`
   }
 
+  // --- Image handling ---
+  const pickImage = useCallback(async () => {
+    if (businessImages.length >= MAX_IMAGES) {
+      Alert.alert(t('common.error'), t('business.maxImages'))
+      return
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 0.8,
+      selectionLimit: MAX_IMAGES - businessImages.length,
+    })
+    if (result.canceled || !result.assets?.length || !profile) return
+
+    setUploading(true)
+    const newUrls: string[] = []
+    for (const asset of result.assets) {
+      const uri = asset.uri
+      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
+      if (!ALLOWED_EXTS.includes(ext)) continue
+      const fileName = `business/${profile.id}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+
+      try {
+        const response = await fetch(uri)
+        const blob = await response.blob()
+        if (blob.size > MAX_FILE_SIZE) continue
+        const arrayBuffer = await blob.arrayBuffer()
+
+        // Try business-images bucket first, fallback to post-images/business/
+        let publicUrl: string | null = null
+        const { error } = await supabase.storage
+          .from('business-images')
+          .upload(fileName, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
+
+        if (!error) {
+          const { data: urlData } = supabase.storage.from('business-images').getPublicUrl(fileName)
+          publicUrl = urlData.publicUrl
+        } else {
+          // Fallback bucket
+          const fallbackPath = `business/${profile.id}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+          const { error: fallbackError } = await supabase.storage
+            .from('post-images')
+            .upload(fallbackPath, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
+          if (!fallbackError) {
+            const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fallbackPath)
+            publicUrl = urlData.publicUrl
+          }
+        }
+
+        if (publicUrl) {
+          newUrls.push(publicUrl)
+        }
+      } catch {
+        // Skip failed uploads
+      }
+    }
+
+    if (newUrls.length > 0) {
+      const updated = [...businessImages, ...newUrls].slice(0, MAX_IMAGES)
+      setBusinessImages(updated)
+      // Save immediately
+      await (supabase.from('profiles') as any)
+        .update({ business_images: updated })
+        .eq('id', profile.id)
+    } else if (result.assets.length > 0) {
+      Alert.alert(t('common.error'), t('business.imageUploadFail'))
+    }
+    setUploading(false)
+  }, [businessImages, profile, supabase, t])
+
+  const removeImage = useCallback(async (index: number) => {
+    if (!profile) return
+    const updated = businessImages.filter((_, i) => i !== index)
+    setBusinessImages(updated)
+    await (supabase.from('profiles') as any)
+      .update({ business_images: updated })
+      .eq('id', profile.id)
+  }, [businessImages, profile, supabase])
+
+  // --- Geocoding ---
+  const geocodeAddress = useCallback(async () => {
+    if (!businessAddress.trim()) return
+    setGeocoding(true)
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(businessAddress)}&countrycodes=fi&limit=1`,
+        { headers: { 'User-Agent': 'TackBird/1.0' } },
+      )
+      const data = await res.json()
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat)
+        const lng = parseFloat(data[0].lon)
+        setBusinessLat(lat)
+        setBusinessLng(lng)
+        Alert.alert(t('business.geocodeSuccess'), `${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+      } else {
+        Alert.alert(t('common.error'), t('business.geocodeFail'))
+      }
+    } catch {
+      Alert.alert(t('common.error'), t('business.geocodeFail'))
+    } finally {
+      setGeocoding(false)
+    }
+  }, [businessAddress, t])
+
+  // --- Save all ---
+  const saveAll = useCallback(async () => {
+    if (!profile) return
+    setSaving(true)
+    try {
+      const { error } = await (supabase.from('profiles') as any)
+        .update({
+          business_description: businessDescription.trim() || null,
+          business_address: businessAddress.trim() || null,
+          business_lat: businessLat,
+          business_lng: businessLng,
+          business_phone: businessPhone.trim() || null,
+          business_website: businessWebsite.trim() || null,
+          business_images: businessImages,
+        })
+        .eq('id', profile.id)
+
+      if (error) throw error
+      Alert.alert(t('business.saved'))
+    } catch {
+      Alert.alert(t('common.error'), t('business.saveFailed'))
+    } finally {
+      setSaving(false)
+    }
+  }, [profile, supabase, businessDescription, businessAddress, businessLat, businessLng, businessPhone, businessWebsite, businessImages, t])
+
   const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
 
   if (loading) {
@@ -154,6 +312,150 @@ export default function OrganizationScreen() {
             <Text style={[styles.statusText, { color: colors.success }]}>{t('business.active')}</Text>
           </View>
         </View>
+
+        {/* ===== Business Images ===== */}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('business.profileImages')}
+        </Text>
+        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageScroll}>
+            {businessImages.map((uri, i) => (
+              <View key={`${uri}-${i}`} style={styles.imageThumbWrap}>
+                <Image source={{ uri }} style={styles.imageThumb} contentFit="cover" />
+                <Pressable
+                  style={[styles.imageDeleteBtn, { backgroundColor: colors.destructive }]}
+                  onPress={() => removeImage(i)}
+                  hitSlop={8}
+                >
+                  <X size={12} color="#fff" />
+                </Pressable>
+              </View>
+            ))}
+            {businessImages.length < MAX_IMAGES && (
+              <Pressable
+                style={[styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.muted }]}
+                onPress={pickImage}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <>
+                    <Camera size={22} color={colors.primary} />
+                    <Text style={[styles.addImageText, { color: colors.primary }]}>{t('business.addPhoto')}</Text>
+                  </>
+                )}
+              </Pressable>
+            )}
+          </ScrollView>
+          <Text style={[styles.imageHint, { color: colors.mutedForeground }]}>
+            {t('business.maxImages')} ({businessImages.length}/{MAX_IMAGES})
+          </Text>
+        </View>
+
+        {/* ===== Description ===== */}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('business.description')}
+        </Text>
+        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+          <TextInput
+            style={[styles.textArea, { color: colors.foreground, borderColor: colors.border }]}
+            value={businessDescription}
+            onChangeText={setBusinessDescription}
+            placeholder={t('business.descriptionPlaceholder')}
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            maxLength={500}
+            textAlignVertical="top"
+          />
+          <Text style={[styles.charCount, { color: colors.mutedForeground }]}>
+            {businessDescription.length}/500
+          </Text>
+        </View>
+
+        {/* ===== Address + Geocoding ===== */}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('business.address')}
+        </Text>
+        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+          <TextInput
+            style={[styles.input, { color: colors.foreground, borderColor: colors.border }]}
+            value={businessAddress}
+            onChangeText={setBusinessAddress}
+            placeholder={t('business.addressPlaceholder')}
+            placeholderTextColor={colors.mutedForeground}
+            maxLength={200}
+          />
+          <Pressable
+            style={[styles.geocodeBtn, { backgroundColor: `${colors.primary}18` }]}
+            onPress={geocodeAddress}
+            disabled={geocoding || !businessAddress.trim()}
+          >
+            {geocoding ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <>
+                <Navigation size={16} color={colors.primary} />
+                <Text style={[styles.geocodeBtnText, { color: colors.primary }]}>{t('business.geocode')}</Text>
+              </>
+            )}
+          </Pressable>
+          {businessLat != null && businessLng != null && (
+            <Text style={[styles.coordsText, { color: colors.success }]}>
+              {businessLat.toFixed(5)}, {businessLng.toFixed(5)}
+            </Text>
+          )}
+        </View>
+
+        {/* ===== Contact Fields ===== */}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('business.contactInfo')}
+        </Text>
+        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+          <View style={styles.contactRow}>
+            <Phone size={16} color={colors.mutedForeground} />
+            <TextInput
+              style={[styles.contactInput, { color: colors.foreground, borderColor: colors.border }]}
+              value={businessPhone}
+              onChangeText={setBusinessPhone}
+              placeholder={t('business.phonePlaceholder')}
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="phone-pad"
+              maxLength={30}
+            />
+          </View>
+          <View style={styles.contactRow}>
+            <Globe size={16} color={colors.mutedForeground} />
+            <TextInput
+              style={[styles.contactInput, { color: colors.foreground, borderColor: colors.border }]}
+              value={businessWebsite}
+              onChangeText={setBusinessWebsite}
+              placeholder={t('business.websitePlaceholder')}
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="url"
+              autoCapitalize="none"
+              maxLength={200}
+            />
+          </View>
+        </View>
+
+        {/* ===== Save All Button ===== */}
+        <Pressable
+          onPress={saveAll}
+          disabled={saving}
+          style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
+          ) : (
+            <>
+              <Save size={18} color={colors.primaryForeground} />
+              <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>
+                {t('business.saveAll')}
+              </Text>
+            </>
+          )}
+        </Pressable>
 
         {/* Map presence toggle */}
         <View style={[styles.toggleCard, { backgroundColor: colors.card }]}>
@@ -280,4 +582,47 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 10 },
   emptyTitle: { fontSize: 17, fontWeight: '700' },
   emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+
+  // Profile editor styles
+  editorCard: { borderRadius: 14, padding: 16, gap: 10 },
+  imageScroll: { gap: 10, paddingVertical: 4 },
+  imageThumbWrap: { position: 'relative' },
+  imageThumb: { width: 90, height: 90, borderRadius: 10 },
+  imageDeleteBtn: {
+    position: 'absolute', top: -6, right: -6,
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  addImageBtn: {
+    width: 90, height: 90, borderRadius: 10, borderWidth: 1.5, borderStyle: 'dashed',
+    alignItems: 'center', justifyContent: 'center', gap: 4,
+  },
+  addImageText: { fontSize: 10, fontWeight: '600' },
+  imageHint: { fontSize: 11, marginTop: 2 },
+  textArea: {
+    borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+    minHeight: 100, lineHeight: 22,
+  },
+  charCount: { fontSize: 11, textAlign: 'right' },
+  input: {
+    borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+  },
+  geocodeBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingVertical: 10, borderRadius: 10,
+  },
+  geocodeBtnText: { fontSize: 14, fontWeight: '600' },
+  coordsText: { fontSize: 12, fontWeight: '500' },
+  contactRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  contactInput: {
+    flex: 1, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+  },
+  saveBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 4,
+  },
+  saveBtnText: { fontSize: 16, fontWeight: '700' },
 })

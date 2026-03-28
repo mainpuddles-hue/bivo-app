@@ -1,12 +1,13 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Dimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
   Flag, ShieldBan, Crown, PenLine, Zap, ShieldCheck, Clock, CalendarDays, CheckCircle2,
+  Phone, Globe, Building2, Camera, BadgeCheck,
 } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
@@ -26,6 +27,10 @@ import { isValidUUID } from '@/lib/validation'
 import { isProfileVisible } from '@/lib/privacyUtils'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+const HERO_IMAGE_WIDTH = SCREEN_WIDTH * 0.85
+const HERO_IMAGE_HEIGHT = 200
 
 export default function PublicProfileScreen() {
   const { colors } = useTheme()
@@ -296,6 +301,426 @@ export default function PublicProfileScreen() {
     )
   }
 
+  // === BUSINESS PROFILE LAYOUT ===
+  if (profile.is_business) {
+    const businessImages = profile.business_images ?? []
+    const businessHours = profile.business_hours as Record<string, string> | null
+    const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    const dayLabels: Record<string, string> = {
+      monday: locale === 'fi' ? 'Ma' : locale === 'sv' ? 'Mån' : 'Mon',
+      tuesday: locale === 'fi' ? 'Ti' : locale === 'sv' ? 'Tis' : 'Tue',
+      wednesday: locale === 'fi' ? 'Ke' : locale === 'sv' ? 'Ons' : 'Wed',
+      thursday: locale === 'fi' ? 'To' : locale === 'sv' ? 'Tor' : 'Thu',
+      friday: locale === 'fi' ? 'Pe' : locale === 'sv' ? 'Fre' : 'Fri',
+      saturday: locale === 'fi' ? 'La' : locale === 'sv' ? 'Lör' : 'Sat',
+      sunday: locale === 'fi' ? 'Su' : locale === 'sv' ? 'Sön' : 'Sun',
+    }
+    const hasContactInfo = profile.business_phone || profile.business_website || businessHours
+
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={12}>
+            <ArrowLeft size={24} color={colors.foreground} />
+          </Pressable>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>
+            {profile.business_name || profile.name}
+          </Text>
+          <View style={{ flex: 1 }} />
+        </View>
+
+        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+          {/* 1. Hero: Business Images Carousel */}
+          {businessImages.length > 0 ? (
+            <View style={bs.heroWrapper}>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                style={bs.heroCarousel}
+                contentContainerStyle={bs.heroCarouselContent}
+              >
+                {businessImages.map((uri, idx) => (
+                  <Image
+                    key={`biz-img-${idx}`}
+                    source={{ uri }}
+                    style={bs.heroImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                ))}
+              </ScrollView>
+              {businessImages.length > 1 && (
+                <View style={bs.imageCountBadge}>
+                  <Camera size={12} color="#fff" />
+                  <Text style={bs.imageCountText}>{businessImages.length}</Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            <View style={[bs.heroPlaceholder, { backgroundColor: colors.muted }]}>
+              <Building2 size={48} color={colors.mutedForeground} />
+              <Text style={[bs.heroPlaceholderText, { color: colors.mutedForeground }]}>
+                {locale === 'fi' ? 'Ei kuvia' : locale === 'sv' ? 'Inga bilder' : 'No images'}
+              </Text>
+            </View>
+          )}
+
+          {/* 2. Business Info Card */}
+          <View style={[bs.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={bs.infoCardHeader}>
+              <Avatar url={profile.avatar_url} name={profile.business_name || profile.name} size={56} borderColor={colors.primary} borderWidth={2} />
+              <View style={bs.infoCardHeaderText}>
+                <Text style={[bs.businessName, { color: colors.foreground }]} numberOfLines={2}>
+                  {profile.business_name || profile.name}
+                </Text>
+                {profile.business_category && (
+                  <View style={[bs.categoryBadge, { backgroundColor: `${colors.primary}18` }]}>
+                    <Text style={[bs.categoryBadgeText, { color: colors.primary }]}>
+                      {profile.business_category}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* PRH Verified Trust Badge */}
+            {profile.business_vat_id && (
+              <View style={[bs.prhBadge, { backgroundColor: `${colors.primary}12` }]}>
+                <BadgeCheck size={16} color={colors.primary} />
+                <Text style={[bs.prhBadgeText, { color: colors.primary }]}>
+                  {locale === 'fi' ? 'PRH-vahvistettu yritys' : locale === 'sv' ? 'PRH-verifierat företag' : 'PRH Verified Business'}
+                </Text>
+                <Text style={[bs.prhVatText, { color: colors.mutedForeground }]}>
+                  {profile.business_vat_id}
+                </Text>
+              </View>
+            )}
+
+            {/* Star rating + review count */}
+            {avgRating !== null && (
+              <View style={bs.ratingRow}>
+                <StarRating rating={Math.round(avgRating)} size={16} />
+                <Text style={[bs.ratingText, { color: colors.foreground }]}>
+                  {avgRating}
+                </Text>
+                <Text style={[bs.reviewCountText, { color: colors.mutedForeground }]}>
+                  ({totalReviewCount} {totalReviewCount === 1
+                    ? (locale === 'fi' ? 'arvostelu' : locale === 'sv' ? 'recension' : 'review')
+                    : (locale === 'fi' ? 'arvostelua' : locale === 'sv' ? 'recensioner' : 'reviews')})
+                </Text>
+              </View>
+            )}
+
+            {/* Business description */}
+            {profile.business_description && (
+              <Text style={[bs.businessDescription, { color: colors.foreground }]}>
+                {profile.business_description}
+              </Text>
+            )}
+
+            {/* Neighborhood */}
+            {profile.naapurusto && (
+              <View style={bs.nhRow}>
+                <MapPin size={14} color={colors.primary} />
+                <Text style={[bs.nhText, { color: colors.primary }]}>{profile.naapurusto}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Action buttons */}
+          <View style={s.actions}>
+            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]}>
+              {isFollowing ? (
+                <UserMinus size={16} color={colors.foreground} />
+              ) : (
+                <UserPlus size={16} color={colors.primaryForeground} />
+              )}
+              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.primaryForeground }]}>
+                {isFollowing ? t('profile.unfollow') : t('profile.follow')}
+              </Text>
+            </Pressable>
+            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <MessageCircle size={16} color={colors.foreground} />
+              <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
+            </Pressable>
+          </View>
+
+          {/* Write Review button */}
+          {currentUserId && hasTransaction && !hasExistingReview && (
+            <Pressable onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <PenLine size={16} color={colors.pro} />
+              <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
+            </Pressable>
+          )}
+
+          {/* Stats row */}
+          <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={s.stat}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount > 0 ? followerCount : '\u2013'}</Text>
+              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
+            </View>
+            <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+            <View style={s.stat}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{postCount > 0 ? postCount : '\u2013'}</Text>
+              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
+            </View>
+            <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+            <View style={s.stat}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating ?? '\u2013'}</Text>
+              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
+            </View>
+            <View style={[s.statDiv, { backgroundColor: colors.border }]} />
+            <View style={s.stat}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{completedTransactions > 0 ? completedTransactions : '\u2013'}</Text>
+              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.completedTransactions')}</Text>
+            </View>
+          </View>
+
+          {/* 3. Location Card */}
+          {(profile.business_lat != null && profile.business_lng != null) && (
+            <View style={[bs.locationCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={bs.locationCardHeader}>
+                <MapPin size={18} color={colors.primary} />
+                <Text style={[bs.locationCardTitle, { color: colors.foreground }]}>
+                  {locale === 'fi' ? 'Sijainti' : locale === 'sv' ? 'Plats' : 'Location'}
+                </Text>
+              </View>
+              {profile.naapurusto && (
+                <Text style={[bs.locationAddress, { color: colors.foreground }]}>
+                  {profile.naapurusto}
+                </Text>
+              )}
+              <Pressable
+                style={[bs.mapButton, { backgroundColor: `${colors.primary}12` }]}
+                onPress={() => {
+                  const url = `https://www.google.com/maps/search/?api=1&query=${profile.business_lat},${profile.business_lng}`
+                  Linking.openURL(url).catch(() => {})
+                }}
+              >
+                <MapPin size={16} color={colors.primary} />
+                <Text style={[bs.mapButtonText, { color: colors.primary }]}>
+                  {locale === 'fi' ? 'Näytä kartalla' : locale === 'sv' ? 'Visa på karta' : 'Show on map'}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+
+          {/* 4. Contact Card */}
+          {hasContactInfo && (
+            <View style={[bs.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[bs.contactCardTitle, { color: colors.foreground }]}>
+                {locale === 'fi' ? 'Yhteystiedot' : locale === 'sv' ? 'Kontakt' : 'Contact'}
+              </Text>
+
+              {profile.business_phone && (
+                <Pressable
+                  style={bs.contactRow}
+                  onPress={() => Linking.openURL(`tel:${profile.business_phone}`).catch(() => {})}
+                >
+                  <View style={[bs.contactIconWrap, { backgroundColor: `${colors.primary}12` }]}>
+                    <Phone size={16} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
+                      {locale === 'fi' ? 'Puhelin' : locale === 'sv' ? 'Telefon' : 'Phone'}
+                    </Text>
+                    <Text style={[bs.contactValue, { color: colors.primary }]}>{profile.business_phone}</Text>
+                  </View>
+                </Pressable>
+              )}
+
+              {profile.business_website && (
+                <Pressable
+                  style={bs.contactRow}
+                  onPress={() => {
+                    const url = profile.business_website!.startsWith('http') ? profile.business_website! : `https://${profile.business_website}`
+                    Linking.openURL(url).catch(() => {})
+                  }}
+                >
+                  <View style={[bs.contactIconWrap, { backgroundColor: `${colors.primary}12` }]}>
+                    <Globe size={16} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
+                      {locale === 'fi' ? 'Verkkosivut' : locale === 'sv' ? 'Webbplats' : 'Website'}
+                    </Text>
+                    <Text style={[bs.contactValue, { color: colors.primary }]} numberOfLines={1}>
+                      {profile.business_website}
+                    </Text>
+                  </View>
+                </Pressable>
+              )}
+
+              {businessHours && Object.keys(businessHours).length > 0 && (
+                <View style={bs.hoursSection}>
+                  <View style={bs.contactRow}>
+                    <View style={[bs.contactIconWrap, { backgroundColor: `${colors.primary}12` }]}>
+                      <Clock size={16} color={colors.primary} />
+                    </View>
+                    <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
+                      {locale === 'fi' ? 'Aukioloajat' : locale === 'sv' ? 'Öppettider' : 'Business Hours'}
+                    </Text>
+                  </View>
+                  <View style={bs.hoursGrid}>
+                    {dayOrder.map(day => {
+                      const value = businessHours[day]
+                      if (!value) return null
+                      return (
+                        <View key={day} style={bs.hoursRow}>
+                          <Text style={[bs.hoursDay, { color: colors.foreground }]}>
+                            {dayLabels[day] ?? day}
+                          </Text>
+                          <Text style={[bs.hoursValue, { color: colors.mutedForeground }]}>
+                            {value}
+                          </Text>
+                        </View>
+                      )
+                    })}
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* 5. Ilmoitukset — Business posts */}
+          <View style={bs.sectionHeader}>
+            <Text style={[bs.sectionTitle, { color: colors.foreground }]}>
+              {locale === 'fi' ? 'Ilmoitukset' : locale === 'sv' ? 'Annonser' : 'Listings'}
+            </Text>
+            <Text style={[bs.sectionCount, { color: colors.mutedForeground }]}>
+              {postCount}
+            </Text>
+          </View>
+          <View style={s.tabContent}>
+            {posts.length === 0 ? (
+              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPosts')}</Text>
+            ) : (
+              posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))
+            )}
+          </View>
+
+          {/* 6. Reviews */}
+          <View style={bs.sectionHeader}>
+            <Text style={[bs.sectionTitle, { color: colors.foreground }]}>
+              {locale === 'fi' ? 'Arvostelut' : locale === 'sv' ? 'Recensioner' : 'Reviews'}
+            </Text>
+            <Text style={[bs.sectionCount, { color: colors.mutedForeground }]}>
+              {totalReviewCount}
+            </Text>
+          </View>
+
+          {/* Rating Summary Card (same as non-business) */}
+          {totalReviewCount > 0 && (
+            <View style={[s.ratingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={s.ratingOverview}>
+                <View style={s.ratingStarsCol}>
+                  <StarRating rating={Math.round(avgRating ?? 0)} size={18} />
+                  <Text style={[s.ratingBigNum, { color: colors.foreground }]}>
+                    {avgRating ?? 0} / 5
+                  </Text>
+                </View>
+              </View>
+              <View style={s.ratingBars}>
+                {[5, 4, 3, 2, 1].map(star => {
+                  const count = ratingDistribution[star] ?? 0
+                  const maxCount = Math.max(...Object.values(ratingDistribution), 1)
+                  const pct = count / maxCount
+                  return (
+                    <View key={star} style={s.ratingBarRow}>
+                      <Text style={[s.ratingBarLabel, { color: colors.mutedForeground }]}>{star}{'\u2605'}</Text>
+                      <View style={[s.ratingBarTrack, { backgroundColor: colors.muted }]}>
+                        <View style={[s.ratingBarFill, { width: `${pct * 100}%`, backgroundColor: colors.pro }]} />
+                      </View>
+                      <Text style={[s.ratingBarCount, { color: colors.mutedForeground }]}>{count}</Text>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+          )}
+
+          <View style={s.tabContent}>
+            {reviews.length === 0 ? (
+              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
+            ) : (
+              reviews.map((rev) => (
+                <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
+                  <View style={s.reviewHeader}>
+                    <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
+                      <StarRating rating={rev.rating} size={12} />
+                    </View>
+                    <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
+                  </View>
+                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]}>{rev.comment}</Text>}
+                </View>
+              ))
+            )}
+          </View>
+
+          {/* Block / Report */}
+          {currentUserId && currentUserId !== userId && (
+            <View style={s.dangerActions}>
+              <Pressable onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+                <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
+                <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
+                  {isBlocked ? t('post.unblock') : t('post.block')}
+                </Text>
+              </Pressable>
+              <Pressable onPress={handleReport} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+                <Flag size={18} color={colors.mutedForeground} />
+                <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
+              </Pressable>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Review Modal */}
+        <ReviewModal
+          visible={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          reviewedUserId={userId!}
+          onReviewSubmitted={() => {
+            setHasExistingReview(true)
+            supabase
+              .from('reviews')
+              .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
+              .eq('reviewed_id', userId)
+              .order('created_at', { ascending: false })
+              .then(({ data }) => {
+                if (data) {
+                  const revsList = data as unknown as Review[]
+                  setReviews(revsList)
+                  setTotalReviewCount(revsList.length)
+                  const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length : 0
+                  setAvgRating(Math.round(avg * 10) / 10)
+                  const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+                  for (const r of revsList as any[]) {
+                    const star = Math.min(5, Math.max(1, Math.round(r.rating)))
+                    dist[star] = (dist[star] ?? 0) + 1
+                  }
+                  setRatingDistribution(dist)
+                }
+              })
+          }}
+        />
+
+        {/* Report Modal */}
+        <ReportModal
+          visible={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          type="user"
+          targetId={userId!}
+        />
+      </View>
+    )
+  }
+
+  // === PERSONAL PROFILE LAYOUT (existing) ===
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
@@ -681,4 +1106,243 @@ const s = StyleSheet.create({
   recentPostThumb: { flex: 1 },
   recentPostImg: { height: 60, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   recentPostImgPlaceholder: { fontSize: 11, textAlign: 'center' },
+})
+
+// === Business profile styles ===
+const bs = StyleSheet.create({
+  // Hero carousel
+  heroWrapper: {
+    marginHorizontal: -16,
+  },
+  heroCarousel: {
+    height: HERO_IMAGE_HEIGHT,
+  },
+  heroCarouselContent: {
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  heroImage: {
+    width: HERO_IMAGE_WIDTH,
+    height: HERO_IMAGE_HEIGHT,
+    borderRadius: 14,
+  },
+  heroPlaceholder: {
+    height: HERO_IMAGE_HEIGHT,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  heroPlaceholderText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  imageCountBadge: {
+    position: 'absolute',
+    bottom: 10,
+    right: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  imageCountText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // Info card
+  infoCard: {
+    borderRadius: 14,
+    padding: 18,
+    gap: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  infoCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  infoCardHeaderText: {
+    flex: 1,
+    gap: 6,
+  },
+  businessName: {
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+    fontFamily: fonts.headingSemi,
+  },
+  categoryBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  categoryBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // PRH badge
+  prhBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  prhBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  prhVatText: {
+    fontSize: 12,
+    fontWeight: '400',
+  },
+
+  // Rating row
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  ratingText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  reviewCountText: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
+
+  // Business description
+  businessDescription: {
+    fontSize: 14,
+    lineHeight: 21,
+  },
+
+  // Neighborhood row (inside business card)
+  nhRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  nhText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  // Location card
+  locationCard: {
+    borderRadius: 14,
+    padding: 18,
+    gap: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  locationCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  locationCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  locationAddress: {
+    fontSize: 14,
+    lineHeight: 20,
+    paddingLeft: 26,
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  mapButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Contact card
+  contactCard: {
+    borderRadius: 14,
+    padding: 18,
+    gap: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  contactCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  contactIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contactLabel: {
+    fontSize: 12,
+    fontWeight: '400',
+  },
+  contactValue: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Hours
+  hoursSection: {
+    gap: 10,
+  },
+  hoursGrid: {
+    gap: 4,
+    paddingLeft: 48,
+  },
+  hoursRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  hoursDay: {
+    fontSize: 13,
+    fontWeight: '600',
+    width: 36,
+  },
+  hoursValue: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
+
+  // Section headers
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  sectionCount: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
 })

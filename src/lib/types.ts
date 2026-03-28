@@ -77,6 +77,15 @@ export interface Profile {
   last_active_date?: string | null
   onboarding_checklist?: Record<string, boolean>
   map_presence?: boolean
+  business_description?: string | null
+  business_phone?: string | null
+  business_website?: string | null
+  business_address?: string | null
+  business_hours?: Record<string, string> | null
+  business_images?: string[]
+  business_lat?: number | null
+  business_lng?: number | null
+  business_category?: string | null
   created_at: string
   updated_at: string
 }
