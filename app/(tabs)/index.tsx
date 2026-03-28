@@ -229,7 +229,7 @@ function FeedScreenInner() {
   const ListHeader = useMemo(() => (
     <View style={{ gap: 12 }}>
       {/* Greeting — compact single line */}
-      <View style={{ alignItems: 'flex-start', paddingTop: 4, marginBottom: 4 }}>
+      <View style={{ alignItems: 'flex-start', paddingTop: 12, marginBottom: 8 }}>
         <Text style={{ fontSize: 15, color: colors.primary, fontFamily: fonts.headingSemi, letterSpacing: -0.2 }}>
           {(() => {
             const hour = new Date().getHours()
