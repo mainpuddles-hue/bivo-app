@@ -200,9 +200,16 @@ export default function MessagesScreen() {
   return (
     <ScreenErrorBoundary screenName="Messages">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { paddingTop: 8, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
-        <Pressable onPress={() => setShowArchived(!showArchived)} hitSlop={8} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('messages.archive')}>
+        <Pressable
+          onPress={() => setShowArchived(!showArchived)}
+          hitSlop={8}
+          style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+          accessibilityRole="button"
+          accessibilityLabel={showArchived ? t('messages.showActive') ?? 'Show active conversations' : t('messages.archive') ?? 'Show archived conversations'}
+          accessibilityState={{ selected: showArchived }}
+        >
           <Archive size={20} color={showArchived ? colors.primary : colors.mutedForeground} />
         </Pressable>
       </View>
@@ -219,9 +226,17 @@ export default function MessagesScreen() {
           returnKeyType="search"
           autoCapitalize="none"
           autoCorrect={false}
+          accessibilityLabel={t('messages.searchConversations') ?? 'Search conversations'}
+          accessibilityRole="search"
         />
         {searchQuery.length > 0 && (
-          <Pressable onPress={() => setSearchQuery('')} hitSlop={8} style={{ minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}>
+          <Pressable
+            onPress={() => setSearchQuery('')}
+            hitSlop={8}
+            style={{ minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}
+            accessibilityLabel={t('common.clear') ?? 'Clear search'}
+            accessibilityRole="button"
+          >
             <X size={16} color={colors.mutedForeground} />
           </Pressable>
         )}
@@ -246,6 +261,9 @@ export default function MessagesScreen() {
               onPress={() => router.push(`/messages/${item.id}`)}
               onLongPress={() => handleTogglePin(item.id)}
               style={({ pressed }) => [styles.convRow, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }, pressed && { opacity: 0.7 }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${other?.name ?? t('messages.unknownUser')}${unread > 0 ? `, ${unread} ${t('messages.unread') ?? 'unread'}` : ''}${isPinned ? `, ${t('messages.pinned') ?? 'pinned'}` : ''}`}
+              accessibilityHint={t('messages.longPressToPinHint') ?? 'Long press to pin or unpin'}
             >
               <View style={styles.avatarWrap}>
                 <Avatar url={other?.avatar_url} name={other?.name} size={48} borderColor={unread > 0 ? colors.primary : undefined} borderWidth={unread > 0 ? 2 : undefined} />
@@ -316,19 +334,19 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   searchBar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, borderWidth: 1,
-    borderRadius: 12, paddingHorizontal: 14, height: 44,
+    borderRadius: 12, paddingHorizontal: 16, height: 48,
   },
   searchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body },
-  list: { paddingBottom: 100 },
+  list: { paddingBottom: 96 },
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 16, paddingVertical: 12,
   },
   avatarWrap: { position: 'relative' },
   avatar: { width: 48, height: 48, borderRadius: 24 },
@@ -339,21 +357,21 @@ const styles = StyleSheet.create({
     width: 14, height: 14, borderRadius: 7,
     borderWidth: 2,
   },
-  convContent: { flex: 1, gap: 3 },
+  convContent: { flex: 1, gap: 4 },
   convNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   convName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },
   previewRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   convPreview: { fontSize: 13, flex: 1, fontFamily: fonts.body },
-  convRight: { alignItems: 'flex-end', gap: 6 },
+  convRight: { alignItems: 'flex-end', gap: 8 },
   convTime: { fontSize: 11, fontFamily: fonts.body },
   unreadBadge: {
     minWidth: 20, height: 20, borderRadius: 10,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
   },
   unreadText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 76 },
-  empty: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 8 },
+  empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi },
   emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 })

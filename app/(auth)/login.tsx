@@ -57,8 +57,8 @@ function PasswordStrength({ password, colors }: { password: string; colors: Retu
 
 const pwStyles = StyleSheet.create({
   container: { gap: 4, paddingTop: 4 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  text: { fontSize: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  text: { fontSize: 12, fontFamily: fonts.body },
 })
 
 export default function LoginScreen() {
@@ -331,6 +331,9 @@ export default function LoginScreen() {
                 <Pressable
                   onPress={() => setMode('login')}
                   style={[styles.modeBtn, mode === 'login' && { backgroundColor: colors.card }]}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: mode === 'login' }}
+                  accessibilityLabel={t('auth.login')}
                 >
                   <Text style={[styles.modeText, { color: mode === 'login' ? colors.foreground : colors.mutedForeground }]}>
                     {t('auth.login')}
@@ -339,6 +342,9 @@ export default function LoginScreen() {
                 <Pressable
                   onPress={() => setMode('register')}
                   style={[styles.modeBtn, mode === 'register' && { backgroundColor: colors.card }]}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: mode === 'register' }}
+                  accessibilityLabel={t('auth.register')}
                 >
                   <Text style={[styles.modeText, { color: mode === 'register' ? colors.foreground : colors.mutedForeground }]}>
                     {t('auth.register')}
@@ -352,6 +358,8 @@ export default function LoginScreen() {
               <Pressable
                 onPress={handleGoogleOAuth}
                 style={[styles.googleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.signInWithGoogle')}
               >
                 <GoogleLogo size={20} />
                 <Text style={[styles.googleBtnText, { color: colors.foreground }]}>
@@ -364,10 +372,12 @@ export default function LoginScreen() {
             {mode !== 'forgot' && Platform.OS !== 'web' && appleAvailable && (
               <Pressable
                 onPress={handleAppleSignIn}
-                style={[styles.appleBtn, { borderWidth: 1, borderColor: isDark ? colors.border : '#000000' }]}
+                style={[styles.appleBtn, { backgroundColor: colors.foreground, borderWidth: 1, borderColor: isDark ? colors.border : colors.foreground }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.signInWithApple')}
               >
-                <AppleLogo size={20} color="#FFFFFF" />
-                <Text style={styles.appleBtnText}>
+                <AppleLogo size={20} color={colors.primaryForeground} />
+                <Text style={[styles.appleBtnText, { color: colors.primaryForeground }]}>
                   {t('auth.signInWithApple')}
                 </Text>
               </Pressable>
@@ -444,7 +454,11 @@ export default function LoginScreen() {
 
               {/* Forgot password link */}
               {mode === 'login' && (
-                <Pressable onPress={() => setMode('forgot')}>
+                <Pressable
+                  onPress={() => setMode('forgot')}
+                  accessibilityRole="link"
+                  accessibilityLabel={t('auth.forgotPassword')}
+                >
                   <Text style={[styles.forgotLink, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
                 </Pressable>
               )}
@@ -452,7 +466,14 @@ export default function LoginScreen() {
               {/* Terms checkbox (register mode only) */}
               {mode === 'register' && (
                 <View style={styles.termsRow}>
-                  <Pressable onPress={() => setTermsAccepted(!termsAccepted)} style={styles.checkbox} hitSlop={8}>
+                  <Pressable
+                    onPress={() => setTermsAccepted(!termsAccepted)}
+                    style={styles.checkbox}
+                    hitSlop={8}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: termsAccepted }}
+                    accessibilityLabel={t('auth.acceptTerms')}
+                  >
                     {termsAccepted ? <Check size={16} color={colors.primary} /> : <View style={[styles.emptyCheckbox, { borderColor: colors.border }]} />}
                   </Pressable>
                   <Text style={[styles.termsText, { color: colors.mutedForeground }]}>
@@ -469,6 +490,8 @@ export default function LoginScreen() {
                 onPress={handleSubmit}
                 disabled={loading || (mode === 'register' && !termsAccepted)}
                 style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: (loading || (mode === 'register' && !termsAccepted)) ? 0.6 : 1 }]}
+                accessibilityRole="button"
+                accessibilityLabel={mode === 'forgot' ? t('auth.sendResetLink') : mode === 'login' ? t('auth.login') : t('auth.register')}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -502,36 +525,36 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   appName: { fontSize: 18, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
-  tagline: { fontSize: 14, textAlign: 'center' },
+  tagline: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
   modeToggle: {
     flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 16,
   },
-  modeBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
+  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   modeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   googleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    borderWidth: 1, borderRadius: 12, paddingVertical: 14, minHeight: 48, marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderWidth: 1, borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 8,
   },
   googleBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
   appleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#000000', borderRadius: 12, paddingVertical: 14, minHeight: 48, marginBottom: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 16,
   },
-  appleBtnText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  appleBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   dividerLine: { flex: 1, height: 1 },
-  dividerText: { fontSize: 13 },
+  dividerText: { fontSize: 13, fontFamily: fonts.body },
   forgotTitle: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading },
-  forgotHint: { fontSize: 14, lineHeight: 20 },
+  forgotHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   form: { gap: 12 },
   input: {
-    borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 14,
-    fontSize: 15, minHeight: 48,
+    borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
+    fontSize: 15, minHeight: 48, fontFamily: fonts.body,
   },
-  eyeBtn: { position: 'absolute', right: 14, top: 14 },
+  eyeBtn: { position: 'absolute', right: 16, top: 16 },
   forgotLink: { fontSize: 13, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
   submitBtn: {
-    borderRadius: 12, paddingVertical: 14, alignItems: 'center',
+    borderRadius: 12, paddingVertical: 16, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
   submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -540,8 +563,8 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 24, alignItems: 'center', gap: 12,
   },
   successText: { fontSize: 15, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
-  termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 4 },
+  termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 4 },
   checkbox: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },
-  termsText: { fontSize: 13, flex: 1, lineHeight: 18 },
+  termsText: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
 })

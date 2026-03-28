@@ -31,7 +31,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
-import { NEIGHBORHOODS } from '@/lib/constants'
+import { NEIGHBORHOODS, CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
 import { useReferral } from '@/hooks/useReferral'
@@ -247,6 +247,8 @@ export default function OnboardingScreen() {
         <Pressable
           onPress={() => goToPage(1)}
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.next')}
         >
           <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
@@ -268,7 +270,7 @@ export default function OnboardingScreen() {
 
         <View style={s.featureList}>
           <View style={s.featureRow}>
-            <View style={[s.featureIconCircle, { backgroundColor: '#2D6B5E20' }]}>
+            <View style={[s.featureIconCircle, { backgroundColor: `${colors.primary}20` }]}>
               <Handshake size={28} color={colors.primary} />
             </View>
             <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
@@ -277,8 +279,8 @@ export default function OnboardingScreen() {
           </View>
 
           <View style={s.featureRow}>
-            <View style={[s.featureIconCircle, { backgroundColor: '#7C5CBF20' }]}>
-              <Gift size={28} color="#7C5CBF" />
+            <View style={[s.featureIconCircle, { backgroundColor: `${CATEGORIES.tarjoan.color}20` }]}>
+              <Gift size={28} color={CATEGORIES.tarjoan.color} />
             </View>
             <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
               {t('onboarding.offerServices')}
@@ -286,8 +288,8 @@ export default function OnboardingScreen() {
           </View>
 
           <View style={s.featureRow}>
-            <View style={[s.featureIconCircle, { backgroundColor: '#C98B2E20' }]}>
-              <Package size={28} color="#C98B2E" />
+            <View style={[s.featureIconCircle, { backgroundColor: `${CATEGORIES.lainaa.color}20` }]}>
+              <Package size={28} color={CATEGORIES.lainaa.color} />
             </View>
             <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
               {t('onboarding.borrowSafely')}
@@ -300,13 +302,20 @@ export default function OnboardingScreen() {
         <Pressable
           onPress={() => goToPage(2)}
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.next')}
         >
           <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
           </Text>
           <ChevronRight size={18} color={colors.primaryForeground} />
         </Pressable>
-        <Pressable onPress={() => goToPage(3)} hitSlop={8}>
+        <Pressable
+          onPress={() => goToPage(3)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.skip')}
+        >
           <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {t('onboarding.skip')}
           </Text>
@@ -320,7 +329,7 @@ export default function OnboardingScreen() {
   const renderTrustSafety = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <View style={s.trustContent}>
-        <View style={[s.trustIconCircle, { backgroundColor: '#2D6B5E15' }]}>
+        <View style={[s.trustIconCircle, { backgroundColor: `${colors.primary}15` }]}>
           <Shield size={48} color={colors.primary} />
         </View>
 
@@ -354,13 +363,20 @@ export default function OnboardingScreen() {
         <Pressable
           onPress={() => goToPage(3)}
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.next')}
         >
           <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
           </Text>
           <ChevronRight size={18} color={colors.primaryForeground} />
         </Pressable>
-        <Pressable onPress={() => goToPage(3)} hitSlop={8}>
+        <Pressable
+          onPress={() => goToPage(3)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.skip')}
+        >
           <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {t('onboarding.skip')}
           </Text>
@@ -374,7 +390,7 @@ export default function OnboardingScreen() {
   const renderNeighborhood = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       {/* Back button so user can return to previous slides and change choices */}
-      <Pressable onPress={() => goToPage(2)} style={s.backBtn} hitSlop={12}>
+      <Pressable onPress={() => goToPage(2)} style={s.backBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
         <ArrowRight size={18} color={colors.mutedForeground} style={{ transform: [{ rotate: '180deg' }] }} />
         <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
           {t('common.back')}
@@ -399,6 +415,9 @@ export default function OnboardingScreen() {
                   ? { backgroundColor: colors.primary }
                   : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
               ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={city.name}
             >
               <Text
                 style={[
@@ -468,6 +487,9 @@ export default function OnboardingScreen() {
                     ? { backgroundColor: colors.primary }
                     : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                 ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={nh}
               >
                 {isSelected && <Check size={14} color={colors.primaryForeground} />}
                 <MapPin size={14} color={isSelected ? colors.primaryForeground : colors.mutedForeground} />
@@ -491,8 +513,8 @@ export default function OnboardingScreen() {
       {/* Location verification status */}
       {selectedNeighborhood && verificationStatus !== 'idle' && (
         <View style={[s.verificationRow, {
-          backgroundColor: verificationStatus === 'verified' ? '#2B8A6215' :
-            verificationStatus === 'unverified' ? '#E8A05015' : colors.muted,
+          backgroundColor: verificationStatus === 'verified' ? `${colors.success}15` :
+            verificationStatus === 'unverified' ? `${CATEGORIES.nappaa.color}15` : colors.muted,
         }]}>
           {verificationStatus === 'checking' && (
             <>
@@ -504,16 +526,16 @@ export default function OnboardingScreen() {
           )}
           {verificationStatus === 'verified' && (
             <>
-              <CheckCircle size={16} color="#2B8A62" />
-              <Text style={[s.verificationText, { color: '#2B8A62' }]}>
+              <CheckCircle size={16} color={colors.success} />
+              <Text style={[s.verificationText, { color: colors.success }]}>
                 {t('onboarding.locationVerified')}
               </Text>
             </>
           )}
           {verificationStatus === 'unverified' && (
             <>
-              <AlertTriangle size={16} color="#E8A050" />
-              <Text style={[s.verificationText, { color: '#E8A050' }]}>
+              <AlertTriangle size={16} color={CATEGORIES.nappaa.color} />
+              <Text style={[s.verificationText, { color: CATEGORIES.nappaa.color }]}>
                 {t('onboarding.locationNotVerified', { distance: distanceKm ? distanceKm.toFixed(1) : '?' })}
               </Text>
             </>
@@ -538,7 +560,7 @@ export default function OnboardingScreen() {
           placeholderTextColor={colors.mutedForeground}
           style={[s.referralInput, {
             backgroundColor: colors.card,
-            borderColor: referralStatus === 'invalid' ? '#D94F4F' : referralStatus === 'applied' ? '#2B8A62' : colors.border,
+            borderColor: referralStatus === 'invalid' ? colors.destructive : referralStatus === 'applied' ? colors.success : colors.border,
             color: colors.foreground,
             fontFamily: fonts.body,
           }]}
@@ -547,12 +569,12 @@ export default function OnboardingScreen() {
           maxLength={12}
         />
         {referralStatus === 'applied' && (
-          <Text style={[s.referralFeedback, { color: '#2B8A62', fontFamily: fonts.body }]}>
+          <Text style={[s.referralFeedback, { color: colors.success, fontFamily: fonts.body }]}>
             {t('referral.codeApplied')}
           </Text>
         )}
         {referralStatus === 'invalid' && (
-          <Text style={[s.referralFeedback, { color: '#D94F4F', fontFamily: fonts.body }]}>
+          <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
             {t('referral.invalidCode')}
           </Text>
         )}
@@ -569,6 +591,8 @@ export default function OnboardingScreen() {
               opacity: saving ? 0.6 : 1,
             },
           ]}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.start')}
         >
           {saving ? (
             <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -670,7 +694,7 @@ const s = StyleSheet.create({
   pageSubtitle: {
     fontSize: 14,
     lineHeight: 20,
-    marginTop: 6,
+    marginTop: 8,
     marginBottom: 16,
   },
 
@@ -761,12 +785,13 @@ const s = StyleSheet.create({
   },
   cityChip: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 20,
   },
   cityChipText: {
     fontSize: 14,
     lineHeight: 20,
+    fontFamily: fonts.body,
   },
 
   // Neighborhood search
@@ -777,8 +802,8 @@ const s = StyleSheet.create({
   neighborhoodSearchInput: {
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -797,14 +822,15 @@ const s = StyleSheet.create({
   neighborhoodChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 20,
   },
   neighborhoodText: {
     fontSize: 14,
     lineHeight: 20,
+    fontFamily: fonts.bodyMedium,
   },
 
   // Location verification
@@ -813,15 +839,15 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginHorizontal: 24,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
     marginBottom: 8,
   },
   verificationText: {
     fontSize: 13,
     fontFamily: fonts.body,
-    lineHeight: 17,
+    lineHeight: 18,
     flex: 1,
   },
 
@@ -834,15 +860,15 @@ const s = StyleSheet.create({
   referralInput: {
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 14,
     lineHeight: 20,
   },
   referralFeedback: {
     fontSize: 12,
-    lineHeight: 17,
-    marginTop: 2,
+    lineHeight: 16,
+    marginTop: 4,
     paddingHorizontal: 4,
   },
 

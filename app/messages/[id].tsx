@@ -540,8 +540,15 @@ function ConversationScreenInner() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)', borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back') ?? 'Go back'}
+          accessibilityHint={t('messages.backToConversations') ?? 'Returns to conversations list'}
+        >
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
@@ -618,7 +625,7 @@ function ConversationScreenInner() {
       {showScrollBtn && (
         <Pressable
           onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          style={[s.scrollBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          style={[s.scrollBtn, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }]}
         >
           <ChevronDown size={20} color={colors.foreground} />
         </Pressable>
@@ -635,7 +642,7 @@ function ConversationScreenInner() {
           style={s.modalOverlay}
           onPress={() => { setShowReactionPicker(false); setSelectedMessageId(null) }}
         >
-          <View style={[s.reactionPickerContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[s.reactionPickerContainer, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 }]}>
             <View style={s.reactionPickerRow}>
               {QUICK_REACTIONS.map((emoji) => (
                 <Pressable
@@ -676,6 +683,8 @@ function ConversationScreenInner() {
               key={i}
               onPress={() => handleQuickReply(reply)}
               style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: colors.border }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${t('messages.quickReply') ?? 'Quick reply'}: ${reply}`}
             >
               <Text style={[s.quickReplyText, { color: colors.foreground }]}>{reply}</Text>
               <Send size={11} color={colors.primary} />
@@ -686,7 +695,13 @@ function ConversationScreenInner() {
 
       {/* Input */}
       <View style={[s.inputBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
-        <Pressable onPress={handleSendImage} style={s.imageBtn} hitSlop={8}>
+        <Pressable
+          onPress={handleSendImage}
+          style={s.imageBtn}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('messages.attachImage') ?? 'Attach image'}
+        >
           <ImageIcon size={22} color={colors.mutedForeground} />
         </Pressable>
         <TextInput
@@ -728,42 +743,41 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerAvatar: { width: 36, height: 36, borderRadius: 18 },
-  headerName: { fontSize: 15, fontWeight: '600' },
-  headerSub: { fontSize: 12 },
+  headerName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },
+  headerSub: { fontSize: 12, fontFamily: fonts.body },
   msgList: { padding: 16, gap: 4, flexGrow: 1 },
-  dateHeader: { fontSize: 12, fontWeight: '500', textAlign: 'center', marginVertical: 12 },
-  msgRow: { flexDirection: 'row', gap: 6, marginVertical: 1 },
+  dateHeader: { fontSize: 12, fontWeight: '500', textAlign: 'center', marginVertical: 16, fontFamily: fonts.bodyMedium },
+  msgRow: { flexDirection: 'row', gap: 8, marginVertical: 2 },
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
-  bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18 },
+  bubble: { maxWidth: '100%', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
   bubbleMine: { borderBottomRightRadius: 4 },
   bubbleTheirs: { borderBottomLeftRadius: 4 },
   msgImage: { width: 200, height: 150, borderRadius: 12, marginBottom: 4 },
-  msgText: { fontSize: 15, lineHeight: 20 },
+  msgText: { fontSize: 15, lineHeight: 20, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
-  msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 2 },
-  msgTime: { fontSize: 10 },
+  msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
+  msgTime: { fontSize: 10, fontFamily: fonts.body },
   reactionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   reactionsRowMine: { justifyContent: 'flex-end' },
   reactionsRowTheirs: { justifyContent: 'flex-start' },
   reactionBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 2,
-    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 12, borderWidth: 1,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, borderWidth: 1,
   },
   reactionEmoji: { fontSize: 14 },
-  reactionCount: { fontSize: 11 },
-  loadOlderBtn: { alignSelf: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 6, marginBottom: 12 },
-  loadOlderText: { fontSize: 13, fontWeight: '500' },
+  reactionCount: { fontSize: 11, fontFamily: fonts.body },
+  loadOlderBtn: { alignSelf: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 16 },
+  loadOlderText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   scrollBtn: {
     position: 'absolute', right: 16, bottom: 80,
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
+    borderWidth: 1, elevation: 3,
   },
   modalOverlay: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
@@ -771,50 +785,49 @@ const s = StyleSheet.create({
   },
   reactionPickerContainer: {
     borderRadius: 16, borderWidth: 1, overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
+    elevation: 8,
   },
   reactionPickerRow: {
-    flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, gap: 4,
+    flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 4,
   },
   reactionPickerItem: {
-    width: 44, height: 44, borderRadius: 22,
+    width: 48, height: 48, borderRadius: 24,
     alignItems: 'center', justifyContent: 'center',
   },
   reactionPickerEmoji: { fontSize: 24 },
   deleteRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth,
   },
-  deleteText: { fontSize: 15, fontWeight: '500' },
+  deleteText: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
-    paddingHorizontal: 12, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth,
   },
-  imageBtn: { paddingBottom: 10, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  imageBtn: { paddingBottom: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   textInput: {
-    flex: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 15, maxHeight: 120, minHeight: 40,
+    flex: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 10,
+    fontSize: 15, maxHeight: 120, minHeight: 40, fontFamily: fonts.body,
   },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
   },
-  emptyText: { textAlign: 'center', fontSize: 14, marginTop: 40 },
+  emptyText: { textAlign: 'center', fontSize: 14, marginTop: 40, fontFamily: fonts.body },
   quickRepliesRow: {
     flexDirection: 'row', gap: 8,
     paddingHorizontal: 16, paddingVertical: 8,
   },
   quickReplyChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 16, paddingVertical: 8,
     borderRadius: 16,
   },
   quickReplyText: { fontSize: 13, fontFamily: fonts.body },
   // 3a: Link preview styles
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginTop: 4, padding: 8, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
+    marginTop: 4, padding: 8, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     maxWidth: '100%',
   },
   linkDomain: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodySemi },
@@ -823,12 +836,12 @@ const s = StyleSheet.create({
 
 const contextStyles = StyleSheet.create({
   card: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginHorizontal: 16, marginVertical: 8, padding: 10,
-    borderRadius: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    marginHorizontal: 16, marginVertical: 8, padding: 12,
+    borderRadius: 12,
   },
   image: { width: 40, height: 40, borderRadius: 8 },
-  info: { flex: 1, gap: 2 },
+  info: { flex: 1, gap: 4 },
   label: { fontSize: 10, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
   title: { fontSize: 13, fontFamily: fonts.bodySemi },
 })

@@ -365,7 +365,7 @@ export default function ProfileScreen() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'post': return <FileText size={16} color={colors.primary} />
-      case 'event': return <CalendarDays size={16} color="#2B8A62" />
+      case 'event': return <CalendarDays size={16} color={colors.success} />
       case 'review_given': case 'review_received': return <Star size={16} color={colors.pro} />
       default: return <FileText size={16} color={colors.mutedForeground} />
     }
@@ -376,7 +376,7 @@ export default function ProfileScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
-        <Pressable onPress={() => router.push('/settings')} hitSlop={8}>
+        <Pressable onPress={() => router.push('/settings')} hitSlop={8} accessibilityLabel={t('settings.title')} accessibilityRole="button">
           <Settings size={22} color={colors.mutedForeground} />
         </Pressable>
       </View>
@@ -397,10 +397,10 @@ export default function ProfileScreen() {
       >
         {/* Hero */}
         <View style={s.hero}>
-          <Pressable onPress={handleAvatarUpload}>
+          <Pressable onPress={handleAvatarUpload} accessibilityLabel={t('profile.changeAvatar')} accessibilityRole="button">
             <View>
               <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />
-              <View style={[s.cameraBtn, { backgroundColor: colors.primary }]}>
+              <View style={[s.cameraBtn, { backgroundColor: colors.primary }]} accessibilityElementsHidden>
                 <Camera size={12} color={colors.primaryForeground} />
               </View>
             </View>
@@ -428,7 +428,7 @@ export default function ProfileScreen() {
                 placeholder={t('profile.bioPlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
               />
-              <Text style={{ fontSize: 11, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2 }}>
+              <Text style={{ fontSize: 11, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
                 {bioText.length}/200
               </Text>
               <View style={s.bioActions}>
@@ -439,7 +439,7 @@ export default function ProfileScreen() {
               </View>
             </View>
           ) : (
-            <Pressable onPress={() => setEditingBio(true)} style={[s.bioTapArea, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }]}>
+            <Pressable onPress={() => setEditingBio(true)} style={[s.bioTapArea, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
               <Text style={[s.bio, { color: profile.bio ? colors.mutedForeground : colors.primary }]}>
                 {profile.bio || t('profile.clickToAddBio')}
               </Text>
@@ -483,14 +483,14 @@ export default function ProfileScreen() {
 
         {/* Stats — simplified to 4 primary stats */}
         <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Pressable style={s.stat} onPress={() => followerCount > 0 ? openFollowList('followers') : null}>
+          <Pressable style={s.stat} onPress={() => followerCount > 0 ? openFollowList('followers') : null} accessibilityLabel={`${followerCount} ${t('profile.followers')}`} accessibilityRole="button">
             <Text style={[s.statNum, { color: followerCount === 0 ? colors.primary : colors.foreground }]}>
               {followerCount === 0 ? '\u2013' : followerCount}
             </Text>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
           </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <Pressable style={s.stat} onPress={() => postCount === 0 ? router.push('/(tabs)/create') : setActiveTab('posts')}>
+          <Pressable style={s.stat} onPress={() => postCount === 0 ? router.push('/(tabs)/create') : setActiveTab('posts')} accessibilityLabel={`${postCount} ${t('profile.posts')}`} accessibilityRole="button">
             <Text style={[s.statNum, { color: postCount === 0 ? colors.primary : colors.foreground }]}>
               {postCount === 0 ? '\u2013' : postCount}
             </Text>
@@ -499,9 +499,9 @@ export default function ProfileScreen() {
             </Text>
           </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
+          <View style={s.stat} accessibilityLabel={`${avgRating ?? 0} ${t('profile.avgRating')}`} accessibilityRole="text">
             {avgRating != null ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating}</Text>
                 <Star size={12} color={colors.pro} fill={colors.pro} />
               </View>
@@ -511,8 +511,8 @@ export default function ProfileScreen() {
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <Pressable style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+          <Pressable style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityLabel={`${profile?.total_points ?? 0} ${t('profile.karma')}`} accessibilityRole="button">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[s.statNum, { color: colors.foreground }]}>{profile?.total_points ?? 0}</Text>
               <Zap size={12} color={colors.pro} fill={colors.pro} />
             </View>
@@ -531,7 +531,7 @@ export default function ProfileScreen() {
 
         {/* Pro upgrade card */}
         {!profile.is_pro && (
-          <Pressable onPress={() => router.push('/pro')} style={[s.proUpgradeCard, { backgroundColor: `${colors.pro}12`, borderColor: `${colors.pro}30` }]}>
+          <Pressable onPress={() => router.push('/pro')} style={[s.proUpgradeCard, { backgroundColor: `${colors.pro}12`, borderColor: `${colors.pro}30` }]} accessibilityLabel={t('pro.upgradeToPro')} accessibilityRole="button">
             <Crown size={20} color={colors.pro} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[s.proUpgradeTitle, { color: colors.pro }]}>{t('pro.upgradeToPro')}</Text>
@@ -542,18 +542,18 @@ export default function ProfileScreen() {
         )}
 
         {/* Quick action cards */}
-        <Pressable onPress={() => router.push('/bookings')} style={[s.overviewCard, { backgroundColor: colors.card }]}>
-          <Package size={18} color="#C98B2E" />
+        <Pressable onPress={() => router.push('/bookings')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('bookings.title')} accessibilityRole="button">
+          <Package size={18} color={colors.pro} />
           <Text style={[s.overviewText, { color: colors.foreground }]}>{t('bookings.title')}</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push('/saved')} style={[s.overviewCard, { backgroundColor: colors.card }]}>
+        <Pressable onPress={() => router.push('/saved')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('saved.title')} accessibilityRole="button">
           <Heart size={18} color={colors.primary} />
           <Text style={[s.overviewText, { color: colors.foreground }]}>{t('saved.title')}</Text>
         </Pressable>
 
         {/* Leaderboard button */}
-        <Pressable onPress={() => router.push('/leaderboard')} style={[s.overviewCard, { backgroundColor: colors.card }]}>
+        <Pressable onPress={() => router.push('/leaderboard')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('leaderboard.title')} accessibilityRole="button">
           <Trophy size={18} color={colors.pro} />
           <Text style={[s.overviewText, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
         </Pressable>
@@ -571,14 +571,14 @@ export default function ProfileScreen() {
         )}
 
         {/* Tabs */}
-        <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setActiveTab('overview')} style={[s.tab, activeTab === 'overview' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+        <View style={[s.tabRow, { borderBottomColor: colors.border }]} accessibilityRole="tablist">
+          <Pressable onPress={() => setActiveTab('overview')} style={[s.tab, activeTab === 'overview' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityLabel={t('profile.overview')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'overview' }}>
             <Text style={[s.tabText, { color: activeTab === 'overview' ? colors.primary : colors.mutedForeground }]}>{t('profile.overview')}</Text>
           </Pressable>
-          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityLabel={t('profile.myPosts')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'posts' }}>
             <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground }]}>{t('profile.myPosts')}</Text>
           </Pressable>
-          <Pressable onPress={() => setActiveTab('activity')} style={[s.tab, activeTab === 'activity' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          <Pressable onPress={() => setActiveTab('activity')} style={[s.tab, activeTab === 'activity' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityLabel={t('profile.activity')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'activity' }}>
             <Text style={[s.tabText, { color: activeTab === 'activity' ? colors.primary : colors.mutedForeground }]}>{t('profile.activity')}</Text>
           </Pressable>
         </View>
@@ -605,7 +605,7 @@ export default function ProfileScreen() {
               </View>
               {(profile?.current_streak ?? 0) > 0 && (
                 <View style={[impactStyles.streakRow, { borderTopColor: colors.border }]}>
-                  <Flame size={16} color="#EF4444" />
+                  <Flame size={16} color={colors.destructive} />
                   <Text style={[impactStyles.streakText, { color: colors.foreground }]}>
                     {t('profile.streakDays', { count: profile?.current_streak ?? 0 })}
                   </Text>
@@ -682,7 +682,7 @@ export default function ProfileScreen() {
         {activeTab === 'posts' && (
           <View style={s.tabContent}>
             {/* 2c: Filter chips */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
               {([
                 { key: 'all' as const, label: t('profile.filterAll') },
                 { key: 'active' as const, label: t('profile.filterActive') },
@@ -706,7 +706,7 @@ export default function ProfileScreen() {
             ) : filteredPosts.length === 0 ? (
               <View style={{ alignItems: 'center', paddingVertical: 24, gap: 12 }}>
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
-                <Pressable onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 4 }]}>
+                <Pressable onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 4 }]}>
                   <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('nav.create')}</Text>
                 </Pressable>
               </View>
@@ -714,7 +714,7 @@ export default function ProfileScreen() {
               filteredPosts.map((post) => {
                 const status = getPostStatus(post)
                 const statusColor = status === 'active' ? (colors.success ?? colors.primary)
-                  : status === 'expired' ? '#E8A050'
+                  : status === 'expired' ? colors.pro
                   : colors.mutedForeground
                 const statusLabel = status === 'active' ? t('profile.active')
                   : status === 'expired' ? t('profile.expired')
@@ -919,11 +919,11 @@ const s = StyleSheet.create({
   bioEditWrap: { width: '100%', gap: 8, paddingHorizontal: 8 },
   bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 60, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
-  bioSaveBtn: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 12 },
-  badgesSection: { alignItems: 'center', gap: 6, width: '100%' },
+  bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
+  badgesSection: { alignItems: 'center', gap: 8, width: '100%' },
   badgesSectionTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
-  badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
-  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
+  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
   proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -937,17 +937,17 @@ const s = StyleSheet.create({
   tabActive: { borderBottomWidth: 2 },
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   tabContent: { gap: 12 },
-  overviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12 },
+  overviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
   proUpgradeCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 14, borderRadius: 12, borderWidth: 1,
+    padding: 16, borderRadius: 12, borderWidth: 1,
   },
   proUpgradeTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi },
   proUpgradeSubtitle: { fontSize: 12, fontFamily: fonts.body },
-  overviewText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.body },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 4, fontFamily: fonts.headingSemi },
-  reviewCard: { borderRadius: 12, padding: 14, gap: 8 },
-  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  overviewText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 8, fontFamily: fonts.headingSemi },
+  reviewCard: { borderRadius: 12, padding: 16, gap: 8 },
+  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium },
   reviewTime: { fontSize: 11, fontFamily: fonts.body },
@@ -958,7 +958,7 @@ const s = StyleSheet.create({
   activityItem: { flexDirection: 'row', gap: 12, paddingLeft: 16, borderLeftWidth: 2, paddingVertical: 8 },
   activityDot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: -25 },
   activityContent: { flex: 1, gap: 2 },
-  activityTitle: { fontSize: 14, fontWeight: '500', fontFamily: fonts.body },
+  activityTitle: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   activityMeta: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   activityTime: { fontSize: 12, fontFamily: fonts.body },
   activityMetaBadge: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -972,43 +972,43 @@ const s = StyleSheet.create({
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
   followName: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  multiplierBadge: { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 6 },
-  multiplierText: { fontSize: 9, fontWeight: '800', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 8 },
+  multiplierText: { fontSize: 9, fontWeight: '800', fontFamily: fonts.bodySemi },
   // My Posts tab
-  myPostItem: { gap: 8, padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
+  myPostItem: { gap: 8, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
-  myPostTypeBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 },
+  myPostTypeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   myPostTypeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostDate: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-  myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   myPostStatusText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
-  myPostActions: { flexDirection: 'row', gap: 6, paddingTop: 4 },
-  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, minHeight: 32 },
+  myPostActions: { flexDirection: 'row', gap: 8, paddingTop: 4 },
+  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, minHeight: 32 },
   myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
-  postFilterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },
+  postFilterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   // Point history modal
-  pointHistoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth },
+  pointHistoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   pointHistoryPoints: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, minWidth: 32 },
-  pointHistoryAction: { fontSize: 14, fontWeight: '500', fontFamily: fonts.body, lineHeight: 20 },
+  pointHistoryAction: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   pointHistoryTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
 })
 
 const impactStyles = StyleSheet.create({
   card: { borderRadius: 12, padding: 16, gap: 12 },
-  title: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16 },
+  title: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi, letterSpacing: -0.16 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around' },
   statItem: { alignItems: 'center', gap: 4 },
-  statNumber: { fontSize: 24, fontFamily: fonts.heading },
+  statNumber: { fontSize: 24, fontWeight: '700', fontFamily: fonts.heading },
   statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
-  streakText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
+  streakText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   pointsText: { fontSize: 13, fontFamily: fonts.body },
 })
 
 const badgeStyles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  item: { alignItems: 'center', gap: 6, width: 72 },
+  item: { alignItems: 'center', gap: 8, width: 72 },
   circle: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 10, fontFamily: fonts.body, textAlign: 'center' },
 })
