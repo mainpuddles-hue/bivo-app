@@ -361,12 +361,7 @@ function FeedScreenInner() {
             </Text>
             <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
           </Pressable>
-          {currentStreak > 0 && (
-            <View style={[styles.streakBadge, { backgroundColor: isDark ? '#F59E0B18' : '#FDF6E8' }]}>
-              <Text style={[styles.streakText, { color: colors.pro }]}>{currentStreak}</Text>
-              <Flame size={14} color={colors.pro} />
-            </View>
-          )}
+{/* Streak badge removed — cleaner header */}
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 6, alignItems: 'center', paddingHorizontal: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
