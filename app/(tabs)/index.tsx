@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken, ScrollView } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -261,20 +261,9 @@ function FeedScreenInner() {
         </View>
       ) : null}
 
-      {/* Contextual greeting */}
-      <FeedContextHeader
-        neighborhood={feed.userNeighborhood}
-        postCount={feed.posts.length}
-        loading={feed.loading}
-        cityName={feed.userCityName}
-      />
+      {/* FeedContextHeader removed — feed IS the listings, no redundant header needed */}
 
-      {/* Discovery: nearby places carousel */}
-      <DiscoverySection
-        nearbyPlaces={feed.nearbyPlaces}
-        extraLoading={feed.extraLoading}
-        placesSectionTitle={placesSectionTitle}
-      />
+      {/* DiscoverySection removed from feed — belongs in Explore tab */}
 
       {/* New posts banner */}
       {feed.hasNewPosts && (
@@ -299,12 +288,7 @@ function FeedScreenInner() {
         </Pressable>
       )}
 
-      {/* Section header — only when posts exist */}
-      {feed.posts.length > 0 && (
-        <View style={styles.compactSectionHeader}>
-          <Text style={[styles.compactSectionTitle, { color: colors.foreground }]}>{t('feed.latestListings')}</Text>
-        </View>
-      )}
+      {/* "Uusimmat ilmoitukset" section header removed — feed IS the listings */}
     </View>
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
@@ -375,27 +359,27 @@ function FeedScreenInner() {
             </View>
           )}
         </View>
-        <View style={styles.filterRow}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 6, alignItems: 'center' }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
-        </View>
-        {feed.followedIds.length > 0 && (
-          <Pressable
-            onPress={() => feed.setShowFollowing(p => !p)}
-            style={[styles.followingBtn, feed.showFollowing ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
-          >
-            <Users size={14} color={feed.showFollowing ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.75} />
-            <Text style={[styles.followingText, { color: feed.showFollowing ? colors.primaryForeground : colors.mutedForeground }]}>
-              {t('feed.following')}
-            </Text>
-          </Pressable>
-        )}
+          {feed.followedIds.length > 0 && (
+            <Pressable
+              onPress={() => feed.setShowFollowing(p => !p)}
+              style={[styles.followingBtn, feed.showFollowing ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
+            >
+              <Users size={14} color={feed.showFollowing ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.75} />
+              <Text style={[styles.followingText, { color: feed.showFollowing ? colors.primaryForeground : colors.mutedForeground }]}>
+                {t('feed.following')}
+              </Text>
+            </Pressable>
+          )}
+        </ScrollView>
       </View>
 
       <FlatList
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isAd' in item ? `ad-${item.id}` : item.id)}
-        contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_BASE_HEIGHT + (feed.followedIds.length > 0 ? 44 : 0) }]}
+        contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_BASE_HEIGHT }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
