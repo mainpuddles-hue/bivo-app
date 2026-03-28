@@ -75,6 +75,7 @@ export interface Profile {
   longest_streak?: number
   last_active_date?: string | null
   onboarding_checklist?: Record<string, boolean>
+  map_presence?: boolean
   created_at: string
   updated_at: string
 }

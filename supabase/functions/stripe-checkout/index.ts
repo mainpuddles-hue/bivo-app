@@ -1,6 +1,6 @@
 // Supabase Edge Function: stripe-checkout
 // Creates Stripe Checkout sessions for rental and service bookings.
-// Commission: 10% to Puddles Oy (platform), 90% to provider via Connect.
+// Commission: 10% standard / 5% for Pro users to Puddles Oy (platform), rest to provider via Connect.
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -172,8 +172,28 @@ serve(async (req) => {
       })
     }
 
-    // Enforce commission server-side (10%)
-    const validatedFee = Math.round(validatedAmount * 0.10)
+    // Fetch buyer profile for Pro status (commission discount + ad pricing validation)
+    const { data: buyerProProfile } = await supabase
+      .from('profiles')
+      .select('is_pro')
+      .eq('id', user.id)
+      .single()
+
+    // Pro users get 5% commission, standard users 10%
+    const commissionRate = buyerProProfile?.is_pro ? 0.05 : 0.10
+    const validatedFee = Math.round(validatedAmount * commissionRate)
+
+    // Validate ad campaign pricing server-side
+    if (type === 'ad_campaign') {
+      const expectedDaily = buyerProProfile?.is_pro ? 239 : 299
+      const duration = parseInt(metadata?.duration ?? '7')
+      const expectedAmount = expectedDaily * duration
+      if (Math.abs(validatedAmount - expectedAmount) > 1) {
+        return new Response(JSON.stringify({ error: 'Invalid ad amount' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
 
     // --- Idempotency: check if booking already has a session ---
     if (metadata?.booking_id) {

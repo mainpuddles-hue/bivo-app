@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
-  MessageCircle, Clock,
+  MessageCircle, Clock, Building2,
   Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User, Flag, EyeOff,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -506,6 +506,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                       <Crown size={10} color="#F59E0B" />
                     </View>
                   )}
+                  {user?.is_business && (
+                    <View style={styles.businessMicroBadge}>
+                      <Building2 size={10} color="#2D6B5E" />
+                    </View>
+                  )}
                 </View>
                 {post.created_at && (
                   <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
@@ -591,6 +596,10 @@ const styles = StyleSheet.create({
   urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
   proMicroBadge: {
     backgroundColor: '#F59E0B18',
+    borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
+  },
+  businessMicroBadge: {
+    backgroundColor: '#2D6B5E18',
     borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
   },
   newDot: {

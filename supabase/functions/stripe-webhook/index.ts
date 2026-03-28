@@ -161,13 +161,30 @@ serve(async (req) => {
         if (userId) {
           const isActive = subscription.status === 'active' || subscription.status === 'trialing'
           const expiresAt = new Date(subscription.current_period_end * 1000).toISOString()
-          await supabase.from('profiles').update({
-            is_pro: isActive,
-            pro_expires_at: expiresAt,
-            stripe_subscription_id: subscription.id,
-          }).eq('id', userId)
 
-          console.log(`[webhook] Subscription ${subscription.status} for user ${userId}`)
+          // Determine subscription type from plan metadata or amount
+          const plan = subscription.metadata?.plan ?? ''
+          const isBusiness = plan === 'business_monthly' ||
+            (subscription.items?.data?.[0]?.price?.unit_amount ?? 0) >= 2999
+
+          if (isBusiness) {
+            // Business subscription
+            await supabase.from('profiles').update({
+              is_business: isActive,
+              is_pro: isActive,
+              pro_expires_at: expiresAt,
+              stripe_subscription_id: subscription.id,
+            }).eq('id', userId)
+          } else {
+            // Pro subscription (monthly or yearly)
+            await supabase.from('profiles').update({
+              is_pro: isActive,
+              pro_expires_at: expiresAt,
+              stripe_subscription_id: subscription.id,
+            }).eq('id', userId)
+          }
+
+          console.log(`[webhook] Subscription ${subscription.status} (${isBusiness ? 'business' : 'pro'}) for user ${userId}`)
         }
         break
       }
@@ -176,12 +193,25 @@ serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription
         const userId = subscription.metadata?.user_id
         if (userId) {
-          await supabase.from('profiles').update({
-            is_pro: false,
-            pro_expires_at: null,
-          }).eq('id', userId)
+          // Determine subscription type from plan metadata or amount
+          const plan = subscription.metadata?.plan ?? ''
+          const isBusiness = plan === 'business_monthly' ||
+            (subscription.items?.data?.[0]?.price?.unit_amount ?? 0) >= 2999
 
-          console.log(`[webhook] Subscription cancelled for user ${userId}`)
+          if (isBusiness) {
+            await supabase.from('profiles').update({
+              is_business: false,
+              is_pro: false,
+              pro_expires_at: null,
+            }).eq('id', userId)
+          } else {
+            await supabase.from('profiles').update({
+              is_pro: false,
+              pro_expires_at: null,
+            }).eq('id', userId)
+          }
+
+          console.log(`[webhook] Subscription cancelled (${isBusiness ? 'business' : 'pro'}) for user ${userId}`)
         }
         break
       }

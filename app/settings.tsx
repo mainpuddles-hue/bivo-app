@@ -91,6 +91,12 @@ export default function SettingsScreen() {
       setAccountCreatedAt(user.created_at ?? null)
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
+        // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
+        if ((data as any).is_pro && (data as any).pro_expires_at && new Date((data as any).pro_expires_at) < new Date()) {
+          await (supabase.from('profiles') as any).update({ is_pro: false, pro_expires_at: null }).eq('id', user.id)
+          ;(data as any).is_pro = false
+          ;(data as any).pro_expires_at = null
+        }
         const p = data as unknown as Profile
         setProfile(p)
         setNameText(p.name ?? '')

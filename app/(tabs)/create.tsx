@@ -451,6 +451,8 @@ export default function CreateScreen() {
 
       // Create post
       setUploadStatus(t('create.publishing'))
+      // Fetch profile to check Pro status for priority listing
+      const { data: creatorProfile } = await supabase.from('profiles').select('is_pro').eq('id', user.id).single()
       const { data: post, error } = await (supabase.from('posts') as any).insert({
         user_id: user.id,
         type: selectedType,
@@ -468,6 +470,7 @@ export default function CreateScreen() {
         is_anonymous: isAnonymous || false,
         is_active: true,
         tags: selectedTags,
+        is_pro_listing: !!(creatorProfile as any)?.is_pro,
       }).select('id').single()
 
       if (error) throw error

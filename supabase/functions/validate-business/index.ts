@@ -145,9 +145,9 @@ serve(async (req) => {
     const autoApproved = isActive && nameMatch
     const verificationStatus = autoApproved ? 'approved' : 'pending_review'
 
-    // Step 5: Update profile
+    // Step 5: Update profile — store business details only.
+    // is_business will be set after payment confirmation via stripe-webhook.
     await supabase.from('profiles').update({
-      is_business: autoApproved,
       business_name: prhData.name, // Use official PRH name
       business_vat_id: prhData.businessId,
     }).eq('id', user.id)

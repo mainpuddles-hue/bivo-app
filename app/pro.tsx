@@ -13,12 +13,12 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
 const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
 const FEATURES = [
-  { icon: Zap, free: 'Basic listings', pro: 'Priority listings' },
-  { icon: Shield, free: 'Standard support', pro: 'Priority support' },
-  { icon: BarChart3, free: 'No analytics', pro: 'Full analytics' },
-  { icon: Sparkles, free: 'Standard commission', pro: 'Lower commission' },
-  { icon: Megaphone, free: 'No ad campaigns', pro: 'Ad campaigns' },
+  { icon: Zap, free: 'Basic listings', pro: 'Priority feed placement' },
+  { icon: Sparkles, free: '10% commission', pro: '5% commission' },
+  { icon: Megaphone, free: 'Ad campaigns (2.99\u20AC/day)', pro: 'Ad campaigns (2.39\u20AC/day)' },
+  { icon: BarChart3, free: 'Basic stats', pro: 'Detailed analytics' },
   { icon: BadgeCheck, free: 'No verified badge', pro: 'Verified badge' },
+  { icon: Shield, free: 'Standard support', pro: 'Priority support' },
 ] as const
 
 type Plan = 'monthly' | 'yearly'

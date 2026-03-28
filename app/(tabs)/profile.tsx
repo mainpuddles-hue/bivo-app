@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package,
-  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2,
+  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
@@ -100,7 +100,15 @@ export default function ProfileScreen() {
 
     // Profile
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-    if (p) { setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '') }
+    if (p) {
+      // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
+      if ((p as any).is_pro && (p as any).pro_expires_at && new Date((p as any).pro_expires_at) < new Date()) {
+        await (supabase.from('profiles') as any).update({ is_pro: false, pro_expires_at: null }).eq('id', user.id)
+        ;(p as any).is_pro = false
+        ;(p as any).pro_expires_at = null
+      }
+      setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '')
+    }
 
     // Counts
     const [postsRes, followersRes, followingRes, savedRes, thanksRes] = await Promise.all([
@@ -460,6 +468,12 @@ export default function ProfileScreen() {
             <View style={[s.proBadge, { backgroundColor: `${colors.pro}20` }]}>
               <Crown size={14} color={colors.pro} fill={colors.pro} />
               <Text style={[s.proText, { color: colors.pro }]}>Pro</Text>
+            </View>
+          )}
+          {profile.is_business && (
+            <View style={[s.proBadge, { backgroundColor: `${colors.primary}15` }]}>
+              <Building2 size={12} color={colors.primary} />
+              <Text style={[s.proText, { color: colors.primary }]}>{profile.business_name ?? t('business.verified')}</Text>
             </View>
           )}
         </View>

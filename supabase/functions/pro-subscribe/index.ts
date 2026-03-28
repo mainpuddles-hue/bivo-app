@@ -19,6 +19,7 @@ const corsHeaders = {
 const PRICES = {
   monthly: { amount: 499, interval: 'month' as const, name: 'TackBird Pro Monthly' },
   yearly: { amount: 3999, interval: 'year' as const, name: 'TackBird Pro Yearly' },
+  business_monthly: { amount: 2999, interval: 'month' as const, name: 'TackBird Business Monthly' },
 }
 
 serve(async (req) => {
