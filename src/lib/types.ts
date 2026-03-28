@@ -65,6 +65,7 @@ export interface Profile {
   business_vat_id: string | null
   stripe_customer_id?: string | null
   stripe_connect_account_id?: string | null
+  stripe_subscription_id?: string | null
   stripe_connect_onboarded: boolean
   identity_verified_at?: string | null
   invite_code?: string | null

@@ -83,6 +83,27 @@ export default function PaymentSuccessScreen() {
         }
       }
 
+      // Fallback: check advertisements
+      if (!found) {
+        try {
+          const { data: adData } = await (supabase.from('advertisements') as any)
+            .select('id, title, status')
+            .eq('stripe_session_id', session_id!)
+            .maybeSingle()
+          if (adData) {
+            setBooking({
+              id: adData.id,
+              post_title: adData.title ?? 'Ad Campaign',
+              start_date: new Date().toISOString(),
+              end_date: new Date().toISOString(),
+              total_amount: 0,
+              status: adData.status ?? 'active',
+            })
+            found = true
+          }
+        } catch {}
+      }
+
       if (!found) setNotFound(true)
       setLoading(false)
     }
@@ -109,7 +130,7 @@ export default function PaymentSuccessScreen() {
           {/* Order summary — show info message when no booking found */}
           {notFound && !booking && (
             <Text style={[styles.subtitle, { color: colors.mutedForeground, marginBottom: 16 }]}>
-              {t('payment.bookingNotFound') ?? 'Varauksen tietoja ei löytynyt. Tarkista varauksesi.'}
+              {t('payment.subscriptionActivating') ?? 'Payment successful! Your subscription will be activated shortly.'}
             </Text>
           )}
           {booking && (

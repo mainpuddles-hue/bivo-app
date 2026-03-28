@@ -508,7 +508,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                   )}
                   {user?.is_business && (
                     <View style={styles.businessMicroBadge}>
-                      <Building2 size={10} color="#2D6B5E" />
+                      <Building2 size={10} color={colors.primary} />
                     </View>
                   )}
                 </View>

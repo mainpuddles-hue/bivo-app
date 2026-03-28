@@ -304,8 +304,8 @@ export default function UpgradeBusinessScreen() {
           <>
             <Pressable
               onPress={handleUpgrade}
-              disabled={submitting || !businessName.trim()}
-              style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !businessName.trim() ? 0.6 : 1 }]}
+              disabled={submitting || !businessName.trim() || !vatId.trim()}
+              style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !businessName.trim() || !vatId.trim() ? 0.6 : 1 }]}
             >
               {submitting ? (
                 <ActivityIndicator size="small" color={colors.primaryForeground} />

@@ -57,6 +57,11 @@ export default function CreateAdScreen() {
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
         const p = data as unknown as Profile
+        if (!p.is_business && !p.is_pro) {
+          Alert.alert(t('common.error'), t('ads.businessRequired') ?? 'Business or Pro account required')
+          router.back()
+          return
+        }
         setProfile(p)
         setTargetNeighborhood(p.naapurusto ?? null)
         // Load neighborhoods for user's city
@@ -76,7 +81,7 @@ export default function CreateAdScreen() {
       }
     }
     load()
-  }, [supabase])
+  }, [supabase, t, router])
 
   const pricePerDay = profile?.is_pro ? PRO_PRICE_PER_DAY : PRICE_PER_DAY
   const totalPrice = duration * pricePerDay
