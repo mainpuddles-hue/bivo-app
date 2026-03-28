@@ -19,7 +19,6 @@ import { shareContent } from '@/lib/share'
 import { triggerPush } from '@/lib/pushTrigger'
 import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
 import { ReportModal } from '@/components/ReportModal'
-import { ThanksButton } from '@/components/ThanksButton'
 import { Avatar } from '@/components/Avatar'
 import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
@@ -784,7 +783,7 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {/* Action row — like + count, comment + count, thanks only (bookmark/share/flag in header) */}
+          {/* Action row — like + count, comment + count (bookmark/share/flag in header) */}
           <View style={styles.actionRow}>
             <Pressable onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')}>
               <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
@@ -800,11 +799,6 @@ function PostDetailScreenInner() {
                 <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{comments.length}</Text>
               )}
             </View>
-            {!isAuthor && (
-              <View style={{ marginLeft: 'auto' }}>
-                <ThanksButton toUserId={post.user_id} postId={post.id} fromUserId={userId} size="small" />
-              </View>
-            )}
           </View>
 
           {/* Author card — compact, like feed PostCard */}

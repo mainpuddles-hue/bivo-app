@@ -73,7 +73,6 @@ export default function ProfileScreen() {
   const [badges, setBadges] = useState<UserBadge[]>([])
   const [recentPosts, setRecentPosts] = useState<Post[]>([])
   const [savedCount, setSavedCount] = useState(0)
-  const [thanksCount, setThanksCount] = useState(0)
   const [activity, setActivity] = useState<ActivityItem[]>([])
   const [editingBio, setEditingBio] = useState(false)
   const [bioText, setBioText] = useState('')
@@ -113,20 +112,16 @@ export default function ProfileScreen() {
     }
 
     // Counts
-    const [postsRes, followersRes, followingRes, savedRes, thanksRes] = await Promise.all([
+    const [postsRes, followersRes, followingRes, savedRes] = await Promise.all([
       supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
       supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-      Promise.resolve(supabase.from('thanks').select('id', { count: 'exact', head: true }).eq('to_user_id', user.id))
-        .then(res => res.error ? { count: 0, data: null, error: res.error } : res)
-        .catch(() => ({ count: 0, data: null, error: null })),
     ])
     setPostCount(postsRes.count ?? 0)
     setFollowerCount(followersRes.count ?? 0)
     setFollowingCount(followingRes.count ?? 0)
     setSavedCount(savedRes.count ?? 0)
-    setThanksCount(thanksRes.count ?? 0)
 
       // Reviews received — fetch all for correct average, display latest 10
       const { data: revs } = await supabase
@@ -590,10 +585,6 @@ export default function ProfileScreen() {
             <View style={[impactStyles.card, { backgroundColor: colors.card }]}>
               <Text style={[impactStyles.title, { color: colors.foreground }]}>{t('profile.yourImpact')}</Text>
               <View style={impactStyles.statsRow}>
-                <View style={impactStyles.statItem}>
-                  <Text style={[impactStyles.statNumber, { color: colors.primary }]}>{thanksCount}</Text>
-                  <Text style={[impactStyles.statLabel, { color: colors.mutedForeground }]}>{t('profile.helped')}</Text>
-                </View>
                 <View style={impactStyles.statItem}>
                   <Text style={[impactStyles.statNumber, { color: colors.primary }]}>{postCount}</Text>
                   <Text style={[impactStyles.statLabel, { color: colors.mutedForeground }]}>{t('profile.shared')}</Text>

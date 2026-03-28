@@ -11,7 +11,6 @@ import * as Haptics from 'expo-haptics'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { ThanksButton } from '@/components/ThanksButton'
 import { Avatar } from '@/components/Avatar'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatDateHeader } from '@/lib/format'
@@ -551,18 +550,17 @@ function ConversationScreenInner() {
         >
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
-        <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
-        <View style={{ flex: 1 }}>
+        <Pressable onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} hitSlop={8} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
+          <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
+        </Pressable>
+        <Pressable onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
           <Text style={[s.headerName, { color: colors.foreground }]} numberOfLines={1}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
           {otherTyping ? (
             <Text style={[s.headerSub, { color: colors.primary }]}>{t('messages.typing')}</Text>
           ) : otherUser?.naapurusto ? (
             <Text style={[s.headerSub, { color: colors.mutedForeground }]}>{otherUser.naapurusto}</Text>
           ) : null}
-        </View>
-        {otherUser && (
-          <ThanksButton toUserId={otherUser.id} fromUserId={userId} size="small" />
-        )}
+        </Pressable>
         {otherUser && (
           <Pressable
             onPress={() => setShowReportModal(true)}
