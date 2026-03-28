@@ -230,7 +230,7 @@ function FeedScreenInner() {
     <View style={{ gap: 12 }}>
       {/* Greeting — compact single line */}
       <View style={{ alignItems: 'flex-start', paddingTop: 12, marginBottom: 8 }}>
-        <Text style={{ fontSize: 15, color: colors.primary, fontFamily: fonts.headingSemi, letterSpacing: -0.2 }}>
+        <Text style={{ fontSize: 14, color: colors.primary, fontFamily: fonts.body, letterSpacing: -0.2 }}>
           {(() => {
             const hour = new Date().getHours()
             const greetingKey = hour < 12 ? 'greeting.morning' : hour < 17 ? 'greeting.afternoon' : hour < 21 ? 'greeting.evening' : 'greeting.night'
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   streakText: { fontSize: 13, fontWeight: '700', fontFamily: fonts.heading },
   neighborhoodText: { fontSize: 12, fontFamily: fonts.body },
-  dateGroupLabel: { alignItems: 'center', paddingVertical: 6 },
+  dateGroupLabel: { alignItems: 'center', paddingVertical: 4 },
   dateGroupLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3 },
   list: { paddingHorizontal: 16, paddingBottom: 96 },
