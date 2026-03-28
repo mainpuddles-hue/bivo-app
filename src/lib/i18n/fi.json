@@ -2296,7 +2296,8 @@
     "placesNearby": "{count} paikkaa lähellä",
     "noEvents": "Ei tulevia tapahtumia",
     "noEventsHint": "Tarkista myöhemmin — uusia tapahtumia lisätään jatkuvasti.",
-    "noPlaces": "Ei paikkoja lähistöllä"
+    "noPlaces": "Ei paikkoja lähistöllä",
+    "noPlacesHint": "Salli sijainnin käyttö tai yritä myöhemmin uudelleen."
   },
   "celebration": {
     "firstResponse": "Ensimmäinen vastauksesi!",

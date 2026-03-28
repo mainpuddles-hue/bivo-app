@@ -7,6 +7,7 @@ import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingU
 import * as Location from 'expo-location'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SearchSkeleton } from '@/components/SkeletonLoaders'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -92,12 +93,12 @@ function DiscoveryView({
         <View style={s.section}>
           <View style={s.recentHeader}>
             <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recent')}</Text>
-            <Pressable onPress={clearRecentSearches}>
+            <Pressable onPress={clearRecentSearches} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
               <Text style={[s.recentClear, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('common.clear')}</Text>
             </Pressable>
           </View>
           {recentSearches.map((term, i) => (
-            <Pressable key={i} onPress={() => { setQuery(term); saveRecentSearch(term); executeSearch(term) }} style={s.recentItem}>
+            <Pressable key={i} onPress={() => { setQuery(term); saveRecentSearch(term); executeSearch(term) }} style={s.recentItem} accessibilityRole="button" accessibilityLabel={term}>
               <Clock size={14} color={colors.mutedForeground} />
               <Text style={[s.recentText, { color: colors.foreground, fontFamily: fonts.body }]}>{term}</Text>
             </Pressable>
@@ -187,6 +188,8 @@ function DiscoveryView({
                   key={tp.id}
                   onPress={() => router.push(`/post/${tp.id}` as any)}
                   style={[s.trendingCard, { backgroundColor: colors.card }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={tp.title}
                 >
                   {tpCat && (
                     <View style={[s.trendingDot, { backgroundColor: tpCat.color }]} />
@@ -225,6 +228,8 @@ function DiscoveryView({
                   executeSearch(t(cat.label), undefined, type)
                 }}
                 style={[s.categoryCard, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}
+                accessibilityRole="button"
+                accessibilityLabel={t(cat.label)}
               >
                 <View style={[s.categoryIconBox, { backgroundColor: `${cat.color}20` }]}>
                   {CatIcon && <CatIcon size={22} color={cat.color} />}
@@ -259,7 +264,7 @@ function SearchEmptyState({ query, colors, t }: SearchEmptyStateProps) {
   )
 }
 
-export default function SearchScreen() {
+function SearchScreenInner() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -805,7 +810,7 @@ export default function SearchScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header with search */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <View style={[s.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -819,15 +824,17 @@ export default function SearchScreen() {
             onSubmitEditing={() => executeSearch()}
             returnKeyType="search"
             autoFocus
+            accessibilityLabel={t('feed.searchPlaceholder')}
+            accessibilityRole="search"
           />
           {query.length > 0 && (
-            <Pressable onPress={() => { setQuery(''); setResults([]); setUserResults([]); setSearched(false) }} hitSlop={8}>
+            <Pressable onPress={() => { setQuery(''); setResults([]); setUserResults([]); setSearched(false) }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
               <X size={18} color={colors.mutedForeground} />
             </Pressable>
           )}
         </View>
         {/* Filter button */}
-        <Pressable onPress={() => setFiltersVisible(true)} hitSlop={8} style={s.filterButton}>
+        <Pressable onPress={() => setFiltersVisible(true)} hitSlop={8} style={s.filterButton} accessibilityRole="button" accessibilityLabel={t('search.filters')}>
           <SlidersHorizontal size={20} color={filterCount > 0 ? colors.primary : colors.mutedForeground} />
           {filterCount > 0 && (
             <View style={[s.filterBadge, { backgroundColor: colors.primary }]}>
@@ -860,6 +867,9 @@ export default function SearchScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
             <Pressable
               onPress={() => handleCategoryFilter(null)}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.all')}
+              accessibilityState={{ selected: !activeFilter }}
               style={[s.filterChip, !activeFilter ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
             >
               <Text style={[s.filterText, { color: !activeFilter ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t('common.all')}</Text>
@@ -868,9 +878,12 @@ export default function SearchScreen() {
               <Pressable
                 key={type}
                 onPress={() => handleCategoryFilter(type)}
+                accessibilityRole="button"
+                accessibilityLabel={t(cat.label)}
+                accessibilityState={{ selected: activeFilter === type }}
                 style={[s.filterChip, activeFilter === type ? { backgroundColor: cat.color } : { backgroundColor: isDark ? colors.card : colors.muted }]}
               >
-                <Text style={[s.filterText, { color: activeFilter === type ? '#FFFFFF' : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t(cat.label)}</Text>
+                <Text style={[s.filterText, { color: activeFilter === type ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t(cat.label)}</Text>
               </Pressable>
             ))}
           </ScrollView>
@@ -1130,7 +1143,7 @@ export default function SearchScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
-            <Pressable onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card }]}>
+            <Pressable onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
               <Avatar url={item.avatar_url} name={item.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
@@ -1165,6 +1178,14 @@ export default function SearchScreen() {
   )
 }
 
+export default function SearchScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Search">
+      <SearchScreenInner />
+    </ScreenErrorBoundary>
+  )
+}
+
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
@@ -1175,50 +1196,50 @@ const s = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 44,
   },
-  searchInput: { flex: 1, fontSize: 15 },
+  searchInput: { flex: 1, fontSize: 15, fontFamily: fonts.body },
   filterButton: { position: 'relative', padding: 4 },
   filterBadge: {
     position: 'absolute', top: -2, right: -4,
     minWidth: 16, height: 16, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
   },
-  filterBadgeText: { fontSize: 9, fontWeight: '700' },
+  filterBadgeText: { fontSize: 9, fontWeight: '700', fontFamily: fonts.bodySemi },
   activeFilterBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  activeFilterInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  activeFilterText: { fontSize: 12, fontWeight: '600' },
+  activeFilterInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  activeFilterText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   saveSearchBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  saveSearchText: { fontSize: 12, fontWeight: '500' },
+  saveSearchText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   chipSections: { gap: 0 },
-  filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 8 },
+  filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36 },
   filterChipOutline: { borderWidth: 1 },
-  filterText: { fontSize: 12, fontWeight: '500' },
-  chipDivider: { width: 1, height: 20, alignSelf: 'center', marginHorizontal: 4, borderRadius: 1 },
+  filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  chipDivider: { width: 1, height: 24, alignSelf: 'center', marginHorizontal: 8, borderRadius: 1 },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
   tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600' },
+  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   list: { padding: 16, paddingBottom: 100 },
   discovery: { padding: 16, gap: 24, paddingBottom: 100 },
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 16, fontWeight: '700' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
     borderWidth: 1,
   },
-  recentChipText: { fontSize: 13 },
+  recentChipText: { fontSize: 13, fontFamily: fonts.body },
   historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
-  historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  historyText: { fontSize: 14 },
-  savedFilterHint: { fontSize: 11, marginTop: 1 },
-  hintText: { fontSize: 14, lineHeight: 20 },
+  historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  historyText: { fontSize: 14, fontFamily: fonts.body },
+  savedFilterHint: { fontSize: 11, marginTop: 1, fontFamily: fonts.body },
+  hintText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   categoryGrid: { gap: 8 },
   categoryCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -1228,49 +1249,49 @@ const s = StyleSheet.create({
     width: 44, height: 44, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
   },
-  categoryCardText: { fontSize: 15, fontWeight: '600', flex: 1 },
+  categoryCardText: { fontSize: 15, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi },
   empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
-  emptyTitle: { fontSize: 16, fontWeight: '600' },
-  emptyHint: { fontSize: 14, textAlign: 'center' },
-  userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12 },
+  emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi },
+  emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
+  userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
-  userName: { fontSize: 15, fontWeight: '600' },
-  userNh: { fontSize: 13 },
+  userName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
+  userNh: { fontSize: 13, fontFamily: fonts.body },
   recentHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  recentClear: { fontSize: 13, fontWeight: '500' },
-  recentItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  recentText: { fontSize: 14 },
-  resultCountRow: { paddingHorizontal: 16, paddingVertical: 6 },
-  resultCountText: { fontSize: 13, fontWeight: '500' },
-  trendingList: { gap: 6 },
+  recentClear: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  recentItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
+  recentText: { fontSize: 14, fontFamily: fonts.body },
+  resultCountRow: { paddingHorizontal: 16, paddingVertical: 8 },
+  resultCountText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  trendingList: { gap: 8 },
   trendingCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 14, paddingVertical: 12, borderRadius: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
   },
   trendingDot: { width: 8, height: 8, borderRadius: 4 },
-  trendingTitle: { fontSize: 14, fontWeight: '600' },
-  trendingCat: { fontSize: 11, marginTop: 1 },
+  trendingTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  trendingCat: { fontSize: 11, marginTop: 1, fontFamily: fonts.body },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  trendingLikeCount: { fontSize: 12, fontWeight: '500' },
-  semanticLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, paddingLeft: 2 },
+  trendingLikeCount: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  semanticLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, paddingLeft: 2, fontFamily: fonts.bodyMedium },
   // Inline quick-filters
   inlineFilterSection: { borderBottomWidth: StyleSheet.hairlineWidth },
   inlineFilterToggle: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 16, paddingVertical: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 16, paddingVertical: 8,
   },
-  inlineFilterToggleText: { fontSize: 13, fontWeight: '600' },
-  inlineFilterPanel: { paddingHorizontal: 16, paddingBottom: 12, gap: 14 },
+  inlineFilterToggleText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+  inlineFilterPanel: { paddingHorizontal: 16, paddingBottom: 12, gap: 16 },
   inlineFilterGroup: { gap: 8 },
-  inlineFilterGroupHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  inlineFilterGroupLabel: { fontSize: 13, fontWeight: '600' },
+  inlineFilterGroupHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  inlineFilterGroupLabel: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   inlinePriceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   inlinePriceInput: {
-    flex: 1, height: 38, borderRadius: 10, borderWidth: 1,
-    paddingHorizontal: 12, fontSize: 14,
+    flex: 1, height: 40, borderRadius: 12, borderWidth: 1,
+    paddingHorizontal: 12, fontSize: 14, fontFamily: fonts.body,
   },
-  inlinePriceSep: { fontSize: 16 },
+  inlinePriceSep: { fontSize: 16, fontFamily: fonts.body },
   inlineChipRow: { flexDirection: 'row', gap: 8 },
   inlineChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  inlineChipText: { fontSize: 12, fontWeight: '500' },
+  inlineChipText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
 })

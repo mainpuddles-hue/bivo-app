@@ -38,20 +38,7 @@ interface EventPreview {
 
 type SubTab = 'map' | 'events' | 'places'
 
-// ── Group category colors ──
-const GROUP_COLORS: Record<string, string> = {
-  general: '#2D6B5E', sports: '#27AE60', kids: '#FF9800', pets: '#E8A050',
-  garden: '#4CAF6A', food: '#E74C3C', culture: '#8E44AD', other: '#607D8B',
-}
-
-// ── Place category colors ──
-const PLACE_CAT_COLORS: Record<string, string> = {
-  restaurant: '#C75B3A', fast_food: '#C75B3A', cafe: '#E8A050',
-  bar: '#7C5CBF', pub: '#7C5CBF', culture: '#3B7DD8', library: '#3B7DD8',
-  sport: '#2B8A62', health: '#C75B3A', shop: '#E8A050',
-  hotel: '#8E44AD', service: '#607D8B', other: '#78716C',
-}
-
+// ── Place category label keys ──
 const PLACE_LABEL_KEYS: Record<string, string> = {
   restaurant: 'places.restaurant', cafe: 'places.cafe', bar: 'places.bar', shop: 'places.shop',
   library: 'places.library', health: 'places.health', sport: 'places.sport', culture: 'places.culture',
@@ -103,6 +90,18 @@ function ExploreScreenInner() {
   const [groups, setGroups] = useState<Array<{ id: string; name: string; category: string; member_count: number }>>([])
   const [forumPosts, setForumPosts] = useState<Array<{ id: string; title: string; category: string; comment_count: number; created_at: string }>>([])
 
+  // ── Semantic colors derived from theme ──
+  const groupColors: Record<string, string> = useMemo(() => ({
+    general: colors.primary, sports: colors.success, kids: colors.pro, pets: colors.pro,
+    garden: colors.accent, food: colors.destructive, culture: colors.info, other: colors.mutedForeground,
+  }), [colors])
+
+  const placeCatColors: Record<string, string> = useMemo(() => ({
+    restaurant: colors.destructive, fast_food: colors.destructive, cafe: colors.pro,
+    bar: colors.info, pub: colors.info, culture: colors.info, library: colors.info,
+    sport: colors.success, health: colors.destructive, shop: colors.pro,
+    hotel: colors.info, service: colors.mutedForeground, other: colors.mutedForeground,
+  }), [colors])
 
   // ── Fetch location ──
   const fetchLocation = useCallback(async () => {
@@ -296,6 +295,9 @@ function ExploreScreenInner() {
             <Pressable
               key={key}
               onPress={() => setActiveTab(key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={`${t(labelKey)}${tabCounts[key] > 0 ? `, ${tabCounts[key]}` : ''}`}
               style={[
                 s.chip,
                 { backgroundColor: isActive ? colors.primary : colors.muted },
@@ -322,7 +324,7 @@ function ExploreScreenInner() {
 
       <ScrollView
         style={s.scroll}
-        contentContainerStyle={[s.scrollContent, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[s.scrollContent, { paddingBottom: insets.bottom + 96 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
@@ -334,6 +336,8 @@ function ExploreScreenInner() {
             {/* Map teaser card */}
             <Pressable
               onPress={() => router.push('/map')}
+              accessibilityRole="button"
+              accessibilityLabel={t('explore.openMap')}
               style={[s.mapTeaser, { backgroundColor: colors.card }]}
             >
               <View style={s.mapTeaserContent}>
@@ -355,8 +359,10 @@ function ExploreScreenInner() {
                   <Pressable
                     style={[s.summaryCard, { backgroundColor: colors.card }]}
                     onPress={() => setActiveTab('events')}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('explore.eventsThisWeek', { count: eventsThisWeek })}
                   >
-                    <CalendarDays size={18} color="#2B8A62" strokeWidth={1.8} />
+                    <CalendarDays size={18} color={colors.success} strokeWidth={1.8} />
                     <Text style={[s.summaryText, { color: colors.foreground }]}>
                       {t('explore.eventsThisWeek', { count: eventsThisWeek })}
                     </Text>
@@ -368,8 +374,10 @@ function ExploreScreenInner() {
                   <Pressable
                     style={[s.summaryCard, { backgroundColor: colors.card }]}
                     onPress={() => setActiveTab('places')}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('explore.placesNearby', { count: placesCount })}
                   >
-                    <MapPin size={18} color="#3B7DD8" strokeWidth={1.8} />
+                    <MapPin size={18} color={colors.info} strokeWidth={1.8} />
                     <Text style={[s.summaryText, { color: colors.foreground }]}>
                       {t('explore.placesNearby', { count: placesCount })}
                     </Text>
@@ -383,18 +391,29 @@ function ExploreScreenInner() {
             <View style={s.communitySection}>
               <View style={s.sectionHeader}>
                 <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
-                <Pressable onPress={() => router.push('/groups' as any)} style={s.seeAllLink}>
+                <Pressable
+                  onPress={() => router.push('/groups' as any)}
+                  accessibilityRole="link"
+                  accessibilityLabel={`${t('groups.title')} — ${t('feed.showAll')}`}
+                  style={s.seeAllLink}
+                >
                   <Text style={[s.seeAllText, { color: colors.primary }]}>{t('feed.showAll')}</Text>
                   <ChevronRight size={14} color={colors.primary} />
                 </Pressable>
               </View>
               {groups.length > 0 ? (
                 groups.map(g => (
-                  <Pressable key={g.id} onPress={() => router.push('/groups' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
-                    <View style={[s.groupDot, { backgroundColor: GROUP_COLORS[g.category] ?? colors.primary }]}>
-                      <Text style={s.groupDotText}>{(g.name || '?').charAt(0)}</Text>
+                  <Pressable
+                    key={g.id}
+                    onPress={() => router.push('/groups' as any)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${g.name}, ${g.member_count} ${t('groups.members')}`}
+                    style={[s.communityCard, { backgroundColor: colors.card }]}
+                  >
+                    <View style={[s.groupDot, { backgroundColor: groupColors[g.category] ?? colors.primary }]}>
+                      <Text style={[s.groupDotText, { color: colors.primaryForeground }]}>{(g.name || '?').charAt(0)}</Text>
                     </View>
-                    <View style={{ flex: 1 }}>
+                    <View style={s.cardFlex}>
                       <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{g.name}</Text>
                       <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{g.member_count} {t('groups.members')}</Text>
                     </View>
@@ -402,9 +421,14 @@ function ExploreScreenInner() {
                   </Pressable>
                 ))
               ) : (
-                <Pressable onPress={() => router.push('/groups' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                <Pressable
+                  onPress={() => router.push('/groups' as any)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('groups.title')} — ${t('groups.joinOrCreate')}`}
+                  style={[s.communityCard, { backgroundColor: colors.card }]}
+                >
                   <Users size={20} color={colors.primary} />
-                  <View style={{ flex: 1 }}>
+                  <View style={s.cardFlex}>
                     <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
                     <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
                   </View>
@@ -417,16 +441,27 @@ function ExploreScreenInner() {
             <View style={s.communitySection}>
               <View style={s.sectionHeader}>
                 <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
-                <Pressable onPress={() => router.push('/forum' as any)} style={s.seeAllLink}>
+                <Pressable
+                  onPress={() => router.push('/forum' as any)}
+                  accessibilityRole="link"
+                  accessibilityLabel={`${t('forum.title')} — ${t('feed.showAll')}`}
+                  style={s.seeAllLink}
+                >
                   <Text style={[s.seeAllText, { color: colors.primary }]}>{t('feed.showAll')}</Text>
                   <ChevronRight size={14} color={colors.primary} />
                 </Pressable>
               </View>
               {forumPosts.length > 0 ? (
                 forumPosts.map(p => (
-                  <Pressable key={p.id} onPress={() => router.push('/forum' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                  <Pressable
+                    key={p.id}
+                    onPress={() => router.push('/forum' as any)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${p.title}, ${p.comment_count} ${t('forum.replies')}`}
+                    style={[s.communityCard, { backgroundColor: colors.card }]}
+                  >
                     <MessageCircle size={18} color={colors.primary} />
-                    <View style={{ flex: 1 }}>
+                    <View style={s.cardFlex}>
                       <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{p.title}</Text>
                       <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.comment_count} {t('forum.replies')}</Text>
                     </View>
@@ -434,9 +469,14 @@ function ExploreScreenInner() {
                   </Pressable>
                 ))
               ) : (
-                <Pressable onPress={() => router.push('/forum' as any)} style={[s.communityCard, { backgroundColor: colors.card }]}>
+                <Pressable
+                  onPress={() => router.push('/forum' as any)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('forum.title')} — ${t('forum.startDiscussion')}`}
+                  style={[s.communityCard, { backgroundColor: colors.card }]}
+                >
                   <MessageCircle size={20} color={colors.primary} />
-                  <View style={{ flex: 1 }}>
+                  <View style={s.cardFlex}>
                     <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
                     <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
                   </View>
@@ -449,7 +489,12 @@ function ExploreScreenInner() {
 
             {/* Error state */}
             {fetchError && !loading && cityEvents.length === 0 && places.length === 0 && (
-              <Pressable onPress={handleRefresh} style={[s.errorRow, { backgroundColor: `${colors.destructive}10` }]}>
+              <Pressable
+                onPress={handleRefresh}
+                accessibilityRole="button"
+                accessibilityLabel={t('feed.loadError')}
+                style={[s.errorRow, { backgroundColor: `${colors.destructive}10` }]}
+              >
                 <Text style={[s.errorRowText, { color: colors.destructive }]}>
                   {t('feed.loadError')}
                 </Text>
@@ -465,14 +510,25 @@ function ExploreScreenInner() {
               <SectionSkeleton count={5} />
             ) : allEvents.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <CalendarDays size={36} color={colors.mutedForeground} strokeWidth={1.4} />
+                <CalendarDays size={40} color={colors.mutedForeground} strokeWidth={1.4} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noEvents')}</Text>
+                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noEventsHint')}</Text>
+                <Pressable
+                  onPress={handleRefresh}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.refresh')}
+                  style={[s.emptyCta, { backgroundColor: colors.primary }]}
+                >
+                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.refresh')}</Text>
+                </Pressable>
               </View>
             ) : (
               <View style={s.cardList}>
                 {allEvents.map((event) => (
                   <Pressable
                     key={event.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${event.title}, ${formatEventDateShort(event.date, locale)}${event.location ? `, ${event.location}` : ''}${event.isFree ? `, ${t('events.free')}` : ''}`}
                     style={[s.card, { backgroundColor: colors.card }]}
                     onPress={() => {
                       if (event.infoUrl) {
@@ -483,8 +539,8 @@ function ExploreScreenInner() {
                     }}
                   >
                     <View style={s.cardRow}>
-                      <View style={[s.eventIconBox, { backgroundColor: isDark ? (event.isCity ? '#101A2D' : '#102D1A') : (event.isCity ? '#EBF2FE' : '#E8F7EF') }]}>
-                        <CalendarDays size={18} color={event.isCity ? '#3B7DD8' : '#2B8A62'} />
+                      <View style={[s.eventIconBox, { backgroundColor: isDark ? (event.isCity ? `${colors.info}18` : `${colors.success}18`) : (event.isCity ? `${colors.info}14` : `${colors.success}14`) }]}>
+                        <CalendarDays size={18} color={event.isCity ? colors.info : colors.success} />
                       </View>
                       <View style={s.cardContent}>
                         <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
@@ -495,8 +551,8 @@ function ExploreScreenInner() {
                           {event.location ? ` \u00B7 ${event.location}` : ''}
                         </Text>
                         {event.isFree && (
-                          <View style={[s.freeBadge, { backgroundColor: isDark ? '#102D1A' : '#E8F7EF' }]}>
-                            <Text style={[s.freeBadgeText, { color: '#2B8A62' }]}>
+                          <View style={[s.freeBadge, { backgroundColor: `${colors.success}18` }]}>
+                            <Text style={[s.freeBadgeText, { color: colors.success }]}>
                               {t('events.free')}
                             </Text>
                           </View>
@@ -518,13 +574,22 @@ function ExploreScreenInner() {
               <SectionSkeleton count={5} />
             ) : sortedPlaces.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <MapPin size={36} color={colors.mutedForeground} strokeWidth={1.4} />
+                <MapPin size={40} color={colors.mutedForeground} strokeWidth={1.4} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noPlaces')}</Text>
+                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noPlacesHint')}</Text>
+                <Pressable
+                  onPress={handleRefresh}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.refresh')}
+                  style={[s.emptyCta, { backgroundColor: colors.primary }]}
+                >
+                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.refresh')}</Text>
+                </Pressable>
               </View>
             ) : (
               <View style={s.cardList}>
                 {sortedPlaces.map((place) => {
-                  const catColor = PLACE_CAT_COLORS[place.category] ?? '#78716C'
+                  const catColor = placeCatColors[place.category] ?? colors.mutedForeground
                   const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other')
                   const dist = '_distance' in place
                     ? formatDistance((place as any)._distance)
@@ -533,6 +598,8 @@ function ExploreScreenInner() {
                   return (
                     <Pressable
                       key={place.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${place.name}, ${catLabel}${dist ? `, ${dist}` : ''}`}
                       style={[s.card, { backgroundColor: colors.card }]}
                       onPress={() => openPlaceInMaps(place)}
                     >
@@ -586,9 +653,9 @@ const s = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 20,
   },
   chipText: {
@@ -597,27 +664,34 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
   },
   chipCount: {
-    paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, minWidth: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    minWidth: 20,
     alignItems: 'center' as const,
   },
-  chipCountText: { fontSize: 11, fontWeight: '700' as const },
+  chipCountText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    fontFamily: fonts.bodySemi,
+  },
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 4,
+    paddingTop: 8,
   },
 
   // Map teaser
   mapTeaser: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
-    padding: 20,
+    borderRadius: 12,
+    padding: 16,
     gap: 16,
   },
   mapTeaserContent: {
     flex: 1,
-    gap: 6,
+    gap: 8,
   },
   mapTeaserTitle: {
     fontSize: 17,
@@ -633,16 +707,16 @@ const s = StyleSheet.create({
 
   // Summary
   summaryRow: {
-    gap: 10,
-    marginTop: 12,
+    gap: 8,
+    marginTop: 16,
   },
   summaryCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   summaryText: {
     fontSize: 14,
@@ -653,7 +727,7 @@ const s = StyleSheet.create({
 
   // Cards
   cardList: {
-    gap: 10,
+    gap: 8,
   },
   card: {
     borderRadius: 12,
@@ -661,13 +735,16 @@ const s = StyleSheet.create({
   },
   cardRow: {
     flexDirection: 'row',
-    padding: 14,
+    padding: 16,
     gap: 12,
     alignItems: 'center',
   },
   cardContent: {
     flex: 1,
-    gap: 3,
+    gap: 4,
+  },
+  cardFlex: {
+    flex: 1,
   },
   cardTitle: {
     fontSize: 15,
@@ -689,7 +766,7 @@ const s = StyleSheet.create({
   eventIconBox: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -698,7 +775,7 @@ const s = StyleSheet.create({
   placeIconBox: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -708,8 +785,8 @@ const s = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 2,
+    borderRadius: 8,
+    marginTop: 4,
   },
   freeBadgeText: {
     fontSize: 11,
@@ -722,7 +799,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
-    borderRadius: 14,
+    borderRadius: 12,
     gap: 8,
   },
   emptyTitle: {
@@ -731,27 +808,90 @@ const s = StyleSheet.create({
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
   },
+  emptyHint: {
+    fontSize: 13,
+    textAlign: 'center',
+    fontFamily: fonts.body,
+    lineHeight: 18,
+  },
+  emptyCta: {
+    marginTop: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  emptyCtaText: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
 
   // Community section
-  communitySection: { gap: 10, marginTop: 12 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 },
-  seeAllLink: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  seeAllText: { fontSize: 13, fontFamily: fonts.bodySemi },
-  sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16 },
-  groupDot: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  groupDotText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
+  communitySection: {
+    gap: 8,
+    marginTop: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+  },
+  seeAllLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  seeAllText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.16,
+  },
+  groupDot: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupDotText: {
+    fontSize: 14,
+    fontWeight: '700',
+    fontFamily: fonts.headingSemi,
+  },
   communityCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    padding: 14, borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
   },
-  communityCardTitle: { fontSize: 14, fontFamily: fonts.bodySemi },
-  communityCardHint: { fontSize: 12, fontFamily: fonts.body },
+  communityCardTitle: {
+    fontSize: 14,
+    fontFamily: fonts.bodySemi,
+  },
+  communityCardHint: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
   errorRow: {
-    flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8,
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginTop: 12,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 16,
   },
-  errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
-
+  errorRowText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
+  },
 })
 
 export default function ExploreScreen() {

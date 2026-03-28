@@ -2296,7 +2296,8 @@
     "placesNearby": "{count} places nearby",
     "noEvents": "No upcoming events",
     "noEventsHint": "Check back later — new events are added regularly.",
-    "noPlaces": "No places nearby"
+    "noPlaces": "No places nearby",
+    "noPlacesHint": "Allow location access or try again later."
   },
   "celebration": {
     "firstResponse": "Your first response!",

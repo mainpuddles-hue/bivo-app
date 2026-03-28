@@ -2274,7 +2274,8 @@
     "placesNearby": "{count} kohta lähedal",
     "noEvents": "Tulevasi sündmusi pole",
     "noEventsHint": "Vaata hiljem — uusi sündmusi lisatakse pidevalt.",
-    "noPlaces": "Läheduses kohti pole"
+    "noPlaces": "Läheduses kohti pole",
+    "noPlacesHint": "Luba asukoha juurdepääs või proovi hiljem uuesti."
   },
   "celebration": {
     "firstResponse": "Sinu esimene vastus!",

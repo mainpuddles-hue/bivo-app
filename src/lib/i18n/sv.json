@@ -2296,7 +2296,8 @@
     "placesNearby": "{count} platser i närheten",
     "noEvents": "Inga kommande evenemang",
     "noEventsHint": "Kolla tillbaka senare — nya evenemang läggs till regelbundet.",
-    "noPlaces": "Inga platser i närheten"
+    "noPlaces": "Inga platser i närheten",
+    "noPlacesHint": "Tillåt platsåtkomst eller försök igen senare."
   },
   "celebration": {
     "firstResponse": "Ditt första svar!",

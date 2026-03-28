@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { EmptyState } from '@/components/EmptyState'
 import { useShimmer } from '@/components/SkeletonLoaders'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
@@ -41,9 +42,9 @@ function getTypeColor(type: string, colors: ReturnType<typeof useTheme>['colors'
     case 'new_message': return colors.primary
     case 'review_received': case 'thanks_received': case 'thanks': return colors.pro
     case 'rental_update': case 'rental_request': case 'rental_confirmed':
-    case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return '#C98B2E'
+    case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return colors.pro
     case 'new_follower': return colors.success
-    case 'event_reminder': return '#2B8A62'
+    case 'event_reminder': return colors.primary
     case 'post_like': case 'post_comment': case 'comment': return colors.accent
     default: return colors.info
   }
@@ -111,7 +112,7 @@ function NotificationSkeleton() {
   )
 }
 
-export default function NotificationsScreen() {
+function NotificationsScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -252,6 +253,9 @@ export default function NotificationsScreen() {
           <Pressable
             key={f.key}
             onPress={() => setActiveFilter(f.key)}
+            accessibilityRole="button"
+            accessibilityLabel={t(f.label)}
+            accessibilityState={{ selected: activeFilter === f.key }}
             style={[
               styles.filterChip,
               activeFilter === f.key
@@ -271,7 +275,7 @@ export default function NotificationsScreen() {
 
       {/* Notification list */}
       {loading ? (
-        <View style={{ padding: 16, gap: 4 }}>
+        <View style={{ padding: 16, gap: 8 }}>
           {[0, 1, 2, 3, 4, 5].map(i => <NotificationSkeleton key={i} />)}
         </View>
       ) : (
@@ -300,6 +304,10 @@ export default function NotificationsScreen() {
                 onPress={() => handleTap(item)}
                 onLongPress={() => handleLongPress(item)}
                 delayLongPress={500}
+                accessibilityRole="button"
+                accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
+                accessibilityState={{ selected: !item.is_read }}
+                accessibilityHint={t('notifications.deleteNotification')}
                 style={({ pressed }) => [styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }, pressed && { opacity: 0.7 }]}
               >
                 {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
@@ -312,7 +320,7 @@ export default function NotificationsScreen() {
                     </View>
                   )}
                   <View style={[styles.typeIconBadge, { backgroundColor: typeColor, borderColor: colors.background }]}>
-                    <TypeIcon size={10} color="#FFFFFF" />
+                    <TypeIcon size={10} color={colors.primaryForeground} />
                   </View>
                 </View>
                 <View style={styles.notifContent}>
@@ -374,6 +382,14 @@ export default function NotificationsScreen() {
   )
 }
 
+export default function NotificationsScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Notifications">
+      <NotificationsScreenInner />
+    </ScreenErrorBoundary>
+  )
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
@@ -388,14 +404,14 @@ const styles = StyleSheet.create({
   headerBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 14 },
   markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   markAllReadText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  filterRow: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
+  filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36 },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
   sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
   sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 17 },
   notifRow: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14, position: 'relative',
+    paddingHorizontal: 16, paddingVertical: 16, position: 'relative',
   },
   unreadBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: 1.5 },
   notifAvatar: { position: 'relative' },
@@ -407,11 +423,11 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2,
   },
-  notifContent: { flex: 1, gap: 3 },
-  notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19 },
-  notifBody: { fontSize: 13, lineHeight: 17 },
-  notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14 },
-  notifMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  notifContent: { flex: 1, gap: 4 },
+  notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19, fontFamily: fonts.body },
+  notifBody: { fontSize: 13, lineHeight: 17, fontFamily: fonts.body },
+  notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14, fontFamily: fonts.body },
+  notifMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   groupExpandBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 2,
     minWidth: 18, height: 22, borderRadius: 11,
@@ -420,11 +436,11 @@ const styles = StyleSheet.create({
   groupBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
   unreadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
   // 1a: Expanded group styles
-  expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 8, paddingVertical: 4, marginBottom: 4 },
-  expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  expandedDot: { width: 6, height: 6, borderRadius: 3 },
+  expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 12, paddingVertical: 4, marginBottom: 4 },
+  expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  expandedDot: { width: 8, height: 8, borderRadius: 4 },
   expandedName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, maxWidth: '40%' },
   expandedAction: { fontSize: 12, fontFamily: fonts.body, flex: 1 },
   empty: { alignItems: 'center', paddingTop: 80, gap: 12 },
-  emptyText: { fontSize: 14, lineHeight: 20 },
+  emptyText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
 })
