@@ -56,6 +56,7 @@ const ItemSeparator12 = () => <View style={{ height: 12 }} />
 //    count since last visit. Currently feed always starts fresh from newest,
 //    but there's no indication of what's new vs already seen.
 
+const HEADER_HEIGHT = 52 // Header.tsx headerContent height
 const FILTER_BAR_BASE_HEIGHT = 76
 
 function FeedScreenInner() {
@@ -358,7 +359,7 @@ function FeedScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar */}
-      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, top: insets.top }]}>
+      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, top: insets.top + HEADER_HEIGHT }]}>
         <View style={styles.neighborhoodRow}>
           <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={4}>
             <MapPin size={12} color={colors.mutedForeground} />
@@ -394,7 +395,7 @@ function FeedScreenInner() {
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isAd' in item ? `ad-${item.id}` : item.id)}
-        contentContainerStyle={[styles.list, { paddingTop: insets.top + FILTER_BAR_BASE_HEIGHT }]}
+        contentContainerStyle={[styles.list, { paddingTop: insets.top + HEADER_HEIGHT + FILTER_BAR_BASE_HEIGHT + (feed.followedIds.length > 0 ? 44 : 0) }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
