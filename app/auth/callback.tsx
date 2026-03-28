@@ -35,6 +35,36 @@ export default function AuthCallbackScreen() {
           return
         }
 
+        // Method 0: Email verification via auth-verify Edge Function
+        // Token hash is passed as query param, app verifies it via POST
+        const tokenHash = params.token_hash as string | undefined
+        if (tokenHash) {
+          const authType = (params.type as string) || 'signup'
+          const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+          const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
+          const verifyRes = await fetch(`${supabaseUrl}/auth/v1/verify`, {
+            method: 'POST',
+            headers: { 'apikey': anonKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token_hash: tokenHash, type: authType }),
+          })
+          if (verifyRes.ok) {
+            const data = await verifyRes.json()
+            if (data.access_token && data.refresh_token) {
+              await supabase.auth.setSession({
+                access_token: data.access_token,
+                refresh_token: data.refresh_token,
+              })
+            }
+            router.replace(authType === 'recovery' ? '/settings' as any : '/(tabs)')
+            return
+          } else {
+            const err = await verifyRes.json().catch(() => ({}))
+            setError(err.msg || 'Link expired')
+            setProcessing(false)
+            return
+          }
+        }
+
         // Method 1: PKCE flow — code in query params
         const code = params.code as string | undefined
         if (code) {
