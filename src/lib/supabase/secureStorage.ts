@@ -18,11 +18,10 @@ export const secureStorage = {
   async getItem(key: string): Promise<string | null> {
     if (SecureStore && isSecureKey(key)) {
       try {
-        return await SecureStore.getItemAsync(key.replace(/[^a-zA-Z0-9._-]/g, '_'))
-      } catch {
-        // Fallback to AsyncStorage if SecureStore fails
-        return AsyncStorage.getItem(key)
-      }
+        const secureValue = await SecureStore.getItemAsync(key.replace(/[^a-zA-Z0-9._-]/g, '_'))
+        if (secureValue !== null) return secureValue
+      } catch {}
+      // Fallback to AsyncStorage (large values or SecureStore miss)
     }
     return AsyncStorage.getItem(key)
   },

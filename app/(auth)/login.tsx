@@ -217,7 +217,7 @@ export default function LoginScreen() {
         if (error) Alert.alert(t('common.error'), t('auth.googleFailed'))
       } else {
         // Native: use WebBrowser to open OAuth flow and capture redirect
-        const redirectTo = Linking.createURL('auth/callback')
+        const redirectTo = 'tackbird://auth/callback'
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
@@ -230,17 +230,20 @@ export default function LoginScreen() {
         if (data?.url) {
           const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
           if (result.type === 'success' && result.url) {
-            // Extract tokens from URL fragment
             const url = result.url
-            const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1] || '')
+            const fragment = url.split('#')[1] || ''
+            const query = url.split('?')[1]?.split('#')[0] || ''
+            const raw = fragment || query
+            const params = new URLSearchParams(raw)
             const accessToken = params.get('access_token')
             const refreshToken = params.get('refresh_token')
+            const code = params.get('code')
             if (accessToken && refreshToken) {
-              const { error: sessionError } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              })
-              if (sessionError) throw sessionError
+              await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+              router.replace('/')
+              return
+            } else if (code) {
+              await supabase.auth.exchangeCodeForSession(code)
               router.replace('/')
               return
             }
