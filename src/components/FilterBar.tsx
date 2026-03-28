@@ -5,7 +5,6 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
-import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import type { PostType } from '@/lib/types'
 
 interface FilterBarProps {
@@ -21,7 +20,6 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
     <>
       {/* Category chips — tapping active chip deselects (shows all) */}
       {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
-        const Icon = ICON_MAP[cat.icon]
         const isActive = activeFilter === type
 
         return (
@@ -33,21 +31,19 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
               styles.chip,
               isActive
                 ? { backgroundColor: cat.color }
-                : { backgroundColor: isDark ? colors.card : colors.muted },
+                : {
+                    backgroundColor: cat.color + '12',
+                    borderWidth: 1,
+                    borderColor: cat.color + '30',
+                  },
             ]}
           >
-            {Icon && <Icon size={14} color={isActive ? '#FFFFFF' : colors.mutedForeground} strokeWidth={1.75} />}
             <Text style={[
               styles.chipText,
-              { color: isActive ? '#FFFFFF' : colors.mutedForeground }
+              { color: isActive ? '#FFFFFF' : cat.color }
             ]}>
               {t(cat.label)}
             </Text>
-            {isActive && (
-              <Text style={[styles.chipSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>
-                {t(cat.subtitle)}
-              </Text>
-            )}
           </Pressable>
         )
       })}
@@ -57,10 +53,11 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
 
 const styles = StyleSheet.create({
   chip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 8,
-    borderRadius: 20, minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
-  chipText: { fontSize: 12, fontFamily: fonts.bodyMedium },
-  chipSubtitle: { fontSize: 10, fontFamily: fonts.body },
+  chipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
 })
