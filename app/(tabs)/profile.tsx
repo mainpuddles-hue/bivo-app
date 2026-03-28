@@ -397,7 +397,7 @@ export default function ProfileScreen() {
       >
         {/* Hero */}
         <View style={s.hero}>
-          <Pressable onPress={handleAvatarUpload} accessibilityLabel={t('profile.changeAvatar')} accessibilityRole="button">
+          <Pressable onPress={handleAvatarUpload} accessibilityLabel={`${profile.name} — ${t('profile.avatarUpdated')}`} accessibilityRole="button">
             <View>
               <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />
               <View style={[s.cameraBtn, { backgroundColor: colors.primary }]} accessibilityElementsHidden>
@@ -917,7 +917,7 @@ const s = StyleSheet.create({
   bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
   bioTapArea: { alignItems: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 16 },
   bioEditWrap: { width: '100%', gap: 8, paddingHorizontal: 8 },
-  bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 60, textAlignVertical: 'top', fontFamily: fonts.body },
+  bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 64, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
   bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
   badgesSection: { alignItems: 'center', gap: 8, width: '100%' },
@@ -954,9 +954,9 @@ const s = StyleSheet.create({
   reviewComment: { fontSize: 14, lineHeight: 19, fontFamily: fonts.body },
   emptyText: { fontSize: 14, fontFamily: fonts.body },
   emptyHint: { fontSize: 13, marginTop: 4, fontFamily: fonts.body },
-  emptyActivity: { alignItems: 'center', paddingTop: 20, gap: 4 },
+  emptyActivity: { alignItems: 'center', paddingTop: 24, gap: 4 },
   activityItem: { flexDirection: 'row', gap: 12, paddingLeft: 16, borderLeftWidth: 2, paddingVertical: 8 },
-  activityDot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: -25 },
+  activityDot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: -24 },
   activityContent: { flex: 1, gap: 2 },
   activityTitle: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   activityMeta: { flexDirection: 'row', gap: 8, alignItems: 'center' },
@@ -964,7 +964,7 @@ const s = StyleSheet.create({
   activityMetaBadge: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
   menuText: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  loginBtn: { marginHorizontal: 16, marginTop: 60, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  loginBtn: { marginHorizontal: 16, marginTop: 64, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },
