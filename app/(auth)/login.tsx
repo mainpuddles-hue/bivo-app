@@ -117,13 +117,10 @@ export default function LoginScreen() {
     if (mode === 'forgot') {
       setLoading(true)
       try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: Platform.OS === 'web'
-            ? (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.fi') + '/auth/callback'
-            : Linking.createURL('auth/callback'),
-        })
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
         if (error) throw error
-        setForgotSent(true)
+        // Navigate to OTP verification screen for password recovery
+        router.push({ pathname: '/verify-otp', params: { email: email.trim(), mode: 'recovery' } })
       } catch (err: any) {
         Alert.alert(t('common.error'), translateError(err.message))
       } finally { setLoading(false) }
@@ -175,10 +172,8 @@ export default function LoginScreen() {
         }
 
         trackEvent('auth_register_success' as any)
-        // Otherwise email confirmation is required — tell user to check email
-        Alert.alert(t('common.success'), t('auth.checkEmail'), [
-          { text: 'OK', onPress: () => { setMode('login'); setPassword('') } }
-        ])
+        // Email confirmation required — navigate to OTP verification screen
+        router.push({ pathname: '/verify-otp', params: { email: email.trim(), mode: 'signup' } })
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),

@@ -810,7 +810,19 @@
     "loginRequired": "Please log in",
     "acceptTerms": "I accept the",
     "termsLink": "Terms of Service",
-    "privacyLink": "Privacy Policy"
+    "privacyLink": "Privacy Policy",
+    "otpTitle": "Verify your email",
+    "otpDescription": "We sent a 6-digit code to",
+    "otpRecoveryTitle": "Reset your password",
+    "otpRecoveryDescription": "We sent a 6-digit reset code to",
+    "otpVerify": "Verify",
+    "otpResend": "Resend code",
+    "otpResendIn": "Resend in",
+    "otpNotReceived": "Didn't receive the code?",
+    "otpResent": "A new code has been sent to your email",
+    "otpTooShort": "Enter the 6-digit code",
+    "otpExpired": "Code has expired. Please request a new one.",
+    "otpInvalid": "Invalid code. Please check and try again."
   },
   "onboarding": {
     "welcome": "Welcome to TackBird!",

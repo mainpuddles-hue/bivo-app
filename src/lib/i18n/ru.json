@@ -803,7 +803,19 @@
     "loginRequired": "Войдите в систему",
     "acceptTerms": "Принимаю",
     "termsLink": "условия использования",
-    "privacyLink": "политику конфиденциальности"
+    "privacyLink": "политику конфиденциальности",
+    "otpTitle": "Подтвердите email",
+    "otpDescription": "Мы отправили 6-значный код на адрес",
+    "otpRecoveryTitle": "Сбросить пароль",
+    "otpRecoveryDescription": "Мы отправили 6-значный код сброса на адрес",
+    "otpVerify": "Подтвердить",
+    "otpResend": "Отправить повторно",
+    "otpResendIn": "Повторная отправка через",
+    "otpNotReceived": "Не получили код?",
+    "otpResent": "Новый код отправлен на вашу почту",
+    "otpTooShort": "Введите 6-значный код",
+    "otpExpired": "Код истёк. Запросите новый код.",
+    "otpInvalid": "Неверный код. Проверьте и попробуйте снова."
   },
   "onboarding": {
     "welcome": "Добро пожаловать в TackBird!",

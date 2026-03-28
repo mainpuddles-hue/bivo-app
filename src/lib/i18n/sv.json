@@ -810,7 +810,19 @@
     "loginRequired": "Logga in",
     "acceptTerms": "Jag accepterar",
     "termsLink": "användarvillkoren",
-    "privacyLink": "integritetspolicyn"
+    "privacyLink": "integritetspolicyn",
+    "otpTitle": "Verifiera din e-post",
+    "otpDescription": "Vi skickade en 6-siffrig kod till",
+    "otpRecoveryTitle": "Återställ ditt lösenord",
+    "otpRecoveryDescription": "Vi skickade en 6-siffrig återställningskod till",
+    "otpVerify": "Verifiera",
+    "otpResend": "Skicka igen",
+    "otpResendIn": "Skicka igen om",
+    "otpNotReceived": "Fick du ingen kod?",
+    "otpResent": "En ny kod har skickats till din e-post",
+    "otpTooShort": "Ange den 6-siffriga koden",
+    "otpExpired": "Koden har gått ut. Begär en ny kod.",
+    "otpInvalid": "Ogiltig kod. Kontrollera och försök igen."
   },
   "onboarding": {
     "welcome": "Välkommen till TackBird!",

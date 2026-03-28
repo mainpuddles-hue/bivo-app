@@ -803,7 +803,19 @@
     "loginRequired": "Palun logi sisse",
     "acceptTerms": "Nõustun",
     "termsLink": "kasutustingimused",
-    "privacyLink": "privaatsuspoliitika"
+    "privacyLink": "privaatsuspoliitika",
+    "otpTitle": "Kinnita oma e-post",
+    "otpDescription": "Saatsime 6-kohalise koodi aadressile",
+    "otpRecoveryTitle": "Lähtesta oma parool",
+    "otpRecoveryDescription": "Saatsime 6-kohalise lähtestamiskoodi aadressile",
+    "otpVerify": "Kinnita",
+    "otpResend": "Saada uuesti",
+    "otpResendIn": "Saada uuesti",
+    "otpNotReceived": "Kas sa ei saanud koodi?",
+    "otpResent": "Uus kood on saadetud sinu e-postile",
+    "otpTooShort": "Sisesta 6-kohaline kood",
+    "otpExpired": "Kood on aegunud. Palun taotle uut koodi.",
+    "otpInvalid": "Vale kood. Kontrolli ja proovi uuesti."
   },
   "onboarding": {
     "welcome": "Tere tulemast TackBirdi!",

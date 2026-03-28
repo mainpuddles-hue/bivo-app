@@ -810,7 +810,19 @@
     "loginRequired": "Kirjaudu sisään",
     "acceptTerms": "Hyväksyn",
     "termsLink": "käyttöehdot",
-    "privacyLink": "tietosuojaselosteen"
+    "privacyLink": "tietosuojaselosteen",
+    "otpTitle": "Vahvista sähköpostisi",
+    "otpDescription": "Lähetimme 6-numeroisen koodin osoitteeseen",
+    "otpRecoveryTitle": "Nollaa salasanasi",
+    "otpRecoveryDescription": "Lähetimme 6-numeroisen nollauskoodin osoitteeseen",
+    "otpVerify": "Vahvista",
+    "otpResend": "Lähetä uudelleen",
+    "otpResendIn": "Lähetä uudelleen",
+    "otpNotReceived": "Etkö saanut koodia?",
+    "otpResent": "Uusi koodi lähetetty sähköpostiisi",
+    "otpTooShort": "Syötä 6-numeroinen koodi",
+    "otpExpired": "Koodi on vanhentunut. Pyydä uusi koodi.",
+    "otpInvalid": "Virheellinen koodi. Tarkista ja yritä uudelleen."
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
