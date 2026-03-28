@@ -27,9 +27,10 @@ export function useInteractionTracker(userId: string | null) {
     }
     tracked.current.add(key)
 
-    await (supabase.from('user_interactions') as any)
-      .insert({ user_id: userId, post_id: postId, interaction_type: type })
-      .catch(() => {}) // Non-blocking, don't fail the main flow
+    try {
+      await (supabase.from('user_interactions') as any)
+        .insert({ user_id: userId, post_id: postId, interaction_type: type })
+    } catch {} // Non-blocking, don't fail the main flow
   }, [userId, supabase])
 
   return { trackInteraction }
