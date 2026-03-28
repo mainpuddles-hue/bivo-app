@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
     shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
-  proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
+  proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
   content: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12, gap: 6 },
 
   // Top row: user + category badge
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   avatarContainer: { position: 'relative' },
   avatar: { width: 32, height: 32, borderRadius: 16, borderWidth: 1 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { fontSize: 12, fontWeight: '600' },
+  avatarInitial: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   statusDot: {
     position: 'absolute', bottom: -1, right: -1,
     width: 7, height: 7, borderRadius: 3.5, borderWidth: 1,
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 10,
     paddingHorizontal: 8, paddingVertical: 3,
   },
-  multiImageText: { fontSize: 10, fontWeight: '600', color: '#FFFFFF', lineHeight: 13 },
+  multiImageText: { fontSize: 10, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
   proBadgeOnImage: {
     position: 'absolute', top: 8, right: 8,
     width: 26, height: 26, borderRadius: 13,
@@ -582,17 +582,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
     alignSelf: 'flex-start',
   },
-  expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7 },
+  expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7, fontFamily: fonts.bodySemi },
 
   // Title + description
   title: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20, letterSpacing: -0.15 },
   seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic' },
-  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19, marginTop: 4 },
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14.3 },
+  priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14.3, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
 
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
   popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },
   distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 3 },
-  distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13 },
+  distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
 
   // Badges
   proMicroBadge: {
