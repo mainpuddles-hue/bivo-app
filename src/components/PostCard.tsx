@@ -152,7 +152,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         styles.card,
         { backgroundColor: colors.card },
         isDark ? cardShadowDark : cardShadow,
-        category && { borderTopWidth: 3, borderTopColor: category.color },
+        category && { borderTopWidth: 2, borderTopColor: category.color + '99' },
         isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: '#E8A050' },
         isUrgentPost && { borderWidth: 2, borderColor: colors.destructive },
         isPro && { borderWidth: 1.5, borderColor: colors.pro },
@@ -241,7 +241,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             <View style={[styles.categoryBadge, { backgroundColor: `${category.color}20` }]}>
               {CategoryIcon && <CategoryIcon size={11} color={category.color} strokeWidth={2} />}
               <Text style={[styles.categoryBadgeText, { color: category.color }]}>
-                {t(category.label)}
+                {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
               </Text>
               {isNew && <View style={[styles.newDot, { backgroundColor: colors.accent }]} />}
             </View>
@@ -522,7 +522,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 })
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
+  card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 1 },
   proBanner: {
     height: 22, backgroundColor: '#F59E0B',
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
     flexShrink: 0,
   },
-  categoryBadgeText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 13 },
+  categoryBadgeText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
   newDot: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: '#4CAF6A', marginLeft: 2,
   },

@@ -234,8 +234,7 @@ function FeedScreenInner() {
           {(() => {
             const hour = new Date().getHours()
             const greetingKey = hour < 12 ? 'greeting.morning' : hour < 17 ? 'greeting.afternoon' : hour < 21 ? 'greeting.evening' : 'greeting.night'
-            const greeting = `${t(greetingKey)}, ${feed.userNeighborhood ?? feed.userCityName ?? 'Helsinki'}!`
-            return feed.posts.length > 0 ? `${greeting} \u00B7 ${t('greeting.postsInArea', { count: feed.posts.length })}` : greeting
+            return `${t(greetingKey)}, ${feed.userNeighborhood ?? feed.userCityName ?? 'Helsinki'}!`
           })()}
         </Text>
       </View>
