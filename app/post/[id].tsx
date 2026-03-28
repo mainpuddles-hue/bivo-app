@@ -620,7 +620,7 @@ function PostDetailScreenInner() {
         </View>
         <Text style={[styles.commentContent, { color: colors.foreground }]}>{c.content}</Text>
         {userId && (
-          <Pressable onPress={() => setReplyToComment(c)} style={styles.replyBtn} hitSlop={8}>
+          <Pressable onPress={() => setReplyToComment(c)} style={styles.replyBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel="Reply">
             <Reply size={12} color={colors.mutedForeground} />
             <Text style={[styles.replyBtnText, { color: colors.mutedForeground }]}>{t('post.reply')}</Text>
           </Pressable>
@@ -633,7 +633,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Back"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         </View>
         <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}>
           <PostDetailSkeleton />
@@ -645,8 +645,8 @@ function PostDetailScreenInner() {
   if (!post) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Back"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         </View>
         <Text style={[styles.notFound, { color: colors.mutedForeground }]}>{t('post.notFound')}</Text>
       </View>
@@ -654,7 +654,6 @@ function PostDetailScreenInner() {
   }
 
   const category = CATEGORIES[post.type as PostType]
-  const CategoryIcon = category ? CATEGORY_ICON_MAP[category.icon] : null
   const user = post.user
   const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
   const allImages = [post.image_url, ...(post.images ?? []).map(i => i.image_url)].filter(Boolean) as string[]
@@ -662,23 +661,23 @@ function PostDetailScreenInner() {
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)', borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Back"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('post.save')}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
-        <Pressable onPress={handleShare} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('post.share')}><Share2 size={22} color={colors.mutedForeground} /></Pressable>
+        <Pressable onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Save"><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
+        <Pressable onPress={handleShare} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Share"><Share2 size={22} color={colors.mutedForeground} /></Pressable>
         {isAuthor ? (
-          <Pressable onPress={handleMorePress} hitSlop={8} style={styles.headerBtn} accessibilityRole="button"><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleMorePress} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="More options"><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
         ) : userId ? (
-          <Pressable onPress={handleReport} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('report.title')}><Flag size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleReport} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Report"><Flag size={22} color={colors.mutedForeground} /></Pressable>
         ) : null}
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 64 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Image gallery — tap to open fullscreen */}
         {allImages.length > 0 && (
           allImages.length === 1 ? (
-            <Pressable onPress={() => openGallery(0)}>
+            <Pressable onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
               <Image source={{ uri: allImages[0] }} style={styles.heroImage} contentFit="cover" transition={300} />
             </Pressable>
           ) : (
@@ -686,7 +685,7 @@ function PostDetailScreenInner() {
               horizontal pagingEnabled data={allImages}
               keyExtractor={(item, i) => `${item}-${i}`}
               renderItem={({ item, index }) => (
-                <Pressable onPress={() => openGallery(index)}>
+                <Pressable onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
                   <Image source={{ uri: item }} style={styles.heroImage} contentFit="cover" />
                 </Pressable>
               )}
@@ -705,9 +704,10 @@ function PostDetailScreenInner() {
           )}
 
           {category && (
-            <View style={[styles.categoryChip, { backgroundColor: isDark ? category.bgDark : category.bgLight }]}>
-              {CategoryIcon && <CategoryIcon size={14} color={category.color} />}
-              <Text style={[styles.categoryText, { color: category.color }]}>{t(category.label)}</Text>
+            <View style={[styles.categoryChip, { backgroundColor: `${category.color}20` }]}>
+              <Text style={[styles.categoryText, { color: category.color }]}>
+                {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
+              </Text>
             </View>
           )}
 
@@ -716,21 +716,21 @@ function PostDetailScreenInner() {
           {/* Author action buttons */}
           {isAuthor && (
             <View style={styles.authorActionsRow}>
-              <Pressable onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]}>
+              <Pressable onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
                 <Pencil size={14} color={colors.primary} />
                 <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.edit')}</Text>
               </Pressable>
               {post.is_active ? (
-                <Pressable onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]}>
+                <Pressable onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
                   <XCircle size={14} color={colors.mutedForeground} />
                   <Text style={[styles.authorActionText, { color: colors.mutedForeground }]}>{t('post.markClosed')}</Text>
                 </Pressable>
               ) : (
-                <Pressable onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]}>
+                <Pressable onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
                   <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.reopen')}</Text>
                 </Pressable>
               )}
-              <Pressable onPress={handleDelete} style={[styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }]}>
+              <Pressable onPress={handleDelete} style={[styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
                 <Trash2 size={14} color={colors.destructive} />
                 <Text style={[styles.authorActionText, { color: colors.destructive }]}>{t('post.delete')}</Text>
               </Pressable>
@@ -744,11 +744,11 @@ function PostDetailScreenInner() {
           )}
 
           {post.daily_fee != null && (
-            <Text style={[styles.price, { color: '#C98B2E' }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>
+            <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>
           )}
 
           {post.service_price != null && (
-            <Text style={[styles.price, { color: '#7C5CBF' }]}>{formatPrice(post.service_price, locale)}</Text>
+            <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.service_price, locale)}</Text>
           )}
 
           {priceContext && (post.daily_fee != null || post.service_price != null) && (
@@ -758,16 +758,16 @@ function PostDetailScreenInner() {
           )}
 
           {post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (
-            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]}>
+            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
             </Pressable>
           )}
 
           {post.type === 'tarjoan' && post.service_price != null && !isAuthor && (
-            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: '#7C5CBF' }]}>
-              <ShoppingBag size={16} color="#FFFFFF" />
-              <Text style={[styles.bookingBtnText, { color: '#FFFFFF' }]}>{t('service.buyService')}</Text>
+            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
+              <ShoppingBag size={16} color={colors.primaryForeground} />
+              <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>
             </Pressable>
           )}
 
@@ -784,12 +784,12 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {/* Action row — unified like PostCard */}
+          {/* Action row — like + count, comment + count, thanks only (bookmark/share/flag in header) */}
           <View style={styles.actionRow}>
             <Pressable onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')}>
               <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
               {likeCount > 0 && (
-                <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8}>
+                <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
                   <Text style={[styles.actionText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>
                 </Pressable>
               )}
@@ -800,21 +800,6 @@ function PostDetailScreenInner() {
                 <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{comments.length}</Text>
               )}
             </View>
-            <Pressable onPress={toggleSave} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isSaved ? t('post.unsave') : t('post.save')}>
-              <Bookmark size={16} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} />
-            </Pressable>
-            <Pressable onPress={handleShare} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.share')}>
-              <Share2 size={16} color={colors.mutedForeground} />
-            </Pressable>
-            {isAuthor ? (
-              <Pressable onPress={handleMorePress} style={styles.actionItem} hitSlop={8} accessibilityRole="button">
-                <MoreHorizontal size={16} color={colors.mutedForeground} />
-              </Pressable>
-            ) : userId ? (
-              <Pressable onPress={handleReport} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('report.title')}>
-                <Flag size={16} color={colors.mutedForeground} />
-              </Pressable>
-            ) : null}
             {!isAuthor && (
               <View style={{ marginLeft: 'auto' }}>
                 <ThanksButton toUserId={post.user_id} postId={post.id} fromUserId={userId} size="small" />
@@ -824,8 +809,8 @@ function PostDetailScreenInner() {
 
           {/* Author card — compact, like feed PostCard */}
           <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow}>
-              <Avatar url={user?.avatar_url} name={user?.name} size={40} />
+            <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow} accessibilityRole="button" accessibilityLabel={user?.name ?? t('common.user')}>
+              <Avatar url={user?.avatar_url} name={user?.name} size={32} />
               <View style={styles.authorCardInfo}>
                 <View style={styles.authorNameRow}>
                   <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name ?? t('common.user')}</Text>
@@ -884,7 +869,7 @@ function PostDetailScreenInner() {
                 <View key={c.id}>
                   {renderCommentItem(c, false)}
                   {replies.length > 0 && (
-                    <Pressable onPress={() => toggleReplies(c.id)} style={styles.showRepliesBtn} hitSlop={8}>
+                    <Pressable onPress={() => toggleReplies(c.id)} style={styles.showRepliesBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}>
                       {isExpanded ? <ChevronUp size={14} color={colors.primary} /> : <ChevronDown size={14} color={colors.primary} />}
                       <Text style={[styles.showRepliesText, { color: colors.primary }]}>
                         {isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}
@@ -902,7 +887,7 @@ function PostDetailScreenInner() {
                 <Text style={[styles.replyIndicatorText, { color: colors.primary }]} numberOfLines={1}>
                   {t('post.replyingTo', { name: replyToComment.user?.name ?? t('common.user') })}
                 </Text>
-                <Pressable onPress={() => setReplyToComment(null)} hitSlop={8}><X size={14} color={colors.mutedForeground} /></Pressable>
+                <Pressable onPress={() => setReplyToComment(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><X size={14} color={colors.mutedForeground} /></Pressable>
               </View>
             )}
 
@@ -917,6 +902,7 @@ function PostDetailScreenInner() {
                 />
                 <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
                   hitSlop={8}
+                  accessibilityRole="button" accessibilityLabel="Send comment"
                   style={[styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim() || sendingComment) ? 0.5 : 1 }]}>
                   <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
                 </Pressable>
@@ -975,7 +961,7 @@ function PostDetailScreenInner() {
                 <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: bookingDays > 0 ? colors.primary : colors.muted }} />
               </View>
               <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
-              {post?.daily_fee != null && (<Text style={[styles.bookingFee, { color: '#C98B2E' }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
+              {post?.daily_fee != null && (<Text style={[styles.bookingFee, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
               <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{bookingDays > 0 ? t('rental.pricingBreakdown') : t('rental.selectDates')}</Text>
               <DateRangePicker startDate={bookingStartDate} endDate={bookingEndDate} onSelect={(start, end) => { setBookingStartDate(start); setBookingEndDate(end) }} blockedDates={blockedDates} />
               {bookingStartDate && (
@@ -1017,7 +1003,7 @@ function PostDetailScreenInner() {
 
             {/* Provider info */}
             {user && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 }}>
                 <Avatar url={user.avatar_url} name={user.name} size={36} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 14, fontFamily: fonts.bodySemi, color: colors.foreground }} numberOfLines={1}>{user.name ?? t('common.user')}</Text>
@@ -1057,7 +1043,7 @@ function PostDetailScreenInner() {
                 </View>
                 <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}>
                   <Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text>
-                  <Text style={[styles.bookingTotalPrice, { color: '#7C5CBF' }]}>{formatPrice(svcTotal, locale)}</Text>
+                  <Text style={[styles.bookingTotalPrice, { color: category?.color ?? colors.primary }]}>{formatPrice(svcTotal, locale)}</Text>
                 </View>
               </View>
             )}
@@ -1071,14 +1057,14 @@ function PostDetailScreenInner() {
             <Pressable
               onPress={handlePayForService}
               disabled={sendingService || paymentLoading}
-              style={[styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : '#7C5CBF', marginTop: 16, marginBottom: 8 }]}
+              style={[styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : (category?.color ?? colors.primary), marginTop: 16, marginBottom: 8 }]}
             >
               {sendingService || paymentLoading ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
               ) : (
                 <>
-                  <ShoppingBag size={16} color="#FFFFFF" />
-                  <Text style={[styles.saveBtnText, { color: '#FFFFFF' }]}>{t('service.payAndBook')}</Text>
+                  <ShoppingBag size={16} color={colors.primaryForeground} />
+                  <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('service.payAndBook')}</Text>
                 </>
               )}
             </Pressable>
@@ -1086,7 +1072,7 @@ function PostDetailScreenInner() {
         </Pressable>
       </Modal>
 
-      {/* Fixed bottom CTA */}
+      {/* Fixed bottom CTA — message only (bookmark/share/flag in header) */}
       {post && userId && post.user_id !== userId && (
         <View style={[ctaStyles.bar, {
           backgroundColor: colors.card,
@@ -1096,17 +1082,12 @@ function PostDetailScreenInner() {
           <Pressable
             onPress={handleMessage}
             style={[ctaStyles.messageBtn, { backgroundColor: colors.primary }]}
+            accessibilityRole="button" accessibilityLabel="Send message"
           >
             <MessageCircle size={18} color={colors.primaryForeground} />
             <Text style={[ctaStyles.messageBtnText, { color: colors.primaryForeground }]}>
               {t('post.message')}
             </Text>
-          </Pressable>
-          <Pressable
-            onPress={handleShare}
-            style={[ctaStyles.shareBtn, { backgroundColor: isDark ? colors.muted : colors.background, borderColor: colors.border }]}
-          >
-            <Share2 size={18} color={colors.foreground} />
           </Pressable>
         </View>
       )}
@@ -1126,7 +1107,7 @@ function PostDetailScreenInner() {
                 data={likers}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                  <Pressable onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 }}>
+                  <Pressable onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
                     <Avatar url={item.avatar_url} name={item.name} size={40} />
                     <Text style={{ fontSize: 15, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1 }}>{item.name}</Text>
                   </Pressable>
@@ -1157,16 +1138,16 @@ const styles = StyleSheet.create({
   headerBtn: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
-  body: { paddingHorizontal: 12, paddingTop: 14, paddingBottom: 12, gap: 12 },
-  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12 },
+  body: { paddingHorizontal: 12, paddingTop: 16, paddingBottom: 12, gap: 12 },
+  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
   closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
-  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 36 },
+  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 36 },
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, alignSelf: 'flex-start' },
-  categoryText: { fontSize: 12, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.5 },
+  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
+  categoryText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
-  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi },
   price: { fontSize: 18, fontFamily: fonts.heading },
   eventDate: { fontSize: 15, fontFamily: fonts.bodyMedium },
@@ -1180,8 +1161,8 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
 
   // Author card — compact single row
-  authorCard: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
-  authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  authorCard: { paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
+  authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   authorCardInfo: { flex: 1, gap: 1 },
   authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'nowrap' },
   authorName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17, flexShrink: 1 },
@@ -1192,7 +1173,7 @@ const styles = StyleSheet.create({
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
   commentTitle: { fontSize: 16, fontFamily: fonts.headingSemi },
-  commentRow: { flexDirection: 'row', gap: 10 },
+  commentRow: { flexDirection: 'row', gap: 8 },
   commentAvatar: { width: 32, height: 32, borderRadius: 16 },
   commentBody: { flex: 1, gap: 2 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -1208,7 +1189,7 @@ const styles = StyleSheet.create({
   showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi },
   replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
   replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium },
-  commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
+  commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
   commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36 },
   commentSendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
@@ -1216,13 +1197,13 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi },
   modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8 },
-  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, fontFamily: fonts.body, minHeight: 44, marginTop: 4 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body, minHeight: 44, marginTop: 4 },
   modalTextArea: { minHeight: 120 },
-  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, marginTop: 16, minHeight: 48 },
+  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 12, marginTop: 16, minHeight: 48 },
   saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
   relatedTitle: { fontSize: 16, fontFamily: fonts.headingSemi },
-  relatedScroll: { gap: 10 },
+  relatedScroll: { gap: 8 },
   relatedCard: { width: 160, borderRadius: 12, overflow: 'hidden' },
   relatedImage: { width: 160, height: 100, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
   relatedCardBody: { padding: 8, gap: 4 },
@@ -1237,34 +1218,30 @@ const styles = StyleSheet.create({
   datesSummaryItem: { flex: 1, gap: 2 },
   datesSummaryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3 },
   datesSummaryValue: { fontSize: 14, fontFamily: fonts.bodySemi },
-  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 14, marginTop: 12, gap: 8 },
+  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 16, marginTop: 12, gap: 8 },
   pricingTitle: { fontSize: 14, fontFamily: fonts.headingSemi, marginBottom: 4 },
   pricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   pricingLabel: { fontSize: 13, fontFamily: fonts.body },
   pricingValue: { fontSize: 13, fontFamily: fonts.bodyMedium },
   pricingTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, marginTop: 4 },
   pricingTotalLabel: { fontSize: 15, fontFamily: fonts.bodySemi },
-  confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 10, lineHeight: 17 },
+  confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 17 },
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8 },
-  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, minHeight: 48 },
+  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48 },
 })
 
 const ctaStyles = StyleSheet.create({
   bar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 14, borderRadius: 12,
+    gap: 8, paddingVertical: 16, borderRadius: 12,
   },
   messageBtnText: { fontSize: 15, fontFamily: fonts.bodySemi },
-  shareBtn: {
-    width: 48, height: 48, borderRadius: 12, borderWidth: 1,
-    alignItems: 'center', justifyContent: 'center',
-  },
 })
 
 export default function PostDetailScreen() {
