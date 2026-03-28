@@ -13,6 +13,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { shareContent } from '@/lib/share'
 import { triggerPush } from '@/lib/pushTrigger'
@@ -751,7 +752,7 @@ function PostDetailScreenInner() {
           )}
 
           {priceContext && (post.daily_fee != null || post.service_price != null) && (
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 15 }}>
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 15, fontFamily: fonts.body }}>
               {t('post.priceContext', { min: priceContext.min, max: priceContext.max })}
             </Text>
           )}
@@ -783,45 +784,67 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          <View style={styles.engRow}>
-            <Pressable onPress={toggleLike} style={styles.engItem} hitSlop={8}>
-              <Heart size={18} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
+          {/* Action row — unified like PostCard */}
+          <View style={styles.actionRow}>
+            <Pressable onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')}>
+              <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
+              {likeCount > 0 && (
+                <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8}>
+                  <Text style={[styles.actionText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>
+                </Pressable>
+              )}
             </Pressable>
-            {likeCount > 0 ? (
-              <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8}>
-                <Text style={[styles.engText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount} {t('post.likes')}</Text>
+            <View style={styles.actionItem}>
+              <MessageCircle size={16} color={colors.mutedForeground} />
+              {comments.length > 0 && (
+                <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{comments.length}</Text>
+              )}
+            </View>
+            <Pressable onPress={toggleSave} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isSaved ? t('post.unsave') : t('post.save')}>
+              <Bookmark size={16} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} />
+            </Pressable>
+            <Pressable onPress={handleShare} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.share')}>
+              <Share2 size={16} color={colors.mutedForeground} />
+            </Pressable>
+            {isAuthor ? (
+              <Pressable onPress={handleMorePress} style={styles.actionItem} hitSlop={8} accessibilityRole="button">
+                <MoreHorizontal size={16} color={colors.mutedForeground} />
+              </Pressable>
+            ) : userId ? (
+              <Pressable onPress={handleReport} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('report.title')}>
+                <Flag size={16} color={colors.mutedForeground} />
               </Pressable>
             ) : null}
-            {comments.length > 0 && (
-              <View style={styles.engItem}>
-                <MessageCircle size={18} color={colors.mutedForeground} />
-                <Text style={[styles.engText, { color: colors.mutedForeground }]}>{comments.length}</Text>
+            {!isAuthor && (
+              <View style={{ marginLeft: 'auto' }}>
+                <ThanksButton toUserId={post.user_id} postId={post.id} fromUserId={userId} size="small" />
               </View>
             )}
           </View>
 
-          {/* Author card */}
+          {/* Author card — compact, like feed PostCard */}
           <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Avatar url={user?.avatar_url} name={user?.name} size={44} />
-              <View style={{ flex: 1, gap: 2 }}>
+            <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow}>
+              <Avatar url={user?.avatar_url} name={user?.name} size={40} />
+              <View style={styles.authorCardInfo}>
                 <View style={styles.authorNameRow}>
                   <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name ?? t('common.user')}</Text>
-                  {isVerified && <BadgeCheck size={16} color={colors.info} />}
+                  {isVerified && <BadgeCheck size={14} color={colors.info} />}
+                  {post.created_at && (
+                    <Text style={[styles.authorTimeAgo, { color: colors.mutedForeground }]}>
+                      {'· ' + formatTimeAgo(post.created_at, t, locale)}
+                    </Text>
+                  )}
                 </View>
-                {user?.naapurusto && <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>}
+                {user?.naapurusto && (
+                  <View style={styles.authorLocationRow}>
+                    <MapPin size={11} color={colors.mutedForeground} />
+                    <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>
+                  </View>
+                )}
               </View>
             </Pressable>
-            <Pressable onPress={handleMessage} style={[styles.messageBtn, { backgroundColor: colors.primary, marginTop: 10 }]}>
-              <MessageCircle size={16} color={colors.primaryForeground} />
-              <Text style={[styles.messageBtnText, { color: colors.primaryForeground }]}>{t('post.message')}</Text>
-            </Pressable>
-            {!isAuthor && (
-              <ThanksButton toUserId={post.user_id} postId={post.id} fromUserId={userId} />
-            )}
           </View>
-
-          <Text style={[styles.timestamp, { color: colors.mutedForeground }]}>{formatTimeAgo(post.created_at, t, locale)}</Text>
 
           {/* Related posts */}
           {relatedPosts.length > 0 && (
@@ -899,7 +922,7 @@ function PostDetailScreenInner() {
                 </Pressable>
               </View>
               {commentText.length > 0 && (
-                <Text style={{ fontSize: 11, color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', paddingRight: 4 }}>
+                <Text style={{ fontSize: 11, color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', paddingRight: 4, fontFamily: fonts.body }}>
                   {commentText.length}/500
                 </Text>
               )}
@@ -924,10 +947,10 @@ function PostDetailScreenInner() {
             </View>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')} *</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} />
-            <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right' }}>{editTitle.length}/100</Text>
+            <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body }}>{editTitle.length}/100</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.descriptionLabel')}</Text>
             <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} />
-            <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right' }}>{editDescription.length}/2000</Text>
+            <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} />
             <Pressable onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }]}>
@@ -971,7 +994,7 @@ function PostDetailScreenInner() {
               )}
               {bookingDays > 0 && (<Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>{t('rental.confirmationNote')}</Text>)}
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
-              <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15 }}>{t('payment.opensInBrowser')}</Text>
+              <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
               <Pressable onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
                 style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }]}>
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
@@ -997,8 +1020,8 @@ function PostDetailScreenInner() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
                 <Avatar url={user.avatar_url} name={user.name} size={36} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }} numberOfLines={1}>{user.name ?? t('common.user')}</Text>
-                  <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('service.provider')}</Text>
+                  <Text style={{ fontSize: 14, fontFamily: fonts.bodySemi, color: colors.foreground }} numberOfLines={1}>{user.name ?? t('common.user')}</Text>
+                  <Text style={{ fontSize: 12, fontFamily: fonts.body, color: colors.mutedForeground }}>{t('service.provider')}</Text>
                 </View>
               </View>
             )}
@@ -1015,7 +1038,7 @@ function PostDetailScreenInner() {
               maxLength={500}
             />
             {serviceNotes.length > 0 && (
-              <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right' }}>
+              <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body }}>
                 {serviceNotes.length}/500
               </Text>
             )}
@@ -1039,11 +1062,11 @@ function PostDetailScreenInner() {
               </View>
             )}
 
-            <Text style={{ fontSize: 12, color: colors.mutedForeground, lineHeight: 17, marginTop: 4 }}>{t('service.escrowNote')}</Text>
+            <Text style={{ fontSize: 12, fontFamily: fonts.body, color: colors.mutedForeground, lineHeight: 17, marginTop: 4 }}>{t('service.escrowNote')}</Text>
 
             {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
 
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15 }}>{t('payment.opensInBrowser')}</Text>
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
 
             <Pressable
               onPress={handlePayForService}
@@ -1105,10 +1128,10 @@ function PostDetailScreenInner() {
                 renderItem={({ item }) => (
                   <Pressable onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 }}>
                     <Avatar url={item.avatar_url} name={item.name} size={40} />
-                    <Text style={{ fontSize: 15, fontWeight: '500', color: colors.foreground, flex: 1 }}>{item.name}</Text>
+                    <Text style={{ fontSize: 15, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1 }}>{item.name}</Text>
                   </Pressable>
                 )}
-                ListEmptyComponent={<Text style={{ textAlign: 'center', color: colors.mutedForeground, paddingVertical: 20 }}>{t('post.noLikes')}</Text>}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', color: colors.mutedForeground, paddingVertical: 20, fontFamily: fonts.body }}>{t('post.noLikes')}</Text>}
               />
             )}
           </View>
@@ -1134,93 +1157,95 @@ const styles = StyleSheet.create({
   headerBtn: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
-  body: { padding: 16, gap: 12 },
-  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
-  closedBannerText: { fontSize: 13, fontWeight: '600' },
+  body: { paddingHorizontal: 12, paddingTop: 14, paddingBottom: 12, gap: 12 },
+  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12 },
+  closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
-  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, minHeight: 36 },
-  authorActionText: { fontSize: 12, fontWeight: '600' },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, alignSelf: 'flex-start' },
-  categoryText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 22, fontWeight: '700', lineHeight: 28, letterSpacing: -0.3 },
-  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
-  proText: { fontSize: 13, fontWeight: '600' },
-  price: { fontSize: 18, fontWeight: '700' },
-  eventDate: { fontSize: 15, fontWeight: '500' },
-  description: { fontSize: 15, lineHeight: 22 },
+  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 36 },
+  authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi },
+  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, alignSelf: 'flex-start' },
+  categoryText: { fontSize: 12, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
+  proText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  price: { fontSize: 18, fontFamily: fonts.heading },
+  eventDate: { fontSize: 15, fontFamily: fonts.bodyMedium },
+  description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 22 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  locationText: { fontSize: 14 },
-  engRow: { flexDirection: 'row', gap: 16 },
-  engItem: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 44, justifyContent: 'center' },
-  engText: { fontSize: 15, fontWeight: '500' },
-  authorCard: { padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
-  authorAvatar: { width: 44, height: 44, borderRadius: 22 },
-  avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  avatarInit: { fontSize: 18, fontWeight: '600' },
-  authorInfo: { flex: 1, gap: 2 },
-  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  authorName: { fontSize: 15, fontWeight: '600' },
-  authorNh: { fontSize: 13 },
-  messageBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, minHeight: 44 },
-  messageBtnText: { fontSize: 13, fontWeight: '600' },
-  timestamp: { fontSize: 12, marginTop: 4 },
-  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100 },
+  locationText: { fontSize: 14, fontFamily: fonts.body },
+
+  // Action row — unified like PostCard
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
+  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 32, paddingHorizontal: 2 },
+  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
+
+  // Author card — compact single row
+  authorCard: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
+  authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  authorCardInfo: { flex: 1, gap: 1 },
+  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'nowrap' },
+  authorName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17, flexShrink: 1 },
+  authorTimeAgo: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, flexShrink: 0 },
+  authorLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  authorNh: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+
+  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  commentTitle: { fontSize: 16, fontWeight: '700' },
+  commentTitle: { fontSize: 16, fontFamily: fonts.headingSemi },
   commentRow: { flexDirection: 'row', gap: 10 },
   commentAvatar: { width: 32, height: 32, borderRadius: 16 },
   commentBody: { flex: 1, gap: 2 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  commentName: { fontSize: 13, fontWeight: '600' },
-  commentTime: { fontSize: 11 },
-  commentContent: { fontSize: 14, lineHeight: 19 },
+  commentName: { fontSize: 13, fontFamily: fonts.bodySemi },
+  commentTime: { fontSize: 11, fontFamily: fonts.body },
+  commentContent: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19 },
   replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, minHeight: 32, paddingVertical: 4 },
-  replyBtnText: { fontSize: 11, fontWeight: '500' },
+  replyBtnText: { fontSize: 11, fontFamily: fonts.bodyMedium },
   replyRow: { marginLeft: 32, paddingLeft: 12 },
   replyLine: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, borderRadius: 1 },
   replyAvatar: { width: 24, height: 24, borderRadius: 12 },
   showRepliesBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 42, marginTop: 4 },
-  showRepliesText: { fontSize: 12, fontWeight: '600' },
-  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1 },
-  replyIndicatorText: { flex: 1, fontSize: 12, fontWeight: '500' },
+  showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi },
+  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
+  replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium },
   commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
-  commentTextInput: { flex: 1, fontSize: 14, minHeight: 36 },
+  commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36 },
   commentSendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
   modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 8, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  modalTitle: { fontSize: 18, fontWeight: '700' },
-  modalLabel: { fontSize: 13, fontWeight: '600', marginTop: 8 },
-  modalInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, minHeight: 44, marginTop: 4 },
+  modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi },
+  modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, fontFamily: fonts.body, minHeight: 44, marginTop: 4 },
   modalTextArea: { minHeight: 120 },
   saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, marginTop: 16, minHeight: 48 },
-  saveBtnText: { fontSize: 16, fontWeight: '600' },
+  saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  relatedTitle: { fontSize: 16, fontWeight: '700' },
+  relatedTitle: { fontSize: 16, fontFamily: fonts.headingSemi },
   relatedScroll: { gap: 10 },
   relatedCard: { width: 160, borderRadius: 12, overflow: 'hidden' },
   relatedImage: { width: 160, height: 100, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
   relatedCardBody: { padding: 8, gap: 4 },
-  relatedCardTitle: { fontSize: 13, fontWeight: '600', lineHeight: 17 },
-  relatedCardLocation: { fontSize: 11 },
+  relatedCardTitle: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 17 },
+  relatedCardLocation: { fontSize: 11, fontFamily: fonts.body },
   bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, alignSelf: 'flex-start' },
-  bookingBtnText: { fontSize: 14, fontWeight: '600' },
-  bookingPostTitle: { fontSize: 16, fontWeight: '600' },
-  bookingFee: { fontSize: 15, fontWeight: '700' },
-  bookingTotalPrice: { fontSize: 18, fontWeight: '700' },
-  datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 10, marginTop: 12 },
+  bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
+  bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi },
+  bookingFee: { fontSize: 15, fontFamily: fonts.heading },
+  bookingTotalPrice: { fontSize: 18, fontFamily: fonts.heading },
+  datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 12, marginTop: 12 },
   datesSummaryItem: { flex: 1, gap: 2 },
-  datesSummaryLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.3 },
-  datesSummaryValue: { fontSize: 14, fontWeight: '600' },
-  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 10, padding: 14, marginTop: 12, gap: 8 },
-  pricingTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
+  datesSummaryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3 },
+  datesSummaryValue: { fontSize: 14, fontFamily: fonts.bodySemi },
+  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 14, marginTop: 12, gap: 8 },
+  pricingTitle: { fontSize: 14, fontFamily: fonts.headingSemi, marginBottom: 4 },
   pricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pricingLabel: { fontSize: 13 },
-  pricingValue: { fontSize: 13, fontWeight: '500' },
+  pricingLabel: { fontSize: 13, fontFamily: fonts.body },
+  pricingValue: { fontSize: 13, fontFamily: fonts.bodyMedium },
   pricingTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, marginTop: 4 },
-  pricingTotalLabel: { fontSize: 15, fontWeight: '600' },
-  confirmNote: { fontSize: 12, textAlign: 'center', marginTop: 10, lineHeight: 17 },
-  errorText: { fontSize: 13, textAlign: 'center', marginTop: 8 },
+  pricingTotalLabel: { fontSize: 15, fontFamily: fonts.bodySemi },
+  confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 10, lineHeight: 17 },
+  errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, minHeight: 48 },
 })
 
@@ -1235,7 +1260,7 @@ const ctaStyles = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 14, borderRadius: 12,
   },
-  messageBtnText: { fontSize: 15, fontWeight: '600' },
+  messageBtnText: { fontSize: 15, fontFamily: fonts.bodySemi },
   shareBtn: {
     width: 48, height: 48, borderRadius: 12, borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
