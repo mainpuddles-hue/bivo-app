@@ -229,7 +229,7 @@ function FeedScreenInner() {
   const ListHeader = useMemo(() => (
     <View style={{ gap: 12 }}>
       {/* Greeting — compact single line */}
-      <View style={{ alignItems: 'flex-start', paddingTop: 4 }}>
+      <View style={{ alignItems: 'flex-start', paddingTop: 4, marginBottom: 4 }}>
         <Text style={{ fontSize: 15, color: colors.primary, fontFamily: fonts.headingSemi, letterSpacing: -0.2 }}>
           {(() => {
             const hour = new Date().getHours()
@@ -368,7 +368,7 @@ function FeedScreenInner() {
             </View>
           )}
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 6, alignItems: 'center', paddingRight: 16 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 6, alignItems: 'center', paddingHorizontal: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
           {feed.followedIds.length > 0 && (
             <Pressable
@@ -417,12 +417,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-    paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8, gap: 4,
+    paddingTop: 4, paddingBottom: 8, gap: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,
   },
-  neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
   neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, alignSelf: 'flex-start', minHeight: 32 },
   streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   streakText: { fontSize: 13, fontWeight: '700', fontFamily: fonts.heading },
