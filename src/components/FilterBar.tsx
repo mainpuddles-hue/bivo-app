@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
+import { Text, Pressable, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -18,12 +18,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
   const { t } = useI18n()
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.scrollContent}
-      style={styles.scroll}
-    >
+    <>
       {/* Category chips — tapping active chip deselects (shows all) */}
       {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
         const Icon = ICON_MAP[cat.icon]
@@ -56,13 +51,11 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
           </Pressable>
         )
       })}
-    </ScrollView>
+    </>
   )
 })
 
 const styles = StyleSheet.create({
-  scroll: { flexGrow: 0 },
-  scrollContent: { flexDirection: 'row', gap: 6, paddingRight: 16 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8,

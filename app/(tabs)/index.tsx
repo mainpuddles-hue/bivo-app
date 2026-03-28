@@ -233,11 +233,15 @@ function FeedScreenInner() {
       {/* Greeting */}
       <View style={{ alignItems: 'center', paddingTop: 8 }}>
         <Text style={{ fontSize: 17, color: colors.primary, fontFamily: fonts.headingSemi, letterSpacing: -0.2 }}>
-          {t('feed.greeting', { area: feed.userNeighborhood ?? (feed.userCityName ?? 'Helsinki') })}
+          {(() => {
+            const hour = new Date().getHours()
+            const greetingKey = hour < 12 ? 'greeting.morning' : hour < 17 ? 'greeting.afternoon' : hour < 21 ? 'greeting.evening' : 'greeting.night'
+            return `${t(greetingKey)}, ${feed.userNeighborhood ?? feed.userCityName ?? 'Helsinki'}!`
+          })()}
         </Text>
         {feed.posts.length > 0 && (
           <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body, marginTop: 2 }}>
-            {t('feed.postCount', { count: feed.posts.length })}
+            {t('greeting.postsInArea', { count: feed.posts.length })}
           </Text>
         )}
       </View>
@@ -371,7 +375,7 @@ function FeedScreenInner() {
             </View>
           )}
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 6, alignItems: 'center' }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 6, alignItems: 'center', paddingRight: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
           {feed.followedIds.length > 0 && (
             <Pressable

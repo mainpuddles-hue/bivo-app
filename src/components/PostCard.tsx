@@ -114,9 +114,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     return t('postCard.distanceKm', { distance: dist < 10 ? dist.toFixed(1) : Math.round(dist).toString() })
   }, [userLocation, post.latitude, post.longitude, t])
 
-  const catBgColor = category ? `${category.color}${isDark ? '15' : '08'}` : undefined
-  const hasEngagement = likeCount > 0 || (post.comment_count ?? 0) > 0 || liked
-
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
     <Pressable
@@ -161,46 +158,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
-      {/* Left category color bar */}
-      <View style={[styles.categoryBar, { backgroundColor: category?.color ?? colors.primary }]} />
-
       {/* Pro banner — only when no image (crown badge handles image cards) */}
       {isPro && !hasImage && (
         <View style={[styles.proBanner, { backgroundColor: colors.pro, shadowColor: colors.pro }]}>
           <Crown size={12} color="#FFFFFF" />
           <Text style={styles.proBannerText}>Pro</Text>
-        </View>
-      )}
-
-      {/* Image */}
-      {hasImage && (
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: post.image_url! }}
-            style={styles.image}
-            contentFit="cover"
-            transition={300}
-            onError={() => setImgError(true)}
-          />
-          {/* Multi-image badge */}
-          {post.images && post.images.length > 1 && (
-            <View style={styles.multiImageBadge}>
-              <ImageIcon size={12} color="#FFFFFF" />
-              <Text style={styles.multiImageText}>{post.images.length + 1}</Text>
-            </View>
-          )}
-          {/* Pro crown */}
-          {isPro && (
-            <View style={[styles.proBadge, { backgroundColor: colors.pro }]}>
-              <Crown size={14} color="#FFFFFF" />
-            </View>
-          )}
-          {/* Nappaa urgency */}
-          {isNappaa && !isPro && (
-            <View style={[styles.proBadge, { backgroundColor: '#E8A050' }]}>
-              <Zap size={14} color="#FFFFFF" fill="#FFFFFF" />
-            </View>
-          )}
         </View>
       )}
 
@@ -211,48 +173,137 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         </View>
       )}
 
-      {/* Content — category color background for imageless cards */}
-      <View style={[styles.content, !hasImage && catBgColor ? { backgroundColor: catBgColor } : undefined]}>
-        {/* Category row + expiration badge */}
-        <View style={styles.categoryExpRow}>
+      {/* Content */}
+      <View style={styles.content}>
+        {/* TOP ROW: Avatar + Name + timeAgo on LEFT, Category badge on RIGHT */}
+        <View style={styles.topRow}>
+          <View style={styles.topRowLeft}>
+            {isAnonymous ? (
+              <View style={styles.topRowUserInfo}>
+                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
+                  <User size={16} color={colors.mutedForeground} />
+                </View>
+                <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {t('postCard.anonymousNeighbor')}
+                </Text>
+                {post.created_at && (
+                  <Text style={[styles.timeAgoDot, { color: colors.mutedForeground }]}>
+                    {'· ' + formatTimeAgo(post.created_at, t, locale)}
+                  </Text>
+                )}
+              </View>
+            ) : (
+              <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo}>
+                <View style={styles.avatarContainer}>
+                  {user?.avatar_url ? (
+                    <Image source={{ uri: user.avatar_url }} style={[
+                      styles.avatar,
+                      { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
+                    ]} contentFit="cover" />
+                  ) : (
+                    <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
+                      <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
+                        {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
+                      </Text>
+                    </View>
+                  )}
+                  {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
+                </View>
+                <View style={styles.userNameBlock}>
+                  <View style={styles.userNameRow}>
+                    <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
+                      {user?.name ?? t('postCard.anonymousUser')}
+                    </Text>
+                    {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
+                    {isPro && (
+                      <View style={styles.proMicroBadge}>
+                        <Crown size={10} color={colors.pro} />
+                      </View>
+                    )}
+                    {user?.is_business && (
+                      <View style={styles.businessMicroBadge}>
+                        <Building2 size={10} color={colors.primary} />
+                      </View>
+                    )}
+                  </View>
+                </View>
+                {post.created_at && (
+                  <Text style={[styles.timeAgoDot, { color: colors.mutedForeground }]}>
+                    {'· ' + formatTimeAgo(post.created_at, t, locale)}
+                  </Text>
+                )}
+              </Pressable>
+            )}
+          </View>
+          {/* Category badge — top right */}
           {category && (
-            <View style={styles.categoryRow}>
-              {CategoryIcon && <CategoryIcon size={10} color={category.color} strokeWidth={2.5} />}
-              <Text style={[styles.categoryLabel, { color: category.color }]}>
+            <View style={[styles.categoryBadge, { backgroundColor: `${category.color}20` }]}>
+              {CategoryIcon && <CategoryIcon size={11} color={category.color} strokeWidth={2} />}
+              <Text style={[styles.categoryBadgeText, { color: category.color }]}>
                 {t(category.label)}
               </Text>
               {isNew && <View style={[styles.newDot, { backgroundColor: colors.accent }]} />}
             </View>
           )}
-          {expirationInfo && (
-            <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
-              <Clock size={10} color={expirationInfo.color} />
-              <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
-            </View>
-          )}
         </View>
 
-        {/* Title — larger style for imageless cards */}
-        <Text style={[
-          styles.title,
-          { color: colors.foreground },
-          !hasImage && styles.titleLarge,
-        ]} numberOfLines={2}>
+        {/* Image — full width, below user row */}
+        {hasImage && (
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: post.image_url! }}
+              style={styles.image}
+              contentFit="cover"
+              transition={300}
+              onError={() => setImgError(true)}
+            />
+            {/* Multi-image badge */}
+            {post.images && post.images.length > 1 && (
+              <View style={styles.multiImageBadge}>
+                <ImageIcon size={12} color="#FFFFFF" />
+                <Text style={styles.multiImageText}>{post.images.length + 1}</Text>
+              </View>
+            )}
+            {/* Pro crown */}
+            {isPro && (
+              <View style={[styles.proBadgeOnImage, { backgroundColor: colors.pro }]}>
+                <Crown size={14} color="#FFFFFF" />
+              </View>
+            )}
+            {/* Nappaa urgency */}
+            {isNappaa && !isPro && (
+              <View style={[styles.proBadgeOnImage, { backgroundColor: '#E8A050' }]}>
+                <Zap size={14} color="#FFFFFF" fill="#FFFFFF" />
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Expiration badge */}
+        {expirationInfo && (
+          <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
+            <Clock size={10} color={expirationInfo.color} />
+            <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
+          </View>
+        )}
+
+        {/* Title */}
+        <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
           {post.title}
         </Text>
         {(post as any).is_seed && (
           <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
         )}
 
-        {/* Description for imageless posts */}
-        {!hasImage && post.description ? (
+        {/* Description — always show when available, 2 lines */}
+        {post.description ? (
           <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={2}>
             {post.description}
           </Text>
         ) : null}
 
-        {/* Location + price + distance */}
-        {(post.daily_fee != null || post.location || distanceText) && (
+        {/* Location + price */}
+        {(post.daily_fee != null || post.service_price != null || post.location) && (
           <View style={styles.metaRow}>
             {post.daily_fee != null && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? '#2D2010' : '#FDF6E8' }]}>
@@ -268,15 +319,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 </Text>
               </View>
             )}
-            {distanceText && (
-              <View style={styles.distanceRow}>
-                <MapPin size={11} color={colors.primary} />
-                <Text style={[styles.distanceText, { color: colors.primary }]}>{distanceText}</Text>
-              </View>
-            )}
             {post.location && (
               <View style={styles.locationRow}>
-                <MapPin size={12} color={colors.mutedForeground} />
+                <MapPin size={11} color={colors.mutedForeground} />
                 <Text style={[styles.locationText, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {post.location}
                 </Text>
@@ -285,88 +330,85 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           </View>
         )}
 
-        {/* Engagement — like + comment visible only when engaged, share/save behind more */}
-        <View style={styles.engagementRow} accessibilityRole="toolbar">
-          {hasEngagement && (likeCount > 0 || liked) && (
-            <Pressable
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
-              accessibilityState={{ selected: liked }}
-              onPress={async (e) => {
-                e.stopPropagation?.()
-                if (!isHumanAction()) return
-                if (!userId) { router.push('/(auth)/login'); return }
-                if (likingRef.current) return
-                likingRef.current = true
-                try {
-                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+        {/* Action row: Like count · Comment count · Save · More ... Distance on RIGHT */}
+        <View style={styles.actionRow} accessibilityRole="toolbar">
+          {/* Like button — always show */}
+          <Pressable
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
+            accessibilityState={{ selected: liked }}
+            onPress={async (e) => {
+              e.stopPropagation?.()
+              if (!isHumanAction()) return
+              if (!userId) { router.push('/(auth)/login'); return }
+              if (likingRef.current) return
+              likingRef.current = true
+              try {
+                try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
 
-                  // Block interactions on seed posts (fake IDs cause FK violations)
-                  if ((post as any).is_seed) return
+                // Block interactions on seed posts (fake IDs cause FK violations)
+                if ((post as any).is_seed) return
 
-                  if (liked) {
-                    const prevCount = likeCount
-                    setLiked(false)
-                    setLikeCount(c => Math.max(0, c - 1))
-                    const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                    if (error) { setLiked(true); setLikeCount(prevCount) }
-                    else {
-                      // Sync like_count on posts table
-                      await (supabase.from('posts') as any).update({ like_count: Math.max(0, prevCount - 1) }).eq('id', post.id)
-                    }
-                  } else {
-                    const prevCount = likeCount
-                    setLiked(true)
-                    setLikeCount(c => c + 1)
-                    Animated.sequence([
-                      Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
-                      Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
-                    ]).start()
-                    const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
-                    if (error) { setLiked(false); setLikeCount(prevCount) }
-                    else {
-                      // Sync like_count on posts table
-                      await (supabase.from('posts') as any).update({ like_count: prevCount + 1 }).eq('id', post.id)
-                      onInteraction?.(post.id, 'like')
-                      // Notify post author about the like (skip if own post)
-                      if (post.user_id && post.user_id !== userId) {
-                        (supabase.from('notifications') as any).insert({
-                          user_id: post.user_id,
-                          from_user_id: userId,
-                          type: 'post_like',
-                          title: t('post.liked'),
-                          body: post.title,
-                          link_type: 'post',
-                          link_id: post.id,
-                        }).catch(() => {})
-                      }
+                if (liked) {
+                  const prevCount = likeCount
+                  setLiked(false)
+                  setLikeCount(c => Math.max(0, c - 1))
+                  const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                  if (error) { setLiked(true); setLikeCount(prevCount) }
+                  else {
+                    // Sync like_count on posts table
+                    await (supabase.from('posts') as any).update({ like_count: Math.max(0, prevCount - 1) }).eq('id', post.id)
+                  }
+                } else {
+                  const prevCount = likeCount
+                  setLiked(true)
+                  setLikeCount(c => c + 1)
+                  Animated.sequence([
+                    Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
+                    Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+                  ]).start()
+                  const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
+                  if (error) { setLiked(false); setLikeCount(prevCount) }
+                  else {
+                    // Sync like_count on posts table
+                    await (supabase.from('posts') as any).update({ like_count: prevCount + 1 }).eq('id', post.id)
+                    onInteraction?.(post.id, 'like')
+                    // Notify post author about the like (skip if own post)
+                    if (post.user_id && post.user_id !== userId) {
+                      (supabase.from('notifications') as any).insert({
+                        user_id: post.user_id,
+                        from_user_id: userId,
+                        type: 'post_like',
+                        title: t('post.liked'),
+                        body: post.title,
+                        link_type: 'post',
+                        link_id: post.id,
+                      }).catch(() => {})
                     }
                   }
-                } finally { likingRef.current = false }
-              }}
-              style={styles.engagementItem}
-            >
-              <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
-                <Heart size={14} color={liked ? colors.destructive : colors.mutedForeground} fill={liked ? colors.destructive : 'transparent'} />
-              </Animated.View>
-              {likeCount > 0 && <Text style={[styles.engagementText, { color: liked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>}
-            </Pressable>
-          )}
-          {hasEngagement && (post.comment_count ?? 0) > 0 && (
-            <View style={styles.engagementItem}>
-              <MessageCircle size={14} color={colors.mutedForeground} />
-              <Text style={[styles.engagementText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
-            </View>
-          )}
-          {hasEngagement && (post.comment_count ?? 0) === 0 && (likeCount > 0 || liked) && (
-            <View style={styles.engagementItem}>
-              <MessageCircle size={14} color={colors.mutedForeground} />
-              <Text style={[styles.engagementText, { color: colors.mutedForeground, fontStyle: 'italic' }]}>{t('feed.startConversation')}</Text>
-            </View>
-          )}
+                }
+              } finally { likingRef.current = false }
+            }}
+            style={styles.actionItem}
+          >
+            <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
+              <Heart size={16} color={liked ? colors.destructive : colors.mutedForeground} fill={liked ? colors.destructive : 'transparent'} />
+            </Animated.View>
+            {likeCount > 0 && <Text style={[styles.actionText, { color: liked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>}
+          </Pressable>
+
+          {/* Comment count */}
+          <View style={styles.actionItem}>
+            <MessageCircle size={16} color={colors.mutedForeground} />
+            {(post.comment_count ?? 0) > 0 && (
+              <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+            )}
+          </View>
+
+          {/* Save */}
           <Pressable
-            hitSlop={12}
+            hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={saved ? t('post.unsave') : t('post.save')}
             accessibilityState={{ selected: saved }}
@@ -392,17 +434,19 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 }
               } finally { savingRef.current = false }
             }}
-            style={styles.engagementItem}
+            style={styles.actionItem}
           >
             {saved ? (
-              <BookmarkCheck size={14} color={colors.primary} fill={colors.primary} />
+              <BookmarkCheck size={16} color={colors.primary} fill={colors.primary} />
             ) : (
-              <Bookmark size={14} color={colors.mutedForeground} />
+              <Bookmark size={16} color={colors.mutedForeground} />
             )}
           </Pressable>
+
+          {/* More menu items */}
           {showMore && (
             <Pressable
-              hitSlop={12}
+              hitSlop={8}
               onPress={async (e) => {
                 e.stopPropagation?.()
                 try {
@@ -410,14 +454,14 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                   await Share.share({ message: post.title + '\n' + APP_URL + '/post/' + post.id })
                 } catch {}
               }}
-              style={styles.engagementItem}
+              style={styles.actionItem}
             >
-              <Share2 size={14} color={colors.mutedForeground} />
+              <Share2 size={16} color={colors.mutedForeground} />
             </Pressable>
           )}
           {showMore && (
             <Pressable
-              hitSlop={12}
+              hitSlop={8}
               onPress={(e) => {
                 e.stopPropagation?.()
                 setShowMore(false)
@@ -425,100 +469,49 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 // Navigate to post detail where report modal exists
                 router.push(`/post/${post.id}`)
               }}
-              style={styles.engagementItem}
+              style={styles.actionItem}
             >
-              <Flag size={14} color={colors.mutedForeground} />
+              <Flag size={16} color={colors.mutedForeground} />
             </Pressable>
           )}
           {showMore && userId && (
             <Pressable
-              hitSlop={12}
+              hitSlop={8}
               onPress={(e) => {
                 e.stopPropagation?.()
                 setShowMore(false)
                 onInteraction?.(post.id, 'hide')
                 onHide?.(post.id)
               }}
-              style={styles.engagementItem}
+              style={styles.actionItem}
             >
-              <EyeOff size={14} color={colors.mutedForeground} />
+              <EyeOff size={16} color={colors.mutedForeground} />
             </Pressable>
           )}
+
+          {/* More toggle */}
           <Pressable
-            hitSlop={12}
+            hitSlop={8}
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
-            style={[styles.engagementItem, !showMore && { opacity: 0.5 }]}
+            style={[styles.actionItem, !showMore && { opacity: 0.5 }]}
           >
-            <MoreHorizontal size={14} color={colors.mutedForeground} />
+            <MoreHorizontal size={16} color={colors.mutedForeground} />
           </Pressable>
+
+          {/* Popular badge */}
           {likeCount >= 5 && (
             <View style={[styles.popularBadge, { backgroundColor: isDark ? '#D9770615' : '#FEF3C7' }]}>
               <TrendingUp size={11} color="#D97706" />
               <Text style={styles.popularText}>{t('feed.popular')}</Text>
             </View>
           )}
-        </View>
 
-        {/* User row */}
-        <View style={styles.userRow}>
-          {isAnonymous ? (
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
-                <User size={18} color={colors.mutedForeground} />
-              </View>
-              <View style={styles.userInfo}>
-                <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {t('postCard.anonymousNeighbor')}
-                </Text>
-                {post.created_at && (
-                  <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
-                    {formatTimeAgo(post.created_at, t, locale)}
-                  </Text>
-                )}
-              </View>
+          {/* Distance — right-aligned */}
+          {distanceText && (
+            <View style={styles.distanceRow}>
+              <MapPin size={11} color={colors.primary} />
+              <Text style={[styles.distanceText, { color: colors.primary }]}>{distanceText}</Text>
             </View>
-          ) : (
-            <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-              <View style={styles.avatarContainer}>
-                {user?.avatar_url ? (
-                  <Image source={{ uri: user.avatar_url }} style={[
-                    styles.avatar,
-                    { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
-                  ]} contentFit="cover" />
-                ) : (
-                  <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
-                    <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
-                      {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                    </Text>
-                  </View>
-                )}
-                {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
-              </View>
-
-              <View style={styles.userInfo}>
-                <View style={styles.userNameRow}>
-                  <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
-                    {user?.name ?? t('postCard.anonymousUser')}
-                  </Text>
-                  {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
-                  {isPro && (
-                    <View style={styles.proMicroBadge}>
-                      <Crown size={10} color={colors.pro} />
-                    </View>
-                  )}
-                  {user?.is_business && (
-                    <View style={styles.businessMicroBadge}>
-                      <Building2 size={10} color={colors.primary} />
-                    </View>
-                  )}
-                </View>
-                {post.created_at && (
-                  <Text style={[styles.timeAgo, { color: colors.mutedForeground }]}>
-                    {formatTimeAgo(post.created_at, t, locale)}
-                  </Text>
-                )}
-              </View>
-            </Pressable>
           )}
         </View>
       </View>
@@ -529,71 +522,90 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
 const styles = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
-  categoryBar: { position: 'absolute' as const, left: 0, top: 0, bottom: 0, width: 6, zIndex: 1, borderTopLeftRadius: 14, borderBottomLeftRadius: 14 },
   proBanner: {
     height: 22, backgroundColor: '#F59E0B',
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
     shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
-  imageContainer: { aspectRatio: 16 / 9, position: 'relative' },
-  image: { width: '100%', height: '100%' },
+  content: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12, gap: 6 },
+
+  // Top row: user + category badge
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  topRowLeft: { flex: 1, minWidth: 0 },
+  topRowUserInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  userNameBlock: { flexShrink: 1, minWidth: 0 },
+  userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  userName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
+  timeAgoDot: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14.3, flexShrink: 0 },
+
+  // Avatar
+  avatarContainer: { position: 'relative' },
+  avatar: { width: 32, height: 32, borderRadius: 16, borderWidth: 1 },
+  avatarFallback: { alignItems: 'center', justifyContent: 'center' },
+  avatarInitial: { fontSize: 12, fontWeight: '600' },
+  statusDot: {
+    position: 'absolute', bottom: -1, right: -1,
+    width: 7, height: 7, borderRadius: 3.5, borderWidth: 1,
+  },
+
+  // Category badge — top right pill
+  categoryBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
+    flexShrink: 0,
+  },
+  categoryBadgeText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 13 },
+  newDot: {
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#4CAF6A', marginLeft: 2,
+  },
+
+  // Image — full width, inline
+  imageContainer: { borderRadius: 10, overflow: 'hidden', maxHeight: 200, marginTop: 2 },
+  image: { width: '100%', height: 200 },
   multiImageBadge: {
-    position: 'absolute', bottom: 10, right: 10,
+    position: 'absolute', bottom: 8, right: 8,
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 10,
     paddingHorizontal: 8, paddingVertical: 3,
   },
   multiImageText: { fontSize: 10, fontWeight: '600', color: '#FFFFFF', lineHeight: 13 },
-  proBadge: {
-    position: 'absolute', top: 10, right: 10,
-    width: 28, height: 28, borderRadius: 14,
+  proBadgeOnImage: {
+    position: 'absolute', top: 8, right: 8,
+    width: 26, height: 26, borderRadius: 13,
     alignItems: 'center', justifyContent: 'center',
   },
-  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, gap: 8 },
-  categoryExpRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
+
+  // Expiration
   expirationBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
     paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7 },
-  categoryLabel: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.5, textTransform: 'uppercase', lineHeight: 13 },
-  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.16 },
-  titleLarge: { fontSize: 18, fontFamily: fonts.headingSemi, letterSpacing: -0.18, lineHeight: 24 },
+
+  // Title + description
+  title: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20, letterSpacing: -0.15 },
   seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic' },
-  description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19 },
+
+  // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14.3 },
-  distanceRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
-  engagementRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  engagementItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, minWidth: 44, justifyContent: 'center' },
-  engagementText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
-  popularBadge: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
+
+  // Action row
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
+  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 32, paddingHorizontal: 2 },
+  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
+  popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },
-  userRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingTop: 8 },
-  avatarContainer: { position: 'relative' },
-  avatar: { width: 36, height: 36, borderRadius: 18, borderWidth: 1 },
-  avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { fontSize: 13, fontWeight: '600' },
-  statusDot: {
-    position: 'absolute', bottom: -1, right: -1,
-    width: 8, height: 8, borderRadius: 4, borderWidth: 1,
-  },
-  userInfo: { flex: 1, gap: 1 },
-  userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  userName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
-  timeAgo: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14.3 },
-  // Fix 1: Nappaa urgency banner
-  urgencyBanner: {
-    backgroundColor: '#D94F4F', paddingVertical: 4,
-    alignItems: 'center' as const, justifyContent: 'center' as const,
-  },
-  urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
+  distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 3 },
+  distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13 },
+
+  // Badges
   proMicroBadge: {
     backgroundColor: '#F59E0B18',
     borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
@@ -602,7 +614,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D6B5E18',
     borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
   },
-  newDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#4CAF6A', marginLeft: 4,
+  // Fix 1: Nappaa urgency banner
+  urgencyBanner: {
+    backgroundColor: '#D94F4F', paddingVertical: 4,
+    alignItems: 'center' as const, justifyContent: 'center' as const,
   },
+  urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
 })
