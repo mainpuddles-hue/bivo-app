@@ -70,54 +70,43 @@ export default function VerifyOtpScreen() {
     setError('')
 
     try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email ?? '',
-        token: code.trim(),
-        type: otpMode === 'recovery' ? 'recovery' : 'signup',
+      // Verify OTP via our Edge Function (not Supabase built-in)
+      const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+      const verifyRes = await fetch(`${FUNCTIONS_URL}/verify-otp-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email ?? '', code: code.trim(), type: otpMode }),
       })
+      const verifyData = await verifyRes.json()
 
-      if (verifyError) {
-        if (verifyError.message.includes('expired')) {
-          setError(t('auth.otpExpired'))
-        } else if (verifyError.message.includes('invalid') || verifyError.message.includes('Invalid')) {
+      if (!verifyRes.ok || !verifyData.verified) {
+        const errMsg = verifyData.error
+        if (errMsg === 'invalid_code') {
           setError(t('auth.otpInvalid'))
+        } else if (errMsg?.includes('expired')) {
+          setError(t('auth.otpExpired'))
         } else {
-          setError(verifyError.message)
+          setError(t('auth.otpInvalid'))
         }
         setLoading(false)
         return
       }
 
       if (otpMode === 'recovery') {
-        // Recovery flow: user is now authenticated, navigate to settings to change password
         trackEvent('auth_login_success' as any)
         router.replace('/settings')
       } else {
-        // Signup flow: ensure profile exists, then go to onboarding or feed
         trackEvent('auth_register_success' as any)
-        if (data?.user) {
-          const { data: existingProfile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', data.user.id)
-            .maybeSingle()
-
-          if (!existingProfile) {
-            await (supabase.from('profiles') as any).insert({
-              id: data.user.id,
-              email: data.user.email ?? email,
-              name: data.user.user_metadata?.name ?? '',
-            })
-          }
-
-          // Check if profile has neighborhood set (onboarding completed)
+        // User is already logged in (autoconfirm=true), navigate to onboarding or feed
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('neighborhood')
-            .eq('id', data.user.id)
+            .select('naapurusto')
+            .eq('id', user.id)
             .maybeSingle()
 
-          if (!(profile as any)?.neighborhood) {
+          if (!(profile as any)?.naapurusto) {
             router.replace('/onboarding')
             return
           }
@@ -138,15 +127,15 @@ export default function VerifyOtpScreen() {
     setError('')
 
     try {
-      if (otpMode === 'recovery') {
-        const { error: resendError } = await supabase.auth.resetPasswordForEmail(email ?? '')
-        if (resendError) throw resendError
-      } else {
-        const { error: resendError } = await supabase.auth.resend({
-          type: 'signup',
-          email: email ?? '',
-        })
-        if (resendError) throw resendError
+      const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+      const res = await fetch(`${FUNCTIONS_URL}/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email ?? '', type: otpMode }),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error ?? 'Failed to send')
       }
       setResendCooldown(60)
       Alert.alert(t('common.success'), t('auth.otpResent'))

@@ -154,26 +154,33 @@ export default function LoginScreen() {
         })
         if (error) throw error
 
-        // If Supabase returned a session, email confirmation is disabled — auto-login
-        if (signUpData?.session) {
-          trackEvent('auth_register_success' as any)
-          // Ensure profile exists (fallback if DB trigger fails)
-          if (signUpData.user) {
-            const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', signUpData.user.id).maybeSingle()
-            if (!existingProfile) {
-              await (supabase.from('profiles') as any).insert({
-                id: signUpData.user.id,
-                email: email.trim(),
-                name: name.trim(),
-              })
-            }
+        // Ensure profile exists (fallback if DB trigger fails)
+        if (signUpData?.user) {
+          const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', signUpData.user.id).maybeSingle()
+          if (!existingProfile) {
+            await (supabase.from('profiles') as any).insert({
+              id: signUpData.user.id,
+              email: email.trim(),
+              name: name.trim(),
+            })
           }
-          router.replace('/')
-          return
         }
 
         trackEvent('auth_register_success' as any)
-        // Email confirmation required — navigate to OTP verification screen
+
+        // Send OTP code via Edge Function (Resend API)
+        const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+        try {
+          await fetch(`${FUNCTIONS_URL}/send-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.trim(), type: 'signup' }),
+          })
+        } catch {
+          // If send-otp fails, user can resend from OTP screen
+        }
+
+        // Navigate to OTP verification screen
         router.push({ pathname: '/verify-otp', params: { email: email.trim(), mode: 'signup' } })
       } else {
         const { error } = await supabase.auth.signInWithPassword({
