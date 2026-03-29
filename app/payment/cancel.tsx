@@ -5,8 +5,9 @@ import { XCircle, RotateCcw, ArrowLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
-export default function PaymentCancelScreen() {
+function PaymentCancelScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -109,3 +110,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
   },
 })
+
+export default function PaymentCancelScreen() {
+  return (
+    <ScreenErrorBoundary screenName="PaymentCancel">
+      <PaymentCancelScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

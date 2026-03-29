@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
 
@@ -20,7 +21,7 @@ interface BlockedUser {
   } | null
 }
 
-export default function BlockedUsersScreen() {
+function BlockedUsersScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -87,7 +88,7 @@ export default function BlockedUsersScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('blocked.title')}</Text>
@@ -173,3 +174,11 @@ const s = StyleSheet.create({
   },
   emptyText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })
+
+export default function BlockedUsersScreen() {
+  return (
+    <ScreenErrorBoundary screenName="BlockedUsers">
+      <BlockedUsersScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

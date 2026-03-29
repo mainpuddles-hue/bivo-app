@@ -19,6 +19,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 // ── Types ──
 
@@ -184,7 +185,7 @@ function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hook
 //  Main screen
 // ══════════════════════════════════════════════════════
 
-export default function ActivitiesScreen() {
+function ActivitiesScreenInner() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -491,11 +492,11 @@ export default function ActivitiesScreen() {
   const needsDayPicker = createScheduleType === 'weekly' || createScheduleType === 'biweekly'
 
   return (
-    <View style={[st.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[st.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* ── Header ── */}
       <View style={[st.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={st.backBtn}>
-          <ArrowLeft size={22} color={colors.foreground} />
+        <Pressable onPress={() => router.back()} hitSlop={12} style={st.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[st.headerTitle, { color: colors.foreground }]}>
           {t('activities.title')}
@@ -818,7 +819,7 @@ const st = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     gap: 12,
   },
@@ -1035,9 +1036,9 @@ const st = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     fontSize: 15,
     fontFamily: fonts.body,
     lineHeight: 20,
@@ -1045,8 +1046,8 @@ const st = StyleSheet.create({
   textArea: {
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     fontSize: 15,
     fontFamily: fonts.body,
     lineHeight: 20,
@@ -1103,6 +1104,7 @@ const st = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 8,
+    minHeight: 48,
   },
   createBtnText: {
     fontSize: 16,
@@ -1110,3 +1112,11 @@ const st = StyleSheet.create({
     lineHeight: 24,
   },
 })
+
+export default function ActivitiesScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Activities">
+      <ActivitiesScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

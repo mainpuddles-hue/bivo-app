@@ -1299,7 +1299,7 @@ const styles = StyleSheet.create({
   urgencySection: { gap: 8 },
   urgencyOptions: { flexDirection: 'row', gap: 10 },
   urgencyOption: {
-    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, borderWidth: 1.5,
+    flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,
   },
   urgencyOptionText: { fontSize: 15, fontWeight: '700' },
   categoryTextWrap: { flex: 1, gap: 2 },
@@ -1309,7 +1309,7 @@ const styles = StyleSheet.create({
   field: { gap: 6 },
   label: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   input: {
-    borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
     fontSize: 15, minHeight: 48, fontFamily: fonts.body,
   },
   textArea: { minHeight: 120 },
@@ -1345,7 +1345,7 @@ const styles = StyleSheet.create({
   },
   detailsToggleText: { fontSize: 14, fontFamily: fonts.bodySemi },
   submitBtn: {
-    borderRadius: 12, paddingVertical: 14, alignItems: 'center',
+    borderRadius: 12, paddingVertical: 16, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
   submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -1362,7 +1362,7 @@ const styles = StyleSheet.create({
   // Pro banner
   proBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    padding: 12, borderRadius: 10,
+    padding: 12, borderRadius: 12,
   },
   proBannerText: { flex: 1, fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
 
@@ -1400,14 +1400,14 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
   modalFooter: { paddingHorizontal: 16, paddingVertical: 12 },
   confirmBtn: {
-    borderRadius: 12, paddingVertical: 14, alignItems: 'center',
+    borderRadius: 12, paddingVertical: 16, alignItems: 'center',
     justifyContent: 'center', minHeight: 48,
   },
   confirmBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   coordsDisplay: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   coordsDisplayText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.body },
   mapFallback: {
@@ -1417,7 +1417,7 @@ const styles = StyleSheet.create({
   mapFallbackHint: { fontSize: 13, textAlign: 'center', fontFamily: fonts.body },
   coordInputRow: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
   coordInput: {
-    flex: 1, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
+    flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
     fontSize: 14, textAlign: 'center', fontFamily: fonts.body,
   },
 })

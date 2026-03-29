@@ -7,8 +7,9 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { TRUST_TIERS } from '@/lib/constants'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
-export default function VerificationSuccessScreen() {
+function VerificationSuccessScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -90,3 +91,11 @@ const styles = StyleSheet.create({
   primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
 })
+
+export default function VerificationSuccessScreen() {
+  return (
+    <ScreenErrorBoundary screenName="VerificationSuccess">
+      <VerificationSuccessScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

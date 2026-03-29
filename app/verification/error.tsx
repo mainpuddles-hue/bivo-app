@@ -5,8 +5,9 @@ import { ShieldAlert, RotateCcw, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
-export default function VerificationErrorScreen() {
+function VerificationErrorScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -50,3 +51,11 @@ const styles = StyleSheet.create({
   secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, borderWidth: 1 },
   secondaryBtnText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })
+
+export default function VerificationErrorScreen() {
+  return (
+    <ScreenErrorBoundary screenName="VerificationError">
+      <VerificationErrorScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

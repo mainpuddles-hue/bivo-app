@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   proDiscount: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 8,
+    gap: 8, paddingVertical: 16, borderRadius: 12, marginTop: 8, minHeight: 48,
   },
   submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8, fontFamily: fonts.body },

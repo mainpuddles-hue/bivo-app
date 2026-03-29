@@ -6,8 +6,9 @@ import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
-export default function AboutScreen() {
+function AboutScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -18,7 +19,7 @@ export default function AboutScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('about.title')}</Text>
@@ -116,3 +117,11 @@ const s = StyleSheet.create({
   creditsText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   copyrightText: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 16 },
 })
+
+export default function AboutScreen() {
+  return (
+    <ScreenErrorBoundary screenName="About">
+      <AboutScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

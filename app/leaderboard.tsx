@@ -9,6 +9,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { FEATURES } from '@/lib/featureFlags'
 
 interface LeaderboardUser {
@@ -196,6 +197,8 @@ export default function LeaderboardScreen() {
             router.push(`/profile/${item.id}` as any)
           }
         }}
+        accessibilityRole="button"
+        accessibilityLabel={`#${rank} ${item.name ?? t('common.user')}, ${item.total_points} ${t('profile.points')}`}
         style={({ pressed }) => [
           s.row,
           { backgroundColor: isCurrentUser ? `${colors.primary}10` : colors.card },
@@ -238,10 +241,11 @@ export default function LeaderboardScreen() {
   const isCurrentUserInTop10 = users.some(u => u.id === currentUserId)
 
   return (
+    <ScreenErrorBoundary screenName="Leaderboard">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
@@ -252,6 +256,9 @@ export default function LeaderboardScreen() {
       <View style={s.filterRow}>
         <Pressable
           onPress={() => setFilter('all')}
+          accessibilityRole="button"
+          accessibilityLabel={t('leaderboard.allNeighborhoods')}
+          accessibilityState={{ selected: filter === 'all' }}
           style={[
             s.filterChip,
             {
@@ -266,6 +273,9 @@ export default function LeaderboardScreen() {
         {userNeighborhood && (
           <Pressable
             onPress={() => setFilter('neighborhood')}
+            accessibilityRole="button"
+            accessibilityLabel={userNeighborhood}
+            accessibilityState={{ selected: filter === 'neighborhood' }}
             style={[
               s.filterChip,
               {
@@ -330,6 +340,7 @@ export default function LeaderboardScreen() {
         />
       )}
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -344,10 +355,10 @@ const s = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
-    lineHeight: 24,
+    lineHeight: 28,
   },
   filterRow: {
     flexDirection: 'row',
@@ -399,7 +410,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 12,
+    padding: 16,
     borderRadius: 12,
   },
   rankCircle: {

@@ -344,19 +344,19 @@ const s = StyleSheet.create({
   saveBadgeText: { fontSize: 10, fontWeight: '800', fontFamily: fonts.bodySemi },
   subscribeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 10, paddingVertical: 16, borderRadius: 12, marginTop: 4,
+    gap: 10, paddingVertical: 16, borderRadius: 12, marginTop: 4, minHeight: 48,
   },
   subscribeBtnText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   manageBtn: {
-    alignItems: 'center', paddingVertical: 14, borderRadius: 12,
-    borderWidth: 1,
+    alignItems: 'center', paddingVertical: 16, borderRadius: 12,
+    borderWidth: 1, minHeight: 48,
   },
   manageBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
   errorText: { fontSize: 13, textAlign: 'center', fontFamily: fonts.body },
   termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 14, borderWidth: 1, marginTop: 8,
+    padding: 16, borderRadius: 12, borderWidth: 1, marginTop: 8,
   },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
   autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },

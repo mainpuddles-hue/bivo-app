@@ -16,6 +16,7 @@ import { PostCard } from '@/components/PostCard'
 import { EmptyState } from '@/components/EmptyState'
 import { PostCardSkeleton } from '@/components/SkeletonLoaders'
 import { getCachedUserId } from '@/lib/authCache'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Post } from '@/lib/types'
 
 type SavedTab = 'posts' | 'events' | 'places'
@@ -36,7 +37,7 @@ interface SavedPlace {
   address: string | null
 }
 
-export default function SavedScreen() {
+function SavedScreenInner() {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -228,7 +229,7 @@ export default function SavedScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('saved.title')}</Text>
@@ -282,6 +283,8 @@ export default function SavedScreen() {
                     onPress={() => handleUnsavePost(post.id)}
                     disabled={unsavingId === post.id}
                     style={[s.unsaveBtn, { backgroundColor: colors.card }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('saved.unsave')}
                   >
                     <BookmarkCheck size={16} color={colors.primary} />
                   </Pressable>
@@ -324,7 +327,7 @@ export default function SavedScreen() {
                       </View>
                     )}
                   </View>
-                  <Pressable onPress={() => handleUnsaveEvent(event.id, event.event_type)} hitSlop={8}>
+                  <Pressable onPress={() => handleUnsaveEvent(event.id, event.event_type)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')}>
                     <BookmarkCheck size={18} color={colors.primary} />
                   </Pressable>
                 </Pressable>
@@ -358,7 +361,7 @@ export default function SavedScreen() {
                       </View>
                     )}
                   </View>
-                  <Pressable onPress={() => handleUnsavePlace(place.id)} hitSlop={8}>
+                  <Pressable onPress={() => handleUnsavePlace(place.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')}>
                     <BookmarkCheck size={18} color={colors.primary} />
                   </Pressable>
                 </View>
@@ -416,3 +419,11 @@ const s = StyleSheet.create({
   eventLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
   eventLocation: { fontSize: 12, fontFamily: fonts.body },
 })
+
+export default function SavedScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Saved">
+      <SavedScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

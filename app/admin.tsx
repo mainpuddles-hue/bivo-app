@@ -11,6 +11,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { formatTimeAgo } from '@/lib/format'
 
 type Tab = 'flags' | 'users' | 'stats'
@@ -45,7 +46,7 @@ interface Stats {
   unreviewedFlags: number
 }
 
-export default function AdminScreen() {
+function AdminScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -197,7 +198,7 @@ export default function AdminScreen() {
   // Loading / access denied
   if (loading) {
     return (
-      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
       </View>
     )
@@ -205,9 +206,9 @@ export default function AdminScreen() {
 
   if (!isAdmin) {
     return (
-      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
-        <View style={s.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
+        <View style={[s.header, { borderBottomColor: colors.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('admin.accessDenied')}</Text>
@@ -228,10 +229,10 @@ export default function AdminScreen() {
   ]
 
   return (
-    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
-      <View style={s.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+      <View style={[s.header, { borderBottomColor: colors.border }]}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <View style={s.headerCenter}>
@@ -453,7 +454,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerCenter: {
     flexDirection: 'row',
@@ -461,8 +463,9 @@ const s = StyleSheet.create({
     gap: 8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: fonts.headingSemi,
+    letterSpacing: -0.3,
   },
   tabs: {
     flexDirection: 'row',
@@ -642,3 +645,11 @@ const s = StyleSheet.create({
     maxWidth: 280,
   },
 })
+
+export default function AdminScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Admin">
+      <AdminScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

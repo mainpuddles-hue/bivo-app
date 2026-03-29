@@ -33,6 +33,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { NEIGHBORHOODS, CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
 import { useReferral } from '@/hooks/useReferral'
 import { trackEvent } from '@/lib/analytics'
@@ -49,7 +50,7 @@ const CITY_NAMES: Record<string, string> = {
   oulu: 'Oulu',
 }
 
-export default function OnboardingScreen() {
+function OnboardingScreenInner() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -884,7 +885,7 @@ const s = StyleSheet.create({
     gap: 8,
     borderRadius: 12,
     paddingVertical: 16,
-    minHeight: 52,
+    minHeight: 48,
   },
   primaryBtnText: {
     fontSize: 16,
@@ -901,3 +902,11 @@ const s = StyleSheet.create({
     borderRadius: 4,
   },
 })
+
+export default function OnboardingScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Onboarding">
+      <OnboardingScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

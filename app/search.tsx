@@ -1343,7 +1343,7 @@ const s = StyleSheet.create({
   },
   searchBar: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 44,
+    borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, height: 48,
   },
   searchInput: { flex: 1, fontSize: 15, fontFamily: fonts.body },
   filterButton: { position: 'relative', padding: 4 },
@@ -1392,7 +1392,7 @@ const s = StyleSheet.create({
   categoryGrid: { gap: 8 },
   categoryCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 16, borderRadius: 12,
   },
   categoryIconBox: {
     width: 44, height: 44, borderRadius: 12,

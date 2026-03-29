@@ -161,7 +161,7 @@ function CommunityEventsScreenInner() {
   const keyExtractor = useCallback((item: CommunityEvent) => item.id, [])
 
   return (
-    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
@@ -244,12 +244,11 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
   },

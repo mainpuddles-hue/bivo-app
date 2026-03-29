@@ -10,6 +10,7 @@ import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, Plus, ChevronRight, Search, X, Users, Lock, Globe,
 } from 'lucide-react-native'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -312,7 +313,7 @@ export default function GroupsScreen() {
         accessibilityLabel={`${group.name}, ${group.member_count} ${t('groups.members')}`}
       >
         <View style={[s.groupAvatar, { backgroundColor: catColor }]}>
-          <Text style={s.groupAvatarText}>
+          <Text style={[s.groupAvatarText, { color: colors.primaryForeground }]}>
             {(group.name || '?').charAt(0).toUpperCase()}
           </Text>
         </View>
@@ -355,11 +356,12 @@ export default function GroupsScreen() {
   // ── Coming soon empty state ──
   if (!loading && !tableExists) {
     return (
+      <ScreenErrorBoundary screenName="Groups">
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         {/* Header */}
         <View style={[s.header, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8}>
-            <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
+          <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+            <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
             {t('groups.title')}
@@ -373,20 +375,22 @@ export default function GroupsScreen() {
           </Text>
         </View>
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
   return (
+    <ScreenErrorBoundary screenName="Groups">
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8}>
-          <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
+        <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>
           {t('groups.title')}
         </Text>
-        <Pressable onPress={() => setShowSearch(!showSearch)} style={s.headerBack} hitSlop={8}>
+        <Pressable onPress={() => setShowSearch(!showSearch)} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.search')}>
           <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
         </Pressable>
       </View>
@@ -633,6 +637,7 @@ export default function GroupsScreen() {
         </Pressable>
       </Modal>
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -652,9 +657,9 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 20,
     fontFamily: fonts.headingSemi,
-    letterSpacing: 0.2,
+    letterSpacing: -0.3,
   },
   headerRight: { width: 40 },
   searchBar: {
@@ -696,7 +701,6 @@ const s = StyleSheet.create({
   groupAvatarText: {
     fontSize: 18,
     fontFamily: fonts.heading,
-    color: '#FFFFFF',
   },
   groupCardMiddle: {
     flex: 1,

@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
     width: 40,
@@ -522,6 +522,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 20,
     textAlign: 'center',
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.3,
   },
   headerSpacer: {
     width: 40,
@@ -575,7 +577,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     fontSize: 16,
   },
   multilineInput: {
@@ -653,9 +655,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,
-    minHeight: 52,
+    minHeight: 48,
   },
   submitButtonText: {
-    fontSize: 17,
+    fontSize: 16,
+    fontFamily: fonts.bodySemi,
   },
 })

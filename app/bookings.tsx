@@ -16,6 +16,7 @@ import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { getCachedUserId } from '@/lib/authCache'
 
 function BookingCardSkeleton() {
@@ -97,7 +98,7 @@ function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useThem
     case 'active': return colors.primary
     case 'completed': return colors.success
     case 'cancelled': return colors.destructive
-    case 'disputed': return '#E8A050'
+    case 'disputed': return colors.pro
     case 'refunded': return colors.mutedForeground
     default: return colors.mutedForeground
   }
@@ -332,6 +333,8 @@ export default function BookingsScreen() {
     return (
       <Pressable
         onPress={() => router.push(`/booking/${item.id}` as any)}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
         style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>
@@ -383,10 +386,10 @@ export default function BookingsScreen() {
                 style={[styles.actionBtn, { backgroundColor: colors.success }]}
               >
                 {isActionLoading(item.id) ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
                   <>
-                    <CheckCircle size={14} color="#FFFFFF" />
+                    <CheckCircle size={14} color={colors.primaryForeground} />
                     <Text style={styles.actionBtnText}>{t('rental.confirmBooking')}</Text>
                   </>
                 )}
@@ -452,6 +455,8 @@ export default function BookingsScreen() {
     return (
       <Pressable
         onPress={() => router.push(`/booking/${item.id}` as any)}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
         style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>
@@ -643,7 +648,7 @@ const styles = StyleSheet.create({
   },
   cardTop: {
     flexDirection: 'row',
-    padding: 12,
+    padding: 16,
     gap: 12,
   },
   itemImage: {

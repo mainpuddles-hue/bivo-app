@@ -5,8 +5,9 @@ import { ArrowLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
-export default function TermsScreen() {
+function TermsScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -15,7 +16,7 @@ export default function TermsScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('terms.title')}</Text>
@@ -96,3 +97,11 @@ const s = StyleSheet.create({
   listItem: { fontSize: 14, fontFamily: fonts.body, lineHeight: 21 },
   link: { fontSize: 14, fontFamily: fonts.bodyMedium, marginTop: 8 },
 })
+
+export default function TermsScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Terms">
+      <TermsScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

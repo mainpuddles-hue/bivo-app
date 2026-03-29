@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -441,11 +442,12 @@ export default function ForumScreen() {
   }, [loading, tableExists, colors, t])
 
   return (
+    <ScreenErrorBoundary screenName="Forum">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top, backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)', borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
         <View style={s.headerContent}>
-          <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={8}><ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} /></Pressable>
+          <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
           <View style={s.headerSpacer} />
         </View>
@@ -593,6 +595,7 @@ export default function ForumScreen() {
         targetId={reportTargetId}
       />
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -602,7 +605,7 @@ const s = StyleSheet.create({
   header: { zIndex: 40, borderBottomWidth: StyleSheet.hairlineWidth },
   headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 48, paddingHorizontal: 16 },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 17, fontFamily: fonts.headingSemi, letterSpacing: -0.2 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   headerSpacer: { width: 40 },
   filterBar: { paddingHorizontal: 16, paddingVertical: 10, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, alignSelf: 'flex-start', borderWidth: 1 },
@@ -613,8 +616,8 @@ const s = StyleSheet.create({
   sortRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   sortChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
   sortChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
-  newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  newPostsBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, color: '#FFFFFF' },
+  newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
+  newPostsBannerText: { fontSize: 13, fontFamily: fonts.bodySemi },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   listHeaderGap: { height: 4 },
   card: { borderRadius: 12, overflow: 'hidden', flexDirection: 'row', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
@@ -631,8 +634,8 @@ const s = StyleSheet.create({
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 56, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth },
   modalTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, textAlign: 'center', paddingHorizontal: 8 },
   modalSection: { paddingHorizontal: 16, paddingTop: 14 },
-  publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, minWidth: 80, alignItems: 'center' },
+  publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, minWidth: 80, alignItems: 'center' },
   publishBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
-  titleInput: { fontSize: 16, fontFamily: fonts.headingSemi, borderRadius: 10, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, letterSpacing: -0.16 },
-  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 10, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, lineHeight: 20, minHeight: 160 },
+  titleInput: { fontSize: 16, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
+  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
 })

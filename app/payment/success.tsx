@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { formatPrice } from '@/lib/format'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 interface BookingSummary {
   id: string
@@ -18,7 +19,7 @@ interface BookingSummary {
   status: string
 }
 
-export default function PaymentSuccessScreen() {
+function PaymentSuccessScreenInner() {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -298,3 +299,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
   },
 })
+
+export default function PaymentSuccessScreen() {
+  return (
+    <ScreenErrorBoundary screenName="PaymentSuccess">
+      <PaymentSuccessScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

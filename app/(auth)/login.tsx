@@ -13,6 +13,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { fonts } from '@/lib/fonts'
 import { trackEvent } from '@/lib/analytics'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 function AppleLogo({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) {
   return (
@@ -61,7 +62,7 @@ const pwStyles = StyleSheet.create({
   text: { fontSize: 12, fontFamily: fonts.body },
 })
 
-export default function LoginScreen() {
+function LoginScreenInner() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -567,3 +568,11 @@ const styles = StyleSheet.create({
   emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },
   termsText: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
 })
+
+export default function LoginScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Login">
+      <LoginScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

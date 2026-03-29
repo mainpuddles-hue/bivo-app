@@ -434,13 +434,13 @@ export default function SettingsScreen() {
                     {nameText.length}/50
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <Pressable onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: colors.muted }}>
+                    <Pressable onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.muted }}>
                       <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi }}>{t('common.cancel')}</Text>
                     </Pressable>
                     <Pressable
                       onPress={handleSaveName}
                       disabled={savingName || !nameText.trim()}
-                      style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
+                      style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
                     >
                       <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
                         {savingName ? '...' : t('common.save')}
@@ -914,8 +914,8 @@ const s = StyleSheet.create({
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
   proBadge: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   upgradeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  input: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontFamily: fonts.body },
-  changePwBtn: { borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
+  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body },
+  changePwBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, padding: 16, borderRadius: 12, marginTop: 16,
@@ -963,10 +963,10 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   deleteInput: {
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     fontSize: 14,
     fontFamily: fonts.body,
   },

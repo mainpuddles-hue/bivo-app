@@ -24,6 +24,7 @@ import { GroupCommentList } from '@/components/groups/GroupCommentList'
 import { GroupMembersModal } from '@/components/groups/GroupMembersModal'
 import { GroupEditModal } from '@/components/groups/GroupEditModal'
 import { ReportModal } from '@/components/ReportModal'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
 import type { GroupMember } from '@/components/groups/GroupMembersModal'
@@ -573,6 +574,7 @@ export default function GroupDetailScreen() {
   }, [group, colors, isDark, catColor, t, isMember, handleJoinLeave, fetchMembers])
 
   return (
+    <ScreenErrorBoundary screenName="GroupDetail">
     <KeyboardAvoidingView
       style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -691,16 +693,17 @@ export default function GroupDetailScreen() {
         targetId={reportTargetId}
       />
     </KeyboardAvoidingView>
+    </ScreenErrorBoundary>
   )
 }
 
 // ── Styles ──
 const ps = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 52, paddingHorizontal: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   headerBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: { fontSize: 16, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   headerSub: { fontSize: 11, fontFamily: fonts.body, marginTop: -1 },
   loadingContainer: { padding: 16 },
   listContent: { padding: 16 },

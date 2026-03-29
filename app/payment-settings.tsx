@@ -11,8 +11,9 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { usePaymentMethods } from '@/hooks/usePaymentMethods'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
-export default function PaymentSettingsScreen() {
+function PaymentSettingsScreenInner() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -70,7 +71,7 @@ export default function PaymentSettingsScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('payment.settings')}</Text>
@@ -251,3 +252,11 @@ const s = StyleSheet.create({
   infoRow: { flexDirection: 'row', gap: 12, padding: 16, alignItems: 'flex-start' },
   infoText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, flex: 1 },
 })
+
+export default function PaymentSettingsScreen() {
+  return (
+    <ScreenErrorBoundary screenName="PaymentSettings">
+      <PaymentSettingsScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { formatPrice } from '@/lib/format'
 
 type PaymentStatus = 'paid' | 'refunded' | 'pending' | 'failed'
@@ -45,7 +46,7 @@ function getStatusColor(status: PaymentStatus, colors: ReturnType<typeof useThem
   }
 }
 
-export default function PaymentHistoryScreen() {
+function PaymentHistoryScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -171,7 +172,7 @@ export default function PaymentHistoryScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('payment.history')}</Text>
@@ -313,3 +314,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
 })
+
+export default function PaymentHistoryScreen() {
+  return (
+    <ScreenErrorBoundary screenName="PaymentHistory">
+      <PaymentHistoryScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

@@ -911,7 +911,7 @@ const s = StyleSheet.create({
   bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
   bioTapArea: { alignItems: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 16 },
   bioEditWrap: { width: '100%', gap: 8, paddingHorizontal: 8 },
-  bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, minHeight: 64, textAlignVertical: 'top', fontFamily: fonts.body },
+  bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, minHeight: 64, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
   bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
   badgesSection: { alignItems: 'center', gap: 8, width: '100%' },

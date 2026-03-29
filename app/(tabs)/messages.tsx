@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   searchBar: {
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16, marginVertical: 8, borderWidth: 1,
     borderRadius: 12, paddingHorizontal: 16, height: 48,
   },
-  searchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, paddingVertical: 0 },
   list: { paddingBottom: 96 },
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,

@@ -565,7 +565,8 @@ function ConversationScreenInner() {
           <Pressable
             onPress={() => setShowReportModal(true)}
             hitSlop={8}
-            style={{ padding: 6 }}
+            style={{ padding: 8 }}
+            accessibilityRole="button"
             accessibilityLabel={t('report.title')}
           >
             <Flag size={18} color={colors.mutedForeground} strokeWidth={1.8} />
@@ -741,7 +742,7 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerAvatar: { width: 36, height: 36, borderRadius: 18 },
   headerName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },

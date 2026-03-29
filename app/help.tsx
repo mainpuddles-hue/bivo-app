@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Mail, ExternalLink } from 'lucide-re
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 interface FAQItem {
   question: string
@@ -58,7 +59,7 @@ const FAQ_CATEGORIES: FAQCategory[] = [
   },
 ]
 
-export default function HelpScreen() {
+function HelpScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -80,7 +81,7 @@ export default function HelpScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('help.title')}</Text>
@@ -182,3 +183,11 @@ const s = StyleSheet.create({
   },
   linkText: { fontSize: 15, fontFamily: fonts.bodyMedium },
 })
+
+export default function HelpScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Help">
+      <HelpScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

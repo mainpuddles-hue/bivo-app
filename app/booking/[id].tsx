@@ -270,7 +270,7 @@ function BookingDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
           <View style={{ flex: 1 }} />
         </View>
@@ -292,7 +292,7 @@ function BookingDetailScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
         <View style={{ flex: 1 }} />
       </View>
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   actionsContainer: { gap: 8, marginTop: 8 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 14, borderRadius: 12,
+    gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48,
   },
   actionBtnText: { fontSize: 15, fontFamily: fonts.bodySemi },
 })

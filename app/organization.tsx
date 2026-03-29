@@ -564,19 +564,19 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 12, paddingBottom: 60 },
-  businessCard: { borderRadius: 14, padding: 18, gap: 6 },
+  businessCard: { borderRadius: 12, padding: 16, gap: 6 },
   businessName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.headingSemi },
   vatId: { fontSize: 13, fontFamily: fonts.body },
   statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 8 },
   statusText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   toggleCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderRadius: 14, padding: 16,
+    borderRadius: 12, padding: 16,
   },
   toggleText: { fontSize: 15, flex: 1, fontWeight: '500', fontFamily: fonts.bodyMedium },
   createAdBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 14, borderRadius: 14,
+    gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48,
   },
   createAdText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   sectionLabel: {
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
     fontFamily: fonts.bodySemi,
   },
-  adCard: { borderRadius: 14, padding: 16, gap: 8 },
+  adCard: { borderRadius: 12, padding: 16, gap: 8 },
   adHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   adTitle: { fontSize: 15, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi },
   adStatus: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 
   // Profile editor styles
-  editorCard: { borderRadius: 14, padding: 16, gap: 10 },
+  editorCard: { borderRadius: 12, padding: 16, gap: 10 },
   imageScroll: { gap: 10, paddingVertical: 4 },
   imageThumbWrap: { position: 'relative' },
   imageThumb: { width: 90, height: 90, borderRadius: 10 },
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 4,
+    gap: 8, paddingVertical: 16, borderRadius: 12, marginTop: 4, minHeight: 48,
   },
   saveBtnText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
 })

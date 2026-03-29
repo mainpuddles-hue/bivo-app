@@ -212,7 +212,7 @@ function EventDetailScreenInner() {
 
   if (loading) {
     return (
-      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
@@ -227,7 +227,7 @@ function EventDetailScreenInner() {
 
   if (!event) {
     return (
-      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
@@ -287,7 +287,7 @@ function EventDetailScreenInner() {
   }
 
   return (
-    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header bar */}
       <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
@@ -483,7 +483,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerActions: {
@@ -615,9 +615,10 @@ const s = StyleSheet.create({
   },
   actionButton: {
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
+    minHeight: 48,
   },
   actionButtonText: {
     fontSize: 16,
@@ -664,8 +665,9 @@ const s = StyleSheet.create({
     gap: 8,
     marginHorizontal: 16,
     marginTop: 12,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
+    minHeight: 48,
   },
   messageCreatorText: {
     fontSize: 15,

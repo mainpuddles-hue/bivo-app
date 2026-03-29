@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 /**
  * Auth callback screen — handles OAuth redirect from Google/Supabase.
@@ -16,7 +17,7 @@ import { TackBirdLogo } from '@/components/TackBirdLogo'
  *
  * We handle both cases.
  */
-export default function AuthCallbackScreen() {
+function AuthCallbackScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const router = useRouter()
@@ -209,3 +210,11 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 15, fontFamily: fonts.body, textAlign: 'center' },
   backLink: { fontSize: 14, fontFamily: fonts.bodyMedium },
 })
+
+export default function AuthCallbackScreen() {
+  return (
+    <ScreenErrorBoundary screenName="AuthCallback">
+      <AuthCallbackScreenInner />
+    </ScreenErrorBoundary>
+  )
+}

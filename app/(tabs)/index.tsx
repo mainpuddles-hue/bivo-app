@@ -71,9 +71,9 @@ function CommunityCard({ item, type, colors, t, onPress }: {
   onPress: () => void
 }) {
   const iconConfig = {
-    event: { Icon: CalendarDays, color: '#2B8A62', bg: '#2B8A6220', label: t('feed.upcomingEvent') },
-    group: { Icon: Users, color: '#7C5CBF', bg: '#7C5CBF20', label: t('feed.activeGroup') },
-    thread: { Icon: MessageCircle, color: '#3B7DD8', bg: '#3B7DD820', label: t('feed.trendingThread') },
+    event: { Icon: CalendarDays, color: colors.success, bg: `${colors.success}20`, label: t('feed.upcomingEvent') },
+    group: { Icon: Users, color: colors.accent, bg: `${colors.accent}20`, label: t('feed.activeGroup') },
+    thread: { Icon: MessageCircle, color: colors.info, bg: `${colors.info}20`, label: t('feed.trendingThread') },
   }[type]
 
   const title = item.title ?? item.name ?? ''
@@ -381,7 +381,7 @@ function FeedScreenInner() {
               digestData.threads > 0 ? `${digestData.threads} ${t('feed.newDiscussions')}` : null,
             ].filter(Boolean).join(' \u00B7 ')}
           </Text>
-          <Pressable onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 8, right: 8 }}>
+          <Pressable onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
             <XIcon size={14} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -393,8 +393,8 @@ function FeedScreenInner() {
           <Text style={[styles.missedBannerText, { color: colors.primaryForeground }]}>
             {t('feed.missedPosts', { count: missedCount })}
           </Text>
-          <Pressable onPress={() => setShowMissedBanner(false)} hitSlop={8}>
-            <XIcon size={16} color="#FFFFFF" />
+          <Pressable onPress={() => setShowMissedBanner(false)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
+            <XIcon size={16} color={colors.primaryForeground} />
           </Pressable>
         </View>
       )}
@@ -409,7 +409,7 @@ function FeedScreenInner() {
       {displayEvents.length > 0 ? (
         <View style={{ gap: 10 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
-            <View style={[styles.sectionBar, { backgroundColor: '#2B8A62' }]} />
+            <View style={[styles.sectionBar, { backgroundColor: colors.success }]} />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{eventSectionTitle}</Text>
           </View>
           {displayEvents.map(event => (
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   newBannerText: { fontSize: 14, fontFamily: fonts.bodySemi },
   errorRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
   },
   errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
   compactSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
