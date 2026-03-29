@@ -831,7 +831,7 @@ export default function PublicProfileScreen() {
           <View style={s.stat}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
               <Text style={[s.statNum, { color: colors.foreground }]}>{((profile as any)?.total_points ?? 0) > 0 ? (profile as any).total_points : '\u2013'}</Text>
-              <Zap size={12} color="#F59E0B" fill="#F59E0B" />
+              <Zap size={12} color={colors.pro} fill={colors.pro} />
             </View>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('leaderboard.points')}</Text>
           </View>
