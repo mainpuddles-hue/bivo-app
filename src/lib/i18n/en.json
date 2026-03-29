@@ -1331,7 +1331,13 @@
     "eventDateInPast": "Event date cannot be in the past",
     "published": "Your listing has been published!",
     "visibleTo": "Visible to neighbors in {neighborhood}",
-    "share": "Share"
+    "share": "Share",
+    "listing": "Listing",
+    "event": "Event",
+    "discussion": "Discussion",
+    "listingHint": "Need, offer, free items...",
+    "eventHint": "Organize a neighborhood event",
+    "discussionHint": "Start a discussion on the forum"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",

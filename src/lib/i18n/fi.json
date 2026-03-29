@@ -1331,7 +1331,13 @@
     "eventDateInPast": "Tapahtuman päivämäärä ei voi olla menneisyydessä",
     "published": "Ilmoituksesi on julkaistu!",
     "visibleTo": "Näkyy naapureille alueella {neighborhood}",
-    "share": "Jaa"
+    "share": "Jaa",
+    "listing": "Ilmoitus",
+    "event": "Tapahtuma",
+    "discussion": "Keskustelu",
+    "listingHint": "Tarvitsen, tarjoan, ilmaista...",
+    "eventHint": "Järjestä tapahtuma naapurustossa",
+    "discussionHint": "Aloita keskustelu foorumilla"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",

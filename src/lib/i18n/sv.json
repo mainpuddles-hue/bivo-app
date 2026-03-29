@@ -1311,7 +1311,13 @@
     "eventDateInPast": "Evenemangets datum kan inte vara i det förflutna",
     "published": "Din annons har publicerats!",
     "visibleTo": "Synlig för grannar i {neighborhood}",
-    "share": "Dela"
+    "share": "Dela",
+    "listing": "Annons",
+    "event": "Evenemang",
+    "discussion": "Diskussion",
+    "listingHint": "Behöver, erbjuder, gratis...",
+    "eventHint": "Ordna ett evenemang i grannskapet",
+    "discussionHint": "Starta en diskussion på forumet"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",

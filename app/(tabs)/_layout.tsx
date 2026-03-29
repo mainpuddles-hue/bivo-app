@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Tabs } from 'expo-router'
-import { View, Text, StyleSheet } from 'react-native'
+import { Tabs, useRouter } from 'expo-router'
+import { View, Text, StyleSheet, Modal, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Newspaper, Plus, MessageCircle, User, Compass } from 'lucide-react-native'
+import { Newspaper, Plus, MessageCircle, User, Compass, FileText, CalendarDays, ChevronRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { Header } from '@/components/Header'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useUnreadCount } from '@/hooks/useUnreadCount'
@@ -54,11 +55,13 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
 export default function TabLayout() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
+  const router = useRouter()
   const insets = useSafeAreaInsets()
   const tabBarBg = isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)'
   const supabase = useSupabase()
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)
+  const [showCreateMenu, setShowCreateMenu] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -101,6 +104,11 @@ export default function TabLayout() {
       <Tabs.Screen name="create" options={{
         tabBarAccessibilityLabel: t('nav.create'),
         tabBarIcon: ({ focused }) => <TabIcon icon={Plus} label={t('nav.create')} focused={focused} isCreate colors={colors} />,
+      }} listeners={{
+        tabPress: (e) => {
+          e.preventDefault()
+          setShowCreateMenu(true)
+        },
       }} />
       <Tabs.Screen name="messages" options={{
         tabBarAccessibilityLabel: t('nav.messages'),
@@ -111,6 +119,66 @@ export default function TabLayout() {
         tabBarIcon: ({ focused }) => <TabIcon icon={User} label={t('nav.profile')} focused={focused} colors={colors} />,
       }} />
     </Tabs>
+    <Modal
+      visible={showCreateMenu}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowCreateMenu(false)}
+    >
+      <Pressable style={s.backdrop} onPress={() => setShowCreateMenu(false)}>
+        <View style={[s.sheet, { backgroundColor: colors.card }]}>
+          <View style={[s.handle, { backgroundColor: colors.border }]} />
+
+          <Pressable
+            style={s.sheetRow}
+            accessibilityLabel={t('create.listing')}
+            accessibilityRole="button"
+            onPress={() => { setShowCreateMenu(false); router.push('/(tabs)/create') }}
+          >
+            <View style={[s.sheetIcon, { backgroundColor: `${colors.primary}15` }]}>
+              <FileText size={20} color={colors.primary} />
+            </View>
+            <View style={s.sheetText}>
+              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.listing')}</Text>
+              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.listingHint')}</Text>
+            </View>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+
+          <Pressable
+            style={s.sheetRow}
+            accessibilityLabel={t('create.event')}
+            accessibilityRole="button"
+            onPress={() => { setShowCreateMenu(false); router.push('/create-event') }}
+          >
+            <View style={[s.sheetIcon, { backgroundColor: '#2B8A6215' }]}>
+              <CalendarDays size={20} color="#2B8A62" />
+            </View>
+            <View style={s.sheetText}>
+              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.event')}</Text>
+              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.eventHint')}</Text>
+            </View>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+
+          <Pressable
+            style={s.sheetRow}
+            accessibilityLabel={t('create.discussion')}
+            accessibilityRole="button"
+            onPress={() => { setShowCreateMenu(false); router.push('/forum') }}
+          >
+            <View style={[s.sheetIcon, { backgroundColor: '#3B7DD815' }]}>
+              <MessageCircle size={20} color="#3B7DD8" />
+            </View>
+            <View style={s.sheetText}>
+              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.discussion')}</Text>
+              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.discussionHint')}</Text>
+            </View>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+        </View>
+      </Pressable>
+    </Modal>
     </View>
   )
 }
@@ -155,4 +223,12 @@ const s = StyleSheet.create({
     position: 'absolute', bottom: -6,
     width: 20, height: 3, borderRadius: 1.5,
   },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingBottom: 32, paddingTop: 8 },
+  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
+  sheetRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12, minHeight: 56 },
+  sheetIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  sheetText: { flex: 1 },
+  sheetTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
+  sheetHint: { fontSize: 13, fontFamily: fonts.body, marginTop: 2 },
 })

@@ -1292,7 +1292,13 @@
     "tooShort": "Palun kirjuta pikem kirjeldus",
     "published": "Sinu kuulutus on avaldatud!",
     "visibleTo": "Nähtav naabritele piirkonnas {neighborhood}",
-    "share": "Jaga"
+    "share": "Jaga",
+    "listing": "Kuulutus",
+    "event": "Sündmus",
+    "discussion": "Arutelu",
+    "listingHint": "Vajan, pakun, tasuta...",
+    "eventHint": "Korralda sündmus naabruskonnas",
+    "discussionHint": "Alusta arutelu foorumil"
   },
   "locationPicker": {
     "useCurrentLocation": "Kasuta praegust asukohta",
