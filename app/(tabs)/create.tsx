@@ -125,14 +125,28 @@ export default function CreateScreen() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [successNeighborhood, setSuccessNeighborhood] = useState<string | null>(null)
   const [successPostId, setSuccessPostId] = useState<string | null>(null)
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Handle pre-selected type from query params (e.g., from events screen)
   useEffect(() => {
     if (params.type && Object.keys(CATEGORIES).includes(params.type)) {
+      // Respect feature flags — don't allow disabled categories via deep link
+      if (params.type === 'lainaa' && !FEATURES.LENDING) return
+      if (params.type === 'nappaa' && !FEATURES.GRAB) return
       setSelectedType(params.type as PostType)
       setStep('form')
     }
   }, [params.type])
+
+  // Clean up success timeout on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current)
+        successTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
 
@@ -338,12 +352,14 @@ export default function CreateScreen() {
       await (supabase.from('post_images') as any).insert(extras)
     }
 
-    if (failedCount > 0) {
+    if (failedCount > 0 && uploadedUrls.length > 0) {
+      // Some images failed but at least one succeeded — show partial failure notice
       Alert.alert(
         t('common.error'),
         t('create.imageUploadPartialFail', { count: failedCount }),
       )
     }
+    // When ALL images failed (uploadedUrls empty), the caller handles it
 
     return uploadedUrls[0] ?? null
   }
@@ -486,6 +502,27 @@ export default function CreateScreen() {
         const mainImageUrl = await uploadImages(user.id, post.id)
         if (mainImageUrl) {
           await (supabase.from('posts') as any).update({ image_url: mainImageUrl }).eq('id', post.id)
+        } else {
+          // ALL image uploads failed — ask user whether to keep post without images or retry
+          const userChoice = await new Promise<'publish' | 'retry'>(resolve => {
+            Alert.alert(
+              t('common.error'),
+              t('create.allImagesFailed'),
+              [
+                { text: t('create.retryUpload'), style: 'cancel', onPress: () => resolve('retry') },
+                { text: t('create.publishWithoutImages'), onPress: () => resolve('publish') },
+              ],
+              { cancelable: false },
+            )
+          })
+          if (userChoice === 'retry') {
+            // Delete the already-inserted post and bail out so user can retry
+            await (supabase.from('posts') as any).delete().eq('id', post.id)
+            setSubmitting(false)
+            setUploadStatus('')
+            return
+          }
+          // userChoice === 'publish' — continue without images
         }
       }
 
@@ -592,7 +629,8 @@ export default function CreateScreen() {
       setSuccessPostId(createdPostId)
       setSuccessNeighborhood(userNeighborhood)
       setShowSuccess(true)
-      setTimeout(() => {
+      successTimeoutRef.current = setTimeout(() => {
+        successTimeoutRef.current = null
         setShowSuccess(false)
         router.replace(`/post/${createdPostId}`)
       }, 2000)
@@ -1076,9 +1114,21 @@ export default function CreateScreen() {
                 </Text>
               )}
               <Pressable
-                onPress={() => {
+                onPress={async () => {
+                  // Cancel the auto-navigation timeout so it doesn't fire during/after sharing
+                  if (successTimeoutRef.current) {
+                    clearTimeout(successTimeoutRef.current)
+                    successTimeoutRef.current = null
+                  }
                   if (successPostId) {
-                    Share.share({ message: `${t('create.published')} https://tackbird.fi/post/${successPostId}` }).catch(() => {})
+                    try {
+                      await Share.share({ message: `${t('create.published')} https://tackbird.fi/post/${successPostId}` })
+                    } catch (_) {
+                      // User cancelled or share failed — navigate anyway
+                    }
+                    // Navigate after share sheet is dismissed
+                    setShowSuccess(false)
+                    router.replace(`/post/${successPostId}`)
                   }
                 }}
                 style={[styles.shareBtn, { backgroundColor: colors.primary }]}

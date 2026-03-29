@@ -357,8 +357,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                   const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
                   if (error) { setLiked(true); setLikeCount(prevCount) }
                   else {
-                    // Sync like_count on posts table
-                    await (supabase.from('posts') as any).update({ like_count: Math.max(0, prevCount - 1) }).eq('id', post.id)
+                    // Re-read actual count from post_likes (source of truth) to avoid divergence
+                    const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
+                    const syncedCount = realCount ?? Math.max(0, prevCount - 1)
+                    setLikeCount(syncedCount)
+                    await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', post.id)
                   }
                 } else {
                   const prevCount = likeCount
@@ -371,8 +374,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                   const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
                   if (error) { setLiked(false); setLikeCount(prevCount) }
                   else {
-                    // Sync like_count on posts table
-                    await (supabase.from('posts') as any).update({ like_count: prevCount + 1 }).eq('id', post.id)
+                    // Re-read actual count from post_likes (source of truth) to avoid divergence
+                    const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
+                    const syncedCount = realCount ?? (prevCount + 1)
+                    setLikeCount(syncedCount)
+                    await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', post.id)
                     onInteraction?.(post.id, 'like')
                     // Notify post author about the like (skip if own post)
                     if (post.user_id && post.user_id !== userId) {

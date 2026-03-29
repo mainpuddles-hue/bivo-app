@@ -1,12 +1,12 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { Bell, Search, Map } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { TackBirdLogo } from './TackBirdLogo'
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
 
 export function Header() {
@@ -17,7 +17,7 @@ export function Header() {
   const supabase = useSupabase()
   const [unreadCount, setUnreadCount] = useState(0)
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     let mounted = true
     async function fetchUnread() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -31,7 +31,7 @@ export function Header() {
     }
     fetchUnread()
     return () => { mounted = false }
-  }, [supabase])
+  }, [supabase]))
 
   return (
     <View style={[

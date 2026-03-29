@@ -27,6 +27,7 @@ import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
 import { ReferralCard } from '@/components/ReferralCard'
 import { getCachedUserId, clearAuthCache } from '@/lib/authCache'
+import { clearExpiredPro } from '@/lib/proExpiry'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 interface ActivityItem {
@@ -103,12 +104,7 @@ export default function ProfileScreen() {
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     if (p) {
       // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
-      const GRACE_DAYS = 3
-      if ((p as any).is_pro && (p as any).pro_expires_at && new Date((p as any).pro_expires_at).getTime() + GRACE_DAYS * 86400000 < Date.now() && !(p as any).stripe_subscription_id) {
-        await (supabase.from('profiles') as any).update({ is_pro: false, pro_expires_at: null }).eq('id', user.id)
-        ;(p as any).is_pro = false
-        ;(p as any).pro_expires_at = null
-      }
+      await clearExpiredPro(supabase, user.id, p as any)
       setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '')
     }
 
@@ -507,12 +503,12 @@ export default function ProfileScreen() {
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <Pressable style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityLabel={`${profile?.total_points ?? 0} ${t('profile.karma')}`} accessibilityRole="button">
+          <Pressable style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityLabel={`${profile?.total_points ?? 0} ${t('profile.points')}`} accessibilityRole="button">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[s.statNum, { color: colors.foreground }]}>{profile?.total_points ?? 0}</Text>
               <Zap size={12} color={colors.pro} fill={colors.pro} />
             </View>
-            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.karma')}</Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.points')}</Text>
           </Pressable>
         </View>
 
@@ -538,10 +534,12 @@ export default function ProfileScreen() {
         )}
 
         {/* Quick action cards */}
+        {FEATURES.PAYMENTS && (
         <Pressable onPress={() => router.push('/bookings')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('bookings.title')} accessibilityRole="button">
           <Package size={18} color={colors.pro} />
           <Text style={[s.overviewText, { color: colors.foreground }]}>{t('bookings.title')}</Text>
         </Pressable>
+        )}
 
         <Pressable onPress={() => router.push('/saved')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('saved.title')} accessibilityRole="button">
           <Heart size={18} color={colors.primary} />
@@ -631,12 +629,6 @@ export default function ProfileScreen() {
                 </View>
               </View>
             )}
-
-            {/* Saved posts count — navigates to saved screen */}
-            <Pressable onPress={() => router.push('/saved')} style={[s.overviewCard, { backgroundColor: colors.card }]}>
-              <Heart size={18} color={colors.primary} />
-              <Text style={[s.overviewText, { color: colors.foreground }]}>{t('profile.saved', { count: savedCount })}</Text>
-            </Pressable>
 
             {/* Reviews */}
             <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('profile.reviewsCount', { count: reviews.length })}</Text>

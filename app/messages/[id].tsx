@@ -61,6 +61,8 @@ function ConversationScreenInner() {
   const [userId, setUserId] = useState<string | null>(null)
   const [otherUser, setOtherUser] = useState<Profile | null>(null)
   const [sending, setSending] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
   const [hasOlder, setHasOlder] = useState(true)
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
@@ -83,24 +85,37 @@ function ConversationScreenInner() {
   // self" UI instead of a broken "unknown user" state.
   useEffect(() => {
     async function load() {
+      setLoading(true)
+      setNotFound(false)
+
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) { setLoading(false); setNotFound(true); return }
       setUserId(user.id)
 
       const { data: conv } = await supabase.from('conversations').select('*').eq('id', id).single()
-      if (conv) {
-        const otherId = (conv as any).user1_id === user.id ? (conv as any).user2_id : (conv as any).user1_id
-        const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).single()
-        if (profile) setOtherUser(profile as unknown as Profile)
+      if (!conv) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
 
-        if ((conv as any).post_id) {
-          const { data: postData } = await supabase
-            .from('posts')
-            .select('id, title, type, image_url')
-            .eq('id', (conv as any).post_id)
-            .single()
-          if (postData) setLinkedPost(postData as any)
-        }
+      const otherId = (conv as any).user1_id === user.id ? (conv as any).user2_id : (conv as any).user1_id
+      const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).single()
+      if (profile) {
+        setOtherUser(profile as unknown as Profile)
+      } else {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
+
+      if ((conv as any).post_id) {
+        const { data: postData } = await supabase
+          .from('posts')
+          .select('id, title, type, image_url')
+          .eq('id', (conv as any).post_id)
+          .single()
+        if (postData) setLinkedPost(postData as any)
       }
 
       const { data: msgs } = await supabase
@@ -141,12 +156,15 @@ function ConversationScreenInner() {
         .eq('conversation_id', id)
         .neq('sender_id', user.id)
         .eq('is_read', false)
+
+      setLoading(false)
     }
     if (id && isValidUUID(id)) {
       load()
     } else {
-      // Invalid conversation ID — show empty state instead of infinite spinner
-      setMessages([])
+      // Invalid conversation ID — show not-found state
+      setLoading(false)
+      setNotFound(true)
     }
   }, [id, supabase])
 
@@ -532,6 +550,44 @@ function ConversationScreenInner() {
   const selectedMsg = selectedMessageId ? messagesRef.current.find(m => m.id === selectedMessageId) : null
   const canDelete = selectedMsg?.sender_id === userId && !(selectedMsg as any)?.is_deleted
   const canCopy = selectedMsg && !(selectedMsg as any)?.is_deleted && !!selectedMsg.content
+
+  // Conversation not found — invalid ID, deleted, or missing profile
+  if (notFound && !loading) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back') ?? 'Go back'}
+          >
+            <ArrowLeft size={24} color={colors.foreground} />
+          </Pressable>
+          <Text style={[s.headerName, { color: colors.foreground }]}>{t('messages.title')}</Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+          <Text style={{ fontSize: 17, fontWeight: '600', color: colors.foreground, textAlign: 'center', marginBottom: 8, fontFamily: fonts.bodyMedium }}>
+            {t('messages.conversationNotFound') ?? 'Keskustelua ei löydy'}
+          </Text>
+          <Text style={{ fontSize: 14, color: colors.mutedForeground, textAlign: 'center', marginBottom: 24, fontFamily: fonts.body }}>
+            {t('messages.conversationNotFoundDesc') ?? 'Keskustelu on ehkä poistettu tai sitä ei ole olemassa.'}
+          </Text>
+          <Pressable
+            onPress={() => router.replace('/(tabs)/messages' as any)}
+            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('errors.backToMessages') ?? 'Back to messages'}
+          >
+            <Text style={{ color: colors.primaryForeground, fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium }}>
+              {t('errors.backToMessages') ?? 'Takaisin viesteihin'}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <KeyboardAvoidingView

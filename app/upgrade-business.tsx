@@ -9,6 +9,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { getBusinessAdapter } from '@/lib/adapters'
+import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -45,6 +46,13 @@ export default function UpgradeBusinessScreen() {
     [businessValidationType],
   )
   const idFormat = useMemo(() => businessAdapter.getIdFormat(), [businessAdapter])
+
+  // Feature flag gate — redirect if Business accounts are disabled
+  useEffect(() => {
+    if (!FEATURES.BUSINESS_ACCOUNT) {
+      router.back()
+    }
+  }, [router])
 
   useEffect(() => {
     async function load() {

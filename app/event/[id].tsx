@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
-  ArrowLeft, Share2, Flag, CalendarDays, MapPin, Users, Clock, MessageCircle,
+  ArrowLeft, Share2, Flag, CalendarDays, MapPin, Users, Clock, MessageCircle, XCircle,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -63,6 +63,7 @@ function EventDetailScreenInner() {
   const participantCount = participants.filter(p => p.status === 'joined' || p.status === 'approved').length
   const isCreator = userId != null && event?.creator_id === userId
   const isFull = event?.max_participants != null && participantCount >= event.max_participants
+  const isPast = event != null && new Date(event.event_date) < new Date()
 
   const fetchEvent = useCallback(async () => {
     if (!id || !isValidUUID(id)) {
@@ -258,14 +259,14 @@ function EventDetailScreenInner() {
     ? t('events.participantsCountMax', { count: participantCount, max: event.max_participants })
     : t('events.participantsCount', { count: participantCount })
 
-  // Action button
+  // Action button — hide for past events
   let actionLabel = ''
   let actionColor = colors.primary
   let actionOnPress: (() => void) | null = null
   let actionDisabled = false
 
-  if (isCreator) {
-    // Creator sees nothing (edit/cancel are separate)
+  if (isPast || isCreator) {
+    // Past events and creators see no action button
   } else if (myStatus === 'joined' || myStatus === 'approved') {
     actionLabel = t('events.leaveEvent')
     actionColor = colors.destructive
@@ -329,6 +330,14 @@ function EventDetailScreenInner() {
 
         {/* Title */}
         <Text style={[s.title, { color: colors.foreground }]}>{event.title}</Text>
+
+        {/* Past event banner */}
+        {isPast && (
+          <View style={[s.endedBanner, { backgroundColor: `${colors.destructive}15` }]}>
+            <XCircle size={16} color={colors.destructive} />
+            <Text style={[s.endedBannerText, { color: colors.destructive }]}>{t('events.eventEnded')}</Text>
+          </View>
+        )}
 
         {/* Date + time */}
         <View style={s.infoRow}>
@@ -441,8 +450,8 @@ function EventDetailScreenInner() {
           </Pressable>
         )}
 
-        {/* Creator actions */}
-        {isCreator && (
+        {/* Creator actions — hide for past events */}
+        {isCreator && !isPast && (
           <View style={s.creatorActions}>
             <Pressable
               onPress={() => router.push(`/create-event?edit=${event.id}` as any)}
@@ -543,6 +552,21 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+  },
+
+  // Ended banner
+  endedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  endedBannerText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
   },
 
   // Info rows

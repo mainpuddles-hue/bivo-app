@@ -11,6 +11,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { usePaymentMethods } from '@/hooks/usePaymentMethods'
+import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 function PaymentSettingsScreenInner() {
@@ -23,6 +24,24 @@ function PaymentSettingsScreenInner() {
   const [userId, setUserId] = useState<string | null>(null)
   const [hasProviderPosts, setHasProviderPosts] = useState(false)
   const [connecting, setConnecting] = useState(false)
+
+  // Feature flag gate — redirect if Payments are disabled
+  useEffect(() => {
+    if (!FEATURES.PAYMENTS) {
+      router.back()
+    }
+  }, [router])
+
+  // Auth gate — redirect to login if not authenticated
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.replace('/(auth)/login')
+      }
+    }
+    checkAuth()
+  }, [supabase, router])
 
   const {
     isConnectOnboarded,
@@ -38,12 +57,13 @@ function PaymentSettingsScreenInner() {
       if (!user) return
       setUserId(user.id)
 
-      // Check if user has tarjoan or lainaa posts (provider posts)
+      // Check if user has provider posts (tarjoan type only — lainaa disabled for now)
+      const providerTypes = FEATURES.LENDING ? ['tarjoan', 'lainaa'] : ['tarjoan']
       const { data: posts, error } = await supabase
         .from('posts')
         .select('id')
         .eq('user_id', user.id)
-        .in('type', ['tarjoan', 'lainaa'])
+        .in('type', providerTypes)
         .limit(1)
 
       if (!error && posts && posts.length > 0) {

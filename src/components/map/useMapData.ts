@@ -7,6 +7,7 @@ import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
 import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import * as Location from 'expo-location'
 import { CATEGORIES } from '@/lib/constants'
+import { FEATURES } from '@/lib/featureFlags'
 import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 import { useSupabase } from '@/hooks/useSupabase'
 import { isToday, isTomorrow, isWithinDays } from '@/lib/dateHelpers'
@@ -329,6 +330,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
 
     for (const p of posts) {
       if (p.latitude == null || p.longitude == null) continue
+      if (!FEATURES.LENDING && p.type === 'lainaa') continue
       const dist = haversineKm(cLat, cLng, p.latitude, p.longitude)
       if (dist > radiusKm) continue
       const cat = CATEGORIES[p.type as PostType]

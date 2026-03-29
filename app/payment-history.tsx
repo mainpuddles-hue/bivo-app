@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { formatPrice } from '@/lib/format'
 
@@ -57,6 +58,24 @@ function PaymentHistoryScreenInner() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  // Feature flag gate — redirect if Payments are disabled
+  useEffect(() => {
+    if (!FEATURES.PAYMENTS) {
+      router.back()
+    }
+  }, [router])
+
+  // Auth gate — redirect to login if not authenticated
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.replace('/(auth)/login')
+      }
+    }
+    checkAuth()
+  }, [supabase, router])
 
   const fetchPayments = useCallback(async () => {
     try {

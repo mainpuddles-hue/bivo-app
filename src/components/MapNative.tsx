@@ -17,6 +17,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { NEIGHBORHOODS } from '@/lib/constants'
+import { FEATURES } from '@/lib/featureFlags'
 
 import { useSupabase } from '@/hooks/useSupabase'
 import { isInCityBounds } from '@/lib/geo'
@@ -72,6 +73,7 @@ export default function MapScreen() {
   const [selectedBusiness, setSelectedBusiness] = useState<any | null>(null)
 
   useEffect(() => {
+    if (!FEATURES.BUSINESS_ACCOUNT) return
     let cancelled = false
     ;(async () => {
       try {
@@ -307,7 +309,7 @@ export default function MapScreen() {
               />
             )
           })}
-          {showBusinesses && businesses.map(biz => (
+          {FEATURES.BUSINESS_ACCOUNT && showBusinesses && businesses.map(biz => (
             <Marker
               key={`biz-${biz.id}`}
               coordinate={{ latitude: biz.business_lat, longitude: biz.business_lng }}
@@ -354,6 +356,7 @@ export default function MapScreen() {
         </Pressable>
 
         {/* ── Business toggle chip ── */}
+        {FEATURES.BUSINESS_ACCOUNT && (
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
@@ -373,6 +376,7 @@ export default function MapScreen() {
             {t('map.businesses')}
           </Text>
         </Pressable>
+        )}
 
         {/* ── Filter Pills ── */}
         <MapFilters
@@ -490,7 +494,7 @@ export default function MapScreen() {
       />
 
       {/* ── Business Preview Card ── */}
-      {selectedBusiness && (
+      {FEATURES.BUSINESS_ACCOUNT && selectedBusiness && (
         <View style={[styles.businessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Pressable
             onPress={() => setSelectedBusiness(null)}

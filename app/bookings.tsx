@@ -16,6 +16,7 @@ import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
+import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { getCachedUserId } from '@/lib/authCache'
 
@@ -135,6 +136,24 @@ export default function BookingsScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<'active' | 'past'>('active')
+
+  // Feature flag gate — redirect if Payments are disabled
+  useEffect(() => {
+    if (!FEATURES.PAYMENTS) {
+      router.back()
+    }
+  }, [router])
+
+  // Auth gate — redirect to login if not authenticated
+  useEffect(() => {
+    async function checkAuth() {
+      const cachedId = await getCachedUserId()
+      if (!cachedId) {
+        router.replace('/(auth)/login')
+      }
+    }
+    checkAuth()
+  }, [router])
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -687,15 +706,6 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 2,
   },
-  tinyAvatar: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-  },
-  tinyAvatarFb: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   userName: {
     fontSize: 12,
     flex: 1,
@@ -743,23 +753,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
-  },
-  empty: {
-    alignItems: 'center',
-    paddingTop: 80,
-    gap: 10,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 24,
-  },
-  emptyHint: {
-    fontSize: 13,
-    textAlign: 'center',
-    paddingHorizontal: 40,
-    lineHeight: 16,
-    fontFamily: fonts.body,
   },
   statusFilterRow: {
     flexDirection: 'row',

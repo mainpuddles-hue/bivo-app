@@ -3,7 +3,7 @@ import { initSentry } from '@/lib/sentry'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { Platform, View } from 'react-native'
+import { Alert, Platform, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
 import { useFonts, BricolageGrotesque_500Medium, BricolageGrotesque_600SemiBold, BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque'
@@ -223,22 +223,52 @@ function useCurrentUserId() {
 }
 
 /**
- * Listen for auth state changes (e.g. email verification deep link, password reset).
- * When a user clicks a confirmation/reset link, Supabase triggers SIGNED_IN or
- * PASSWORD_RECOVERY events. We route them to the correct screen.
+ * Listen for auth state changes (e.g. email verification deep link, password reset,
+ * session expiry). When a user clicks a confirmation/reset link, Supabase triggers
+ * SIGNED_IN or PASSWORD_RECOVERY events. We route them to the correct screen.
+ *
+ * Session expiry detection:
+ * - SIGNED_OUT after initial check → session expired, show alert and redirect
+ * - TOKEN_REFRESHED with null session → token refresh failed, redirect to login
+ * - Periodic session check on protected routes → redirect if session is null
+ *
+ * Uses `initialCheckDoneRef` to avoid redirect loops on initial app load.
  */
 function useAuthStateListener() {
   const supabase = useSupabase()
   const router = useRouter()
   const segments = useSegments()
+  const { t } = useI18n()
   const authSegmentsRef = useRef(segments)
   authSegmentsRef.current = segments
+
+  // Track whether the initial auth state has been resolved so we don't
+  // treat the first SIGNED_OUT as a session expiry on cold start.
+  const initialCheckDoneRef = useRef(false)
+  // Track whether we had a session at some point (to distinguish "expired" from "never logged in")
+  const hadSessionRef = useRef(false)
 
   useEffect(() => {
     let mounted = true
     const timers: ReturnType<typeof setTimeout>[] = []
 
+    // Run an initial session check to seed our refs
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
+      if (session) {
+        hadSessionRef.current = true
+      }
+      initialCheckDoneRef.current = true
+    }).catch(() => {
+      if (mounted) initialCheckDoneRef.current = true
+    })
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Track sessions so we know if expiry happened
+      if (session) {
+        hadSessionRef.current = true
+      }
+
       if (event === 'SIGNED_IN' && session) {
         // Don't navigate if auth/callback is handling the redirect
         if (authSegmentsRef.current[0] === 'auth') return
@@ -271,13 +301,63 @@ function useAuthStateListener() {
       } else if (event === 'SIGNED_OUT') {
         const timer = setTimeout(async () => {
           if (!mounted) return
+
+          // Determine if this is a session expiry (had session + initial check done)
+          // vs. a deliberate logout or cold start without session
+          const isSessionExpiry = initialCheckDoneRef.current && hadSessionRef.current
+
           try {
             clearAuthCache()
             await AsyncStorage.removeItem('onboarding_complete')
           } catch {
             // Non-critical — ignore
           }
-          if (mounted) router.replace('/(auth)/login')
+
+          if (!mounted) return
+
+          // Don't redirect if already on auth screens
+          const currentSegment = authSegmentsRef.current[0]
+          if (currentSegment === '(auth)' || currentSegment === 'auth') return
+
+          if (isSessionExpiry) {
+            // Session expired — show alert then redirect
+            Alert.alert(
+              t('common.error'),
+              t('auth.sessionExpired'),
+              [{ text: 'OK', onPress: () => { if (mounted) router.replace('/(auth)/login') } }]
+            )
+          } else if (initialCheckDoneRef.current) {
+            // Deliberate sign-out (not initial load)
+            router.replace('/(auth)/login')
+          }
+          // If initialCheckDoneRef is false, this is the initial SIGNED_OUT on cold start
+          // with no session — don't redirect (the onboarding guard handles routing)
+        }, 100)
+        timers.push(timer)
+      } else if (event === 'TOKEN_REFRESHED' && !session) {
+        // Token refresh failed — session is invalid
+        if (!initialCheckDoneRef.current) return
+
+        const timer = setTimeout(async () => {
+          if (!mounted) return
+
+          const currentSegment = authSegmentsRef.current[0]
+          if (currentSegment === '(auth)' || currentSegment === 'auth') return
+
+          try {
+            clearAuthCache()
+            await AsyncStorage.removeItem('onboarding_complete')
+          } catch {
+            // Non-critical — ignore
+          }
+
+          if (!mounted) return
+
+          Alert.alert(
+            t('common.error'),
+            t('auth.sessionExpired'),
+            [{ text: 'OK', onPress: () => { if (mounted) router.replace('/(auth)/login') } }]
+          )
         }, 100)
         timers.push(timer)
       } else if (event === 'PASSWORD_RECOVERY' && session) {
@@ -293,7 +373,55 @@ function useAuthStateListener() {
       timers.forEach(clearTimeout)
       subscription.unsubscribe()
     }
-  }, [supabase, router])
+  }, [supabase, router, t])
+}
+
+/**
+ * Periodically check if the session is still valid on protected routes.
+ * If getSession() returns null while the user is on a protected route,
+ * redirect to login. Runs every 60 seconds.
+ */
+function useSessionGuard() {
+  const supabase = useSupabase()
+  const router = useRouter()
+  const segments = useSegments()
+  const { t } = useI18n()
+  const segmentsRef = useRef(segments)
+  segmentsRef.current = segments
+
+  useEffect(() => {
+    const PROTECTED_CHECK_INTERVAL = 60000 // 60 seconds
+    let mounted = true
+
+    const interval = setInterval(async () => {
+      if (!mounted) return
+
+      const currentSegment = segmentsRef.current[0]
+      // Only check on protected routes (not auth or onboarding screens)
+      if (currentSegment === '(auth)' || currentSegment === 'auth' || currentSegment === 'onboarding') return
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!mounted) return
+
+        if (!session) {
+          clearAuthCache()
+          Alert.alert(
+            t('common.error'),
+            t('auth.sessionExpired'),
+            [{ text: 'OK', onPress: () => { if (mounted) router.replace('/(auth)/login') } }]
+          )
+        }
+      } catch {
+        // Network error or similar — don't redirect on transient failures
+      }
+    }, PROTECTED_CHECK_INTERVAL)
+
+    return () => {
+      mounted = false
+      clearInterval(interval)
+    }
+  }, [supabase, router, t])
 }
 
 function RootLayoutInner() {
@@ -302,6 +430,7 @@ function RootLayoutInner() {
   useNotificationNavigation()
   useAnalyticsSetup()
   useAuthStateListener()
+  useSessionGuard()
 
   // Location-aware international system
   const userId = useCurrentUserId()

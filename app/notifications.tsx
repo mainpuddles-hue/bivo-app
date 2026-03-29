@@ -3,7 +3,7 @@ import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSh
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2 } from 'lucide-react-native'
+import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2, LogIn } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -127,6 +127,7 @@ function NotificationsScreenInner() {
   const [notifications, setNotifications] = useState<PrioritizedNotification[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(true)
   const [activeFilter, setActiveFilter] = useState('all')
   // 1a: Expanded groups state — tracks which grouped notifications are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
@@ -134,7 +135,8 @@ function NotificationsScreenInner() {
   const fetchNotifications = useCallback(async () => {
     try {
       const cachedId = await getCachedUserId()
-      if (!cachedId) { setLoading(false); setRefreshing(false); return }
+      if (!cachedId) { setIsLoggedIn(false); setLoading(false); setRefreshing(false); return }
+      setIsLoggedIn(true)
       const { data } = await supabase
         .from('notifications')
         .select('*, from_user:profiles!notifications_from_user_id_fkey(id, name, avatar_url)')
@@ -374,11 +376,21 @@ function NotificationsScreenInner() {
         }}
         ListEmptyComponent={
           !loading ? (
-            <EmptyState
-              icon={<Bell size={36} color={colors.primary} />}
-              title={t('notifications.empty')}
-              description={t('notifications.emptyHint')}
-            />
+            !isLoggedIn ? (
+              <EmptyState
+                icon={<LogIn size={36} color={colors.primary} />}
+                title={t('notifications.loginRequired')}
+                description={t('notifications.loginHint')}
+                actionLabel={t('auth.login')}
+                onAction={() => router.push('/(auth)/login')}
+              />
+            ) : (
+              <EmptyState
+                icon={<Bell size={36} color={colors.primary} />}
+                title={t('notifications.empty')}
+                description={t('notifications.emptyHint')}
+              />
+            )
           ) : null
         }
         showsVerticalScrollIndicator={false}

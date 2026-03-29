@@ -1,3 +1,10 @@
+// TODO: i18n — All label strings in this file (PLACE_LABEL, POST_SUBCATS,
+// EVENT_SUBCATS, PLACE_SUBCATS, TIME_FILTERS) are hardcoded in Finnish.
+// They should be internationalized in a future pass. Since this is a plain
+// constants file (not a React component), it cannot use the useI18n() hook.
+// Approach: add a `labelKey` field mapping to i18n translation keys, and
+// resolve translations in the consuming components.
+
 export const LAYER_COLORS = {
   post: '#2D6B5E',
   event: '#8E44AD',
@@ -11,13 +18,15 @@ export const PLACE_LABEL: Record<string, string> = {
   fast_food: 'Pikaruoka', pub: 'Pubi', other: 'Muu',
 }
 
+import { FEATURES } from '@/lib/featureFlags'
+
 export const POST_SUBCATS = [
   { key: null, label: 'Kaikki tyypit', color: LAYER_COLORS.post },
   { key: 'tarvitsen', label: 'Tarvitsen', color: '#C75B3A' },
   { key: 'tarjoan', label: 'Tarjoan', color: '#7C5CBF' },
   { key: 'ilmaista', label: 'Ilmaista', color: '#3B7DD8' },
   { key: 'nappaa', label: 'Nappaa', color: '#E8A050' },
-  { key: 'lainaa', label: 'Lainaa', color: '#C98B2E' },
+  ...(FEATURES.LENDING ? [{ key: 'lainaa' as const, label: 'Lainaa', color: '#C98B2E' }] : []),
   { key: 'tapahtuma', label: 'Tapahtuma', color: '#2B8A62' },
 ]
 

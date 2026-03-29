@@ -25,6 +25,7 @@ import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { isValidUUID } from '@/lib/validation'
+import { FEATURES } from '@/lib/featureFlags'
 import { isProfileVisible } from '@/lib/privacyUtils'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
@@ -66,7 +67,7 @@ export default function PublicProfileScreen() {
 
   useEffect(() => {
     async function load() {
-      if (!userId || !isValidUUID(userId)) return
+      if (!userId || !isValidUUID(userId)) { setLoading(false); return }
 
       const { data: { user } } = await supabase.auth.getUser()
       if (user) setCurrentUserId(user.id)
@@ -180,6 +181,7 @@ export default function PublicProfileScreen() {
   }, [userId, supabase, router])
 
   const followingRef = useRef(false)
+  const [creatingConversation, setCreatingConversation] = useState(false)
   const handleFollow = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
     if (followingRef.current) return
@@ -205,27 +207,33 @@ export default function PublicProfileScreen() {
   }, [currentUserId, isFollowing, followerCount, userId, supabase, router])
 
   const handleMessage = useCallback(async () => {
+    if (creatingConversation) return
     if (!currentUserId) { router.push('/(auth)/login'); return }
     if (!isValidUUID(currentUserId) || !isValidUUID(userId)) return
-    // Find existing conversation or create new one
-    const { data: existing } = await supabase
-      .from('conversations')
-      .select('id')
-      .or(`and(user1_id.eq.${currentUserId},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${currentUserId})`)
-      .maybeSingle()
-
-    if (existing) {
-      router.push(`/messages/${(existing as any).id}`)
-    } else {
-      const { data: newConv, error } = await (supabase.from('conversations') as any)
-        .insert({ user1_id: currentUserId, user2_id: userId })
+    setCreatingConversation(true)
+    try {
+      // Find existing conversation or create new one
+      const { data: existing } = await supabase
+        .from('conversations')
         .select('id')
-        .single()
-      if (error) { if (__DEV__) console.log('[conv] create error:', JSON.stringify(error)); Alert.alert(t('common.error'), error.message || t('messages.conversationCreateFailed')); return }
-      if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
-      router.push(`/messages/${newConv.id}`)
+        .or(`and(user1_id.eq.${currentUserId},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${currentUserId})`)
+        .maybeSingle()
+
+      if (existing) {
+        router.push(`/messages/${(existing as any).id}`)
+      } else {
+        const { data: newConv, error } = await (supabase.from('conversations') as any)
+          .insert({ user1_id: currentUserId, user2_id: userId })
+          .select('id')
+          .single()
+        if (error) { if (__DEV__) console.log('[conv] create error:', JSON.stringify(error)); Alert.alert(t('common.error'), error.message || t('messages.conversationCreateFailed')); return }
+        if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+        router.push(`/messages/${newConv.id}`)
+      }
+    } finally {
+      setCreatingConversation(false)
     }
-  }, [currentUserId, userId, supabase, router, t])
+  }, [creatingConversation, currentUserId, userId, supabase, router, t])
 
   const handleBlock = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
@@ -309,7 +317,7 @@ export default function PublicProfileScreen() {
   }
 
   // === BUSINESS PROFILE LAYOUT ===
-  if (profile.is_business) {
+  if (profile.is_business && FEATURES.BUSINESS_ACCOUNT) {
     const businessImages = profile.business_images ?? []
     const businessHours = profile.business_hours as Record<string, string> | null
     const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
@@ -448,7 +456,7 @@ export default function PublicProfileScreen() {
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </Pressable>
-            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
+            <Pressable onPress={handleMessage} disabled={creatingConversation} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
               <MessageCircle size={16} color={colors.foreground} />
               <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
@@ -796,7 +804,7 @@ export default function PublicProfileScreen() {
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </Pressable>
-            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
+            <Pressable onPress={handleMessage} disabled={creatingConversation} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
               <MessageCircle size={16} color={colors.foreground} />
               <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
@@ -833,7 +841,7 @@ export default function PublicProfileScreen() {
               <Text style={[s.statNum, { color: colors.foreground }]}>{((profile as any)?.total_points ?? 0) > 0 ? (profile as any).total_points : '\u2013'}</Text>
               <Zap size={12} color={colors.pro} fill={colors.pro} />
             </View>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('leaderboard.points')}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.points')}</Text>
           </View>
         </View>
 

@@ -196,10 +196,22 @@ function FeedScreenInner() {
     })
   }, [supabase])
 
-  // ── TODO 1: Hidden post IDs ──
+  // ── Hidden post IDs (persisted to AsyncStorage) ──
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
+  useEffect(() => {
+    AsyncStorage.getItem('tackbird_hidden_posts').then(val => {
+      if (val) {
+        try { setHiddenIds(new Set(JSON.parse(val))) } catch {}
+      }
+    })
+  }, [])
   const handleHidePost = useCallback((postId: string) => {
-    setHiddenIds(prev => { const next = new Set(prev); next.add(postId); return next })
+    setHiddenIds(prev => {
+      const next = new Set(prev)
+      next.add(postId)
+      AsyncStorage.setItem('tackbird_hidden_posts', JSON.stringify([...next]))
+      return next
+    })
   }, [])
 
   // ── TODO 6: "Seen" / new indicator ──

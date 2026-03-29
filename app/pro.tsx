@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { FEATURES as APP_FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -35,6 +36,13 @@ export default function ProScreen() {
   const [selectedPlan, setSelectedPlan] = useState<Plan>('yearly')
   const [purchasing, setPurchasing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Feature flag gate — redirect if Pro subscription is disabled
+  useEffect(() => {
+    if (!APP_FEATURES.PRO_SUBSCRIPTION) {
+      router.back()
+    }
+  }, [router])
 
   useEffect(() => {
     async function load() {

@@ -179,8 +179,11 @@ function BookingDetailScreenInner() {
     load()
   }, [id, supabase])
 
+  const messagingRef = useRef(false)
   const handleSendMessage = useCallback(async () => {
+    if (messagingRef.current) return
     if (!userId || !booking?.other_user) return
+    messagingRef.current = true
     try {
       const otherId = booking.other_user.id
       const { data: existing } = await supabase
@@ -197,6 +200,8 @@ function BookingDetailScreenInner() {
       }
     } catch {
       // silent
+    } finally {
+      messagingRef.current = false
     }
   }, [userId, booking, supabase, router])
 

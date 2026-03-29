@@ -24,7 +24,7 @@ import {
   Shield,
   Handshake,
   Gift,
-  Package,
+  Heart,
 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
@@ -37,6 +37,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
 import { useReferral } from '@/hooks/useReferral'
 import { trackEvent } from '@/lib/analytics'
+import { FEATURES } from '@/lib/featureFlags'
 
 const TOTAL_PAGES = 4
 
@@ -70,6 +71,7 @@ function OnboardingScreenInner() {
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
   const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
+  const [customNeighborhood, setCustomNeighborhood] = useState('')
   const [onboardingUserId, setOnboardingUserId] = useState<string | null>(null)
   const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
   const { applyInviteCode } = useReferral(onboardingUserId)
@@ -113,6 +115,7 @@ function OnboardingScreenInner() {
       setNeighborhoodsLoading(true)
       setSelectedNeighborhood(null) // Reset selection when city changes
       setNeighborhoodSearch('') // Reset search when city changes
+      setCustomNeighborhood('') // Reset custom input when city changes
       try {
         const { data } = await supabase
           .from('city_neighborhoods')
@@ -289,11 +292,11 @@ function OnboardingScreenInner() {
           </View>
 
           <View style={s.featureRow}>
-            <View style={[s.featureIconCircle, { backgroundColor: `${CATEGORIES.lainaa.color}20` }]}>
-              <Package size={28} color={CATEGORIES.lainaa.color} />
+            <View style={[s.featureIconCircle, { backgroundColor: `${CATEGORIES.ilmaista.color}20` }]}>
+              <Heart size={28} color={CATEGORIES.ilmaista.color} />
             </View>
             <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.borrowSafely')}
+              {t('onboarding.shareFree')}
             </Text>
           </View>
         </View>
@@ -342,7 +345,7 @@ function OnboardingScreenInner() {
           <View style={s.trustItem}>
             <CheckCircle size={18} color={colors.primary} />
             <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.suomifiDesc')}
+              {t('onboarding.verifiedProfiles')}
             </Text>
           </View>
           <View style={s.trustItem}>
@@ -354,7 +357,7 @@ function OnboardingScreenInner() {
           <View style={s.trustItem}>
             <CheckCircle size={18} color={colors.primary} />
             <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.securePayments')}
+              {t('onboarding.safeMessaging')}
             </Text>
           </View>
         </View>
@@ -468,9 +471,37 @@ function OnboardingScreenInner() {
         {neighborhoodsLoading ? (
           <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 20 }} />
         ) : dynamicNeighborhoods.length === 0 ? (
-          <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, paddingTop: 16 }]}>
-            {t('onboarding.noNeighborhoods')}
-          </Text>
+          <View style={s.customNeighborhoodContainer}>
+            <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, marginBottom: 12 }]}>
+              {t('onboarding.noNeighborhoods')}
+            </Text>
+            <TextInput
+              value={customNeighborhood}
+              onChangeText={(text) => {
+                setCustomNeighborhood(text)
+                setSelectedNeighborhood(text.trim() || null)
+              }}
+              placeholder={t('onboarding.typeNeighborhood')}
+              placeholderTextColor={colors.mutedForeground}
+              style={[s.neighborhoodSearchInput, {
+                backgroundColor: colors.card,
+                borderColor: customNeighborhood.trim() ? colors.primary : colors.border,
+                color: colors.foreground,
+                fontFamily: fonts.body,
+              }]}
+              autoCorrect={false}
+              autoCapitalize="words"
+              accessibilityLabel={t('onboarding.typeNeighborhood')}
+            />
+            {customNeighborhood.trim() !== '' && (
+              <View style={s.customNeighborhoodConfirm}>
+                <MapPin size={14} color={colors.primary} />
+                <Text style={[s.neighborhoodText, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>
+                  {customNeighborhood.trim()}
+                </Text>
+              </View>
+            )}
+          </View>
         ) : filteredNeighborhoods.length === 0 ? (
           <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, paddingTop: 16 }]}>
             {t('search.noResults')}
@@ -837,6 +868,17 @@ const s = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.bodyMedium,
+  },
+  customNeighborhoodContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    width: '100%',
+  },
+  customNeighborhoodConfirm: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
   },
 
   // Location verification

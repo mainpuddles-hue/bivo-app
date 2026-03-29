@@ -7,7 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
-  BadgeCheck, Send, Flag,
+  Send, Flag, Clock,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
   ShoppingBag,
 } from 'lucide-react-native'
@@ -25,6 +25,8 @@ import { FEATURES } from '@/lib/featureFlags'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import { useStripePayment } from '@/hooks/useStripePayment'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
+import { TrustBadge } from '@/components/TrustBadge'
+import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
@@ -62,6 +64,7 @@ function PostDetailScreenInner() {
   const [relatedPosts, setRelatedPosts] = useState<{ id: string; type: string; title: string; image_url: string | null; location: string | null; created_at: string }[]>([])
   const likingRef = useRef(false)
   const savingRef = useRef(false)
+  const messagingRef = useRef(false)
 
   // Report modal state
   const [reportModalVisible, setReportModalVisible] = useState(false)
@@ -196,16 +199,22 @@ function PostDetailScreenInner() {
         const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', id).eq('user_id', userId)
         if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
         else {
-          // Update like_count on posts table (in case no DB trigger)
-          await (supabase.from('posts') as any).update({ like_count: Math.max(0, prevCount - 1) }).eq('id', id)
+          // Re-read actual count from post_likes (source of truth) to avoid divergence
+          const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
+          const syncedCount = realCount ?? Math.max(0, prevCount - 1)
+          setLikeCount(syncedCount)
+          await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
         }
       } else {
         setIsLiked(true); setLikeCount(c => c + 1)
         const { error } = await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
         if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
         else {
-          // Update like_count on posts table (in case no DB trigger)
-          await (supabase.from('posts') as any).update({ like_count: prevCount + 1 }).eq('id', id)
+          // Re-read actual count from post_likes (source of truth) to avoid divergence
+          const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
+          const syncedCount = realCount ?? (prevCount + 1)
+          setLikeCount(syncedCount)
+          await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
         }
       }
     } finally { likingRef.current = false }
@@ -230,10 +239,12 @@ function PostDetailScreenInner() {
   }, [userId, isSaved, id, supabase, router])
 
   const handleMessage = useCallback(async () => {
+    if (messagingRef.current) return
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post) return
     if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
     if (!isValidUUID(userId) || !isValidUUID(post.user_id)) return
+    messagingRef.current = true
     try {
       // Find ANY existing conversation between these two users
       const { data: existing, error: findError } = await supabase
@@ -266,6 +277,8 @@ function PostDetailScreenInner() {
       }
     } catch (e: any) {
       Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
+    } finally {
+      messagingRef.current = false
     }
   }, [userId, post, id, supabase, router, t])
 
@@ -655,8 +668,24 @@ function PostDetailScreenInner() {
 
   const category = CATEGORIES[post.type as PostType]
   const user = post.user
-  const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
+  const userTrustLevel = computeTrustLevelFromBadges(user?.user_badges)
   const allImages = [post.image_url, ...(post.images ?? []).map(i => i.image_url)].filter(Boolean) as string[]
+
+  // Expiration info — same logic as PostCard
+  const expirationInfo = useMemo(() => {
+    if (!post.expires_at) return null
+    const now = new Date()
+    const expires = new Date(post.expires_at)
+    if (isNaN(expires.getTime())) return null
+    const diffMs = expires.getTime() - now.getTime()
+    if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
+    const diffHours = diffMs / 3600000
+    if (diffHours < 24) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
+    const diffDays = Math.ceil(diffMs / 86400000)
+    if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
+    if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
+    return null
+  }, [post.expires_at, t])
 
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -708,6 +737,13 @@ function PostDetailScreenInner() {
               <Text style={[styles.categoryText, { color: category.color }]}>
                 {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
               </Text>
+            </View>
+          )}
+
+          {expirationInfo && (
+            <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
+              <Clock size={12} color={expirationInfo.color} />
+              <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
             </View>
           )}
 
@@ -821,7 +857,7 @@ function PostDetailScreenInner() {
               <View style={styles.authorCardInfo}>
                 <View style={styles.authorNameRow}>
                   <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name ?? t('common.user')}</Text>
-                  {isVerified && <BadgeCheck size={14} color={colors.info} />}
+                  {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
                   {post.created_at && (
                     <Text style={[styles.authorTimeAgo, { color: colors.mutedForeground }]}>
                       {'· ' + formatTimeAgo(post.created_at, t, locale)}
@@ -1153,6 +1189,8 @@ const styles = StyleSheet.create({
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi },
   categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
   categoryText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
+  expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
+  expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi },

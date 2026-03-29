@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
+import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Profile } from '@/lib/types'
 
@@ -50,6 +51,24 @@ export default function CreateAdScreen() {
   const [submitting, setSubmitting] = useState(false)
   const [showNeighborhoods, setShowNeighborhoods] = useState(false)
   const [cityNeighborhoods, setCityNeighborhoods] = useState<string[]>([])
+
+  // Feature flag gate — redirect if Ad campaigns are disabled
+  useEffect(() => {
+    if (!FEATURES.AD_CAMPAIGNS) {
+      router.back()
+    }
+  }, [router])
+
+  // Auth gate — redirect to login if not authenticated
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.replace('/(auth)/login')
+      }
+    }
+    checkAuth()
+  }, [supabase, router])
 
   useEffect(() => {
     async function load() {

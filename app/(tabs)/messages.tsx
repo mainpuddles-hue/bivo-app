@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle } from 'lucide-react-native'
+import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { Avatar } from '@/components/Avatar'
@@ -311,6 +311,22 @@ export default function MessagesScreen() {
         ListEmptyComponent={
           loading ? (
             <MessageListSkeleton />
+          ) : !userId ? (
+            <View style={styles.empty}>
+              <LogIn size={48} color={colors.primary} />
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+                {t('messages.loginRequired')}
+              </Text>
+              <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.loginHint')}</Text>
+              <Pressable
+                onPress={() => router.push('/(auth)/login')}
+                style={[styles.loginBtn, { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.login')}
+              >
+                <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{t('auth.login')}</Text>
+              </Pressable>
+            </View>
           ) : (
             <View style={styles.empty}>
               <MessageCircle size={48} color={colors.mutedForeground} />
@@ -374,4 +390,6 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi },
   emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
+  loginBtn: { marginTop: 8, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center' },
+  loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
 })
