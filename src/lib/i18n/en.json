@@ -95,7 +95,16 @@
     "activeGroup": "Active group",
     "trendingThread": "Trending discussion",
     "members": "members",
-    "replies": "replies"
+    "replies": "replies",
+    "todayIn": "Today in {area}:",
+    "newListings": "new listings",
+    "eventsTomorrow": "events tomorrow",
+    "newDiscussions": "new discussions"
+  },
+  "streak": {
+    "milestone3": "3 days in a row! You're an active neighbor.",
+    "milestone7": "7 days! Your points are doubled today! 🔥",
+    "milestone30": "30 days! You're a neighborhood pillar. 3x points! 🏆"
   },
   "time": {
     "justNow": "just now",

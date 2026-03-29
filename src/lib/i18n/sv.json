@@ -95,7 +95,16 @@
     "activeGroup": "Aktiv grupp",
     "trendingThread": "Populär diskussion",
     "members": "medlemmar",
-    "replies": "svar"
+    "replies": "svar",
+    "todayIn": "Idag i {area}:",
+    "newListings": "nya annonser",
+    "eventsTomorrow": "evenemang imorgon",
+    "newDiscussions": "nya diskussioner"
+  },
+  "streak": {
+    "milestone3": "3 dagar i rad! Du är en aktiv granne.",
+    "milestone7": "7 dagar! Dina poäng fördubblas idag! 🔥",
+    "milestone30": "30 dagar! Du är grannskapets pelare. 3x poäng! 🏆"
   },
   "time": {
     "justNow": "just nu",

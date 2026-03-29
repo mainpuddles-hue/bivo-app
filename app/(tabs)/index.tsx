@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIn
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, X as XIcon, CalendarDays, MessageCircle, ChevronRight } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, Trophy, X as XIcon, CalendarDays, MessageCircle, ChevronRight } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
@@ -125,6 +125,10 @@ function FeedScreenInner() {
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
 
+  // ── Evening digest state ──
+  const [digestData, setDigestData] = useState<{ posts: number; events: number; threads: number } | null>(null)
+  const [digestDismissed, setDigestDismissed] = useState(false)
+
   // Wrap filter change with haptic feedback
   const handleFilterChangeWithHaptics = useCallback((type: import('@/lib/types').PostType | null) => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -158,6 +162,39 @@ function FeedScreenInner() {
     }
     fetchAds()
   }, [supabase, feed.userNeighborhood])
+
+  // ── Evening digest (19:00-06:00) ──
+  useEffect(() => {
+    const hour = new Date().getHours()
+    if (hour < 19 && hour >= 6) return // Only show 19:00-06:00
+
+    async function fetchDigest() {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const todayISO = today.toISOString()
+      const tomorrow = new Date(today.getTime() + 86400000)
+      const tomorrowEnd = new Date(tomorrow.getTime() + 86400000)
+
+      try {
+        const [postsRes, eventsRes, threadsRes] = await Promise.all([
+          supabase.from('posts').select('id', { count: 'exact', head: true }).gte('created_at', todayISO).eq('is_active', true),
+          (supabase.from('community_events') as any).select('id', { count: 'exact', head: true }).gte('event_date', tomorrow.toISOString()).lt('event_date', tomorrowEnd.toISOString()),
+          (supabase.from('forum_posts') as any).select('id', { count: 'exact', head: true }).gte('created_at', todayISO),
+        ])
+        setDigestData({
+          posts: postsRes.count ?? 0,
+          events: eventsRes.count ?? 0,
+          threads: threadsRes.count ?? 0,
+        })
+      } catch {} // Tables may not exist
+    }
+
+    // Check if already dismissed today
+    AsyncStorage.getItem('digest_dismissed').then(val => {
+      if (val === new Date().toISOString().slice(0, 10)) setDigestDismissed(true)
+      else fetchDigest()
+    })
+  }, [supabase])
 
   // ── TODO 1: Hidden post IDs ──
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
@@ -319,6 +356,37 @@ function FeedScreenInner() {
         </Text>
       </View>
 
+      {/* Streak milestone */}
+      {[3, 7, 30].includes(currentStreak) && (
+        <View style={[styles.streakMilestone, { backgroundColor: `${colors.pro}12` }]}>
+          {currentStreak >= 30 ? <Trophy size={20} color={colors.pro} /> : <Flame size={20} color={colors.pro} />}
+          <Text style={[styles.streakMilestoneText, { color: colors.pro }]}>
+            {currentStreak === 3 ? t('streak.milestone3')
+             : currentStreak === 7 ? t('streak.milestone7')
+             : t('streak.milestone30')}
+          </Text>
+        </View>
+      )}
+
+      {/* Evening digest card */}
+      {digestData && !digestDismissed && (digestData.posts > 0 || digestData.events > 0 || digestData.threads > 0) && (
+        <View style={[styles.digestCard, { backgroundColor: colors.muted }]}>
+          <Text style={[styles.digestText, { color: colors.foreground }]}>
+            {t('feed.todayIn', { area: feed.userNeighborhood ?? 'Helsinki' })}
+          </Text>
+          <Text style={[styles.digestDetails, { color: colors.mutedForeground }]}>
+            {[
+              digestData.posts > 0 ? `${digestData.posts} ${t('feed.newListings')}` : null,
+              digestData.events > 0 ? `${digestData.events} ${t('feed.eventsTomorrow')}` : null,
+              digestData.threads > 0 ? `${digestData.threads} ${t('feed.newDiscussions')}` : null,
+            ].filter(Boolean).join(' \u00B7 ')}
+          </Text>
+          <Pressable onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 8, right: 8 }}>
+            <XIcon size={14} color={colors.mutedForeground} />
+          </Pressable>
+        </View>
+      )}
+
       {/* Missed posts banner */}
       {showMissedBanner && missedCount > 0 && (
         <View style={[styles.missedBanner, { backgroundColor: colors.primary }]}>
@@ -381,7 +449,8 @@ function FeedScreenInner() {
     </View>
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
-    placesSectionTitle, matches, dismissMatch, showMissedBanner, missedCount])
+    placesSectionTitle, matches, dismissMatch, showMissedBanner, missedCount,
+    currentStreak, digestData, digestDismissed])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {
@@ -548,6 +617,11 @@ const styles = StyleSheet.create({
   },
   greenDot: { width: 8, height: 8, borderRadius: 4 },
   neighborsActiveText: { fontSize: 12, fontFamily: fonts.body },
+  streakMilestone: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12 },
+  streakMilestoneText: { flex: 1, fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600' },
+  digestCard: { padding: 12, borderRadius: 12, position: 'relative' as const },
+  digestText: { fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600' },
+  digestDetails: { fontSize: 13, fontFamily: fonts.body, marginTop: 2 },
 })
 
 export default function FeedScreen() {

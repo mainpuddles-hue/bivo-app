@@ -95,7 +95,16 @@
     "activeGroup": "Aktiivinen ryhmä",
     "trendingThread": "Suosittu keskustelu",
     "members": "jäsentä",
-    "replies": "vastausta"
+    "replies": "vastausta",
+    "todayIn": "Tänään {area}ssa:",
+    "newListings": "uutta ilmoitusta",
+    "eventsTomorrow": "tapahtumaa huomenna",
+    "newDiscussions": "uutta keskustelua"
+  },
+  "streak": {
+    "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
+    "milestone7": "7 päivää! Pisteesi tuplautuvat tänään! 🔥",
+    "milestone30": "30 päivää! Olet naapuruston pilari. 3x pisteet! 🏆"
   },
   "time": {
     "justNow": "juuri nyt",
