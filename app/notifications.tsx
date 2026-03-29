@@ -13,16 +13,22 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
+import { FEATURES } from '@/lib/featureFlags'
 import type { Notification } from '@/lib/types'
 import { prioritizeNotifications, type PrioritizedNotification } from '@/lib/notificationPriority'
 
-const FILTERS = [
+const ALL_FILTERS = [
   { key: 'all', label: 'common.all' },
   { key: 'messages', label: 'nav.messages' },
   { key: 'reviews', label: 'profile.reviews' },
   { key: 'rentals', label: 'notifications.prefRentals' },
   { key: 'system', label: 'settings.notifications' },
 ] as const
+
+// Hide rental filter when lending feature is disabled
+const FILTERS = FEATURES.LENDING
+  ? ALL_FILTERS
+  : ALL_FILTERS.filter(f => f.key !== 'rentals')
 
 function getTypeIcon(type: string) {
   switch (type) {

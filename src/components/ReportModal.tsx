@@ -4,6 +4,7 @@ import { Flag, X, Check } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
+import { fonts } from '@/lib/fonts'
 
 const REPORT_REASONS = ['spam', 'inappropriate', 'harassment', 'scam', 'fake', 'other'] as const
 type ReportReason = typeof REPORT_REASONS[number]
@@ -11,7 +12,7 @@ type ReportReason = typeof REPORT_REASONS[number]
 interface ReportModalProps {
   visible: boolean
   onClose: () => void
-  type: 'post' | 'user'
+  type: 'post' | 'user' | 'event'
   targetId: string
 }
 
@@ -55,7 +56,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
         reporter_id: user.id,
         reason,
         description: description.trim() || null,
-        ...(type === 'post' ? { post_id: targetId } : { user_id: targetId, reported_id: targetId }),
+        ...(type === 'post' ? { post_id: targetId } : type === 'event' ? { event_id: targetId } : { user_id: targetId, reported_id: targetId }),
         target_type: type,
         target_id: targetId,
       }
@@ -106,7 +107,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
             <View style={s.successContainer}>
               <Check size={48} color={colors.success} />
               <Text style={[s.successText, { color: colors.foreground }]}>{t('report.submitted')}</Text>
-              <Text style={[{ fontSize: 13, color: colors.mutedForeground, textAlign: 'center', lineHeight: 18, paddingHorizontal: 16 }]}>
+              <Text style={[{ fontSize: 13, color: colors.mutedForeground, textAlign: 'center', lineHeight: 18, paddingHorizontal: 16, fontFamily: fonts.body }]}>
                 {t('report.reviewNotice')}
               </Text>
             </View>
@@ -200,11 +201,13 @@ const s = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: -0.3,
+    fontFamily: fonts.headingSemi,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
     marginTop: 4,
+    fontFamily: fonts.bodySemi,
   },
   reasonList: {
     gap: 6,
@@ -221,6 +224,7 @@ const s = StyleSheet.create({
   reasonText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
   radio: {
     width: 16,
@@ -240,11 +244,13 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     minHeight: 80,
+    fontFamily: fonts.body,
   },
   charCount: {
     fontSize: 11,
     textAlign: 'right',
     marginTop: -8,
+    fontFamily: fonts.body,
   },
   submitBtn: {
     borderRadius: 12,
@@ -258,6 +264,7 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: fonts.bodySemi,
   },
   successContainer: {
     alignItems: 'center',
@@ -267,5 +274,6 @@ const s = StyleSheet.create({
   successText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 })

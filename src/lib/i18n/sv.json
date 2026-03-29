@@ -185,7 +185,9 @@
     "noLikes": "Inga gillningar ännu",
     "likes": "gillningar",
     "priceContext": "Typiskt pris i området: {min}–{max}€",
-    "beFirstComment": "Bli den första att kommentera!"
+    "beFirstComment": "Bli den första att kommentera!",
+    "browseCommunityEvents": "Bläddra bland gemenskapens evenemang",
+    "openGallery": "Öppna bildgalleri"
   },
   "events": {
     "title": "Evenemang",
@@ -1576,7 +1578,9 @@
     "noResultsQuery": "Inga resultat för \"{query}\"",
     "resultCount": "{count} resultat",
     "semanticMatch": "Liknande träff",
-    "thisMonth": "Denna månad"
+    "thisMonth": "Denna månad",
+    "tabEvents": "Evenemang",
+    "tabGroups": "Grupper"
   },
   "saved": {
     "title": "Sparade",

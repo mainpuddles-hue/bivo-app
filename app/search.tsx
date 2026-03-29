@@ -15,6 +15,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT, CATEGORIES } from '@/lib/constants'
+import { FEATURES } from '@/lib/featureFlags'
 import { PostCard } from '@/components/PostCard'
 import { Avatar } from '@/components/Avatar'
 import { BoardIllustration } from '@/components/illustrations'
@@ -218,7 +219,11 @@ function DiscoveryView({
           <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.browseByCategory')}</Text>
         </View>
         <View style={s.categoryGrid}>
-          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
+          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
+            if (type === 'lainaa' && !FEATURES.LENDING) return false
+            if (type === 'nappaa' && !FEATURES.GRAB) return false
+            return true
+          }).map(([type, cat]) => {
             const CatIcon = CATEGORY_ICON_MAP[cat.icon]
             return (
               <Pressable
@@ -650,6 +655,14 @@ function SearchScreenInner() {
         .eq('is_active', true)
         .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
 
+      // Hide disabled category types from search results (same as feed)
+      const hiddenTypes: string[] = []
+      if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
+      if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
+      if (hiddenTypes.length > 0 && !catFilter) {
+        postQuery = postQuery.not('type', 'in', `(${hiddenTypes.join(',')})`)
+      }
+
       postQuery = buildFilteredQuery(postQuery, f, catFilter, tf)
       postQuery = postQuery.limit(20)
 
@@ -777,6 +790,14 @@ function SearchScreenInner() {
         .select(POST_SELECT)
         .eq('is_active', true)
         .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+
+      // Hide disabled category types from search results (same as feed)
+      const hiddenTypes: string[] = []
+      if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
+      if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
+      if (hiddenTypes.length > 0 && !activeFilter) {
+        postQuery = postQuery.not('type', 'in', `(${hiddenTypes.join(',')})`)
+      }
 
       postQuery = buildFilteredQuery(postQuery, filters, activeFilter, timeFilter)
       postQuery = postQuery.range(results.length, results.length + 19)
@@ -908,7 +929,11 @@ function SearchScreenInner() {
             >
               <Text style={[s.filterText, { color: !activeFilter ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t('common.all')}</Text>
             </Pressable>
-            {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => (
+            {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
+              if (type === 'lainaa' && !FEATURES.LENDING) return false
+              if (type === 'nappaa' && !FEATURES.GRAB) return false
+              return true
+            }).map(([type, cat]) => (
               <Pressable
                 key={type}
                 onPress={() => handleCategoryFilter(type)}
@@ -1124,12 +1149,12 @@ function SearchScreenInner() {
           </Pressable>
           <Pressable onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
             <Text style={[s.tabText, { color: activeTab === 'events' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
-              Tapahtumat ({eventResults.length})
+              {t('search.tabEvents')} ({eventResults.length})
             </Text>
           </Pressable>
           <Pressable onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
             <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
-              {'Ryhmät'} ({groupResults.length})
+              {t('search.tabGroups')} ({groupResults.length})
             </Text>
           </Pressable>
         </View>

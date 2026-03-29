@@ -185,7 +185,9 @@
     "noLikes": "No likes yet",
     "likes": "likes",
     "priceContext": "Typical price in area: {min}–{max}€",
-    "beFirstComment": "Be the first to comment!"
+    "beFirstComment": "Be the first to comment!",
+    "browseCommunityEvents": "Browse community events",
+    "openGallery": "Open image gallery"
   },
   "events": {
     "title": "Events",
@@ -1596,7 +1598,9 @@
     "noResultsQuery": "No results for \"{query}\"",
     "resultCount": "{count} results",
     "semanticMatch": "Similar match",
-    "thisMonth": "This month"
+    "thisMonth": "This month",
+    "tabEvents": "Events",
+    "tabGroups": "Groups"
   },
   "saved": {
     "title": "Saved",

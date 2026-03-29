@@ -185,7 +185,9 @@
     "noLikes": "Ei vielä tykkäyksiä",
     "likes": "tykkäystä",
     "priceContext": "Tyypillinen hinta alueella: {min}–{max}€",
-    "beFirstComment": "Ole ensimmäinen kommentoija!"
+    "beFirstComment": "Ole ensimmäinen kommentoija!",
+    "browseCommunityEvents": "Selaa yhteisötapahtumia",
+    "openGallery": "Avaa kuvagalleria"
   },
   "events": {
     "title": "Tapahtumat",
@@ -1596,7 +1598,9 @@
     "noResultsQuery": "Ei tuloksia haulle \"{query}\"",
     "resultCount": "{count} tulosta",
     "semanticMatch": "Samankaltainen osuma",
-    "thisMonth": "Tässä kuussa"
+    "thisMonth": "Tässä kuussa",
+    "tabEvents": "Tapahtumat",
+    "tabGroups": "Ryhmät"
   },
   "saved": {
     "title": "Tallennetut",

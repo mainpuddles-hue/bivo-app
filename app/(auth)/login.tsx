@@ -274,7 +274,6 @@ export default function LoginScreen() {
 
       if (!credential.identityToken) {
         Alert.alert(t('common.error'), t('auth.appleFailed'))
-        setLoading(false)
         return
       }
 
@@ -288,10 +287,10 @@ export default function LoginScreen() {
     } catch (err: any) {
       // User cancelled — Apple throws ERR_REQUEST_CANCELED
       if (err?.code === 'ERR_REQUEST_CANCELED' || err?.code === 'ERR_CANCELED') {
-        setLoading(false)
         return
       }
       Alert.alert(t('common.error'), t('auth.appleFailed'))
+    } finally {
       setLoading(false)
     }
   }

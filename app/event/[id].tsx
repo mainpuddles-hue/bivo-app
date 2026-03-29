@@ -469,7 +469,7 @@ function EventDetailScreenInner() {
         visible={reportModalVisible}
         onClose={() => setReportModalVisible(false)}
         targetId={event.id}
-        type="post"
+        type="event"
       />
     </View>
   )

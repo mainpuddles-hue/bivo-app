@@ -430,19 +430,19 @@ export default function SettingsScreen() {
                     maxLength={50}
                     autoFocus
                   />
-                  <Text style={{ fontSize: 11, color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2 }}>
+                  <Text style={{ fontSize: 11, color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
                     {nameText.length}/50
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Pressable onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: colors.muted }}>
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>{t('common.cancel')}</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi }}>{t('common.cancel')}</Text>
                     </Pressable>
                     <Pressable
                       onPress={handleSaveName}
                       disabled={savingName || !nameText.trim()}
                       style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
                     >
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground }}>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
                         {savingName ? '...' : t('common.save')}
                       </Text>
                     </Pressable>
@@ -581,7 +581,7 @@ export default function SettingsScreen() {
               <MapPin size={18} color={colors.mutedForeground} />
               <View style={{ flex: 1 }}>
                 <Text style={[s.rowText, { color: colors.foreground, flex: undefined }]}>{t(label)}</Text>
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2 }}>{t(desc)}</Text>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body }}>{t(desc)}</Text>
               </View>
               <View style={[locationAccuracy === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
             </Pressable>
@@ -645,14 +645,14 @@ export default function SettingsScreen() {
                   <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
                 ) : (
                   <Pressable onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi }}>
                       4,99 {'\u20AC'}{t('pro.perMonth')}
                     </Text>
                   </Pressable>
                 )}
               </Pressable>
               {profile?.is_pro && profile?.pro_expires_at && (
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12 }}>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12, fontFamily: fonts.body }}>
                   {t('pro.renewsOn', { date: new Date(profile.pro_expires_at).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB') })}
                 </Text>
               )}
@@ -676,7 +676,7 @@ export default function SettingsScreen() {
                 {profile?.is_business ? (
                   <Text style={[s.proBadge, { color: colors.success }]}>{t('business.active')}</Text>
                 ) : (
-                  <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('business.monthlyPrice')}</Text>
+                  <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>{t('business.monthlyPrice')}</Text>
                 )}
               </Pressable>
             </View>
@@ -710,16 +710,16 @@ export default function SettingsScreen() {
             {newPw.length > 0 && (
               <View style={{ gap: 2, marginTop: 2 }}>
                 {newPw.length < 8 && (
-                  <Text style={{ fontSize: 11, color: colors.destructive }}>{t('settings.passwordTooShort')}</Text>
+                  <Text style={{ fontSize: 11, color: colors.destructive, fontFamily: fonts.body }}>{t('settings.passwordTooShort')}</Text>
                 )}
                 {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
-                  <Text style={{ fontSize: 11, color: '#E8A050' }}>{t('settings.passwordNeedsUppercase')}</Text>
+                  <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsUppercase')}</Text>
                 )}
                 {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
-                  <Text style={{ fontSize: 11, color: '#E8A050' }}>{t('settings.passwordNeedsNumber')}</Text>
+                  <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsNumber')}</Text>
                 )}
                 {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
-                  <Text style={{ fontSize: 11, color: colors.success ?? '#2B8A62' }}>{t('settings.passwordStrong')}</Text>
+                  <Text style={{ fontSize: 11, color: colors.success, fontFamily: fonts.body }}>{t('settings.passwordStrong')}</Text>
                 )}
               </View>
             )}
@@ -728,7 +728,7 @@ export default function SettingsScreen() {
               disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
               style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
             >
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
                 {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
               </Text>
             </Pressable>
@@ -768,7 +768,7 @@ export default function SettingsScreen() {
             <View style={{ flex: 1 }}>
               <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
               {exporting && exportProgress ? (
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2 }}>{exportProgress}</Text>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body }}>{exportProgress}</Text>
               ) : null}
             </View>
             {!exporting && <ChevronRight size={16} color={colors.mutedForeground} />}
@@ -841,7 +841,7 @@ export default function SettingsScreen() {
         {/* Logout */}
         <Pressable onPress={handleLogout} style={[s.logoutBtn, { backgroundColor: colors.card }]}>
           <LogOut size={18} color={colors.destructive} />
-          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.destructive }}>{t('settings.logout')}</Text>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi }}>{t('settings.logout')}</Text>
         </Pressable>
 
         {/* App version */}
@@ -874,8 +874,8 @@ export default function SettingsScreen() {
               </Pressable>
               <Pressable
                 onPress={handleConfirmDelete}
-                disabled={deleteConfirmText !== t('settings.deleteConfirmWord') || deletingAccount}
-                style={[s.deleteConfirmBtn, { backgroundColor: colors.destructive, opacity: deleteConfirmText !== t('settings.deleteConfirmWord') || deletingAccount ? 0.5 : 1 }]}
+                disabled={deleteConfirmText.toUpperCase() !== (t('settings.deleteConfirmWord') ?? '').toUpperCase() || deletingAccount}
+                style={[s.deleteConfirmBtn, { backgroundColor: colors.destructive, opacity: deleteConfirmText.toUpperCase() !== (t('settings.deleteConfirmWord') ?? '').toUpperCase() || deletingAccount ? 0.5 : 1 }]}
               >
                 {deletingAccount ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
@@ -903,18 +903,18 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
   },
-  saveBtnText: { fontSize: 13, fontWeight: '600' },
+  saveBtnText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
-  section: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, paddingHorizontal: 4 },
+  section: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  rowText: { fontSize: 15, flex: 1 },
+  rowText: { fontSize: 15, flex: 1, fontFamily: fonts.body },
   radio: { width: 18, height: 18, borderRadius: 9 },
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
-  proBadge: { fontSize: 13, fontWeight: '600' },
+  proBadge: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   upgradeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  input: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
+  input: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontFamily: fonts.body },
   changePwBtn: { borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -923,9 +923,9 @@ const s = StyleSheet.create({
   verifiedBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
-  verifiedText: { fontSize: 12, fontWeight: '500' },
+  verifiedText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   versionText: {
-    fontSize: 12, textAlign: 'center', marginTop: 24, marginBottom: 8,
+    fontSize: 12, textAlign: 'center', marginTop: 24, marginBottom: 8, fontFamily: fonts.body,
   },
   deleteBackdrop: {
     flex: 1,
@@ -949,15 +949,18 @@ const s = StyleSheet.create({
   deleteTitle: {
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: fonts.headingSemi,
   },
   deleteDesc: {
     fontSize: 14,
     lineHeight: 20,
+    fontFamily: fonts.body,
   },
   deleteLabel: {
     fontSize: 13,
     fontWeight: '600',
     marginTop: 4,
+    fontFamily: fonts.bodySemi,
   },
   deleteInput: {
     borderRadius: 10,
@@ -965,6 +968,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
+    fontFamily: fonts.body,
   },
   deleteActions: {
     flexDirection: 'row',
@@ -980,6 +984,7 @@ const s = StyleSheet.create({
   deleteCancelText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   deleteConfirmBtn: {
     flex: 1,
@@ -991,5 +996,6 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: fonts.bodySemi,
   },
 })

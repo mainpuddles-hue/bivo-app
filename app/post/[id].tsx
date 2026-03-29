@@ -782,10 +782,10 @@ function PostDetailScreenInner() {
               onPress={() => router.push('/community-events' as any)}
               style={styles.communityEventsLink}
               accessibilityRole="link"
-              accessibilityLabel="Selaa yhteisötapahtumia"
+              accessibilityLabel={t('post.browseCommunityEvents')}
             >
               <Calendar size={14} color={colors.primary} />
-              <Text style={[styles.communityEventsLinkText, { color: colors.primary }]}>Selaa yhteisötapahtumia</Text>
+              <Text style={[styles.communityEventsLinkText, { color: colors.primary }]}>{t('post.browseCommunityEvents')}</Text>
             </Pressable>
           )}
 
