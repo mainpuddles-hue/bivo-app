@@ -43,6 +43,11 @@ export function useFeedData() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
   const [cityNeighborhoods, setCityNeighborhoods] = useState<string[]>([])
+  const [communityCards, setCommunityCards] = useState<{
+    event: any | null
+    group: any | null
+    thread: any | null
+  }>({ event: null, group: null, thread: null })
 
   // ── Refs ──
   const offsetRef = useRef(0)
@@ -160,7 +165,53 @@ export function useFeedData() {
     } finally {
       setExtraLoading(false)
     }
-  }, [userLocation])
+
+    // ── Community cards (independent of location — fetch every time) ──
+    let event: any = null
+    let group: any = null
+    let thread: any = null
+
+    try {
+      const { data } = await supabase
+        .from('community_events')
+        .select('id, title, event_date, max_participants, category, image_url')
+        .eq('is_active', true)
+        .gte('event_date', new Date().toISOString())
+        .order('event_date', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      event = data
+    } catch {
+      // community_events table may not exist yet
+    }
+
+    try {
+      const { data } = await supabase
+        .from('groups')
+        .select('id, name, member_count, category')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      group = data
+    } catch {
+      // groups table may not exist yet
+    }
+
+    try {
+      const { data } = await supabase
+        .from('forum_posts')
+        .select('id, title, upvote_count, comment_count')
+        .gte('created_at', new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString())
+        .order('upvote_count', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      thread = data
+    } catch {
+      // forum_posts table may not exist yet
+    }
+
+    setCommunityCards({ event, group, thread })
+  }, [userLocation, supabase])
 
   useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])
 
@@ -392,6 +443,8 @@ export function useFeedData() {
     cityEvents,
     nearbyPlaces,
     extraLoading,
+    // Community
+    communityCards,
     // Neighborhood
     showNeighborhoodPicker,
     setShowNeighborhoodPicker,

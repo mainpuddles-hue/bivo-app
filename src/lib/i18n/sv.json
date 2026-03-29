@@ -90,7 +90,12 @@
     "postHidden": "Inlägg dolt",
     "newPost": "Ny",
     "missedPosts": "{count} nya inlägg sedan ditt senaste besök",
-    "neighborsActive": "{count} grannar aktiva"
+    "neighborsActive": "{count} grannar aktiva",
+    "upcomingEvent": "Kommande evenemang",
+    "activeGroup": "Aktiv grupp",
+    "trendingThread": "Populär diskussion",
+    "members": "medlemmar",
+    "replies": "svar"
   },
   "time": {
     "justNow": "just nu",

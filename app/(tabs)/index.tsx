@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIn
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, X as XIcon } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, X as XIcon, CalendarDays, MessageCircle, ChevronRight } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
@@ -58,6 +58,59 @@ const ItemSeparator8 = () => <View style={{ height: 8 }} />
 
 const HEADER_HEIGHT = 52 // Header.tsx headerContent height
 const FILTER_BAR_BASE_HEIGHT = 88
+
+// ── Community card type ──
+type CommunityCardItem = { _isCommunity: 'event' | 'group' | 'thread'; [key: string]: any }
+
+// ── Community card component ──
+function CommunityCard({ item, type, colors, t, onPress }: {
+  item: any
+  type: 'event' | 'group' | 'thread'
+  colors: any
+  t: (key: string) => string
+  onPress: () => void
+}) {
+  const iconConfig = {
+    event: { Icon: CalendarDays, color: '#2B8A62', bg: '#2B8A6220', label: t('feed.upcomingEvent') },
+    group: { Icon: Users, color: '#7C5CBF', bg: '#7C5CBF20', label: t('feed.activeGroup') },
+    thread: { Icon: MessageCircle, color: '#3B7DD8', bg: '#3B7DD820', label: t('feed.trendingThread') },
+  }[type]
+
+  const title = item.title ?? item.name ?? ''
+  const subtitle = type === 'event'
+    ? (item.event_date ? new Date(item.event_date).toLocaleDateString() : '')
+    : type === 'group'
+    ? `${item.member_count ?? 0} ${t('feed.members')}`
+    : `${item.upvote_count ?? 0} \u2191 \u00B7 ${item.comment_count ?? 0} ${t('feed.replies')}`
+
+  return (
+    <Pressable onPress={onPress} style={[communityCardStyles.row, { backgroundColor: colors.muted }]}>
+      <View style={[communityCardStyles.iconWrap, { backgroundColor: iconConfig.bg }]}>
+        <iconConfig.Icon size={18} color={iconConfig.color} />
+      </View>
+      <View style={communityCardStyles.center}>
+        <Text style={[communityCardStyles.label, { color: iconConfig.color }]}>{iconConfig.label}</Text>
+        <Text style={[communityCardStyles.title, { color: colors.foreground }]} numberOfLines={1}>{title}</Text>
+        <Text style={[communityCardStyles.subtitle, { color: colors.mutedForeground }]} numberOfLines={1}>{subtitle}</Text>
+      </View>
+      <ChevronRight size={16} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
+    </Pressable>
+  )
+}
+
+const communityCardStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row', alignItems: 'center', height: 56, borderRadius: 12,
+    paddingHorizontal: 12, gap: 10,
+  },
+  iconWrap: {
+    width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
+  },
+  center: { flex: 1, justifyContent: 'center' },
+  label: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase' },
+  title: { fontSize: 14, fontWeight: '700', fontFamily: fonts.heading },
+  subtitle: { fontSize: 12, fontFamily: fonts.body },
+})
 
 function FeedScreenInner() {
   const { colors, isDark } = useTheme()
@@ -145,10 +198,9 @@ function FeedScreenInner() {
     [feed.posts, hiddenIds],
   )
 
-  // Interleave ads every 5th post
+  // Interleave ads every 5th post, then community cards at positions 3, 9, 16
   const visiblePosts = useMemo(() => {
-    if (activeAds.length === 0) return filteredPosts
-    const result: (Post | Ad)[] = []
+    const result: (Post | Ad | CommunityCardItem)[] = []
     let adIdx = 0
     for (let i = 0; i < filteredPosts.length; i++) {
       result.push(filteredPosts[i])
@@ -157,8 +209,18 @@ function FeedScreenInner() {
         adIdx++
       }
     }
+    // Insert community cards at specific positions
+    if (feed.communityCards?.event && result.length > 3) {
+      result.splice(3, 0, { ...feed.communityCards.event, _isCommunity: 'event' as const })
+    }
+    if (feed.communityCards?.group && result.length > 9) {
+      result.splice(9, 0, { ...feed.communityCards.group, _isCommunity: 'group' as const })
+    }
+    if (feed.communityCards?.thread && result.length > 16) {
+      result.splice(16, 0, { ...feed.communityCards.thread, _isCommunity: 'thread' as const })
+    }
     return result
-  }, [filteredPosts, activeAds])
+  }, [filteredPosts, activeAds, feed.communityCards])
 
   // Ref for visiblePosts so renderPost can access it without dependency
   const visiblePostsRef = useRef(visiblePosts)
@@ -193,19 +255,37 @@ function FeedScreenInner() {
   }, [feed.userLocation, feed.userNeighborhood, t])
 
   // ── renderPost — uses postsRef to avoid full FlatList re-render ──
-  const renderPost = useCallback(({ item, index }: { item: Post | Ad; index: number }) => {
+  const renderPost = useCallback(({ item, index }: { item: Post | Ad | CommunityCardItem; index: number }) => {
+    // Render community card
+    if ('_isCommunity' in item) {
+      const communityType = item._isCommunity as 'event' | 'group' | 'thread'
+      return (
+        <CommunityCard
+          item={item}
+          type={communityType}
+          colors={colors}
+          t={t}
+          onPress={() => {
+            if (communityType === 'event') router.push(`/event/${item.id}` as any)
+            else if (communityType === 'group') router.push(`/groups/${item.id}` as any)
+            else router.push(`/forum?thread=${item.id}` as any)
+          }}
+        />
+      )
+    }
+
     // Render ad card
-    if ('_isAd' in item && item._isAd) {
+    if ('_isAd' in item && (item as any)._isAd) {
       return <AdCard ad={item as Ad} />
     }
 
     const post = item as Post
     const currentGroup = post.created_at ? getDateGroup(post.created_at) : ''
-    // Walk backwards to find the previous non-ad item for date group comparison
+    // Walk backwards to find the previous real post for date group comparison
     let prevGroup = ''
     for (let i = index - 1; i >= 0; i--) {
       const prev = visiblePostsRef.current[i]
-      if (prev && !('_isAd' in prev) && (prev as Post).created_at) {
+      if (prev && !('_isAd' in prev) && !('_isCommunity' in prev) && (prev as Post).created_at) {
         prevGroup = getDateGroup((prev as Post).created_at!)
         break
       }
@@ -223,7 +303,7 @@ function FeedScreenInner() {
         <PostCard post={post} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} />
       </View>
     )
-  }, [feed.userLocation, feed.currentUserId, colors.mutedForeground, colors.border, t, trackInteraction, handleHidePost, lastFeedVisit])
+  }, [feed.userLocation, feed.currentUserId, colors, t, trackInteraction, handleHidePost, lastFeedVisit, router])
 
   // ── ListHeader ──
   const ListHeader = useMemo(() => (
@@ -382,7 +462,7 @@ function FeedScreenInner() {
       <FlatList
         data={visiblePosts}
         renderItem={renderPost}
-        keyExtractor={item => ('_isAd' in item ? `ad-${item.id}` : item.id)}
+        keyExtractor={item => ('_isCommunity' in item ? `community-${(item as any)._isCommunity}-${item.id}` : '_isAd' in item ? `ad-${item.id}` : item.id)}
         contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_BASE_HEIGHT }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}

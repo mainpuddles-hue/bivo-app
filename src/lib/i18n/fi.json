@@ -90,7 +90,12 @@
     "postHidden": "Postaus piilotettu",
     "newPost": "Uutta",
     "missedPosts": "{count} uutta ilmoitusta edellisen käyntisi jälkeen",
-    "neighborsActive": "{count} naapuria aktiivisena"
+    "neighborsActive": "{count} naapuria aktiivisena",
+    "upcomingEvent": "Tuleva tapahtuma",
+    "activeGroup": "Aktiivinen ryhmä",
+    "trendingThread": "Suosittu keskustelu",
+    "members": "jäsentä",
+    "replies": "vastausta"
   },
   "time": {
     "justNow": "juuri nyt",

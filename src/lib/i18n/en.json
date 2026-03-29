@@ -90,7 +90,12 @@
     "postHidden": "Post hidden",
     "newPost": "New",
     "missedPosts": "{count} new posts since your last visit",
-    "neighborsActive": "{count} neighbors active"
+    "neighborsActive": "{count} neighbors active",
+    "upcomingEvent": "Upcoming event",
+    "activeGroup": "Active group",
+    "trendingThread": "Trending discussion",
+    "members": "members",
+    "replies": "replies"
   },
   "time": {
     "justNow": "just now",
