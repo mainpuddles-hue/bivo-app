@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Tabs } from 'expo-router'
 import { View, Text, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Newspaper, CalendarDays, Plus, MessageCircle, User, UsersRound, Compass } from 'lucide-react-native'
+import { Newspaper, Plus, MessageCircle, User, Compass } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Header } from '@/components/Header'
@@ -97,12 +97,6 @@ export default function TabLayout() {
       <Tabs.Screen name="explore" options={{
         tabBarAccessibilityLabel: t('explore.title'),
         tabBarIcon: ({ focused }) => <TabIcon icon={Compass} label={t('explore.title')} focused={focused} colors={colors} />,
-      }} />
-      <Tabs.Screen name="community" options={{
-        href: null,
-      }} />
-      <Tabs.Screen name="events" options={{
-        href: null, // Hide from tab bar
       }} />
       <Tabs.Screen name="create" options={{
         tabBarAccessibilityLabel: t('nav.create'),

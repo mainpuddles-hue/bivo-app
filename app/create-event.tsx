@@ -185,7 +185,7 @@ export default function CreateEventScreen() {
       if (router.canGoBack()) {
         router.back()
       } else {
-        router.replace('/(tabs)/events')
+        router.replace('/community-events' as any)
       }
     } catch {
       Alert.alert(t('common.error'), t('events.createFailed'))

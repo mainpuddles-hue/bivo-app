@@ -213,7 +213,7 @@ function NotificationsScreenInner() {
     else if (item.link_type === 'conversation') router.push(`/messages/${linkId}`)
     else if (item.link_type === 'profile') router.push(`/profile/${linkId}`)
     else if (item.link_type === 'booking') router.push(`/booking/${linkId}`)
-    else if (item.link_type === 'event') router.push({ pathname: '/(tabs)/events', params: { highlight: linkId } })
+    else if (item.link_type === 'event') router.push(`/event/${linkId}` as any)
   }, [supabase, router, expandedGroups, toggleGroup])
 
   const filtered = useMemo(() => {

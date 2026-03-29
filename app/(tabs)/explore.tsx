@@ -631,7 +631,7 @@ function ExploreScreenInner() {
                       if (event.infoUrl) {
                         Linking.openURL(event.infoUrl).catch(() => {})
                       } else {
-                        router.push('/(tabs)/events' as any)
+                        router.push('/community-events' as any)
                       }
                     }}
                   >

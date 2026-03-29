@@ -28,7 +28,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
 
   return (
     <Pressable
-      onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/(tabs)/events')}
+      onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/community-events' as any)}
       style={[styles.todayEventCard, { backgroundColor: colors.card }]}
     >
       {event.image_url ? (
