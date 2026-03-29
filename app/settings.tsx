@@ -14,6 +14,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
 import { isValidUUID } from '@/lib/validation'
 import { fonts } from '@/lib/fonts'
+import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
@@ -633,46 +634,54 @@ export default function SettingsScreen() {
         </View>
 
         {/* Pro */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.proSubscription')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/pro')} style={s.row}>
-            <Crown size={18} color={colors.pro} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Pro</Text>
-            {profile?.is_pro ? (
-              <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
-            ) : (
-              <Pressable onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>
-                  4,99 {'\u20AC'}{t('pro.perMonth')}
-                </Text>
+        {FEATURES.PRO_SUBSCRIPTION && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.proSubscription')}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Pressable onPress={() => router.push('/pro')} style={s.row}>
+                <Crown size={18} color={colors.pro} />
+                <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Pro</Text>
+                {profile?.is_pro ? (
+                  <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
+                ) : (
+                  <Pressable onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>
+                      4,99 {'\u20AC'}{t('pro.perMonth')}
+                    </Text>
+                  </Pressable>
+                )}
               </Pressable>
-            )}
-          </Pressable>
-          {profile?.is_pro && profile?.pro_expires_at && (
-            <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12 }}>
-              {t('pro.renewsOn', { date: new Date(profile.pro_expires_at).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB') })}
-            </Text>
-          )}
-        </View>
+              {profile?.is_pro && profile?.pro_expires_at && (
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12 }}>
+                  {t('pro.renewsOn', { date: new Date(profile.pro_expires_at).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB') })}
+                </Text>
+              )}
+            </View>
+          </>
+        )}
 
         {/* Business account */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('business.upgrade')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable
-            onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
-            style={s.row}
-          >
-            <Building2 size={18} color={colors.primary} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>
-              {profile?.is_business ? t('business.dashboard') : t('business.upgradeCTA')}
-            </Text>
-            {profile?.is_business ? (
-              <Text style={[s.proBadge, { color: colors.success }]}>{t('business.active')}</Text>
-            ) : (
-              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('business.monthlyPrice')}</Text>
-            )}
-          </Pressable>
-        </View>
+        {FEATURES.BUSINESS_ACCOUNT && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('business.upgrade')}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Pressable
+                onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
+                style={s.row}
+              >
+                <Building2 size={18} color={colors.primary} />
+                <Text style={[s.rowText, { color: colors.foreground }]}>
+                  {profile?.is_business ? t('business.dashboard') : t('business.upgradeCTA')}
+                </Text>
+                {profile?.is_business ? (
+                  <Text style={[s.proBadge, { color: colors.success }]}>{t('business.active')}</Text>
+                ) : (
+                  <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t('business.monthlyPrice')}</Text>
+                )}
+              </Pressable>
+            </View>
+          </>
+        )}
 
         {/* Security */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.security')}</Text>

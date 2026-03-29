@@ -21,6 +21,7 @@ import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
 import { ReportModal } from '@/components/ReportModal'
 import { Avatar } from '@/components/Avatar'
 import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
+import { FEATURES } from '@/lib/featureFlags'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import { useStripePayment } from '@/hooks/useStripePayment'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
@@ -756,14 +757,14 @@ function PostDetailScreenInner() {
             </Text>
           )}
 
-          {post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (
+          {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (
             <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
             </Pressable>
           )}
 
-          {post.type === 'tarjoan' && post.service_price != null && !isAuthor && (
+          {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price != null && !isAuthor && (
             <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
               <ShoppingBag size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>

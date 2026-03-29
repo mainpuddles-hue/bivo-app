@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
+import { FEATURES } from '@/lib/featureFlags'
 import { PostCard } from '@/components/PostCard'
 import { TrustBadge, TrustProgress } from '@/components/TrustBadge'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
@@ -525,7 +526,7 @@ export default function ProfileScreen() {
         )}
 
         {/* Pro upgrade card */}
-        {!profile.is_pro && (
+        {FEATURES.PRO_SUBSCRIPTION && !profile.is_pro && (
           <Pressable onPress={() => router.push('/pro')} style={[s.proUpgradeCard, { backgroundColor: `${colors.pro}12`, borderColor: `${colors.pro}30` }]} accessibilityLabel={t('pro.upgradeToPro')} accessibilityRole="button">
             <Crown size={20} color={colors.pro} />
             <View style={{ flex: 1, gap: 2 }}>
@@ -872,14 +873,16 @@ export default function ProfileScreen() {
       </Modal>
 
       {/* Suomi.fi Verification Modal */}
-      <VerificationModal
-        visible={identity.showModal}
-        onClose={() => identity.setShowModal(false)}
-        onConfirm={identity.confirmVerification}
-        loading={identity.loading}
-        error={identity.error}
-        isSuccess={identity.status === 'success'}
-      />
+      {FEATURES.IDENTITY_VERIFICATION && (
+        <VerificationModal
+          visible={identity.showModal}
+          onClose={() => identity.setShowModal(false)}
+          onConfirm={identity.confirmVerification}
+          loading={identity.loading}
+          error={identity.error}
+          isSuccess={identity.status === 'success'}
+        />
+      )}
     </View>
     </ScreenErrorBoundary>
   )

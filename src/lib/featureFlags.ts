@@ -1,0 +1,12 @@
+// Feature flags for MVP launch
+// Set to true to enable features post-launch
+export const FEATURES = {
+  LENDING: false,        // Lainaa category
+  GRAB: false,           // Nappaa category
+  PAYMENTS: false,       // Stripe payments for services
+  PRO_SUBSCRIPTION: false, // Pro tier
+  BUSINESS_ACCOUNT: false, // Organization/business tier
+  AD_CAMPAIGNS: false,   // Create ad campaigns
+  IDENTITY_VERIFICATION: false, // Suomi.fi
+  EVENTS_TAPAHTUMA_TYPE: true, // Tapahtuma post type (keep for now)
+} as const

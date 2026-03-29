@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { getSeedPosts } from '@/lib/seedContent'
 import { rankFeed } from '@/lib/feedAlgorithm'
 import { getCachedUserId } from '@/lib/authCache'
+import { FEATURES } from '@/lib/featureFlags'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type { PostType }
@@ -239,6 +240,14 @@ export function useFeedData() {
       if (activeFilter) query = query.eq('type', activeFilter)
       if (showFollowing && followedIds.length > 0) {
         query = query.in('user_id', followedIds)
+      }
+
+      // Hide disabled category types from feed
+      const hiddenTypes: string[] = []
+      if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
+      if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
+      if (hiddenTypes.length > 0 && !activeFilter) {
+        query = query.not('type', 'in', `(${hiddenTypes.join(',')})`)
       }
 
       const { data, error: fetchError } = await query

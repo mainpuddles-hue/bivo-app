@@ -9,6 +9,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { fonts } from '@/lib/fonts'
+import { FEATURES } from '@/lib/featureFlags'
 
 interface LeaderboardUser {
   id: string
@@ -283,7 +284,7 @@ export default function LeaderboardScreen() {
       <Text style={[s.monthLabel, { color: colors.mutedForeground }]}>{isMonthlyData ? t('leaderboard.thisMonth') : t('leaderboard.allTime') ?? 'All time'}</Text>
 
       {/* Pro upsell banner */}
-      {!userIsPro && (
+      {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
         <Pressable onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: `${colors.pro}12` }]}>
           <Crown size={16} color={colors.pro} />
           <Text style={[s.proBannerText, { color: colors.pro }]}>{t('pro.leaderboardBanner')}</Text>

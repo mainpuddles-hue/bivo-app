@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { CATEGORIES } from '@/lib/constants'
+import { FEATURES } from '@/lib/featureFlags'
 import { fonts } from '@/lib/fonts'
 import { usePoints } from '@/hooks/usePoints'
 import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
@@ -613,7 +614,11 @@ export default function CreateScreen() {
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('create.selectCategory')}</Text>
         </View>
         <ScrollView contentContainerStyle={styles.categoryGrid}>
-          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
+          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
+            if (type === 'lainaa' && !FEATURES.LENDING) return false
+            if (type === 'nappaa' && !FEATURES.GRAB) return false
+            return true
+          }).map(([type, cat]) => {
             const Icon = CATEGORY_ICON_MAP[cat.icon]
             const isLocked = type === 'lainaa' && !trust.permissions.canLainaa
             return (
@@ -655,14 +660,16 @@ export default function CreateScreen() {
           onVerifyPress={identity.startVerification}
         />
 
-        <VerificationModal
-          visible={identity.showModal}
-          onClose={() => identity.setShowModal(false)}
-          onConfirm={identity.confirmVerification}
-          loading={identity.loading}
-          error={identity.error}
-          isSuccess={identity.status === 'success'}
-        />
+        {FEATURES.IDENTITY_VERIFICATION && (
+          <VerificationModal
+            visible={identity.showModal}
+            onClose={() => identity.setShowModal(false)}
+            onConfirm={identity.confirmVerification}
+            loading={identity.loading}
+            error={identity.error}
+            isSuccess={identity.status === 'success'}
+          />
+        )}
       </View>
       </ScreenErrorBoundary>
     )
@@ -690,7 +697,7 @@ export default function CreateScreen() {
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Pro upsell banner */}
-          {!userIsPro && (
+          {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
             <Pressable onPress={() => router.push('/pro')} style={[styles.proBanner, { backgroundColor: `${colors.pro}12` }]}>
               <Crown size={16} color={colors.pro} />
               <Text style={[styles.proBannerText, { color: colors.pro }]}>{t('pro.createBanner')}</Text>

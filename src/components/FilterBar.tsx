@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
+import { FEATURES } from '@/lib/featureFlags'
 import type { PostType } from '@/lib/types'
 
 interface FilterBarProps {
@@ -19,7 +20,11 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
   return (
     <>
       {/* Category chips — tapping active chip deselects (shows all) */}
-      {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
+      {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
+        if (type === 'lainaa' && !FEATURES.LENDING) return false
+        if (type === 'nappaa' && !FEATURES.GRAB) return false
+        return true
+      }).map(([type, cat]) => {
         const isActive = activeFilter === type
 
         return (
