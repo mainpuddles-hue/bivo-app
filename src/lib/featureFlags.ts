@@ -2,7 +2,7 @@
 // Set to true to enable features post-launch
 export const FEATURES = {
   LENDING: false,        // Lainaa category
-  GRAB: false,           // Nappaa category
+  GRAB: true,            // Nappaa category — 24h urgent listings
   PAYMENTS: false,       // Stripe payments for services
   PRO_SUBSCRIPTION: false, // Pro tier
   BUSINESS_ACCOUNT: false, // Organization/business tier
