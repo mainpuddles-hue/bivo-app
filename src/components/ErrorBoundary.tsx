@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { AlertTriangle, RotateCcw } from 'lucide-react-native'
+import * as Sentry from '@sentry/react-native'
 
 interface Props {
   children: React.ReactNode
@@ -32,6 +33,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     if (__DEV__) console.error('[ErrorBoundary]', error.message, errorInfo.componentStack)
+    Sentry.captureException(error)
     this.props.onError?.(error, errorInfo)
   }
 

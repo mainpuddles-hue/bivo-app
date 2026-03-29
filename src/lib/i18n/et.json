@@ -90,7 +90,21 @@
     "postHidden": "Postitus peidetud",
     "newPost": "Uus",
     "missedPosts": "{count} uut kuulutust pärast sinu viimast külastust",
-    "neighborsActive": "{count} naabrit aktiivset"
+    "neighborsActive": "{count} naabrit aktiivset",
+    "upcomingEvent": "Tulev sündmus",
+    "activeGroup": "Aktiivne grupp",
+    "trendingThread": "Populaarne arutelu",
+    "members": "liiget",
+    "replies": "vastust",
+    "todayIn": "Täna {area}s:",
+    "newListings": "uut kuulutust",
+    "eventsTomorrow": "sündmust homme",
+    "newDiscussions": "uut arutelu"
+  },
+  "streak": {
+    "milestone3": "3 päeva järjest! Oled aktiivne naaber.",
+    "milestone7": "7 päeva! Sinu punktid kahekordistuvad täna!",
+    "milestone30": "30 päeva! Oled naabruskonna tugisammas. 3x punktid!"
   },
   "time": {
     "justNow": "just praegu",
@@ -170,7 +184,10 @@
     "likedBy": "Meeldimised",
     "noLikes": "Veel pole meeldimisi",
     "likes": "meeldimist",
-    "priceContext": "Tüüpiline hind piirkonnas: {min}–{max}€"
+    "priceContext": "Tüüpiline hind piirkonnas: {min}–{max}€",
+    "beFirstComment": "Ole esimene kommenteerija!",
+    "browseCommunityEvents": "Sirvi kogukonna sündmusi",
+    "openGallery": "Ava pildigalerii"
   },
   "events": {
     "title": "Sündmused",
@@ -291,7 +308,27 @@
     "catNature": "Loodus",
     "catKids": "Lastele",
     "catOther": "Muu",
-    "messageOrganizer": "Saada korraldajale s\u00f5num"
+    "messageOrganizer": "Saada korraldajale s\u00f5num",
+    "communityEventsTitle": "Kogukonna s\u00fcndmused",
+    "noUpcomingEvents": "Tulevaid s\u00fcndmusi pole",
+    "createFirstEvent": "Loo esimene s\u00fcndmus!",
+    "showAllEvents": "N\u00e4ita k\u00f5iki",
+    "participantsCount": "{count} osalejat",
+    "participantsCountMax": "{count}/{max} osalejat",
+    "isFull": "T\u00e4is",
+    "joinEvent": "Osale",
+    "requestSpot": "Taotle kohta",
+    "leaveEvent": "T\u00fchista",
+    "pendingApproval": "Ootab kinnitust",
+    "organizer": "Korraldaja",
+    "editEventAction": "Muuda s\u00fcndmust",
+    "cancelEvent": "T\u00fchista s\u00fcndmus",
+    "cancelEventConfirm": "Kas soovid kindlasti selle s\u00fcndmuse t\u00fchistada?",
+    "eventCancelled": "S\u00fcndmus t\u00fchistatud",
+    "cancelFailed": "T\u00fchistamine eba\u00f5nnestus",
+    "joinFailed": "Liitumine eba\u00f5nnestus",
+    "leaveFailed": "Lahkumine eba\u00f5nnestus",
+    "eventNotFound": "S\u00fcndmust ei leitud"
   },
   "activity": {
     "activities": "Koos",
@@ -675,6 +712,9 @@
     "passwordChangeFailed": "Parooli vahetamine ebaõnnestus",
     "passwordTooShort": "Parool peab olema vähemalt 8 tähemärki",
     "passwordTooWeak": "Parool peab sisaldama suurtähte ja numbrit",
+    "passwordNeedsUppercase": "Lisa suurt\u00e4ht (A-Z)",
+    "passwordNeedsNumber": "Lisa number (0-9)",
+    "passwordStrong": "Tugev parool",
     "changingPassword": "Vahetamine...",
     "dataAndPrivacy": "Andmed ja privaatsus",
     "dataDownloaded": "Andmed alla laaditud",
@@ -766,7 +806,8 @@
     "expiresToday": "Aegub täna",
     "expired": "Aegunud",
     "distanceKm": "{distance} km",
-    "verified": "Kinnitatud"
+    "verified": "Kinnitatud",
+    "tapToOpen": "Puuduta kuulutuse avamiseks"
   },
   "auth": {
     "login": "Logi sisse",
@@ -1545,7 +1586,9 @@
     "noResultsQuery": "Otsingule \"{query}\" tulemusi pole",
     "resultCount": "{count} tulemust",
     "semanticMatch": "Sarnane vaste",
-    "thisMonth": "Sel kuul"
+    "thisMonth": "Sel kuul",
+    "tabEvents": "S\u00fcndmused",
+    "tabGroups": "Grupid"
   },
   "saved": {
     "title": "Salvestatud",
@@ -1722,7 +1765,9 @@
     "showAllPlaces": "Näita kõik {count} kohta",
     "outOfArea": "Oled piirkonnast väljas",
     "outOfAreaDesc": "Sündmused ja kohad kuvatakse ainult linnas {city}",
-    "changeCity": "Vaheta linn"
+    "changeCity": "Vaheta linn",
+    "businesses": "Ettev\u00f5tted",
+    "showProfile": "N\u00e4ita profiili"
   },
   "privacy": {
     "title": "Andmekaitseteade",

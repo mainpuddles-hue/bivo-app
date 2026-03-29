@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { initSentry } from '@/lib/sentry'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -15,6 +16,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
 import { setAnalyticsUser, trackEvent, trackRetention } from '@/lib/analytics'
 import { clearAuthCache } from '@/lib/authCache'
+
+// Initialize Sentry error reporting (no-op in __DEV__)
+initSentry()
 
 const LANG_AUTO_SET_KEY = 'tackbird_lang_auto_set'
 const UNSUPPORTED_DISMISSED_KEY = 'tackbird_unsupported_dismissed'

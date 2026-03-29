@@ -76,6 +76,7 @@ export default function PrivacyScreen() {
             <Text style={[s.listItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('privacy.section7List2')}</Text>
             <Text style={[s.listItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('privacy.section7List3')}</Text>
             <Text style={[s.listItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('privacy.section7List4')}</Text>
+            <Text style={[s.listItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('privacy.section7List5')}</Text>
           </View>
 
           {/* Section 8: Data Security */}
@@ -85,6 +86,10 @@ export default function PrivacyScreen() {
           {/* Section 9: Contact and Complaints */}
           <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('privacy.section9Title')}</Text>
           <Text style={[s.paragraph, { color: colors.mutedForeground }]}>{t('privacy.section9Content')}</Text>
+
+          {/* Section 10: Age Requirement and Updates */}
+          <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('privacy.section10Title')}</Text>
+          <Text style={[s.paragraph, { color: colors.mutedForeground }]}>{t('privacy.section10Content')}</Text>
         </View>
 
         {/* Data export CTA */}

@@ -595,6 +595,8 @@ export default function ActivitiesScreen() {
           setShowCreateModal(true)
         }}
         style={[st.fab, { backgroundColor: colors.primary, bottom: insets.bottom + 16 }]}
+        accessibilityRole="button"
+        accessibilityLabel={t('activities.create')}
       >
         <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
       </Pressable>
@@ -824,7 +826,6 @@ const st = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 20,
-    fontWeight: '700',
     letterSpacing: -0.3,
     fontFamily: fonts.headingSemi,
     lineHeight: 28,
@@ -851,9 +852,8 @@ const st = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 13,
-    fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    lineHeight: 17,
+    lineHeight: 16,
   },
 
   // List
@@ -890,7 +890,6 @@ const st = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: '600',
     lineHeight: 20,
     fontFamily: fonts.headingSemi,
   },
@@ -928,9 +927,8 @@ const st = StyleSheet.create({
   },
   categoryBadgeText: {
     fontSize: 10,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 14,
+    lineHeight: 16,
   },
   cardBottom: {
     flexDirection: 'row',
@@ -945,15 +943,14 @@ const st = StyleSheet.create({
     gap: 5,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
     minWidth: 90,
     justifyContent: 'center',
   },
   joinBtnText: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 17,
+    lineHeight: 16,
   },
 
   // Empty state
@@ -965,10 +962,9 @@ const st = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   emptyHint: {
     fontSize: 14,
@@ -987,7 +983,6 @@ const st = StyleSheet.create({
   },
   emptyBtnText: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -1020,9 +1015,8 @@ const st = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
     fontFamily: fonts.headingSemi,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   modalBody: {
     padding: 16,
@@ -1036,7 +1030,6 @@ const st = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -1051,7 +1044,7 @@ const st = StyleSheet.create({
   },
   textArea: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
@@ -1070,24 +1063,22 @@ const st = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   catChipText: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   schedChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   schedChipText: {
     fontSize: 13,
-    fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   dayRow: {
     flexDirection: 'row',
@@ -1096,28 +1087,26 @@ const st = StyleSheet.create({
   dayChip: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   dayChipText: {
     fontSize: 12,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   createBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
     marginTop: 8,
   },
   createBtnText: {
     fontSize: 16,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 23,
+    lineHeight: 24,
   },
 })

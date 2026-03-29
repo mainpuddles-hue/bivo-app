@@ -308,6 +308,8 @@ export default function GroupsScreen() {
           backgroundColor: colors.card,
         }, isDark ? cardShadowDark : cardShadow]}
         onPress={() => router.push(`/groups/${group.id}`)}
+        accessibilityRole="button"
+        accessibilityLabel={`${group.name}, ${group.member_count} ${t('groups.members')}`}
       >
         <View style={[s.groupAvatar, { backgroundColor: catColor }]}>
           <Text style={s.groupAvatarText}>
@@ -338,6 +340,8 @@ export default function GroupsScreen() {
               e.stopPropagation?.()
               handleJoin(group)
             }}
+            accessibilityRole="button"
+            accessibilityLabel={t('groups.join')}
           >
             <Text style={[s.joinButtonText, { color: colors.accentForeground }]}>
               {t('groups.join')}
@@ -464,6 +468,8 @@ export default function GroupsScreen() {
           try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
           setShowCreateModal(true)
         }}
+        accessibilityRole="button"
+        accessibilityLabel={t('groups.create')}
       >
         <Plus size={24} color={colors.accentForeground} strokeWidth={2} />
       </Pressable>
@@ -675,9 +681,9 @@ const s = StyleSheet.create({
   groupCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 14,
-    marginBottom: 10,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
     gap: 12,
   },
   groupAvatar: {
@@ -732,8 +738,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    borderRadius: 14,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 8,
     gap: 8,
   },
   emptySectionText: {

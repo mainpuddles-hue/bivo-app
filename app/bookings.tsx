@@ -466,7 +466,7 @@ export default function BookingsScreen() {
             <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
               {item.post?.title ?? t('service.deletedPost')}
             </Text>
-            <Text style={{ fontSize: 11, color: TARJOAN_COLOR, fontWeight: '600' }}>
+            <Text style={{ fontSize: 11, color: TARJOAN_COLOR, fontFamily: fonts.bodySemi }}>
               {isBuyer ? t('service.youBought') : t('service.youProvide')}
             </Text>
             {otherUser && (
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   tabRow: {
     flexDirection: 'row',
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
   },
-  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  tabText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   listContent: { padding: 16, gap: 12, paddingBottom: 100 },
   bookingCard: {
     borderRadius: 12,
@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
   itemImage: {
     width: 64,
     height: 64,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   itemImageFb: {
     alignItems: 'center',
@@ -661,7 +661,6 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 15,
-    fontWeight: '600',
     lineHeight: 20,
     fontFamily: fonts.bodySemi,
   },
@@ -672,7 +671,8 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
-    lineHeight: 17,
+    lineHeight: 16,
+    fontFamily: fonts.body,
   },
   userRow: {
     flexDirection: 'row',
@@ -692,7 +692,8 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 12,
     flex: 1,
-    lineHeight: 17,
+    lineHeight: 16,
+    fontFamily: fonts.body,
   },
   cardRight: {
     alignItems: 'flex-end',
@@ -705,17 +706,15 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 11,
-    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
     fontFamily: fonts.bodySemi,
-    lineHeight: 14,
+    lineHeight: 16,
   },
   priceText: {
     fontSize: 16,
-    fontWeight: '700',
     fontFamily: fonts.headingSemi,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -735,10 +734,9 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 12,
-    fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: fonts.bodySemi,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   empty: {
     alignItems: 'center',
@@ -747,15 +745,15 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   emptyHint: {
     fontSize: 13,
     textAlign: 'center',
     paddingHorizontal: 40,
-    lineHeight: 17,
+    lineHeight: 16,
+    fontFamily: fonts.body,
   },
   statusFilterRow: {
     flexDirection: 'row',
@@ -770,8 +768,7 @@ const styles = StyleSheet.create({
   },
   statusFilterText: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 17,
+    lineHeight: 16,
   },
 })

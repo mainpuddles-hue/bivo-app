@@ -345,10 +345,9 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   filterRow: {
     flexDirection: 'row',
@@ -364,9 +363,8 @@ const s = StyleSheet.create({
   },
   filterText: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   monthLabel: {
     fontSize: 12,
@@ -381,17 +379,16 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginHorizontal: 16,
-    marginTop: 4,
-    marginBottom: 4,
-    padding: 10,
-    borderRadius: 10,
+    marginTop: 8,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 12,
   },
   proBannerText: {
     flex: 1,
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   list: {
     padding: 16,
@@ -414,7 +411,6 @@ const s = StyleSheet.create({
   },
   rankText: {
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: fonts.heading,
     lineHeight: 20,
   },
@@ -424,7 +420,6 @@ const s = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -440,7 +435,6 @@ const s = StyleSheet.create({
   },
   points: {
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: fonts.heading,
     lineHeight: 20,
   },
@@ -463,9 +457,8 @@ const s = StyleSheet.create({
   },
   yourRankLabel: {
     fontSize: 13,
-    fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   yourRankRow: {
     flexDirection: 'row',
@@ -474,7 +467,6 @@ const s = StyleSheet.create({
   },
   yourRankNum: {
     fontSize: 24,
-    fontWeight: '700',
     fontFamily: fonts.heading,
     lineHeight: 32,
   },

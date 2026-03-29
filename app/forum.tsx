@@ -521,7 +521,9 @@ export default function ForumScreen() {
       {/* FAB */}
       {tableExists && currentUserId && (
         <Pressable onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}; setShowCreateModal(true) }}
-          style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.accent }]}>
+          style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.accent }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('forum.create')}>
           <Plus size={24} color="#FFFFFF" />
         </Pressable>
       )}

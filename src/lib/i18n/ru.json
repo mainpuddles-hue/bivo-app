@@ -90,7 +90,21 @@
     "postHidden": "Публикация скрыта",
     "newPost": "Новое",
     "missedPosts": "{count} новых объявлений с вашего последнего визита",
-    "neighborsActive": "{count} соседей онлайн"
+    "neighborsActive": "{count} соседей онлайн",
+    "upcomingEvent": "Предстоящее событие",
+    "activeGroup": "Активная группа",
+    "trendingThread": "Популярное обсуждение",
+    "members": "участников",
+    "replies": "ответов",
+    "todayIn": "Сегодня в {area}:",
+    "newListings": "новых объявлений",
+    "eventsTomorrow": "событий завтра",
+    "newDiscussions": "новых обсуждений"
+  },
+  "streak": {
+    "milestone3": "3 дня подряд! Вы активный сосед.",
+    "milestone7": "7 дней! Ваши очки удваиваются сегодня!",
+    "milestone30": "30 дней! Вы опора района. 3x очков!"
   },
   "time": {
     "justNow": "только что",
@@ -170,7 +184,10 @@
     "likedBy": "Понравилось",
     "noLikes": "Пока нет лайков",
     "likes": "лайков",
-    "priceContext": "Типичная цена в районе: {min}–{max}€"
+    "priceContext": "Типичная цена в районе: {min}–{max}€",
+    "beFirstComment": "Будьте первым комментатором!",
+    "browseCommunityEvents": "Обзор событий сообщества",
+    "openGallery": "Открыть галерею"
   },
   "events": {
     "title": "События",
@@ -291,7 +308,27 @@
     "catNature": "Природа",
     "catKids": "Для детей",
     "catOther": "Другое",
-    "messageOrganizer": "Написать организатору"
+    "messageOrganizer": "Написать организатору",
+    "communityEventsTitle": "События сообщества",
+    "noUpcomingEvents": "Предстоящих событий нет",
+    "createFirstEvent": "Создайте первое событие!",
+    "showAllEvents": "Показать все",
+    "participantsCount": "{count} участников",
+    "participantsCountMax": "{count}/{max} участников",
+    "isFull": "Мест нет",
+    "joinEvent": "Участвовать",
+    "requestSpot": "Запросить место",
+    "leaveEvent": "Отменить",
+    "pendingApproval": "Ожидает одобрения",
+    "organizer": "Организатор",
+    "editEventAction": "Редактировать событие",
+    "cancelEvent": "Отменить событие",
+    "cancelEventConfirm": "Вы уверены, что хотите отменить это событие?",
+    "eventCancelled": "Событие отменено",
+    "cancelFailed": "Не удалось отменить",
+    "joinFailed": "Не удалось присоединиться",
+    "leaveFailed": "Не удалось покинуть",
+    "eventNotFound": "Событие не найдено"
   },
   "activity": {
     "activities": "Вместе",
@@ -675,6 +712,9 @@
     "passwordChangeFailed": "Не удалось сменить пароль",
     "passwordTooShort": "Пароль должен быть не менее 8 символов",
     "passwordTooWeak": "Пароль должен содержать заглавную букву и цифру",
+    "passwordNeedsUppercase": "Добавьте заглавную букву (A-Z)",
+    "passwordNeedsNumber": "Добавьте цифру (0-9)",
+    "passwordStrong": "Надёжный пароль",
     "changingPassword": "Смена пароля...",
     "dataAndPrivacy": "Данные и приватность",
     "dataDownloaded": "Данные загружены",
@@ -766,7 +806,8 @@
     "expiresToday": "Истекает сегодня",
     "expired": "Истекло",
     "distanceKm": "{distance} км",
-    "verified": "Подтверждён"
+    "verified": "Подтверждён",
+    "tapToOpen": "Нажмите, чтобы открыть объявление"
   },
   "auth": {
     "login": "Войти",
@@ -1545,7 +1586,9 @@
     "noResultsQuery": "По запросу \"{query}\" ничего не найдено",
     "resultCount": "{count} результатов",
     "semanticMatch": "Похожее совпадение",
-    "thisMonth": "В этом месяце"
+    "thisMonth": "В этом месяце",
+    "tabEvents": "События",
+    "tabGroups": "Группы"
   },
   "saved": {
     "title": "Сохранённые",
@@ -1722,7 +1765,9 @@
     "showAllPlaces": "Показать все {count} мест",
     "outOfArea": "Вы за пределами зоны",
     "outOfAreaDesc": "События и места отображаются только в {city}",
-    "changeCity": "Сменить город"
+    "changeCity": "Сменить город",
+    "businesses": "Компании",
+    "showProfile": "Показать профиль"
   },
   "privacy": {
     "title": "Политика конфиденциальности",
