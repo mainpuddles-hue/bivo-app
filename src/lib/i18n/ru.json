@@ -290,7 +290,8 @@
     "catCulture": "Культура",
     "catNature": "Природа",
     "catKids": "Для детей",
-    "catOther": "Другое"
+    "catOther": "Другое",
+    "messageOrganizer": "Написать организатору"
   },
   "activity": {
     "activities": "Вместе",

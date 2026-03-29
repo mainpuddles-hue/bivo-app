@@ -304,6 +304,7 @@
     "leaveEvent": "Peruu",
     "pendingApproval": "Odottaa hyväksyntää",
     "organizer": "Järjestäjä",
+    "messageOrganizer": "Viesti järjestäjälle",
     "editEventAction": "Muokkaa tapahtumaa",
     "cancelEvent": "Peru tapahtuma",
     "cancelEventConfirm": "Haluatko varmasti perua tämän tapahtuman?",

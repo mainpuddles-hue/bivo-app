@@ -776,6 +776,18 @@ function PostDetailScreenInner() {
             <Text style={[styles.description, { color: colors.foreground }]}>{post.description}</Text>
           ) : null}
 
+          {post.type === 'tapahtuma' && (
+            <Pressable
+              onPress={() => router.push('/community-events' as any)}
+              style={styles.communityEventsLink}
+              accessibilityRole="link"
+              accessibilityLabel="Selaa yhteisötapahtumia"
+            >
+              <Calendar size={14} color={colors.primary} />
+              <Text style={[styles.communityEventsLinkText, { color: colors.primary }]}>Selaa yhteisötapahtumia</Text>
+            </Pressable>
+          )}
+
           {post.location && (
             <View style={styles.locationRow}>
               <MapPin size={16} color={colors.mutedForeground} />
@@ -1146,6 +1158,8 @@ const styles = StyleSheet.create({
   price: { fontSize: 18, fontFamily: fonts.heading },
   eventDate: { fontSize: 15, fontFamily: fonts.bodyMedium },
   description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 22 },
+  communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
+  communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   locationText: { fontSize: 14, fontFamily: fonts.body },
 

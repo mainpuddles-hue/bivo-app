@@ -300,7 +300,13 @@ export default function SavedScreen() {
               />
             ) : (
               events.map((event) => (
-                <View key={event.id} style={[s.eventCard, { backgroundColor: colors.card }]}>
+                <Pressable
+                  key={event.id}
+                  onPress={() => router.push(`/event/${event.id}` as any)}
+                  style={[s.eventCard, { backgroundColor: colors.card }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={event.title}
+                >
                   <View style={[s.eventIcon, { backgroundColor: `${colors.primary}15` }]}>
                     <CalendarDays size={20} color={colors.primary} />
                   </View>
@@ -321,7 +327,7 @@ export default function SavedScreen() {
                   <Pressable onPress={() => handleUnsaveEvent(event.id, event.event_type)} hitSlop={8}>
                     <BookmarkCheck size={18} color={colors.primary} />
                   </Pressable>
-                </View>
+                </Pressable>
               ))
             )
           )}

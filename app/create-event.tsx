@@ -156,7 +156,7 @@ export default function CreateEventScreen() {
       }
 
       // Insert event
-      const { error } = await (supabase.from('community_events') as any).insert({
+      const { data: insertedEvent, error } = await (supabase.from('community_events') as any).insert({
         creator_id: currentUserId,
         title: title.trim(),
         description: description.trim() || null,
@@ -171,7 +171,7 @@ export default function CreateEventScreen() {
         approval_required: approvalRequired,
         naapurusto: userNaapurusto,
         is_active: true,
-      })
+      }).select('id').single()
 
       if (error) {
         Alert.alert(t('common.error'), t('events.createFailed'))
@@ -182,7 +182,9 @@ export default function CreateEventScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       Alert.alert(t('common.success'), t('events.created'))
 
-      if (router.canGoBack()) {
+      if (insertedEvent?.id) {
+        router.replace(`/event/${insertedEvent.id}` as any)
+      } else if (router.canGoBack()) {
         router.back()
       } else {
         router.replace('/community-events' as any)

@@ -5,7 +5,7 @@ import {
   Platform, Alert, Animated,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
 import { BoardIllustration } from '@/components/illustrations'
@@ -85,6 +85,7 @@ export default function ForumScreen() {
   const { awardPoints } = usePoints()
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  const { thread } = useLocalSearchParams<{ thread?: string }>()
   const supabase = useSupabase()
 
   // State
@@ -276,6 +277,27 @@ export default function ForumScreen() {
     finally { setLoadingReplies(false) }
   }, [supabase])
 
+  // ── Auto-open thread from query param ──
+  const threadHandledRef = useRef(false)
+  useEffect(() => {
+    if (!thread || threadHandledRef.current || loading || posts.length === 0) return
+    threadHandledRef.current = true
+    const targetPost = posts.find(p => p.id === thread)
+    if (targetPost) {
+      openPostDetail(targetPost)
+    } else {
+      // Post may not be in current page — fetch it directly
+      ;(async () => {
+        try {
+          const { data } = await supabase.from('forum_posts')
+            .select('*, user:profiles!forum_posts_user_id_fkey(id, name, avatar_url, naapurusto)')
+            .eq('id', thread).single()
+          if (data) openPostDetail(data as unknown as ForumPost)
+        } catch { /* silent */ }
+      })()
+    }
+  }, [thread, loading, posts, supabase, openPostDetail])
+
   // ── Send reply ──
   const handleSendReply = useCallback(async () => {
     if (!currentUserId || !selectedPost || !replyText.trim()) return
@@ -387,6 +409,10 @@ export default function ForumScreen() {
   }, [currentUserId, userNeighborhood, supabase, t, awardPoints])
 
   // ── Render post card ──
+  const handleUserPress = useCallback((userId: string) => {
+    router.push(`/profile/${userId}` as any)
+  }, [router])
+
   const renderPostCard = useCallback(({ item }: { item: ForumPost }) => (
     <ForumPostCard
       post={item}
@@ -397,8 +423,9 @@ export default function ForumScreen() {
       onDelete={handleDeletePost}
       onSelect={openPostDetail}
       onReport={handleReport}
+      onUserPress={handleUserPress}
     />
-  ), [currentUserId, votedPosts, handleUpvotePost, handleEditPost, handleDeletePost, openPostDetail, handleReport])
+  ), [currentUserId, votedPosts, handleUpvotePost, handleEditPost, handleDeletePost, openPostDetail, handleReport, handleUserPress])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {

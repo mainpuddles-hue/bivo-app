@@ -294,7 +294,16 @@ export default function MapScreen() {
                 title={m.title}
                 description={m.description}
                 tracksViewChanges={false}
-                onPress={() => handleMarkerPress({ key: m.id, latitude: m.latitude, longitude: m.longitude, pinColor: m.pinColor ?? '', title: m.title ?? '', description: m.description ?? '' })}
+                onPress={() => {
+                  // For post markers, navigate directly to post detail
+                  const listItem = filteredItems.find(fi => fi.id === m.id)
+                  if (listItem?.kind === 'post') {
+                    const postData = listItem.sourceData as import('@/lib/types').Post
+                    router.push(`/post/${postData.id}` as any)
+                    return
+                  }
+                  handleMarkerPress({ key: m.id, latitude: m.latitude, longitude: m.longitude, pinColor: m.pinColor ?? '', title: m.title ?? '', description: m.description ?? '' })
+                }}
               />
             )
           })}

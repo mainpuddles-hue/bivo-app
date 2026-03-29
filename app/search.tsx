@@ -1,9 +1,11 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, Star, Trash2, Heart, ChevronDown, ChevronUp, Navigation, DollarSign, Calendar } from 'lucide-react-native'
+import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, Star, Trash2, Heart, ChevronDown, ChevronUp, Navigation, DollarSign, Calendar, CalendarDays, Users } from 'lucide-react-native'
 import * as Location from 'expo-location'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SearchSkeleton } from '@/components/SkeletonLoaders'
@@ -279,8 +281,10 @@ function SearchScreenInner() {
   const [hasMore, setHasMore] = useState(false)
   const [history, setHistory] = useState<string[]>([])
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
-  const [activeTab, setActiveTab] = useState<'posts' | 'users'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'users' | 'events' | 'groups'>('posts')
   const [userResults, setUserResults] = useState<{ id: string; name: string; avatar_url: string | null; naapurusto: string }[]>([])
+  const [eventResults, setEventResults] = useState<{ id: string; title: string; description: string | null; event_date: string | null; location_name: string | null }[]>([])
+  const [groupResults, setGroupResults] = useState<{ id: string; name: string; description: string | null; member_count: number | null }[]>([])
   const [trendingPosts, setTrendingPosts] = useState<{ id: string; title: string; type: string; like_count: number }[]>([])
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [recentSearches, setRecentSearches] = useState<string[]>([])
@@ -685,15 +689,45 @@ function SearchScreenInner() {
       setResults(postResults)
       setHasMore((posts ?? []).length >= 20)
 
-      // Search users
-      const { data: users } = await supabase
-        .from('profiles')
-        .select('id, name, avatar_url, naapurusto')
-        .ilike('name', `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
-        .limit(10)
+      // Search users, events, and groups in parallel
+      const [usersRes, eventsRes, groupsRes] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, name, avatar_url, naapurusto')
+          .ilike('name', `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
+          .limit(10),
+        supabase
+          .from('community_events')
+          .select('id, title, description, event_date, location_name')
+          .eq('is_active', true)
+          .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
+          .order('event_date', { ascending: true })
+          .limit(10)
+          .then(res => {
+            if (res.error) {
+              if (__DEV__) console.log('[search] community_events error:', res.error.message)
+              return { ...res, data: [] }
+            }
+            return res
+          }),
+        supabase
+          .from('groups')
+          .select('id, name, description, member_count')
+          .ilike('name', `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
+          .limit(10)
+          .then(res => {
+            if (res.error) {
+              if (__DEV__) console.log('[search] groups error:', res.error.message)
+              return { ...res, data: [] }
+            }
+            return res
+          }),
+      ])
       if (controller.signal.aborted) return
 
-      setUserResults((users ?? []) as any[])
+      setUserResults((usersRes.data ?? []) as any[])
+      setEventResults((eventsRes.data ?? []) as any[])
+      setGroupResults((groupsRes.data ?? []) as any[])
     } catch {
       // Request aborted or failed — ignore
     } finally {
@@ -1088,6 +1122,16 @@ function SearchScreenInner() {
               {t('common.user')} ({userResults.length})
             </Text>
           </Pressable>
+          <Pressable onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+            <Text style={[s.tabText, { color: activeTab === 'events' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+              Tapahtumat ({eventResults.length})
+            </Text>
+          </Pressable>
+          <Pressable onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+            <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+              {'Ryhmät'} ({groupResults.length})
+            </Text>
+          </Pressable>
         </View>
       )}
 
@@ -1135,6 +1179,86 @@ function SearchScreenInner() {
           onEndReachedThreshold={0.3}
           ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} /> : null}
           ListEmptyComponent={<SearchEmptyState query={query} colors={colors} t={t} />}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : activeTab === 'events' ? (
+        <FlatList
+          data={eventResults}
+          keyExtractor={item => item.id}
+          contentContainerStyle={s.list}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => router.push(`/event/${item.id}` as any)}
+              style={[s.userCard, { backgroundColor: colors.card }]}
+              accessibilityRole="button"
+              accessibilityLabel={item.title}
+            >
+              <View style={[s.searchEventIcon, { backgroundColor: `${colors.primary}15` }]}>
+                <CalendarDays size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.title}</Text>
+                {item.event_date && (
+                  <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                    {new Date(item.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </Text>
+                )}
+                {item.location_name && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <MapPin size={12} color={colors.mutedForeground} />
+                    <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={1}>{item.location_name}</Text>
+                  </View>
+                )}
+              </View>
+              <ChevronRight size={16} color={colors.mutedForeground} />
+            </Pressable>
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ListEmptyComponent={
+            <View style={s.empty}>
+              <BoardIllustration size={80} />
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
+            </View>
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      ) : activeTab === 'groups' ? (
+        <FlatList
+          data={groupResults}
+          keyExtractor={item => item.id}
+          contentContainerStyle={s.list}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => router.push(`/groups/${item.id}` as any)}
+              style={[s.userCard, { backgroundColor: colors.card }]}
+              accessibilityRole="button"
+              accessibilityLabel={item.name}
+            >
+              <View style={[s.searchEventIcon, { backgroundColor: `${colors.primary}15` }]}>
+                <Users size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.name}</Text>
+                {item.description && (
+                  <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={2}>{item.description}</Text>
+                )}
+                {item.member_count != null && item.member_count > 0 && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Users size={12} color={colors.mutedForeground} />
+                    <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{item.member_count}</Text>
+                  </View>
+                )}
+              </View>
+              <ChevronRight size={16} color={colors.mutedForeground} />
+            </Pressable>
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ListEmptyComponent={
+            <View style={s.empty}>
+              <BoardIllustration size={80} />
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
+            </View>
+          }
           showsVerticalScrollIndicator={false}
         />
       ) : (
@@ -1254,6 +1378,7 @@ const s = StyleSheet.create({
   emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi },
   emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
+  searchEventIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
   userName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
   userNh: { fontSize: 13, fontFamily: fonts.body },

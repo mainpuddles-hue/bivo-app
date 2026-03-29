@@ -508,6 +508,7 @@ export default function GroupDetailScreen() {
       onEdit={handleStartEditPost}
       onToggleComments={handleToggleComments}
       onReport={handleReportPost}
+      onUserPress={(userId: string) => router.push(`/profile/${userId}` as any)}
       editingPostId={editingPostId}
       editPostContent={editPostContent}
       onEditContentChange={setEditPostContent}

@@ -18,6 +18,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { Avatar } from '@/components/Avatar'
 
 // ── Types ──
 
@@ -439,6 +440,18 @@ export default function ActivitiesScreen() {
                   : t('activity.members', { count: item.member_count ?? 0 })}
               </Text>
             </View>
+            {/* Creator */}
+            {item.creator && (
+              <Pressable
+                onPress={() => router.push(`/profile/${item.creator!.id}` as any)}
+                style={st.creatorRow}
+              >
+                <Avatar url={item.creator.avatar_url} name={item.creator.name} size={18} />
+                <Text style={[st.metaText, { color: colors.primary }]} numberOfLines={1}>
+                  {item.creator.name}
+                </Text>
+              </Pressable>
+            )}
           </View>
           {/* Category badge */}
           <View style={[st.categoryBadge, { backgroundColor: `${catColor}15` }]}>
@@ -901,6 +914,12 @@ const st = StyleSheet.create({
     flex: 1,
     fontFamily: fonts.body,
     lineHeight: 17,
+  },
+  creatorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
   },
   categoryBadge: {
     paddingHorizontal: 8,

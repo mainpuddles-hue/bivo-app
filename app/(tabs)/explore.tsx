@@ -502,7 +502,7 @@ function ExploreScreenInner() {
                 groups.map(g => (
                   <Pressable
                     key={g.id}
-                    onPress={() => router.push('/groups' as any)}
+                    onPress={() => router.push(`/groups/${g.id}` as any)}
                     accessibilityRole="button"
                     accessibilityLabel={`${g.name}, ${g.member_count} ${t('groups.members')}`}
                     style={[s.communityCard, { backgroundColor: colors.card }]}
@@ -552,7 +552,7 @@ function ExploreScreenInner() {
                 forumPosts.map(p => (
                   <Pressable
                     key={p.id}
-                    onPress={() => router.push('/forum' as any)}
+                    onPress={() => router.push(`/forum?thread=${p.id}` as any)}
                     accessibilityRole="button"
                     accessibilityLabel={`${p.title}, ${p.comment_count} ${t('forum.replies')}`}
                     style={[s.communityCard, { backgroundColor: colors.card }]}

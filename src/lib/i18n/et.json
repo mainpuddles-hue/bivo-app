@@ -290,7 +290,8 @@
     "catCulture": "Kultuur",
     "catNature": "Loodus",
     "catKids": "Lastele",
-    "catOther": "Muu"
+    "catOther": "Muu",
+    "messageOrganizer": "Saada korraldajale s\u00f5num"
   },
   "activity": {
     "activities": "Koos",

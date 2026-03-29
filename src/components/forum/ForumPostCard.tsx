@@ -59,6 +59,7 @@ interface ForumPostCardProps {
   onDelete: (postId: string) => void
   onSelect: (post: ForumPost) => void
   onReport?: (postId: string) => void
+  onUserPress?: (userId: string) => void
 }
 
 function ForumPostCardInner({
@@ -70,6 +71,7 @@ function ForumPostCardInner({
   onDelete,
   onSelect,
   onReport,
+  onUserPress,
 }: ForumPostCardProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -95,25 +97,31 @@ function ForumPostCardInner({
       <View style={styles.cardBody}>
         {/* User row */}
         <View style={styles.cardUserRow}>
-          <Avatar url={user?.avatar_url} name={user?.name} size={32} />
-          <View style={styles.cardUserInfo}>
-            <Text style={[styles.cardUserName, { color: colors.foreground }]} numberOfLines={1}>
-              {user?.name ?? t('common.user')}
-            </Text>
-            <View style={styles.cardUserMeta}>
-              {user?.naapurusto && (
-                <>
-                  <MapPin size={10} color={colors.mutedForeground} />
-                  <Text style={[styles.cardMetaText, { color: colors.mutedForeground }]}>
-                    {user.naapurusto}
-                  </Text>
-                </>
-              )}
-              <Text style={[styles.cardMetaText, { color: colors.mutedForeground }]}>
-                {formatTimeAgo(post.created_at, t, locale)}
+          <Pressable
+            onPress={(e) => { e.stopPropagation?.(); if (user?.id && onUserPress) onUserPress(user.id) }}
+            disabled={!onUserPress || !user?.id}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}
+          >
+            <Avatar url={user?.avatar_url} name={user?.name} size={32} />
+            <View style={styles.cardUserInfo}>
+              <Text style={[styles.cardUserName, { color: colors.foreground }]} numberOfLines={1}>
+                {user?.name ?? t('common.user')}
               </Text>
+              <View style={styles.cardUserMeta}>
+                {user?.naapurusto && (
+                  <>
+                    <MapPin size={10} color={colors.mutedForeground} />
+                    <Text style={[styles.cardMetaText, { color: colors.mutedForeground }]}>
+                      {user.naapurusto}
+                    </Text>
+                  </>
+                )}
+                <Text style={[styles.cardMetaText, { color: colors.mutedForeground }]}>
+                  {formatTimeAgo(post.created_at, t, locale)}
+                </Text>
+              </View>
             </View>
-          </View>
+          </Pressable>
           <View style={[styles.categoryBadge, { backgroundColor: `${catColor}18` }]}>
             <Text style={[styles.categoryBadgeText, { color: catColor }]}>
               {getCategoryLabel(post.category)}

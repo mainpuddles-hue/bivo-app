@@ -51,6 +51,7 @@ interface GroupPostCardProps {
   onEdit: (postId: string, content: string) => void
   onToggleComments: (postId: string) => void
   onReport?: (postId: string) => void
+  onUserPress?: (userId: string) => void
   // Inline edit state (managed by parent)
   editingPostId: string | null
   editPostContent: string
@@ -73,6 +74,7 @@ function GroupPostCardInner({
   onEdit,
   onToggleComments,
   onReport,
+  onUserPress,
   editingPostId,
   editPostContent,
   onEditContentChange,
@@ -91,15 +93,21 @@ function GroupPostCardInner({
       <View style={styles.postBody}>
         {/* User row */}
         <View style={styles.postUserRow}>
-          <Avatar url={post.user?.avatar_url} name={post.user?.name} size={36} />
-          <View style={styles.postUserInfo}>
-            <Text style={[styles.postUserName, { color: colors.foreground }]} numberOfLines={1}>
-              {post.user?.name || t('common.user')}
-            </Text>
-            <Text style={[styles.postTime, { color: colors.mutedForeground }]}>
-              {formatTimeAgo(post.created_at, t, locale)}
-            </Text>
-          </View>
+          <Pressable
+            onPress={() => { if (post.user?.id && onUserPress) onUserPress(post.user.id) }}
+            disabled={!onUserPress || !post.user?.id}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}
+          >
+            <Avatar url={post.user?.avatar_url} name={post.user?.name} size={36} />
+            <View style={styles.postUserInfo}>
+              <Text style={[styles.postUserName, { color: colors.foreground }]} numberOfLines={1}>
+                {post.user?.name || t('common.user')}
+              </Text>
+              <Text style={[styles.postTime, { color: colors.mutedForeground }]}>
+                {formatTimeAgo(post.created_at, t, locale)}
+              </Text>
+            </View>
+          </Pressable>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {post.user_id === currentUserId && (
               <>

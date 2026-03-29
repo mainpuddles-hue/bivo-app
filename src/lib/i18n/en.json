@@ -304,6 +304,7 @@
     "leaveEvent": "Leave",
     "pendingApproval": "Pending approval",
     "organizer": "Organizer",
+    "messageOrganizer": "Message organizer",
     "editEventAction": "Edit event",
     "cancelEvent": "Cancel event",
     "cancelEventConfirm": "Are you sure you want to cancel this event?",

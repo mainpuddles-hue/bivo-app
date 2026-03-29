@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
-  ArrowLeft, Share2, Flag, CalendarDays, MapPin, Users, Clock,
+  ArrowLeft, Share2, Flag, CalendarDays, MapPin, Users, Clock, MessageCircle,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -179,6 +179,34 @@ function EventDetailScreenInner() {
       text: `${event.title} - ${formatEventDate(event.event_date, locale)}`,
     })
   }, [event, locale])
+
+  const messagingRef = useRef(false)
+  const handleMessageCreator = useCallback(async () => {
+    if (!userId) { router.push('/(auth)/login'); return }
+    if (!event?.creator?.id) return
+    if (event.creator.id === userId) return
+    if (messagingRef.current) return
+    messagingRef.current = true
+    try {
+      const { data: existing, error: findError } = await supabase
+        .from('conversations').select('id')
+        .or(`and(user1_id.eq.${userId},user2_id.eq.${event.creator.id}),and(user1_id.eq.${event.creator.id},user2_id.eq.${userId})`)
+        .maybeSingle()
+      if (findError) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+      if (existing) {
+        router.push(`/messages/${(existing as any).id}`)
+      } else {
+        const { data: newConv, error } = await (supabase.from('conversations') as any)
+          .insert({ user1_id: userId, user2_id: event.creator.id }).select('id').single()
+        if (error || !newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+        router.push(`/messages/${newConv.id}`)
+      }
+    } catch {
+      Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
+    } finally {
+      messagingRef.current = false
+    }
+  }, [userId, event, supabase, router, t])
 
   // ── Render ──
 
@@ -398,6 +426,21 @@ function EventDetailScreenInner() {
           </Pressable>
         )}
 
+        {/* Message organizer */}
+        {event.creator && !isCreator && (
+          <Pressable
+            onPress={handleMessageCreator}
+            accessibilityRole="button"
+            accessibilityLabel={t('events.messageOrganizer')}
+            style={[s.messageCreatorBtn, { backgroundColor: colors.primary }]}
+          >
+            <MessageCircle size={18} color={colors.primaryForeground} strokeWidth={1.8} />
+            <Text style={[s.messageCreatorText, { color: colors.primaryForeground }]}>
+              {t('events.messageOrganizer')}
+            </Text>
+          </Pressable>
+        )}
+
         {/* Creator actions */}
         {isCreator && (
           <View style={s.creatorActions}>
@@ -609,6 +652,23 @@ const s = StyleSheet.create({
   },
   organizerBadgeText: {
     fontSize: 12,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+
+  // Message creator button
+  messageCreatorBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  messageCreatorText: {
+    fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },

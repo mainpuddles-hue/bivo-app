@@ -291,7 +291,8 @@
     "catCulture": "Kultur",
     "catNature": "Natur",
     "catKids": "Barn",
-    "catOther": "Övrigt"
+    "catOther": "Övrigt",
+    "messageOrganizer": "Meddelande till arrangören"
   },
   "activity": {
     "activities": "Tillsammans",
