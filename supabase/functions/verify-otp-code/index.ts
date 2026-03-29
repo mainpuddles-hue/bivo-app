@@ -59,6 +59,27 @@ serve(async (req) => {
         .eq('email', cleanEmail)
     }
 
+    // For recovery: generate a recovery link so the client can establish a session
+    if (type === 'recovery') {
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: cleanEmail,
+      })
+      if (linkError || !linkData?.properties?.hashed_token) {
+        console.error('[verify-otp-code] generateLink error:', linkError?.message)
+        // Still return verified=true so user isn't stuck, but without session token
+        return new Response(JSON.stringify({ verified: true }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      return new Response(JSON.stringify({
+        verified: true,
+        token_hash: linkData.properties.hashed_token,
+      }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     return new Response(JSON.stringify({ verified: true }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

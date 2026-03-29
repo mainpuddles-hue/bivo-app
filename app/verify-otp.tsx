@@ -95,8 +95,18 @@ export default function VerifyOtpScreen() {
       }
 
       if (otpMode === 'recovery') {
+        // Establish a session using the recovery token hash from the Edge Function
+        if (verifyData.token_hash) {
+          const { error: sessionError } = await supabase.auth.verifyOtp({
+            token_hash: verifyData.token_hash,
+            type: 'recovery',
+          })
+          if (sessionError) {
+            console.warn('[verify-otp] Failed to establish recovery session:', sessionError.message)
+          }
+        }
         trackEvent('auth_login_success' as any)
-        router.replace('/settings')
+        router.replace('/settings?recovery=true')
       } else {
         trackEvent('auth_register_success' as any)
         // User is already logged in (autoconfirm=true), navigate to onboarding or feed

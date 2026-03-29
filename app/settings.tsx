@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -13,6 +13,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications'
 // useInAppPurchase replaced by Stripe-based pro subscription
 import { useNotificationPreferences, type NotificationType } from '@/hooks/useNotificationPreferences'
 import { isValidUUID } from '@/lib/validation'
+import { clearExpiredPro } from '@/lib/proExpiry'
 import { fonts } from '@/lib/fonts'
 import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
@@ -43,6 +44,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const { recovery } = useLocalSearchParams<{ recovery?: string }>()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const push = usePushNotifications(profile?.id ?? null)
@@ -58,7 +60,7 @@ export default function SettingsScreen() {
   const [currentPw, setCurrentPw] = useState('')
   const [newPw, setNewPw] = useState('')
   const [changingPw, setChangingPw] = useState(false)
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(recovery === 'true')
 
   // Delete account
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
@@ -83,6 +85,10 @@ export default function SettingsScreen() {
   // Account info
   const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null)
 
+  // OAuth-only user (no password to change)
+  const [isOAuthUser, setIsOAuthUser] = useState(false)
+  const [oauthProvider, setOauthProvider] = useState<string | null>(null)
+
   useEffect(() => {
     async function load() {
       try {
@@ -91,15 +97,18 @@ export default function SettingsScreen() {
       setUserEmail(user.email ?? null)
       setEmailVerified(!!user.email_confirmed_at)
       setAccountCreatedAt(user.created_at ?? null)
+      // Detect OAuth-only users (no email/password identity)
+      const identities = user.identities ?? []
+      const hasEmailIdentity = identities.some((id: any) => id.provider === 'email')
+      if (!hasEmailIdentity && identities.length > 0) {
+        setIsOAuthUser(true)
+        const providerName = identities[0]?.provider ?? null
+        setOauthProvider(providerName)
+      }
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
         // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
-        const GRACE_DAYS = 3
-        if ((data as any).is_pro && (data as any).pro_expires_at && new Date((data as any).pro_expires_at).getTime() + GRACE_DAYS * 86400000 < Date.now() && !(data as any).stripe_subscription_id) {
-          await (supabase.from('profiles') as any).update({ is_pro: false, pro_expires_at: null }).eq('id', user.id)
-          ;(data as any).is_pro = false
-          ;(data as any).pro_expires_at = null
-        }
+        await clearExpiredPro(supabase, user.id, data as any)
         const p = data as unknown as Profile
         setProfile(p)
         setNameText(p.name ?? '')
@@ -208,70 +217,126 @@ export default function SettingsScreen() {
     setExporting(true)
     setExportProgress('1/6')
     try {
+      // Track per-table errors so export continues even if some tables fail
+      const tableErrors: Record<string, string> = {}
+      const rejected = { status: 'rejected' as const, reason: new Error('Batch skipped') }
+      const r = (res: PromiseSettledResult<any>, tableName: string) => {
+        if (res.status === 'rejected') {
+          tableErrors[tableName] = res.reason?.message ?? 'Promise rejected'
+          return []
+        }
+        const val = res.value
+        if (val?.error) {
+          tableErrors[tableName] = val.error.message ?? val.error.code ?? 'Query error'
+          return []
+        }
+        return val?.data ?? []
+      }
+
       // Batch 1: posts, messages, reviews
-      const [postsRes, msgsRes, reviewsRes] = await Promise.allSettled([
-        supabase.from('posts').select('*').eq('user_id', profile.id),
-        supabase.from('messages').select('*').eq('sender_id', profile.id),
-        supabase.from('reviews').select('*').eq('reviewer_id', profile.id),
-      ])
+      let postsRes: PromiseSettledResult<any> = rejected
+      let msgsRes: PromiseSettledResult<any> = rejected
+      let reviewsRes: PromiseSettledResult<any> = rejected
+      try {
+        ;[postsRes, msgsRes, reviewsRes] = await Promise.allSettled([
+          supabase.from('posts').select('*').eq('user_id', profile.id),
+          supabase.from('messages').select('*').eq('sender_id', profile.id),
+          supabase.from('reviews').select('*').eq('reviewer_id', profile.id),
+        ])
+      } catch (e: any) {
+        tableErrors['batch1_posts_messages_reviews'] = e?.message ?? 'Batch failed'
+      }
 
       setExportProgress('2/6')
       // Batch 2: saved posts, saved events, post likes
-      const [savedPostsRes, savedEventsRes, postLikesRes] = await Promise.allSettled([
-        supabase.from('saved_posts').select('*').eq('user_id', profile.id),
-        supabase.from('saved_events').select('*').eq('user_id', profile.id),
-        supabase.from('post_likes').select('*').eq('user_id', profile.id),
-      ])
+      let savedPostsRes: PromiseSettledResult<any> = rejected
+      let savedEventsRes: PromiseSettledResult<any> = rejected
+      let postLikesRes: PromiseSettledResult<any> = rejected
+      try {
+        ;[savedPostsRes, savedEventsRes, postLikesRes] = await Promise.allSettled([
+          supabase.from('saved_posts').select('*').eq('user_id', profile.id),
+          supabase.from('saved_events').select('*').eq('user_id', profile.id),
+          supabase.from('post_likes').select('*').eq('user_id', profile.id),
+        ])
+      } catch (e: any) {
+        tableErrors['batch2_saved_likes'] = e?.message ?? 'Batch failed'
+      }
 
       setExportProgress('3/6')
       // Batch 3: comments, follows (both directions)
-      const [commentsRes, followersRes, followingRes] = await Promise.allSettled([
-        supabase.from('post_comments').select('*').eq('user_id', profile.id),
-        supabase.from('user_follows').select('*').eq('followed_id', profile.id),
-        supabase.from('user_follows').select('*').eq('follower_id', profile.id),
-      ])
+      let commentsRes: PromiseSettledResult<any> = rejected
+      let followersRes: PromiseSettledResult<any> = rejected
+      let followingRes: PromiseSettledResult<any> = rejected
+      try {
+        ;[commentsRes, followersRes, followingRes] = await Promise.allSettled([
+          supabase.from('post_comments').select('*').eq('user_id', profile.id),
+          supabase.from('user_follows').select('*').eq('followed_id', profile.id),
+          supabase.from('user_follows').select('*').eq('follower_id', profile.id),
+        ])
+      } catch (e: any) {
+        tableErrors['batch3_comments_follows'] = e?.message ?? 'Batch failed'
+      }
 
       setExportProgress('4/6')
       // Batch 4: notification preferences, conversations, badges
-      const [notifPrefsRes, conversationsRes, badgesRes] = await Promise.allSettled([
-        supabase.from('notification_preferences').select('*').eq('user_id', profile.id),
-        isValidUUID(profile.id) ? supabase.from('conversations').select('id, user1_id, user2_id, post_id, created_at, updated_at').or(`user1_id.eq.${profile.id},user2_id.eq.${profile.id}`) : Promise.resolve({ data: [] }),
-        supabase.from('user_badges').select('*').eq('user_id', profile.id),
-      ])
+      let notifPrefsRes: PromiseSettledResult<any> = rejected
+      let conversationsRes: PromiseSettledResult<any> = rejected
+      let badgesRes: PromiseSettledResult<any> = rejected
+      try {
+        ;[notifPrefsRes, conversationsRes, badgesRes] = await Promise.allSettled([
+          supabase.from('notification_preferences').select('*').eq('user_id', profile.id),
+          isValidUUID(profile.id) ? supabase.from('conversations').select('id, user1_id, user2_id, post_id, created_at, updated_at').or(`user1_id.eq.${profile.id},user2_id.eq.${profile.id}`) : Promise.resolve({ data: [] }),
+          supabase.from('user_badges').select('*').eq('user_id', profile.id),
+        ])
+      } catch (e: any) {
+        tableErrors['batch4_notif_conversations_badges'] = e?.message ?? 'Batch failed'
+      }
 
       setExportProgress('5/6')
       // Batch 5: payments, bookings, thanks, points
-      if (!isValidUUID(profile.id)) throw new Error('Invalid profile ID')
-      const [paymentsRes, rentalBookingsRes, serviceBookingsRes, thanksRes, pointsRes] = await Promise.allSettled([
-        supabase.from('payments').select('*').eq('user_id', profile.id),
-        supabase.from('rental_bookings').select('*').or(`borrower_id.eq.${profile.id},lender_id.eq.${profile.id}`),
-        supabase.from('service_bookings').select('*').or(`buyer_id.eq.${profile.id},provider_id.eq.${profile.id}`),
-        supabase.from('thanks').select('*').or(`from_user_id.eq.${profile.id},to_user_id.eq.${profile.id}`),
-        supabase.from('user_points').select('*').eq('user_id', profile.id),
-      ])
+      let paymentsRes: PromiseSettledResult<any> = rejected
+      let rentalBookingsRes: PromiseSettledResult<any> = rejected
+      let serviceBookingsRes: PromiseSettledResult<any> = rejected
+      let thanksRes: PromiseSettledResult<any> = rejected
+      let pointsRes: PromiseSettledResult<any> = rejected
+      if (isValidUUID(profile.id)) {
+        try {
+          ;[paymentsRes, rentalBookingsRes, serviceBookingsRes, thanksRes, pointsRes] = await Promise.allSettled([
+            supabase.from('payments').select('*').eq('user_id', profile.id),
+            supabase.from('rental_bookings').select('*').or(`borrower_id.eq.${profile.id},lender_id.eq.${profile.id}`),
+            supabase.from('service_bookings').select('*').or(`buyer_id.eq.${profile.id},provider_id.eq.${profile.id}`),
+            supabase.from('thanks').select('*').or(`from_user_id.eq.${profile.id},to_user_id.eq.${profile.id}`),
+            supabase.from('user_points').select('*').eq('user_id', profile.id),
+          ])
+        } catch (e: any) {
+          tableErrors['batch5_payments_bookings_thanks_points'] = e?.message ?? 'Batch failed'
+        }
+      } else {
+        tableErrors['batch5_payments_bookings_thanks_points'] = 'Invalid profile ID — skipped .or() queries'
+      }
 
       setExportProgress('6/6')
-      const r = (res: PromiseSettledResult<any>) => res.status === 'fulfilled' ? (res.value?.data ?? []) : []
       const exportData = {
         profile,
-        posts: r(postsRes),
-        messages: r(msgsRes),
-        reviews: r(reviewsRes),
-        saved_posts: r(savedPostsRes),
-        saved_events: r(savedEventsRes),
-        post_likes: r(postLikesRes),
-        post_comments: r(commentsRes),
-        followers: r(followersRes),
-        following: r(followingRes),
-        notification_preferences: r(notifPrefsRes),
-        conversations: r(conversationsRes),
-        user_badges: r(badgesRes),
-        payments: r(paymentsRes),
-        rental_bookings: r(rentalBookingsRes),
-        service_bookings: r(serviceBookingsRes),
-        thanks: r(thanksRes),
-        user_points: r(pointsRes),
+        posts: r(postsRes, 'posts'),
+        messages: r(msgsRes, 'messages'),
+        reviews: r(reviewsRes, 'reviews'),
+        saved_posts: r(savedPostsRes, 'saved_posts'),
+        saved_events: r(savedEventsRes, 'saved_events'),
+        post_likes: r(postLikesRes, 'post_likes'),
+        post_comments: r(commentsRes, 'post_comments'),
+        followers: r(followersRes, 'followers'),
+        following: r(followingRes, 'following'),
+        notification_preferences: r(notifPrefsRes, 'notification_preferences'),
+        conversations: r(conversationsRes, 'conversations'),
+        user_badges: r(badgesRes, 'user_badges'),
+        payments: r(paymentsRes, 'payments'),
+        rental_bookings: r(rentalBookingsRes, 'rental_bookings'),
+        service_bookings: r(serviceBookingsRes, 'service_bookings'),
+        thanks: r(thanksRes, 'thanks'),
+        user_points: r(pointsRes, 'user_points'),
         exported_at: new Date().toISOString(),
+        ...(Object.keys(tableErrors).length > 0 ? { errors: tableErrors } : {}),
       }
 
       const jsonStr = JSON.stringify(exportData, null, 2)
@@ -746,19 +811,23 @@ export default function SettingsScreen() {
         </View>
 
         {/* Payment Settings */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.settings')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/payment-settings' as any)} style={s.row}>
-            <CreditCard size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.settings')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-          <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row}>
-            <CreditCard size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.paymentHistory')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-        </View>
+        {FEATURES.PAYMENTS && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.settings')}</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Pressable onPress={() => router.push('/payment-settings' as any)} style={s.row}>
+                <CreditCard size={18} color={colors.mutedForeground} />
+                <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.settings')}</Text>
+                <ChevronRight size={16} color={colors.mutedForeground} />
+              </Pressable>
+              <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row}>
+                <CreditCard size={18} color={colors.mutedForeground} />
+                <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.paymentHistory')}</Text>
+                <ChevronRight size={16} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
+          </>
+        )}
 
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
