@@ -151,8 +151,8 @@ export default function TabLayout() {
             accessibilityRole="button"
             onPress={() => { setShowCreateMenu(false); router.push('/create-event') }}
           >
-            <View style={[s.sheetIcon, { backgroundColor: '#2B8A6215' }]}>
-              <CalendarDays size={20} color="#2B8A62" />
+            <View style={[s.sheetIcon, { backgroundColor: `${colors.success}15` }]}>
+              <CalendarDays size={20} color={colors.success} />
             </View>
             <View style={s.sheetText}>
               <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.event')}</Text>
@@ -167,8 +167,8 @@ export default function TabLayout() {
             accessibilityRole="button"
             onPress={() => { setShowCreateMenu(false); router.push('/forum') }}
           >
-            <View style={[s.sheetIcon, { backgroundColor: '#3B7DD815' }]}>
-              <MessageCircle size={20} color="#3B7DD8" />
+            <View style={[s.sheetIcon, { backgroundColor: `${colors.info}15` }]}>
+              <MessageCircle size={20} color={colors.info} />
             </View>
             <View style={s.sheetText}>
               <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.discussion')}</Text>
@@ -207,14 +207,13 @@ const s = StyleSheet.create({
     minWidth: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#D94F4F',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     paddingHorizontal: 4,
     borderWidth: 2,
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: '#FFFFFF', // always white on destructive background
     fontSize: 10,
     fontWeight: '700' as const,
     lineHeight: 12,

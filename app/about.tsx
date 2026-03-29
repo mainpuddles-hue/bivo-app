@@ -42,19 +42,19 @@ export default function AboutScreen() {
 
         {/* Links */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/terms')} style={s.linkRow}>
+          <Pressable onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
             <FileText size={18} color={colors.mutedForeground} />
             <Text style={[s.linkText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
             <ExternalLink size={14} color={colors.mutedForeground} />
           </Pressable>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
-          <Pressable onPress={() => router.push('/privacy')} style={s.linkRow}>
+          <Pressable onPress={() => router.push('/privacy')} style={s.linkRow} accessibilityLabel={t('settings.privacy')} accessibilityRole="button">
             <Lock size={18} color={colors.mutedForeground} />
             <Text style={[s.linkText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
             <ExternalLink size={14} color={colors.mutedForeground} />
           </Pressable>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
-          <Pressable onPress={() => router.push('/help' as any)} style={s.linkRow}>
+          <Pressable onPress={() => router.push('/help' as any)} style={s.linkRow} accessibilityLabel={t('help.title')} accessibilityRole="button">
             <HelpCircle size={18} color={colors.mutedForeground} />
             <Text style={[s.linkText, { color: colors.foreground }]}>{t('help.title')}</Text>
             <ExternalLink size={14} color={colors.mutedForeground} />
@@ -66,6 +66,8 @@ export default function AboutScreen() {
           <Pressable
             onPress={() => Linking.openURL('https://tackbird.fi').catch(() => {})}
             style={s.linkRow}
+            accessibilityLabel="tackbird.fi"
+            accessibilityRole="link"
           >
             <ExternalLink size={18} color={colors.primary} />
             <Text style={[s.linkText, { color: colors.primary }]}>tackbird.fi</Text>
@@ -92,25 +94,25 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  content: { padding: 16, gap: 12, paddingBottom: 40 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  content: { padding: 16, gap: 16, paddingBottom: 40 },
   logoSection: { alignItems: 'center', paddingVertical: 24, gap: 8 },
   logoPlaceholder: {
     width: 80, height: 80, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
   },
-  logoText: { fontSize: 28, fontWeight: '800' },
-  appName: { fontSize: 24, fontWeight: '700', letterSpacing: -0.5 },
-  versionText: { fontSize: 14 },
-  tagline: { fontSize: 15, marginTop: 4 },
+  logoText: { fontSize: 28, fontFamily: fonts.heading },
+  appName: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.5 },
+  versionText: { fontSize: 14, fontFamily: fonts.body },
+  tagline: { fontSize: 15, fontFamily: fonts.body, marginTop: 4 },
   card: { borderRadius: 12, overflow: 'hidden' },
-  description: { fontSize: 14, lineHeight: 22, padding: 16 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22, padding: 16 },
   linkRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
   },
-  linkText: { fontSize: 15, flex: 1 },
+  linkText: { fontSize: 15, fontFamily: fonts.bodyMedium, flex: 1 },
   divider: { height: StyleSheet.hairlineWidth },
-  creditsTitle: { fontSize: 14, fontWeight: '600', padding: 16, paddingBottom: 4 },
-  creditsText: { fontSize: 13, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
-  copyrightText: { fontSize: 12, textAlign: 'center', marginTop: 12 },
+  creditsTitle: { fontSize: 14, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
+  creditsText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
+  copyrightText: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 16 },
 })

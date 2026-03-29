@@ -155,14 +155,14 @@ export default function OnboardingScreen() {
     scrollRef.current?.scrollTo({ x: page * SCREEN_WIDTH, animated: true })
     setCurrentPage(page)
     trackEvent('onboarding_slide' as any, { slide: page })
-  }, [])
+  }, [SCREEN_WIDTH])
 
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH)
     if (page >= 0 && page < TOTAL_PAGES) {
       setCurrentPage(page)
     }
-  }, [])
+  }, [SCREEN_WIDTH])
 
   const handleComplete = useCallback(async () => {
     if (!selectedNeighborhood) return

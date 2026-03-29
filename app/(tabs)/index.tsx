@@ -390,7 +390,7 @@ function FeedScreenInner() {
       {/* Missed posts banner */}
       {showMissedBanner && missedCount > 0 && (
         <View style={[styles.missedBanner, { backgroundColor: colors.primary }]}>
-          <Text style={styles.missedBannerText}>
+          <Text style={[styles.missedBannerText, { color: colors.primaryForeground }]}>
             {t('feed.missedPosts', { count: missedCount })}
           </Text>
           <Pressable onPress={() => setShowMissedBanner(false)} hitSlop={8}>
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
   },
-  missedBannerText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF', flex: 1, fontFamily: fonts.bodySemi },
+  missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi },
   // neighborsActiveRow removed per user request
   _neighborsActiveRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center',

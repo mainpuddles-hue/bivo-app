@@ -7,6 +7,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { trackEvent } from '@/lib/analytics'
+import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 type OtpMode = 'signup' | 'recovery'
 
@@ -160,11 +162,12 @@ export default function VerifyOtpScreen() {
     : ''
 
   return (
+    <ScreenErrorBoundary screenName="VerifyOtp">
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         {/* Header */}
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
+          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
         </View>
@@ -211,11 +214,12 @@ export default function VerifyOtpScreen() {
             autoFocus
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
+            accessibilityLabel={t('auth.otpTitle')}
           />
 
           {/* Error message */}
           {error ? (
-            <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.destructive }]} accessibilityRole="alert">{error}</Text>
           ) : null}
 
           {/* Verify button */}
@@ -229,6 +233,9 @@ export default function VerifyOtpScreen() {
                 opacity: loading || code.length < 6 ? 0.6 : 1,
               },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('auth.otpVerify')}
+            accessibilityState={{ disabled: loading || code.length < 6 }}
           >
             {loading ? (
               <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -244,7 +251,7 @@ export default function VerifyOtpScreen() {
             <Text style={[styles.resendLabel, { color: colors.mutedForeground }]}>
               {t('auth.otpNotReceived')}
             </Text>
-            <Pressable onPress={handleResend} disabled={resendCooldown > 0 || resending}>
+            <Pressable onPress={handleResend} disabled={resendCooldown > 0 || resending} accessibilityRole="button" accessibilityLabel={t('auth.otpResend')}>
               <View style={styles.resendBtnInner}>
                 {resending ? (
                   <ActivityIndicator size={14} color={colors.primary} />
@@ -267,6 +274,7 @@ export default function VerifyOtpScreen() {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </ScreenErrorBoundary>
   )
 }
 

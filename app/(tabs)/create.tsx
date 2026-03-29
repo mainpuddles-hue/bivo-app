@@ -717,7 +717,7 @@ export default function CreateScreen() {
                   </Pressable>
                   {idx === 0 && (
                     <View style={[styles.mainImageBadge, { backgroundColor: colors.primary }]}>
-                      <Text style={styles.mainImageBadgeText}>{t('create.mainImage')}</Text>
+                      <Text style={[styles.mainImageBadgeText, { color: colors.primaryForeground }]}>{t('create.mainImage')}</Text>
                     </View>
                   )}
                 </View>
@@ -1323,7 +1323,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     paddingVertical: 2, alignItems: 'center',
   },
-  mainImageBadgeText: { fontSize: 8, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  mainImageBadgeText: { fontSize: 8, fontWeight: '600', fontFamily: fonts.bodySemi },
   addImageBtn: {
     width: 80, height: 80, borderRadius: 10, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
