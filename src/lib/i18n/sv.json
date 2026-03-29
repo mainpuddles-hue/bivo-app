@@ -36,7 +36,8 @@
     "offline": "Ingen anslutning",
     "loginRequired": "Logga in",
     "you": "du",
-    "and": "och"
+    "and": "och",
+    "ok": "OK"
   },
   "nav": {
     "feed": "Hem",
@@ -468,6 +469,7 @@
     "send": "Skicka",
     "noSearchResults": "Inga sökresultat",
     "tryDifferentSearch": "Prova ett annat sökord",
+    "online": "Online",
     "emptyHint": "Börja en konversation med din granne genom att klicka på en annons",
     "unreadMessages": "olästa meddelanden",
     "pinned": "Fäst",
@@ -489,7 +491,10 @@
     "conversationNotFoundDesc": "Konversationen kan ha tagits bort eller finns inte.",
     "backToConversations": "Tillbaka till konversationer",
     "loginRequired": "Logga in for att se meddelanden",
-    "loginHint": "Logga in for att se dina konversationer och chatta med dina grannar."
+    "loginHint": "Logga in for att se dina konversationer och chatta med dina grannar.",
+    "quickReply": "Snabbsvar",
+    "attachImage": "Bifoga bild",
+    "searchConversations": "Sök konversationer"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -624,7 +629,10 @@
     "memberSince": "Medlem sedan",
     "completedTransactions": "genomförda transaktioner",
     "totalPosts": "inlägg",
-    "activitySummary": "Aktivitetssammanfattning"
+    "activitySummary": "Aktivitetssammanfattning",
+    "listings": "Annonser",
+    "reviewCountSingular": "recension",
+    "noImages": "Inga bilder"
   },
   "settings": {
     "title": "Inställningar",
@@ -1524,7 +1532,12 @@
     "saveAll": "Spara uppgifter",
     "saved": "Sparat",
     "saveFailed": "Sparandet misslyckades",
-    "imageUploadFail": "Bilduppladdning misslyckades"
+    "imageUploadFail": "Bilduppladdning misslyckades",
+    "prhVerified": "PRH-verifierat företag",
+    "location": "Plats",
+    "showOnMap": "Visa på karta",
+    "hours": "Öppettider",
+    "noImages": "Inga bilder"
   },
   "search": {
     "placeholder": "Sök inlägg...",

@@ -36,7 +36,8 @@
     "offline": "Ei verkkoyhteyttä",
     "loginRequired": "Kirjaudu sisään",
     "you": "sinä",
-    "and": "ja"
+    "and": "ja",
+    "ok": "OK"
   },
   "nav": {
     "feed": "Koti",
@@ -488,6 +489,7 @@
     "send": "Lähetä",
     "noSearchResults": "Ei hakutuloksia",
     "tryDifferentSearch": "Kokeile eri hakusanaa",
+    "online": "Paikalla",
     "emptyHint": "Aloita keskustelu naapurisi kanssa klikkaamalla kiinnostavaa ilmoitusta.",
     "unreadMessages": "lukematonta viestiä",
     "pinned": "Kiinnitetty",
@@ -509,7 +511,10 @@
     "conversationNotFoundDesc": "Keskustelu on ehkä poistettu tai sitä ei ole olemassa.",
     "backToConversations": "Palaa keskusteluihin",
     "loginRequired": "Kirjaudu sisään nähdäksesi viestit",
-    "loginHint": "Kirjaudu sisään nähdäksesi keskustelusi ja jutellaksesi naapureidesi kanssa."
+    "loginHint": "Kirjaudu sisään nähdäksesi keskustelusi ja jutellaksesi naapureidesi kanssa.",
+    "quickReply": "Pikavastaus",
+    "attachImage": "Liitä kuva",
+    "searchConversations": "Hae keskusteluja"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -644,7 +649,10 @@
     "memberSince": "Jäsen vuodesta",
     "completedTransactions": "onnistunutta transaktiota",
     "totalPosts": "postausta",
-    "activitySummary": "Toiminnan yhteenveto"
+    "activitySummary": "Toiminnan yhteenveto",
+    "listings": "Ilmoitukset",
+    "reviewCountSingular": "arvostelu",
+    "noImages": "Ei kuvia"
   },
   "settings": {
     "title": "Asetukset",
@@ -1544,7 +1552,12 @@
     "saveAll": "Tallenna tiedot",
     "saved": "Tallennettu",
     "saveFailed": "Tallennus epäonnistui",
-    "imageUploadFail": "Kuvan lataus epäonnistui"
+    "imageUploadFail": "Kuvan lataus epäonnistui",
+    "prhVerified": "PRH-vahvistettu yritys",
+    "location": "Sijainti",
+    "showOnMap": "Näytä kartalla",
+    "hours": "Aukioloajat",
+    "noImages": "Ei kuvia"
   },
   "search": {
     "placeholder": "Hae ilmoituksia...",

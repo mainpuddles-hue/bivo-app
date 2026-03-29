@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Animated } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -45,17 +45,17 @@ function SavedScreenInner() {
   const supabase = useSupabase()
 
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState<SavedTab>('posts')
   const [posts, setPosts] = useState<Post[]>([])
   const [events, setEvents] = useState<SavedEvent[]>([])
   const [places, setPlaces] = useState<SavedPlace[]>([])
   const [unsavingId, setUnsavingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function load() {
-      try {
+  const loadSaved = useCallback(async () => {
+    try {
       const cachedId = await getCachedUserId()
-      if (!cachedId) { router.replace('/(auth)/login'); setLoading(false); return }
+      if (!cachedId) { router.replace('/(auth)/login'); setLoading(false); setRefreshing(false); return }
       const user = { id: cachedId }
 
       // Fetch saved posts, events, and places in parallel
@@ -162,14 +162,15 @@ function SavedScreenInner() {
         }
       }
 
-      } catch {
-        // Network error
-      } finally {
-        setLoading(false)
-      }
+    } catch {
+      // Network error
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-    load()
   }, [supabase, router, locale])
+
+  useEffect(() => { loadSaved() }, [loadSaved])
 
   const handleUnsavePost = useCallback(async (postId: string) => {
     if (unsavingId) return
@@ -264,7 +265,7 @@ function SavedScreenInner() {
           <PostCardSkeleton />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadSaved() }} tintColor={colors.primary} />}>
           {/* Posts tab */}
           {activeTab === 'posts' && (
             posts.length === 0 ? (

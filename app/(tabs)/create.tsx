@@ -1103,9 +1103,35 @@ export default function CreateScreen() {
         </ScrollView>
 
         {/* Success celebration overlay */}
-        <Modal visible={showSuccess} transparent animationType="fade">
-          <View style={styles.successOverlay}>
-            <View style={[styles.successCard, { backgroundColor: colors.card }]}>
+        <Modal
+          visible={showSuccess}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            // Dismiss without navigating to the post — just close and reset
+            if (successTimeoutRef.current) {
+              clearTimeout(successTimeoutRef.current)
+              successTimeoutRef.current = null
+            }
+            setShowSuccess(false)
+            setSuccessPostId(null)
+            setSuccessNeighborhood(null)
+          }}
+        >
+          <Pressable
+            style={styles.successOverlay}
+            onPress={() => {
+              // Backdrop press — dismiss without navigating, reset to prevent re-submit
+              if (successTimeoutRef.current) {
+                clearTimeout(successTimeoutRef.current)
+                successTimeoutRef.current = null
+              }
+              setShowSuccess(false)
+              setSuccessPostId(null)
+              setSuccessNeighborhood(null)
+            }}
+          >
+            <Pressable style={[styles.successCard, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
               <CheckCircle size={48} color={colors.primary} />
               <Text style={[styles.successTitle, { color: colors.foreground }]}>{t('create.published')}</Text>
               {successNeighborhood && (
@@ -1135,8 +1161,8 @@ export default function CreateScreen() {
               >
                 <Text style={[styles.shareBtnText, { color: colors.primaryForeground }]}>{t('create.share')}</Text>
               </Pressable>
-            </View>
-          </View>
+            </Pressable>
+          </Pressable>
         </Modal>
 
         {/* Map Location Picker Modal */}

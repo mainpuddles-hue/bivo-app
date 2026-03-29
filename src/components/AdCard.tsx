@@ -78,6 +78,8 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
         { backgroundColor: colors.card },
         isDark ? cardShadowDark : cardShadow,
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={ad.title}
     >
       {/* Sponsored label */}
       <View style={[styles.sponsoredBadge, { backgroundColor: `${colors.pro}18` }]}>

@@ -410,6 +410,7 @@ function LoginScreenInner() {
                   placeholder={t('auth.namePlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
                   autoCapitalize="words"
+                  accessibilityLabel={t('auth.name')}
                 />
               )}
               <TextInput
@@ -421,6 +422,7 @@ function LoginScreenInner() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
+                accessibilityLabel={t('auth.email')}
               />
               {mode !== 'forgot' && (
                 <View>
@@ -432,6 +434,7 @@ function LoginScreenInner() {
                     placeholderTextColor={colors.mutedForeground}
                     secureTextEntry={!showPassword}
                     autoComplete="password"
+                    accessibilityLabel={t('auth.password')}
                   />
                   <Pressable
                     onPress={() => setShowPassword(!showPassword)}
@@ -551,7 +554,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
     fontSize: 15, minHeight: 48, fontFamily: fonts.body,
   },
-  eyeBtn: { position: 'absolute', right: 16, top: 16 },
+  eyeBtn: { position: 'absolute', right: 4, top: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   forgotLink: { fontSize: 13, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
   submitBtn: {
     borderRadius: 12, paddingVertical: 16, alignItems: 'center',
@@ -564,7 +567,7 @@ const styles = StyleSheet.create({
   },
   successText: { fontSize: 15, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 4 },
-  checkbox: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  checkbox: { minWidth: 44, minHeight: 44, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },
   termsText: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
 })

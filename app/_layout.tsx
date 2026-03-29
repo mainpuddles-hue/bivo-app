@@ -520,6 +520,10 @@ function RootLayoutInner() {
         <Stack.Screen name="leaderboard" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="profile/[userId]" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="admin" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="event/[id]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="create-event" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="community-events" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="verify-otp" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </View>
   )

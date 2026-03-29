@@ -36,7 +36,8 @@
     "offline": "No connection",
     "loginRequired": "Please log in",
     "you": "you",
-    "and": "and"
+    "and": "and",
+    "ok": "OK"
   },
   "nav": {
     "feed": "Home",
@@ -488,6 +489,7 @@
     "send": "Send",
     "noSearchResults": "No search results",
     "tryDifferentSearch": "Try a different search term",
+    "online": "Online",
     "emptyHint": "Start a conversation with your neighbor by clicking a listing",
     "unreadMessages": "unread messages",
     "pinned": "Pinned",
@@ -509,7 +511,10 @@
     "conversationNotFoundDesc": "This conversation may have been deleted or doesn't exist.",
     "backToConversations": "Back to conversations",
     "loginRequired": "Log in to see messages",
-    "loginHint": "Log in to view your conversations and chat with your neighbors."
+    "loginHint": "Log in to view your conversations and chat with your neighbors.",
+    "quickReply": "Quick reply",
+    "attachImage": "Attach image",
+    "searchConversations": "Search conversations"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -644,7 +649,10 @@
     "memberSince": "Member since",
     "completedTransactions": "completed transactions",
     "totalPosts": "posts",
-    "activitySummary": "Activity summary"
+    "activitySummary": "Activity summary",
+    "listings": "Listings",
+    "reviewCountSingular": "review",
+    "noImages": "No images"
   },
   "settings": {
     "title": "Settings",
@@ -1544,7 +1552,12 @@
     "saveAll": "Save details",
     "saved": "Saved",
     "saveFailed": "Save failed",
-    "imageUploadFail": "Image upload failed"
+    "imageUploadFail": "Image upload failed",
+    "prhVerified": "PRH Verified Business",
+    "location": "Location",
+    "showOnMap": "Show on map",
+    "hours": "Business Hours",
+    "noImages": "No images"
   },
   "search": {
     "placeholder": "Search posts...",

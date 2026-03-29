@@ -256,6 +256,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               contentFit="cover"
               transition={300}
               onError={() => setImgError(true)}
+              accessibilityLabel={post.title}
             />
             {/* Multi-image badge */}
             {post.images && post.images.length > 1 && (
@@ -604,7 +605,7 @@ const styles = StyleSheet.create({
 
   // Action row
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 6, paddingTop: 6 },
-  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 32, paddingHorizontal: 2 },
+  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
   popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },

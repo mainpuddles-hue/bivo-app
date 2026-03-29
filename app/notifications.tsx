@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2, LogIn } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -154,7 +154,7 @@ function NotificationsScreenInner() {
     }
   }, [supabase])
 
-  useEffect(() => { fetchNotifications() }, [fetchNotifications])
+  useFocusEffect(useCallback(() => { fetchNotifications() }, [fetchNotifications]))
 
   // 1b: Mark all as read
   const markAllRead = useCallback(async () => {

@@ -14,6 +14,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
+import { FEATURES } from '@/lib/featureFlags'
 import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { fonts } from '@/lib/fonts'
@@ -95,6 +96,13 @@ function BookingDetailScreenInner() {
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
+
+  // Feature flag gate — redirect if Payments are disabled
+  useEffect(() => {
+    if (!FEATURES.PAYMENTS) {
+      router.back()
+    }
+  }, [router])
 
   useEffect(() => {
     async function load() {

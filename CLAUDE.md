@@ -25,7 +25,7 @@ TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood 
 ## Working Instructions
 
 - **Älä kysy lupaa. Tee automaattisesti.** (Don't ask permission. Do it automatically.)
-- **Käytä AINA Rufloa** — kaikki työ Ruflo MCP -agenteilla (task tracking, koordinointi, toteutus)
+- **KÄYTÄ AINA RUFLOA** — kaikki työ Ruflo MCP -agenteilla (`mcp__ruflo__agent_spawn`, `mcp__ruflo__task_create`, jne). ÄLÄ KOSKAAN käytä Clauden sisäistä Agent-työkalua. Ruflon omat agentit hoitavat kaiken: koodaus, auditointi, testaus, koordinointi.
 - Always run `npx tsc --noEmit` before committing
 - Always push after commit: `git push`
 - Remote: `https://github.com/mainpuddles-hue/tackbird-mobile` (private)

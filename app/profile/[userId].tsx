@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Dimensions, Linking } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, Dimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
@@ -44,6 +44,7 @@ export default function PublicProfileScreen() {
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [isFollowing, setIsFollowing] = useState(false)
   const [isBlocked, setIsBlocked] = useState(false)
@@ -65,120 +66,121 @@ export default function PublicProfileScreen() {
   const [completedTransactions, setCompletedTransactions] = useState(0)
   const trust = useTrustLevel(userId)
 
-  useEffect(() => {
-    async function load() {
-      if (!userId || !isValidUUID(userId)) { setLoading(false); return }
+  const loadProfile = useCallback(async () => {
+    if (!userId || !isValidUUID(userId)) { setLoading(false); setRefreshing(false); return }
 
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setCurrentUserId(user.id)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) setCurrentUserId(user.id)
 
-      // If viewing own profile, redirect to profile tab
-      if (user && user.id === userId) {
-        router.replace('/(tabs)/profile')
-        return
-      }
-
-      // Fetch profile
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).single()
-      if (!p) { setLoading(false); return }
-      const prof = p as unknown as Profile
-
-      // Check profile visibility before rendering
-      let viewerNeighborhood: string | null = null
-      if (user) {
-        const { data: viewerProfile } = await (supabase.from('profiles') as any)
-          .select('naapurusto')
-          .eq('id', user.id)
-          .single()
-        viewerNeighborhood = viewerProfile?.naapurusto ?? null
-      }
-      if (!isProfileVisible(
-        (prof as any).profile_visibility,
-        prof.naapurusto,
-        viewerNeighborhood,
-        user?.id === userId,
-      )) {
-        setProfileHidden(true)
-        setLoading(false)
-        return
-      }
-
-      setProfile(prof)
-
-      // Parallel fetches
-      const [postsRes, followersRes, followingRes] = await Promise.all([
-        supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_active', true),
-        supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', userId),
-        supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId),
-      ])
-      setPostCount(postsRes.count ?? 0)
-      setFollowerCount(followersRes.count ?? 0)
-      setFollowingCount(followingRes.count ?? 0)
-
-      // Check follow/block status + transaction history for reviews
-      if (user) {
-        const [followRes, blockRes, convRes, existingReviewRes] = await Promise.all([
-          supabase.from('user_follows').select('id').eq('follower_id', user.id).eq('followed_id', userId).maybeSingle(),
-          supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', userId).maybeSingle(),
-          // Check if there's been a conversation (transaction proxy) between users
-          supabase.from('conversations').select('id').or(
-            `and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`
-          ).maybeSingle(),
-          // Check for existing review
-          supabase.from('reviews').select('id').eq('reviewer_id', user.id).eq('reviewed_id', userId).maybeSingle(),
-        ])
-        setIsFollowing(!!followRes.data)
-        setIsBlocked(!!blockRes.data)
-        setHasTransaction(!!convRes.data)
-        setHasExistingReview(!!existingReviewRes.data)
-      }
-
-      // Reviews received — fetch all to compute distribution
-      const { data: allRevs } = await supabase
-        .from('reviews')
-        .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
-        .eq('reviewed_id', userId)
-        .order('created_at', { ascending: false })
-      const revsList = (allRevs ?? []) as unknown as Review[]
-      setReviews(revsList)
-      setTotalReviewCount(revsList.length)
-      if (revsList.length > 0) {
-        const avg = (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length
-        setAvgRating(Math.round(avg * 10) / 10)
-        // Compute rating distribution
-        const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-        for (const r of revsList as any[]) {
-          const star = Math.min(5, Math.max(1, Math.round(r.rating)))
-          dist[star] = (dist[star] ?? 0) + 1
-        }
-        setRatingDistribution(dist)
-      }
-
-      // Completed transactions count (conversations as proxy)
-      const { count: txCount } = await supabase
-        .from('conversations')
-        .select('id', { count: 'exact', head: true })
-        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-      setCompletedTransactions(txCount ?? 0)
-
-      // Badges
-      const { data: bdg } = await supabase.from('user_badges').select('badge_type').eq('user_id', userId)
-      setBadges((bdg ?? []) as UserBadge[])
-
-      // Public posts
-      const { data: userPosts } = await supabase
-        .from('posts')
-        .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at')
-        .eq('user_id', userId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(20)
-      setPosts((userPosts ?? []) as unknown as Post[])
-
-      setLoading(false)
+    // If viewing own profile, redirect to profile tab
+    if (user && user.id === userId) {
+      router.replace('/(tabs)/profile')
+      return
     }
-    load()
+
+    // Fetch profile
+    const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).single()
+    if (!p) { setLoading(false); setRefreshing(false); return }
+    const prof = p as unknown as Profile
+
+    // Check profile visibility before rendering
+    let viewerNeighborhood: string | null = null
+    if (user) {
+      const { data: viewerProfile } = await (supabase.from('profiles') as any)
+        .select('naapurusto')
+        .eq('id', user.id)
+        .single()
+      viewerNeighborhood = viewerProfile?.naapurusto ?? null
+    }
+    if (!isProfileVisible(
+      (prof as any).profile_visibility,
+      prof.naapurusto,
+      viewerNeighborhood,
+      user?.id === userId,
+    )) {
+      setProfileHidden(true)
+      setLoading(false)
+      setRefreshing(false)
+      return
+    }
+
+    setProfile(prof)
+
+    // Parallel fetches
+    const [postsRes, followersRes, followingRes] = await Promise.all([
+      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_active', true),
+      supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', userId),
+      supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId),
+    ])
+    setPostCount(postsRes.count ?? 0)
+    setFollowerCount(followersRes.count ?? 0)
+    setFollowingCount(followingRes.count ?? 0)
+
+    // Check follow/block status + transaction history for reviews
+    if (user) {
+      const [followRes, blockRes, convRes, existingReviewRes] = await Promise.all([
+        supabase.from('user_follows').select('id').eq('follower_id', user.id).eq('followed_id', userId).maybeSingle(),
+        supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', userId).maybeSingle(),
+        // Check if there's been a conversation (transaction proxy) between users
+        supabase.from('conversations').select('id').or(
+          `and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`
+        ).maybeSingle(),
+        // Check for existing review
+        supabase.from('reviews').select('id').eq('reviewer_id', user.id).eq('reviewed_id', userId).maybeSingle(),
+      ])
+      setIsFollowing(!!followRes.data)
+      setIsBlocked(!!blockRes.data)
+      setHasTransaction(!!convRes.data)
+      setHasExistingReview(!!existingReviewRes.data)
+    }
+
+    // Reviews received — fetch all to compute distribution
+    const { data: allRevs } = await supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
+      .eq('reviewed_id', userId)
+      .order('created_at', { ascending: false })
+    const revsList = (allRevs ?? []) as unknown as Review[]
+    setReviews(revsList)
+    setTotalReviewCount(revsList.length)
+    if (revsList.length > 0) {
+      const avg = (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length
+      setAvgRating(Math.round(avg * 10) / 10)
+      // Compute rating distribution
+      const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+      for (const r of revsList as any[]) {
+        const star = Math.min(5, Math.max(1, Math.round(r.rating)))
+        dist[star] = (dist[star] ?? 0) + 1
+      }
+      setRatingDistribution(dist)
+    }
+
+    // Completed transactions count (conversations as proxy)
+    const { count: txCount } = await supabase
+      .from('conversations')
+      .select('id', { count: 'exact', head: true })
+      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+    setCompletedTransactions(txCount ?? 0)
+
+    // Badges
+    const { data: bdg } = await supabase.from('user_badges').select('badge_type').eq('user_id', userId)
+    setBadges((bdg ?? []) as UserBadge[])
+
+    // Public posts
+    const { data: userPosts } = await supabase
+      .from('posts')
+      .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    setPosts((userPosts ?? []) as unknown as Post[])
+
+    setLoading(false)
+    setRefreshing(false)
   }, [userId, supabase, router])
+
+  useEffect(() => { loadProfile() }, [loadProfile])
 
   const followingRef = useRef(false)
   const [creatingConversation, setCreatingConversation] = useState(false)
@@ -322,13 +324,13 @@ export default function PublicProfileScreen() {
     const businessHours = profile.business_hours as Record<string, string> | null
     const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     const dayLabels: Record<string, string> = {
-      monday: locale === 'fi' ? 'Ma' : locale === 'sv' ? 'Mån' : 'Mon',
-      tuesday: locale === 'fi' ? 'Ti' : locale === 'sv' ? 'Tis' : 'Tue',
-      wednesday: locale === 'fi' ? 'Ke' : locale === 'sv' ? 'Ons' : 'Wed',
-      thursday: locale === 'fi' ? 'To' : locale === 'sv' ? 'Tor' : 'Thu',
-      friday: locale === 'fi' ? 'Pe' : locale === 'sv' ? 'Fre' : 'Fri',
-      saturday: locale === 'fi' ? 'La' : locale === 'sv' ? 'Lör' : 'Sat',
-      sunday: locale === 'fi' ? 'Su' : locale === 'sv' ? 'Sön' : 'Sun',
+      monday: t('days.monShort'),
+      tuesday: t('days.tueShort'),
+      wednesday: t('days.wedShort'),
+      thursday: t('days.thuShort'),
+      friday: t('days.friShort'),
+      saturday: t('days.satShort'),
+      sunday: t('days.sunShort'),
     }
     const hasContactInfo = profile.business_phone || profile.business_website || businessHours
 
@@ -345,7 +347,7 @@ export default function PublicProfileScreen() {
           <View style={{ flex: 1 }} />
         </View>
 
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProfile() }} tintColor={colors.primary} />}>
           {/* 1. Hero: Business Images Carousel */}
           {businessImages.length > 0 ? (
             <View style={bs.heroWrapper}>
@@ -377,7 +379,7 @@ export default function PublicProfileScreen() {
             <View style={[bs.heroPlaceholder, { backgroundColor: colors.muted }]}>
               <Building2 size={48} color={colors.mutedForeground} />
               <Text style={[bs.heroPlaceholderText, { color: colors.mutedForeground }]}>
-                {locale === 'fi' ? 'Ei kuvia' : locale === 'sv' ? 'Inga bilder' : 'No images'}
+                {t('business.noImages')}
               </Text>
             </View>
           )}
@@ -405,7 +407,7 @@ export default function PublicProfileScreen() {
               <View style={[bs.prhBadge, { backgroundColor: `${colors.primary}12` }]}>
                 <BadgeCheck size={16} color={colors.primary} />
                 <Text style={[bs.prhBadgeText, { color: colors.primary }]}>
-                  {locale === 'fi' ? 'PRH-vahvistettu yritys' : locale === 'sv' ? 'PRH-verifierat företag' : 'PRH Verified Business'}
+                  {t('business.prhVerified')}
                 </Text>
                 <Text style={[bs.prhVatText, { color: colors.mutedForeground }]}>
                   {profile.business_vat_id}
@@ -422,8 +424,8 @@ export default function PublicProfileScreen() {
                 </Text>
                 <Text style={[bs.reviewCountText, { color: colors.mutedForeground }]}>
                   ({totalReviewCount} {totalReviewCount === 1
-                    ? (locale === 'fi' ? 'arvostelu' : locale === 'sv' ? 'recension' : 'review')
-                    : (locale === 'fi' ? 'arvostelua' : locale === 'sv' ? 'recensioner' : 'reviews')})
+                    ? t('profile.reviewCountSingular')
+                    : t('profile.reviewCount')})
                 </Text>
               </View>
             )}
@@ -499,7 +501,7 @@ export default function PublicProfileScreen() {
               <View style={bs.locationCardHeader}>
                 <MapPin size={18} color={colors.primary} />
                 <Text style={[bs.locationCardTitle, { color: colors.foreground }]}>
-                  {locale === 'fi' ? 'Sijainti' : locale === 'sv' ? 'Plats' : 'Location'}
+                  {t('business.location')}
                 </Text>
               </View>
               {profile.naapurusto && (
@@ -516,7 +518,7 @@ export default function PublicProfileScreen() {
               >
                 <MapPin size={16} color={colors.primary} />
                 <Text style={[bs.mapButtonText, { color: colors.primary }]}>
-                  {locale === 'fi' ? 'Näytä kartalla' : locale === 'sv' ? 'Visa på karta' : 'Show on map'}
+                  {t('business.showOnMap')}
                 </Text>
               </Pressable>
             </View>
@@ -526,7 +528,7 @@ export default function PublicProfileScreen() {
           {hasContactInfo && (
             <View style={[bs.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[bs.contactCardTitle, { color: colors.foreground }]}>
-                {locale === 'fi' ? 'Yhteystiedot' : locale === 'sv' ? 'Kontakt' : 'Contact'}
+                {t('business.contactInfo')}
               </Text>
 
               {profile.business_phone && (
@@ -539,7 +541,7 @@ export default function PublicProfileScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
-                      {locale === 'fi' ? 'Puhelin' : locale === 'sv' ? 'Telefon' : 'Phone'}
+                      {t('business.phone')}
                     </Text>
                     <Text style={[bs.contactValue, { color: colors.primary }]}>{profile.business_phone}</Text>
                   </View>
@@ -559,7 +561,7 @@ export default function PublicProfileScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
-                      {locale === 'fi' ? 'Verkkosivut' : locale === 'sv' ? 'Webbplats' : 'Website'}
+                      {t('business.website')}
                     </Text>
                     <Text style={[bs.contactValue, { color: colors.primary }]} numberOfLines={1}>
                       {profile.business_website}
@@ -575,7 +577,7 @@ export default function PublicProfileScreen() {
                       <Clock size={16} color={colors.primary} />
                     </View>
                     <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
-                      {locale === 'fi' ? 'Aukioloajat' : locale === 'sv' ? 'Öppettider' : 'Business Hours'}
+                      {t('business.hours')}
                     </Text>
                   </View>
                   <View style={bs.hoursGrid}>
@@ -602,7 +604,7 @@ export default function PublicProfileScreen() {
           {/* 5. Ilmoitukset — Business posts */}
           <View style={bs.sectionHeader}>
             <Text style={[bs.sectionTitle, { color: colors.foreground }]}>
-              {locale === 'fi' ? 'Ilmoitukset' : locale === 'sv' ? 'Annonser' : 'Listings'}
+              {t('profile.listings')}
             </Text>
             <Text style={[bs.sectionCount, { color: colors.mutedForeground }]}>
               {postCount}
@@ -621,7 +623,7 @@ export default function PublicProfileScreen() {
           {/* 6. Reviews */}
           <View style={bs.sectionHeader}>
             <Text style={[bs.sectionTitle, { color: colors.foreground }]}>
-              {locale === 'fi' ? 'Arvostelut' : locale === 'sv' ? 'Recensioner' : 'Reviews'}
+              {t('profile.reviews')}
             </Text>
             <Text style={[bs.sectionCount, { color: colors.mutedForeground }]}>
               {totalReviewCount}
@@ -749,7 +751,7 @@ export default function PublicProfileScreen() {
         <View style={{ flex: 1 }} />
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProfile() }} tintColor={colors.primary} />}>
         {/* Hero */}
         <View style={s.hero}>
           <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />

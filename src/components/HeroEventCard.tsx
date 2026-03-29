@@ -30,6 +30,8 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
     <Pressable
       onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/community-events' as any)}
       style={[styles.todayEventCard, { backgroundColor: colors.card }]}
+      accessibilityRole="button"
+      accessibilityLabel={getCityEventName(event, locale)}
     >
       {event.image_url ? (
         <Image source={{ uri: event.image_url }} style={styles.todayEventImage} contentFit="cover" />

@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -49,6 +49,7 @@ function PostDetailScreenInner() {
 
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [isLiked, setIsLiked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
@@ -103,57 +104,54 @@ function PostDetailScreenInner() {
   const [serviceNotes, setServiceNotes] = useState('')
   const [sendingService, setSendingService] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      const cachedId = await getCachedUserId()
-      if (cachedId) setUserId(cachedId)
+  const loadPost = useCallback(async () => {
+    if (!id || !isValidUUID(id)) { setLoading(false); setRefreshing(false); return }
 
-      const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).single()
-      if (data) {
-        const p = data as unknown as Post
-        setPost(p)
-        setLikeCount(p.like_count ?? 0)
-        trackEvent('post_viewed', { post_id: id as string, type: p.type })
-      }
+    const cachedId = await getCachedUserId()
+    if (cachedId) setUserId(cachedId)
 
-      if (cachedId) {
-        const [likeRes, saveRes] = await Promise.all([
-          supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
-          supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
-        ])
-        setIsLiked(!!likeRes.data)
-        setIsSaved(!!saveRes.data)
-      }
-
-      // Fetch comments (including parent_id for threading)
-      const { data: cmts } = await supabase
-        .from('post_comments')
-        .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
-        .eq('post_id', id)
-        .order('created_at', { ascending: true })
-      setComments((cmts ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
-
-      if (data) {
-        const { data: related } = await supabase
-          .from('posts')
-          .select('id, type, title, image_url, location, created_at')
-          .eq('type', (data as any).type)
-          .eq('is_active', true)
-          .neq('id', id)
-          .order('created_at', { ascending: false })
-          .limit(4)
-        setRelatedPosts((related ?? []) as any[])
-      }
-
-      setLoading(false)
+    const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).single()
+    if (data) {
+      const p = data as unknown as Post
+      setPost(p)
+      setLikeCount(p.like_count ?? 0)
+      trackEvent('post_viewed', { post_id: id as string, type: p.type })
     }
-    if (id && isValidUUID(id)) {
-      load()
-    } else {
-      // Invalid or missing ID — stop loading and show "not found"
-      setLoading(false)
+
+    if (cachedId) {
+      const [likeRes, saveRes] = await Promise.all([
+        supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
+        supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
+      ])
+      setIsLiked(!!likeRes.data)
+      setIsSaved(!!saveRes.data)
     }
+
+    // Fetch comments (including parent_id for threading)
+    const { data: cmts } = await supabase
+      .from('post_comments')
+      .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
+      .eq('post_id', id)
+      .order('created_at', { ascending: true })
+    setComments((cmts ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
+
+    if (data) {
+      const { data: related } = await supabase
+        .from('posts')
+        .select('id, type, title, image_url, location, created_at')
+        .eq('type', (data as any).type)
+        .eq('is_active', true)
+        .neq('id', id)
+        .order('created_at', { ascending: false })
+        .limit(4)
+      setRelatedPosts((related ?? []) as any[])
+    }
+
+    setLoading(false)
+    setRefreshing(false)
   }, [id, supabase])
+
+  useEffect(() => { loadPost() }, [loadPost])
 
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
@@ -693,7 +691,7 @@ function PostDetailScreenInner() {
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Back"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Save"><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
+        <Pressable onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Save" accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
         <Pressable onPress={handleShare} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Share"><Share2 size={22} color={colors.mutedForeground} /></Pressable>
         {isAuthor ? (
           <Pressable onPress={handleMorePress} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="More options"><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
@@ -702,7 +700,7 @@ function PostDetailScreenInner() {
         ) : null}
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 64 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 64 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.primary} />}>
         {/* Image gallery — tap to open fullscreen */}
         {allImages.length > 0 && (
           allImages.length === 1 ? (
@@ -834,7 +832,7 @@ function PostDetailScreenInner() {
 
           {/* Action row — like + count, comment + count (bookmark/share/flag in header) */}
           <View style={styles.actionRow}>
-            <Pressable onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')}>
+            <Pressable onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
               <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
               {likeCount > 0 && (
                 <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>

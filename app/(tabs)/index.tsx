@@ -480,7 +480,7 @@ function FeedScreenInner() {
         <Text style={[styles.coldStartHint, { color: colors.mutedForeground }]}>
           {t('map.beFirstInArea', { area: feed.userNeighborhood ?? 'Helsinki' })}
         </Text>
-        <Pressable onPress={() => router.push('/create')} style={[styles.coldStartBtn, { backgroundColor: colors.primary }]}>
+        <Pressable onPress={() => router.push('/(tabs)/create')} style={[styles.coldStartBtn, { backgroundColor: colors.primary }]}>
           <Plus size={16} color={colors.primaryForeground} />
           <Text style={[styles.coldStartBtnText, { color: colors.primaryForeground }]}>{t('events.heroCreateCTA')}</Text>
         </Pressable>

@@ -12,6 +12,7 @@ import { SearchSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { resolveLocale } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT, CATEGORIES } from '@/lib/constants'
@@ -273,7 +274,7 @@ function SearchEmptyState({ query, colors, t }: SearchEmptyStateProps) {
 
 function SearchScreenInner() {
   const { colors, isDark } = useTheme()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
@@ -1225,7 +1226,7 @@ function SearchScreenInner() {
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.title}</Text>
                 {item.event_date && (
                   <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                    {new Date(item.event_date).toLocaleDateString('fi-FI', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    {new Date(item.event_date).toLocaleDateString(resolveLocale(locale), { weekday: 'short', day: 'numeric', month: 'short' })}
                   </Text>
                 )}
                 {item.location_name && (

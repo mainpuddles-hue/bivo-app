@@ -458,6 +458,8 @@ function ConversationScreenInner() {
             onLongPress={() => handleLongPress(item.id)}
             delayLongPress={400}
             style={{ maxWidth: '78%' }}
+            accessibilityRole="text"
+            accessibilityLabel={item.content || t('messages.imageMessageAlt')}
           >
             <View style={[
               s.bubble,

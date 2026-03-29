@@ -36,7 +36,8 @@
     "offline": "Нет связи",
     "loginRequired": "Войдите в систему",
     "you": "вы",
-    "and": "и"
+    "and": "и",
+    "ok": "OK"
   },
   "nav": {
     "feed": "Главная",
@@ -488,6 +489,7 @@
     "send": "Отправить",
     "noSearchResults": "Результатов нет",
     "tryDifferentSearch": "Попробуйте другой запрос",
+    "online": "В сети",
     "emptyHint": "Начните беседу с соседом, нажав на интересное объявление.",
     "unreadMessages": "непрочитанных сообщений",
     "pinned": "Закреплено",
@@ -504,7 +506,10 @@
     "photo": "Фото",
     "quickReplyThanks": "Спасибо!",
     "quickReplyWhen": "Когда?",
-    "quickReplyOk": "Подходит?"
+    "quickReplyOk": "Подходит?",
+    "quickReply": "Быстрый ответ",
+    "attachImage": "Прикрепить фото",
+    "searchConversations": "Поиск бесед"
   },
   "conversation": {
     "startPrompt": "Начните беседу, написав сообщение",
@@ -637,7 +642,10 @@
     "filterAll": "Все",
     "filterActive": "Активные",
     "filterExpired": "Истекшие",
-    "filterClosed": "Закрытые"
+    "filterClosed": "Закрытые",
+    "listings": "Объявления",
+    "reviewCountSingular": "отзыв",
+    "noImages": "Нет фотографий"
   },
   "settings": {
     "title": "Настройки",
@@ -1522,7 +1530,12 @@
     "saveAll": "Сохранить данные",
     "saved": "Сохранено",
     "saveFailed": "Сохранение не удалось",
-    "imageUploadFail": "Не удалось загрузить изображение"
+    "imageUploadFail": "Не удалось загрузить изображение",
+    "prhVerified": "Компания подтверждена PRH",
+    "location": "Местоположение",
+    "showOnMap": "Показать на карте",
+    "hours": "Часы работы",
+    "noImages": "Нет фотографий"
   },
   "search": {
     "placeholder": "Поиск объявлений...",

@@ -36,7 +36,8 @@
     "offline": "Ühendus puudub",
     "loginRequired": "Palun logi sisse",
     "you": "sina",
-    "and": "ja"
+    "and": "ja",
+    "ok": "OK"
   },
   "nav": {
     "feed": "Kodu",
@@ -488,6 +489,7 @@
     "send": "Saada",
     "noSearchResults": "Otsingutulemusi pole",
     "tryDifferentSearch": "Proovi teist otsisõna",
+    "online": "Kohal",
     "emptyHint": "Alusta vestlust naabriga klikkides huvitavale kuulutusele.",
     "unreadMessages": "lugemata sõnumit",
     "pinned": "Kinnitatud",
@@ -504,7 +506,10 @@
     "photo": "Pilt",
     "quickReplyThanks": "Aitäh!",
     "quickReplyWhen": "Millal?",
-    "quickReplyOk": "Sobib?"
+    "quickReplyOk": "Sobib?",
+    "quickReply": "Kiire vastus",
+    "attachImage": "Lisa pilt",
+    "searchConversations": "Otsi vestlusi"
   },
   "conversation": {
     "startPrompt": "Alusta vestlust kirjutades sõnumi",
@@ -637,7 +642,10 @@
     "memberSince": "Liige aastast",
     "completedTransactions": "lõpetatud tehingut",
     "totalPosts": "kuulutust",
-    "activitySummary": "Tegevuse kokkuvõte"
+    "activitySummary": "Tegevuse kokkuvõte",
+    "listings": "Kuulutused",
+    "reviewCountSingular": "arvustus",
+    "noImages": "Pilte pole"
   },
   "settings": {
     "title": "Seaded",
@@ -1522,7 +1530,12 @@
     "saveAll": "Salvesta andmed",
     "saved": "Salvestatud",
     "saveFailed": "Salvestamine ebaõnnestus",
-    "imageUploadFail": "Pildi üleslaadimine ebaõnnestus"
+    "imageUploadFail": "Pildi üleslaadimine ebaõnnestus",
+    "prhVerified": "PRH-kinnitatud ettevõte",
+    "location": "Asukoht",
+    "showOnMap": "Näita kaardil",
+    "hours": "Lahtiolekuajad",
+    "noImages": "Pilte pole"
   },
   "search": {
     "placeholder": "Otsi kuulutusi...",

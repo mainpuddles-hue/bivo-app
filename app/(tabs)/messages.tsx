@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
@@ -153,6 +153,9 @@ export default function MessagesScreen() {
 
   useEffect(() => { fetchConversations() }, [fetchConversations])
 
+  // Re-fetch conversations when screen gains focus (e.g. after reading messages)
+  useFocusEffect(useCallback(() => { fetchConversations() }, [fetchConversations]))
+
   // Realtime for new messages
   useEffect(() => {
     if (!userId) return
@@ -267,7 +270,7 @@ export default function MessagesScreen() {
             >
               <View style={styles.avatarWrap}>
                 <Avatar url={other?.avatar_url} name={other?.name} size={48} borderColor={unread > 0 ? colors.primary : undefined} borderWidth={unread > 0 ? 2 : undefined} />
-                {online && <View style={[styles.onlineDot, { borderColor: colors.background, backgroundColor: colors.success }]} />}
+                {online && <View style={[styles.onlineDot, { borderColor: colors.background, backgroundColor: colors.success }]} accessibilityLabel={t('messages.online')} />}
               </View>
               <View style={styles.convContent}>
                 <View style={styles.convNameRow}>
