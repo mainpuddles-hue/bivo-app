@@ -330,7 +330,7 @@ function PostDetailScreenInner() {
 
   const handleShare = () => {
     if (!post) return
-    shareContent({ title: post.title, text: post.title, url: `https://tackbird-v2.vercel.app/post/${post.id}` })
+    shareContent({ title: post.title, text: post.title, url: `https://tackbird.fi/post/${post.id}` })
   }
 
   const isAuthor = userId != null && post?.user_id === userId

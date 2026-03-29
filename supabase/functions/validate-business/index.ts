@@ -181,8 +181,8 @@ serve(async (req) => {
         : 'Yritystiedot lähetetty tarkistettavaksi. Saat ilmoituksen kun tili aktivoidaan.',
     }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (err: any) {
-    console.error('[validate-business] Error:', err.message)
-    return new Response(JSON.stringify({ error: err.message }), {
+    console.error('[validate-business]', err.message)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

@@ -631,7 +631,7 @@ export default function CreateScreen() {
                   {Icon && <Icon size={24} color={cat.color} />}
                   {isLocked && (
                     <View style={styles.lockOverlay}>
-                      <Lock size={14} color="#FFFFFF" />
+                      <Lock size={14} color={colors.primaryForeground} />
                     </View>
                   )}
                 </View>
@@ -713,7 +713,7 @@ export default function CreateScreen() {
                 <View key={idx} style={styles.imageThumb}>
                   <Image source={{ uri }} style={styles.imageThumbImg} contentFit="cover" />
                   <Pressable onPress={() => removeImage(idx)} style={styles.imageRemoveBtn}>
-                    <X size={12} color="#FFFFFF" />
+                    <X size={12} color={colors.primaryForeground} />
                   </Pressable>
                   {idx === 0 && (
                     <View style={[styles.mainImageBadge, { backgroundColor: colors.primary }]}>
@@ -744,7 +744,7 @@ export default function CreateScreen() {
               returnKeyType="next"
               autoCapitalize="sentences"
             />
-            <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? '#E8A050' : colors.mutedForeground }]}>{title.length}/100</Text>
+            <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
           </View>
 
           {/* Description */}
@@ -761,7 +761,7 @@ export default function CreateScreen() {
               textAlignVertical="top"
               maxLength={2000}
             />
-            <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? '#E8A050' : colors.mutedForeground }]}>{description.length}/2000</Text>
+            <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.pro : colors.mutedForeground }]}>{description.length}/2000</Text>
           </View>
 
           {/* Details toggle */}
@@ -946,8 +946,8 @@ export default function CreateScreen() {
                               : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                           ]}
                         >
-                          {isSelected && <Check size={12} color="#FFFFFF" />}
-                          <Text style={[styles.tagText, { color: isSelected ? '#FFFFFF' : colors.foreground }]}>
+                          {isSelected && <Check size={12} color={colors.primaryForeground} />}
+                          <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
                             {t(tag.label)}
                           </Text>
                         </Pressable>
@@ -976,7 +976,7 @@ export default function CreateScreen() {
                             : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                         ]}
                       >
-                        <Text style={[styles.tagText, { color: isSelected ? '#FFFFFF' : colors.foreground }]}>
+                        <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
                           {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}
                         </Text>
                       </Pressable>
@@ -998,16 +998,16 @@ export default function CreateScreen() {
                   value={isAnonymous}
                   onValueChange={setIsAnonymous}
                   trackColor={{ false: colors.muted, true: colors.primary }}
-                  thumbColor="#FFFFFF"
+                  thumbColor={colors.primaryForeground}
                 />
               </View>
 
               {/* Juuri nyt — urgency toggle */}
               {selectedType !== 'tapahtuma' && (
                 <View style={styles.urgencySection}>
-                  <View style={[styles.anonymousRow, { borderColor: isUrgent ? '#EF4444' : colors.border }]}>
+                  <View style={[styles.anonymousRow, { borderColor: isUrgent ? colors.destructive : colors.border }]}>
                     <View style={styles.anonymousInfo}>
-                      <Zap size={16} color={isUrgent ? '#EF4444' : colors.mutedForeground} fill={isUrgent ? '#EF4444' : 'transparent'} />
+                      <Zap size={16} color={isUrgent ? colors.destructive : colors.mutedForeground} fill={isUrgent ? colors.destructive : 'transparent'} />
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('urgency.toggle')}</Text>
                         <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('urgency.toggleHint')}</Text>
@@ -1016,8 +1016,8 @@ export default function CreateScreen() {
                     <Switch
                       value={isUrgent}
                       onValueChange={setIsUrgent}
-                      trackColor={{ false: colors.muted, true: '#EF4444' }}
-                      thumbColor="#FFFFFF"
+                      trackColor={{ false: colors.muted, true: colors.destructive }}
+                      thumbColor={colors.primaryForeground}
                     />
                   </View>
                   {isUrgent && (
@@ -1028,11 +1028,11 @@ export default function CreateScreen() {
                           onPress={() => setUrgencyHours(h)}
                           style={[
                             styles.urgencyOption,
-                            { borderColor: urgencyHours === h ? '#EF4444' : colors.border },
-                            urgencyHours === h && { backgroundColor: '#EF444415' },
+                            { borderColor: urgencyHours === h ? colors.destructive : colors.border },
+                            urgencyHours === h && { backgroundColor: `${colors.destructive}15` },
                           ]}
                         >
-                          <Text style={[styles.urgencyOptionText, { color: urgencyHours === h ? '#EF4444' : colors.foreground }]}>
+                          <Text style={[styles.urgencyOptionText, { color: urgencyHours === h ? colors.destructive : colors.foreground }]}>
                             {h}h
                           </Text>
                         </Pressable>
@@ -1049,6 +1049,9 @@ export default function CreateScreen() {
             onPress={handleSubmit}
             disabled={submitting}
             style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting ? 0.6 : 1 }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('create.publish')}
+            accessibilityState={{ disabled: submitting }}
           >
             {submitting ? (
               <View style={styles.submitLoading}>

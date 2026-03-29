@@ -289,7 +289,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backBtn: {
-    padding: 4,
+    padding: 8,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
@@ -310,18 +314,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
+    fontFamily: fonts.headingSemi,
   },
   description: {
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 4,
+    marginBottom: 8,
+    fontFamily: fonts.body,
   },
   emailDisplay: {
     fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 32,
+    fontFamily: fonts.bodySemi,
   },
   codeInput: {
     width: '100%',
@@ -334,26 +341,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 8,
     textAlign: 'center',
-    minHeight: 60,
+    minHeight: 64,
+    fontFamily: fonts.heading,
   },
   errorText: {
     fontSize: 13,
     marginTop: 8,
     textAlign: 'center',
+    fontFamily: fonts.body,
   },
   verifyBtn: {
     width: '100%',
     maxWidth: 280,
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
-    marginTop: 20,
+    marginTop: 24,
   },
   verifyBtnText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   resendRow: {
     alignItems: 'center',
@@ -362,14 +372,16 @@ const styles = StyleSheet.create({
   },
   resendLabel: {
     fontSize: 14,
+    fontFamily: fonts.body,
   },
   resendBtnInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   resendBtnText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 })

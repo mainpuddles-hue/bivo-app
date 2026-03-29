@@ -303,9 +303,9 @@ serve(async (req) => {
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     )
   } catch (err: any) {
-    console.error('[send-push] Error:', err.message)
+    console.error('[send-push]', err.message)
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     )
   }

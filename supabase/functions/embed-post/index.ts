@@ -139,8 +139,8 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err: any) {
-    console.error('[embed-post] Error:', err.message)
-    // Return 200 with error details instead of 500 — the post should still
+    console.error('[embed-post]', err.message)
+    // Return 200 with error info instead of 500 — the post should still
     // work without an embedding. Semantic matching will gracefully degrade
     // to tag-based matching when no embedding exists.
     const isTimeout = err.message?.includes('timeout')
@@ -148,7 +148,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: err.message,
+        error: 'Internal server error',
         retryable: isTimeout || isApiDown,
         post_still_works: true,
       }),

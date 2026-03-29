@@ -28,7 +28,7 @@
         "NSLocationWhenInUseUsageDescription": "TackBird shows nearby posts and places on the map."
       },
       "associatedDomains": [
-        "applinks:tackbird-v2.vercel.app"
+        "applinks:tackbird.fi"
       ]
     },
     "android": {
@@ -59,37 +59,37 @@
           "data": [
             {
               "scheme": "https",
-              "host": "tackbird-v2.vercel.app",
+              "host": "tackbird.fi",
               "pathPrefix": "/post"
             },
             {
               "scheme": "https",
-              "host": "tackbird-v2.vercel.app",
+              "host": "tackbird.fi",
               "pathPrefix": "/events"
             },
             {
               "scheme": "https",
-              "host": "tackbird-v2.vercel.app",
+              "host": "tackbird.fi",
               "pathPrefix": "/messages"
             },
             {
               "scheme": "https",
-              "host": "tackbird-v2.vercel.app",
+              "host": "tackbird.fi",
               "pathPrefix": "/profile"
             },
             {
               "scheme": "https",
-              "host": "tackbird-v2.vercel.app",
+              "host": "tackbird.fi",
               "pathPrefix": "/search"
             },
             {
               "scheme": "https",
-              "host": "tackbird-v2.vercel.app",
+              "host": "tackbird.fi",
               "pathPrefix": "/settings"
             },
             {
               "scheme": "https",
-              "host": "tackbird-v2.vercel.app",
+              "host": "tackbird.fi",
               "pathPrefix": "/bookings"
             }
           ],
@@ -140,8 +140,8 @@
       "eas": {
         "projectId": "504a9107-9e8e-4e5d-90fe-ea7564166e33"
       },
-      "privacyPolicyUrl": "https://tackbird-v2.vercel.app/privacy",
-      "termsOfServiceUrl": "https://tackbird-v2.vercel.app/terms",
+      "privacyPolicyUrl": "https://tackbird.fi/privacy",
+      "termsOfServiceUrl": "https://tackbird.fi/terms",
       "supportEmail": "tuki@tackbird.fi",
       "router": {}
     },

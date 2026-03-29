@@ -74,7 +74,7 @@ Suomi.fi-tunnistusta käytetään **kertaluonteisena henkilöllisyyden vahvistuk
 |------------|------|
 | Protokolla | OpenID Connect (OIDC) |
 | Asiakastyyppi | Confidential client |
-| Redirect URI | `https://tackbird-v2.vercel.app/api/auth/suomifi-callback` |
+| Redirect URI | `https://tackbird.fi/api/auth/suomifi-callback` |
 | Vaaditut scopet | `openid` |
 | Vaaditut claimit | Ei mitään (vain tokenin validiteetti) |
 | ID-tokenin käyttö | Vain vahvistus, ei tietojen tallennus |
@@ -94,7 +94,7 @@ Suomi.fi-tunnistusta käytetään **kertaluonteisena henkilöllisyyden vahvistuk
 
 ## 8. Tietosuoja
 
-Täydellinen tietosuojaseloste: [tackbird-v2.vercel.app/privacy](https://tackbird-v2.vercel.app/privacy)
+Täydellinen tietosuojaseloste: [tackbird.fi/privacy](https://tackbird.fi/privacy)
 
 Keskeiset kohdat:
 - Rekisterinpitäjä: TackBird Oy
@@ -109,14 +109,14 @@ Keskeiset kohdat:
 |--------|----------------|
 | iOS-sovellus | App Store (Expo/EAS Build) |
 | Android-sovellus | Google Play (Expo/EAS Build) |
-| Verkkopalvelu | https://tackbird-v2.vercel.app |
+| Verkkopalvelu | https://tackbird.fi |
 | Tukisähköposti | support@tackbird.fi |
 
 ## 10. Yhteystiedot
 
 **Puddles Oy**
 Sähköposti: main.puddles@gmail.com
-Verkkosivut: https://tackbird-v2.vercel.app
+Verkkosivut: https://tackbird.fi
 
 ---
 

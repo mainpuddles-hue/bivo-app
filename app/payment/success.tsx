@@ -6,6 +6,7 @@ import { CheckCircle, Calendar, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
+import { fonts } from '@/lib/fonts'
 import { formatPrice } from '@/lib/format'
 
 interface BookingSummary {
@@ -176,6 +177,8 @@ export default function PaymentSuccessScreen() {
             <Pressable
               onPress={() => router.push('/bookings' as any)}
               style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+              accessibilityLabel={t('payment.viewBooking')}
+              accessibilityRole="button"
             >
               <Calendar size={18} color={colors.primaryForeground} />
               <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('payment.viewBooking')}</Text>
@@ -184,6 +187,8 @@ export default function PaymentSuccessScreen() {
             <Pressable
               onPress={() => router.replace('/(tabs)')}
               style={[styles.secondaryBtn, { borderColor: colors.border }]}
+              accessibilityLabel={t('payment.backToHome')}
+              accessibilityRole="button"
             >
               <Home size={18} color={colors.foreground} />
               <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>{t('payment.backToHome')}</Text>
@@ -201,39 +206,40 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingTop: 64,
   },
   iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     letterSpacing: -0.3,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: fonts.body,
     textAlign: 'center',
     lineHeight: 21,
     marginBottom: 32,
   },
   summaryCard: {
     width: '100%',
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    padding: 18,
+    padding: 16,
     gap: 12,
     marginBottom: 32,
   },
   summaryTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     marginBottom: 4,
   },
   summaryRow: {
@@ -243,23 +249,24 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
+    fontFamily: fonts.body,
   },
   summaryValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
   totalRow: {
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 12,
-    marginTop: 4,
+    marginTop: 8,
   },
   totalLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   totalValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
   },
   actions: {
     width: '100%',
@@ -270,24 +277,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
   },
   primaryBtnText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   secondaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
   },
   secondaryBtnText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
 })

@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-nativ
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
 
@@ -181,6 +182,8 @@ export default function AuthCallbackScreen() {
           <Text
             style={[styles.backLink, { color: colors.primary }]}
             onPress={() => router.replace('/(auth)/login')}
+            accessibilityLabel={t('auth.backToLogin')}
+            accessibilityRole="button"
           >
             {t('auth.backToLogin')}
           </Text>
@@ -200,9 +203,9 @@ export default function AuthCallbackScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   logoCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  loadingBox: { alignItems: 'center', gap: 12 },
-  loadingText: { fontSize: 14 },
-  errorBox: { alignItems: 'center', gap: 12 },
-  errorText: { fontSize: 15, textAlign: 'center' },
-  backLink: { fontSize: 14, fontWeight: '500' },
+  loadingBox: { alignItems: 'center', gap: 16 },
+  loadingText: { fontSize: 14, fontFamily: fonts.body },
+  errorBox: { alignItems: 'center', gap: 16 },
+  errorText: { fontSize: 15, fontFamily: fonts.body, textAlign: 'center' },
+  backLink: { fontSize: 14, fontFamily: fonts.bodyMedium },
 })

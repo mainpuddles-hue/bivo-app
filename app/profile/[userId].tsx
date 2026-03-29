@@ -16,6 +16,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
@@ -262,42 +263,48 @@ export default function PublicProfileScreen() {
 
   if (loading) {
     return (
+      <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
         </View>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
   if (profileHidden) {
     return (
+      <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.profileHidden') ?? 'Profiili ei ole julkinen'}</Text>
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
   if (!profile) {
     return (
+      <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.notFound')}</Text>
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
@@ -318,9 +325,10 @@ export default function PublicProfileScreen() {
     const hasContactInfo = profile.business_phone || profile.business_website || businessHours
 
     return (
+      <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -352,8 +360,8 @@ export default function PublicProfileScreen() {
               </ScrollView>
               {businessImages.length > 1 && (
                 <View style={bs.imageCountBadge}>
-                  <Camera size={12} color="#fff" />
-                  <Text style={bs.imageCountText}>{businessImages.length}</Text>
+                  <Camera size={12} color={colors.primaryForeground} />
+                  <Text style={[bs.imageCountText, { color: colors.primaryForeground }]}>{businessImages.length}</Text>
                 </View>
               )}
             </View>
@@ -430,7 +438,7 @@ export default function PublicProfileScreen() {
 
           {/* Action buttons */}
           <View style={s.actions}>
-            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]}>
+            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
               {isFollowing ? (
                 <UserMinus size={16} color={colors.foreground} />
               ) : (
@@ -440,7 +448,7 @@ export default function PublicProfileScreen() {
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </Pressable>
-            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
               <MessageCircle size={16} color={colors.foreground} />
               <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
@@ -717,14 +725,16 @@ export default function PublicProfileScreen() {
           targetId={userId!}
         />
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
   // === PERSONAL PROFILE LAYOUT (existing) ===
   return (
+    <ScreenErrorBoundary screenName="PublicProfile">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
@@ -776,7 +786,7 @@ export default function PublicProfileScreen() {
 
           {/* Action buttons */}
           <View style={s.actions}>
-            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]}>
+            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
               {isFollowing ? (
                 <UserMinus size={16} color={colors.foreground} />
               ) : (
@@ -786,7 +796,7 @@ export default function PublicProfileScreen() {
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </Pressable>
-            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Pressable onPress={handleMessage} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
               <MessageCircle size={16} color={colors.foreground} />
               <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
@@ -794,7 +804,7 @@ export default function PublicProfileScreen() {
 
           {/* Write Review button — only if user has had a transaction and hasn't reviewed yet */}
           {currentUserId && hasTransaction && !hasExistingReview && (
-            <Pressable onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Pressable onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
               <PenLine size={16} color={colors.pro} />
               <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
             </Pressable>
@@ -1018,6 +1028,7 @@ export default function PublicProfileScreen() {
         targetId={userId!}
       />
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -1033,79 +1044,79 @@ const s = StyleSheet.create({
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
   bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },
   bigAvatarInit: { fontSize: 32, fontWeight: '700' },
-  profileName: { fontSize: 20, fontWeight: '700' },
+  profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.headingSemi },
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nhText: { fontSize: 14, fontWeight: '500' },
-  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
+  nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
   badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  badgeText: { fontSize: 11, fontWeight: '600' },
+  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  proText: { fontSize: 13, fontWeight: '600' },
+  proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   actions: { flexDirection: 'row', gap: 10, marginTop: 8, width: '100%', paddingHorizontal: 16 },
   followBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 10, borderRadius: 10,
   },
-  followBtnText: { fontSize: 14, fontWeight: '600' },
+  followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 10, borderRadius: 10, borderWidth: 1,
   },
-  messageBtnText: { fontSize: 14, fontWeight: '600' },
+  messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statNum: { fontSize: 18, fontWeight: '700' },
-  statLabel: { fontSize: 11 },
+  statNum: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading },
+  statLabel: { fontSize: 11, fontFamily: fonts.body },
   statDiv: { width: 1 },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
   tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600' },
+  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   tabContent: { gap: 12 },
-  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 20 },
+  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24, fontFamily: fonts.body },
   reviewCard: { borderRadius: 12, padding: 14, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
-  reviewName: { fontSize: 13, fontWeight: '600' },
-  reviewTime: { fontSize: 11 },
-  reviewComment: { fontSize: 14, lineHeight: 19 },
+  reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+  reviewTime: { fontSize: 11, fontFamily: fonts.body },
+  reviewComment: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   dangerActions: { flexDirection: 'row', gap: 10, marginTop: 8 },
   dangerBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, padding: 14, borderRadius: 12,
   },
-  dangerBtnText: { fontSize: 14, fontWeight: '500' },
+  dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   reviewBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1, width: '100%', paddingHorizontal: 16,
   },
-  reviewBtnText: { fontSize: 14, fontWeight: '600' },
-  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100 },
+  reviewBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body },
   // Rating summary card
   ratingCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
-  ratingCardTitle: { fontSize: 15, fontWeight: '700' },
+  ratingCardTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi },
   ratingOverview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingStarsCol: { alignItems: 'center', gap: 4 },
-  ratingBigNum: { fontSize: 16, fontWeight: '700' },
+  ratingBigNum: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading },
   ratingBars: { gap: 6 },
   ratingBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ratingBarLabel: { fontSize: 12, fontWeight: '600', width: 24, textAlign: 'right' },
+  ratingBarLabel: { fontSize: 12, fontWeight: '600', width: 24, textAlign: 'right', fontFamily: fonts.bodySemi },
   ratingBarTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   ratingBarFill: { height: 8, borderRadius: 4 },
-  ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20 },
+  ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20, fontFamily: fonts.body },
   // Verification card
   verificationCard: { borderRadius: 12, padding: 16, gap: 10, borderWidth: StyleSheet.hairlineWidth },
   verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  verifyText: { fontSize: 14, fontWeight: '500' },
+  verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   // Activity summary
   activitySummaryCard: { borderRadius: 12, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },
-  activitySummaryTitle: { fontSize: 15, fontWeight: '700' },
-  activitySummaryText: { fontSize: 13, lineHeight: 18 },
+  activitySummaryTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi },
+  activitySummaryText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   recentPostsRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
   recentPostThumb: { flex: 1 },
   recentPostImg: { height: 60, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  recentPostImgPlaceholder: { fontSize: 11, textAlign: 'center' },
+  recentPostImgPlaceholder: { fontSize: 11, textAlign: 'center', fontFamily: fonts.body },
 })
 
 // === Business profile styles ===
@@ -1136,6 +1147,7 @@ const bs = StyleSheet.create({
   heroPlaceholderText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
   imageCountBadge: {
     position: 'absolute',
@@ -1150,9 +1162,9 @@ const bs = StyleSheet.create({
     borderRadius: 10,
   },
   imageCountText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 
   // Info card
@@ -1186,6 +1198,7 @@ const bs = StyleSheet.create({
   categoryBadgeText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 
   // PRH badge
@@ -1201,10 +1214,12 @@ const bs = StyleSheet.create({
   prhBadgeText: {
     fontSize: 13,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   prhVatText: {
     fontSize: 12,
     fontWeight: '400',
+    fontFamily: fonts.body,
   },
 
   // Rating row
@@ -1216,16 +1231,19 @@ const bs = StyleSheet.create({
   ratingText: {
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: fonts.heading,
   },
   reviewCountText: {
     fontSize: 13,
     fontWeight: '400',
+    fontFamily: fonts.body,
   },
 
   // Business description
   businessDescription: {
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 22,
+    fontFamily: fonts.body,
   },
 
   // Neighborhood row (inside business card)
@@ -1237,6 +1255,7 @@ const bs = StyleSheet.create({
   nhText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
 
   // Location card
@@ -1254,11 +1273,13 @@ const bs = StyleSheet.create({
   locationCardTitle: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: fonts.headingSemi,
   },
   locationAddress: {
     fontSize: 14,
     lineHeight: 20,
-    paddingLeft: 26,
+    paddingLeft: 24,
+    fontFamily: fonts.body,
   },
   mapButton: {
     flexDirection: 'row',
@@ -1272,6 +1293,7 @@ const bs = StyleSheet.create({
   mapButtonText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 
   // Contact card
@@ -1284,6 +1306,7 @@ const bs = StyleSheet.create({
   contactCardTitle: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: fonts.headingSemi,
   },
   contactRow: {
     flexDirection: 'row',
@@ -1300,10 +1323,12 @@ const bs = StyleSheet.create({
   contactLabel: {
     fontSize: 12,
     fontWeight: '400',
+    fontFamily: fonts.body,
   },
   contactValue: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 
   // Hours
@@ -1322,11 +1347,13 @@ const bs = StyleSheet.create({
   hoursDay: {
     fontSize: 13,
     fontWeight: '600',
-    width: 36,
+    width: 40,
+    fontFamily: fonts.bodySemi,
   },
   hoursValue: {
     fontSize: 13,
     fontWeight: '400',
+    fontFamily: fonts.body,
   },
 
   // Section headers
@@ -1340,9 +1367,11 @@ const bs = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     letterSpacing: -0.2,
+    fontFamily: fonts.headingSemi,
   },
   sectionCount: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
 })

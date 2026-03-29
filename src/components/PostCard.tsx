@@ -22,7 +22,7 @@ import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import { isHumanAction } from '@/lib/abuseDetection'
 import type { Post, PostType } from '@/lib/types'
 
-const APP_URL = 'https://tackbird-v2.vercel.app'
+const APP_URL = 'https://tackbird.fi'
 
 function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: Record<string, string | number>) => string): { label: string; color: string } | null {
   if (!expiresAt) return null

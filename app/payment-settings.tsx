@@ -70,7 +70,7 @@ export default function PaymentSettingsScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('payment.settings')}</Text>
@@ -87,7 +87,7 @@ export default function PaymentSettingsScreen() {
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.methods')}</Text>
           <View style={[s.card, { backgroundColor: colors.card }]}>
             {/* Card */}
-            <Pressable style={s.row}>
+            <Pressable style={s.row} accessibilityLabel={t('payment.card')} accessibilityRole="button">
               <CreditCard size={20} color={colors.primary} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.card')}</Text>
               <Text style={[s.statusText, { color: colors.primary }]}>{t('payment.available')}</Text>
@@ -159,13 +159,15 @@ export default function PaymentSettingsScreen() {
                       onPress={handleStartConnect}
                       disabled={connecting}
                       style={[s.connectBtn, { backgroundColor: colors.primary, opacity: connecting ? 0.6 : 1 }]}
+                      accessibilityLabel={t('payment.startConnect')}
+                      accessibilityRole="button"
                     >
                       {connecting ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <ActivityIndicator size="small" color={colors.primaryForeground} />
                       ) : (
                         <>
-                          <Text style={s.connectBtnText}>{t('payment.startConnect')}</Text>
-                          <ChevronRight size={16} color="#FFFFFF" />
+                          <Text style={[s.connectBtnText, { color: colors.primaryForeground }]}>{t('payment.startConnect')}</Text>
+                          <ChevronRight size={16} color={colors.primaryForeground} />
                         </>
                       )}
                     </Pressable>
@@ -189,7 +191,7 @@ export default function PaymentSettingsScreen() {
           {/* Transaction History */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.history')}</Text>
           <View style={[s.card, { backgroundColor: colors.card }]}>
-            <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row}>
+            <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityLabel={t('payment.history')} accessibilityRole="button">
               <History size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.history')}</Text>
               <ChevronRight size={16} color={colors.mutedForeground} />
@@ -242,10 +244,10 @@ const s = StyleSheet.create({
   connectedBadgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 17 },
   connectBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 12, paddingHorizontal: 20, borderRadius: 10,
-    marginTop: 4,
+    gap: 8, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12,
+    marginTop: 8,
   },
-  connectBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20, color: '#FFFFFF' },
+  connectBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   infoRow: { flexDirection: 'row', gap: 12, padding: 16, alignItems: 'flex-start' },
   infoText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, flex: 1 },
 })

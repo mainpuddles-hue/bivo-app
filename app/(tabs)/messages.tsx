@@ -73,7 +73,7 @@ export default function MessagesScreen() {
 
     if (rpcError) {
       // Fallback: if RPC doesn't exist yet, use legacy query
-      console.warn('[messages] RPC fallback:', rpcError.message)
+      if (__DEV__) console.warn('[messages] RPC fallback:', rpcError.message)
       try {
         const { data: fallbackData } = await supabase
           .from('conversations')

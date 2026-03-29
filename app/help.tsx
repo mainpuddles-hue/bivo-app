@@ -125,6 +125,8 @@ export default function HelpScreen() {
           <Pressable
             onPress={() => Linking.openURL('mailto:tuki@tackbird.fi').catch(() => Alert.alert('Error', 'Could not open email client'))}
             style={[s.contactBtn, { backgroundColor: colors.primary }]}
+            accessibilityLabel="tuki@tackbird.fi"
+            accessibilityRole="link"
           >
             <Mail size={16} color={colors.primaryForeground} />
             <Text style={[s.contactBtnText, { color: colors.primaryForeground }]}>tuki@tackbird.fi</Text>
@@ -133,12 +135,12 @@ export default function HelpScreen() {
 
         {/* Links to terms and privacy */}
         <View style={[s.card, { backgroundColor: colors.card, marginTop: 12 }]}>
-          <Pressable onPress={() => router.push('/terms')} style={s.linkRow}>
+          <Pressable onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
             <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.terms')}</Text>
             <ExternalLink size={14} color={colors.primary} />
           </Pressable>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
-          <Pressable onPress={() => router.push('/privacy')} style={s.linkRow}>
+          <Pressable onPress={() => router.push('/privacy')} style={s.linkRow} accessibilityLabel={t('settings.privacy')} accessibilityRole="button">
             <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.privacy')}</Text>
             <ExternalLink size={14} color={colors.primary} />
           </Pressable>
@@ -154,29 +156,29 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
-  subtitle: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
-  categoryTitle: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 6, paddingHorizontal: 4 },
+  subtitle: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 8 },
+  categoryTitle: { fontSize: 14, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 8, paddingHorizontal: 4 },
   card: { borderRadius: 12, overflow: 'hidden' },
   divider: { height: StyleSheet.hairlineWidth },
   faqRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16,
   },
-  faqQuestion: { fontSize: 15, fontWeight: '500', flex: 1 },
+  faqQuestion: { fontSize: 15, fontFamily: fonts.bodyMedium, flex: 1 },
   faqAnswer: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 },
-  answerText: { fontSize: 14, lineHeight: 21 },
-  contactTitle: { fontSize: 16, fontWeight: '600', padding: 16, paddingBottom: 4 },
-  contactDesc: { fontSize: 14, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 12 },
+  answerText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 21 },
+  contactTitle: { fontSize: 16, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
+  contactDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   contactBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 10,
+    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 12,
   },
-  contactBtnText: { fontSize: 14, fontWeight: '600' },
+  contactBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   linkRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     padding: 16,
   },
-  linkText: { fontSize: 15, fontWeight: '500' },
+  linkText: { fontSize: 15, fontFamily: fonts.bodyMedium },
 })

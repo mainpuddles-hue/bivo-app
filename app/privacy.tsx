@@ -95,7 +95,7 @@ export default function PrivacyScreen() {
         {/* Data export CTA */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <Text style={[s.paragraph, { color: colors.mutedForeground }]}>{t('privacy.right1')}</Text>
-          <Pressable onPress={() => router.push('/settings')}>
+          <Pressable onPress={() => router.push('/settings')} accessibilityLabel={t('settings.export')} accessibilityRole="button">
             <Text style={[s.link, { color: colors.primary }]}>{t('settings.export')} →</Text>
           </Pressable>
         </View>
@@ -110,13 +110,13 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  content: { padding: 16, gap: 12, paddingBottom: 40 },
-  card: { borderRadius: 12, padding: 20, gap: 4 },
-  updated: { fontSize: 12, marginBottom: 12 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', marginTop: 16, marginBottom: 4 },
-  paragraph: { fontSize: 14, lineHeight: 21 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  content: { padding: 16, gap: 16, paddingBottom: 40 },
+  card: { borderRadius: 12, padding: 16, gap: 4 },
+  updated: { fontSize: 12, fontFamily: fonts.body, marginBottom: 16 },
+  sectionTitle: { fontSize: 16, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 4 },
+  paragraph: { fontSize: 14, fontFamily: fonts.body, lineHeight: 21 },
   list: { gap: 4, paddingLeft: 8, marginBottom: 8 },
-  listItem: { fontSize: 14, lineHeight: 21 },
-  link: { fontSize: 14, fontWeight: '500', marginTop: 8 },
+  listItem: { fontSize: 14, fontFamily: fonts.body, lineHeight: 21 },
+  link: { fontSize: 14, fontFamily: fonts.bodyMedium, marginTop: 8 },
 })

@@ -67,7 +67,7 @@ function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useThem
     case 'active': case 'in_progress': return colors.primary
     case 'completed': return colors.success
     case 'cancelled': return colors.destructive
-    case 'disputed': return '#E8A050'
+    case 'disputed': return colors.pro
     case 'refunded': return colors.mutedForeground
     default: return colors.mutedForeground
   }
@@ -270,11 +270,11 @@ function BookingDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
           <View style={{ flex: 1 }} />
         </View>
-        <Text style={[styles.notFound, { color: colors.mutedForeground }]}>{t('booking.notFound')}</Text>
+        <Text style={[styles.notFound, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('booking.notFound')}</Text>
       </View>
     )
   }
@@ -292,7 +292,7 @@ function BookingDetailScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
         <View style={{ flex: 1 }} />
       </View>
@@ -314,7 +314,7 @@ function BookingDetailScreenInner() {
             <Text style={[styles.postTitle, { color: colors.foreground }]} numberOfLines={2}>
               {booking.post?.title ?? t('rental.deletedPost')}
             </Text>
-            <Text style={{ fontSize: 12, color: isService ? '#7C5CBF' : colors.primary, fontWeight: '600' }}>
+            <Text style={{ fontSize: 12, color: isService ? colors.info : colors.primary, fontFamily: fonts.bodySemi }}>
               {isService ? t('service.services') : t('rental.booking')}
             </Text>
           </View>
@@ -329,7 +329,7 @@ function BookingDetailScreenInner() {
             <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={44} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>{booking.other_user.name ?? t('common.user')}</Text>
-              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>{t(`booking.otherParty`)}</Text>
+              <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>{t(`booking.otherParty`)}</Text>
             </View>
           </Pressable>
         )}
@@ -363,7 +363,7 @@ function BookingDetailScreenInner() {
                         { backgroundColor: dotColor },
                         isCurrent && { borderWidth: 3, borderColor: `${colors.primary}40` },
                       ]}>
-                        {isCompleted && !isCurrent && <Check size={10} color="#FFFFFF" />}
+                        {isCompleted && !isCurrent && <Check size={10} color={colors.primaryForeground} />}
                       </View>
                       {i < steps.length - 1 && (
                         <View style={[styles.timelineLine, { backgroundColor: isCompleted ? colors.success : colors.muted }]} />
@@ -385,7 +385,7 @@ function BookingDetailScreenInner() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.dates')}</Text>
             <View style={styles.dateRow}>
               <Calendar size={16} color={colors.mutedForeground} />
-              <Text style={{ fontSize: 15, color: colors.foreground, fontWeight: '500' }}>
+              <Text style={{ fontSize: 15, color: colors.foreground, fontFamily: fonts.bodyMedium }}>
                 {formatDateRange(booking.start_date, booking.end_date, locale)}
               </Text>
             </View>
@@ -407,7 +407,7 @@ function BookingDetailScreenInner() {
           </View>
           <View style={[styles.priceRow, styles.priceTotalRow, { borderTopColor: colors.border }]}>
             <Text style={[styles.priceTotalLabel, { color: colors.foreground }]}>{t('booking.total')}</Text>
-            <Text style={[styles.priceTotalValue, { color: isService ? '#7C5CBF' : colors.primary }]}>
+            <Text style={[styles.priceTotalValue, { color: isService ? colors.info : colors.primary }]}>
               {formatPrice(booking.total_amount, locale)}
             </Text>
           </View>
@@ -417,7 +417,7 @@ function BookingDetailScreenInner() {
         {booking.notes && (
           <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.notes')}</Text>
-            <Text style={{ fontSize: 14, color: colors.foreground, lineHeight: 20 }}>{booking.notes}</Text>
+            <Text style={{ fontSize: 14, color: colors.foreground, lineHeight: 20, fontFamily: fonts.body }}>{booking.notes}</Text>
           </View>
         )}
 
@@ -428,9 +428,11 @@ function BookingDetailScreenInner() {
               onPress={handleConfirm}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: colors.success }]}
+              accessibilityLabel={t('rental.confirmBooking')}
+              accessibilityRole="button"
             >
-              {actionLoading ? <ActivityIndicator size="small" color="#FFFFFF" /> : (
-                <><CheckCircle size={16} color="#FFFFFF" /><Text style={styles.actionBtnText}>{t('rental.confirmBooking')}</Text></>
+              {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
+                <><CheckCircle size={16} color={colors.primaryForeground} /><Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text></>
               )}
             </Pressable>
           )}
@@ -439,6 +441,8 @@ function BookingDetailScreenInner() {
               onPress={handleStartWork}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+              accessibilityLabel={t('service.startWork')}
+              accessibilityRole="button"
             >
               <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
             </Pressable>
@@ -448,6 +452,8 @@ function BookingDetailScreenInner() {
               onPress={handleComplete}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+              accessibilityLabel={booking.type === 'rental' ? t('rental.returnItem') : t('service.markDone')}
+              accessibilityRole="button"
             >
               {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
                 <><RotateCcw size={16} color={colors.primaryForeground} /><Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>
@@ -461,6 +467,8 @@ function BookingDetailScreenInner() {
               onPress={handleCancel}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}
+              accessibilityLabel={t('rental.cancelBooking')}
+              accessibilityRole="button"
             >
               <XCircle size={16} color={colors.destructive} />
               <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('rental.cancelBooking')}</Text>
@@ -470,6 +478,8 @@ function BookingDetailScreenInner() {
             <Pressable
               onPress={handleLeaveReview}
               style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}
+              accessibilityLabel={t('rental.leaveReview')}
+              accessibilityRole="button"
             >
               <Star size={16} color={colors.pro} />
               <Text style={[styles.actionBtnText, { color: colors.pro }]}>{t('rental.leaveReview')}</Text>
@@ -481,6 +491,8 @@ function BookingDetailScreenInner() {
             <Pressable
               onPress={handleSendMessage}
               style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+              accessibilityLabel={t('booking.sendMessage')}
+              accessibilityRole="button"
             >
               <MessageCircle size={16} color={colors.primaryForeground} />
               <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('booking.sendMessage')}</Text>
@@ -500,14 +512,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   scrollContent: { padding: 16, gap: 12, paddingBottom: 40 },
-  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100 },
+  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 104 },
 
   // Post card
   postCard: {
     flexDirection: 'row', padding: 12, gap: 12, borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
-  postImage: { width: 72, height: 72, borderRadius: 10 },
+  postImage: { width: 72, height: 72, borderRadius: 12 },
   postImageFb: { alignItems: 'center', justifyContent: 'center' },
   postInfo: { flex: 1, gap: 4, justifyContent: 'center' },
   postTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.bodySemi },
@@ -542,26 +554,26 @@ const styles = StyleSheet.create({
     width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
   },
   timelineLine: { width: 2, flex: 1, minHeight: 14, marginVertical: 2 },
-  timelineLabel: { fontSize: 14, paddingTop: 1, lineHeight: 20 },
+  timelineLabel: { fontSize: 14, fontFamily: fonts.body, paddingTop: 1, lineHeight: 20 },
 
   // Date row
   dateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   // Price breakdown
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  priceLabel: { fontSize: 14 },
-  priceValue: { fontSize: 14, fontWeight: '500' },
+  priceLabel: { fontSize: 14, fontFamily: fonts.body },
+  priceValue: { fontSize: 14, fontFamily: fonts.bodyMedium },
   priceTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, marginTop: 4 },
   priceTotalLabel: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi },
   priceTotalValue: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
 
   // Actions
-  actionsContainer: { gap: 10, marginTop: 4 },
+  actionsContainer: { gap: 8, marginTop: 8 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 14, borderRadius: 12,
   },
-  actionBtnText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  actionBtnText: { fontSize: 15, fontFamily: fonts.bodySemi },
 })
 
 export default function BookingDetailScreen() {

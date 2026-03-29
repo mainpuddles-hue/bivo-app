@@ -15,7 +15,9 @@ const corsHeaders = {
 }
 
 function generateCode(): string {
-  return String(Math.floor(100000 + Math.random() * 900000))
+  const array = new Uint32Array(1)
+  crypto.getRandomValues(array)
+  return String(array[0] % 900000 + 100000)
 }
 
 serve(async (req) => {
@@ -32,6 +34,19 @@ serve(async (req) => {
     }
 
     const cleanEmail = email.trim().toLowerCase()
+
+    // Rate limit: max 3 OTP requests per email in 10 minutes
+    const { count } = await supabase
+      .from('otp_codes')
+      .select('id', { count: 'exact', head: true })
+      .eq('email', cleanEmail)
+      .gte('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString())
+
+    if ((count ?? 0) >= 3) {
+      return new Response(JSON.stringify({ error: 'Too many requests. Try again in 10 minutes.' }), {
+        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // Invalidate previous codes for this email+type
     await supabase.from('otp_codes').update({ used: true })
@@ -97,8 +112,8 @@ serve(async (req) => {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
-    console.error('[send-otp] Error:', err.message)
-    return new Response(JSON.stringify({ error: err.message }), {
+    console.error('[send-otp]', err.message)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

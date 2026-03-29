@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Profile } from '@/lib/types'
 
 const MAX_IMAGES = 10
@@ -271,9 +272,10 @@ export default function OrganizationScreen() {
 
   if (loading) {
     return (
+      <ScreenErrorBoundary screenName="Organization">
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.dashboard')}</Text>
@@ -283,14 +285,16 @@ export default function OrganizationScreen() {
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
   return (
+    <ScreenErrorBoundary screenName="Organization">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.dashboard')}</Text>
@@ -326,8 +330,10 @@ export default function OrganizationScreen() {
                   style={[styles.imageDeleteBtn, { backgroundColor: colors.destructive }]}
                   onPress={() => removeImage(i)}
                   hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.delete')}
                 >
-                  <X size={12} color="#fff" />
+                  <X size={12} color={colors.primaryForeground} />
                 </Pressable>
               </View>
             ))}
@@ -336,6 +342,8 @@ export default function OrganizationScreen() {
                 style={[styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.muted }]}
                 onPress={pickImage}
                 disabled={uploading}
+                accessibilityRole="button"
+                accessibilityLabel={t('business.addPhoto')}
               >
                 {uploading ? (
                   <ActivityIndicator size="small" color={colors.primary} />
@@ -444,6 +452,9 @@ export default function OrganizationScreen() {
           onPress={saveAll}
           disabled={saving}
           style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('business.saveAll')}
+          accessibilityState={{ disabled: saving }}
         >
           {saving ? (
             <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -473,6 +484,8 @@ export default function OrganizationScreen() {
         <Pressable
           onPress={() => router.push('/create-ad')}
           style={[styles.createAdBtn, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('ads.create')}
         >
           <Plus size={18} color={colors.primaryForeground} />
           <Text style={[styles.createAdText, { color: colors.primaryForeground }]}>
@@ -539,6 +552,7 @@ export default function OrganizationScreen() {
         )}
       </ScrollView>
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -552,36 +566,37 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 12, paddingBottom: 60 },
   businessCard: { borderRadius: 14, padding: 18, gap: 6 },
   businessName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.headingSemi },
-  vatId: { fontSize: 13 },
-  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 4 },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  vatId: { fontSize: 13, fontFamily: fonts.body },
+  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 8 },
+  statusText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   toggleCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     borderRadius: 14, padding: 16,
   },
-  toggleText: { fontSize: 15, flex: 1, fontWeight: '500' },
+  toggleText: { fontSize: 15, flex: 1, fontWeight: '500', fontFamily: fonts.bodyMedium },
   createAdBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 14, borderRadius: 14,
   },
-  createAdText: { fontSize: 16, fontWeight: '700' },
+  createAdText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   sectionLabel: {
     fontSize: 12, fontWeight: '600', letterSpacing: 0.5,
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
+    fontFamily: fonts.bodySemi,
   },
   adCard: { borderRadius: 14, padding: 16, gap: 8 },
   adHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   adTitle: { fontSize: 15, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi },
   adStatus: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  adStatusText: { fontSize: 11, fontWeight: '600' },
-  adDates: { fontSize: 12 },
+  adStatusText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  adDates: { fontSize: 12, fontFamily: fonts.body },
   statsRow: { flexDirection: 'row', gap: 16, marginTop: 4 },
   statItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  statValue: { fontSize: 14, fontWeight: '700' },
-  statLabel: { fontSize: 11 },
-  emptyState: { alignItems: 'center', paddingTop: 40, gap: 10 },
-  emptyTitle: { fontSize: 17, fontWeight: '700' },
-  emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  statValue: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
+  statLabel: { fontSize: 11, fontFamily: fonts.body },
+  emptyState: { alignItems: 'center', paddingTop: 40, gap: 8 },
+  emptyTitle: { fontSize: 17, fontWeight: '700', fontFamily: fonts.headingSemi },
+  emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 
   // Profile editor styles
   editorCard: { borderRadius: 14, padding: 16, gap: 10 },
@@ -597,32 +612,32 @@ const styles = StyleSheet.create({
     width: 90, height: 90, borderRadius: 10, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
-  addImageText: { fontSize: 10, fontWeight: '600' },
-  imageHint: { fontSize: 11, marginTop: 2 },
+  addImageText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi },
+  imageHint: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
   textArea: {
-    borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
-    minHeight: 100, lineHeight: 22,
+    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15,
+    minHeight: 100, lineHeight: 22, fontFamily: fonts.body,
   },
-  charCount: { fontSize: 11, textAlign: 'right' },
+  charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
   input: {
-    borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body,
   },
   geocodeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 10, borderRadius: 10,
   },
-  geocodeBtnText: { fontSize: 14, fontWeight: '600' },
-  coordsText: { fontSize: 12, fontWeight: '500' },
+  geocodeBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  coordsText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.body },
   contactRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   contactInput: {
-    flex: 1, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+    flex: 1, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body,
   },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 4,
   },
-  saveBtnText: { fontSize: 16, fontWeight: '700' },
+  saveBtnText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
 })

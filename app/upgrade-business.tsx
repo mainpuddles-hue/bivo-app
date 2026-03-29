@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { getBusinessAdapter } from '@/lib/adapters'
 import type { Profile } from '@/lib/types'
 
@@ -202,10 +203,11 @@ export default function UpgradeBusinessScreen() {
   }
 
   return (
+    <ScreenErrorBoundary screenName="UpgradeBusiness">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
@@ -282,6 +284,9 @@ export default function UpgradeBusinessScreen() {
                   borderColor: category === cat.id ? colors.primary : colors.border,
                 },
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={getCategoryLabel(cat.id)}
+              accessibilityState={{ selected: category === cat.id }}
             >
               <Text style={[
                 styles.categoryText,
@@ -310,6 +315,9 @@ export default function UpgradeBusinessScreen() {
               onPress={handleUpgrade}
               disabled={submitting || !businessName.trim() || !vatId.trim()}
               style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !businessName.trim() || !vatId.trim() ? 0.6 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('business.subscribeCTA')}
+              accessibilityState={{ disabled: submitting || !businessName.trim() || !vatId.trim() }}
             >
               {submitting ? (
                 <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -340,6 +348,7 @@ export default function UpgradeBusinessScreen() {
         )}
       </ScrollView>
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -350,37 +359,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  content: { padding: 16, gap: 8, paddingBottom: 60 },
-  hero: { alignItems: 'center', paddingVertical: 20, gap: 8 },
+  content: { padding: 16, gap: 8, paddingBottom: 64 },
+  hero: { alignItems: 'center', paddingVertical: 24, gap: 8 },
   iconCircle: {
     width: 80, height: 80, borderRadius: 40,
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
-  heroTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.3 },
-  heroSubtitle: { fontSize: 15, textAlign: 'center', lineHeight: 21 },
-  heroPrice: { fontSize: 22, fontWeight: '800', marginTop: 4 },
+  heroTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.3, fontFamily: fonts.heading },
+  heroSubtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
+  heroPrice: { fontSize: 22, fontWeight: '800', marginTop: 8, fontFamily: fonts.heading },
   benefitsCard: { borderRadius: 14, padding: 16, gap: 12 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  benefitText: { fontSize: 14, flex: 1 },
+  benefitText: { fontSize: 14, flex: 1, fontFamily: fonts.body },
   label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body,
   },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   categoryChip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
-  categoryText: { fontSize: 13, fontWeight: '500' },
+  categoryText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 12,
   },
-  submitText: { fontSize: 16, fontWeight: '700' },
-  terms: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
+  submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
+  terms: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderRadius: 14, borderWidth: 1, marginTop: 12,
   },
-  iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20 },
+  iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
 })

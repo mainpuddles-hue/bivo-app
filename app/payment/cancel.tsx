@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { XCircle, RotateCcw, ArrowLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 export default function PaymentCancelScreen() {
   const { colors } = useTheme()
@@ -27,6 +28,8 @@ export default function PaymentCancelScreen() {
           <Pressable
             onPress={() => router.replace('/(tabs)')}
             style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+            accessibilityLabel={t('payment.tryAgain')}
+            accessibilityRole="button"
           >
             <RotateCcw size={18} color={colors.primaryForeground} />
             <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('payment.tryAgain')}</Text>
@@ -35,6 +38,8 @@ export default function PaymentCancelScreen() {
           <Pressable
             onPress={() => router.replace('/(tabs)')}
             style={[styles.secondaryBtn, { borderColor: colors.border }]}
+            accessibilityLabel={t('payment.backToHome')}
+            accessibilityRole="button"
           >
             <ArrowLeft size={18} color={colors.foreground} />
             <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>{t('payment.backToHome')}</Text>
@@ -54,21 +59,22 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     letterSpacing: -0.3,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: fonts.body,
     textAlign: 'center',
     lineHeight: 21,
     marginBottom: 40,
@@ -82,24 +88,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
   },
   primaryBtnText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   secondaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
   },
   secondaryBtnText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
 })

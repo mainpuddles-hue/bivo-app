@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { ShieldAlert, RotateCcw, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 export default function VerificationErrorScreen() {
   const { colors } = useTheme()
@@ -22,12 +23,12 @@ export default function VerificationErrorScreen() {
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('verification.errorMessage')}</Text>
 
         <View style={styles.actions}>
-          <Pressable onPress={() => router.replace('/settings' as any)} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
+          <Pressable onPress={() => router.replace('/settings' as any)} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityLabel={t('verification.tryAgain')} accessibilityRole="button">
             <RotateCcw size={18} color={colors.primaryForeground} />
             <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('verification.tryAgain')}</Text>
           </Pressable>
 
-          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.secondaryBtn, { borderColor: colors.border }]} accessibilityRole="button">
+          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.secondaryBtn, { borderColor: colors.border }]} accessibilityLabel={t('verification.backToApp')} accessibilityRole="button">
             <Home size={18} color={colors.foreground} />
             <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>{t('verification.backToApp')}</Text>
           </Pressable>
@@ -39,13 +40,13 @@ export default function VerificationErrorScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 60 },
-  iconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  title: { fontSize: 24, fontWeight: '700', letterSpacing: -0.3, marginBottom: 8 },
-  subtitle: { fontSize: 15, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
+  content: { flex: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 64 },
+  iconCircle: { width: 104, height: 104, borderRadius: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
+  subtitle: { fontSize: 15, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
   actions: { width: '100%', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12 },
-  primaryBtnText: { fontSize: 16, fontWeight: '600' },
-  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1 },
-  secondaryBtnText: { fontSize: 16, fontWeight: '500' },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12 },
+  primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
+  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, borderWidth: 1 },
+  secondaryBtnText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })

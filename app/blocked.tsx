@@ -125,11 +125,13 @@ export default function BlockedUsersScreen() {
                     onPress={() => handleUnblock(item.blocked_id, user?.name ?? null)}
                     disabled={unblocking === item.blocked_id}
                     style={[s.unblockBtn, { backgroundColor: colors.destructive, opacity: unblocking === item.blocked_id ? 0.5 : 1 }]}
+                    accessibilityLabel={t('blocked.removeBlock')}
+                    accessibilityRole="button"
                   >
                     {unblocking === item.blocked_id ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <ActivityIndicator size="small" color={colors.primaryForeground} />
                     ) : (
-                      <Text style={s.unblockText}>{t('blocked.removeBlock')}</Text>
+                      <Text style={[s.unblockText, { color: colors.primaryForeground }]}>{t('blocked.removeBlock')}</Text>
                     )}
                   </Pressable>
                 </View>
@@ -148,26 +150,26 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  avatar: { width: 44, height: 44, borderRadius: 22 },
+  avatar: { width: 48, height: 48, borderRadius: 24 },
   avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  avatarInit: { fontSize: 18, fontWeight: '600' },
+  avatarInit: { fontSize: 18, fontFamily: fonts.bodySemi },
   userInfo: { flex: 1, gap: 2 },
-  userName: { fontSize: 15, fontWeight: '600' },
-  userNh: { fontSize: 13 },
+  userName: { fontSize: 15, fontFamily: fonts.bodySemi },
+  userNh: { fontSize: 13, fontFamily: fonts.body },
   unblockBtn: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12,
     minWidth: 100, alignItems: 'center',
   },
-  unblockText: { fontSize: 13, fontWeight: '600', color: '#FFFFFF' },
+  unblockText: { fontSize: 13, fontFamily: fonts.bodySemi },
   emptyState: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingBottom: 80,
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingBottom: 80,
   },
-  emptyText: { fontSize: 16, fontWeight: '500' },
+  emptyText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })

@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
+import { fonts } from '@/lib/fonts'
 import { formatTimeAgo } from '@/lib/format'
 
 type Tab = 'flags' | 'users' | 'stats'
@@ -206,7 +207,7 @@ export default function AdminScreen() {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         <View style={s.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('admin.accessDenied')}</Text>
@@ -230,7 +231,7 @@ export default function AdminScreen() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Header */}
       <View style={s.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <View style={s.headerCenter}>
@@ -246,6 +247,9 @@ export default function AdminScreen() {
           <Pressable
             key={key}
             onPress={() => setActiveTab(key)}
+            accessibilityLabel={label}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === key }}
             style={[
               s.tab,
               {
@@ -280,7 +284,7 @@ export default function AdminScreen() {
                 <View key={flag.id} style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={s.flagHeader}>
                     <View style={[s.flagBadge, { backgroundColor: flagColor(flag.flag_type, colors) }]}>
-                      <AlertTriangle size={12} color="#fff" />
+                      <AlertTriangle size={12} color={colors.primaryForeground} />
                       <Text style={s.flagBadgeText}>
                         {t(`admin.${flag.flag_type}` as any) || flag.flag_type}
                       </Text>
@@ -319,6 +323,8 @@ export default function AdminScreen() {
                         <Pressable
                           onPress={() => hidePost(flag.post_id!, flag.id)}
                           style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
+                          accessibilityLabel={t('admin.hidePost')}
+                          accessibilityRole="button"
                         >
                           <EyeOff size={14} color={colors.destructive} />
                           <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.hidePost')}</Text>
@@ -327,6 +333,8 @@ export default function AdminScreen() {
                       <Pressable
                         onPress={() => allowPost(flag.id)}
                         style={[s.actionBtn, { backgroundColor: colors.accent + '15' }]}
+                        accessibilityLabel={t('admin.allowPost')}
+                        accessibilityRole="button"
                       >
                         <Check size={14} color={colors.accent} />
                         <Text style={[s.actionText, { color: colors.accent }]}>{t('admin.allowPost')}</Text>
@@ -335,6 +343,8 @@ export default function AdminScreen() {
                         <Pressable
                           onPress={() => toggleBan(flag.post!.user_id, false)}
                           style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
+                          accessibilityLabel={t('admin.banUser')}
+                          accessibilityRole="button"
                         >
                           <Ban size={14} color={colors.destructive} />
                           <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.banUser')}</Text>
@@ -388,6 +398,8 @@ export default function AdminScreen() {
                       s.banBtn,
                       { backgroundColor: user.is_banned ? colors.accent + '15' : colors.destructive + '15' },
                     ]}
+                    accessibilityLabel={user.is_banned ? t('admin.unbanUser') : t('admin.banUser')}
+                    accessibilityRole="button"
                   >
                     {user.is_banned ? (
                       <Check size={16} color={colors.accent} />
@@ -407,8 +419,8 @@ export default function AdminScreen() {
             {([
               { label: t('admin.totalUsers'), value: stats.totalUsers, color: colors.primary },
               { label: t('admin.activeToday'), value: stats.activeToday, color: colors.accent },
-              { label: t('admin.postsThisWeek'), value: stats.postsThisWeek, color: '#3B7DD8' },
-              { label: t('admin.bookingsThisWeek'), value: stats.bookingsThisWeek, color: '#E8A050' },
+              { label: t('admin.postsThisWeek'), value: stats.postsThisWeek, color: colors.info },
+              { label: t('admin.bookingsThisWeek'), value: stats.bookingsThisWeek, color: colors.pro },
               { label: t('admin.unreviewedFlags'), value: stats.unreviewedFlags, color: colors.destructive },
             ] as const).map((stat, i) => (
               <View key={i} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -425,9 +437,9 @@ export default function AdminScreen() {
 
 function flagColor(type: string, colors: any): string {
   switch (type) {
-    case 'spam': return '#E8A050'
+    case 'spam': return colors.pro
     case 'inappropriate': return colors.destructive
-    case 'scam': return '#C75B3A'
+    case 'scam': return colors.destructive
     default: return colors.mutedForeground
   }
 }
@@ -450,7 +462,7 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontFamily: 'BricolageGrotesque_600SemiBold',
+    fontFamily: fonts.headingSemi,
   },
   tabs: {
     flexDirection: 'row',
@@ -469,7 +481,7 @@ const s = StyleSheet.create({
   },
   tabText: {
     fontSize: 13,
-    fontFamily: 'InstrumentSans_500Medium',
+    fontFamily: fonts.bodyMedium,
   },
   content: {
     flex: 1,
@@ -478,8 +490,8 @@ const s = StyleSheet.create({
   card: {
     borderRadius: 12,
     borderWidth: 1,
-    padding: 14,
-    marginBottom: 10,
+    padding: 16,
+    marginBottom: 8,
   },
   flagHeader: {
     flexDirection: 'row',
@@ -497,8 +509,8 @@ const s = StyleSheet.create({
   },
   flagBadgeText: {
     fontSize: 11,
-    fontFamily: 'InstrumentSans_600SemiBold',
-    color: '#fff',
+    fontFamily: fonts.bodySemi,
+    color: '#FFFFFF',
   },
   reviewedBadge: {
     flexDirection: 'row',
@@ -510,22 +522,22 @@ const s = StyleSheet.create({
   },
   reviewedText: {
     fontSize: 11,
-    fontFamily: 'InstrumentSans_500Medium',
+    fontFamily: fonts.bodyMedium,
   },
   flagTitle: {
     fontSize: 15,
-    fontFamily: 'InstrumentSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
     marginBottom: 4,
   },
   flagDetails: {
     fontSize: 13,
-    fontFamily: 'InstrumentSans_400Regular',
+    fontFamily: fonts.body,
     marginBottom: 6,
     lineHeight: 18,
   },
   flagDate: {
     fontSize: 12,
-    fontFamily: 'InstrumentSans_400Regular',
+    fontFamily: fonts.body,
     marginBottom: 8,
   },
   actions: {
@@ -543,7 +555,7 @@ const s = StyleSheet.create({
   },
   actionText: {
     fontSize: 13,
-    fontFamily: 'InstrumentSans_500Medium',
+    fontFamily: fonts.bodyMedium,
   },
   searchRow: {
     flexDirection: 'row',
@@ -558,7 +570,7 @@ const s = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    fontFamily: 'InstrumentSans_400Regular',
+    fontFamily: fonts.body,
   },
   userRow: {
     flexDirection: 'row',
@@ -575,11 +587,11 @@ const s = StyleSheet.create({
   },
   userName: {
     fontSize: 15,
-    fontFamily: 'InstrumentSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
   },
   userMeta: {
     fontSize: 12,
-    fontFamily: 'InstrumentSans_400Regular',
+    fontFamily: fonts.body,
     marginTop: 2,
   },
   bannedBadge: {
@@ -589,7 +601,7 @@ const s = StyleSheet.create({
   },
   bannedText: {
     fontSize: 11,
-    fontFamily: 'InstrumentSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
   },
   banBtn: {
     width: 36,
@@ -599,7 +611,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   statsGrid: {
-    gap: 10,
+    gap: 8,
   },
   statCard: {
     borderRadius: 12,
@@ -609,12 +621,12 @@ const s = StyleSheet.create({
   },
   statValue: {
     fontSize: 32,
-    fontFamily: 'BricolageGrotesque_700Bold',
+    fontFamily: fonts.heading,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 13,
-    fontFamily: 'InstrumentSans_500Medium',
+    fontFamily: fonts.bodyMedium,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -625,7 +637,7 @@ const s = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    fontFamily: 'InstrumentSans_500Medium',
+    fontFamily: fonts.bodyMedium,
     textAlign: 'center',
     maxWidth: 280,
   },

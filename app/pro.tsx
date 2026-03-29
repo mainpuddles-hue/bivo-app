@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -94,10 +95,11 @@ export default function ProScreen() {
   }
 
   return (
+    <ScreenErrorBoundary screenName="Pro">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>TackBird Pro</Text>
@@ -171,6 +173,9 @@ export default function ProScreen() {
                   s.pricingCard,
                   { backgroundColor: colors.card, borderColor: selectedPlan === 'monthly' ? colors.pro : colors.border },
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('pro.monthly')} 4.99 €`}
+                accessibilityState={{ selected: selectedPlan === 'monthly' }}
               >
                 <Text style={[s.pricingLabel, { color: colors.foreground }]}>{t('pro.monthly')}</Text>
                 <Text style={[s.pricingPrice, { color: selectedPlan === 'monthly' ? colors.pro : colors.foreground }]}>
@@ -186,9 +191,12 @@ export default function ProScreen() {
                   s.pricingCard,
                   { backgroundColor: colors.card, borderColor: selectedPlan === 'yearly' ? colors.pro : colors.border },
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('pro.yearly')} 39.99 €`}
+                accessibilityState={{ selected: selectedPlan === 'yearly' }}
               >
                 <View style={[s.saveBadge, { backgroundColor: colors.pro }]}>
-                  <Text style={s.saveBadgeText}>-33%</Text>
+                  <Text style={[s.saveBadgeText, { color: colors.primaryForeground }]}>-33%</Text>
                 </View>
                 <Text style={[s.pricingLabel, { color: colors.foreground }]}>{t('pro.yearly')}</Text>
                 <Text style={[s.pricingPrice, { color: selectedPlan === 'yearly' ? colors.pro : colors.foreground }]}>
@@ -209,13 +217,16 @@ export default function ProScreen() {
               onPress={handleSubscribe}
               disabled={purchasing}
               style={[s.subscribeBtn, { backgroundColor: colors.pro, opacity: purchasing ? 0.6 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('pro.subscribe')}
+              accessibilityState={{ disabled: purchasing }}
             >
               {purchasing ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
               ) : (
                 <>
-                  <Crown size={20} color="#FFFFFF" />
-                  <Text style={s.subscribeBtnText}>
+                  <Crown size={20} color={colors.primaryForeground} />
+                  <Text style={[s.subscribeBtnText, { color: colors.primaryForeground }]}>
                     {selectedPlan === 'monthly' ? '4.99 \u20AC' + t('pro.perMonth') : '39.99 \u20AC' + t('pro.perYear')}
                     {' \u2014 '}
                     {t('pro.subscribe')}
@@ -272,6 +283,7 @@ export default function ProScreen() {
         </Text>
       </ScrollView>
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -289,16 +301,17 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
   heroTitle: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
-  heroSubtitle: { fontSize: 15, textAlign: 'center' },
+  heroSubtitle: { fontSize: 15, textAlign: 'center', fontFamily: fonts.body },
   activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, marginTop: 8,
   },
-  activeBadgeText: { fontSize: 14, fontWeight: '600' },
-  renewsText: { fontSize: 13, marginTop: 4 },
+  activeBadgeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  renewsText: { fontSize: 13, marginTop: 8, fontFamily: fonts.body },
   sectionLabel: {
     fontSize: 12, fontWeight: '600', letterSpacing: 0.5,
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
+    fontFamily: fonts.bodySemi,
   },
   comparisonCard: { borderRadius: 12, overflow: 'hidden' },
   comparisonHeader: {
@@ -308,12 +321,12 @@ const s = StyleSheet.create({
   comparisonIconCol: { width: 32 },
   comparisonFreeCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   comparisonProCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  comparisonColLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
+  comparisonColLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', fontFamily: fonts.bodySemi },
   comparisonRow: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12,
   },
-  comparisonText: { fontSize: 13, flex: 1 },
+  comparisonText: { fontSize: 13, flex: 1, fontFamily: fonts.body },
   pricingRow: { flexDirection: 'row', gap: 12 },
   pricingCard: {
     flex: 1, borderRadius: 12, borderWidth: 2,
@@ -321,35 +334,35 @@ const s = StyleSheet.create({
   },
   pricingLabel: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   pricingPrice: { fontSize: 28, fontWeight: '800', fontFamily: fonts.heading },
-  pricingPeriod: { fontSize: 13 },
-  pricingSubtext: { fontSize: 12, fontWeight: '600', marginTop: 2 },
+  pricingPeriod: { fontSize: 13, fontFamily: fonts.body },
+  pricingSubtext: { fontSize: 12, fontWeight: '600', marginTop: 2, fontFamily: fonts.bodySemi },
   saveBadge: {
     position: 'absolute', top: 8, right: -20,
     paddingHorizontal: 24, paddingVertical: 3,
     transform: [{ rotate: '30deg' }],
   },
-  saveBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  saveBadgeText: { fontSize: 10, fontWeight: '800', fontFamily: fonts.bodySemi },
   subscribeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10, paddingVertical: 16, borderRadius: 12, marginTop: 4,
   },
-  subscribeBtnText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi },
+  subscribeBtnText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   manageBtn: {
     alignItems: 'center', paddingVertical: 14, borderRadius: 12,
     borderWidth: 1,
   },
-  manageBtnText: { fontSize: 15, fontWeight: '600' },
-  errorText: { fontSize: 13, textAlign: 'center' },
-  termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
+  manageBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
+  errorText: { fontSize: 13, textAlign: 'center', fontFamily: fonts.body },
+  termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderRadius: 14, borderWidth: 1, marginTop: 8,
   },
-  iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20 },
-  autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
+  iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
+  autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   restoreBtn: {
     alignItems: 'center', paddingVertical: 12, borderRadius: 12,
     borderWidth: 1,
   },
-  restoreBtnText: { fontSize: 14, fontWeight: '500' },
+  restoreBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
 })

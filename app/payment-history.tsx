@@ -155,6 +155,8 @@ export default function PaymentHistoryScreen() {
               <Pressable
                 onPress={() => router.push(`/post/${item.post_id}` as any)}
                 style={[styles.viewPostBtn, { borderColor: colors.border }]}
+                accessibilityLabel={t('post.viewPost') ?? 'View post'}
+                accessibilityRole="button"
               >
                 <Text style={[styles.viewPostBtnText, { color: colors.primary }]}>{t('post.viewPost') ?? 'View post'}</Text>
               </Pressable>
@@ -169,7 +171,7 @@ export default function PaymentHistoryScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('payment.history')}</Text>
@@ -211,8 +213,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  listContent: { padding: 16, gap: 10, paddingBottom: 40 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  listContent: { padding: 16, gap: 8, paddingBottom: 40 },
   paymentRow: {
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -221,13 +223,13 @@ const styles = StyleSheet.create({
   rowTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    padding: 16,
     gap: 12,
   },
   iconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -237,10 +239,11 @@ const styles = StyleSheet.create({
   },
   rowDesc: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   rowDate: {
     fontSize: 12,
+    fontFamily: fonts.body,
   },
   rowRight: {
     alignItems: 'flex-end',
@@ -248,23 +251,23 @@ const styles = StyleSheet.create({
   },
   rowAmount: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
   },
   miniStatus: {
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   miniStatusText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
   expandedSection: {
-    paddingHorizontal: 14,
-    paddingBottom: 14,
-    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: 8,
   },
@@ -275,35 +278,37 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 13,
+    fontFamily: fonts.body,
   },
   detailValue: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
     maxWidth: '60%',
     textAlign: 'right',
   },
   viewPostBtn: {
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    marginTop: 4,
+    marginTop: 8,
   },
   viewPostBtnText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   empty: {
     alignItems: 'center',
     paddingTop: 80,
-    gap: 10,
+    gap: 8,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   emptyHint: {
     fontSize: 13,
+    fontFamily: fonts.body,
     textAlign: 'center',
     paddingHorizontal: 40,
   },

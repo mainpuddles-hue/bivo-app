@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -207,10 +208,11 @@ export default function CreateAdScreen() {
   const formatPrice = (cents: number) => `${(cents / 100).toFixed(2).replace('.', ',')} \u20AC`
 
   return (
+    <ScreenErrorBoundary screenName="CreateAd">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('ads.create')}</Text>
@@ -246,8 +248,8 @@ export default function CreateAdScreen() {
         {imageUri ? (
           <View style={styles.imagePreview}>
             <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" />
-            <Pressable onPress={() => setImageUri(null)} style={[styles.removeImage, { backgroundColor: colors.destructive }]}>
-              <X size={14} color="#FFFFFF" />
+            <Pressable onPress={() => setImageUri(null)} style={[styles.removeImage, { backgroundColor: colors.destructive }]} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
+              <X size={14} color={colors.primaryForeground} />
             </Pressable>
           </View>
         ) : (
@@ -283,6 +285,8 @@ export default function CreateAdScreen() {
                   borderColor: ctaText === opt.value ? colors.primary : colors.border,
                 },
               ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: ctaText === opt.value }}
             >
               <Text
                 style={[
@@ -302,7 +306,7 @@ export default function CreateAdScreen() {
           onPress={() => setShowNeighborhoods(!showNeighborhoods)}
           style={[styles.input, styles.pickerBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <Text style={{ color: targetNeighborhood ? colors.foreground : colors.mutedForeground, fontSize: 15 }}>
+          <Text style={{ color: targetNeighborhood ? colors.foreground : colors.mutedForeground, fontSize: 15, fontFamily: fonts.body }}>
             {targetNeighborhood ?? t('ads.allAreas')}
           </Text>
         </Pressable>
@@ -387,6 +391,9 @@ export default function CreateAdScreen() {
           onPress={handleSubmit}
           disabled={submitting || !title.trim()}
           style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !title.trim() ? 0.6 : 1 }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('ads.publishAd')}
+          accessibilityState={{ disabled: submitting || !title.trim() }}
         >
           {submitting ? (
             <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -401,6 +408,7 @@ export default function CreateAdScreen() {
         </Pressable>
       </ScrollView>
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -411,18 +419,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  content: { padding: 16, gap: 8, paddingBottom: 60 },
+  content: { padding: 16, gap: 8, paddingBottom: 64 },
   label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body,
   },
   textArea: { minHeight: 100, textAlignVertical: 'top' },
   imagePicker: {
     borderRadius: 12, borderWidth: 1, borderStyle: 'dashed',
     height: 120, alignItems: 'center', justifyContent: 'center', gap: 8,
   },
-  imagePickerText: { fontSize: 13 },
+  imagePickerText: { fontSize: 13, fontFamily: fonts.body },
   imagePreview: { borderRadius: 12, overflow: 'hidden', position: 'relative' },
   previewImage: { width: '100%', height: 160, borderRadius: 12 },
   removeImage: {
@@ -434,7 +442,7 @@ const styles = StyleSheet.create({
   ctaChip: {
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
-  ctaChipText: { fontSize: 13, fontWeight: '500' },
+  ctaChipText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   pickerBtn: { justifyContent: 'center' },
   neighborhoodList: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
@@ -444,27 +452,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  neighborhoodText: { fontSize: 14 },
+  neighborhoodText: { fontSize: 14, fontFamily: fonts.body },
   durationRow: { flexDirection: 'row', gap: 10 },
   durationCard: {
     flex: 1, borderRadius: 12, borderWidth: 1.5,
     padding: 14, alignItems: 'center', gap: 2,
   },
-  durationDays: { fontSize: 24, fontWeight: '800' },
-  durationLabel: { fontSize: 12 },
-  durationPrice: { fontSize: 13, fontWeight: '600', marginTop: 4 },
+  durationDays: { fontSize: 24, fontWeight: '800', fontFamily: fonts.heading },
+  durationLabel: { fontSize: 12, fontFamily: fonts.body },
+  durationPrice: { fontSize: 13, fontWeight: '600', marginTop: 4, fontFamily: fonts.bodySemi },
   priceCard: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     padding: 16, gap: 4,
   },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  priceLabel: { fontSize: 14 },
-  priceValue: { fontSize: 18, fontWeight: '700' },
-  proDiscount: { fontSize: 12, fontWeight: '600' },
+  priceLabel: { fontSize: 14, fontFamily: fonts.body },
+  priceValue: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading },
+  proDiscount: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 8,
   },
-  submitText: { fontSize: 16, fontWeight: '700' },
-  iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 4 },
+  submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
+  iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8, fontFamily: fonts.body },
 })

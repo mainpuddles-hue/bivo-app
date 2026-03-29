@@ -2,10 +2,6 @@
 // Types: booking_confirmation, payment_receipt, booking_reminder, welcome
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -64,26 +60,29 @@ serve(async (req) => {
 
     const { subject, html } = TEMPLATES[template](data ?? {})
 
-    // Use Supabase Auth admin to send email
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    // Send via Resend API
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')!
+    const resendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: 'TackBird <onboarding@resend.dev>', to: to_email, subject, html }),
+    })
 
-    // Supabase doesn't have a direct email API, so we use a workaround:
-    // Insert into an email_queue table and let a DB trigger or cron send it
-    // For now: just log it and return success (actual email sending needs Resend/SendGrid)
-    await (supabase.from('email_queue') as any).insert({
-      to_email,
-      subject,
-      html_body: html,
-      template,
-      status: 'pending',
-    }).catch(() => {})
+    if (!resendRes.ok) {
+      const resendErr = await resendRes.json().catch(() => ({}))
+      console.error('[send-email] Resend error:', JSON.stringify(resendErr))
+      return new Response(JSON.stringify({ error: 'Failed to send email' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     return new Response(
       JSON.stringify({ sent: true, template }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    console.error('[send-email]', err.message)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }
