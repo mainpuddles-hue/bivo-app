@@ -540,7 +540,7 @@ export default function GroupsScreen() {
                       ]}
                       onPress={() => setNewCategory(cat.key)}
                     >
-                      <Text style={[s.chipText, { color: isActive ? '#FFFFFF' : colors.foreground }]}>
+                      <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                         {t(cat.labelKey)}
                       </Text>
                     </Pressable>

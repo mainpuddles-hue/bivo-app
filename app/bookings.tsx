@@ -390,7 +390,7 @@ export default function BookingsScreen() {
                 ) : (
                   <>
                     <CheckCircle size={14} color={colors.primaryForeground} />
-                    <Text style={styles.actionBtnText}>{t('rental.confirmBooking')}</Text>
+                    <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text>
                   </>
                 )}
               </Pressable>
@@ -500,7 +500,7 @@ export default function BookingsScreen() {
             {canConfirm && (
               <Pressable onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
                 <CheckCircle size={14} color="#FFFFFF" />
-                <Text style={styles.actionBtnText}>{t('service.acceptJob')}</Text>
+                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.acceptJob')}</Text>
               </Pressable>
             )}
             {canStart && (
@@ -511,7 +511,7 @@ export default function BookingsScreen() {
             {canComplete && (
               <Pressable onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
                 <CheckCircle size={14} color="#FFFFFF" />
-                <Text style={styles.actionBtnText}>{t('service.markDone')}</Text>
+                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.markDone')}</Text>
               </Pressable>
             )}
             {canCancel && (
@@ -533,10 +533,11 @@ export default function BookingsScreen() {
   }, [colors, isDark, userId, router, t, locale, handleServiceConfirm, handleServiceStart, handleServiceComplete, handleServiceCancel, actionLoading])
 
   return (
+    <ScreenErrorBoundary screenName="Bookings">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('bookings.title')}</Text>
@@ -620,6 +621,7 @@ export default function BookingsScreen() {
         />
       )}
     </View>
+    </ScreenErrorBoundary>
   )
 }
 
@@ -739,7 +741,6 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 12,
-    color: '#FFFFFF',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },

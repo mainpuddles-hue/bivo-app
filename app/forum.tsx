@@ -469,7 +469,7 @@ export default function ForumScreen() {
             return (
               <Pressable key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}; setActiveCategory(cat.key) }}
                 style={[s.categoryChip, isActive ? { backgroundColor: chipColor } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
-                <Text style={[s.categoryChipText, { color: isActive ? '#FFFFFF' : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
+                <Text style={[s.categoryChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
               </Pressable>
             )
           })}
@@ -483,7 +483,7 @@ export default function ForumScreen() {
           return (
             <Pressable key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}; setSortBy(opt) }}
               style={[s.sortChip, isActive ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
-              <Text style={[s.sortChipText, { color: isActive ? '#FFFFFF' : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
+              <Text style={[s.sortChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
                 {opt === 'newest' ? t('forum.sortNewest') : t('forum.sortPopular')}
               </Text>
             </Pressable>
@@ -493,8 +493,8 @@ export default function ForumScreen() {
 
       {/* New posts banner */}
       {newPostsBanner && (
-        <Pressable onPress={() => { setNewPostsBanner(false); setPage(0); setLoading(true); fetchPosts(0) }} style={[s.newPostsBanner, { backgroundColor: colors.primary }]}>
-          <Text style={s.newPostsBannerText}>{t('forum.newPosts')}</Text>
+        <Pressable onPress={() => { setNewPostsBanner(false); setPage(0); setLoading(true); fetchPosts(0) }} style={[s.newPostsBanner, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('forum.newPosts')}>
+          <Text style={[s.newPostsBannerText, { color: colors.primaryForeground }]}>{t('forum.newPosts')}</Text>
         </Pressable>
       )}
 
@@ -526,7 +526,7 @@ export default function ForumScreen() {
           style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.accent }]}
           accessibilityRole="button"
           accessibilityLabel={t('forum.create')}>
-          <Plus size={24} color="#FFFFFF" />
+          <Plus size={24} color={colors.primaryForeground} />
         </Pressable>
       )}
 
