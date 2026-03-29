@@ -328,7 +328,8 @@
     "cancelFailed": "Peruutus epäonnistui",
     "joinFailed": "Liittyminen epäonnistui",
     "leaveFailed": "Poistuminen epäonnistui",
-    "eventNotFound": "Tapahtumaa ei löytynyt"
+    "eventNotFound": "Tapahtumaa ei löytynyt",
+    "eventEnded": "Tämä tapahtuma on päättynyt"
   },
   "activity": {
     "activities": "Porukalla",
@@ -503,7 +504,12 @@
     "photo": "Kuva",
     "quickReplyThanks": "Kiitos!",
     "quickReplyWhen": "Milloin?",
-    "quickReplyOk": "Sopiiko?"
+    "quickReplyOk": "Sopiiko?",
+    "conversationNotFound": "Keskustelua ei löydy",
+    "conversationNotFoundDesc": "Keskustelu on ehkä poistettu tai sitä ei ole olemassa.",
+    "backToConversations": "Palaa keskusteluihin",
+    "loginRequired": "Kirjaudu sisään nähdäksesi viestit",
+    "loginHint": "Kirjaudu sisään nähdäksesi keskustelusi ja jutellaksesi naapureidesi kanssa."
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -718,10 +724,12 @@
     "passwordNeedsNumber": "Lisää numero (0-9)",
     "passwordStrong": "Vahva salasana",
     "changingPassword": "Vaihdetaan...",
+    "passwordManagedByOAuth": "Salasanaasi hallinnoi {provider}. Voit vaihtaa salasanasi {provider}-tilisi asetuksista.",
     "dataAndPrivacy": "Tiedot ja yksityisyys",
     "dataDownloaded": "Tiedot ladattu",
     "dataExportFailed": "Tietojen vienti epäonnistui",
     "accountDeleted": "Tili poistettu",
+    "accountDeletePartial": "Tietosi on poistettu. Tilin täydellistä poistamista varten ota yhteyttä osoitteeseen tuki@tackbird.fi.",
     "accountDeleteFailed": "Tilin poisto epäonnistui",
     "businessAccount": "Yritystili",
     "businessName": "Yrityksen nimi",
@@ -879,7 +887,8 @@
     "otpResent": "Uusi koodi lähetetty sähköpostiisi",
     "otpTooShort": "Syötä 6-numeroinen koodi",
     "otpExpired": "Koodi on vanhentunut. Pyydä uusi koodi.",
-    "otpInvalid": "Virheellinen koodi. Tarkista ja yritä uudelleen."
+    "otpInvalid": "Virheellinen koodi. Tarkista ja yritä uudelleen.",
+    "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen."
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
@@ -937,14 +946,18 @@
     "askHelp": "Pyydä apua naapureilta",
     "offerServices": "Tarjoa palveluksia ja tavaroita",
     "borrowSafely": "Lainaa ja vuokraa turvallisesti",
+    "shareFree": "Jaa ja löydä ilmaisia tavaroita",
     "trustSafety": "Luottamus ja turvallisuus",
     "suomifiDesc": "Suomi.fi-vahvistus turvallisiin transaktioihin",
+    "verifiedProfiles": "Vahvistetut profiilit, joihin voit luottaa",
     "trustTiers": "Kolmiportainen luottamusjärjestelmä",
     "securePayments": "Turvalliset maksut Stripen kautta",
+    "safeMessaging": "Turvallinen viestintä yhteisön moderointia",
     "next": "Seuraava",
     "start": "Aloita!",
     "selectCity": "Valitse kaupunki",
-    "noNeighborhoods": "Naapurustoja ei löytynyt"
+    "noNeighborhoods": "Naapurustoja ei löytynyt",
+    "typeNeighborhood": "Syötä naapurustosi"
   },
   "resetPassword": {
     "title": "Vaihda salasana",
@@ -1316,6 +1329,9 @@
     "maxAttendees": "Osallistujaraja",
     "maxAttendeesPlaceholder": "Rajaton",
     "imageUploadPartialFail": "{count} kuvan lataus epäonnistui",
+    "allImagesFailed": "Kaikkien kuvien lataus epäonnistui. Julkaistaanko ilman kuvia?",
+    "publishWithoutImages": "Julkaise ilman",
+    "retryUpload": "Yritä uudelleen",
     "camera": "Kamera",
     "gallery": "Galleria",
     "cameraPermissionRequired": "Kameralupa vaaditaan",
@@ -1699,7 +1715,9 @@
     "groupedLikes": "{name} ja {count} muuta tykkäsivät",
     "deleteNotification": "Poista ilmoitus",
     "expanded": "Näytä kaikki",
-    "collapsed": "Piilota"
+    "collapsed": "Piilota",
+    "loginRequired": "Kirjaudu sisään nähdäksesi ilmoitukset",
+    "loginHint": "Kirjaudu sisään pysyäksesi ajan tasalla naapurustosi tapahtumista."
   },
   "map": {
     "locate": "Paikanna minut",
@@ -1783,6 +1801,7 @@
   },
   "privacy": {
     "title": "Tietosuojaseloste",
+    "featureDisclaimer": "Jotkin tässä asiakirjassa kuvatut ominaisuudet eivät välttämättä ole vielä saatavilla alueellasi.",
     "updated": "Päivitetty: 29.3.2026",
     "section1Title": "1. Rekisterinpitäjä",
     "section1Content": "Puddles Oy (Y-tunnus: 3610705-3) vastaa henkilötietojesi käsittelystä TackBird-palvelussa. Yhteystiedot: main.puddles@gmail.com. Olemme sitoutuneet suojaamaan yksityisyyttäsi EU:n yleisen tietosuoja-asetuksen (GDPR) ja Suomen tietosuojalain mukaisesti.",
@@ -1825,6 +1844,7 @@
   },
   "terms": {
     "title": "Käyttöehdot",
+    "featureDisclaimer": "Jotkin näissä ehdoissa kuvatut ominaisuudet eivät välttämättä ole vielä saatavilla alueellasi.",
     "updated": "Päivitetty: 29.3.2026",
     "section1Title": "1. Palvelun kuvaus",
     "section1Content": "TackBird on naapuriapusovellus, joka yhdistää Helsingin naapurustojen asukkaita. Palvelu mahdollistaa avunpyyntöjen, tarjousten, ilmaisten tavaroiden, lainausten, tapahtumien ja viestien jakamisen naapuruston kesken. Palvelun tarjoaa Puddles Oy (Y-tunnus: 3610705-3). Palvelun käyttö edellyttää vähintään 12 vuoden ikää.",

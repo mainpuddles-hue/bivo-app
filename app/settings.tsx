@@ -390,6 +390,8 @@ export default function SettingsScreen() {
       const { error: rpcError } = await (supabase.rpc as any)('delete_user_account')
       if (rpcError) {
         // RPC failed — attempt manual cleanup of user data before signout
+        // Note: fallback cannot delete the Supabase auth record (requires service role).
+        // User may need to contact support for full account removal.
         const uid = profile?.id
         if (uid) {
           await Promise.allSettled([
@@ -408,6 +410,11 @@ export default function SettingsScreen() {
             }).eq('id', uid),
           ])
         }
+        // Inform user that full deletion requires support contact
+        Alert.alert(
+          t('settings.accountDeleted'),
+          t('settings.accountDeletePartial'),
+        )
       }
       clearAuthCache()
       await supabase.auth.signOut()
@@ -427,7 +434,8 @@ export default function SettingsScreen() {
       // Sign out may fail on network — proceed anyway
     }
     clearAuthCache()
-    await AsyncStorage.removeItem('onboarding_complete').catch(() => {})
+    // Note: onboarding_complete is intentionally kept — the onboarding guard
+    // checks the profile's naapurusto field, AsyncStorage is just a cache.
     router.replace('/(auth)/login')
   }
 
@@ -753,50 +761,58 @@ export default function SettingsScreen() {
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <View style={{ padding: 16, gap: 10 }}>
             <Text style={[s.rowText, { color: colors.foreground, fontWeight: '600' }]}>{t('settings.changePassword')}</Text>
-            {!isPasswordRecovery && (
-              <TextInput
-                style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
-                value={currentPw}
-                onChangeText={setCurrentPw}
-                placeholder={t('settings.currentPasswordPlaceholder')}
-                placeholderTextColor={colors.mutedForeground}
-                secureTextEntry
-              />
-            )}
-            <TextInput
-              style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
-              value={newPw}
-              onChangeText={setNewPw}
-              placeholder={t('settings.newPasswordPlaceholder')}
-              placeholderTextColor={colors.mutedForeground}
-              secureTextEntry
-            />
-            {/* Inline password strength feedback (error prevention) */}
-            {newPw.length > 0 && (
-              <View style={{ gap: 2, marginTop: 2 }}>
-                {newPw.length < 8 && (
-                  <Text style={{ fontSize: 11, color: colors.destructive, fontFamily: fonts.body }}>{t('settings.passwordTooShort')}</Text>
-                )}
-                {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
-                  <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsUppercase')}</Text>
-                )}
-                {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
-                  <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsNumber')}</Text>
-                )}
-                {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
-                  <Text style={{ fontSize: 11, color: colors.success, fontFamily: fonts.body }}>{t('settings.passwordStrong')}</Text>
-                )}
-              </View>
-            )}
-            <Pressable
-              onPress={handleChangePassword}
-              disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
-              style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
-            >
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
-                {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
+            {isOAuthUser ? (
+              <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body }}>
+                {t('settings.passwordManagedByOAuth', { provider: (oauthProvider ?? 'OAuth').charAt(0).toUpperCase() + (oauthProvider ?? 'OAuth').slice(1) })}
               </Text>
-            </Pressable>
+            ) : (
+              <>
+                {!isPasswordRecovery && (
+                  <TextInput
+                    style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
+                    value={currentPw}
+                    onChangeText={setCurrentPw}
+                    placeholder={t('settings.currentPasswordPlaceholder')}
+                    placeholderTextColor={colors.mutedForeground}
+                    secureTextEntry
+                  />
+                )}
+                <TextInput
+                  style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
+                  value={newPw}
+                  onChangeText={setNewPw}
+                  placeholder={t('settings.newPasswordPlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  secureTextEntry
+                />
+                {/* Inline password strength feedback (error prevention) */}
+                {newPw.length > 0 && (
+                  <View style={{ gap: 2, marginTop: 2 }}>
+                    {newPw.length < 8 && (
+                      <Text style={{ fontSize: 11, color: colors.destructive, fontFamily: fonts.body }}>{t('settings.passwordTooShort')}</Text>
+                    )}
+                    {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
+                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsUppercase')}</Text>
+                    )}
+                    {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
+                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsNumber')}</Text>
+                    )}
+                    {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
+                      <Text style={{ fontSize: 11, color: colors.success, fontFamily: fonts.body }}>{t('settings.passwordStrong')}</Text>
+                    )}
+                  </View>
+                )}
+                <Pressable
+                  onPress={handleChangePassword}
+                  disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
+                  style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
+                    {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
+                  </Text>
+                </Pressable>
+              </>
+            )}
           </View>
         </View>
 

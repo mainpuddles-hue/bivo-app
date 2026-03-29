@@ -26,6 +26,11 @@ function TermsScreenInner() {
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <Text style={[s.updated, { color: colors.mutedForeground }]}>{t('terms.updated')}</Text>
 
+          {/* Feature availability disclaimer */}
+          <View style={[s.disclaimer, { backgroundColor: colors.muted }]}>
+            <Text style={[s.disclaimerText, { color: colors.mutedForeground }]}>{t('terms.featureDisclaimer')}</Text>
+          </View>
+
           {/* Section 1: Service Description */}
           <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('terms.section1Title')}</Text>
           <Text style={[s.paragraph, { color: colors.mutedForeground }]}>{t('terms.section1Content')}</Text>
@@ -96,6 +101,8 @@ const s = StyleSheet.create({
   list: { gap: 4, paddingLeft: 8, marginBottom: 8 },
   listItem: { fontSize: 14, fontFamily: fonts.body, lineHeight: 21 },
   link: { fontSize: 14, fontFamily: fonts.bodyMedium, marginTop: 8 },
+  disclaimer: { borderRadius: 8, padding: 12, marginBottom: 12 },
+  disclaimerText: { fontSize: 13, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 19 },
 })
 
 export default function TermsScreen() {

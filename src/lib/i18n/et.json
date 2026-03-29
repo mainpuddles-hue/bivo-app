@@ -328,7 +328,8 @@
     "cancelFailed": "T\u00fchistamine eba\u00f5nnestus",
     "joinFailed": "Liitumine eba\u00f5nnestus",
     "leaveFailed": "Lahkumine eba\u00f5nnestus",
-    "eventNotFound": "S\u00fcndmust ei leitud"
+    "eventNotFound": "S\u00fcndmust ei leitud",
+    "eventEnded": "See s\u00fcndmus on l\u00f5ppenud"
   },
   "activity": {
     "activities": "Koos",
@@ -716,10 +717,12 @@
     "passwordNeedsNumber": "Lisa number (0-9)",
     "passwordStrong": "Tugev parool",
     "changingPassword": "Vahetamine...",
+    "passwordManagedByOAuth": "Sinu parooli haldab {provider}. Parooli muutmiseks külasta oma {provider} konto seadeid.",
     "dataAndPrivacy": "Andmed ja privaatsus",
     "dataDownloaded": "Andmed alla laaditud",
     "dataExportFailed": "Andmete eksport ebaõnnestus",
     "accountDeleted": "Konto kustutatud",
+    "accountDeletePartial": "Sinu andmed on eemaldatud. Konto täielikuks kustutamiseks võta ühendust aadressil tuki@tackbird.fi.",
     "accountDeleteFailed": "Konto kustutamine ebaõnnestus",
     "businessAccount": "Ärikonto",
     "businessName": "Ettevõtte nimi",
@@ -877,7 +880,8 @@
     "otpResent": "Uus kood on saadetud sinu e-postile",
     "otpTooShort": "Sisesta 6-kohaline kood",
     "otpExpired": "Kood on aegunud. Palun taotle uut koodi.",
-    "otpInvalid": "Vale kood. Kontrolli ja proovi uuesti."
+    "otpInvalid": "Vale kood. Kontrolli ja proovi uuesti.",
+    "sessionExpired": "Sinu seanss on aegunud. Palun logi uuesti sisse."
   },
   "onboarding": {
     "welcome": "Tere tulemast TackBirdi!",
@@ -937,8 +941,10 @@
     "borrowSafely": "Laenuta ja rendi turvaliselt",
     "trustSafety": "Usaldus ja turvalisus",
     "suomifiDesc": "Suomi.fi kinnitus turvalisteks tehinguteks",
+    "verifiedProfiles": "Kontrollitud profiilid, mida saate usaldada",
     "trustTiers": "Kolmeastmeline usaldussüsteem",
     "securePayments": "Turvalised maksed Stripe'i kaudu",
+    "safeMessaging": "Turvaline suhtlus kogukonna modereerimisega",
     "next": "Järgmine",
     "start": "Alustame!",
     "selectCity": "Vali linn",
@@ -1771,6 +1777,7 @@
   },
   "privacy": {
     "title": "Andmekaitseteade",
+    "featureDisclaimer": "Mõned selles dokumendis kirjeldatud funktsioonid ei pruugi sinu piirkonnas veel saadaval olla.",
     "updated": "Uuendatud: 29.3.2026",
     "section1Title": "1. Vastutav töötleja",
     "section1Content": "Puddles Oy (äriregistri kood: 3610705-3) vastutab sinu isikuandmete töötlemise eest TackBirdi teenuses. Kontaktandmed: main.puddles@gmail.com. Oleme pühendunud sinu privaatsuse kaitsmisele vastavalt EL-i isikuandmete kaitse üldmäärusele (GDPR) ja Soome andmekaitsseadusele.",
@@ -1813,6 +1820,7 @@
   },
   "terms": {
     "title": "Kasutustingimused",
+    "featureDisclaimer": "Mõned nendes tingimustes kirjeldatud funktsioonid ei pruugi sinu piirkonnas veel saadaval olla.",
     "updated": "Uuendatud: 29.3.2026",
     "section1Title": "1. Teenuse kirjeldus",
     "section1Content": "TackBird on naabriabirakendus, mis ühendab Helsingi naabruskondade elanikke. Teenus võimaldab abipalvete, pakkumiste, tasuta asjade, laenutuste, sündmuste ja sõnumite jagamist naabruskonna vahel. Teenust pakub Puddles Oy (äriregistri kood: 3610705-3). Teenuse kasutamiseks pead olema vähemalt 12-aastane.",

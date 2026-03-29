@@ -308,7 +308,8 @@
     "catNature": "Natur",
     "catKids": "Barn",
     "catOther": "Övrigt",
-    "messageOrganizer": "Meddelande till arrangören"
+    "messageOrganizer": "Meddelande till arrangören",
+    "eventEnded": "Detta evenemang har avslutats"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -483,7 +484,12 @@
     "photo": "Bild",
     "quickReplyThanks": "Tack!",
     "quickReplyWhen": "När?",
-    "quickReplyOk": "Passar?"
+    "quickReplyOk": "Passar?",
+    "conversationNotFound": "Konversationen hittades inte",
+    "conversationNotFoundDesc": "Konversationen kan ha tagits bort eller finns inte.",
+    "backToConversations": "Tillbaka till konversationer",
+    "loginRequired": "Logga in for att se meddelanden",
+    "loginHint": "Logga in for att se dina konversationer och chatta med dina grannar."
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -698,10 +704,12 @@
     "passwordNeedsNumber": "Lägg till en siffra (0-9)",
     "passwordStrong": "Starkt lösenord",
     "changingPassword": "Ändrar...",
+    "passwordManagedByOAuth": "Ditt lösenord hanteras av {provider}. För att ändra ditt lösenord, besök dina {provider}-kontoinställningar.",
     "dataAndPrivacy": "Data och integritet",
     "dataDownloaded": "Data nedladdad",
     "dataExportFailed": "Kunde inte exportera data",
     "accountDeleted": "Konto raderat",
+    "accountDeletePartial": "Din data har tagits bort. Kontakta tuki@tackbird.fi för fullständig kontoborttagning.",
     "accountDeleteFailed": "Kunde inte ta bort konto",
     "businessAccount": "Företagskonto",
     "businessName": "Företagsnamn",
@@ -859,7 +867,8 @@
     "otpResent": "En ny kod har skickats till din e-post",
     "otpTooShort": "Ange den 6-siffriga koden",
     "otpExpired": "Koden har gått ut. Begär en ny kod.",
-    "otpInvalid": "Ogiltig kod. Kontrollera och försök igen."
+    "otpInvalid": "Ogiltig kod. Kontrollera och försök igen.",
+    "sessionExpired": "Din session har gått ut. Logga in igen."
   },
   "onboarding": {
     "welcome": "Välkommen till TackBird!",
@@ -917,14 +926,18 @@
     "askHelp": "Be grannar om hjälp",
     "offerServices": "Erbjud tjänster och saker",
     "borrowSafely": "Låna och hyr tryggt",
+    "shareFree": "Dela och hitta gratis saker",
     "trustSafety": "Tillit och säkerhet",
     "suomifiDesc": "Suomi.fi-verifiering för trygga transaktioner",
+    "verifiedProfiles": "Verifierade profiler du kan lita på",
     "trustTiers": "Trestegs tillitssystem",
     "securePayments": "Säkra betalningar via Stripe",
+    "safeMessaging": "Trygg meddelandehantering med communitymoderering",
     "next": "Nästa",
     "start": "Sätt igång!",
     "selectCity": "Välj stad",
-    "noNeighborhoods": "Inga stadsdelar hittades"
+    "noNeighborhoods": "Inga stadsdelar hittades",
+    "typeNeighborhood": "Skriv ditt grannskap"
   },
   "resetPassword": {
     "title": "Byt lösenord",
@@ -1285,6 +1298,9 @@
     "maxAttendeesPlaceholder": "Obegränsat",
     "uploadingImages": "Laddar upp bilder...",
     "imageUploadPartialFail": "{count} bild(er) kunde inte laddas upp",
+    "allImagesFailed": "Alla bilder kunde inte laddas upp. Publicera utan bilder?",
+    "publishWithoutImages": "Publicera utan",
+    "retryUpload": "Försök igen",
     "camera": "Kamera",
     "gallery": "Galleri",
     "cameraPermissionRequired": "Kameratillstånd krävs",
@@ -1679,7 +1695,9 @@
     "groupedLikes": "{name} och {count} andra gillade",
     "deleteNotification": "Ta bort avisering",
     "expanded": "Visa alla",
-    "collapsed": "Dölj"
+    "collapsed": "Dölj",
+    "loginRequired": "Logga in for att se aviseringar",
+    "loginHint": "Logga in for att halla dig uppdaterad om vad som hander i ditt grannskap."
   },
   "map": {
     "locate": "Hitta mig",
@@ -1763,6 +1781,7 @@
   },
   "privacy": {
     "title": "Integritetspolicy",
+    "featureDisclaimer": "Vissa funktioner som beskrivs i detta dokument kanske inte är tillgängliga i din region ännu.",
     "updated": "Uppdaterad: 29.3.2026",
     "section1Title": "1. Registeransvarig",
     "section1Content": "Puddles Oy (FO-nummer: 3610705-3) ansvarar för behandlingen av dina personuppgifter i TackBird-tjänsten. Kontakt: main.puddles@gmail.com. Vi är engagerade i att skydda din integritet i enlighet med EU:s allmänna dataskyddsförordning (GDPR) och finsk dataskyddslagstiftning.",
@@ -1805,6 +1824,7 @@
   },
   "terms": {
     "title": "Användarvillkor",
+    "featureDisclaimer": "Vissa funktioner som beskrivs i dessa villkor kanske inte är tillgängliga i din region ännu.",
     "updated": "Uppdaterad: 29.3.2026",
     "section1Title": "1. Tjänstebeskrivning",
     "section1Content": "TackBird är en grannskapsapp som kopplar samman invånare i Helsingfors grannskap. Tjänsten möjliggör delning av hjälpförfrågningar, erbjudanden, gratisartiklar, uthyrningar, evenemang och meddelanden inom grannskapet. Tjänsten tillhandahålls av Puddles Oy (FO-nummer: 3610705-3). Du måste vara minst 12 år gammal för att använda tjänsten.",

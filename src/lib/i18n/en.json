@@ -328,7 +328,8 @@
     "cancelFailed": "Failed to cancel",
     "joinFailed": "Failed to join",
     "leaveFailed": "Failed to leave",
-    "eventNotFound": "Event not found"
+    "eventNotFound": "Event not found",
+    "eventEnded": "This event has ended"
   },
   "activity": {
     "activities": "Together",
@@ -503,7 +504,12 @@
     "photo": "Image",
     "quickReplyThanks": "Thanks!",
     "quickReplyWhen": "When?",
-    "quickReplyOk": "Works?"
+    "quickReplyOk": "Works?",
+    "conversationNotFound": "Conversation not found",
+    "conversationNotFoundDesc": "This conversation may have been deleted or doesn't exist.",
+    "backToConversations": "Back to conversations",
+    "loginRequired": "Log in to see messages",
+    "loginHint": "Log in to view your conversations and chat with your neighbors."
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -718,10 +724,12 @@
     "passwordNeedsNumber": "Add a number (0-9)",
     "passwordStrong": "Strong password",
     "changingPassword": "Changing...",
+    "passwordManagedByOAuth": "Your password is managed by {provider}. To change your password, visit your {provider} account settings.",
     "dataAndPrivacy": "Data & Privacy",
     "dataDownloaded": "Data downloaded",
     "dataExportFailed": "Failed to export data",
     "accountDeleted": "Account deleted",
+    "accountDeletePartial": "Your data has been removed. For complete account deletion, please contact tuki@tackbird.fi.",
     "accountDeleteFailed": "Failed to delete account",
     "businessAccount": "Business account",
     "businessName": "Company name",
@@ -879,7 +887,8 @@
     "otpResent": "A new code has been sent to your email",
     "otpTooShort": "Enter the 6-digit code",
     "otpExpired": "Code has expired. Please request a new one.",
-    "otpInvalid": "Invalid code. Please check and try again."
+    "otpInvalid": "Invalid code. Please check and try again.",
+    "sessionExpired": "Your session has expired. Please log in again."
   },
   "onboarding": {
     "welcome": "Welcome to TackBird!",
@@ -937,14 +946,18 @@
     "askHelp": "Ask neighbors for help",
     "offerServices": "Offer services and items",
     "borrowSafely": "Borrow and rent safely",
+    "shareFree": "Share and find free items",
     "trustSafety": "Trust & Safety",
     "suomifiDesc": "Suomi.fi verification for safe transactions",
+    "verifiedProfiles": "Verified profiles you can trust",
     "trustTiers": "Three-tier trust system",
     "securePayments": "Secure payments via Stripe",
+    "safeMessaging": "Safe messaging with community moderation",
     "next": "Next",
     "start": "Let's go!",
     "selectCity": "Select city",
-    "noNeighborhoods": "No neighborhoods found"
+    "noNeighborhoods": "No neighborhoods found",
+    "typeNeighborhood": "Type your neighborhood"
   },
   "resetPassword": {
     "title": "Change password",
@@ -1305,6 +1318,9 @@
     "maxAttendeesPlaceholder": "Unlimited",
     "uploadingImages": "Uploading images...",
     "imageUploadPartialFail": "{count} image(s) failed to upload",
+    "allImagesFailed": "All images failed to upload. Publish without images?",
+    "publishWithoutImages": "Publish without",
+    "retryUpload": "Retry",
     "camera": "Camera",
     "gallery": "Gallery",
     "cameraPermissionRequired": "Camera permission required",
@@ -1699,7 +1715,9 @@
     "groupedLikes": "{name} and {count} others liked",
     "deleteNotification": "Delete notification",
     "expanded": "Show all",
-    "collapsed": "Hide"
+    "collapsed": "Hide",
+    "loginRequired": "Log in to see notifications",
+    "loginHint": "Log in to stay updated on what's happening in your neighborhood."
   },
   "map": {
     "locate": "Locate me",
@@ -1783,6 +1801,7 @@
   },
   "privacy": {
     "title": "Privacy Policy",
+    "featureDisclaimer": "Some features described in this document may not yet be available in your region.",
     "updated": "Updated: 29.3.2026",
     "section1Title": "1. Data Controller",
     "section1Content": "Puddles Oy (Business ID: 3610705-3) is responsible for processing your personal data in the TackBird service. Contact: main.puddles@gmail.com. We are committed to protecting your privacy in accordance with the EU General Data Protection Regulation (GDPR) and Finnish data protection law.",
@@ -1825,6 +1844,7 @@
   },
   "terms": {
     "title": "Terms of Service",
+    "featureDisclaimer": "Some features described in these terms may not yet be available in your region.",
     "updated": "Updated: 29.3.2026",
     "section1Title": "1. Service Description",
     "section1Content": "TackBird is a neighborhood help app that connects residents of Helsinki neighborhoods. The service enables sharing help requests, offers, free items, rentals, events, and messages within the neighborhood. The service is provided by Puddles Oy (Business ID: 3610705-3). You must be at least 12 years old to use the service.",
