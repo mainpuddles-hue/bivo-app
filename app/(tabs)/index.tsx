@@ -31,7 +31,7 @@ import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
 // ── Stable separator components (avoid re-render) ──
-const ItemSeparator8 = () => <View style={{ height: 8 }} />
+const ItemSeparator8 = () => <View style={{ height: 12 }} />
 
 // ══════════════════════════════════════════════
 // ── Feed Screen ──
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-    paddingTop: 4, paddingBottom: 8, gap: 4,
+    paddingTop: 8, paddingBottom: 10, gap: 6,
     borderBottomWidth: StyleSheet.hairlineWidth,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,

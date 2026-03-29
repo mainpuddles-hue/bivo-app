@@ -330,7 +330,7 @@ function LoginScreenInner() {
               <View style={[styles.modeToggle, { backgroundColor: colors.muted }]}>
                 <Pressable
                   onPress={() => setMode('login')}
-                  style={[styles.modeBtn, mode === 'login' && { backgroundColor: colors.card }]}
+                  style={[styles.modeBtn, mode === 'login' && { backgroundColor: colors.card, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }]}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: mode === 'login' }}
                   accessibilityLabel={t('auth.login')}
@@ -341,7 +341,7 @@ function LoginScreenInner() {
                 </Pressable>
                 <Pressable
                   onPress={() => setMode('register')}
-                  style={[styles.modeBtn, mode === 'register' && { backgroundColor: colors.card }]}
+                  style={[styles.modeBtn, mode === 'register' && { backgroundColor: colors.card, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }]}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: mode === 'register' }}
                   accessibilityLabel={t('auth.register')}

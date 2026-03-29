@@ -317,8 +317,8 @@ function EventDetailScreenInner() {
               contentFit="cover"
             />
           ) : (
-            <View style={[s.heroPlaceholder, { backgroundColor: `${catColor}20` }]}>
-              <CalendarDays size={48} color={catColor} strokeWidth={1.4} />
+            <View style={[s.heroPlaceholder, { backgroundColor: `${catColor}30` }]}>
+              <CalendarDays size={64} color={catColor} strokeWidth={1.4} />
             </View>
           )}
           {/* Category badge */}

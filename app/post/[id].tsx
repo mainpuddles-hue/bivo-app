@@ -1145,7 +1145,7 @@ const styles = StyleSheet.create({
   headerBtn: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
-  body: { paddingHorizontal: 12, paddingTop: 16, paddingBottom: 12, gap: 12 },
+  body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 14 },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
   closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },

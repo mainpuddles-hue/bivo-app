@@ -331,7 +331,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         )}
 
         {/* Action row: Like count · Comment count · Save · More ... Distance on RIGHT */}
-        <View style={styles.actionRow} accessibilityRole="toolbar">
+        <View style={[styles.actionRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border + '40' }]} accessibilityRole="toolbar">
           {/* Like button — always show */}
           <Pressable
             hitSlop={8}
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
-  content: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12, gap: 6 },
+  content: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 14, gap: 10 },
 
   // Top row: user + category badge
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
@@ -585,9 +585,9 @@ const styles = StyleSheet.create({
   expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7, fontFamily: fonts.bodySemi },
 
   // Title + description
-  title: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20, letterSpacing: -0.15 },
+  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.15 },
   seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic' },
-  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19, marginTop: 4 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19 },
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
 
   // Action row
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 6, paddingTop: 6 },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 32, paddingHorizontal: 2 },
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
   popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
