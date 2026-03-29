@@ -7,3 +7,5 @@ dist/
 .claude-flow/
 .swarm/
 .playwright-mcp/
+supabase/.temp/
+*.swp

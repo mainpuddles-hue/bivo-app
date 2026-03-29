@@ -477,7 +477,7 @@ export default function SettingsScreen() {
         {/* Language */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          {(['fi', 'en', 'sv', 'et', 'ru'] as Locale[]).map((l) => (
+          {(['fi', 'en', 'sv'] as Locale[]).map((l) => (
             <Pressable key={l} onPress={() => setLocale(l)} style={s.row}>
               <Globe size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{langLabel(l)}</Text>
