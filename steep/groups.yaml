@@ -1,0 +1,9 @@
+module:
+  identifier: "groups"
+  schema: "public"
+  table: "groups"
+  metrics:
+    - identifier: "total_groups"
+      name: "Total Groups"
+      time: "groups.created_at"
+      calculation: "count"
