@@ -1,0 +1,9 @@
+module:
+  identifier: "posts"
+  schema: "public"
+  table: "posts"
+  metrics:
+    - identifier: "total_posts"
+      name: "Total Posts"
+      time: "posts.created_at"
+      calculation: "count"
