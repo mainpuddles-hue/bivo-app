@@ -1,9 +1,10 @@
 module:
   identifier: "ad_impressions"
-    schema: "public"
-      table: "ad_impressions"
-        metrics:
-            - identifier: "ad_impressions"
-                  name: "Ad Impressions"
-                        time: "ad_impressions.impression_date"
-                              calculation: "count"
+  schema: "public"
+  table: "ad_impressions"
+  metrics:
+    - identifier: "ad_impressions"
+      name: "Ad Impressions"
+      time: "ad_impressions.impression_date"
+      calculation: "count"
+
