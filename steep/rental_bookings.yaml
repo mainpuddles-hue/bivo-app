@@ -1,0 +1,9 @@
+module:
+  identifier: "rental_bookings"
+  schema: "public"
+  table: "rental_bookings"
+  metrics:
+    - identifier: "rental_bookings"
+      name: "Rental Bookings"
+      time: "rental_bookings.created_at"
+      calculation: "count"
