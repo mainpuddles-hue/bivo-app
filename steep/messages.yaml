@@ -1,0 +1,9 @@
+module:
+  identifier: "messages"
+  schema: "public"
+  table: "messages"
+  metrics:
+    - identifier: "total_messages"
+      name: "Total Messages"
+      time: "messages.created_at"
+      calculation: "count"
