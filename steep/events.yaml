@@ -1,0 +1,9 @@
+module:
+  identifier: "events"
+  schema: "public"
+  table: "events"
+  metrics:
+    - identifier: "total_events"
+      name: "Total Events"
+      time: "events.created_at"
+      calculation: "count"
