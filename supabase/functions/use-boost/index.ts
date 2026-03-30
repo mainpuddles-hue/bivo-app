@@ -9,7 +9,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://tackbird.fi',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

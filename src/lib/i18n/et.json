@@ -615,6 +615,7 @@
     "reviewFailed": "Arvustuse saatmine ebaõnnestus",
     "selectRating": "Vali hinne",
     "alreadyReviewed": "Oled selle kasutaja juba hinnanud",
+    "cannotReviewSelf": "Sa ei saa ennast hinnata",
     "profileHidden": "Profiil pole avalik",
     "myPosts": "Postitused",
     "pointHistory": "Punktide ajalugu",

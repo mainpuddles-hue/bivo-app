@@ -43,6 +43,13 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
         return
       }
 
+      // Prevent self-reviews
+      if (reviewedUserId === user.id) {
+        Alert.alert(t('common.error'), t('profile.cannotReviewSelf'))
+        setLoading(false)
+        return
+      }
+
       // Check for existing review
       const { data: existing } = await supabase
         .from('reviews')

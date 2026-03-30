@@ -622,6 +622,7 @@
     "reviewFailed": "Arvostelun lähetys epäonnistui",
     "selectRating": "Valitse arvosana",
     "alreadyReviewed": "Olet jo arvostellut tämän käyttäjän",
+    "cannotReviewSelf": "Et voi arvostella itseäsi",
     "profileHidden": "Profiili ei ole julkinen",
     "myPosts": "Postaukset",
     "pointHistory": "Pistehistoria",

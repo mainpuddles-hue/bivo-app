@@ -10,7 +10,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://tackbird.fi',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -23,6 +23,42 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    // ── Auth: require cron secret or admin JWT ─────────────────
+    const cronSecret = req.headers.get('x-cron-secret')
+    const expectedSecret = Deno.env.get('CRON_SECRET')
+
+    if (!expectedSecret || cronSecret !== expectedSecret) {
+      // Fallback: check for admin JWT
+      const authHeader = req.headers.get('Authorization')
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const authSupabase = createClient(supabaseUrl, supabaseServiceKey)
+      const token = authHeader.replace('Bearer ', '')
+      const { data: { user }, error: userError } = await authSupabase.auth.getUser(token)
+      if (userError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Check if user is admin
+      const { data: profile } = await authSupabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile?.is_admin) {
+        return new Response(JSON.stringify({ error: 'Admin access required' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const now = new Date()

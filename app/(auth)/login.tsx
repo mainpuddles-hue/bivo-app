@@ -184,11 +184,22 @@ function LoginScreenInner() {
         // Navigate to OTP verification screen
         router.push({ pathname: '/verify-otp', params: { email: email.trim(), mode: 'signup' } })
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
         })
         if (error) throw error
+
+        // Check if user is banned before allowing access
+        if (signInData?.user) {
+          const { data: profile } = await supabase.from('profiles').select('is_banned').eq('id', signInData.user.id).single()
+          if ((profile as any)?.is_banned) {
+            await supabase.auth.signOut()
+            Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+            return
+          }
+        }
+
         setLoginAttempts(0)
         trackEvent('auth_login_success' as any)
         router.replace('/')

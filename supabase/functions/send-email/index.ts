@@ -2,11 +2,18 @@
 // Types: booking_confirmation, payment_receipt, booking_reminder, welcome
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// In-memory rate limit store: userId -> { count, windowStart }
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>()
 
 const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }> = {
   booking_confirmation: (data) => ({
@@ -49,6 +56,38 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    // ── Auth check ─────────────────────────────────────────────
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // ── Rate limiting: max 5 emails per hour per user ──────────
+    const now = Date.now()
+    const ONE_HOUR = 60 * 60 * 1000
+    const entry = rateLimitMap.get(user.id)
+    if (entry && (now - entry.windowStart) < ONE_HOUR) {
+      if (entry.count >= 5) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Max 5 emails per hour.' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      entry.count++
+    } else {
+      rateLimitMap.set(user.id, { count: 1, windowStart: now })
+    }
+
     const body = await req.json()
     const { to_email, template, data } = body
 

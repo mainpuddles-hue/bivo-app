@@ -602,6 +602,7 @@
     "reviewFailed": "Kunde inte skicka recension",
     "selectRating": "Välj ett betyg",
     "alreadyReviewed": "Du har redan recenserat denna användare",
+    "cannotReviewSelf": "Du kan inte recensera dig själv",
     "profileHidden": "Profilen är inte offentlig",
     "myPosts": "Inlägg",
     "pointHistory": "Poänghistorik",

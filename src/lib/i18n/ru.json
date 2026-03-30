@@ -615,6 +615,7 @@
     "reviewFailed": "Не удалось отправить отзыв",
     "selectRating": "Выберите оценку",
     "alreadyReviewed": "Вы уже оставили отзыв",
+    "cannotReviewSelf": "Вы не можете оставить отзыв о себе",
     "profileHidden": "Профиль не является публичным",
     "myPosts": "Публикации",
     "pointHistory": "История баллов",

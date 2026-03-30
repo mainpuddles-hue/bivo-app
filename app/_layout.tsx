@@ -276,18 +276,27 @@ function useAuthStateListener() {
         const timer = setTimeout(async () => {
           if (!mounted) return
           try {
+            // Check if user is banned
+            const { data: banProfile } = await supabase
+              .from('profiles')
+              .select('is_banned, naapurusto')
+              .eq('id', session.user.id)
+              .single()
+
+            if (!mounted) return
+
+            if ((banProfile as any)?.is_banned) {
+              await supabase.auth.signOut()
+              Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+              return
+            }
+
             const flag = await AsyncStorage.getItem('onboarding_complete')
             if (flag === 'true') {
               if (mounted) router.replace('/')
               return
             }
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('naapurusto')
-              .eq('id', session.user.id)
-              .single()
-            if (!mounted) return
-            if ((profile as any)?.naapurusto) {
+            if ((banProfile as any)?.naapurusto) {
               await AsyncStorage.setItem('onboarding_complete', 'true')
               if (mounted) router.replace('/')
             } else {

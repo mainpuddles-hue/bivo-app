@@ -9,8 +9,8 @@ serve(async (req) => {
   // Instead, pass the token to the app and let it verify.
   const params = new URLSearchParams({ token_hash: tokenHash, type })
 
-  // Try Expo Go scheme first, then production scheme
-  const expoUrl = `exp+tackbird-mobile://auth/callback?${params.toString()}`
+  // Use production scheme — tackbird:// (not Expo Go exp+tackbird-mobile://)
+  const expoUrl = `tackbird://auth/callback?${params.toString()}`
 
   return new Response(null, {
     status: 302,

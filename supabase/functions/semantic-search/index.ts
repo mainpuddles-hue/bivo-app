@@ -113,11 +113,21 @@ serve(async (req) => {
     })
 
     // Step 4: Also do traditional text search (ILIKE) as fallback
+    // Sanitize query to prevent PostgREST .or() injection — commas, parens, and dots
+    // can break the filter syntax, and SQL wildcards must be escaped.
+    const safeQuery = query.trim()
+      .replace(/\\/g, '\\\\')
+      .replace(/%/g, '\\%')
+      .replace(/,/g, '')
+      .replace(/\(/g, '')
+      .replace(/\)/g, '')
+      .replace(/\./g, '')
+
     let textQuery = supabase
       .from('posts')
       .select('id, title')
       .eq('is_active', true)
-      .or(`title.ilike.%${query.trim()}%,description.ilike.%${query.trim()}%`)
+      .or(`title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%`)
       .limit(resultLimit)
 
     if (type) textQuery = textQuery.eq('type', type)

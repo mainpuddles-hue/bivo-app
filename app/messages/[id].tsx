@@ -269,6 +269,10 @@ function ConversationScreenInner() {
   // 3c: Quick reply auto-send handler
   const handleQuickReply = useCallback(async (text: string) => {
     if (!userId || sending) return
+    if (!await checkRateLimit('message')) {
+      Alert.alert(t('common.error'), getRateLimitMessage('message'))
+      return
+    }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     setSending(true)
     setShowQuickReplies(false)

@@ -622,6 +622,7 @@
     "reviewFailed": "Failed to submit review",
     "selectRating": "Please select a rating",
     "alreadyReviewed": "You have already reviewed this user",
+    "cannotReviewSelf": "You cannot review yourself",
     "profileHidden": "Profile is not public",
     "myPosts": "Posts",
     "pointHistory": "Point history",

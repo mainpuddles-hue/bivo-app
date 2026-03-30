@@ -28,6 +28,34 @@ serve(async (req) => {
     const cleanEmail = email.trim().toLowerCase()
     const cleanCode = code.trim()
 
+    // ── Brute-force protection ──────────────────────────────────
+    // Count failed verification attempts in the last 15 minutes for this email.
+    // Uses the verify_attempts column on otp_codes rows as a cumulative counter.
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+
+    const { data: recentOtps } = await supabase
+      .from('otp_codes')
+      .select('verify_attempts')
+      .eq('email', cleanEmail)
+      .eq('type', type)
+      .gte('created_at', fifteenMinAgo)
+
+    const totalAttempts = (recentOtps ?? []).reduce(
+      (sum: number, row: any) => sum + (row.verify_attempts ?? 0),
+      0,
+    )
+
+    if (totalAttempts >= 5) {
+      console.warn(`[verify-otp-code] Brute-force blocked for ${cleanEmail} (${totalAttempts} attempts in 15 min)`)
+      return new Response(JSON.stringify({
+        error: 'too_many_attempts',
+        verified: false,
+        message: 'Too many failed attempts. Please wait 15 minutes before trying again.',
+      }), {
+        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Find valid (unused, not expired) code
     const { data: otpRecord, error: findError } = await supabase
       .from('otp_codes')
@@ -44,6 +72,23 @@ serve(async (req) => {
     if (findError) throw findError
 
     if (!otpRecord) {
+      // Increment verify_attempts on the most recent OTP for this email
+      const { data: latestOtp } = await supabase
+        .from('otp_codes')
+        .select('id, verify_attempts')
+        .eq('email', cleanEmail)
+        .eq('type', type)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (latestOtp) {
+        await supabase
+          .from('otp_codes')
+          .update({ verify_attempts: (latestOtp.verify_attempts ?? 0) + 1 })
+          .eq('id', latestOtp.id)
+      }
+
       return new Response(JSON.stringify({ error: 'invalid_code', verified: false }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

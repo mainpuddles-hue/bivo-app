@@ -35,6 +35,22 @@ serve(async (req) => {
 
     const cleanEmail = email.trim().toLowerCase()
 
+    // Block disposable email domains
+    const emailDomain = cleanEmail.split('@')[1]
+    if (emailDomain) {
+      const { data: blockedDomain } = await supabase
+        .from('blocked_email_domains')
+        .select('domain')
+        .eq('domain', emailDomain)
+        .maybeSingle()
+
+      if (blockedDomain) {
+        return new Response(JSON.stringify({ error: 'This email provider is not supported' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
     // Rate limit: max 3 OTP requests per email in 10 minutes
     const { count } = await supabase
       .from('otp_codes')
