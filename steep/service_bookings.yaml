@@ -1,0 +1,9 @@
+module:
+  identifier: "service_bookings"
+  schema: "public"
+  table: "service_bookings"
+  metrics:
+    - identifier: "service_bookings"
+      name: "Service Bookings"
+      time: "service_bookings.created_at"
+      calculation: "count"
