@@ -1,0 +1,10 @@
+module:
+  identifier: "payments"
+  schema: "public"
+  table: "payments"
+  metrics:
+    - identifier: "revenue"
+      name: "Revenue"
+      time: "payments.created_at"
+      calculation: "sum"
+      value: "payments.amount"
