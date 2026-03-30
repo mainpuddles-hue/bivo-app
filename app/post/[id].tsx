@@ -7,7 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
-  Send, Flag, Clock,
+  Send, Flag, Clock, TrendingUp,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
   ShoppingBag,
 } from 'lucide-react-native'
@@ -37,6 +37,8 @@ import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
+import { useBoosts } from '@/hooks/useBoosts'
+import { BoostBadge } from '@/components/BoostBadge'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -345,6 +347,40 @@ function PostDetailScreenInner() {
   }
 
   const isAuthor = userId != null && post?.user_id === userId
+  const boosts = useBoosts(userId)
+  const [boosting, setBoosting] = useState(false)
+
+  // Check if the current post has an active boost
+  const isPostBoosted = post?.is_boosted || boosts.activeBoosts.some(b => b.post_id === id)
+
+  const handleBoostPost = useCallback(async () => {
+    if (!id || !userId || boosting) return
+    if (boosts.balance <= 0) {
+      Alert.alert(t('boost.title'), t('boost.noBalance'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('boost.buyBoosts'), onPress: () => router.push('/boosts') },
+      ])
+      return
+    }
+    setBoosting(true)
+    const success = await boosts.useBoostOnPost(id)
+    if (success) {
+      setPost(prev => prev ? { ...prev, is_boosted: true } : prev)
+      Alert.alert(t('boost.title'), t('boost.boostSuccess'))
+    }
+    setBoosting(false)
+  }, [id, userId, boosting, boosts, t, router])
+
+  // Get remaining boost time for display
+  const activeBoostForPost = boosts.activeBoosts.find(b => b.post_id === id)
+  const boostRemainingText = activeBoostForPost ? (() => {
+    const remaining = new Date(activeBoostForPost.boost_end).getTime() - Date.now()
+    if (remaining <= 0) return null
+    const hours = Math.floor(remaining / 3600000)
+    if (hours < 24) return `${hours}h`
+    const days = Math.floor(hours / 24)
+    return `${days}d ${hours % 24}h`
+  })() : null
 
   const handleDelete = useCallback(() => {
     if (!post) return
@@ -771,6 +807,24 @@ function PostDetailScreenInner() {
             </View>
           )}
 
+          {/* Boost badge / button — gated behind FEATURES.BOOSTS */}
+          {FEATURES.BOOSTS && isAuthor && !isPostBoosted && post.is_active && (
+            <Pressable
+              onPress={handleBoostPost}
+              disabled={boosting}
+              style={[styles.boostBtn, { backgroundColor: `${colors.accent}15`, borderColor: `${colors.accent}40` }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('boost.boostThis')}
+            >
+              <TrendingUp size={14} color={colors.accent} />
+              <Text style={[styles.boostBtnText, { color: colors.accent }]}>{t('boost.boostThis')}</Text>
+              {boosting && <ActivityIndicator size="small" color={colors.accent} style={{ marginLeft: 4 }} />}
+            </Pressable>
+          )}
+          {FEATURES.BOOSTS && isPostBoosted && (
+            <BoostBadge subtitle={boostRemainingText ? t('boost.boostEndsIn', { time: boostRemainingText }) : undefined} />
+          )}
+
           {post.is_pro_listing && (
             <View style={[styles.proBadge, { backgroundColor: `${colors.pro}20` }]}>
               <Crown size={14} color={colors.pro} /><Text style={[styles.proText, { color: colors.pro }]}>Pro</Text>
@@ -1192,6 +1246,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
+  boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
   price: { fontSize: 18, fontFamily: fonts.heading },
   eventDate: { fontSize: 15, fontFamily: fonts.bodyMedium },
   description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 22 },

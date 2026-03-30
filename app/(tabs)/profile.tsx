@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package, ChevronRight,
-  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2,
+  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2, TrendingUp,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -551,6 +551,17 @@ export default function ProfileScreen() {
           <Trophy size={18} color={colors.pro} />
           <Text style={[s.overviewText, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
         </Pressable>
+
+        {/* Boosts — gated behind FEATURES.BOOSTS */}
+        {FEATURES.BOOSTS && (
+          <Pressable onPress={() => router.push('/boosts')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('boost.title')} accessibilityRole="button">
+            <TrendingUp size={18} color={colors.accent} />
+            <Text style={[s.overviewText, { color: colors.foreground }]}>{t('boost.title')}</Text>
+            <View style={{ marginLeft: 'auto' }}>
+              <ChevronRight size={16} color={colors.mutedForeground} />
+            </View>
+          </Pressable>
+        )}
 
         {/* Trust Level Progress */}
         {!trust.loading && (

@@ -524,6 +524,7 @@ function RootLayoutInner() {
         <Stack.Screen name="create-event" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="community-events" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="verify-otp" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="boosts" options={{ headerShown: false, animation: 'slide_from_right' }} />
       </Stack>
     </View>
   )

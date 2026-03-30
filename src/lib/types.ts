@@ -1,5 +1,29 @@
 // Database types for TackBird — shared with web app
 
+export type BoostTier = 'free' | 'pro' | 'business'
+
+export interface UserBoostBalance {
+  balance: number
+  tier: BoostTier
+  monthly_grants_remaining: number
+}
+
+export interface BoostProduct {
+  id: string
+  credits: number
+  priceLabel: string
+  priceCents: number
+}
+
+export interface PostBoost {
+  id: string
+  post_id: string
+  boost_start: string
+  boost_end: string
+  boost_type: 'standard' | 'extended'
+  is_active: boolean
+}
+
 export type PostType =
   | 'tarvitsen'
   | 'tarjoan'
@@ -148,6 +172,7 @@ export interface Post {
   is_pro_listing: boolean
   tags: string[]
   is_active: boolean
+  is_boosted?: boolean
   is_urgent?: boolean
   urgency_hours?: number | null
   is_seed?: boolean

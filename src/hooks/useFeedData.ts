@@ -271,6 +271,29 @@ export function useFeedData() {
         })
       }
 
+      // Fetch active boosts for these posts
+      let boostedPostIds = new Set<string>()
+      if (newPosts.length > 0) {
+        try {
+          const postIds = newPosts.map(p => p.id)
+          const { data: boosts } = await supabase
+            .from('post_boosts')
+            .select('post_id')
+            .in('post_id', postIds)
+            .eq('is_active', true)
+            .lte('boost_start', new Date().toISOString())
+            .gte('boost_end', new Date().toISOString())
+          if (boosts) {
+            boostedPostIds = new Set(boosts.map((b: any) => b.post_id))
+            newPosts.forEach(p => {
+              (p as any).is_boosted = boostedPostIds.has(p.id)
+            })
+          }
+        } catch {
+          // post_boosts table may not exist yet — continue without boost data
+        }
+      }
+
       // Apply location privacy based on user's location_accuracy setting
       newPosts.forEach(p => {
         const accuracy = (p.user as any)?.location_accuracy
@@ -312,6 +335,7 @@ export function useFeedData() {
         userNeighborhood: userNeighborhood ?? null,
         followedIds,
         personalScores,
+        boostedPostIds,
       })
 
       if (reset) {

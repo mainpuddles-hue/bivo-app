@@ -28,6 +28,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
+import { useBoosts } from '@/hooks/useBoosts'
 import type { PostType, TrustLevel } from '@/lib/types'
 
 const POST_TAGS: Record<string, { id: string; label: string }[]> = {
@@ -126,6 +127,7 @@ export default function CreateScreen() {
   const [successNeighborhood, setSuccessNeighborhood] = useState<string | null>(null)
   const [successPostId, setSuccessPostId] = useState<string | null>(null)
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [boostPost, setBoostPost] = useState(false)
 
   // Handle pre-selected type from query params (e.g., from events screen)
   useEffect(() => {
@@ -167,6 +169,7 @@ export default function CreateScreen() {
   const trust = useTrustLevel(currentUserId)
   const identity = useIdentityVerification(currentUserId)
   const { suggestion: priceSuggestion } = usePriceSuggestion(selectedType, selectedTags, userNeighborhood)
+  const boosts = useBoosts(currentUserId)
 
   // Smart default: auto-populate location from user's neighborhood
   useEffect(() => {
@@ -209,6 +212,7 @@ export default function CreateScreen() {
               setExpirationDays(0)
               setIsAnonymous(false)
               setIsUrgent(false)
+              setBoostPost(false)
               setLatitude(null)
               setLongitude(null)
               setStep('category')
@@ -624,6 +628,12 @@ export default function CreateScreen() {
       setLatitude(null)
       setLongitude(null)
       setStep('category')
+
+      // Boost the post if requested
+      if (boostPost && createdPostId) {
+        await boosts.useBoostOnPost(createdPostId)
+        setBoostPost(false)
+      }
 
       // Show success celebration overlay before navigating
       setSuccessPostId(createdPostId)
@@ -1082,6 +1092,49 @@ export default function CreateScreen() {
             </>
           )}
 
+          {/* Boost toggle — gate behind FEATURES.BOOSTS */}
+          {FEATURES.BOOSTS && (
+            <View style={styles.boostSection}>
+              <View style={[styles.anonymousRow, { borderColor: boostPost ? colors.accent : colors.border }]}>
+                <View style={styles.anonymousInfo}>
+                  <TrendingUp size={16} color={boostPost ? colors.accent : colors.mutedForeground} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('boost.boostToggle')}</Text>
+                    <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('boost.boostHint')}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={boostPost}
+                  onValueChange={(val) => {
+                    if (val && boosts.balance <= 0) {
+                      Alert.alert(t('boost.title'), t('boost.noBalance'), [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        { text: t('boost.buyBoosts'), onPress: () => router.push('/boosts') },
+                      ])
+                      return
+                    }
+                    setBoostPost(val)
+                  }}
+                  trackColor={{ false: colors.muted, true: colors.accent }}
+                  thumbColor={colors.primaryForeground}
+                />
+              </View>
+              {boostPost && (
+                <View style={[styles.boostInfo, { backgroundColor: `${colors.accent}10` }]}>
+                  <Text style={[styles.boostInfoText, { color: colors.accent }]}>
+                    {boosts.balance === 1 ? t('boost.balanceOne') : t('boost.balance', { count: boosts.balance })}
+                  </Text>
+                </View>
+              )}
+              {!boostPost && boosts.balance <= 0 && (
+                <Pressable onPress={() => router.push('/boosts')} style={[styles.boostUpsell, { backgroundColor: `${colors.accent}10` }]}>
+                  <Text style={[styles.boostUpsellText, { color: colors.accent }]}>{t('boost.buyBoosts')}</Text>
+                  <ChevronRight size={14} color={colors.accent} />
+                </Pressable>
+              )}
+            </View>
+          )}
+
           {/* Submit */}
           <Pressable
             onPress={handleSubmit}
@@ -1373,6 +1426,11 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   urgencySection: { gap: 8 },
+  boostSection: { gap: 8 },
+  boostInfo: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  boostInfoText: { fontSize: 12, fontFamily: fonts.bodySemi },
+  boostUpsell: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 8, borderRadius: 8 },
+  boostUpsellText: { fontSize: 12, fontFamily: fonts.bodySemi },
   urgencyOptions: { flexDirection: 'row', gap: 10 },
   urgencyOption: {
     flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,

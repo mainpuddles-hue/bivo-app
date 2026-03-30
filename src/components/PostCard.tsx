@@ -18,8 +18,10 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import { haversineKm } from '@/lib/geo'
 import { TrustBadge } from '@/components/TrustBadge'
+import { BoostBadge } from '@/components/BoostBadge'
 import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import { isHumanAction } from '@/lib/abuseDetection'
+import { FEATURES } from '@/lib/featureFlags'
 import type { Post, PostType } from '@/lib/types'
 
 const APP_URL = 'https://tackbird.fi'
@@ -153,6 +155,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         { backgroundColor: colors.card },
         isDark ? cardShadowDark : cardShadow,
         category && { borderTopWidth: 2, borderTopColor: category.color + '99' },
+        post.is_boosted && FEATURES.BOOSTS && { borderLeftWidth: 3, borderLeftColor: colors.accent },
         isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: '#E8A050' },
         isUrgentPost && { borderWidth: 2, borderColor: colors.destructive },
         isPro && { borderWidth: 1.5, borderColor: colors.pro },
@@ -236,15 +239,18 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               </Pressable>
             )}
           </View>
-          {/* Category badge — top right */}
-          {category && (
-            <View style={[styles.categoryBadge, { backgroundColor: `${category.color}20` }]}>
-              <Text style={[styles.categoryBadgeText, { color: category.color }]}>
-                {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
-              </Text>
-              {isNew && <View style={[styles.newDot, { backgroundColor: colors.accent }]} />}
-            </View>
-          )}
+          {/* Category badge + boost badge — top right */}
+          <View style={styles.topRowRight}>
+            {post.is_boosted && FEATURES.BOOSTS && <BoostBadge />}
+            {category && (
+              <View style={[styles.categoryBadge, { backgroundColor: `${category.color}20` }]}>
+                <Text style={[styles.categoryBadgeText, { color: category.color }]}>
+                  {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
+                </Text>
+                {isNew && <View style={[styles.newDot, { backgroundColor: colors.accent }]} />}
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Image — full width, below user row */}
@@ -540,6 +546,7 @@ const styles = StyleSheet.create({
   // Top row: user + category badge
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   topRowLeft: { flex: 1, minWidth: 0 },
+  topRowRight: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
   topRowUserInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   userNameBlock: { flexShrink: 1, minWidth: 0 },
   userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },

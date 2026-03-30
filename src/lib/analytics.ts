@@ -12,6 +12,7 @@ type AnalyticsEvent =
   | 'onboarding_slide' | 'onboarding_city_selected' | 'onboarding_neighborhood_selected'
   | 'onboarding_invite_code' | 'onboarding_completed'
   | 'auth_register_start' | 'auth_register_success' | 'auth_login_success'
+  | 'boost_purchased' | 'boost_used' | 'boost_screen_viewed'
 
 interface EventProps {
   [key: string]: string | number | boolean | null

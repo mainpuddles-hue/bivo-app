@@ -9,4 +9,5 @@ export const FEATURES = {
   AD_CAMPAIGNS: false,   // Create ad campaigns
   IDENTITY_VERIFICATION: false, // Suomi.fi
   EVENTS_TAPAHTUMA_TYPE: true, // Tapahtuma post type (keep for now)
+  BOOSTS: true,  // Nosto-ominaisuus — IAP-pohjainen, aina päällä
 } as const

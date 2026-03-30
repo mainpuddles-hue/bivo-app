@@ -6,6 +6,7 @@ interface FeedContext {
   followedIds: string[]
   now?: number
   personalScores?: Map<string, number> // post_id -> personalization score from DB
+  boostedPostIds?: Set<string>
 }
 
 /**
@@ -55,19 +56,61 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   // Personalization: from collaborative filtering
   const personalScore = ctx.personalScores?.get(post.id) ?? 0
 
+  // Boost bonus: boosted posts get a flat 0.5 score bonus
+  const boostBonus = ctx.boostedPostIds?.has(post.id) ? 0.5 : 0
+
   // Weighted sum
-  return recency * 0.25 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15
+  return recency * 0.25 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15 + boostBonus
+}
+
+/**
+ * Limit boosted posts to max 2 in the top 10 positions.
+ * Excess boosted posts are pushed to position 11+.
+ */
+function enforceBoostedCap(posts: Post[], boostedIds: Set<string>): Post[] {
+  if (boostedIds.size === 0) return posts
+  const MAX_BOOSTED_IN_TOP = 2
+  const TOP_N = 10
+
+  const result = [...posts]
+  const top = result.slice(0, TOP_N)
+  const rest = result.slice(TOP_N)
+
+  let boostedCount = 0
+  const overflow: Post[] = []
+  const filtered: Post[] = []
+
+  for (const p of top) {
+    if (boostedIds.has(p.id)) {
+      boostedCount++
+      if (boostedCount > MAX_BOOSTED_IN_TOP) {
+        overflow.push(p)
+        continue
+      }
+    }
+    filtered.push(p)
+  }
+
+  // Insert overflow posts right after the top positions
+  return [...filtered, ...overflow, ...rest]
 }
 
 /**
  * Sort posts by relevance score, with Pro listings always first.
  */
 export function rankFeed(posts: Post[], ctx: FeedContext): Post[] {
-  return [...posts].sort((a, b) => {
+  const sorted = [...posts].sort((a, b) => {
     // Pro listings always on top
     if (a.is_pro_listing && !b.is_pro_listing) return -1
     if (!a.is_pro_listing && b.is_pro_listing) return 1
     // Then by score
     return scorePost(b, ctx) - scorePost(a, ctx)
   })
+
+  // Cap boosted posts in top positions to avoid feed domination
+  if (ctx.boostedPostIds && ctx.boostedPostIds.size > 0) {
+    return enforceBoostedCap(sorted, ctx.boostedPostIds)
+  }
+
+  return sorted
 }
