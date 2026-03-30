@@ -1,0 +1,9 @@
+module:
+  identifier: "trust_scores"
+  schema: "public"
+  table: "trust_scores"
+  metrics:
+    - identifier: "trust_scores"
+      name: "Trust Scores"
+      time: "trust_scores.updated_at"
+      calculation: "count"
