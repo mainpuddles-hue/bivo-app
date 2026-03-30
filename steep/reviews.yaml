@@ -1,0 +1,9 @@
+module:
+  identifier: "reviews"
+  schema: "public"
+  table: "reviews"
+  metrics:
+    - identifier: "total_reviews"
+      name: "Total Reviews"
+      time: "reviews.created_at"
+      calculation: "count"
