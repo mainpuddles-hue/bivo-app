@@ -1,0 +1,25 @@
+module:
+  identifier: "profiles"
+  schema: "public"
+  table: "profiles"
+  metrics:
+    - identifier: "business_users"
+      name: "Business Users"
+      time: "profiles.created_at"
+      calculation: "count"
+      filters:
+        - column: "is_business"
+          operator: "equals"
+          expression: "true"
+    - identifier: "new_users"
+      name: "New Users"
+      time: "profiles.created_at"
+      calculation: "count"
+    - identifier: "pro_users"
+      name: "Pro Users"
+      time: "profiles.created_at"
+      calculation: "count"
+      filters:
+        - column: "is_pro"
+          operator: "equals"
+          expression: "true"
