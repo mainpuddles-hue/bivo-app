@@ -1,0 +1,4 @@
+module:
+  identifier: "steep_targets"
+  schema: "public"
+  table: "steep_targets"
