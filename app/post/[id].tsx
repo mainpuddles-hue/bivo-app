@@ -346,6 +346,22 @@ function PostDetailScreenInner() {
     shareContent({ title: post.title, text: post.title, url: `https://tackbird.fi/post/${post.id}` })
   }
 
+  // Expiration info — must be before any early returns (React hooks rules)
+  const expirationInfo = useMemo(() => {
+    if (!post?.expires_at) return null
+    const now = new Date()
+    const expires = new Date(post.expires_at)
+    if (isNaN(expires.getTime())) return null
+    const diffMs = expires.getTime() - now.getTime()
+    if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
+    const diffHours = diffMs / 3600000
+    if (diffHours < 24) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
+    const diffDays = Math.ceil(diffMs / 86400000)
+    if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
+    if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
+    return null
+  }, [post?.expires_at, t])
+
   const isAuthor = userId != null && post?.user_id === userId
   const boosts = useBoosts(userId)
   const [boosting, setBoosting] = useState(false)
@@ -705,21 +721,7 @@ function PostDetailScreenInner() {
   const userTrustLevel = computeTrustLevelFromBadges(user?.user_badges)
   const allImages = [post.image_url, ...(post.images ?? []).map(i => i.image_url)].filter(Boolean) as string[]
 
-  // Expiration info — same logic as PostCard
-  const expirationInfo = useMemo(() => {
-    if (!post.expires_at) return null
-    const now = new Date()
-    const expires = new Date(post.expires_at)
-    if (isNaN(expires.getTime())) return null
-    const diffMs = expires.getTime() - now.getTime()
-    if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
-    const diffHours = diffMs / 3600000
-    if (diffHours < 24) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
-    const diffDays = Math.ceil(diffMs / 86400000)
-    if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
-    if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
-    return null
-  }, [post.expires_at, t])
+  // expirationInfo moved before early returns (React hooks rules)
 
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
