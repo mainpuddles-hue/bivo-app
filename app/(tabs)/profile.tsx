@@ -176,7 +176,11 @@ export default function ProfileScreen() {
     }
   }, [supabase, t])
 
-  useEffect(() => { loadProfile() }, [loadProfile])
+  useEffect(() => {
+    let cancelled = false
+    loadProfile().then(() => { if (cancelled) return })
+    return () => { cancelled = true }
+  }, [loadProfile])
 
   const ALLOWED_AVATAR_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
   const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB

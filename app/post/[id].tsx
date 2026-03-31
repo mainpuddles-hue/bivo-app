@@ -153,7 +153,11 @@ function PostDetailScreenInner() {
     setRefreshing(false)
   }, [id, supabase])
 
-  useEffect(() => { loadPost() }, [loadPost])
+  useEffect(() => {
+    let cancelled = false
+    loadPost().then(() => { if (cancelled) return })
+    return () => { cancelled = true }
+  }, [loadPost])
 
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
