@@ -91,8 +91,9 @@ function enforceBoostedCap(posts: Post[], boostedIds: Set<string>): Post[] {
     filtered.push(p)
   }
 
-  // Insert overflow posts right after the top positions
-  return [...filtered, ...overflow, ...rest]
+  // Pad filtered back to TOP_N with non-boosted posts from rest, then append overflow after
+  const filler = rest.splice(0, TOP_N - filtered.length)
+  return [...filtered, ...filler, ...overflow, ...rest]
 }
 
 /**
