@@ -6,8 +6,11 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+function getEnvOrThrow(key: string): string {
+  const val = Deno.env.get(key)
+  if (!val) throw new Error(`Missing env var: ${key}`)
+  return val
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -129,7 +132,17 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json()
+    const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
+    const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
+
+    let body
+    try {
+      body = await req.json()
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     const { title, description, post_id, user_id } = body
 
     if (!title && !description) {

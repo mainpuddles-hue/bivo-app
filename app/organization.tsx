@@ -229,6 +229,10 @@ export default function OrganizationScreen() {
       if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat)
         const lng = parseFloat(data[0].lon)
+        if (isNaN(lat) || isNaN(lng)) {
+          Alert.alert(t('common.error'), t('business.geocodeFail'))
+          return
+        }
         setBusinessLat(lat)
         setBusinessLng(lng)
         Alert.alert(t('business.geocodeSuccess'), `${lat.toFixed(5)}, ${lng.toFixed(5)}`)

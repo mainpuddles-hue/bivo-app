@@ -149,11 +149,15 @@ export default function SettingsScreen() {
     if (!profile) return
     setSaving(true)
     try {
-      await (supabase.from('profiles') as any).update({
+      const { error: saveError } = await (supabase.from('profiles') as any).update({
         profile_visibility: visibility,
         location_accuracy: locationAccuracy,
         notifications_enabled: notifPrefs.preferences.messages,
       }).eq('id', profile.id)
+      if (saveError) {
+        Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
+        return
+      }
       setDirty(false)
       Alert.alert(t('common.success'), t('settings.settingsSaved'))
     } catch {
@@ -165,7 +169,11 @@ export default function SettingsScreen() {
     if (!profile || !nameText.trim()) return
     setSavingName(true)
     try {
-      await (supabase.from('profiles') as any).update({ name: nameText.trim() }).eq('id', profile.id)
+      const { error: nameError } = await (supabase.from('profiles') as any).update({ name: nameText.trim() }).eq('id', profile.id)
+      if (nameError) {
+        Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
+        return
+      }
       setProfile(prev => prev ? { ...prev, name: nameText.trim() } : null)
       setEditingName(false)
       Alert.alert(t('common.success'), t('settings.settingsSaved'))

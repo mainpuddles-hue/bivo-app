@@ -84,15 +84,18 @@ function ConversationScreenInner() {
   // self-conversations at creation time (in post/[id].tsx) or display a "notes to
   // self" UI instead of a broken "unknown user" state.
   useEffect(() => {
+    let cancelled = false
     async function load() {
       setLoading(true)
       setNotFound(false)
 
       const { data: { user } } = await supabase.auth.getUser()
+      if (cancelled) return
       if (!user) { setLoading(false); setNotFound(true); return }
       setUserId(user.id)
 
       const { data: conv } = await supabase.from('conversations').select('*').eq('id', id).single()
+      if (cancelled) return
       if (!conv) {
         setNotFound(true)
         setLoading(false)
@@ -101,6 +104,7 @@ function ConversationScreenInner() {
 
       const otherId = (conv as any).user1_id === user.id ? (conv as any).user2_id : (conv as any).user1_id
       const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).single()
+      if (cancelled) return
       if (profile) {
         setOtherUser(profile as unknown as Profile)
       } else {
@@ -115,6 +119,7 @@ function ConversationScreenInner() {
           .select('id, title, type, image_url')
           .eq('id', (conv as any).post_id)
           .single()
+        if (cancelled) return
         if (postData) setLinkedPost(postData as any)
       }
 
@@ -124,6 +129,7 @@ function ConversationScreenInner() {
         .eq('conversation_id', id)
         .order('created_at', { ascending: false })
         .limit(PAGE_SIZE)
+      if (cancelled) return
       const sorted = (msgs ?? []).reverse() as Message[]
       setMessages(sorted)
       setHasOlder((msgs ?? []).length >= PAGE_SIZE)
@@ -137,6 +143,7 @@ function ConversationScreenInner() {
             .from('message_reactions')
             .select('*')
             .in('message_id', msgIds)
+          if (cancelled) return
           if (rxns) {
             const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
             for (const r of rxns as any[]) {
@@ -152,12 +159,14 @@ function ConversationScreenInner() {
       }
 
       // Mark as read
-      await (supabase.from('messages') as any).update({ is_read: true })
-        .eq('conversation_id', id)
-        .neq('sender_id', user.id)
-        .eq('is_read', false)
+      if (!cancelled) {
+        await (supabase.from('messages') as any).update({ is_read: true })
+          .eq('conversation_id', id)
+          .neq('sender_id', user.id)
+          .eq('is_read', false)
+      }
 
-      setLoading(false)
+      if (!cancelled) setLoading(false)
     }
     if (id && isValidUUID(id)) {
       load()
@@ -166,6 +175,7 @@ function ConversationScreenInner() {
       setLoading(false)
       setNotFound(true)
     }
+    return () => { cancelled = true }
   }, [id, supabase])
 
   // Realtime messages
@@ -178,10 +188,12 @@ function ConversationScreenInner() {
         filter: `conversation_id=eq.${id}`,
       }, (payload) => {
         const newMsg = payload.new as Message
+        const MAX_MESSAGES = 500
         setMessages(prev => {
           // Deduplicate: skip if message already exists (e.g., from reconnect replay)
           if (prev.some(m => m.id === newMsg.id)) return prev
-          return [...prev, newMsg]
+          const next = [...prev, newMsg]
+          return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next
         })
         // Auto-mark as read if from other user
         if (newMsg.sender_id !== userId) {

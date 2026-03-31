@@ -129,7 +129,7 @@ export default function ProfileScreen() {
       const allRevs = (revs ?? []) as any[]
       setReviews(allRevs.slice(0, 10) as unknown as Review[])
       if (allRevs.length > 0) {
-        const avg = allRevs.reduce((sum: number, r: any) => sum + r.rating, 0) / allRevs.length
+        const avg = allRevs.reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / allRevs.length
         setAvgRating(Math.round(avg * 10) / 10)
       }
 

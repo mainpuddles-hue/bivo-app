@@ -4,8 +4,11 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+function getEnvOrThrow(key: string): string {
+  const val = Deno.env.get(key)
+  if (!val) throw new Error(`Missing env var: ${key}`)
+  return val
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -57,6 +60,9 @@ serve(async (req) => {
 
   try {
     // ── Auth check ─────────────────────────────────────────────
+    const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
+    const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
+
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -88,7 +94,14 @@ serve(async (req) => {
       rateLimitMap.set(user.id, { count: 1, windowStart: now })
     }
 
-    const body = await req.json()
+    let body
+    try {
+      body = await req.json()
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     const { to_email, template, data } = body
 
     if (!to_email || !template || !TEMPLATES[template]) {
@@ -100,7 +113,7 @@ serve(async (req) => {
     const { subject, html } = TEMPLATES[template](data ?? {})
 
     // Send via Resend API
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')!
+    const resendApiKey = getEnvOrThrow('RESEND_API_KEY')
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },

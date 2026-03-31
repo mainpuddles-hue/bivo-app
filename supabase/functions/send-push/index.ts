@@ -12,8 +12,11 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+function getEnvOrThrow(key: string): string {
+  const val = Deno.env.get(key)
+  if (!val) throw new Error(`Missing env var: ${key}`)
+  return val
+}
 
 // Expo push notification API
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
@@ -118,8 +121,18 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
+    const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    const body = await req.json()
+
+    let body
+    try {
+      body = await req.json()
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      })
+    }
     const { user_id, title, body: pushBody, type, data, post_id } = body as PushPayload
 
     if (!user_id || !title || !pushBody || !type) {

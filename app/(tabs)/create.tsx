@@ -420,7 +420,8 @@ export default function CreateScreen() {
         image_url: url,
         sort_order: idx + 1,
       }))
-      await (supabase.from('post_images') as any).insert(extras)
+      const { error: imgError } = await (supabase.from('post_images') as any).insert(extras)
+      if (imgError) console.error('[create] post_images insert failed:', imgError.message)
     }
 
     if (failedCount > 0 && uploadedUrls.length > 0) {
@@ -581,7 +582,8 @@ export default function CreateScreen() {
       if (images.length > 0 && post?.id) {
         const mainImageUrl = await uploadImages(user.id, post.id)
         if (mainImageUrl) {
-          await (supabase.from('posts') as any).update({ image_url: mainImageUrl }).eq('id', post.id)
+          const { error: imgUrlError } = await (supabase.from('posts') as any).update({ image_url: mainImageUrl }).eq('id', post.id)
+          if (imgUrlError) console.error('[create] image_url update failed:', imgUrlError.message)
         } else {
           // ALL image uploads failed — ask user whether to keep post without images or retry
           const userChoice = await new Promise<'publish' | 'retry'>(resolve => {
@@ -619,7 +621,7 @@ export default function CreateScreen() {
 
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
 
-        await (supabase.from('events') as any).insert({
+        const { error: eventError } = await (supabase.from('events') as any).insert({
           post_id: post.id,
           creator_id: user.id,
           title: title.trim(),
@@ -631,6 +633,10 @@ export default function CreateScreen() {
           max_attendees: (maxAtt && maxAtt > 0) ? maxAtt : null,
           icon: 'CalendarDays',
         })
+        if (eventError) {
+          console.error('[create] event insert failed:', eventError.message)
+          Alert.alert(t('common.error'), t('create.eventCreateFailed') ?? 'Event creation failed')
+        }
       }
 
       // Award points for creating a post

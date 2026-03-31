@@ -249,10 +249,13 @@ function EventDetailScreenInner() {
 
   // Format event time
   const eventDate = new Date(event.event_date)
-  const timeStr = eventDate.toLocaleTimeString(locale === 'en' ? 'en-GB' : locale === 'sv' ? 'sv-SE' : 'fi-FI', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const isValidDate = !isNaN(eventDate.getTime())
+  const timeStr = isValidDate
+    ? eventDate.toLocaleTimeString(locale === 'en' ? 'en-GB' : locale === 'sv' ? 'sv-SE' : 'fi-FI', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '--:--'
 
   // Participants text
   const participantsText = event.max_participants

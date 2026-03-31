@@ -90,7 +90,7 @@ function groupByTime(items: PrioritizedNotification[], t: (k: string) => string)
 
 /** Build grouped notification display text */
 function getGroupedTitle(item: PrioritizedNotification, t: (k: string, p?: Record<string, string | number>) => string): string {
-  if (!item.isGrouped || !item.groupCount || item.groupCount <= 1) return item.title
+  if (!item.isGrouped || !item.groupCount || item.groupCount <= 1) return item.title ?? ''
 
   const firstName = item.groupNames?.[0] ?? item.from_user?.name ?? '?'
   const othersCount = item.groupCount - 1
@@ -100,7 +100,7 @@ function getGroupedTitle(item: PrioritizedNotification, t: (k: string, p?: Recor
   }
 
   // Generic grouped: "Name and N others"
-  return `${firstName} ${t('notifications.andOthers', { count: othersCount })} — ${item.title}`
+  return `${firstName} ${t('notifications.andOthers', { count: othersCount })} — ${item.title ?? ''}`
 }
 
 function NotificationSkeleton() {

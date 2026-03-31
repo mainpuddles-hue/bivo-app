@@ -7,10 +7,11 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.14.0?target=deno'
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-04-10' })
-const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+function getEnvOrThrow(key: string): string {
+  const val = Deno.env.get(key)
+  if (!val) throw new Error(`Missing env var: ${key}`)
+  return val
+}
 
 serve(async (req) => {
   // Webhook endpoint is server-to-server only — reject OPTIONS (no browser should call this)
@@ -19,6 +20,11 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
+    const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
+    const stripe = new Stripe(getEnvOrThrow('STRIPE_SECRET_KEY'), { apiVersion: '2024-04-10' })
+    const webhookSecret = getEnvOrThrow('STRIPE_WEBHOOK_SECRET')
+
     // Verify Stripe webhook signature
     const body = await req.text()
     const signature = req.headers.get('stripe-signature')

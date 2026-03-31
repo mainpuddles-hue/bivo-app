@@ -6,9 +6,11 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const hfToken = Deno.env.get('HF_API_TOKEN') // Optional — works without for small volume
+function getEnvOrThrow(key: string): string {
+  const val = Deno.env.get(key)
+  if (!val) throw new Error(`Missing env var: ${key}`)
+  return val
+}
 
 const EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
 const HF_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${EMBEDDING_MODEL}`

@@ -144,7 +144,7 @@ export default function PublicProfileScreen() {
     setReviews(revsList)
     setTotalReviewCount(revsList.length)
     if (revsList.length > 0) {
-      const avg = (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length
+      const avg = (revsList as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / revsList.length
       setAvgRating(Math.round(avg * 10) / 10)
       // Compute rating distribution
       const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
@@ -714,7 +714,7 @@ export default function PublicProfileScreen() {
                   const revsList = data as unknown as Review[]
                   setReviews(revsList)
                   setTotalReviewCount(revsList.length)
-                  const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length : 0
+                  const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / revsList.length : 0
                   setAvgRating(Math.round(avg * 10) / 10)
                   const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
                   for (const r of revsList as any[]) {
@@ -1017,7 +1017,7 @@ export default function PublicProfileScreen() {
                 const revsList = data as unknown as Review[]
                 setReviews(revsList)
                 setTotalReviewCount(revsList.length)
-                const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + r.rating, 0) / revsList.length : 0
+                const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / revsList.length : 0
                 setAvgRating(Math.round(avg * 10) / 10)
                 const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
                 for (const r of revsList as any[]) {

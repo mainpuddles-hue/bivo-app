@@ -6,8 +6,11 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+function getEnvOrThrow(key: string): string {
+  const val = Deno.env.get(key)
+  if (!val) throw new Error(`Missing env var: ${key}`)
+  return val
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://tackbird.fi',
@@ -23,6 +26,9 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
+    const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
+
     // ── Auth: require cron secret or admin JWT ─────────────────
     const cronSecret = req.headers.get('x-cron-secret')
     const expectedSecret = Deno.env.get('CRON_SECRET')

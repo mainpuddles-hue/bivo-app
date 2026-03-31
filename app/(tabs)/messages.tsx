@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -36,16 +36,21 @@ export default function MessagesScreen() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showArchived, setShowArchived] = useState(false)
   const [pinnedIds, setPinnedIds] = useState<string[]>([])
+  const mountedRef = useRef(true)
+  useEffect(() => { return () => { mountedRef.current = false } }, [])
 
   // Load pinned conversations from AsyncStorage
   useEffect(() => {
+    let cancelled = false
     async function loadPinned() {
       try {
         const stored = await AsyncStorage.getItem(PINNED_KEY)
+        if (cancelled) return
         if (stored) setPinnedIds(JSON.parse(stored))
       } catch {}
     }
     loadPinned()
+    return () => { cancelled = true }
   }, [])
 
   const savePinnedIds = useCallback(async (ids: string[]) => {
@@ -62,14 +67,18 @@ export default function MessagesScreen() {
   }, [pinnedIds, savePinnedIds])
 
   const fetchConversations = useCallback(async () => {
+    if (!mountedRef.current) return
     try {
     const { data: { user } } = await supabase.auth.getUser()
+    if (!mountedRef.current) return
     if (!user) { setLoading(false); setRefreshing(false); return }
     setUserId(user.id)
     if (!isValidUUID(user.id)) { setLoading(false); setRefreshing(false); return }
 
     // Single RPC call replaces N+1 queries (1 conversations + 2N messages queries)
     const { data, error: rpcError } = await (supabase.rpc as any)('get_conversations_with_details', { p_user_id: user.id })
+
+    if (!mountedRef.current) return
 
     if (rpcError) {
       // Fallback: if RPC doesn't exist yet, use legacy query
@@ -81,6 +90,8 @@ export default function MessagesScreen() {
           .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
           .order('updated_at', { ascending: false })
           .limit(50)
+
+        if (!mountedRef.current) return
 
         const fallbackConvs = (fallbackData ?? []).map((row: any) => {
           const isUser1 = row.user1_id === user.id
@@ -110,8 +121,7 @@ export default function MessagesScreen() {
       } catch {
         // Both RPC and fallback failed — show empty state
       }
-      setLoading(false)
-      setRefreshing(false)
+      if (mountedRef.current) { setLoading(false); setRefreshing(false) }
       return
     }
 
@@ -146,8 +156,7 @@ export default function MessagesScreen() {
     setLoading(false)
     setRefreshing(false)
     } catch {
-      setLoading(false)
-      setRefreshing(false)
+      if (mountedRef.current) { setLoading(false); setRefreshing(false) }
     }
   }, [supabase])
 
