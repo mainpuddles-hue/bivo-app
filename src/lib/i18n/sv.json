@@ -100,7 +100,12 @@
     "todayIn": "Idag i {area}:",
     "newListings": "nya annonser",
     "eventsTomorrow": "evenemang imorgon",
-    "newDiscussions": "nya diskussioner"
+    "newDiscussions": "nya diskussioner",
+    "sort": "Sortera",
+    "sortNewest": "Nyaste",
+    "sortPopular": "Mest populär",
+    "sortNearest": "Närmaste",
+    "sortCheapest": "Billigaste"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",

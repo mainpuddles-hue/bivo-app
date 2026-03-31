@@ -13,9 +13,11 @@ import { getSeedPosts } from '@/lib/seedContent'
 import { rankFeed } from '@/lib/feedAlgorithm'
 import { getCachedUserId } from '@/lib/authCache'
 import { FEATURES } from '@/lib/featureFlags'
+import { haversineKm } from '@/lib/geo'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type { PostType }
+export type FeedSortBy = 'newest' | 'popular' | 'nearest' | 'cheapest'
 
 const PAGE_SIZE = 20
 const FEED_CACHE_KEY = 'tackbird_feed_cache'
@@ -29,6 +31,7 @@ export function useFeedData() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
+  const [sortBy, setSortBy] = useState<FeedSortBy>('newest')
   const [hasMore, setHasMore] = useState(true)
   const [hasNewPosts, setHasNewPosts] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -234,8 +237,18 @@ export function useFeedData() {
         .eq('is_active', true)
         .or('expires_at.is.null,expires_at.gt.now()')
         .order('is_pro_listing', { ascending: false })
-        .order('created_at', { ascending: false })
-        .range(offset, offset + PAGE_SIZE - 1)
+
+      // Apply sort order based on sortBy state
+      if (sortBy === 'popular') {
+        query = query.order('like_count', { ascending: false })
+      } else if (sortBy === 'cheapest') {
+        query = query.order('service_price', { ascending: true, nullsFirst: false })
+      } else {
+        // 'newest' and 'nearest' both fetch by created_at (nearest sorts client-side)
+        query = query.order('created_at', { ascending: false })
+      }
+
+      query = query.range(offset, offset + PAGE_SIZE - 1)
 
       if (activeFilter) query = query.eq('type', activeFilter)
       if (showFollowing && followedIds.length > 0) {
@@ -331,12 +344,26 @@ export function useFeedData() {
       }
 
       // Client-side relevance ranking
-      const ranked = rankFeed(newPosts, {
+      let ranked = rankFeed(newPosts, {
         userNeighborhood: userNeighborhood ?? null,
         followedIds,
         personalScores,
         boostedPostIds,
       })
+
+      // Client-side sort by distance when sortBy === 'nearest'
+      if (sortBy === 'nearest' && userLocation) {
+        const { latitude: uLat, longitude: uLng } = userLocation
+        ranked = [...ranked].sort((a, b) => {
+          const distA = a.latitude != null && a.longitude != null
+            ? haversineKm(uLat, uLng, a.latitude, a.longitude)
+            : Infinity
+          const distB = b.latitude != null && b.longitude != null
+            ? haversineKm(uLat, uLng, b.latitude, b.longitude)
+            : Infinity
+          return distA - distB
+        })
+      }
 
       if (reset) {
         if (ranked.length === 0) {
@@ -370,7 +397,7 @@ export function useFeedData() {
         setRefreshing(false)
       }
     }
-  }, [supabase, activeFilter, showFollowing, followedIds, t, currentUserId, userNeighborhood])
+  }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userNeighborhood, userLocation])
 
   // Ref to avoid stale closures in useFocusEffect and realtime callbacks
   const fetchPostsRef = useRef(fetchPosts)
@@ -435,6 +462,14 @@ export function useFeedData() {
     setLoading(true)
   }, [])
 
+  const handleSortChange = useCallback((sort: FeedSortBy) => {
+    setSortBy(sort)
+    setPosts([])
+    offsetRef.current = 0
+    setHasMore(true)
+    setLoading(true)
+  }, [])
+
   const handleNeighborhoodSelect = useCallback(async (nh: string) => {
     setUserNeighborhood(nh)
     setShowNeighborhoodPicker(false)
@@ -456,12 +491,14 @@ export function useFeedData() {
     hasNewPosts,
     error,
     activeFilter,
+    sortBy,
     showFollowing,
 
     // Actions
     handleRefresh,
     handleLoadMore,
     handleFilterChange,
+    handleSortChange,
     setShowFollowing,
 
     // User

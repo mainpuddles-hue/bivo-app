@@ -100,7 +100,12 @@
     "todayIn": "Сегодня в {area}:",
     "newListings": "новых объявлений",
     "eventsTomorrow": "событий завтра",
-    "newDiscussions": "новых обсуждений"
+    "newDiscussions": "новых обсуждений",
+    "sort": "Сортировка",
+    "sortNewest": "Новейшие",
+    "sortPopular": "Популярные",
+    "sortNearest": "Ближайшие",
+    "sortCheapest": "Дешевле"
   },
   "streak": {
     "milestone3": "3 дня подряд! Вы активный сосед.",

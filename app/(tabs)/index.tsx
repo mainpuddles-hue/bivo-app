@@ -3,13 +3,13 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIn
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, Trophy, X as XIcon, CalendarDays, MessageCircle, ChevronRight } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, Trophy, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { useFeedData } from '@/hooks/useFeedData'
+import { useFeedData, type FeedSortBy } from '@/hooks/useFeedData'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useSmartMatch } from '@/hooks/useSmartMatch'
 import { useStreak } from '@/hooks/useStreak'
@@ -134,6 +134,20 @@ function FeedScreenInner() {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     feed.handleFilterChange(type)
   }, [feed.handleFilterChange])
+
+  // Wrap sort change with haptic feedback
+  const handleSortChangeWithHaptics = useCallback((sort: FeedSortBy) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    feed.handleSortChange(sort)
+  }, [feed.handleSortChange])
+
+  // Sort options
+  const SORT_OPTIONS: { key: FeedSortBy; label: string }[] = useMemo(() => [
+    { key: 'newest', label: t('feed.sortNewest') },
+    { key: 'popular', label: t('feed.sortPopular') },
+    { key: 'nearest', label: t('feed.sortNearest') },
+    { key: 'cheapest', label: t('feed.sortCheapest') },
+  ], [t])
 
   // ── Ads in feed ──
   const [activeAds, setActiveAds] = useState<Ad[]>([])
@@ -537,6 +551,31 @@ function FeedScreenInner() {
               </Text>
             </Pressable>
           )}
+          {/* Sort divider + chips */}
+          <View style={[styles.sortDivider, { backgroundColor: colors.border }]} />
+          <ArrowUpDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
+          {SORT_OPTIONS.map(opt => {
+            const isActive = feed.sortBy === opt.key
+            return (
+              <Pressable
+                key={opt.key}
+                onPress={() => handleSortChangeWithHaptics(opt.key)}
+                accessibilityLabel={`${t('feed.sort')}: ${opt.label}`}
+                accessibilityState={{ selected: isActive }}
+                style={[
+                  styles.sortChip,
+                  isActive
+                    ? { backgroundColor: colors.primary }
+                    : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: `${colors.border}80` },
+                ]}
+              >
+                <Text style={[
+                  styles.sortChipText,
+                  { color: isActive ? colors.primaryForeground : colors.mutedForeground },
+                ]}>{opt.label}</Text>
+              </Pressable>
+            )
+          })}
         </ScrollView>
       </View>
 
@@ -597,6 +636,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start', minHeight: 40,
   },
   followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  sortDivider: { width: 1, height: 20, borderRadius: 0.5, marginHorizontal: 2, alignSelf: 'center' },
+  sortChip: {
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center', minHeight: 30,
+  },
+  sortChipText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
   sectionBar: { width: 3, height: 16, borderRadius: 1.5 },
   sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },

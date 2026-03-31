@@ -100,7 +100,12 @@
     "todayIn": "Tänään {area}ssa:",
     "newListings": "uutta ilmoitusta",
     "eventsTomorrow": "tapahtumaa huomenna",
-    "newDiscussions": "uutta keskustelua"
+    "newDiscussions": "uutta keskustelua",
+    "sort": "Lajittele",
+    "sortNewest": "Uusin",
+    "sortPopular": "Suosituin",
+    "sortNearest": "Lähin",
+    "sortCheapest": "Halvin"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",

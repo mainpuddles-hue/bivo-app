@@ -100,7 +100,12 @@
     "todayIn": "Today in {area}:",
     "newListings": "new listings",
     "eventsTomorrow": "events tomorrow",
-    "newDiscussions": "new discussions"
+    "newDiscussions": "new discussions",
+    "sort": "Sort",
+    "sortNewest": "Newest",
+    "sortPopular": "Most popular",
+    "sortNearest": "Nearest",
+    "sortCheapest": "Cheapest"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",

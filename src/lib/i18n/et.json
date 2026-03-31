@@ -100,7 +100,12 @@
     "todayIn": "Täna {area}s:",
     "newListings": "uut kuulutust",
     "eventsTomorrow": "sündmust homme",
-    "newDiscussions": "uut arutelu"
+    "newDiscussions": "uut arutelu",
+    "sort": "Sorteeri",
+    "sortNewest": "Uusim",
+    "sortPopular": "Populaarseim",
+    "sortNearest": "Lähim",
+    "sortCheapest": "Odavaim"
   },
   "streak": {
     "milestone3": "3 päeva järjest! Oled aktiivne naaber.",
