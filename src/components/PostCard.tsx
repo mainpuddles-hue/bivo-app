@@ -309,8 +309,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           </Text>
         ) : null}
 
-        {/* Location + price */}
-        {(post.daily_fee != null || post.service_price != null || post.location) && (
+        {/* Location + price + condition */}
+        {(post.daily_fee != null || post.service_price != null || post.location || (post.type === 'tarjoan' && post.tags?.includes('tarjoan_item'))) && (
           <View style={styles.metaRow}>
             {post.daily_fee != null && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? '#2D2010' : '#FDF6E8' }]}>
@@ -319,10 +319,29 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 </Text>
               </View>
             )}
-            {post.service_price != null && (
+            {post.service_price != null && post.service_price > 0 && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }]}>
                 <Text style={[styles.priceText, { color: '#7C5CBF' }]}>
                   {formatPrice(post.service_price, locale)}
+                </Text>
+              </View>
+            )}
+            {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price == null || post.service_price === 0) && (
+              <View style={[styles.priceBadge, { backgroundColor: isDark ? '#101A2D' : '#EBF2FE' }]}>
+                <Text style={[styles.priceText, { color: '#3B7DD8' }]}>
+                  {t('create.freeItem')}
+                </Text>
+              </View>
+            )}
+            {post.type === 'tarjoan' && post.tags?.some(tag => tag.startsWith('condition_')) && (
+              <View style={[styles.conditionBadge, { backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }]}>
+                <Text style={[styles.conditionBadgeText, { color: '#7C5CBF' }]}>
+                  {(() => {
+                    const condTag = post.tags?.find(tag => tag.startsWith('condition_'))
+                    if (!condTag) return ''
+                    const condKey = 'create.condition' + condTag.replace('condition_', '').charAt(0).toUpperCase() + condTag.replace('condition_', '').slice(1)
+                    return t(condKey)
+                  })()}
                 </Text>
               </View>
             )}
@@ -607,6 +626,8 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14.3, fontFamily: fonts.bodySemi },
+  conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  conditionBadgeText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
 

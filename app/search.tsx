@@ -5,8 +5,7 @@ import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet, Act
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, Star, Trash2, Heart, ChevronDown, ChevronUp, Navigation, DollarSign, Calendar, CalendarDays, Users } from 'lucide-react-native'
-import * as Location from 'expo-location'
+import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, Star, Trash2, Heart, ChevronDown, CalendarDays, Users } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SearchSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -37,8 +36,6 @@ const MAX_HISTORY = 5
 const MAX_RECENT = 8
 
 type TimeFilter = 'all' | 'today' | 'week' | 'month'
-
-type DistanceFilter = 'all' | '1' | '3' | '5'
 
 interface SavedSearch {
   id: string
@@ -301,96 +298,11 @@ function SearchScreenInner() {
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
 
-  // Inline quick-filter state
-  const [inlineFiltersExpanded, setInlineFiltersExpanded] = useState(false)
-  const [inlinePriceMin, setInlinePriceMin] = useState('')
-  const [inlinePriceMax, setInlinePriceMax] = useState('')
-  const [distanceFilter, setDistanceFilter] = useState<DistanceFilter>('all')
-  const [dateFilter, setDateFilter] = useState<TimeFilter>('all')
-  const [userLat, setUserLat] = useState<number | null>(null)
-  const [userLng, setUserLng] = useState<number | null>(null)
-
   // Debounce + abort refs
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
   const filterCount = useMemo(() => countActiveFilters(filters), [filters])
-
-  // Count inline quick-filters that are active
-  const inlineFilterCount = useMemo(() => {
-    let count = 0
-    if (inlinePriceMin) count++
-    if (inlinePriceMax) count++
-    if (distanceFilter !== 'all') count++
-    if (dateFilter !== 'all') count++
-    return count
-  }, [inlinePriceMin, inlinePriceMax, distanceFilter, dateFilter])
-
-  // Request user location for distance filter
-  const requestLocation = useCallback(async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync()
-      if (status !== 'granted') return
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-      setUserLat(loc.coords.latitude)
-      setUserLng(loc.coords.longitude)
-    } catch {}
-  }, [])
-
-  // Apply inline quick-filters client-side to results
-  const applyInlineFilters = useCallback((posts: Post[]): Post[] => {
-    let filtered = posts
-
-    // Price filter
-    const minP = inlinePriceMin ? parseFloat(inlinePriceMin) : null
-    const maxP = inlinePriceMax ? parseFloat(inlinePriceMax) : null
-    if (minP != null && !isNaN(minP)) {
-      filtered = filtered.filter(p => {
-        const price = (p as any).daily_fee ?? (p as any).service_price ?? 0
-        return price >= minP
-      })
-    }
-    if (maxP != null && !isNaN(maxP)) {
-      filtered = filtered.filter(p => {
-        const price = (p as any).daily_fee ?? (p as any).service_price ?? 0
-        return price <= maxP
-      })
-    }
-
-    // Distance filter
-    if (distanceFilter !== 'all' && userLat != null && userLng != null) {
-      const maxKm = parseFloat(distanceFilter)
-      filtered = filtered.filter(p => {
-        if (p.latitude == null || p.longitude == null) return false
-        const dist = haversineKm(userLat, userLng, p.latitude, p.longitude)
-        return dist <= maxKm
-      })
-    }
-
-    // Date filter
-    if (dateFilter !== 'all') {
-      const now = new Date()
-      let cutoff: Date
-      if (dateFilter === 'today') {
-        cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      } else if (dateFilter === 'week') {
-        cutoff = new Date(now)
-        cutoff.setDate(cutoff.getDate() - 7)
-        cutoff.setHours(0, 0, 0, 0)
-      } else {
-        // month
-        cutoff = new Date(now)
-        cutoff.setMonth(cutoff.getMonth() - 1)
-        cutoff.setHours(0, 0, 0, 0)
-      }
-      filtered = filtered.filter(p => new Date(p.created_at) >= cutoff)
-    }
-
-    return filtered
-  }, [inlinePriceMin, inlinePriceMax, distanceFilter, dateFilter, userLat, userLng])
-
-  // Filtered results after inline filters
-  const displayResults = useMemo(() => applyInlineFilters(results), [results, applyInlineFilters])
 
   // Load trending posts
   useEffect(() => {
@@ -1006,131 +918,13 @@ function SearchScreenInner() {
         </View>
       )}
 
-      {/* Inline quick-filters toggle + panel */}
-      {searched && (
-        <View style={[s.inlineFilterSection, { borderBottomColor: colors.border }]}>
-          <Pressable
-            onPress={() => {
-              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-              setInlineFiltersExpanded(prev => !prev)
-            }}
-            style={[s.inlineFilterToggle, { backgroundColor: inlineFilterCount > 0 ? `${colors.primary}10` : 'transparent' }]}
-          >
-            <SlidersHorizontal size={14} color={inlineFilterCount > 0 ? colors.primary : colors.mutedForeground} />
-            <Text style={[s.inlineFilterToggleText, { color: inlineFilterCount > 0 ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
-              {t('search.filters')}{inlineFilterCount > 0 ? ` (${inlineFilterCount})` : ''}
-            </Text>
-            {inlineFiltersExpanded
-              ? <ChevronUp size={14} color={colors.mutedForeground} />
-              : <ChevronDown size={14} color={colors.mutedForeground} />
-            }
-          </Pressable>
-
-          {inlineFiltersExpanded && (
-            <View style={s.inlineFilterPanel}>
-              {/* Price range */}
-              <View style={s.inlineFilterGroup}>
-                <View style={s.inlineFilterGroupHeader}>
-                  <DollarSign size={14} color={colors.mutedForeground} />
-                  <Text style={[s.inlineFilterGroupLabel, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t('search.priceRange')}</Text>
-                </View>
-                <View style={s.inlinePriceRow}>
-                  <TextInput
-                    style={[s.inlinePriceInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card, fontFamily: fonts.body }]}
-                    value={inlinePriceMin}
-                    onChangeText={setInlinePriceMin}
-                    placeholder={t('search.minPrice')}
-                    placeholderTextColor={colors.mutedForeground}
-                    keyboardType="numeric"
-                  />
-                  <Text style={[s.inlinePriceSep, { color: colors.mutedForeground }]}>{'\u2014'}</Text>
-                  <TextInput
-                    style={[s.inlinePriceInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card, fontFamily: fonts.body }]}
-                    value={inlinePriceMax}
-                    onChangeText={setInlinePriceMax}
-                    placeholder={t('search.maxPrice')}
-                    placeholderTextColor={colors.mutedForeground}
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-
-              {/* Distance chips */}
-              <View style={s.inlineFilterGroup}>
-                <View style={s.inlineFilterGroupHeader}>
-                  <Navigation size={14} color={colors.mutedForeground} />
-                  <Text style={[s.inlineFilterGroupLabel, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t('search.distance')}</Text>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.inlineChipRow}>
-                  {(['1', '3', '5', 'all'] as DistanceFilter[]).map(d => {
-                    const isActive = distanceFilter === d
-                    const label = d === 'all' ? t('search.timeAll') : `< ${d} km`
-                    return (
-                      <Pressable
-                        key={d}
-                        onPress={() => {
-                          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-                          setDistanceFilter(d)
-                          if (d !== 'all' && userLat == null) requestLocation()
-                        }}
-                        style={[
-                          s.inlineChip,
-                          isActive
-                            ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                            : { backgroundColor: 'transparent', borderColor: colors.border },
-                        ]}
-                      >
-                        <Text style={[s.inlineChipText, { fontFamily: fonts.bodyMedium, color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>{label}</Text>
-                      </Pressable>
-                    )
-                  })}
-                </ScrollView>
-              </View>
-
-              {/* Date filter chips */}
-              <View style={s.inlineFilterGroup}>
-                <View style={s.inlineFilterGroupHeader}>
-                  <Calendar size={14} color={colors.mutedForeground} />
-                  <Text style={[s.inlineFilterGroupLabel, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t('search.dateRange')}</Text>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.inlineChipRow}>
-                  {([
-                    { key: 'today' as TimeFilter, label: t('search.timeToday') },
-                    { key: 'week' as TimeFilter, label: t('search.timeWeek') },
-                    { key: 'month' as TimeFilter, label: t('search.thisMonth') },
-                    { key: 'all' as TimeFilter, label: t('search.timeAll') },
-                  ]).map(df => {
-                    const isActive = dateFilter === df.key
-                    return (
-                      <Pressable
-                        key={df.key}
-                        onPress={() => {
-                          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-                          setDateFilter(df.key)
-                        }}
-                        style={[
-                          s.inlineChip,
-                          isActive
-                            ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                            : { backgroundColor: 'transparent', borderColor: colors.border },
-                        ]}
-                      >
-                        <Text style={[s.inlineChipText, { fontFamily: fonts.bodyMedium, color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>{df.label}</Text>
-                      </Pressable>
-                    )
-                  })}
-                </ScrollView>
-              </View>
-            </View>
-          )}
-        </View>
-      )}
+      {/* Inline quick-filters removed — all filtering via header SearchFilters modal */}
 
       {/* Result count */}
-      {searched && !loading && displayResults.length > 0 && activeTab === 'posts' && (
+      {searched && !loading && results.length > 0 && activeTab === 'posts' && (
         <View style={s.resultCountRow}>
           <Text style={[s.resultCountText, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>
-            {t('search.resultCount', { count: displayResults.length })}
+            {t('search.resultCount', { count: results.length })}
           </Text>
         </View>
       )}
@@ -1140,7 +934,7 @@ function SearchScreenInner() {
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
             <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
-              {t('places.posts')} ({displayResults.length})
+              {t('places.posts')} ({results.length})
             </Text>
           </Pressable>
           <Pressable onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
@@ -1187,7 +981,7 @@ function SearchScreenInner() {
         <SearchSkeleton />
       ) : activeTab === 'posts' ? (
         <FlatList
-          data={displayResults}
+          data={results}
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <View>
@@ -1425,24 +1219,4 @@ const s = StyleSheet.create({
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   trendingLikeCount: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   semanticLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, paddingLeft: 2, fontFamily: fonts.bodyMedium },
-  // Inline quick-filters
-  inlineFilterSection: { borderBottomWidth: StyleSheet.hairlineWidth },
-  inlineFilterToggle: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 8,
-  },
-  inlineFilterToggleText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
-  inlineFilterPanel: { paddingHorizontal: 16, paddingBottom: 12, gap: 16 },
-  inlineFilterGroup: { gap: 8 },
-  inlineFilterGroupHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  inlineFilterGroupLabel: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
-  inlinePriceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  inlinePriceInput: {
-    flex: 1, height: 40, borderRadius: 12, borderWidth: 1,
-    paddingHorizontal: 12, fontSize: 14, fontFamily: fonts.body,
-  },
-  inlinePriceSep: { fontSize: 16, fontFamily: fonts.body },
-  inlineChipRow: { flexDirection: 'row', gap: 8 },
-  inlineChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  inlineChipText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
 })

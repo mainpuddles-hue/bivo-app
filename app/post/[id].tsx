@@ -837,8 +837,27 @@ function PostDetailScreenInner() {
             <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>
           )}
 
-          {post.service_price != null && (
+          {post.service_price != null && post.service_price > 0 && (
             <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.service_price, locale)}</Text>
+          )}
+
+          {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price == null || post.service_price === 0) && (
+            <Text style={[styles.price, { color: '#3B7DD8' }]}>{t('create.freeItem')}</Text>
+          )}
+
+          {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#7C5CBF', fontFamily: fonts.bodySemi }}>
+                  {(() => {
+                    const condTag = post.tags?.find((tag: string) => tag.startsWith('condition_'))
+                    if (!condTag) return ''
+                    const condKey = 'create.condition' + condTag.replace('condition_', '').charAt(0).toUpperCase() + condTag.replace('condition_', '').slice(1)
+                    return t(condKey)
+                  })()}
+                </Text>
+              </View>
+            </View>
           )}
 
           {priceContext && (post.daily_fee != null || post.service_price != null) && (
@@ -854,7 +873,7 @@ function PostDetailScreenInner() {
             </Pressable>
           )}
 
-          {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price != null && !isAuthor && (
+          {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price != null && post.service_price > 0 && !post.tags?.includes('tarjoan_item') && !isAuthor && (
             <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
               <ShoppingBag size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>

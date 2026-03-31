@@ -31,6 +31,44 @@ import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
 import type { PostType, TrustLevel } from '@/lib/types'
 
+const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
+  { id: 'kodinhoito', label: 'tags.kodinhoito' },
+  { id: 'muutto', label: 'tags.muutto' },
+  { id: 'lastenhoito', label: 'tags.lastenhoito' },
+  { id: 'lemmikit', label: 'tags.lemmikit' },
+  { id: 'tekniikka', label: 'tags.tekniikka' },
+  { id: 'opetus', label: 'tags.opetus' },
+  { id: 'remontti', label: 'tags.remontti' },
+  { id: 'puutarha', label: 'tags.puutarha' },
+  { id: 'ruoanlaitto', label: 'tags.ruoanlaitto' },
+  { id: 'kaannos', label: 'tags.kaannos' },
+  { id: 'valokuvaus', label: 'tags.valokuvaus' },
+  { id: 'hieronta', label: 'tags.hieronta' },
+  { id: 'kuljetus', label: 'tags.kuljetus' },
+  { id: 'muu', label: 'tags.muu' },
+]
+
+const TARJOAN_ITEM_TAGS: { id: string; label: string }[] = [
+  { id: 'huonekalut', label: 'tags.huonekalut' },
+  { id: 'elektroniikka', label: 'tags.elektroniikka' },
+  { id: 'vaatteet', label: 'tags.vaatteet' },
+  { id: 'urheilu', label: 'tags.urheilu' },
+  { id: 'keittio', label: 'tags.keittio' },
+  { id: 'kodinkoneet', label: 'tags.kodinkoneet' },
+  { id: 'sisustus', label: 'tags.sisustus' },
+  { id: 'lastentarvikkeet', label: 'tags.lastentarvikkeet' },
+  { id: 'rakennustarvikkeet', label: 'tags.rakennustarvikkeet' },
+  { id: 'puutarha', label: 'tags.puutarha' },
+  { id: 'muu', label: 'tags.muu' },
+]
+
+const CONDITION_OPTIONS = [
+  { id: 'condition_new', label: 'create.conditionNew' },
+  { id: 'condition_good', label: 'create.conditionGood' },
+  { id: 'condition_fair', label: 'create.conditionFair' },
+  { id: 'condition_poor', label: 'create.conditionPoor' },
+] as const
+
 const POST_TAGS: Record<string, { id: string; label: string }[]> = {
   tarvitsen: [
     { id: 'kodinhoito', label: 'tags.kodinhoito' },
@@ -41,14 +79,20 @@ const POST_TAGS: Record<string, { id: string; label: string }[]> = {
     { id: 'opetus', label: 'tags.opetus' },
     { id: 'kuljetus', label: 'tags.kuljetus' },
     { id: 'kasityo', label: 'tags.kasityo' },
+    { id: 'remontti', label: 'tags.remontti' },
+    { id: 'puutarha', label: 'tags.puutarha' },
+    { id: 'ruoanlaitto', label: 'tags.ruoanlaitto' },
+    { id: 'kaannos', label: 'tags.kaannos' },
+    { id: 'valokuvaus', label: 'tags.valokuvaus' },
+    { id: 'terveys', label: 'tags.terveys' },
+    { id: 'urheilu', label: 'tags.urheilu' },
+    { id: 'musiikki', label: 'tags.musiikki' },
+    { id: 'muu', label: 'tags.muu' },
   ],
   tarjoan: [
-    { id: 'kodinhoito', label: 'tags.kodinhoito' },
-    { id: 'muutto', label: 'tags.muutto' },
-    { id: 'lastenhoito', label: 'tags.lastenhoito' },
-    { id: 'lemmikit', label: 'tags.lemmikit' },
-    { id: 'tekniikka', label: 'tags.tekniikka' },
-    { id: 'opetus', label: 'tags.opetus' },
+    // Default — will be overridden by tarjoanType-specific tags
+    ...TARJOAN_SERVICE_TAGS,
+    ...TARJOAN_ITEM_TAGS,
   ],
   ilmaista: [
     { id: 'huonekalut', label: 'tags.huonekalut' },
@@ -57,12 +101,24 @@ const POST_TAGS: Record<string, { id: string; label: string }[]> = {
     { id: 'kirjat', label: 'tags.kirjat' },
     { id: 'keittio', label: 'tags.keittio' },
     { id: 'lelut', label: 'tags.lelut' },
+    { id: 'urheilu', label: 'tags.urheilu' },
+    { id: 'puutarha', label: 'tags.puutarha' },
+    { id: 'kodinkoneet', label: 'tags.kodinkoneet' },
+    { id: 'sisustus', label: 'tags.sisustus' },
+    { id: 'rakennustarvikkeet', label: 'tags.rakennustarvikkeet' },
+    { id: 'lastentarvikkeet', label: 'tags.lastentarvikkeet' },
+    { id: 'muu', label: 'tags.muu' },
   ],
   nappaa: [
     { id: 'ruoka', label: 'tags.ruoka' },
     { id: 'huonekalut', label: 'tags.huonekalut' },
     { id: 'vaatteet', label: 'tags.vaatteet' },
     { id: 'kirjat', label: 'tags.kirjat' },
+    { id: 'lelut', label: 'tags.lelut' },
+    { id: 'puutarha', label: 'tags.puutarha' },
+    { id: 'kodinkoneet', label: 'tags.kodinkoneet' },
+    { id: 'elektroniikka', label: 'tags.elektroniikka' },
+    { id: 'muu', label: 'tags.muu' },
   ],
   lainaa: [
     { id: 'tyokalut', label: 'tags.tyokalut' },
@@ -71,11 +127,16 @@ const POST_TAGS: Record<string, { id: string; label: string }[]> = {
     { id: 'musiikki', label: 'tags.musiikki' },
   ],
   tapahtuma: [
+    { id: 'talkoot', label: 'tags.talkoot' },
+    { id: 'urheilu', label: 'tags.urheilu' },
     { id: 'musiikki', label: 'tags.musiikki' },
-    { id: 'liikunta', label: 'tags.liikunta' },
     { id: 'kulttuuri', label: 'tags.kulttuuri' },
-    { id: 'lapsille', label: 'tags.lapsille' },
+    { id: 'lapsiperhe', label: 'tags.lapsiperhe' },
     { id: 'ruoka', label: 'tags.ruoka' },
+    { id: 'kirpputori', label: 'tags.kirpputori' },
+    { id: 'koulutus', label: 'tags.koulutus' },
+    { id: 'naapurusto', label: 'tags.naapurusto' },
+    { id: 'muu', label: 'tags.muu' },
   ],
 }
 
@@ -110,6 +171,8 @@ export default function CreateScreen() {
   const [eventEndTime, setEventEndTime] = useState('')
   const [eventMaxCapacity, setEventMaxCapacity] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [tarjoanType, setTarjoanType] = useState<'service' | 'item'>('service')
+  const [itemCondition, setItemCondition] = useState<string | null>(null)
   const [expirationDays, setExpirationDays] = useState(0)
   const [images, setImages] = useState<string[]>([])
   const [latitude, setLatitude] = useState<number | null>(null)
@@ -209,6 +272,8 @@ export default function CreateScreen() {
               setEventEndTime('')
               setEventMaxCapacity('')
               setSelectedTags([])
+              setTarjoanType('service')
+              setItemCondition(null)
               setExpirationDays(0)
               setIsAnonymous(false)
               setIsUrgent(false)
@@ -233,6 +298,8 @@ export default function CreateScreen() {
     }
     setSelectedType(type)
     setSelectedTags([])
+    setTarjoanType('service')
+    setItemCondition(null)
     setStep('form')
   }
 
@@ -405,13 +472,13 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
       return
     }
-    // Prevent negative service prices (error prevention)
+    // Prevent negative service/item prices (error prevention)
     if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && parseFloat(servicePrice) < 0) {
       Alert.alert(t('common.error'), t('create.priceCannotBeNegative'))
       return
     }
-    // Trust tier: max service price check
-    if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
+    // Trust tier: max service price check (only for services, not items)
+    if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && !isNaN(parseFloat(servicePrice)) && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
       Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
       return
     }
@@ -479,6 +546,15 @@ export default function CreateScreen() {
       setUploadStatus(t('create.publishing'))
       // Fetch profile to check Pro status for priority listing
       const { data: creatorProfile } = await supabase.from('profiles').select('is_pro').eq('id', user.id).single()
+      // Build tags array — include tarjoan sub-type and condition metadata
+      const finalTags = [...selectedTags]
+      if (selectedType === 'tarjoan') {
+        finalTags.push(tarjoanType === 'item' ? 'tarjoan_item' : 'tarjoan_service')
+        if (tarjoanType === 'item' && itemCondition) {
+          finalTags.push(itemCondition)
+        }
+      }
+
       const { data: post, error } = await (supabase.from('posts') as any).insert({
         user_id: user.id,
         type: selectedType,
@@ -495,7 +571,7 @@ export default function CreateScreen() {
         urgency_hours: isUrgent ? urgencyHours : null,
         is_anonymous: isAnonymous || false,
         is_active: true,
-        tags: selectedTags,
+        tags: finalTags,
         is_pro_listing: !!(creatorProfile as any)?.is_pro,
       }).select('id').single()
 
@@ -622,6 +698,8 @@ export default function CreateScreen() {
       setEventEndTime('')
       setEventMaxCapacity('')
       setSelectedTags([])
+      setTarjoanType('service')
+      setItemCondition(null)
       setExpirationDays(0)
       setIsAnonymous(false)
       setIsUrgent(false)
@@ -651,7 +729,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints])
+  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints])
 
   // ── Category selection step ──
   if (step === 'category') {
@@ -725,7 +803,9 @@ export default function CreateScreen() {
 
   // ── Form step ──
   const cat = selectedType ? CATEGORIES[selectedType] : null
-  const availableTags = selectedType ? (POST_TAGS[selectedType] ?? []) : []
+  const availableTags = selectedType === 'tarjoan'
+    ? (tarjoanType === 'item' ? TARJOAN_ITEM_TAGS : TARJOAN_SERVICE_TAGS)
+    : selectedType ? (POST_TAGS[selectedType] ?? []) : []
 
   return (
     <ScreenErrorBoundary screenName="Create">
@@ -778,6 +858,51 @@ export default function CreateScreen() {
               )}
             </ScrollView>
           </View>
+
+          {/* Tarjoan sub-type selector: Palvelu / Tavara */}
+          {selectedType === 'tarjoan' && (
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: colors.foreground }]}>{t('create.tarjoanTypeHint')}</Text>
+              <View style={styles.tagGrid}>
+                <Pressable
+                  onPress={() => {
+                    setTarjoanType('service')
+                    setSelectedTags([])
+                    setItemCondition(null)
+                  }}
+                  style={[
+                    styles.tarjoanTypeChip,
+                    tarjoanType === 'service'
+                      ? { backgroundColor: cat?.color ?? colors.primary }
+                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                  ]}
+                >
+                  {tarjoanType === 'service' && <Check size={14} color={colors.primaryForeground} />}
+                  <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'service' ? colors.primaryForeground : colors.foreground }]}>
+                    {t('create.tarjoanService')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setTarjoanType('item')
+                    setSelectedTags([])
+                    setServicePrice('')
+                  }}
+                  style={[
+                    styles.tarjoanTypeChip,
+                    tarjoanType === 'item'
+                      ? { backgroundColor: cat?.color ?? colors.primary }
+                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                  ]}
+                >
+                  {tarjoanType === 'item' && <Check size={14} color={colors.primaryForeground} />}
+                  <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'item' ? colors.primaryForeground : colors.foreground }]}>
+                    {t('create.tarjoanItem')}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
 
           {/* Title */}
           <View style={styles.field}>
@@ -882,8 +1007,8 @@ export default function CreateScreen() {
                 </View>
               )}
 
-              {/* Service price for tarjoan */}
-              {selectedType === 'tarjoan' && (
+              {/* Service price for tarjoan (service sub-type) */}
+              {selectedType === 'tarjoan' && tarjoanType === 'service' && (
                 <View style={styles.field}>
                   <Text style={[styles.label, { color: colors.foreground }]}>{t('service.price')}</Text>
                   <TextInput
@@ -900,7 +1025,7 @@ export default function CreateScreen() {
                   ) : trust.permissions.maxServicePrice !== null && servicePrice && parseFloat(servicePrice) > trust.permissions.maxServicePrice ? (
                     <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice })}</Text>
                   ) : null}
-                  {priceSuggestion && selectedType === 'tarjoan' && (
+                  {priceSuggestion && (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 4 }}>
                       <TrendingUp size={14} color={colors.primary} />
                       <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.bodyMedium }}>
@@ -912,6 +1037,51 @@ export default function CreateScreen() {
                       </Text>
                     </View>
                   )}
+                </View>
+              )}
+
+              {/* Item price for tarjoan (item sub-type) */}
+              {selectedType === 'tarjoan' && tarjoanType === 'item' && (
+                <View style={styles.field}>
+                  <Text style={[styles.label, { color: colors.foreground }]}>{t('create.itemPrice')}</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    value={servicePrice}
+                    onChangeText={setServicePrice}
+                    placeholder="0.00 €"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="decimal-pad"
+                  />
+                  <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{t('create.itemPriceHint')}</Text>
+                </View>
+              )}
+
+              {/* Condition selector for tarjoan items */}
+              {selectedType === 'tarjoan' && tarjoanType === 'item' && (
+                <View style={styles.field}>
+                  <Text style={[styles.label, { color: colors.foreground }]}>{t('create.condition')}</Text>
+                  <View style={styles.tagGrid}>
+                    {CONDITION_OPTIONS.map((opt) => {
+                      const isSelected = itemCondition === opt.id
+                      return (
+                        <Pressable
+                          key={opt.id}
+                          onPress={() => setItemCondition(isSelected ? null : opt.id)}
+                          style={[
+                            styles.tagChip,
+                            isSelected
+                              ? { backgroundColor: cat?.color ?? colors.primary }
+                              : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                          ]}
+                        >
+                          {isSelected && <Check size={12} color={colors.primaryForeground} />}
+                          <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
+                            {t(opt.label)}
+                          </Text>
+                        </Pressable>
+                      )
+                    })}
+                  </View>
                 </View>
               )}
 
@@ -1554,4 +1724,12 @@ const styles = StyleSheet.create({
     flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
     fontSize: 14, textAlign: 'center', fontFamily: fonts.body,
   },
+
+  // Tarjoan sub-type selector
+  tarjoanTypeChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 16, minHeight: 40,
+    flex: 1, justifyContent: 'center',
+  },
+  tarjoanTypeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 })
