@@ -80,6 +80,8 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
 //
 // 3. THREAD BOOKMARKS: Allow users to bookmark/save forum threads for later.
 //    Currently only posts (marketplace) can be saved, not forum discussions.
+const ForumSeparator = () => <View style={{ height: 10 }} />
+
 export default function ForumScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -507,7 +509,7 @@ export default function ForumScreen() {
         ListHeaderComponent={<View style={s.listHeaderGap} />}
         ListEmptyComponent={EmptyComponent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+        ItemSeparatorComponent={ForumSeparator}
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.3}

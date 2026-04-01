@@ -75,7 +75,6 @@ function LoginScreenInner() {
   const [name, setName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [forgotSent, setForgotSent] = useState(false)
   const [appleAvailable, setAppleAvailable] = useState(false)
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState(0)
@@ -254,11 +253,27 @@ function LoginScreenInner() {
             const refreshToken = params.get('refresh_token')
             const code = params.get('code')
             if (accessToken && refreshToken) {
-              await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+              const { data: { user } } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+              if (user) {
+                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).single()
+                if ((oauthProfile as any)?.is_banned) {
+                  await supabase.auth.signOut()
+                  Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                  return
+                }
+              }
               router.replace('/')
               return
             } else if (code) {
-              await supabase.auth.exchangeCodeForSession(code)
+              const { data: { user } } = await supabase.auth.exchangeCodeForSession(code)
+              if (user) {
+                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).single()
+                if ((oauthProfile as any)?.is_banned) {
+                  await supabase.auth.signOut()
+                  Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                  return
+                }
+              }
               router.replace('/')
               return
             }
@@ -289,12 +304,22 @@ function LoginScreenInner() {
         return
       }
 
-      const { error } = await supabase.auth.signInWithIdToken({
+      const { data: appleData, error } = await supabase.auth.signInWithIdToken({
         provider: 'apple',
         token: credential.identityToken,
       })
 
       if (error) throw error
+
+      if (appleData?.user) {
+        const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', appleData.user.id).single()
+        if ((oauthProfile as any)?.is_banned) {
+          await supabase.auth.signOut()
+          Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+          return
+        }
+      }
+
       router.replace('/')
     } catch (err: any) {
       // User cancelled — Apple throws ERR_REQUEST_CANCELED
@@ -325,18 +350,7 @@ function LoginScreenInner() {
           </Text>
         </View>
 
-        {/* Forgot password success */}
-        {mode === 'forgot' && forgotSent ? (
-          <View style={[styles.successBox, { backgroundColor: `${colors.success}15` }]}>
-            <Check size={24} color={colors.success} />
-            <Text style={[styles.successText, { color: colors.success }]}>{t('auth.resetLinkSent')}</Text>
-            <Pressable onPress={() => { setMode('login'); setForgotSent(false) }}>
-              <Text style={[styles.linkText, { color: colors.primary }]}>{t('auth.backToLogin')}</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <>
-            {/* Mode toggle */}
+        {/* Mode toggle */}
             {mode !== 'forgot' && (
               <View style={[styles.modeToggle, { backgroundColor: colors.muted }]}>
                 <Pressable
@@ -523,8 +537,6 @@ function LoginScreenInner() {
                 </Pressable>
               )}
             </View>
-          </>
-        )}
       </ScrollView>
     </KeyboardAvoidingView>
   )

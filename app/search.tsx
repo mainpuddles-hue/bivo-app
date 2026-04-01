@@ -594,7 +594,7 @@ function SearchScreenInner() {
           const { data: blockedData } = await supabase
             .from('blocked_users')
             .select('blocked_id')
-            .eq('user_id', searchUserId)
+            .eq('blocker_id', searchUserId)
           blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
           if (blockedIds.size > 0) {
             postResults = postResults.filter(p => !blockedIds.has(p.user_id))
@@ -725,11 +725,12 @@ function SearchScreenInner() {
     setLoadingMore(true)
     try {
       const q = query.trim()
+      const escapedQ = q.replace(/%/g, '\\%').replace(/_/g, '\\_')
       let postQuery = supabase
         .from('posts')
         .select(POST_SELECT)
         .eq('is_active', true)
-        .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+        .or(`title.ilike.%${escapedQ}%,description.ilike.%${escapedQ}%`)
 
       // Hide disabled category types from search results (same as feed)
       const hiddenTypes: string[] = []
@@ -744,6 +745,24 @@ function SearchScreenInner() {
 
       const { data } = await postQuery
       let newPosts = (data ?? []) as unknown as Post[]
+
+      // Filter out posts from blocked users
+      const loadMoreUserId = await getCachedUserId()
+      if (loadMoreUserId) {
+        try {
+          const { data: blockedData } = await supabase
+            .from('blocked_users')
+            .select('blocked_id')
+            .eq('user_id', loadMoreUserId)
+          const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
+          if (blockedIds.size > 0) {
+            newPosts = newPosts.filter(p => !blockedIds.has(p.user_id))
+          }
+        } catch {
+          // blocked_users table may not exist yet — continue without filtering
+        }
+      }
+
       newPosts = sortByDistance(newPosts, filters)
       setDbResultCount(prev => prev + newPosts.length)
       setResults(prev => [...prev, ...newPosts])

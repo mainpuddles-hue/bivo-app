@@ -152,7 +152,6 @@ export default function SettingsScreen() {
       const { error: saveError } = await (supabase.from('profiles') as any).update({
         profile_visibility: visibility,
         location_accuracy: locationAccuracy,
-        notifications_enabled: notifPrefs.preferences.messages,
       }).eq('id', profile.id)
       if (saveError) {
         Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
@@ -163,7 +162,7 @@ export default function SettingsScreen() {
     } catch {
       Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
     } finally { setSaving(false) }
-  }, [profile, visibility, locationAccuracy, notifPrefs.preferences.messages, theme, supabase, t])
+  }, [profile, visibility, locationAccuracy, theme, supabase, t])
 
   const handleSaveName = useCallback(async () => {
     if (!profile || !nameText.trim()) return

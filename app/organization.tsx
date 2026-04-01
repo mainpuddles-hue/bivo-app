@@ -72,8 +72,8 @@ export default function OrganizationScreen() {
         setBusinessWebsite(p.business_website ?? '')
 
         if (!p.is_business) {
-          router.replace('/upgrade-business')
           setLoading(false)
+          router.replace('/upgrade-business')
           return
         }
 

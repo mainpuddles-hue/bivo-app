@@ -123,7 +123,7 @@ export default function MessagesScreen() {
           const { data: blockedData } = await supabase
             .from('blocked_users')
             .select('blocked_id')
-            .eq('user_id', user.id)
+            .eq('blocker_id', user.id)
           const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
           if (blockedIds.size > 0) {
             filteredFallback = fallbackConvs.filter(c => {
@@ -176,7 +176,7 @@ export default function MessagesScreen() {
       const { data: blockedData } = await supabase
         .from('blocked_users')
         .select('blocked_id')
-        .eq('user_id', user.id)
+        .eq('blocker_id', user.id)
       const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
       if (blockedIds.size > 0) {
         filteredConvs = convs.filter(c => {
@@ -196,9 +196,7 @@ export default function MessagesScreen() {
     }
   }, [supabase])
 
-  useEffect(() => { fetchConversations() }, [fetchConversations])
-
-  // Re-fetch conversations when screen gains focus (e.g. after reading messages)
+  // Fetch conversations on mount and re-fetch when screen gains focus (e.g. after reading messages)
   useFocusEffect(useCallback(() => { fetchConversations() }, [fetchConversations]))
 
   // Realtime for new messages

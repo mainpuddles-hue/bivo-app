@@ -275,7 +275,7 @@ export function useFeedData() {
           const { data: blockedData } = await supabase
             .from('blocked_users')
             .select('blocked_id')
-            .eq('user_id', currentUserId)
+            .eq('blocker_id', currentUserId)
           const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
           if (blockedIds.size > 0) {
             newPosts = newPosts.filter(p => !blockedIds.has(p.user_id))

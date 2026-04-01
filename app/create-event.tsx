@@ -13,7 +13,7 @@ import {
   Switch,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, Camera, X, Calendar, Clock, MapPin, Users, Check } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
@@ -42,6 +42,7 @@ export default function CreateEventScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const { edit } = useLocalSearchParams<{ edit?: string }>()
 
   // Auth
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -58,6 +59,40 @@ export default function CreateEventScreen() {
   const [approvalRequired, setApprovalRequired] = useState(false)
   const [imageUri, setImageUri] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [editLoading, setEditLoading] = useState(!!edit)
+
+  // Load existing event data when editing
+  useEffect(() => {
+    if (!edit) return
+    const editId = edit
+    let mounted = true
+    async function loadEvent() {
+      try {
+        const { data } = await supabase
+          .from('community_events')
+          .select('*')
+          .eq('id', editId)
+          .single()
+        if (!mounted || !data) return
+        const e = data as any
+        setTitle(e.title ?? '')
+        setDescription(e.description ?? '')
+        setEventDate(e.event_date ? (e.event_date as string).split('T')[0] : '')
+        setEventTime(e.event_date ? (e.event_date as string).split('T')[1]?.substring(0, 5) ?? '' : '')
+        setLocationName(e.location_name ?? '')
+        setCategory(e.category ?? 'social')
+        setMaxParticipants(e.max_participants != null ? String(e.max_participants) : '')
+        setApprovalRequired(e.approval_required ?? false)
+        setImageUri(e.image_url ?? null)
+      } catch {
+        // Event may not exist
+      } finally {
+        if (mounted) setEditLoading(false)
+      }
+    }
+    loadEvent()
+    return () => { mounted = false }
+  }, [edit, supabase])
 
   // Auth check + fetch profile
   useEffect(() => {
@@ -155,12 +190,11 @@ export default function CreateEventScreen() {
         }
       }
 
-      // Insert event
-      const { data: insertedEvent, error } = await (supabase.from('community_events') as any).insert({
-        creator_id: currentUserId,
+      // Insert or Update event
+      const eventPayload = {
         title: title.trim(),
         description: description.trim() || null,
-        image_url: uploadedImageUrl,
+        image_url: uploadedImageUrl ?? (edit ? imageUri : null),
         event_date: isoDate,
         event_end_date: null,
         location_name: locationName.trim() || null,
@@ -171,7 +205,27 @@ export default function CreateEventScreen() {
         approval_required: approvalRequired,
         naapurusto: userNaapurusto,
         is_active: true,
-      }).select('id').single()
+      }
+
+      let resultId: string | undefined
+      let error: any
+
+      if (edit) {
+        const res = await (supabase.from('community_events') as any)
+          .update(eventPayload)
+          .eq('id', edit)
+          .select('id')
+          .single()
+        error = res.error
+        resultId = res.data?.id ?? edit
+      } else {
+        const res = await (supabase.from('community_events') as any)
+          .insert({ ...eventPayload, creator_id: currentUserId })
+          .select('id')
+          .single()
+        error = res.error
+        resultId = res.data?.id
+      }
 
       if (error) {
         Alert.alert(t('common.error'), t('events.createFailed'))
@@ -180,10 +234,10 @@ export default function CreateEventScreen() {
       }
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      Alert.alert(t('common.success'), t('events.created'))
+      Alert.alert(t('common.success'), edit ? t('events.updated') ?? t('events.created') : t('events.created'))
 
-      if (insertedEvent?.id) {
-        router.replace(`/event/${insertedEvent.id}` as any)
+      if (resultId) {
+        router.replace(`/event/${resultId}` as any)
       } else if (router.canGoBack()) {
         router.back()
       } else {
@@ -197,7 +251,7 @@ export default function CreateEventScreen() {
   }, [
     title, description, eventDate, eventTime, locationName, category,
     maxParticipants, approvalRequired, imageUri, currentUserId,
-    userNaapurusto, supabase, router, t,
+    userNaapurusto, supabase, router, t, edit,
   ])
 
   const canSubmit = title.trim().length > 0 && eventDate.trim().length > 0 && !submitting
@@ -230,11 +284,16 @@ export default function CreateEventScreen() {
           style={[styles.headerTitle, { color: colors.foreground, fontFamily: fonts.heading }]}
           accessibilityRole="header"
         >
-          {t('events.createEvent')}
+          {edit ? (t('events.editEvent') ?? t('events.createEvent')) : t('events.createEvent')}
         </Text>
         <View style={styles.headerSpacer} />
       </View>
 
+      {editLoading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
       <ScrollView
         style={styles.flex}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
@@ -491,11 +550,12 @@ export default function CreateEventScreen() {
                 },
               ]}
             >
-              {t('events.publish')}
+              {edit ? (t('common.save') ?? t('events.publish')) : t('events.publish')}
             </Text>
           )}
         </Pressable>
       </ScrollView>
+      )}
     </KeyboardAvoidingView>
   )
 }
