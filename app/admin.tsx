@@ -286,7 +286,7 @@ function AdminScreenInner() {
                   <View style={s.flagHeader}>
                     <View style={[s.flagBadge, { backgroundColor: flagColor(flag.flag_type, colors) }]}>
                       <AlertTriangle size={12} color={colors.primaryForeground} />
-                      <Text style={s.flagBadgeText}>
+                      <Text style={[s.flagBadgeText, { color: colors.primaryForeground }]}>
                         {t(`admin.${flag.flag_type}` as any) || flag.flag_type}
                       </Text>
                     </View>
@@ -466,11 +466,13 @@ const s = StyleSheet.create({
     fontSize: 20,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
+    lineHeight: 28,
   },
   tabs: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     gap: 8,
+    paddingTop: 12,
     marginBottom: 12,
   },
   tab: {
@@ -513,7 +515,6 @@ const s = StyleSheet.create({
   flagBadgeText: {
     fontSize: 11,
     fontFamily: fonts.bodySemi,
-    color: '#FFFFFF',
   },
   reviewedBadge: {
     flexDirection: 'row',

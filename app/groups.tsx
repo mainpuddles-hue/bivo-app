@@ -307,6 +307,7 @@ export default function GroupsScreen() {
         key={group.id}
         style={[s.groupCard, {
           backgroundColor: colors.card,
+          borderColor: colors.border,
         }, isDark ? cardShadowDark : cardShadow]}
         onPress={() => router.push(`/groups/${group.id}`)}
         accessibilityRole="button"
@@ -690,6 +691,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 8,
     gap: 12,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   groupAvatar: {
     width: 44,

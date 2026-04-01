@@ -207,7 +207,7 @@ export default function LeaderboardScreen() {
         ]}
       >
         {/* Rank */}
-        <View style={[s.rankCircle, isTop3 && { backgroundColor: `${medalColor}25` }]}>
+        <View style={[s.rankCircle, isTop3 ? { backgroundColor: `${medalColor}25` } : { backgroundColor: colors.muted }]}>
           {isTop3 ? (
             <Trophy size={16} color={medalColor} />
           ) : (
@@ -373,9 +373,9 @@ const s = StyleSheet.create({
     borderRadius: 20,
   },
   filterText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   monthLabel: {
     fontSize: 12,

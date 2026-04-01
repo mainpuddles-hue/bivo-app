@@ -92,7 +92,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   content: { padding: 16, gap: 16, paddingBottom: 40 },
   card: { borderRadius: 12, padding: 16, gap: 4 },
   updated: { fontSize: 12, fontFamily: fonts.body, marginBottom: 16 },

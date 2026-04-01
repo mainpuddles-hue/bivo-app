@@ -990,10 +990,10 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 20, letterSpacing: -0.3, lineHeight: 28, fontFamily: fonts.headingSemi },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, minHeight: 44,
   },
   saveBtnText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
@@ -1006,7 +1006,7 @@ const s = StyleSheet.create({
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
   proBadge: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   upgradeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, fontFamily: fonts.body },
+  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
   changePwBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',

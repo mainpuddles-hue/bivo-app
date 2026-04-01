@@ -322,7 +322,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
     fontFamily: fonts.headingSemi,
@@ -336,7 +335,6 @@ const styles = StyleSheet.create({
   },
   emailDisplay: {
     fontSize: 15,
-    fontWeight: '600',
     textAlign: 'center',
     marginBottom: 32,
     fontFamily: fonts.bodySemi,
@@ -349,7 +347,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 28,
-    fontWeight: '700',
     letterSpacing: 8,
     textAlign: 'center',
     minHeight: 64,
@@ -373,7 +370,6 @@ const styles = StyleSheet.create({
   },
   verifyBtnText: {
     fontSize: 16,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
   resendRow: {
@@ -392,7 +388,6 @@ const styles = StyleSheet.create({
   },
   resendBtnText: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
 })

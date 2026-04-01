@@ -460,7 +460,7 @@ export default function GroupDetailScreen() {
   // ── Coming soon ──
   if (!loading && !tableExists) {
     return (
-      <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
             <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
@@ -479,7 +479,7 @@ export default function GroupDetailScreen() {
   // ── Group not found (deleted or invalid ID) ──
   if (!loading && tableExists && !group) {
     return (
-      <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
             <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
@@ -576,7 +576,7 @@ export default function GroupDetailScreen() {
   return (
     <ScreenErrorBoundary screenName="GroupDetail">
     <KeyboardAvoidingView
-      style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top }]}
+      style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={0}
     >
@@ -618,7 +618,7 @@ export default function GroupDetailScreen() {
       {newPostsBanner && (
         <Pressable onPress={() => { setNewPostsBanner(false); setLoading(true); fetchPosts() }}
           style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 10, alignItems: 'center', backgroundColor: colors.primary }}>
-          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: '#FFFFFF' }}>{t('groups.newPostsBanner')}</Text>
+          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.primaryForeground }}>{t('groups.newPostsBanner')}</Text>
         </Pressable>
       )}
 
@@ -711,7 +711,7 @@ const ps = StyleSheet.create({
   groupName: { fontSize: 20, fontFamily: fonts.heading, marginBottom: 4 },
   groupDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 12 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   badgeText: { fontSize: 12, fontFamily: fonts.bodyMedium },
   infoActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   membersBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -725,9 +725,9 @@ const ps = StyleSheet.create({
   imagePreview: { width: 80, height: 80, borderRadius: 10 },
   removeImageBtn: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   postInputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
-  imageBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  imageBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   postInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, maxHeight: 100 },
-  sendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   emptyText: { fontSize: 16, fontFamily: fonts.bodyMedium, textAlign: 'center' },
   emptySection: { alignItems: 'center', justifyContent: 'center', padding: 32, gap: 8, marginTop: 16 },

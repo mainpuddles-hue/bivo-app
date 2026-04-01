@@ -33,7 +33,7 @@ export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loa
     >
       {isBestValue && (
         <View style={[styles.bestValueBadge, { backgroundColor: colors.accent }]}>
-          <Text style={styles.bestValueText}>{t('boost.bestValue')}</Text>
+          <Text style={[styles.bestValueText, { color: colors.primaryForeground }]}>{t('boost.bestValue')}</Text>
         </View>
       )}
       <View style={styles.row}>
@@ -48,7 +48,7 @@ export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loa
           <ActivityIndicator size="small" color={colors.accent} />
         ) : (
           <View style={[styles.buyBtn, { backgroundColor: colors.accent }]}>
-            <Text style={styles.buyText}>{t('boost.buyBoosts')}</Text>
+            <Text style={[styles.buyText, { color: colors.primaryForeground }]}>{t('boost.buyBoosts')}</Text>
           </View>
         )}
       </View>
@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
   bestValueText: {
     fontSize: 10,
     fontFamily: fonts.bodySemi,
-    color: '#FFFFFF',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
@@ -106,6 +105,5 @@ const styles = StyleSheet.create({
   buyText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    color: '#FFFFFF',
   },
 })

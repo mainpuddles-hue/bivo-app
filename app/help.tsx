@@ -157,7 +157,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 8 },
   categoryTitle: { fontSize: 14, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 8, paddingHorizontal: 4 },

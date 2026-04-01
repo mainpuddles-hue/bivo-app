@@ -198,7 +198,7 @@ export default function MapScreen() {
       {/* ── Top Bar ── */}
       <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)', borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={12}>
-          <ArrowLeft size={20} color={colors.foreground} />
+          <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Pressable
           style={[styles.neighborhoodButton, { borderColor: colors.border }]}

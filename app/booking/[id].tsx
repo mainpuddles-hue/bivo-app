@@ -315,7 +315,7 @@ function BookingDetailScreenInner() {
         <View style={{ flex: 1 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 60 }]} showsVerticalScrollIndicator={false}>
         {/* Post info card */}
         <Pressable
           onPress={() => booking.post?.id && router.push(`/post/${booking.post.id}` as any)}
@@ -528,8 +528,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
-  scrollContent: { padding: 16, gap: 12, paddingBottom: 40 },
+  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  scrollContent: { padding: 16, gap: 12 },
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 104 },
 
   // Post card

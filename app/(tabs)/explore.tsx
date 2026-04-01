@@ -302,7 +302,7 @@ function ExploreScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Sub-header */}
-      <View style={[s.header, { borderBottomColor: colors.border }]}>
+      <View style={[s.header, { borderBottomColor: colors.border, paddingTop: insets.top + 8 }]}>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('explore.title')}</Text>
       </View>
 
@@ -444,7 +444,7 @@ function ExploreScreenInner() {
                         onPress={() => router.push(`/event/${evt.id}` as any)}
                         accessibilityRole="button"
                         accessibilityLabel={`${evt.title}, ${formatEventDateShort(evt.event_date, locale)}`}
-                        style={[s.ceCard, { backgroundColor: colors.card }]}
+                        style={[s.ceCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                       >
                         {evt.image_url ? (
                           <View style={s.ceImageWrap}>
@@ -731,13 +731,11 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     paddingHorizontal: 16,
-    paddingTop: 12,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
     letterSpacing: -0.3,
     fontFamily: fonts.headingSemi,
   },
@@ -797,7 +795,6 @@ const s = StyleSheet.create({
   },
   mapTeaserTitle: {
     fontSize: 17,
-    fontWeight: '700',
     fontFamily: fonts.headingSemi,
     marginTop: 4,
   },
@@ -976,10 +973,12 @@ const s = StyleSheet.create({
   communityCardTitle: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
+    lineHeight: 18.2,
   },
   communityCardHint: {
     fontSize: 12,
     fontFamily: fonts.body,
+    lineHeight: 15.6,
   },
   errorRow: {
     flexDirection: 'row' as const,
@@ -1008,6 +1007,7 @@ const s = StyleSheet.create({
     width: 180,
     borderRadius: 12,
     overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
   },
   ceImageWrap: {
     width: 180,

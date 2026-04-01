@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   listContent: { padding: 16, gap: 8, paddingBottom: 40 },
   paymentRow: {
     borderRadius: 12,
@@ -271,12 +271,12 @@ const styles = StyleSheet.create({
   },
   rowAmount: {
     fontSize: 15,
-    fontFamily: fonts.heading,
+    fontFamily: fonts.headingSemi,
   },
   miniStatus: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   miniStatusText: {
     fontSize: 10,

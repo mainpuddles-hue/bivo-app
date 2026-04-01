@@ -502,7 +502,7 @@ function LoginScreenInner() {
                     accessibilityState={{ checked: termsAccepted }}
                     accessibilityLabel={t('auth.acceptTerms')}
                   >
-                    {termsAccepted ? <Check size={16} color={colors.primary} /> : <View style={[styles.emptyCheckbox, { borderColor: colors.border }]} />}
+                    {termsAccepted ? <View style={[styles.emptyCheckbox, { borderColor: colors.primary }]}><Check size={16} color={colors.primary} /></View> : <View style={[styles.emptyCheckbox, { borderColor: colors.border }]} />}
                   </Pressable>
                   <Text style={[styles.termsText, { color: colors.mutedForeground }]}>
                     {t('auth.acceptTerms')}{' '}
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   modeToggle: {
     flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 16,
   },
-  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
+  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', minHeight: 44 },
   modeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,

@@ -95,7 +95,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   content: { padding: 16, gap: 16, paddingBottom: 40 },
   logoSection: { alignItems: 'center', paddingVertical: 24, gap: 8 },
   logoPlaceholder: {

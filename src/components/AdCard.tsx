@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
   sponsoredText: {
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },

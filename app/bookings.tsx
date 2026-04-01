@@ -43,7 +43,7 @@ function BookingCardSkeleton() {
 
 const TARJOAN_COLOR = '#7C5CBF'
 
-type BookingStatus = 'pending' | 'confirmed' | 'paid' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
+type BookingStatus = 'pending' | 'confirmed' | 'paid' | 'active' | 'in_progress' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
 interface RentalBooking {
   id: string
@@ -75,7 +75,7 @@ interface RentalBooking {
   }
 }
 
-const VALID_BOOKING_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active', 'completed', 'cancelled', 'disputed', 'refunded']
+const VALID_BOOKING_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active', 'in_progress', 'completed', 'cancelled', 'disputed', 'refunded']
 
 function isBookingStatus(s: string): s is BookingStatus {
   return VALID_BOOKING_STATUSES.includes(s as BookingStatus)
@@ -86,6 +86,7 @@ const STATUS_KEYS: Record<BookingStatus, string> = {
   confirmed: 'rental.statusConfirmed',
   paid: 'rental.statusPaid',
   active: 'rental.statusActive',
+  in_progress: 'service.statusInProgress',
   completed: 'rental.statusCompleted',
   cancelled: 'rental.statusCancelled',
   disputed: 'rental.statusDisputed',
@@ -96,7 +97,7 @@ function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useThem
   switch (status) {
     case 'pending': return colors.pro
     case 'confirmed': case 'paid': return colors.info
-    case 'active': return colors.primary
+    case 'active': case 'in_progress': return colors.primary
     case 'completed': return colors.success
     case 'cancelled': return colors.destructive
     case 'disputed': return colors.pro
@@ -518,7 +519,7 @@ export default function BookingsScreen() {
           <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
             {canConfirm && (
               <Pressable onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
-                <CheckCircle size={14} color="#FFFFFF" />
+                <CheckCircle size={14} color={colors.primaryForeground} />
                 <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.acceptJob')}</Text>
               </Pressable>
             )}
@@ -529,7 +530,7 @@ export default function BookingsScreen() {
             )}
             {canComplete && (
               <Pressable onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
-                <CheckCircle size={14} color="#FFFFFF" />
+                <CheckCircle size={14} color={colors.primaryForeground} />
                 <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.markDone')}</Text>
               </Pressable>
             )}
@@ -737,7 +738,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },

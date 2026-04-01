@@ -31,7 +31,7 @@ import type { Post } from '@/lib/types'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
 // ── Stable separator components (avoid re-render) ──
-const ItemSeparator8 = () => <View style={{ height: 12 }} />
+const ItemSeparator12 = () => <View style={{ height: 12 }} />
 
 // ══════════════════════════════════════════════
 // ── Feed Screen ──
@@ -107,9 +107,9 @@ const communityCardStyles = StyleSheet.create({
     width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
   },
   center: { flex: 1, justifyContent: 'center' },
-  label: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase' },
-  title: { fontSize: 14, fontWeight: '700', fontFamily: fonts.heading },
-  subtitle: { fontSize: 12, fontFamily: fonts.body },
+  label: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 14 },
+  title: { fontSize: 14, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 20 },
+  subtitle: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
 })
 
 function FeedScreenInner() {
@@ -539,7 +539,7 @@ function FeedScreenInner() {
           </Pressable>
 {/* Streak badge removed — cleaner header */}
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 6, alignItems: 'center', paddingHorizontal: 16 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 8, alignItems: 'center', paddingHorizontal: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
           {feed.followedIds.length > 0 && (
             <Pressable
@@ -592,7 +592,7 @@ function FeedScreenInner() {
         onEndReached={feed.handleLoadMore}
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}
-        ItemSeparatorComponent={ItemSeparator8}
+        ItemSeparatorComponent={ItemSeparator12}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
@@ -616,73 +616,62 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-    paddingTop: 8, paddingBottom: 10, gap: 6,
+    paddingTop: 8, paddingBottom: 12, gap: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,
   },
   neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
-  neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, alignSelf: 'flex-start', minHeight: 32 },
-  streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
-  streakText: { fontSize: 13, fontWeight: '700', fontFamily: fonts.heading },
-  neighborhoodText: { fontSize: 12, fontFamily: fonts.body },
+  neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, alignSelf: 'flex-start', minHeight: 32 },
+  neighborhoodText: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   dateGroupLabel: { alignItems: 'center', paddingVertical: 4 },
-  dateGroupLine: { flex: 1, height: StyleSheet.hairlineWidth },
-  dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3 },
+  dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3, lineHeight: 14 },
   list: { paddingHorizontal: 16, paddingBottom: 96 },
   filterRow: { paddingBottom: 0 },
   followingBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
     alignSelf: 'flex-start', minHeight: 40,
   },
-  followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   sortDivider: { width: 1, height: 20, borderRadius: 0.5, marginHorizontal: 2, alignSelf: 'center' },
   sortChip: {
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center', minHeight: 30,
   },
-  sortChipText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  sortChipText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
   sectionBar: { width: 3, height: 16, borderRadius: 1.5 },
-  sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },
+  sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, lineHeight: 22 },
   newBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, borderRadius: 12, paddingVertical: 10, minHeight: 44,
+    gap: 8, borderRadius: 12, paddingVertical: 12, minHeight: 44,
   },
-  newBannerText: { fontSize: 14, fontFamily: fonts.bodySemi },
+  newBannerText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   errorRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
   },
-  errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
-  compactSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
-  compactSectionTitle: { fontSize: 14, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },
+  errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1, lineHeight: 18 },
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
-  coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.heading },
+  coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.heading, lineHeight: 24 },
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
   coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginTop: 8, minHeight: 48 },
-  coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
+  coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
   allLoadedWrap: { alignItems: 'center', gap: 10, paddingVertical: 24 },
   allLoadedLine: { height: 1, width: '100%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  allLoadedText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  allLoadedText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   missedBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
   },
-  missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi },
-  // neighborsActiveRow removed per user request
-  _neighborsActiveRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center',
-  },
-  greenDot: { width: 8, height: 8, borderRadius: 4 },
-  neighborsActiveText: { fontSize: 12, fontFamily: fonts.body },
+  missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
   streakMilestone: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12 },
-  streakMilestoneText: { flex: 1, fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600' },
+  streakMilestoneText: { flex: 1, fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20 },
   digestCard: { padding: 12, borderRadius: 12, position: 'relative' as const },
-  digestText: { fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600' },
-  digestDetails: { fontSize: 13, fontFamily: fonts.body, marginTop: 2 },
+  digestText: { fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20 },
+  digestDetails: { fontSize: 13, fontFamily: fonts.body, marginTop: 4, lineHeight: 18 },
 })
 
 export default function FeedScreen() {

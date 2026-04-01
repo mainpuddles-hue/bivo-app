@@ -103,7 +103,7 @@ function CommunityEventsScreenInner() {
         onPress={() => router.push(`/event/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.title}, ${formatEventDateShort(item.event_date, locale)}`}
-        style={[s.eventCard, { backgroundColor: colors.card }]}
+        style={[s.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
         <View style={s.cardBody}>
           {/* Image or placeholder */}
@@ -270,6 +270,7 @@ const s = StyleSheet.create({
   chipText: {
     fontSize: 14,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
   listContent: {
     paddingHorizontal: 16,
@@ -285,6 +286,12 @@ const s = StyleSheet.create({
   eventCard: {
     borderRadius: 12,
     overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   cardBody: {
     flexDirection: 'row',
@@ -312,7 +319,6 @@ const s = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: '600',
     fontFamily: fonts.headingSemi,
     flex: 1,
     lineHeight: 20,
@@ -324,7 +330,6 @@ const s = StyleSheet.create({
   },
   catBadgeText: {
     fontSize: 11,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
   cardMeta: {
@@ -335,6 +340,7 @@ const s = StyleSheet.create({
   cardMetaText: {
     fontSize: 13,
     fontFamily: fonts.body,
+    lineHeight: 18,
   },
 
   // Empty state
@@ -346,7 +352,6 @@ const s = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
   },
@@ -361,7 +366,6 @@ const s = StyleSheet.create({
   },
   emptyCtaText: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
 })

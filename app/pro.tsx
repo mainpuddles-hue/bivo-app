@@ -370,7 +370,7 @@ const s = StyleSheet.create({
   autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   restoreBtn: {
     alignItems: 'center', paddingVertical: 12, borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 1, minHeight: 48,
   },
   restoreBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
 })

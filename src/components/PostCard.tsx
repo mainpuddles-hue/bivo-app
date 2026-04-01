@@ -26,18 +26,18 @@ import type { Post, PostType } from '@/lib/types'
 
 const APP_URL = 'https://tackbird.fi'
 
-function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: Record<string, string | number>) => string): { label: string; color: string } | null {
+function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: Record<string, string | number>) => string): { label: string; severity: 'urgent' | 'warning' } | null {
   if (!expiresAt) return null
   const now = new Date()
   const expires = new Date(expiresAt)
   if (isNaN(expires.getTime())) return null
   const diffMs = expires.getTime() - now.getTime()
-  if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
+  if (diffMs <= 0) return { label: t('postCard.expired'), severity: 'urgent' }
   const diffHours = diffMs / 3600000
-  if (diffHours < 24) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
-  if (diffHours < 48) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
+  if (diffHours < 24) return { label: t('postCard.expiresToday'), severity: 'urgent' }
+  if (diffHours < 48) return { label: t('postCard.expiresTomorrow'), severity: 'warning' }
   const diffDays = Math.ceil(diffMs / 86400000)
-  if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
+  if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), severity: 'warning' }
   return null
 }
 
@@ -156,7 +156,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         isDark ? cardShadowDark : cardShadow,
         category && { borderTopWidth: 2, borderTopColor: category.color + '99' },
         post.is_boosted && FEATURES.BOOSTS && { borderLeftWidth: 3, borderLeftColor: colors.accent },
-        isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: '#E8A050' },
+        isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: CATEGORIES.nappaa.color },
         isUrgentPost && { borderWidth: 2, borderColor: colors.destructive },
         isPro && { borderWidth: 1.5, borderColor: colors.pro },
         pressed && { transform: [{ scale: 0.98 }] },
@@ -171,7 +171,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
       )}
 
       {/* Fix 1: Nappaa urgency banner — expiring today */}
-      {isNappaa && expirationInfo && expirationInfo.color === '#D94F4F' && (
+      {isNappaa && expirationInfo && expirationInfo.severity === 'urgent' && (
         <View style={[styles.urgencyBanner, { backgroundColor: colors.destructive }]}>
           <Text style={styles.urgencyText}>{t('feed.expiringToday')}</Text>
         </View>
@@ -220,12 +220,12 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                     </Text>
                     {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
                     {isPro && (
-                      <View style={styles.proMicroBadge}>
+                      <View style={[styles.proMicroBadge, { backgroundColor: `${colors.pro}18` }]}>
                         <Crown size={10} color={colors.pro} />
                       </View>
                     )}
                     {user?.is_business && (
-                      <View style={styles.businessMicroBadge}>
+                      <View style={[styles.businessMicroBadge, { backgroundColor: `${colors.primary}18` }]}>
                         <Building2 size={10} color={colors.primary} />
                       </View>
                     )}
@@ -279,7 +279,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             )}
             {/* Nappaa urgency */}
             {isNappaa && !isPro && (
-              <View style={[styles.proBadgeOnImage, { backgroundColor: '#E8A050' }]}>
+              <View style={[styles.proBadgeOnImage, { backgroundColor: CATEGORIES.nappaa.color }]}>
                 <Zap size={14} color="#FFFFFF" fill="#FFFFFF" />
               </View>
             )}
@@ -287,12 +287,15 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         )}
 
         {/* Expiration badge */}
-        {expirationInfo && (
-          <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
-            <Clock size={10} color={expirationInfo.color} />
-            <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
-          </View>
-        )}
+        {expirationInfo && (() => {
+          const expirationColor = expirationInfo.severity === 'urgent' ? colors.destructive : CATEGORIES.nappaa.color
+          return (
+            <View style={[styles.expirationBadge, { backgroundColor: `${expirationColor}18` }]}>
+              <Clock size={10} color={expirationColor} />
+              <Text style={[styles.expirationText, { color: expirationColor }]}>{expirationInfo.label}</Text>
+            </View>
+          )
+        })()}
 
         {/* Title */}
         <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
@@ -314,28 +317,28 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           <View style={styles.metaRow}>
             {post.daily_fee != null && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? '#2D2010' : '#FDF6E8' }]}>
-                <Text style={[styles.priceText, { color: '#C98B2E' }]}>
+                <Text style={[styles.priceText, { color: CATEGORIES.lainaa.color }]}>
                   {t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })}
                 </Text>
               </View>
             )}
             {post.service_price != null && post.service_price > 0 && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }]}>
-                <Text style={[styles.priceText, { color: '#7C5CBF' }]}>
+                <Text style={[styles.priceText, { color: CATEGORIES.tarjoan.color }]}>
                   {formatPrice(post.service_price, locale)}
                 </Text>
               </View>
             )}
             {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price == null || post.service_price === 0) && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? '#101A2D' : '#EBF2FE' }]}>
-                <Text style={[styles.priceText, { color: '#3B7DD8' }]}>
+                <Text style={[styles.priceText, { color: CATEGORIES.ilmaista.color }]}>
                   {t('create.freeItem')}
                 </Text>
               </View>
             )}
             {post.type === 'tarjoan' && post.tags?.some(tag => tag.startsWith('condition_')) && (
               <View style={[styles.conditionBadge, { backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }]}>
-                <Text style={[styles.conditionBadgeText, { color: '#7C5CBF' }]}>
+                <Text style={[styles.conditionBadgeText, { color: CATEGORIES.tarjoan.color }]}>
                   {(() => {
                     const condTag = post.tags?.find(tag => tag.startsWith('condition_'))
                     if (!condTag) return ''
@@ -535,9 +538,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
           {/* Popular badge */}
           {likeCount >= 5 && (
-            <View style={[styles.popularBadge, { backgroundColor: isDark ? '#D9770615' : '#FEF3C7' }]}>
-              <TrendingUp size={11} color="#D97706" />
-              <Text style={styles.popularText}>{t('feed.popular')}</Text>
+            <View style={[styles.popularBadge, { backgroundColor: `${colors.pro}20` }]}>
+              <TrendingUp size={11} color={colors.pro} />
+              <Text style={[styles.popularText, { color: colors.pro }]}>{t('feed.popular')}</Text>
             </View>
           )}
 
@@ -558,17 +561,17 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 const styles = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
   proBanner: {
-    height: 22, backgroundColor: '#F59E0B',
+    height: 22,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
-    shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
+    shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
-  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, gap: 10 },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, gap: 12 },
 
   // Top row: user + category badge
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   topRowLeft: { flex: 1, minWidth: 0 },
-  topRowRight: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
+  topRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 },
   topRowUserInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   userNameBlock: { flexShrink: 1, minWidth: 0 },
   userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -579,7 +582,7 @@ const styles = StyleSheet.create({
   avatarContainer: { position: 'relative' },
   avatar: { width: 32, height: 32, borderRadius: 16, borderWidth: 1 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
+  avatarInitial: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   statusDot: {
     position: 'absolute', bottom: -1, right: -1,
     width: 7, height: 7, borderRadius: 3.5, borderWidth: 1,
@@ -597,7 +600,7 @@ const styles = StyleSheet.create({
   },
 
   // Image — full width, inline
-  imageContainer: { borderRadius: 10, overflow: 'hidden', maxHeight: 200, marginTop: 2 },
+  imageContainer: { borderRadius: 12, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
   image: { width: '100%', height: 200 },
   multiImageBadge: {
     position: 'absolute', bottom: 8, right: 8,
@@ -614,15 +617,15 @@ const styles = StyleSheet.create({
 
   // Expiration
   expirationBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 3,
-    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12,
     alignSelf: 'flex-start',
   },
   expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7, fontFamily: fonts.bodySemi },
 
   // Title + description
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.15 },
-  seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic' },
+  seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 14 },
   description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19 },
 
   // Meta (price + location)
@@ -635,27 +638,25 @@ const styles = StyleSheet.create({
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
 
   // Action row
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6, paddingTop: 6 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8, paddingTop: 8 },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
   popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
-  popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, color: '#D97706', lineHeight: 14.3 },
+  popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14.3 },
   distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 3 },
   distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
 
   // Badges
   proMicroBadge: {
-    backgroundColor: '#F59E0B18',
-    borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
+    borderRadius: 8, paddingHorizontal: 4, paddingVertical: 2,
   },
   businessMicroBadge: {
-    backgroundColor: '#2D6B5E18',
-    borderRadius: 6, paddingHorizontal: 4, paddingVertical: 1,
+    borderRadius: 8, paddingHorizontal: 4, paddingVertical: 2,
   },
   // Fix 1: Nappaa urgency banner
   urgencyBanner: {
-    backgroundColor: '#D94F4F', paddingVertical: 4,
+    paddingVertical: 4,
     alignItems: 'center' as const, justifyContent: 'center' as const,
   },
-  urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
+  urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3, lineHeight: 14 },
 })

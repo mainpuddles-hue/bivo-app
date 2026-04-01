@@ -586,7 +586,7 @@ function ConversationScreenInner() {
           <Text style={[s.headerName, { color: colors.foreground }]}>{t('messages.title')}</Text>
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
-          <Text style={{ fontSize: 17, fontWeight: '600', color: colors.foreground, textAlign: 'center', marginBottom: 8, fontFamily: fonts.bodyMedium }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: colors.foreground, textAlign: 'center', marginBottom: 8, fontFamily: fonts.bodyMedium }}>
             {t('messages.conversationNotFound') ?? 'Keskustelua ei löydy'}
           </Text>
           <Text style={{ fontSize: 14, color: colors.mutedForeground, textAlign: 'center', marginBottom: 24, fontFamily: fonts.body }}>
@@ -819,11 +819,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerAvatar: { width: 36, height: 36, borderRadius: 18 },
-  headerName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium },
-  headerSub: { fontSize: 12, fontFamily: fonts.body },
+  headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodyMedium },
+  headerSub: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   msgList: { padding: 16, gap: 4, flexGrow: 1 },
-  dateHeader: { fontSize: 12, fontWeight: '500', textAlign: 'center', marginVertical: 16, fontFamily: fonts.bodyMedium },
-  msgRow: { flexDirection: 'row', gap: 8, marginVertical: 2 },
+  dateHeader: { fontSize: 12, fontWeight: '500', lineHeight: 16, textAlign: 'center', marginVertical: 16, fontFamily: fonts.bodyMedium },
+  msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
@@ -834,7 +834,7 @@ const s = StyleSheet.create({
   msgText: { fontSize: 15, lineHeight: 20, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
-  msgTime: { fontSize: 10, fontFamily: fonts.body },
+  msgTime: { fontSize: 10, lineHeight: 14, fontFamily: fonts.body },
   reactionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   reactionsRowMine: { justifyContent: 'flex-end' },
   reactionsRowTheirs: { justifyContent: 'flex-start' },
@@ -842,10 +842,10 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 2,
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, borderWidth: 1,
   },
-  reactionEmoji: { fontSize: 14 },
-  reactionCount: { fontSize: 11, fontFamily: fonts.body },
+  reactionEmoji: { fontSize: 14, lineHeight: 20 },
+  reactionCount: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   loadOlderBtn: { alignSelf: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 16 },
-  loadOlderText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  loadOlderText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   scrollBtn: {
     position: 'absolute', right: 16, bottom: 80,
     width: 40, height: 40, borderRadius: 20,
@@ -867,26 +867,26 @@ const s = StyleSheet.create({
     width: 48, height: 48, borderRadius: 24,
     alignItems: 'center', justifyContent: 'center',
   },
-  reactionPickerEmoji: { fontSize: 24 },
+  reactionPickerEmoji: { fontSize: 24, lineHeight: 32 },
   deleteRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth,
   },
-  deleteText: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  deleteText: { fontSize: 15, fontWeight: '500', lineHeight: 20, fontFamily: fonts.bodyMedium },
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
     paddingHorizontal: 16, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth,
   },
   imageBtn: { paddingBottom: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   textInput: {
-    flex: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 10,
+    flex: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 12,
     fontSize: 15, maxHeight: 120, minHeight: 40, fontFamily: fonts.body,
   },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
   },
-  emptyText: { textAlign: 'center', fontSize: 14, marginTop: 40, fontFamily: fonts.body },
+  emptyText: { textAlign: 'center', fontSize: 14, lineHeight: 20, marginTop: 40, fontFamily: fonts.body },
   quickRepliesRow: {
     flexDirection: 'row', gap: 8,
     paddingHorizontal: 16, paddingVertical: 8,
@@ -896,15 +896,15 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8,
     borderRadius: 16,
   },
-  quickReplyText: { fontSize: 13, fontFamily: fonts.body },
+  quickReplyText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   // 3a: Link preview styles
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginTop: 4, padding: 8, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     maxWidth: '100%',
   },
-  linkDomain: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodySemi },
-  linkAction: { fontSize: 11, fontFamily: fonts.body },
+  linkDomain: { fontSize: 12, fontWeight: '500', lineHeight: 16, fontFamily: fonts.bodySemi },
+  linkAction: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
 })
 
 const contextStyles = StyleSheet.create({
@@ -915,8 +915,8 @@ const contextStyles = StyleSheet.create({
   },
   image: { width: 40, height: 40, borderRadius: 8 },
   info: { flex: 1, gap: 4 },
-  label: { fontSize: 10, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 13, fontFamily: fonts.bodySemi },
+  label: { fontSize: 10, lineHeight: 14, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
 })
 
 export default function ConversationScreen() {

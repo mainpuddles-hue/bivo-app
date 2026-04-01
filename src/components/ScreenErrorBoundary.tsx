@@ -25,6 +25,11 @@ interface State {
  * it's a class component it uses hardcoded colors that match Helsinki Dusk.
  * The inline card is small enough that the surrounding screen (tabs, header)
  * remains visible.
+ *
+ * NOTE: Dark mode issue — hardcoded light-mode colors (#FFFFFF card, #1A1A1A text)
+ * will look wrong on dark backgrounds. Converting to a function component would
+ * break Error Boundary behaviour (getDerivedStateFromError requires a class).
+ * A wrapper pattern (class boundary + inner FC for theming) could fix this later.
  */
 export class ScreenErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {

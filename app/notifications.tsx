@@ -345,7 +345,7 @@ function NotificationsScreenInner() {
                     {isGroupedMulti && (
                       <Pressable
                         onPress={() => toggleGroup(groupKey)}
-                        hitSlop={8}
+                        hitSlop={12}
                         style={[styles.groupExpandBtn, { backgroundColor: `${colors.primary}1A` }]}
                       >
                         <Text style={[styles.groupBadgeText, { color: colors.primary }]}>{item.groupCount}</Text>
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   markAllReadText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36 },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
   sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
   sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 17 },
@@ -452,13 +452,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   groupBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
+  unreadDot: { width: 8, height: 8, borderRadius: 4, alignSelf: 'center' as const },
   // 1a: Expanded group styles
   expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 12, paddingVertical: 4, marginBottom: 4 },
   expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
   expandedDot: { width: 8, height: 8, borderRadius: 4 },
-  expandedName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, maxWidth: '40%' },
+  expandedName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, flex: 1 },
   expandedAction: { fontSize: 12, fontFamily: fonts.body, flex: 1 },
-  empty: { alignItems: 'center', paddingTop: 80, gap: 12 },
-  emptyText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
 })

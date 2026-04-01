@@ -1062,85 +1062,85 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, maxWidth: 250 },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, maxWidth: 250, lineHeight: 28 },
   content: { padding: 16, gap: 16, paddingBottom: 100 },
   hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
   bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },
-  bigAvatarInit: { fontSize: 32, fontWeight: '700' },
-  profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.headingSemi },
+  bigAvatarInit: { fontSize: 32, fontWeight: '700', lineHeight: 44 },
+  profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 28 },
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
   badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
-  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+  proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 8, width: '100%', paddingHorizontal: 16 },
   followBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 12, borderRadius: 12,
   },
-  followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 12, borderRadius: 12, borderWidth: 1,
   },
-  messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
-  statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth },
+  messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statNum: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading },
-  statLabel: { fontSize: 11, fontFamily: fonts.body },
-  statDiv: { width: 1 },
+  statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
+  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textTransform: 'uppercase', letterSpacing: 0.3 },
+  statDiv: { width: 1, alignSelf: 'stretch' as const },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
-  tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', minHeight: 44 },
   tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   tabContent: { gap: 12 },
-  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24, fontFamily: fonts.body },
-  reviewCard: { borderRadius: 12, padding: 14, gap: 8 },
-  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24, fontFamily: fonts.body, lineHeight: 20 },
+  reviewCard: { borderRadius: 12, padding: 16, gap: 8 },
+  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
-  reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
-  reviewTime: { fontSize: 11, fontFamily: fonts.body },
+  reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
+  reviewTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   reviewComment: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   dangerActions: { flexDirection: 'row', gap: 10, marginTop: 8 },
   dangerBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, padding: 14, borderRadius: 12,
   },
-  dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   reviewBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1, width: '100%', paddingHorizontal: 16,
   },
-  reviewBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
-  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body },
+  reviewBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body, lineHeight: 22 },
   // Rating summary card
   ratingCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
-  ratingCardTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi },
+  ratingCardTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
   ratingOverview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingStarsCol: { alignItems: 'center', gap: 4 },
-  ratingBigNum: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading },
+  ratingBigNum: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 22 },
   ratingBars: { gap: 6 },
   ratingBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ratingBarLabel: { fontSize: 12, fontWeight: '600', width: 24, textAlign: 'right', fontFamily: fonts.bodySemi },
+  ratingBarLabel: { fontSize: 12, fontWeight: '600', width: 24, textAlign: 'right', fontFamily: fonts.bodySemi, lineHeight: 16 },
   ratingBarTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   ratingBarFill: { height: 8, borderRadius: 4 },
-  ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20, fontFamily: fonts.body },
+  ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20, fontFamily: fonts.body, lineHeight: 16 },
   // Verification card
   verificationCard: { borderRadius: 12, padding: 16, gap: 10, borderWidth: StyleSheet.hairlineWidth },
   verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   // Activity summary
   activitySummaryCard: { borderRadius: 12, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },
-  activitySummaryTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi },
+  activitySummaryTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
   activitySummaryText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   recentPostsRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
   recentPostThumb: { flex: 1 },
   recentPostImg: { height: 60, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  recentPostImgPlaceholder: { fontSize: 11, textAlign: 'center', fontFamily: fonts.body },
+  recentPostImgPlaceholder: { fontSize: 11, textAlign: 'center', fontFamily: fonts.body, lineHeight: 14 },
 })
 
 // === Business profile styles ===
@@ -1172,6 +1172,7 @@ const bs = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
   imageCountBadge: {
     position: 'absolute',
@@ -1189,6 +1190,7 @@ const bs = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
 
   // Info card
@@ -1212,6 +1214,7 @@ const bs = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.4,
     fontFamily: fonts.headingSemi,
+    lineHeight: 30,
   },
   categoryBadge: {
     alignSelf: 'flex-start',
@@ -1223,6 +1226,7 @@ const bs = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
 
   // PRH badge
@@ -1239,11 +1243,13 @@ const bs = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 18,
   },
   prhVatText: {
     fontSize: 12,
     fontWeight: '400',
     fontFamily: fonts.body,
+    lineHeight: 16,
   },
 
   // Rating row
@@ -1256,11 +1262,13 @@ const bs = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     fontFamily: fonts.heading,
+    lineHeight: 22,
   },
   reviewCountText: {
     fontSize: 13,
     fontWeight: '400',
     fontFamily: fonts.body,
+    lineHeight: 18,
   },
 
   // Business description
@@ -1280,6 +1288,7 @@ const bs = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
 
   // Location card
@@ -1297,6 +1306,7 @@ const bs = StyleSheet.create({
   locationCardTitle: {
     fontSize: 16,
     fontWeight: '700',
+    lineHeight: 22,
     fontFamily: fonts.headingSemi,
   },
   locationAddress: {
@@ -1318,6 +1328,7 @@ const bs = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 
   // Contact card
@@ -1331,6 +1342,7 @@ const bs = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
+    lineHeight: 22,
   },
   contactRow: {
     flexDirection: 'row',
@@ -1348,11 +1360,13 @@ const bs = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
     fontFamily: fonts.body,
+    lineHeight: 16,
   },
   contactValue: {
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 
   // Hours
@@ -1373,11 +1387,13 @@ const bs = StyleSheet.create({
     fontWeight: '600',
     width: 40,
     fontFamily: fonts.bodySemi,
+    lineHeight: 18,
   },
   hoursValue: {
     fontSize: 13,
     fontWeight: '400',
     fontFamily: fonts.body,
+    lineHeight: 18,
   },
 
   // Section headers
@@ -1392,10 +1408,12 @@ const bs = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.2,
     fontFamily: fonts.headingSemi,
+    lineHeight: 24,
   },
   sectionCount: {
     fontSize: 14,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
 })

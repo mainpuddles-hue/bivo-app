@@ -151,16 +151,13 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  avatar: { width: 48, height: 48, borderRadius: 24 },
-  avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  avatarInit: { fontSize: 18, fontFamily: fonts.bodySemi },
   userInfo: { flex: 1, gap: 2 },
   userName: { fontSize: 15, fontFamily: fonts.bodySemi },
   userNh: { fontSize: 13, fontFamily: fonts.body },
@@ -169,10 +166,6 @@ const s = StyleSheet.create({
     minWidth: 100, alignItems: 'center',
   },
   unblockText: { fontSize: 13, fontFamily: fonts.bodySemi },
-  emptyState: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingBottom: 80,
-  },
-  emptyText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })
 
 export default function BlockedUsersScreen() {

@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { Star, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { fonts } from '@/lib/fonts'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -198,11 +199,13 @@ const s = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     marginTop: 4,
   },
   starRow: {
@@ -235,6 +238,7 @@ const s = StyleSheet.create({
   submitText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     color: '#FFFFFF',
   },
   successContainer: {
@@ -245,5 +249,6 @@ const s = StyleSheet.create({
   successText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 })

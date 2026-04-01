@@ -30,10 +30,8 @@ import type { Post, PostType } from '@/lib/types'
 const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
 
 const HISTORY_KEY = 'tackbird-search-history'
-const RECENT_SEARCHES_KEY = 'tackbird_recent_searches'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
 const MAX_HISTORY = 5
-const MAX_RECENT = 8
 
 type TimeFilter = 'all' | 'today' | 'week' | 'month'
 
@@ -62,10 +60,7 @@ function boundingBox(lat: number, lng: number, km: number) {
 
 interface DiscoveryViewProps {
   query: string
-  recentSearches: string[]
-  clearRecentSearches: () => void
   setQuery: (q: string) => void
-  saveRecentSearch: (term: string) => Promise<void>
   executeSearch: (q?: string, f?: SearchFilterValues, cat?: PostType | null, tf?: TimeFilter) => void
   history: string[]
   handleHistoryChipTap: (h: string) => void
@@ -82,31 +77,13 @@ interface DiscoveryViewProps {
 }
 
 function DiscoveryView({
-  query, recentSearches, clearRecentSearches, setQuery, saveRecentSearch,
+  query, setQuery,
   executeSearch, history, handleHistoryChipTap, removeFromHistory,
   savedSearches, loadSavedSearch, removeSavedSearch, trendingPosts,
   router, colors, isDark, t, setActiveFilter,
 }: DiscoveryViewProps) {
   return (
     <ScrollView contentContainerStyle={s.discovery} showsVerticalScrollIndicator={false}>
-      {/* Recent searches — persistent vertical list */}
-      {!query && recentSearches.length > 0 && (
-        <View style={s.section}>
-          <View style={s.recentHeader}>
-            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recent')}</Text>
-            <Pressable onPress={clearRecentSearches} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
-              <Text style={[s.recentClear, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('common.clear')}</Text>
-            </Pressable>
-          </View>
-          {recentSearches.map((term, i) => (
-            <Pressable key={i} onPress={() => { setQuery(term); saveRecentSearch(term); executeSearch(term) }} style={s.recentItem} accessibilityRole="button" accessibilityLabel={term}>
-              <Clock size={14} color={colors.mutedForeground} />
-              <Text style={[s.recentText, { color: colors.foreground, fontFamily: fonts.body }]}>{term}</Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
       {/* Recent search chips */}
       {history.length > 0 && (
         <View style={s.section}>
@@ -291,8 +268,6 @@ function SearchScreenInner() {
   const [groupResults, setGroupResults] = useState<{ id: string; name: string; description: string | null; member_count: number | null }[]>([])
   const [trendingPosts, setTrendingPosts] = useState<{ id: string; title: string; type: string; like_count: number }[]>([])
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
-
   // Filter state
   const [filtersVisible, setFiltersVisible] = useState(false)
   const [filters, setFilters] = useState<SearchFilterValues>({ ...EMPTY_FILTERS })
@@ -340,9 +315,6 @@ function SearchScreenInner() {
     AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
       if (stored) try { setSavedSearches(JSON.parse(stored)) } catch {}
     }).catch(() => {})
-    AsyncStorage.getItem(RECENT_SEARCHES_KEY).then(stored => {
-      if (stored) try { setRecentSearches(JSON.parse(stored)) } catch {}
-    }).catch(() => {})
   }, [])
 
   const addToHistory = useCallback(async (q: string) => {
@@ -356,19 +328,6 @@ function SearchScreenInner() {
     setHistory(updated)
     await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
   }, [history])
-
-  const saveRecentSearch = useCallback(async (term: string) => {
-    const trimmed = term.trim()
-    if (!trimmed) return
-    const updated = [trimmed, ...recentSearches.filter(s => s !== trimmed)].slice(0, MAX_RECENT)
-    setRecentSearches(updated)
-    await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated))
-  }, [recentSearches])
-
-  const clearRecentSearches = useCallback(async () => {
-    setRecentSearches([])
-    await AsyncStorage.removeItem(RECENT_SEARCHES_KEY)
-  }, [])
 
   const saveCurrentSearch = useCallback(async () => {
     const q = query.trim()
@@ -554,7 +513,6 @@ function SearchScreenInner() {
     setLoading(true)
     setSearched(true)
     addToHistory(q)
-    saveRecentSearch(q)
     trackEvent('search_performed', { query: q })
 
     const f = overrideFilters ?? filters
@@ -687,7 +645,7 @@ function SearchScreenInner() {
         setLoading(false)
       }
     }
-  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, saveRecentSearch, buildFilteredQuery, sortByDistance, userNeighborhood, fetchSemanticResults])
+  }, [query, activeFilter, timeFilter, filters, supabase, addToHistory, buildFilteredQuery, sortByDistance, userNeighborhood, fetchSemanticResults])
 
   // Keep the ref in sync so loadSavedSearch can use the latest executeSearch
   executeSearchRef.current = executeSearch
@@ -1007,10 +965,7 @@ function SearchScreenInner() {
       {!searched ? (
         <DiscoveryView
           query={query}
-          recentSearches={recentSearches}
-          clearRecentSearches={clearRecentSearches}
           setQuery={setQuery}
-          saveRecentSearch={saveRecentSearch}
           executeSearch={executeSearch}
           history={history}
           handleHistoryChipTap={handleHistoryChipTap}
@@ -1057,7 +1012,7 @@ function SearchScreenInner() {
           renderItem={({ item }) => (
             <Pressable
               onPress={() => router.push(`/event/${item.id}` as any)}
-              style={[s.userCard, { backgroundColor: colors.card }]}
+              style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
               accessibilityLabel={item.title}
             >
@@ -1098,7 +1053,7 @@ function SearchScreenInner() {
           renderItem={({ item }) => (
             <Pressable
               onPress={() => router.push(`/groups/${item.id}` as any)}
-              style={[s.userCard, { backgroundColor: colors.card }]}
+              style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
               accessibilityLabel={item.name}
             >
@@ -1135,7 +1090,7 @@ function SearchScreenInner() {
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
-            <Pressable onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
+            <Pressable onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
               <Avatar url={item.avatar_url} name={item.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
@@ -1195,7 +1150,7 @@ const s = StyleSheet.create({
     minWidth: 16, height: 16, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
   },
-  filterBadgeText: { fontSize: 9, fontWeight: '700', fontFamily: fonts.bodySemi },
+  filterBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi },
   activeFilterBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 8,
@@ -1207,7 +1162,7 @@ const s = StyleSheet.create({
   saveSearchText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   chipSections: { gap: 0 },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36 },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
   filterChipOutline: { borderWidth: 1 },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   chipDivider: { width: 1, height: 24, alignSelf: 'center', marginHorizontal: 8, borderRadius: 1 },
@@ -1245,15 +1200,11 @@ const s = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
   emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi },
   emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
-  userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
+  userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   searchEventIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
   userName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
   userNh: { fontSize: 13, fontFamily: fonts.body },
-  recentHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  recentClear: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  recentItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
-  recentText: { fontSize: 14, fontFamily: fonts.body },
   resultCountRow: { paddingHorizontal: 16, paddingVertical: 8 },
   resultCountText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   trendingList: { gap: 8 },
@@ -1261,7 +1212,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
   },
-  trendingDot: { width: 8, height: 8, borderRadius: 4 },
+  trendingDot: { width: 10, height: 10, borderRadius: 5 },
   trendingTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   trendingCat: { fontSize: 11, marginTop: 1, fontFamily: fonts.body },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },

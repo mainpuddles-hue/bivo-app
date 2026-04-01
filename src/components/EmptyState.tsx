@@ -48,7 +48,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
     fontFamily: fonts.headingSemi,
     lineHeight: 23,
     textAlign: 'center',

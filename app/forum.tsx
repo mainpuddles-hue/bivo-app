@@ -610,7 +610,7 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   headerSpacer: { width: 40 },
   filterBar: { paddingHorizontal: 16, paddingVertical: 10, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, alignSelf: 'flex-start', borderWidth: 1 },
+  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, alignSelf: 'flex-start', borderWidth: 1 },
   neighborhoodChipText: { fontSize: 12, fontFamily: fonts.bodyMedium },
   categoryChips: { gap: 8, paddingRight: 4 },
   categoryChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },
