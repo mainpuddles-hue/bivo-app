@@ -197,7 +197,7 @@ function ConversationScreenInner() {
         })
         // Auto-mark as read if from other user
         if (newMsg.sender_id !== userId) {
-          ;(supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id).catch(() => {})
+          ;(async () => { try { await (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id) } catch {} })()
         }
       })
       .on('postgres_changes', {

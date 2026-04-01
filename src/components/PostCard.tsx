@@ -35,8 +35,8 @@ function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: R
   if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
   const diffHours = diffMs / 3600000
   if (diffHours < 24) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
+  if (diffHours < 48) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
   const diffDays = Math.ceil(diffMs / 86400000)
-  if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
   if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
   return null
 }
@@ -408,15 +408,17 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                     onInteraction?.(post.id, 'like')
                     // Notify post author about the like (skip if own post)
                     if (post.user_id && post.user_id !== userId) {
-                      (supabase.from('notifications') as any).insert({
-                        user_id: post.user_id,
-                        from_user_id: userId,
-                        type: 'post_like',
-                        title: t('post.liked'),
-                        body: post.title,
-                        link_type: 'post',
-                        link_id: post.id,
-                      }).catch(() => {})
+                      try {
+                        await (supabase.from('notifications') as any).insert({
+                          user_id: post.user_id,
+                          from_user_id: userId,
+                          type: 'post_like',
+                          title: t('post.liked'),
+                          body: post.title,
+                          link_type: 'post',
+                          link_id: post.id,
+                        })
+                      } catch {}
                     }
                   }
                 }
