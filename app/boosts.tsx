@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Zap, TrendingUp, Clock, CheckCircle } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -27,6 +27,11 @@ function BoostsScreenInner() {
   }, [])
 
   const { balance, tier, loading, purchasing, activeBoosts, purchaseBoost, refreshBalance } = useBoosts(userId)
+
+  // Refresh balance when screen gains focus (e.g. returning from post detail)
+  useFocusEffect(useCallback(() => {
+    refreshBalance()
+  }, [refreshBalance]))
 
   const tierLabels: Record<BoostTier, string> = {
     free: t('boost.tierFree'),

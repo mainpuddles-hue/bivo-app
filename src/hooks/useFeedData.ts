@@ -267,7 +267,23 @@ export function useFeedData() {
       if (controller.signal.aborted) return
       if (fetchError) { setError(t('feed.loadError')); return }
 
-      const newPosts = (data ?? []) as unknown as Post[]
+      let newPosts = (data ?? []) as unknown as Post[]
+
+      // Filter out posts from blocked users
+      if (currentUserId) {
+        try {
+          const { data: blockedData } = await supabase
+            .from('blocked_users')
+            .select('blocked_id')
+            .eq('user_id', currentUserId)
+          const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
+          if (blockedIds.size > 0) {
+            newPosts = newPosts.filter(p => !blockedIds.has(p.user_id))
+          }
+        } catch {
+          // blocked_users table may not exist yet — continue without filtering
+        }
+      }
 
       // Batch-fetch liked/saved status to avoid N+1 queries in PostCard
       if (newPosts.length > 0 && currentUserId) {
@@ -343,18 +359,23 @@ export function useFeedData() {
         }
       }
 
-      // Client-side relevance ranking
-      let ranked = rankFeed(newPosts, {
-        userNeighborhood: userNeighborhood ?? null,
-        followedIds,
-        personalScores,
-        boostedPostIds,
-      })
+      // Tag boosted posts regardless of sort mode
+      // (is_liked / is_saved already tagged above; is_boosted tagged in boost fetch)
 
-      // Client-side sort by distance when sortBy === 'nearest'
-      if (sortBy === 'nearest' && userLocation) {
+      // Client-side relevance ranking — only apply for 'newest' (default relevance sort)
+      // For other sort modes, the DB order is authoritative
+      let ranked: Post[]
+      if (sortBy === 'newest') {
+        ranked = rankFeed(newPosts, {
+          userNeighborhood: userNeighborhood ?? null,
+          followedIds,
+          personalScores,
+          boostedPostIds,
+        })
+      } else if (sortBy === 'nearest' && userLocation) {
+        // Client-side distance sort
         const { latitude: uLat, longitude: uLng } = userLocation
-        ranked = [...ranked].sort((a, b) => {
+        ranked = [...newPosts].sort((a, b) => {
           const distA = a.latitude != null && a.longitude != null
             ? haversineKm(uLat, uLng, a.latitude, a.longitude)
             : Infinity
@@ -363,6 +384,9 @@ export function useFeedData() {
             : Infinity
           return distA - distB
         })
+      } else {
+        // popular / cheapest: keep DB sort order
+        ranked = newPosts
       }
 
       if (reset) {

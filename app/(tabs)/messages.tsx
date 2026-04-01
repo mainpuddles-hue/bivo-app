@@ -117,7 +117,25 @@ export default function MessagesScreen() {
           }
         }) as unknown as Conversation[]
 
-        setConversations(fallbackConvs)
+        // Filter out conversations with blocked users (fallback path)
+        let filteredFallback = fallbackConvs
+        try {
+          const { data: blockedData } = await supabase
+            .from('blocked_users')
+            .select('blocked_id')
+            .eq('user_id', user.id)
+          const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
+          if (blockedIds.size > 0) {
+            filteredFallback = fallbackConvs.filter(c => {
+              const otherId = (c as any).user1_id === user.id ? (c as any).user2_id : (c as any).user1_id
+              return !blockedIds.has(otherId)
+            })
+          }
+        } catch {
+          // blocked_users table may not exist yet — continue without filtering
+        }
+
+        setConversations(filteredFallback)
       } catch {
         // Both RPC and fallback failed — show empty state
       }
@@ -152,7 +170,25 @@ export default function MessagesScreen() {
       unread_count: Number(row.unread_count ?? 0),
     })) as Conversation[]
 
-    setConversations(convs)
+    // Filter out conversations with blocked users
+    let filteredConvs = convs
+    try {
+      const { data: blockedData } = await supabase
+        .from('blocked_users')
+        .select('blocked_id')
+        .eq('user_id', user.id)
+      const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
+      if (blockedIds.size > 0) {
+        filteredConvs = convs.filter(c => {
+          const otherId = (c as any).user1_id === user.id ? (c as any).user2_id : (c as any).user1_id
+          return !blockedIds.has(otherId)
+        })
+      }
+    } catch {
+      // blocked_users table may not exist yet — continue without filtering
+    }
+
+    setConversations(filteredConvs)
     setLoading(false)
     setRefreshing(false)
     } catch {

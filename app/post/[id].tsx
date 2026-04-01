@@ -302,11 +302,15 @@ function PostDetailScreenInner() {
         post_id: id, user_id: userId, content, parent_id: parentId,
       })
       if (error) throw error
-      // Update comment_count on posts table (in case no DB trigger)
+      // Re-query actual comment count to avoid race conditions
       if (post) {
-        const newCount = (post.comment_count ?? 0) + 1
-        await (supabase.from('posts') as any).update({ comment_count: newCount }).eq('id', id)
-        setPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
+        const { count: realCommentCount } = await supabase
+          .from('post_comments')
+          .select('*', { count: 'exact', head: true })
+          .eq('post_id', id)
+        const syncedCount = realCommentCount ?? (post.comment_count ?? 0) + 1
+        await (supabase.from('posts') as any).update({ comment_count: syncedCount }).eq('id', id)
+        setPost(prev => prev ? { ...prev, comment_count: syncedCount } : prev)
       }
       if (parentId) {
         setExpandedReplies(prev => { const next = new Set(prev); next.add(parentId); return next })
@@ -360,8 +364,8 @@ function PostDetailScreenInner() {
     if (diffMs <= 0) return { label: t('postCard.expired'), color: '#D94F4F' }
     const diffHours = diffMs / 3600000
     if (diffHours < 24) return { label: t('postCard.expiresToday'), color: '#D94F4F' }
+    if (diffHours < 48) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
     const diffDays = Math.ceil(diffMs / 86400000)
-    if (diffDays === 1) return { label: t('postCard.expiresTomorrow'), color: '#E8A050' }
     if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: '#E8A050' }
     return null
   }, [post?.expires_at, t])

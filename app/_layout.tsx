@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Alert, Platform, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
+import * as SplashScreen from 'expo-splash-screen'
 import { useFonts, BricolageGrotesque_500Medium, BricolageGrotesque_600SemiBold, BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque'
 import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans'
 import { I18nProvider, useI18n, type Locale } from '@/lib/i18n'
@@ -19,6 +20,9 @@ import { clearAuthCache } from '@/lib/authCache'
 
 // Initialize Sentry error reporting (no-op in __DEV__)
 initSentry()
+
+// Keep splash screen visible until fonts are loaded
+SplashScreen.preventAutoHideAsync()
 
 const LANG_AUTO_SET_KEY = 'tackbird_lang_auto_set'
 const UNSUPPORTED_DISMISSED_KEY = 'tackbird_unsupported_dismissed'
@@ -548,6 +552,12 @@ export default function RootLayout() {
     InstrumentSans_500Medium,
     InstrumentSans_600SemiBold,
   })
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync()
+    }
+  }, [fontsLoaded])
 
   if (!fontsLoaded) return null
 

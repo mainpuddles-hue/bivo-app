@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
@@ -176,11 +177,11 @@ export default function ProfileScreen() {
     }
   }, [supabase, t])
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     let cancelled = false
     loadProfile().then(() => { if (cancelled) return })
     return () => { cancelled = true }
-  }, [loadProfile])
+  }, [loadProfile]))
 
   const ALLOWED_AVATAR_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
   const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB

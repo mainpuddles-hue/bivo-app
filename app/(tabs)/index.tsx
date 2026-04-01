@@ -57,7 +57,7 @@ const ItemSeparator8 = () => <View style={{ height: 12 }} />
 //    but there's no indication of what's new vs already seen.
 
 const HEADER_HEIGHT = 52 // Header.tsx headerContent height
-const FILTER_BAR_BASE_HEIGHT = 88
+const FILTER_BAR_CONTENT_HEIGHT = 88
 
 // ── Community card type ──
 type CommunityCardItem = { _isCommunity: 'event' | 'group' | 'thread'; [key: string]: any }
@@ -527,7 +527,7 @@ function FeedScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar */}
-      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: insets.top + 8 }]}>
         <View style={styles.neighborhoodRow}>
           <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={4}>
             <MapPin size={12} color={colors.mutedForeground} />
@@ -583,7 +583,7 @@ function FeedScreenInner() {
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isCommunity' in item ? `community-${(item as any)._isCommunity}-${item.id}` : '_isAd' in item ? `ad-${item.id}` : item.id)}
-        contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_BASE_HEIGHT }]}
+        contentContainerStyle={[styles.list, { paddingTop: insets.top + FILTER_BAR_CONTENT_HEIGHT }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}

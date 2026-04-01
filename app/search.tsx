@@ -282,6 +282,7 @@ function SearchScreenInner() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [searched, setSearched] = useState(false)
   const [hasMore, setHasMore] = useState(false)
+  const [dbResultCount, setDbResultCount] = useState(0)
   const [history, setHistory] = useState<string[]>([])
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
   const [activeTab, setActiveTab] = useState<'posts' | 'users' | 'events' | 'groups'>('posts')
@@ -584,6 +585,26 @@ function SearchScreenInner() {
       if (controller.signal.aborted) return
 
       let postResults = (posts ?? []) as unknown as Post[]
+
+      // Filter out posts from blocked users
+      const searchUserId = await getCachedUserId()
+      let blockedIds = new Set<string>()
+      if (searchUserId) {
+        try {
+          const { data: blockedData } = await supabase
+            .from('blocked_users')
+            .select('blocked_id')
+            .eq('user_id', searchUserId)
+          blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
+          if (blockedIds.size > 0) {
+            postResults = postResults.filter(p => !blockedIds.has(p.user_id))
+          }
+        } catch {
+          // blocked_users table may not exist yet — continue without filtering
+        }
+      }
+      if (controller.signal.aborted) return
+
       postResults = sortByDistance(postResults, f)
       postResults = rankSearchResults(postResults, { query: q, userNeighborhood })
 
@@ -613,6 +634,7 @@ function SearchScreenInner() {
       }
 
       setResults(postResults)
+      setDbResultCount((posts ?? []).length)
       setHasMore((posts ?? []).length >= 20)
 
       // Search users, events, and groups in parallel
@@ -651,7 +673,11 @@ function SearchScreenInner() {
       ])
       if (controller.signal.aborted) return
 
-      setUserResults((usersRes.data ?? []) as any[])
+      let userResultsData = (usersRes.data ?? []) as any[]
+      if (blockedIds.size > 0) {
+        userResultsData = userResultsData.filter((u: any) => !blockedIds.has(u.id))
+      }
+      setUserResults(userResultsData)
       setEventResults((eventsRes.data ?? []) as any[])
       setGroupResults((groupsRes.data ?? []) as any[])
     } catch {
@@ -677,6 +703,7 @@ function SearchScreenInner() {
     if (!text.trim()) {
       setSearched(false)
       setResults([])
+      setDbResultCount(0)
       setUserResults([])
       return
     }
@@ -713,18 +740,19 @@ function SearchScreenInner() {
       }
 
       postQuery = buildFilteredQuery(postQuery, filters, activeFilter, timeFilter)
-      postQuery = postQuery.range(results.length, results.length + 19)
+      postQuery = postQuery.range(dbResultCount, dbResultCount + 19)
 
       const { data } = await postQuery
       let newPosts = (data ?? []) as unknown as Post[]
       newPosts = sortByDistance(newPosts, filters)
+      setDbResultCount(prev => prev + newPosts.length)
       setResults(prev => [...prev, ...newPosts])
       setHasMore(newPosts.length >= 20)
     } catch {
     } finally {
       setLoadingMore(false)
     }
-  }, [hasMore, loadingMore, query, activeFilter, timeFilter, filters, results.length, supabase, buildFilteredQuery, sortByDistance])
+  }, [hasMore, loadingMore, query, activeFilter, timeFilter, filters, dbResultCount, supabase, buildFilteredQuery, sortByDistance])
 
   const handleCategoryFilter = useCallback((type: PostType | null) => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -796,7 +824,7 @@ function SearchScreenInner() {
             accessibilityRole="search"
           />
           {query.length > 0 && (
-            <Pressable onPress={() => { setQuery(''); setResults([]); setUserResults([]); setSearched(false) }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
+            <Pressable onPress={() => { setQuery(''); setResults([]); setDbResultCount(0); setUserResults([]); setSearched(false) }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
               <X size={18} color={colors.mutedForeground} />
             </Pressable>
           )}
@@ -893,6 +921,7 @@ function SearchScreenInner() {
                   setFilters(newFilters)
                   if (searched && query.trim()) {
                     setResults([])
+                    setDbResultCount(0)
                     setLoading(true)
                     setTimeout(() => executeSearch(undefined, newFilters), 0)
                   }
