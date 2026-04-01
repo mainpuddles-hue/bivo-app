@@ -11,10 +11,11 @@ interface OutOfAreaBannerProps {
 }
 
 export function OutOfAreaBanner({ visible, cityName }: OutOfAreaBannerProps) {
-  if (!visible) return null
   const { colors } = useTheme()
   const { t } = useI18n()
   const router = useRouter()
+
+  if (!visible) return null
 
   return (
     <View style={[styles.banner, { backgroundColor: colors.card, borderColor: colors.border }]}>
