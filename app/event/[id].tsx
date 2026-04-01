@@ -592,7 +592,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   sectionLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',

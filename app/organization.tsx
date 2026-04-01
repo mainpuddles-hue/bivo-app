@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 12, paddingBottom: 60 },
   businessCard: { borderRadius: 12, padding: 16, gap: 6 },
   businessName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.headingSemi },

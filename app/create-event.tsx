@@ -638,7 +638,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 16,
+    fontSize: 15,
   },
   multilineInput: {
     minHeight: 100,
@@ -666,8 +666,8 @@ const styles = StyleSheet.create({
   },
   inputInner: {
     flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
+    paddingVertical: 16,
+    fontSize: 15,
   },
   chipContainer: {
     flexDirection: 'row',

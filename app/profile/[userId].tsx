@@ -1080,12 +1080,12 @@ const s = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 10, marginTop: 8, width: '100%', paddingHorizontal: 16 },
   followBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 10, borderRadius: 10,
+    gap: 6, paddingVertical: 12, borderRadius: 12,
   },
   followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 10, borderRadius: 10, borderWidth: 1,
+    gap: 6, paddingVertical: 12, borderRadius: 12, borderWidth: 1,
   },
   messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth },
@@ -1113,7 +1113,7 @@ const s = StyleSheet.create({
   dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   reviewBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1, width: '100%', paddingHorizontal: 16,
+    gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1, width: '100%', paddingHorizontal: 16,
   },
   reviewBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body },
@@ -1159,11 +1159,11 @@ const bs = StyleSheet.create({
   heroImage: {
     width: HERO_IMAGE_WIDTH,
     height: HERO_IMAGE_HEIGHT,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   heroPlaceholder: {
     height: HERO_IMAGE_HEIGHT,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -1193,7 +1193,7 @@ const bs = StyleSheet.create({
 
   // Info card
   infoCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 18,
     gap: 14,
     borderWidth: StyleSheet.hairlineWidth,

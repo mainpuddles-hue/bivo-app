@@ -921,9 +921,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
+    minHeight: 44,
   },
   emptyCtaText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
@@ -1001,7 +1002,7 @@ const s = StyleSheet.create({
   },
   ceCarouselContent: {
     paddingHorizontal: 16,
-    gap: 10,
+    gap: 12,
   },
   ceCard: {
     width: 180,
@@ -1023,8 +1024,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   ceCardBody: {
-    padding: 10,
-    gap: 3,
+    padding: 12,
+    gap: 4,
   },
   ceCardTitle: {
     fontSize: 13,

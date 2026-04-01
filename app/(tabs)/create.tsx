@@ -1660,7 +1660,7 @@ const styles = StyleSheet.create({
   tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 36,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, minHeight: 36,
   },
   tagText: { fontSize: 13, fontFamily: fonts.body },
   detailsToggle: {

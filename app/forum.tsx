@@ -447,7 +447,7 @@ export default function ForumScreen() {
     <ScreenErrorBoundary screenName="Forum">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
         <View style={s.headerContent}>
           <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
@@ -613,10 +613,10 @@ const s = StyleSheet.create({
   neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, alignSelf: 'flex-start', borderWidth: 1 },
   neighborhoodChipText: { fontSize: 12, fontFamily: fonts.bodyMedium },
   categoryChips: { gap: 8, paddingRight: 4 },
-  categoryChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
+  categoryChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },
   categoryChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
   sortRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
-  sortChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
+  sortChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },
   sortChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
   newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
   newPostsBannerText: { fontSize: 13, fontFamily: fonts.bodySemi },
@@ -638,6 +638,6 @@ const s = StyleSheet.create({
   modalSection: { paddingHorizontal: 16, paddingTop: 14 },
   publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, minWidth: 80, alignItems: 'center' },
   publishBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
-  titleInput: { fontSize: 16, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
-  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
+  titleInput: { fontSize: 15, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
+  contentInput: { flex: 1, fontSize: 15, fontFamily: fonts.body, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
 })

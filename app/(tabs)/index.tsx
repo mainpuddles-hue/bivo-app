@@ -101,7 +101,7 @@ function CommunityCard({ item, type, colors, t, onPress }: {
 const communityCardStyles = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center', height: 56, borderRadius: 12,
-    paddingHorizontal: 12, gap: 10,
+    paddingHorizontal: 12, gap: 12,
   },
   iconWrap: {
     width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
   followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   sortDivider: { width: 1, height: 20, borderRadius: 0.5, marginHorizontal: 2, alignSelf: 'center' },
   sortChip: {
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center', minHeight: 30,
   },
   sortChipText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium },
@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
   coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.heading },
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
   coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginTop: 8, minHeight: 48 },
-  coldStartBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
+  coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   allLoadedWrap: { alignItems: 'center', gap: 10, paddingVertical: 24 },
   allLoadedLine: { height: 1, width: '100%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },

@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   },
   statusFilterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 20,
   },
   statusFilterText: {

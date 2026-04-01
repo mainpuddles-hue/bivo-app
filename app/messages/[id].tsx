@@ -854,7 +854,7 @@ const s = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   reactionPickerContainer: {
     borderRadius: 16, borderWidth: 1, overflow: 'hidden',

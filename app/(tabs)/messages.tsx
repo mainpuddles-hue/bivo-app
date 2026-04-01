@@ -246,7 +246,7 @@ export default function MessagesScreen() {
   return (
     <ScreenErrorBoundary screenName="Messages">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: 8, borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
         <Pressable
           onPress={() => setShowArchived(!showArchived)}

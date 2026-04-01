@@ -269,7 +269,6 @@ const s = StyleSheet.create({
   },
   chipText: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodyMedium,
   },
   listContent: {

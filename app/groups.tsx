@@ -357,7 +357,7 @@ export default function GroupsScreen() {
   if (!loading && !tableExists) {
     return (
       <ScreenErrorBoundary screenName="Groups">
-      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         {/* Header */}
         <View style={[s.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
@@ -381,7 +381,7 @@ export default function GroupsScreen() {
 
   return (
     <ScreenErrorBoundary screenName="Groups">
-    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
@@ -802,20 +802,20 @@ const s = StyleSheet.create({
     marginTop: 12,
   },
   textInput: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: fonts.body,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   textArea: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: fonts.body,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     minHeight: 80,
     textAlignVertical: 'top',
   },
@@ -862,13 +862,14 @@ const s = StyleSheet.create({
   submitButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: 16,
+    borderRadius: 12,
     marginTop: 20,
     marginBottom: 20,
+    minHeight: 48,
   },
   submitButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: fonts.bodySemi,
   },
   neighborhoodItem: {

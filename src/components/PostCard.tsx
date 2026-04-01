@@ -556,14 +556,14 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 })
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 1 },
+  card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
   proBanner: {
     height: 22, backgroundColor: '#F59E0B',
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
     shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
-  content: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 14, gap: 10 },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, gap: 10 },
 
   // Top row: user + category badge
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   },
   categoryBadgeText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
   newDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#4CAF6A', marginLeft: 2,
+    width: 6, height: 6, borderRadius: 3, marginLeft: 2,
   },
 
   // Image — full width, inline
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
 
   // Action row
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 6, paddingTop: 6 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6, paddingTop: 6 },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
   popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
