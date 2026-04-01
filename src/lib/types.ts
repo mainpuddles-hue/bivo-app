@@ -175,6 +175,7 @@ export interface Post {
   is_boosted?: boolean
   is_urgent?: boolean
   urgency_hours?: number | null
+  is_anonymous?: boolean
   is_seed?: boolean
   like_count: number
   comment_count: number

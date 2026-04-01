@@ -368,6 +368,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               e.stopPropagation?.()
               if (!isHumanAction()) return
               if (!userId) { router.push('/(auth)/login'); return }
+              if (post.user_id === userId) return // Can't like own post
               if (likingRef.current) return
               likingRef.current = true
               try {

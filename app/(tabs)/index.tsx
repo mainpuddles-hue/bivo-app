@@ -143,6 +143,7 @@ function FeedScreenInner() {
 
   // Sort options
   const SORT_OPTIONS: { key: FeedSortBy; label: string }[] = useMemo(() => [
+    { key: 'recommended', label: t('feed.sortRecommended') },
     { key: 'newest', label: t('feed.sortNewest') },
     { key: 'popular', label: t('feed.sortPopular') },
     { key: 'nearest', label: t('feed.sortNearest') },

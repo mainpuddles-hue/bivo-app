@@ -193,13 +193,14 @@ function PostDetailScreenInner() {
 
   const toggleLike = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
+    if (post?.user_id === userId) return
     if (likingRef.current) return
     likingRef.current = true
     try {
       const wasLiked = isLiked
       const prevCount = likeCount
       if (wasLiked) {
-        setIsLiked(false); setLikeCount(c => c - 1)
+        setIsLiked(false); setLikeCount(c => Math.max(0, c - 1))
         const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', id).eq('user_id', userId)
         if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
         else {
@@ -219,10 +220,24 @@ function PostDetailScreenInner() {
           const syncedCount = realCount ?? (prevCount + 1)
           setLikeCount(syncedCount)
           await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
+          // Create notification for post author (not for self-likes)
+          if (post?.user_id && post.user_id !== userId) {
+            try {
+              await (supabase.from('notifications') as any).insert({
+                user_id: post.user_id,
+                from_user_id: userId,
+                type: 'post_like',
+                title: t('post.liked'),
+                body: post.title,
+                link_type: 'post',
+                link_id: id,
+              })
+            } catch {}
+          }
         }
       }
     } finally { likingRef.current = false }
-  }, [userId, isLiked, likeCount, id, supabase, router])
+  }, [userId, isLiked, likeCount, id, supabase, router, post, t])
 
   const toggleSave = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }

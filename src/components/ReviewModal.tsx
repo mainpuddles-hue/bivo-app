@@ -75,6 +75,19 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
 
       if (error) throw error
 
+      // Create notification for the reviewed user
+      try {
+        await (supabase.from('notifications') as any).insert({
+          user_id: reviewedUserId,
+          from_user_id: user.id,
+          type: 'review_received',
+          title: t('notifications.reviewReceived'),
+          body: '',
+          link_type: 'profile',
+          link_id: user.id,
+        })
+      } catch {}
+
       // Award points for writing a review
       awardPoints(user.id, 'review_written', reviewedUserId).catch(() => {})
 

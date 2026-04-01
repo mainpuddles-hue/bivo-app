@@ -17,7 +17,7 @@ import { haversineKm } from '@/lib/geo'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type { PostType }
-export type FeedSortBy = 'newest' | 'popular' | 'nearest' | 'cheapest'
+export type FeedSortBy = 'recommended' | 'newest' | 'popular' | 'nearest' | 'cheapest'
 
 const PAGE_SIZE = 20
 const FEED_CACHE_KEY = 'tackbird_feed_cache'
@@ -31,7 +31,7 @@ export function useFeedData() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
-  const [sortBy, setSortBy] = useState<FeedSortBy>('newest')
+  const [sortBy, setSortBy] = useState<FeedSortBy>('recommended')
   const [hasMore, setHasMore] = useState(true)
   const [hasNewPosts, setHasNewPosts] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -244,7 +244,7 @@ export function useFeedData() {
       } else if (sortBy === 'cheapest') {
         query = query.order('service_price', { ascending: true, nullsFirst: false })
       } else {
-        // 'newest' and 'nearest' both fetch by created_at (nearest sorts client-side)
+        // 'recommended', 'newest', and 'nearest' all fetch by created_at (recommended + nearest sort client-side)
         query = query.order('created_at', { ascending: false })
       }
 
@@ -362,10 +362,10 @@ export function useFeedData() {
       // Tag boosted posts regardless of sort mode
       // (is_liked / is_saved already tagged above; is_boosted tagged in boost fetch)
 
-      // Client-side relevance ranking — only apply for 'newest' (default relevance sort)
-      // For other sort modes, the DB order is authoritative
+      // Client-side relevance ranking — only apply for 'recommended' (default sort)
+      // 'newest' keeps pure chronological DB order; other sorts also keep DB order
       let ranked: Post[]
-      if (sortBy === 'newest') {
+      if (sortBy === 'recommended') {
         ranked = rankFeed(newPosts, {
           userNeighborhood: userNeighborhood ?? null,
           followedIds,
@@ -385,7 +385,7 @@ export function useFeedData() {
           return distA - distB
         })
       } else {
-        // popular / cheapest: keep DB sort order
+        // newest / popular / cheapest: keep DB sort order
         ranked = newPosts
       }
 

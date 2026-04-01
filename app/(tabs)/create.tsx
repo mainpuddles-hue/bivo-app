@@ -478,6 +478,11 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('create.priceCannotBeNegative'))
       return
     }
+    // Trust tier: block Tier 1 from submitting paid services
+    if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && !trust.permissions.canOfferPaidServices) {
+      Alert.alert(t('common.error'), t('service.requiresVerification'))
+      return
+    }
     // Trust tier: max service price check (only for services, not items)
     if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && !isNaN(parseFloat(servicePrice)) && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
       Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
@@ -619,6 +624,15 @@ export default function CreateScreen() {
           eventDateISO = d.toISOString()
         }
 
+        // Build event end date with optional end time
+        let eventEndISO: string | null = null
+        if (eventEndTime && /^\d{1,2}:\d{2}$/.test(eventEndTime)) {
+          const [h, m] = eventEndTime.split(':').map(Number)
+          const d = new Date(eventDate)
+          d.setHours(h, m, 0, 0)
+          eventEndISO = d.toISOString()
+        }
+
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
 
         const { error: eventError } = await (supabase.from('events') as any).insert({
@@ -627,6 +641,7 @@ export default function CreateScreen() {
           title: title.trim(),
           description: description.trim(),
           event_date: eventDateISO,
+          event_end_date: eventEndISO,
           location_name: location.trim() || null,
           location_lat: latitude ?? null,
           location_lng: longitude ?? null,
@@ -735,7 +750,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints])
+  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints, boostPost, boosts, userNeighborhood, uploadImages])
 
   // ── Category selection step ──
   if (step === 'category') {

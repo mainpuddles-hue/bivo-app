@@ -202,11 +202,25 @@ export default function PublicProfileScreen() {
         setFollowerCount(c => c + 1)
         const { error } = await (supabase.from('user_follows') as any).insert({ follower_id: currentUserId, followed_id: userId })
         if (error) { setIsFollowing(false); setFollowerCount(prevCount) }
+        else {
+          // Create notification for the followed user
+          try {
+            await (supabase.from('notifications') as any).insert({
+              user_id: userId,
+              from_user_id: currentUserId,
+              type: 'new_follower',
+              title: t('notifications.newFollower'),
+              body: '',
+              link_type: 'profile',
+              link_id: currentUserId,
+            })
+          } catch {}
+        }
       }
     } finally {
       followingRef.current = false
     }
-  }, [currentUserId, isFollowing, followerCount, userId, supabase, router])
+  }, [currentUserId, isFollowing, followerCount, userId, supabase, router, t])
 
   const handleMessage = useCallback(async () => {
     if (creatingConversation) return
