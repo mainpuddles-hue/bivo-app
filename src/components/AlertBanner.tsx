@@ -94,7 +94,7 @@ export function AlertBanner() {
 const styles = StyleSheet.create({
   container: { gap: 8 },
   alertCard: {
-    borderRadius: 10, borderWidth: 1,
+    borderRadius: 12, borderWidth: 1,
     paddingHorizontal: 12, paddingVertical: 10,
   },
   alertHeader: {

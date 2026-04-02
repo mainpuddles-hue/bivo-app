@@ -215,7 +215,7 @@ const s = StyleSheet.create({
     paddingVertical: 8,
   },
   input: {
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,

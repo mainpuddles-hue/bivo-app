@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     height: 1, marginVertical: 8,
   },
   replyCard: {
-    borderRadius: 10, padding: 12, gap: 8,
+    borderRadius: 12, padding: 12, gap: 8,
     borderWidth: StyleSheet.hairlineWidth,
   },
   replyUserName: {

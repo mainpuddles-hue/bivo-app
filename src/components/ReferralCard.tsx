@@ -260,7 +260,7 @@ const s = StyleSheet.create({
   codeBtn: {
     width: 38,
     height: 38,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -304,7 +304,7 @@ const s = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
   },
   tierIconCircle: {

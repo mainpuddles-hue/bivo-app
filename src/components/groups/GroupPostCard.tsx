@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: fonts.body,
     lineHeight: 20,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10,

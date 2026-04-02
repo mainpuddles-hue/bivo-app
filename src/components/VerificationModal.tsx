@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   stepIcon: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginHorizontal: 20,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   privacyText: {
     flex: 1,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 20,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
   },
   cancelBtnText: {

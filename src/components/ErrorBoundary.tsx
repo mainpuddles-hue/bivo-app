@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   errorBox: {
     backgroundColor: '#FEF2F2',
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 12,
     marginBottom: 24,
     maxWidth: '100%',
