@@ -174,7 +174,7 @@ const s = StyleSheet.create({
   contactDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   contactBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 12,
+    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 12, minHeight: 48,
   },
   contactBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   linkRow: {

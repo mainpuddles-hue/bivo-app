@@ -391,19 +391,19 @@ const s = StyleSheet.create({
     gap: 6, paddingVertical: 8, borderRadius: 8,
   },
   tabItemActive: { borderRadius: 8 },
-  tabText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  tabText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
   tabBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
-  tabBadgeText: { fontSize: 11, fontFamily: fonts.heading },
+  tabBadgeText: { fontSize: 11, lineHeight: 16, fontFamily: fonts.heading },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 12 },
-  emptyTitle: { fontSize: 16, fontFamily: fonts.bodySemi },
+  emptyTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi },
   emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 32, lineHeight: 20, fontFamily: fonts.body },
   browseBtn: { marginTop: 8, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
-  browseBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
+  browseBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   savedItem: { position: 'relative' },
   unsaveBtn: {
     position: 'absolute', top: 8, right: 8, zIndex: 10,
-    width: 32, height: 32, borderRadius: 16,
+    width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
   },
   eventCard: {
@@ -416,9 +416,9 @@ const s = StyleSheet.create({
   },
   eventInfo: { flex: 1, gap: 2 },
   eventTitle: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  eventDate: { fontSize: 12, fontFamily: fonts.body },
+  eventDate: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   eventLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
-  eventLocation: { fontSize: 12, fontFamily: fonts.body },
+  eventLocation: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
 })
 
 export default function SavedScreen() {

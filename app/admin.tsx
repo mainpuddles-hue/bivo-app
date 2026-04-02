@@ -555,7 +555,7 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   actionText: {
     fontSize: 13,
@@ -608,9 +608,9 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   banBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },

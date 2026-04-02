@@ -877,7 +877,7 @@ const s = StyleSheet.create({
   neighborhoodItem: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   neighborhoodText: {
     fontSize: 14,

@@ -1005,7 +1005,7 @@ const s = StyleSheet.create({
   radio: { width: 18, height: 18, borderRadius: 9 },
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
   proBadge: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
-  upgradeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  upgradeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
   input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
   changePwBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
@@ -1029,7 +1029,7 @@ const s = StyleSheet.create({
   deleteCard: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 20,
     gap: 12,
   },

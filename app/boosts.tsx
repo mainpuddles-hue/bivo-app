@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   tierBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 20,
   },
   tierBadgeText: {
     fontSize: 11,
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 14,
+    padding: 16,
     borderRadius: 12,
     borderWidth: 1,
   },

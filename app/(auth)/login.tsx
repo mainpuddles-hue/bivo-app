@@ -59,7 +59,7 @@ function PasswordStrength({ password, colors }: { password: string; colors: Retu
 const pwStyles = StyleSheet.create({
   container: { gap: 4, paddingTop: 4 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  text: { fontSize: 12, fontFamily: fonts.body },
+  text: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
 })
 
 function LoginScreenInner() {
@@ -532,7 +532,7 @@ function LoginScreenInner() {
 
               {/* Back to login from forgot */}
               {mode === 'forgot' && (
-                <Pressable onPress={() => setMode('login')} style={{ alignSelf: 'center' }}>
+                <Pressable onPress={() => setMode('login')} style={{ alignSelf: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={[styles.linkText, { color: colors.primary }]}>{t('auth.backToLogin')}</Text>
                 </Pressable>
               )}
@@ -550,45 +550,45 @@ const styles = StyleSheet.create({
     width: 80, height: 80, borderRadius: 40,
     alignItems: 'center', justifyContent: 'center',
   },
-  appName: { fontSize: 18, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
-  tagline: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
+  appName: { fontSize: 18, lineHeight: 24, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
+  tagline: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
   modeToggle: {
     flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 16,
   },
   modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', minHeight: 44 },
-  modeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  modeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderWidth: 1, borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 8,
   },
-  googleBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
+  googleBtnText: { fontSize: 15, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   appleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 16,
   },
-  appleBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
+  appleBtnText: { fontSize: 15, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   dividerLine: { flex: 1, height: 1 },
-  dividerText: { fontSize: 13, fontFamily: fonts.body },
-  forgotTitle: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading },
+  dividerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
+  forgotTitle: { fontSize: 20, lineHeight: 28, fontWeight: '700', fontFamily: fonts.heading },
   forgotHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   form: { gap: 12 },
   input: {
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
-    fontSize: 15, minHeight: 48, fontFamily: fonts.body,
+    fontSize: 15, lineHeight: 20, minHeight: 48, fontFamily: fonts.body,
   },
   eyeBtn: { position: 'absolute', right: 4, top: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  forgotLink: { fontSize: 13, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
+  forgotLink: { fontSize: 13, lineHeight: 18, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
   submitBtn: {
     borderRadius: 12, paddingVertical: 16, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
-  submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
-  linkText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodySemi },
+  submitText: { fontSize: 16, lineHeight: 22, fontWeight: '600', fontFamily: fonts.bodySemi },
+  linkText: { fontSize: 14, lineHeight: 20, fontWeight: '500', fontFamily: fonts.bodySemi },
   successBox: {
     borderRadius: 12, padding: 24, alignItems: 'center', gap: 12,
   },
-  successText: { fontSize: 15, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
+  successText: { fontSize: 15, lineHeight: 20, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 4 },
   checkbox: { minWidth: 44, minHeight: 44, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },

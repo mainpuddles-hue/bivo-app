@@ -251,6 +251,7 @@ const s = StyleSheet.create({
     fontSize: 20,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
+    lineHeight: 28,
   },
   chipScroll: {
     flexGrow: 0,
@@ -275,7 +276,7 @@ const s = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 4,
-    gap: 10,
+    gap: 12,
   },
   emptyContainer: {
     flex: 1,
@@ -331,6 +332,7 @@ const s = StyleSheet.create({
   catBadgeText: {
     fontSize: 11,
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
   cardMeta: {
     flexDirection: 'row',
@@ -354,6 +356,7 @@ const s = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
+    lineHeight: 22,
   },
   emptyCta: {
     flexDirection: 'row',
@@ -367,6 +370,7 @@ const s = StyleSheet.create({
   emptyCtaText: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 })
 

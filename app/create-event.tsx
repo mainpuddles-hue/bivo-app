@@ -323,6 +323,7 @@ export default function CreateEventScreen() {
               <Pressable
                 onPress={removeImage}
                 style={[styles.removeImageButton, { backgroundColor: colors.destructive }]}
+                hitSlop={8}
                 accessibilityLabel={t('common.remove')}
                 accessibilityRole="button"
               >
@@ -572,8 +573,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
@@ -581,6 +582,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 20,
+    lineHeight: 28,
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
@@ -695,7 +697,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
     marginTop: 12,
   },
   toggleTextContainer: {
