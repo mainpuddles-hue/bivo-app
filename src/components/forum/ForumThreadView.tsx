@@ -85,7 +85,7 @@ function ForumThreadViewInner({
           {item.user_id === currentUserId && (
             <Pressable
               onPress={() => onDeleteReply(item)}
-              hitSlop={6}
+              hitSlop={8}
               style={{ padding: 4 }}
             >
               <X size={14} color={colors.destructive} strokeWidth={1.8} />
@@ -98,7 +98,7 @@ function ForumThreadViewInner({
         <Pressable
           onPress={() => onUpvoteReply(item)}
           style={[styles.actionBtn, isVoted && { backgroundColor: `${colors.primary}14` }]}
-          hitSlop={4}
+          hitSlop={8}
         >
           <ChevronUp
             size={14}
@@ -191,7 +191,7 @@ function ForumThreadViewInner({
                   styles.detailActionBtn,
                   isPostVoted && { backgroundColor: `${colors.primary}14` },
                 ]}
-                hitSlop={4}
+                hitSlop={8}
               >
                 <ChevronUp
                   size={18}
@@ -218,7 +218,7 @@ function ForumThreadViewInner({
 
             {/* Replies header with sort toggle */}
             {onToggleReplySort && replies.length > 1 && (
-              <Pressable onPress={onToggleReplySort} style={styles.sortToggle} hitSlop={6}>
+              <Pressable onPress={onToggleReplySort} style={styles.sortToggle} hitSlop={8}>
                 <Text style={[styles.sortToggleText, { color: colors.primary }]}>
                   {replySortNewest ? t('forum.newestFirst') : t('forum.oldestFirst')}
                 </Text>
@@ -251,7 +251,7 @@ function ForumThreadViewInner({
             styles.sendBtn,
             {
               backgroundColor: replyText.trim() ? colors.primary : colors.muted,
-              opacity: sendingReply ? 0.5 : 1,
+              opacity: sendingReply ? 0.6 : 1,
             },
           ]}
         >

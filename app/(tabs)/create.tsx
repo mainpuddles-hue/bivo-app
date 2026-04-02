@@ -1640,7 +1640,7 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 120 },
   charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
   imageRow: { flexDirection: 'row', gap: 8 },
-  imageThumb: { width: 80, height: 80, borderRadius: 10, overflow: 'hidden', position: 'relative' },
+  imageThumb: { width: 80, height: 80, borderRadius: 12, overflow: 'hidden', position: 'relative' },
   imageThumbImg: { width: '100%', height: '100%' },
   imageRemoveBtn: {
     position: 'absolute', top: 4, right: 4,
@@ -1653,7 +1653,7 @@ const styles = StyleSheet.create({
   },
   mainImageBadgeText: { fontSize: 8, fontWeight: '600', fontFamily: fonts.bodySemi },
   addImageBtn: {
-    width: 80, height: 80, borderRadius: 10, borderWidth: 1.5, borderStyle: 'dashed',
+    width: 80, height: 80, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   addImageText: { fontSize: 10, fontFamily: fonts.body },

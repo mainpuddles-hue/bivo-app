@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   badgeLarge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   label: {
     fontFamily: fonts.bodySemi,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     marginTop: 4,
   },
   verifyBtnText: {

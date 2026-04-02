@@ -1069,7 +1069,7 @@ const s = StyleSheet.create({
   },
   deleteCancelBtn: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },
@@ -1080,7 +1080,7 @@ const s = StyleSheet.create({
   },
   deleteConfirmBtn: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },

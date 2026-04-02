@@ -122,7 +122,7 @@ function GroupEditModalInner({
             <Pressable
               onPress={handleSave}
               disabled={saving || !editName.trim()}
-              style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: (saving || !editName.trim()) ? 0.5 : 1 }]}
+              style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: (saving || !editName.trim()) ? 0.6 : 1 }]}
             >
               {saving ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: fonts.body,
     lineHeight: 20,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10,

@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     gap: 6,
   },
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   waitlistBtn: {
     width: '100%',
     height: 50,
-    borderRadius: 14,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   continueBtn: {
     width: '100%',
     height: 48,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   successText: {
     flex: 1,

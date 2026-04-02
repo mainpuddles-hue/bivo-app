@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   modeToggle: {
     flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 16,
   },
-  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', minHeight: 44 },
+  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', minHeight: 44 },
   modeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,

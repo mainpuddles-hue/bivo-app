@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   placeRow: {
     marginHorizontal: 12,
     marginVertical: 5,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   showAllPlacesBtn: {
     marginHorizontal: 12,
     marginVertical: 5,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',

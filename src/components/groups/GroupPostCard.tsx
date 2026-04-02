@@ -113,14 +113,14 @@ function GroupPostCardInner({
               <>
                 <Pressable
                   onPress={() => onEdit(post.id, post.content)}
-                  hitSlop={6}
+                  hitSlop={8}
                   style={{ padding: 4 }}
                 >
                   <Pencil size={16} color={colors.primary} strokeWidth={1.8} />
                 </Pressable>
                 <Pressable
                   onPress={() => onDelete(post.id)}
-                  hitSlop={6}
+                  hitSlop={8}
                   style={{ padding: 4 }}
                 >
                   <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
@@ -130,7 +130,7 @@ function GroupPostCardInner({
             {post.user_id !== currentUserId && currentUserId && onReport && (
               <Pressable
                 onPress={() => onReport(post.id)}
-                hitSlop={6}
+                hitSlop={8}
                 style={{ padding: 4 }}
                 accessibilityLabel={t('report.title')}
               >
@@ -156,7 +156,7 @@ function GroupPostCardInner({
               <Pressable
                 onPress={onSaveEdit}
                 disabled={savingPostEdit || !editPostContent.trim()}
-                style={[styles.saveBtn, { backgroundColor: colors.primary, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.5 : 1, paddingVertical: 8 }]}
+                style={[styles.saveBtn, { backgroundColor: colors.primary, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.6 : 1, paddingVertical: 8 }]}
               >
                 {savingPostEdit ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   postImage: {
     width: '100%',
     height: 200,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 8,
   },
   postActions: {

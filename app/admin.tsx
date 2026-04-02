@@ -510,7 +510,7 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   flagBadgeText: {
     fontSize: 11,
@@ -522,7 +522,7 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   reviewedText: {
     fontSize: 11,

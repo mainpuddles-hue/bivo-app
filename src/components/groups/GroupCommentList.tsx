@@ -52,7 +52,7 @@ function GroupCommentListInner({
                 {c.user_id === currentUserId && (
                   <Pressable
                     onPress={() => onDeleteComment(c)}
-                    hitSlop={6}
+                    hitSlop={8}
                     style={{ padding: 2 }}
                   >
                     <X size={12} color={colors.destructive} strokeWidth={1.8} />

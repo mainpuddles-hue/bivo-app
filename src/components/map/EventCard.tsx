@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   eventCard: {
     marginHorizontal: 12,
     marginVertical: 5,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000',

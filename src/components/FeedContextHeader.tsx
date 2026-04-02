@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   greetingLine: {
-    fontSize: 17,
+    fontSize: 18,
     fontFamily: fonts.body,
   },
   area: {

@@ -617,7 +617,7 @@ export default function GroupDetailScreen() {
 
       {newPostsBanner && (
         <Pressable onPress={() => { setNewPostsBanner(false); setLoading(true); fetchPosts() }}
-          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 10, alignItems: 'center', backgroundColor: colors.primary }}>
+          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 12, alignItems: 'center', backgroundColor: colors.primary }}>
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.primaryForeground }}>{t('groups.newPostsBanner')}</Text>
         </Pressable>
       )}
@@ -722,7 +722,7 @@ const ps = StyleSheet.create({
   postUserRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   postInputBar: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, paddingHorizontal: 12 },
   imagePreviewRow: { marginBottom: 8 },
-  imagePreview: { width: 80, height: 80, borderRadius: 10 },
+  imagePreview: { width: 80, height: 80, borderRadius: 12 },
   removeImageBtn: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   postInputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   imageBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },

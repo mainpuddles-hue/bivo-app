@@ -790,7 +790,7 @@ function ConversationScreenInner() {
         <Pressable
           onPress={handleSend}
           disabled={!input.trim() || sending}
-          hitSlop={4}
+          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t('messages.send')}
           style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted, opacity: (!input.trim() || sending) ? 0.5 : 1 }]}

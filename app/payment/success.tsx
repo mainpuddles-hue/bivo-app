@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   summaryTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontFamily: fonts.bodySemi,
     marginBottom: 4,
   },

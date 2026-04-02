@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   postCard: {
     marginHorizontal: 12,
     marginVertical: 5,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
     flexDirection: 'row',

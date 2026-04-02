@@ -1184,7 +1184,7 @@ const bs = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   imageCountText: {
     fontSize: 12,
@@ -1237,7 +1237,7 @@ const bs = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   prhBadgeText: {
     fontSize: 13,
@@ -1293,7 +1293,7 @@ const bs = StyleSheet.create({
 
   // Location card
   locationCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 18,
     gap: 10,
     borderWidth: StyleSheet.hairlineWidth,
@@ -1321,7 +1321,7 @@ const bs = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     marginTop: 4,
   },
   mapButtonText: {
@@ -1333,7 +1333,7 @@ const bs = StyleSheet.create({
 
   // Contact card
   contactCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 18,
     gap: 14,
     borderWidth: StyleSheet.hairlineWidth,
@@ -1352,7 +1352,7 @@ const bs = StyleSheet.create({
   contactIconWrap: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1404,7 +1404,7 @@ const bs = StyleSheet.create({
     paddingVertical: 4,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
     letterSpacing: -0.2,
     fontFamily: fonts.headingSemi,

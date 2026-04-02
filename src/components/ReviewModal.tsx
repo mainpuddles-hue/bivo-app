@@ -160,7 +160,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
               <Pressable
                 onPress={handleSubmit}
                 disabled={loading || rating === 0}
-                style={[s.submitBtn, { backgroundColor: colors.primary, opacity: loading || rating === 0 ? 0.5 : 1 }]}
+                style={[s.submitBtn, { backgroundColor: colors.primary, opacity: loading || rating === 0 ? 0.6 : 1 }]}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />

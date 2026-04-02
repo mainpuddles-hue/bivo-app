@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
   multiImageBadge: {
     position: 'absolute', bottom: 8, right: 8,
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12,
     paddingHorizontal: 8, paddingVertical: 3,
   },
   multiImageText: { fontSize: 10, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
@@ -630,9 +630,9 @@ const styles = StyleSheet.create({
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14.3, fontFamily: fonts.bodySemi },
-  conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
   conditionBadgeText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },

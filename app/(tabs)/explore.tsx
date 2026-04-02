@@ -794,7 +794,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   mapTeaserTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontFamily: fonts.headingSemi,
     marginTop: 4,
   },

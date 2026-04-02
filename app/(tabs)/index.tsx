@@ -530,7 +530,7 @@ function FeedScreenInner() {
       {/* Sticky filter bar */}
       <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: insets.top + 8 }]}>
         <View style={styles.neighborhoodRow}>
-          <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={4}>
+          <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
             <MapPin size={12} color={colors.mutedForeground} />
             <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
               {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}

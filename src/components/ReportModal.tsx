@@ -156,7 +156,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
               <Pressable
                 onPress={handleSubmit}
                 disabled={loading || !reason}
-                style={[s.submitBtn, { backgroundColor: colors.destructive, opacity: loading || !reason ? 0.5 : 1 }]}
+                style={[s.submitBtn, { backgroundColor: colors.destructive, opacity: loading || !reason ? 0.6 : 1 }]}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
@@ -218,7 +218,7 @@ const s = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
   },
   reasonText: {
@@ -238,7 +238,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
   },
   input: {
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,

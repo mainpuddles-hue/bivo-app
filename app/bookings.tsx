@@ -26,7 +26,7 @@ function BookingCardSkeleton() {
   return (
     <View style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.cardTop}>
-        <Animated.View style={{ width: 64, height: 64, borderRadius: 10, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: colors.muted, opacity }} />
         <View style={styles.cardInfo}>
           <Animated.View style={{ width: '70%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
           <Animated.View style={{ width: '50%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />

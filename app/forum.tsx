@@ -552,7 +552,7 @@ export default function ForumScreen() {
           <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
             <Pressable onPress={() => setEditingPost(null)} hitSlop={8}><X size={22} color={colors.foreground} /></Pressable>
             <Text style={[s.modalTitle, { color: colors.foreground }]}>{t('forum.editPostTitle')}</Text>
-            <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={[s.publishBtn, { backgroundColor: colors.primary, opacity: savingEdit ? 0.5 : 1 }]}>
+            <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={[s.publishBtn, { backgroundColor: colors.primary, opacity: savingEdit ? 0.6 : 1 }]}>
               {savingEdit ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[s.publishBtnText, { color: colors.primaryForeground }]}>{t('forum.saveEdit')}</Text>}
             </Pressable>
           </View>

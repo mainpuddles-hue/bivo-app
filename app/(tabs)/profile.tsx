@@ -753,18 +753,18 @@ export default function ProfileScreen() {
                     {/* 2b: Action buttons */}
                     <View style={s.myPostActions}>
                       {status === 'expired' && (
-                        <Pressable onPress={() => handleReactivatePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.primary}14` }]} hitSlop={4}>
+                        <Pressable onPress={() => handleReactivatePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.primary}14` }]} hitSlop={8}>
                           <RotateCcw size={13} color={colors.primary} />
                           <Text style={[s.myPostActionText, { color: colors.primary }]}>{t('profile.reactivate')}</Text>
                         </Pressable>
                       )}
                       {status === 'active' && (
-                        <Pressable onPress={() => handleClosePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.mutedForeground}14` }]} hitSlop={4}>
+                        <Pressable onPress={() => handleClosePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.mutedForeground}14` }]} hitSlop={8}>
                           <XCircle size={13} color={colors.mutedForeground} />
                           <Text style={[s.myPostActionText, { color: colors.mutedForeground }]}>{t('profile.closePost')}</Text>
                         </Pressable>
                       )}
-                      <Pressable onPress={() => handleDeletePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.destructive}14` }]} hitSlop={4}>
+                      <Pressable onPress={() => handleDeletePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.destructive}14` }]} hitSlop={8}>
                         <Trash2 size={13} color={colors.destructive} />
                       </Pressable>
                     </View>
@@ -985,7 +985,7 @@ const s = StyleSheet.create({
   myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   myPostStatusText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostActions: { flexDirection: 'row', gap: 8, paddingTop: 4 },
-  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, minHeight: 32 },
+  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, minHeight: 44 },
   myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   postFilterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },

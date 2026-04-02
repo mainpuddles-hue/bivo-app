@@ -870,7 +870,7 @@ function PostDetailScreenInner() {
 
           {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }}>
+              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }}>
                 <Text style={{ fontSize: 12, fontWeight: '600', color: '#7C5CBF', fontFamily: fonts.bodySemi }}>
                   {(() => {
                     const condTag = post.tags?.find((tag: string) => tag.startsWith('condition_'))
@@ -1302,7 +1302,7 @@ const styles = StyleSheet.create({
 
   // Action row — unified like PostCard
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
-  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 32, paddingHorizontal: 2 },
+  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, paddingHorizontal: 2 },
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
 
   // Author card — compact single row

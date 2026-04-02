@@ -231,7 +231,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 17,
+    fontSize: 18,
     lineHeight: 23,
   },
   codeRow: {

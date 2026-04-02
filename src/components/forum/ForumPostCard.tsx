@@ -144,7 +144,7 @@ function ForumPostCardInner({
           <Pressable
             onPress={(e) => { e.stopPropagation?.(); onUpvote(post) }}
             style={[styles.actionBtn, isVoted && { backgroundColor: `${colors.primary}14` }]}
-            hitSlop={4}
+            hitSlop={8}
           >
             <ChevronUp
               size={16}
@@ -172,14 +172,14 @@ function ForumPostCardInner({
               <Pressable
                 onPress={(e) => { e.stopPropagation?.(); onEdit(post) }}
                 style={styles.actionBtn}
-                hitSlop={4}
+                hitSlop={8}
               >
                 <Pencil size={14} color={colors.primary} strokeWidth={1.8} />
               </Pressable>
               <Pressable
                 onPress={(e) => { e.stopPropagation?.(); onDelete(post.id) }}
                 style={styles.actionBtn}
-                hitSlop={4}
+                hitSlop={8}
               >
                 <Trash2 size={14} color={colors.destructive} strokeWidth={1.8} />
               </Pressable>
@@ -189,7 +189,7 @@ function ForumPostCardInner({
             <Pressable
               onPress={(e) => { e.stopPropagation?.(); onReport(post.id) }}
               style={styles.actionBtn}
-              hitSlop={4}
+              hitSlop={8}
               accessibilityLabel={t('report.title')}
             >
               <Flag size={14} color={colors.mutedForeground} strokeWidth={1.8} />

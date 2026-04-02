@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 14, fontFamily: fonts.bodySemi },
   statLabel: { fontSize: 11, fontFamily: fonts.body },
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 8 },
-  emptyTitle: { fontSize: 17, fontFamily: fonts.headingSemi },
+  emptyTitle: { fontSize: 18, fontFamily: fonts.headingSemi },
   emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 
   // Profile editor styles
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
   },
   geocodeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 10, borderRadius: 10,
+    gap: 6, paddingVertical: 10, borderRadius: 12,
   },
   geocodeBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   coordsText: { fontSize: 12, fontFamily: fonts.body },
