@@ -130,7 +130,7 @@ function ForumCreateModalInner({
         {/* Title input */}
         <View style={styles.modalSection}>
           <TextInput
-            style={[styles.titleInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: isDark ? colors.card : '#FFFFFF' }]}
+            style={[styles.titleInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
             placeholder={t('forum.postTitle')}
             placeholderTextColor={colors.mutedForeground}
             value={title}
@@ -143,7 +143,7 @@ function ForumCreateModalInner({
         {/* Content input */}
         <View style={[styles.modalSection, { flex: 1 }]}>
           <TextInput
-            style={[styles.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: isDark ? colors.card : '#FFFFFF' }]}
+            style={[styles.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
             placeholder={t('forum.postContent')}
             placeholderTextColor={colors.mutedForeground}
             value={content}

@@ -196,7 +196,7 @@ function ExploreScreenInner() {
   // ── Initial load ──
   useEffect(() => {
     fetchData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchData])
 
   // ── Pull to refresh ──
   const handleRefresh = useCallback(async () => {

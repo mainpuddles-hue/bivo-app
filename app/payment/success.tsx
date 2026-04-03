@@ -35,6 +35,13 @@ function PaymentSuccessScreenInner() {
     if (!session_id) return
 
     async function fetchBooking() {
+      // Verify auth before making queries
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
       let found = false
 
       // Try rental_bookings first
