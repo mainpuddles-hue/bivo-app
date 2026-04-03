@@ -197,7 +197,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
                   {t(tier.rewardKey)}
                 </Text>
                 <Text style={[s.tierMeta, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                  {tier.invites} {tier.invites === 1 ? 'invite' : 'invites'} &middot; +{tier.points} pts
+                  {tier.invites} {t('referral.invites')} &middot; +{tier.points} {t('referral.points')}
                 </Text>
               </View>
               {achieved && (

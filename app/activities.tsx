@@ -477,8 +477,8 @@ function ActivitiesScreenInner() {
                   : { borderWidth: 1, borderColor: catColor },
               ]}
             >
-              {item.is_member && <Check size={14} color="#FFFFFF" strokeWidth={2.5} />}
-              <Text style={[st.joinBtnText, { color: item.is_member ? '#FFFFFF' : catColor }]}>
+              {item.is_member && <Check size={14} color={colors.primaryForeground} strokeWidth={2.5} />}
+              <Text style={[st.joinBtnText, { color: item.is_member ? colors.primaryForeground : catColor }]}>
                 {item.is_member ? t('activity.joined') : t('activity.joinActivity')}
               </Text>
             </Pressable>
@@ -677,8 +677,8 @@ function ActivitiesScreenInner() {
                             : { backgroundColor: `${cat.color}15`, borderWidth: 1, borderColor: `${cat.color}40` },
                         ]}
                       >
-                        <cat.Icon size={14} color={isSelected ? '#FFFFFF' : cat.color} />
-                        <Text style={[st.catChipText, { color: isSelected ? '#FFFFFF' : cat.color }]}>
+                        <cat.Icon size={14} color={isSelected ? colors.primaryForeground : cat.color} />
+                        <Text style={[st.catChipText, { color: isSelected ? colors.primaryForeground : cat.color }]}>
                           {t(cat.labelKey)}
                         </Text>
                       </Pressable>

@@ -52,7 +52,7 @@ export function MapFilters({
               onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
             >
               <ArrowLeft size={14} color="#FFF" />
-              <Text style={[styles.backPillText, { color: '#FFF' }]}>
+              <Text style={[styles.backPillText, { color: colors.primaryForeground }]}>
                 {activeFilter === 'posts' ? t('map.layerPosts') : activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
               </Text>
             </Pressable>
@@ -69,7 +69,7 @@ export function MapFilters({
                 hitSlop={10}
                 onPress={() => { try { Haptics.selectionAsync() } catch {} onTimeFilterChange(timeFilter === tf.key ? 'all' : tf.key) }}
               >
-                <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? '#FFF' : colors.foreground }]}>
+                <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? colors.primaryForeground : colors.foreground }]}>
                   {tf.label}
                 </Text>
               </Pressable>
@@ -91,7 +91,7 @@ export function MapFilters({
                     hitSlop={10}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
-                    <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                    <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                       {sc.label} ({count})
                     </Text>
                   </Pressable>
@@ -114,7 +114,7 @@ export function MapFilters({
                     hitSlop={10}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
-                    <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                    <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                       {sc.label} ({count})
                     </Text>
                   </Pressable>
@@ -142,7 +142,7 @@ export function MapFilters({
                 hitSlop={10}
                 onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange(f.key); onSubCategoryChange(null); onTimeFilterChange('all') }}
               >
-                <Text style={[styles.filterPillText, { color: isActive ? '#FFF' : colors.foreground }]}>
+                <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                   {f.label} ({counts[f.key]}){f.hasSubFilter ? ' \u25B8' : ''}
                 </Text>
               </Pressable>

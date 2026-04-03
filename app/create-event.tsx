@@ -503,12 +503,12 @@ function CreateEventScreenInner() {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
               >
-                {selected && <Check size={14} color="#FFFFFF" style={styles.chipIcon} />}
+                {selected && <Check size={14} color={colors.primaryForeground} style={styles.chipIcon} />}
                 <Text
                   style={[
                     styles.chipText,
                     {
-                      color: selected ? '#FFFFFF' : colors.foreground,
+                      color: selected ? colors.primaryForeground : colors.foreground,
                       fontFamily: selected ? fonts.bodySemi : fonts.body,
                     },
                   ]}

@@ -433,8 +433,8 @@ export default function MapScreen() {
                 onPress={() => router.push('/(tabs)/create')}
                 style={[styles.emptyCreateBtn, { backgroundColor: colors.accent }]}
               >
-                <Plus size={16} color="#FFF" />
-                <Text style={styles.emptyCreateBtnText}>{t('map.createFirstPost')}</Text>
+                <Plus size={16} color={colors.primaryForeground} />
+                <Text style={[styles.emptyCreateBtnText, { color: colors.primaryForeground }]}>{t('map.createFirstPost')}</Text>
               </Pressable>
               <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
                 <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 16 }}>{t('map.tryAnotherArea')}</Text>

@@ -165,15 +165,15 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
       {/* Pro banner — only when no image (crown badge handles image cards) */}
       {isPro && !hasImage && (
         <View style={[styles.proBanner, { backgroundColor: colors.pro, shadowColor: colors.pro }]}>
-          <Crown size={12} color="#FFFFFF" />
-          <Text style={styles.proBannerText}>Pro</Text>
+          <Crown size={12} color={colors.primaryForeground} />
+          <Text style={[styles.proBannerText, { color: colors.primaryForeground }]}>Pro</Text>
         </View>
       )}
 
       {/* Fix 1: Nappaa urgency banner — expiring today */}
       {isNappaa && expirationInfo && expirationInfo.severity === 'urgent' && (
         <View style={[styles.urgencyBanner, { backgroundColor: colors.destructive }]}>
-          <Text style={styles.urgencyText}>{t('feed.expiringToday')}</Text>
+          <Text style={[styles.urgencyText, { color: colors.primaryForeground }]}>{t('feed.expiringToday')}</Text>
         </View>
       )}
 

@@ -32,6 +32,8 @@ interface ForumThreadViewProps {
   onToggleReplySort?: () => void
 }
 
+const ForumReplySeparator = () => <View style={{ height: 8 }} />
+
 function ForumThreadViewInner({
   post,
   replies,
@@ -229,7 +231,7 @@ function ForumThreadViewInner({
             )}
           </View>
         }
-        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+        ItemSeparatorComponent={ForumReplySeparator}
         ListFooterComponent={<View style={{ height: 80 }} />}
       />
 
