@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useCallback, useEffect } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking, Platform } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Camera, X, Megaphone, ExternalLink } from 'lucide-react-native'
@@ -235,7 +235,7 @@ export default function CreateAdScreen() {
 
   return (
     <ScreenErrorBoundary screenName="CreateAd">
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
@@ -245,7 +245,7 @@ export default function CreateAdScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Title */}
         <Text style={[styles.label, { color: colors.foreground }]}>{t('create.title')} *</Text>
         <TextInput
@@ -433,7 +433,7 @@ export default function CreateAdScreen() {
           )}
         </Pressable>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
     </ScreenErrorBoundary>
   )
 }

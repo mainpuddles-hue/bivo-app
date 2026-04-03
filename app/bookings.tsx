@@ -746,9 +746,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 8,
+    minHeight: 44,
   },
   actionBtnText: {
     fontSize: 12,
