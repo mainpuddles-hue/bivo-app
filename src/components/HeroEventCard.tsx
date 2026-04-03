@@ -34,7 +34,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
       accessibilityLabel={getCityEventName(event, locale)}
     >
       {event.image_url ? (
-        <Image source={{ uri: event.image_url }} style={styles.todayEventImage} contentFit="cover" />
+        <Image source={{ uri: event.image_url }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" />
       ) : (
         <View style={[styles.todayEventImageFallback, { backgroundColor: `${catColor}20` }]}>
           <Globe size={20} color={catColor} />

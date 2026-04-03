@@ -128,6 +128,7 @@ function NotificationsScreenInner() {
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const [userId, setUserId] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState('all')
   // 1a: Expanded groups state — tracks which grouped notifications are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
@@ -135,8 +136,9 @@ function NotificationsScreenInner() {
   const fetchNotifications = useCallback(async () => {
     try {
       const cachedId = await getCachedUserId()
-      if (!cachedId) { setIsLoggedIn(false); setLoading(false); setRefreshing(false); return }
+      if (!cachedId) { setIsLoggedIn(false); setUserId(null); setLoading(false); setRefreshing(false); return }
       setIsLoggedIn(true)
+      setUserId(cachedId)
       const { data } = await supabase
         .from('notifications')
         .select('*, from_user:profiles!notifications_from_user_id_fkey(id, name, avatar_url)')
@@ -155,6 +157,23 @@ function NotificationsScreenInner() {
   }, [supabase])
 
   useFocusEffect(useCallback(() => { fetchNotifications() }, [fetchNotifications]))
+
+  // Realtime subscription for new notifications
+  useEffect(() => {
+    if (!isLoggedIn || !userId) return
+    const channel = supabase
+      .channel(`notifications-${userId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${userId}`,
+      }, () => {
+        fetchNotifications()
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [userId, isLoggedIn, supabase, fetchNotifications])
 
   // 1b: Mark all as read
   const markAllRead = useCallback(async () => {

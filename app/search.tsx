@@ -1003,6 +1003,9 @@ function SearchScreenInner() {
           ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} /> : null}
           ListEmptyComponent={<SearchEmptyState query={query} colors={colors} t={t} />}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
         />
       ) : activeTab === 'events' ? (
         <FlatList
@@ -1044,6 +1047,9 @@ function SearchScreenInner() {
             </View>
           }
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
         />
       ) : activeTab === 'groups' ? (
         <FlatList
@@ -1083,6 +1089,9 @@ function SearchScreenInner() {
             </View>
           }
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
         />
       ) : (
         <FlatList
@@ -1111,6 +1120,9 @@ function SearchScreenInner() {
             </View>
           }
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
         />
       )}
 

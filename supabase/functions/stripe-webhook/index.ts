@@ -254,6 +254,9 @@ serve(async (req) => {
           if (isBusiness) {
             await supabase.from('profiles').update({
               is_business: false,
+              is_pro: false,
+              pro_expires_at: null,
+              stripe_subscription_id: null,
             }).eq('id', userId)
           } else {
             await supabase.from('profiles').update({

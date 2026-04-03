@@ -136,9 +136,17 @@ serve(async (req) => {
       }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Step 2: Check if company is active
-    // PRH doesn't always return clear status, so we check if it exists
-    const isActive = true // If PRH returns data, company exists in register
+    // Step 2: Check if company is active via PRH status
+    const isActive = prhData.status === 'active' || prhData.status === 'ACTIVE'
+    if (!isActive) {
+      return new Response(JSON.stringify({
+        valid: false,
+        error: 'company_not_active',
+        message: 'Yritys ei ole aktiivinen PRH:n rekisterissä. Rekisteröinti hylätty.',
+      }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // Step 3: Check name similarity (fuzzy — allow minor differences)
     const nameMatch = business_name

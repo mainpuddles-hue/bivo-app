@@ -70,39 +70,8 @@ serve(async (req) => {
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
-    // ── Pro users ──────────────────────────────────────────────
-    const { data: proUsers, error: proError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('is_pro', true)
-
-    if (proError) {
-      console.error('[grant-tier-boosts] Failed to query Pro users:', proError.message)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
-
-    let proGranted = 0
-    let proSkipped = 0
-
-    for (const profile of proUsers ?? []) {
-      const granted = await grantCreditsIfNeeded(
-        supabase,
-        profile.id,
-        TIER_CREDITS.pro,
-        currentMonth,
-        now,
-      )
-      if (granted) {
-        proGranted++
-      } else {
-        proSkipped++
-      }
-    }
-
-    // ── Business users ─────────────────────────────────────────
+    // ── Business users FIRST (they also have is_pro=true, so process them first
+    //    to set last_grant_at, preventing the Pro query from double-granting) ──
     const { data: businessUsers, error: bizError } = await supabase
       .from('profiles')
       .select('id')
@@ -131,6 +100,39 @@ serve(async (req) => {
         bizGranted++
       } else {
         bizSkipped++
+      }
+    }
+
+    // ── Pro users (exclude Business users who were already granted above) ──
+    const { data: proUsers, error: proError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('is_pro', true)
+      .eq('is_business', false)
+
+    if (proError) {
+      console.error('[grant-tier-boosts] Failed to query Pro users:', proError.message)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    let proGranted = 0
+    let proSkipped = 0
+
+    for (const profile of proUsers ?? []) {
+      const granted = await grantCreditsIfNeeded(
+        supabase,
+        profile.id,
+        TIER_CREDITS.pro,
+        currentMonth,
+        now,
+      )
+      if (granted) {
+        proGranted++
+      } else {
+        proSkipped++
       }
     }
 

@@ -497,7 +497,7 @@ function ConversationScreenInner() {
               ) : (
                 <>
                   {item.image_url ? (
-                    <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" />
+                    <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" />
                   ) : null}
                   {item.content ? (
                     <Text selectable style={[s.msgText, { color: isMine ? colors.primaryForeground : colors.foreground }]}>{item.content}</Text>
@@ -663,6 +663,9 @@ function ConversationScreenInner() {
         renderItem={renderMessage}
         contentContainerStyle={s.msgList}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
         onContentSizeChange={() => {
           if (!showScrollBtn) flatListRef.current?.scrollToEnd({ animated: false })
         }}
@@ -678,7 +681,7 @@ function ConversationScreenInner() {
                 style={[contextStyles.card, { backgroundColor: isDark ? colors.card : colors.muted }]}
               >
                 {linkedPost.image_url && (
-                  <Image source={{ uri: linkedPost.image_url }} style={contextStyles.image} contentFit="cover" />
+                  <Image source={{ uri: linkedPost.image_url }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" />
                 )}
                 <View style={contextStyles.info}>
                   <Text style={[contextStyles.label, { color: colors.mutedForeground }]}>{t('messages.aboutPost')}</Text>

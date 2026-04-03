@@ -116,8 +116,17 @@ export function useReferral(userId: string | null) {
     const newTier = REFERRAL_TIERS.filter(t => newCount >= t.invites).pop()
     const oldTier = REFERRAL_TIERS.filter(t => newCount - 1 >= t.invites).pop()
     if (newTier && (!oldTier || newTier.invites !== oldTier.invites)) {
-      // Award tier bonus points
-      await awardPoints((inviter as any).id, 'first_post_bonus') // Reuse action for bonus
+      // Award tier bonus points (use actual tier points, not first_post_bonus)
+      const tierPoints = newTier.points
+      const { data: inviterProfile } = await supabase
+        .from('profiles')
+        .select('total_points')
+        .eq('id', (inviter as any).id)
+        .single()
+      const currentTotal = ((inviterProfile as any)?.total_points ?? 0)
+      await (supabase.from('profiles') as any).update({
+        total_points: currentTotal + tierPoints,
+      }).eq('id', (inviter as any).id)
       // Award badge if tier has one
       if (newTier.badgeType) {
         const { error: badgeErr } = await (supabase.from('user_badges') as any)

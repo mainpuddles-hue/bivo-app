@@ -185,15 +185,22 @@ serve(async (req) => {
       })
     }
 
-    // Fetch buyer profile for Pro status (commission discount + ad pricing validation)
+    // Fetch seller's Pro status for commission discount (Pro sellers pay 5%, standard 10%)
+    const { data: sellerProProfile } = await supabase
+      .from('profiles')
+      .select('is_pro')
+      .eq('id', seller_id)
+      .single()
+
+    // Pro SELLERS get 5% commission, standard sellers 10%
+    const commissionRate = sellerProProfile?.is_pro ? 0.05 : 0.10
+
+    // Fetch buyer's Pro status for ad campaign pricing validation
     const { data: buyerProProfile } = await supabase
       .from('profiles')
       .select('is_pro')
       .eq('id', user.id)
       .single()
-
-    // Pro users get 5% commission, standard users 10%
-    const commissionRate = buyerProProfile?.is_pro ? 0.05 : 0.10
     const validatedFee = Math.round(validatedAmount * commissionRate)
 
     // Validate ad campaign pricing server-side

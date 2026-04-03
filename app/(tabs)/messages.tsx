@@ -199,17 +199,19 @@ export default function MessagesScreen() {
   // Fetch conversations on mount and re-fetch when screen gains focus (e.g. after reading messages)
   useFocusEffect(useCallback(() => { fetchConversations() }, [fetchConversations]))
 
-  // Realtime for new messages
+  // Realtime for new messages — filter to only relevant conversations
   useEffect(() => {
     if (!userId) return
     const channel = supabase
       .channel(`messages-list-${userId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload: any) => {
+        // Only refetch if the message belongs to one of our conversations
+        if (!conversations.some(c => c.id === payload.new.conversation_id)) return
         fetchConversations()
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [userId, supabase, fetchConversations])
+  }, [userId, supabase, fetchConversations, conversations])
 
   const handleArchive = useCallback(async (convId: string) => {
     const conv = conversations.find(c => c.id === convId)
@@ -386,6 +388,9 @@ export default function MessagesScreen() {
           )
         }
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
       />
     </View>
     </ScreenErrorBoundary>
