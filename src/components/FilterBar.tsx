@@ -31,6 +31,8 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
           <Pressable
             key={type}
             accessibilityLabel={t(cat.label)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
             onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
             style={({ pressed }) => [
               styles.chip,

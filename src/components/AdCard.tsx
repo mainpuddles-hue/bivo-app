@@ -57,7 +57,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
     }
 
     if (ad.link_url) {
-      Linking.openURL(ad.link_url)
+      Linking.openURL(ad.link_url).catch(() => {})
     }
   }, [ad.id, ad.link_url, supabase])
 

@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo } from 'react'
 import {
-  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet,
+  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, ActivityIndicator,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -215,7 +215,7 @@ function CommunityEventsScreenInner() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
         }
         ListEmptyComponent={
-          loading ? null : (
+          loading ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} /> : (
             <View style={s.emptyState}>
               <CalendarDays size={48} color={colors.mutedForeground} strokeWidth={1.3} />
               <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('events.noUpcomingEvents')}</Text>

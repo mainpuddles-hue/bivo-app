@@ -28,7 +28,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
 
   return (
     <Pressable
-      onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/community-events' as any)}
+      onPress={() => event.info_url ? Linking.openURL(event.info_url).catch(() => {}) : router.push('/community-events' as any)}
       style={({ pressed }) => [styles.todayEventCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
       accessibilityRole="button"
       accessibilityLabel={getCityEventName(event, locale)}

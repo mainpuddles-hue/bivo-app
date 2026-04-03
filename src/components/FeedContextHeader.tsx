@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     gap: 2,
-    height: 60,
+    minHeight: 60,
     justifyContent: 'center',
   },
   greetingLine: {

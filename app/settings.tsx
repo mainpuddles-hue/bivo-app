@@ -473,7 +473,7 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
         {/* Email verification status */}
         {userEmail && (
           <>

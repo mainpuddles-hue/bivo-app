@@ -588,8 +588,8 @@ export default function GroupDetailScreen() {
     <ScreenErrorBoundary screenName="GroupDetail">
     <KeyboardAvoidingView
       style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
     >
       {/* Header */}
       <View style={[ps.header, { borderBottomColor: colors.border }]}>
@@ -664,7 +664,7 @@ export default function GroupDetailScreen() {
           )}
           <View style={ps.postInputRow}>
             <Pressable onPress={handlePickImage} style={({ pressed }) => [ps.imageBtn, pressed && { opacity: 0.7 }]} hitSlop={8}><ImagePlus size={20} color={colors.mutedForeground} strokeWidth={1.8} /></Pressable>
-            <TextInput style={[ps.postInput, { color: colors.foreground, backgroundColor: colors.muted }]} placeholder={t('groups.writePost')} placeholderTextColor={colors.mutedForeground} value={postText} onChangeText={setPostText} multiline maxLength={2000} />
+            <TextInput style={[ps.postInput, { color: colors.foreground, backgroundColor: colors.muted }]} placeholder={t('groups.writePost')} placeholderTextColor={colors.mutedForeground} value={postText} onChangeText={setPostText} multiline maxLength={2000} textAlignVertical="top" />
             <Pressable style={({ pressed }) => [ps.sendBtn, { backgroundColor: (postText.trim() || postImage) ? colors.accent : colors.muted }, pressed && { opacity: 0.7 }]} onPress={handleSendPost} disabled={sending || (!postText.trim() && !postImage)}>
               {sending ? <ActivityIndicator size="small" color={colors.accentForeground} /> : <Send size={18} color={(postText.trim() || postImage) ? colors.accentForeground : colors.mutedForeground} strokeWidth={1.8} />}
             </Pressable>

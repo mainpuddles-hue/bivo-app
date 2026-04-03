@@ -36,7 +36,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
   const router = useRouter()
 
   // Tick every 10s to keep countdowns fresh
-  const [, setTick] = useState(0)
+  const [tick, setTick] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setTick(t => t + 1), 10000)
     return () => clearInterval(id)
@@ -55,7 +55,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
         return false
       })
       .sort((a, b) => new Date(a.expires_at!).getTime() - new Date(b.expires_at!).getTime())
-  }, [posts])
+  }, [posts, tick])
 
   if (urgentPosts.length === 0) return null
 

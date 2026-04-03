@@ -823,7 +823,7 @@ const st = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     gap: 12,
   },
-  backBtn: { padding: 2 },
+  backBtn: { padding: 2, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: {
     flex: 1,
     fontSize: 20,
@@ -832,9 +832,9 @@ const st = StyleSheet.create({
     lineHeight: 28,
   },
   addBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },

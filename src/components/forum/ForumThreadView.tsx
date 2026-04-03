@@ -236,7 +236,7 @@ function ForumThreadViewInner({
       {/* Reply input */}
       <View style={[styles.replyBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom || 12 }]}>
         <TextInput
-          style={[styles.replyInput, { color: colors.foreground, backgroundColor: isDark ? colors.muted : '#F5F5F5', borderColor: colors.border }]}
+          style={[styles.replyInput, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border }]}
           placeholder={t('forum.writeReply')}
           placeholderTextColor={colors.mutedForeground}
           value={replyText}

@@ -20,14 +20,18 @@ export function Header() {
   useFocusEffect(useCallback(() => {
     let mounted = true
     async function fetchUnread() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user || !mounted) return
-      const { count } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false)
-      if (mounted) setUnreadCount(count ?? 0)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || !mounted) return
+        const { count } = await supabase
+          .from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_read', false)
+        if (mounted) setUnreadCount(count ?? 0)
+      } catch {
+        // Network error or expired session — non-critical
+      }
     }
     fetchUnread()
     return () => { mounted = false }

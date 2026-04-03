@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   placeColorBar: {
     width: 3,
-    height: '70%' as any,
+    flex: 0.7,
     borderRadius: 2,
   },
   placeTitle: {

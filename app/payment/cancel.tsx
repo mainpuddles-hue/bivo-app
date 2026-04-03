@@ -27,7 +27,7 @@ function PaymentCancelScreenInner() {
         {/* Action buttons */}
         <View style={styles.actions}>
           <Pressable
-            onPress={() => router.replace('/(tabs)')}
+            onPress={() => router.back()}
             style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
             accessibilityLabel={t('payment.tryAgain')}
             accessibilityRole="button"
