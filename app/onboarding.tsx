@@ -11,6 +11,8 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   useWindowDimensions,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -472,6 +474,8 @@ function OnboardingScreenInner() {
         contentContainerStyle={s.neighborhoodGrid}
         showsVerticalScrollIndicator={false}
         style={s.neighborhoodScroll}
+        nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
       >
         {neighborhoodsLoading ? (
           <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 20 }} />
@@ -659,7 +663,7 @@ function OnboardingScreenInner() {
   )
 
   return (
-    <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <KeyboardAvoidingView style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -668,13 +672,14 @@ function OnboardingScreenInner() {
         scrollEventThrottle={16}
         onMomentumScrollEnd={handleScroll}
         bounces={false}
+        nestedScrollEnabled
       >
         {renderWelcome()}
         {renderHowItWorks()}
         {renderTrustSafety()}
         {renderNeighborhood()}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 

@@ -467,6 +467,7 @@ export default function GroupDetailScreen() {
   // ── Coming soon ──
   if (!loading && !tableExists) {
     return (
+      <ScreenErrorBoundary screenName="GroupDetail">
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
@@ -480,12 +481,14 @@ export default function GroupDetailScreen() {
           <Text style={[ps.emptyText, { color: colors.mutedForeground }]}>{t('groups.comingSoon')}</Text>
         </View>
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
   // ── Group not found (deleted or invalid ID) ──
   if (!loading && tableExists && !group) {
     return (
+      <ScreenErrorBoundary screenName="GroupDetail">
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
@@ -499,6 +502,7 @@ export default function GroupDetailScreen() {
           <Text style={[ps.emptyText, { color: colors.mutedForeground }]}>{t('groups.notFound') ?? t('common.notFound')}</Text>
         </View>
       </View>
+      </ScreenErrorBoundary>
     )
   }
 
