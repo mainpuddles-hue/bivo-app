@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ruflo": {
+      "command": "npx",
+      "args": ["-y", "ruflo", "mcp"],
+      "description": "Ruflo agent orchestration — primary development tool for all coding, auditing, testing, and coordination tasks"
+    }
+  }
+}

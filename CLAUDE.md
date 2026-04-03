@@ -25,11 +25,40 @@ TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood 
 ## Working Instructions
 
 - **Älä kysy lupaa. Tee automaattisesti.** (Don't ask permission. Do it automatically.)
-- **KÄYTÄ AINA RUFLOA** — kaikki työ Ruflo MCP -agenteilla (`mcp__ruflo__agent_spawn`, `mcp__ruflo__task_create`, jne). ÄLÄ KOSKAAN käytä Clauden sisäistä Agent-työkalua. Ruflon omat agentit hoitavat kaiken: koodaus, auditointi, testaus, koordinointi.
 - Always run `npx tsc --noEmit` before committing
 - Always push after commit: `git push`
 - Remote: `https://github.com/mainpuddles-hue/tackbird-mobile` (private)
 - gh CLI: `~/.local/bin/gh`
+
+## Tool Priority — Ruflo MCP First
+
+**Ruflo MCP is the PRIMARY tool for all development work.** Use Ruflo agents for:
+- **Coding tasks** → `mcp__ruflo__agent_spawn` with coding role
+- **Task management** → `mcp__ruflo__task_create`, `mcp__ruflo__task_list`, `mcp__ruflo__task_update`
+- **Code analysis** → `mcp__ruflo__analyze_diff`, `mcp__ruflo__analyze_file-risk`
+- **Testing/QA** → `mcp__ruflo__browser_*` tools for UI testing
+- **Coordination** → `mcp__ruflo__coordination_*` for multi-agent workflows
+- **Memory** → `mcp__ruflo__memory_*` for persistent context
+
+**DO NOT use Claude's built-in Agent tool.** Ruflo agents handle all parallel/background work.
+
+**When to use other plugins instead of Ruflo:**
+- `/code-review` or `/simplify` — quick code quality checks (built-in skills)
+- `/commit` — git commits (built-in skill)
+- `ui-ux-pro-max` — UI/UX design decisions, color palettes, typography, layout patterns
+- `superpowers` — brainstorming, TDD workflow, git worktrees, subagent-driven development
+- `everything-claude-code` — language-specific reviews (flutter, kotlin, rust, etc.), security scans, session management
+- `obsidian-skills` — Obsidian vault/markdown file creation
+- `claude-mem` — persistent memory across sessions (automatic, no manual use needed)
+- Supabase MCP (`mcp__claude_ai_Supabase__*`) — direct database operations, migrations, Edge Functions
+- Figma MCP (`mcp__claude_ai_Figma__*`) — reading designs from Figma files
+- Playwright MCP (`mcp__playwright__*`) — browser automation when Ruflo browser tools are insufficient
+
+**Decision flow:**
+1. Can Ruflo do it? → Use Ruflo
+2. Is it a specialized skill (UI design, code review, commit)? → Use the matching plugin/skill
+3. Is it a direct service operation (Supabase SQL, Figma design)? → Use that service's MCP
+4. Last resort → Use Claude's built-in tools directly
 
 ## Architecture
 
