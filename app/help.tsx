@@ -124,7 +124,7 @@ function HelpScreenInner() {
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
           <Pressable
-            onPress={() => Linking.openURL('mailto:tuki@tackbird.fi').catch(() => Alert.alert('Error', 'Could not open email client'))}
+            onPress={() => Linking.openURL('mailto:tuki@tackbird.fi').catch(() => Alert.alert(t('common.error'), t('common.error')))}
             style={[s.contactBtn, { backgroundColor: colors.primary }]}
             accessibilityLabel="tuki@tackbird.fi"
             accessibilityRole="link"

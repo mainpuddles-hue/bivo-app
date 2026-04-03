@@ -191,7 +191,7 @@ export default function ImageGallery({ images, initialIndex = 0, visible, onClos
 
               {/* Dots indicator */}
               {images.length > 1 && (
-                <View style={[styles.dotsContainer, { bottom: insets.bottom + 32 }]}>
+                <View style={[styles.dotsContainer, { bottom: insets.bottom + 32 }]} accessibilityLabel={`Image ${currentIndex + 1} of ${images.length}`}>
                   {images.map((_, i) => (
                     <View
                       key={i}

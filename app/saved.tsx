@@ -328,7 +328,7 @@ function SavedScreenInner() {
                       </View>
                     )}
                   </View>
-                  <Pressable onPress={() => handleUnsaveEvent(event.id, event.event_type)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')}>
+                  <Pressable onPress={() => handleUnsaveEvent(event.id, event.event_type)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
                     <BookmarkCheck size={18} color={colors.primary} />
                   </Pressable>
                 </Pressable>
@@ -368,7 +368,7 @@ function SavedScreenInner() {
                       </View>
                     )}
                   </View>
-                  <Pressable onPress={() => handleUnsavePlace(place.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')}>
+                  <Pressable onPress={() => handleUnsavePlace(place.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
                     <BookmarkCheck size={18} color={colors.primary} />
                   </Pressable>
                 </Pressable>

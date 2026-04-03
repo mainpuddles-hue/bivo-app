@@ -416,7 +416,7 @@ function FeedScreenInner() {
               digestData.threads > 0 ? `${digestData.threads} ${t('feed.newDiscussions')}` : null,
             ].filter(Boolean).join(' \u00B7 ')}
           </Text>
-          <Pressable onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
+          <Pressable onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 4, right: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
             <XIcon size={14} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-    paddingTop: 8, paddingBottom: 12, gap: 8,
+    paddingBottom: 12, gap: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,

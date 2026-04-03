@@ -352,7 +352,7 @@ export default function MapScreen() {
             },
           ]}
         >
-          <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? '#FFF' : colors.foreground} />
+          <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? colors.primaryForeground : colors.foreground} />
         </Pressable>
 
         {/* ── Business toggle chip ── */}
@@ -371,8 +371,8 @@ export default function MapScreen() {
             },
           ]}
         >
-          <Building2 size={14} color={showBusinesses ? '#FFF' : colors.mutedForeground} />
-          <Text style={[styles.businessToggleText, { color: showBusinesses ? '#FFF' : colors.mutedForeground }]}>
+          <Building2 size={14} color={showBusinesses ? colors.primaryForeground : colors.mutedForeground} />
+          <Text style={[styles.businessToggleText, { color: showBusinesses ? colors.primaryForeground : colors.mutedForeground }]}>
             {t('map.businesses')}
           </Text>
         </Pressable>

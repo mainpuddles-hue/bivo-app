@@ -99,7 +99,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
               <Flag size={18} color={colors.destructive} />
               <Text style={[s.title, { color: colors.foreground }]}>{t('report.title')}</Text>
             </View>
-            <Pressable onPress={handleClose} hitSlop={12}>
+            <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
               <X size={20} color={colors.mutedForeground} />
             </Pressable>
           </View>

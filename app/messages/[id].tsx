@@ -603,7 +603,7 @@ function ConversationScreenInner() {
   if (notFound && !loading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
+        <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
           <Pressable
             onPress={() => router.back()}
             hitSlop={12}
@@ -643,7 +643,7 @@ function ConversationScreenInner() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}

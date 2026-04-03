@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -26,7 +25,6 @@ const separatorStyle = { height: StyleSheet.hairlineWidth, marginLeft: 76 } as c
 export default function MessagesScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
-  const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
   const [conversations, setConversations] = useState<Conversation[]>([])

@@ -19,7 +19,7 @@ export function OutOfAreaBanner({ visible, cityName }: OutOfAreaBannerProps) {
 
   return (
     <View style={[styles.banner, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <MapPin size={20} color="#F59E0B" />
+      <MapPin size={20} color={colors.pro} />
       <View style={styles.textWrap}>
         <Text style={[styles.title, { color: colors.foreground }]}>
           {t('map.outOfArea')}

@@ -37,6 +37,8 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
     <Pressable
       style={({ pressed }) => [styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
       onPress={() => onPress(item)}
+      accessibilityRole="button"
+      accessibilityLabel={item.title}
     >
       {/* Full-width image with date overlay */}
       {imageUrl ? (

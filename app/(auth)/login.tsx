@@ -488,6 +488,7 @@ function LoginScreenInner() {
                   onPress={() => setMode('forgot')}
                   accessibilityRole="link"
                   accessibilityLabel={t('auth.forgotPassword')}
+                  style={{ minHeight: 44, justifyContent: 'center' }}
                 >
                   <Text style={[styles.forgotLink, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
                 </Pressable>

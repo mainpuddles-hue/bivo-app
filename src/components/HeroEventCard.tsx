@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -25,6 +25,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
   const router = useRouter()
 
   const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
+  const [imageError, setImageError] = useState(false)
 
   return (
     <Pressable
@@ -33,8 +34,8 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
       accessibilityRole="button"
       accessibilityLabel={getCityEventName(event, locale)}
     >
-      {event.image_url ? (
-        <Image source={{ uri: event.image_url }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" />
+      {event.image_url && !imageError ? (
+        <Image source={{ uri: event.image_url }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" onError={() => setImageError(true)} />
       ) : (
         <View style={[styles.todayEventImageFallback, { backgroundColor: `${catColor}20` }]}>
           <Globe size={20} color={catColor} />

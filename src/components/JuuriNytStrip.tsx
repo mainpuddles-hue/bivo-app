@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useEffect } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, Animated } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Zap, Clock, MapPin } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'

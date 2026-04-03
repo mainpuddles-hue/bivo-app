@@ -22,7 +22,7 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
         <Text style={[styles.description, { color: colors.mutedForeground }]}>{description}</Text>
       )}
       {actionLabel && onAction && (
-        <Pressable onPress={onAction} style={({ pressed }) => [styles.actionBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}>
+        <Pressable onPress={onAction} style={({ pressed }) => [styles.actionBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button">
           <Text style={[styles.actionText, { color: colors.primaryForeground }]}>{actionLabel}</Text>
         </Pressable>
       )}

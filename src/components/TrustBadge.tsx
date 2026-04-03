@@ -135,8 +135,8 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
             {t('trust.hintVerifyId')}
           </Text>
           <Pressable onPress={onVerifyPress} style={({ pressed }) => [styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }, pressed && { opacity: 0.7 }]}>
-            <ShieldCheck size={16} color="#FFFFFF" />
-            <Text style={styles.verifyBtnText}>{t('trust.verifyNow')}</Text>
+            <ShieldCheck size={16} color={colors.primaryForeground} />
+            <Text style={[styles.verifyBtnText, { color: colors.primaryForeground }]}>{t('trust.verifyNow')}</Text>
           </Pressable>
         </>
       )}
