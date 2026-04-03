@@ -441,11 +441,11 @@ export default function ProfileScreen() {
               </View>
             </View>
           ) : (
-            <Pressable onPress={() => setEditingBio(true)} style={[s.bioTapArea, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
-              <Text style={[s.bio, { color: profile.bio ? colors.mutedForeground : colors.primary }]}>
+            <Pressable onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'center', gap: 6 }, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
+              <Text style={[s.bio, { color: profile.bio ? colors.mutedForeground : colors.primary, flex: 1 }]}>
                 {profile.bio || t('profile.clickToAddBio')}
               </Text>
-              <Pencil size={12} color={profile.bio ? colors.mutedForeground : colors.primary} style={{ alignSelf: 'center', marginTop: 2 }} />
+              <Pencil size={12} color={profile.bio ? colors.mutedForeground : colors.primary} />
             </Pressable>
           )}
 

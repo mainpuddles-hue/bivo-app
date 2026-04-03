@@ -489,7 +489,7 @@
     "startCta": "Alusta vestlust",
     "archivedHint": "Arhiveeritud vestlused kuvatakse siin",
     "unknownUser": "Tundmatu kasutaja",
-    "noMessagesYet": "Sõnumeid veel pole. Ütle tere!",
+    "noMessagesYet": "Sõnumeid pole veel",
     "you": "Sina: {message}",
     "conversationCreateFailed": "Vestluse loomine ebaõnnestus",
     "imageMessageAlt": "Saadetud pilt",

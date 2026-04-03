@@ -333,7 +333,7 @@ export default function MessagesScreen() {
                     </View>
                   ) : (
                     <Text style={[styles.convPreview, { color: colors.mutedForeground }, unread > 0 && { color: colors.foreground }]} numberOfLines={1}>
-                      {isMySent && lastMsg?.content ? t('messages.you', { message: lastMsg.content }) : lastMsg?.content ?? ''}
+                      {isMySent && lastMsg?.content ? t('messages.you', { message: lastMsg.content }) : lastMsg?.content || t('messages.noMessagesYet')}
                     </Text>
                   )}
                 </View>

@@ -490,7 +490,7 @@
     "startCta": "Aloita keskustelu",
     "archivedHint": "Arkistoidut keskustelut näkyvät täällä",
     "unknownUser": "Tuntematon käyttäjä",
-    "noMessagesYet": "Ei vielä viestejä. Sano hei!",
+    "noMessagesYet": "Ei viestejä vielä",
     "you": "Sinä: {message}",
     "conversationCreateFailed": "Keskustelun luonti epäonnistui",
     "imageMessageAlt": "Lähetetty kuva",

@@ -490,7 +490,7 @@
     "startCta": "Start a conversation",
     "archivedHint": "Archived conversations appear here",
     "unknownUser": "Unknown user",
-    "noMessagesYet": "No messages yet. Say hello!",
+    "noMessagesYet": "No messages yet",
     "you": "You: {message}",
     "conversationCreateFailed": "Failed to create conversation",
     "imageMessageAlt": "Sent image",

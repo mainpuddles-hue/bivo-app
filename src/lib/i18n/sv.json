@@ -470,7 +470,7 @@
     "startCta": "Starta en konversation",
     "archivedHint": "Arkiverade konversationer visas här",
     "unknownUser": "Okänd användare",
-    "noMessagesYet": "Inga meddelanden annu. Sag hej!",
+    "noMessagesYet": "Inga meddelanden ännu",
     "you": "Du: {message}",
     "conversationCreateFailed": "Kunde inte skapa konversation",
     "imageMessageAlt": "Skickad bild",

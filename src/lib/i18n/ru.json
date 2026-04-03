@@ -489,7 +489,7 @@
     "startCta": "Начать беседу",
     "archivedHint": "Архивные беседы отображаются здесь",
     "unknownUser": "Неизвестный пользователь",
-    "noMessagesYet": "Сообщений пока нет. Напишите первым!",
+    "noMessagesYet": "Сообщений пока нет",
     "you": "Вы: {message}",
     "conversationCreateFailed": "Не удалось создать беседу",
     "imageMessageAlt": "Отправленное фото",
