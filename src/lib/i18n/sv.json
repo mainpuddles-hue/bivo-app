@@ -2634,5 +2634,8 @@
     "days7": "7 dagar",
     "sandboxNote": "Utvecklingsläge: köp är simulerade",
     "boostHint": "Lyft annonser visas högst upp i flödet"
+  },
+  "rateLimit": {
+    "tooManyActions": "För många åtgärder. Vänta en stund och försök igen."
   }
 }

@@ -78,7 +78,7 @@ function CommunityCard({ item, type, colors, t, onPress }: {
 
   const title = item.title ?? item.name ?? ''
   const subtitle = type === 'event'
-    ? (item.event_date ? new Date(item.event_date).toLocaleDateString() : '')
+    ? (item.event_date ? new Date(item.event_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '')
     : type === 'group'
     ? `${item.member_count ?? 0} ${t('feed.members')}`
     : `${item.upvote_count ?? 0} \u2191 \u00B7 ${item.comment_count ?? 0} ${t('feed.replies')}`

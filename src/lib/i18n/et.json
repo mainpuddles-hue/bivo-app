@@ -2594,5 +2594,8 @@
     "days7": "7 päeva",
     "sandboxNote": "Arendusrežiim: ostud on simuleeritud",
     "boostHint": "Tõstetud kuulutused kuvatakse voo ülaosas"
+  },
+  "rateLimit": {
+    "tooManyActions": "Liiga palju toiminguid. Oota hetk ja proovi uuesti."
   }
 }

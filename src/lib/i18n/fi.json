@@ -2654,5 +2654,8 @@
     "days7": "7 päivää",
     "sandboxNote": "Kehitystila: ostot simuloituja",
     "boostHint": "Nostettu ilmoitus näkyy feedin kärjessä"
+  },
+  "rateLimit": {
+    "tooManyActions": "Liian monta toimintoa. Odota hetki ja yritä uudelleen."
   }
 }

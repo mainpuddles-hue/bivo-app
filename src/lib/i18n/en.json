@@ -2654,5 +2654,8 @@
     "days7": "7 days",
     "sandboxNote": "Dev mode: purchases are simulated",
     "boostHint": "Boosted listings appear at the top of the feed"
+  },
+  "rateLimit": {
+    "tooManyActions": "Too many actions. Please wait a moment and try again."
   }
 }
