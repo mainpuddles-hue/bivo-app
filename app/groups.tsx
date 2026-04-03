@@ -341,10 +341,10 @@ export default function GroupsScreen() {
         ) : (
           <Pressable
             style={[s.joinButton, { backgroundColor: colors.accent }]}
-            onPress={(e) => {
-              e.stopPropagation?.()
+            onPress={() => {
               handleJoin(group)
             }}
+            onStartShouldSetResponder={() => true}
             accessibilityRole="button"
             accessibilityLabel={t('groups.join')}
           >
@@ -581,7 +581,7 @@ export default function GroupsScreen() {
                   value={newIsPublic}
                   onValueChange={setNewIsPublic}
                   trackColor={{ false: colors.muted, true: colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? '#FFFFFF' : undefined}
+                  thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                 />
               </View>
 

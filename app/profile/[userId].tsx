@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, Dimensions, Linking } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, useWindowDimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
@@ -30,8 +30,6 @@ import { isProfileVisible } from '@/lib/privacyUtils'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
-const SCREEN_WIDTH = Dimensions.get('window').width
-const HERO_IMAGE_WIDTH = SCREEN_WIDTH * 0.85
 const HERO_IMAGE_HEIGHT = 200
 
 export default function PublicProfileScreen() {
@@ -41,6 +39,8 @@ export default function PublicProfileScreen() {
   const router = useRouter()
   const { userId } = useLocalSearchParams<{ userId: string }>()
   const supabase = useSupabase()
+  const { width: screenWidth } = useWindowDimensions()
+  const heroImageWidth = screenWidth * 0.85
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -383,8 +383,9 @@ export default function PublicProfileScreen() {
             <View style={bs.heroWrapper}>
               <ScrollView
                 horizontal
-                pagingEnabled
                 showsHorizontalScrollIndicator={false}
+                snapToInterval={heroImageWidth + 12}
+                decelerationRate="fast"
                 style={bs.heroCarousel}
                 contentContainerStyle={bs.heroCarouselContent}
               >
@@ -392,7 +393,7 @@ export default function PublicProfileScreen() {
                   <Image
                     key={`biz-img-${idx}`}
                     source={{ uri }}
-                    style={bs.heroImage}
+                    style={[bs.heroImage, { width: heroImageWidth }]}
                     contentFit="cover"
                     transition={200}
                   />
@@ -1173,7 +1174,6 @@ const bs = StyleSheet.create({
     gap: 10,
   },
   heroImage: {
-    width: HERO_IMAGE_WIDTH,
     height: HERO_IMAGE_HEIGHT,
     borderRadius: 12,
   },

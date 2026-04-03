@@ -320,6 +320,8 @@ function BookingDetailScreenInner() {
         <Pressable
           onPress={() => booking.post?.id && router.push(`/post/${booking.post.id}` as any)}
           style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
+          accessibilityRole="button"
+          accessibilityLabel={booking.post?.title ?? t('booking.viewPost')}
         >
           {booking.post?.image_url ? (
             <Image source={{ uri: booking.post.image_url }} style={styles.postImage} contentFit="cover" />
@@ -343,6 +345,8 @@ function BookingDetailScreenInner() {
           <Pressable
             onPress={() => router.push(`/profile/${booking.other_user!.id}` as any)}
             style={[styles.userCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
+            accessibilityRole="button"
+            accessibilityLabel={booking.other_user!.name}
           >
             <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={44} />
             <View style={{ flex: 1, gap: 2 }}>
