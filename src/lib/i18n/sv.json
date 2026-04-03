@@ -37,7 +37,8 @@
     "loginRequired": "Logga in",
     "you": "du",
     "and": "och",
-    "ok": "OK"
+    "ok": "OK",
+    "dismiss": "Stäng"
   },
   "nav": {
     "feed": "Hem",
@@ -2548,7 +2549,8 @@
     "yourRank": "Din placering",
     "points": "poäng",
     "thisMonth": "Denna månad",
-    "noData": "Inga poäng ännu"
+    "noData": "Inga poäng ännu",
+    "allTime": "Alla tider"
   },
   "points": {
     "earned": "+{points} poäng!",

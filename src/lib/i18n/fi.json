@@ -37,7 +37,8 @@
     "loginRequired": "Kirjaudu sisään",
     "you": "sinä",
     "and": "ja",
-    "ok": "OK"
+    "ok": "OK",
+    "dismiss": "Sulje"
   },
   "nav": {
     "feed": "Koti",
@@ -2568,7 +2569,8 @@
     "yourRank": "Sinun sijasi",
     "points": "pistettä",
     "thisMonth": "Tässä kuussa",
-    "noData": "Ei vielä pisteitä"
+    "noData": "Ei vielä pisteitä",
+    "allTime": "Kaikkien aikojen"
   },
   "points": {
     "earned": "+{points} pistettä!",

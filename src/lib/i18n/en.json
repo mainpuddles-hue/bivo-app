@@ -37,7 +37,8 @@
     "loginRequired": "Please log in",
     "you": "you",
     "and": "and",
-    "ok": "OK"
+    "ok": "OK",
+    "dismiss": "Dismiss"
   },
   "nav": {
     "feed": "Home",
@@ -2568,7 +2569,8 @@
     "yourRank": "Your rank",
     "points": "points",
     "thisMonth": "This month",
-    "noData": "No points yet"
+    "noData": "No points yet",
+    "allTime": "All time"
   },
   "points": {
     "earned": "+{points} points!",

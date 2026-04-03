@@ -37,7 +37,8 @@
     "loginRequired": "Palun logi sisse",
     "you": "sina",
     "and": "ja",
-    "ok": "OK"
+    "ok": "OK",
+    "dismiss": "Sulge"
   },
   "nav": {
     "feed": "Kodu",
@@ -2508,7 +2509,8 @@
     "yourRank": "Sinu koht",
     "points": "punkti",
     "thisMonth": "Sel kuul",
-    "noData": "Punkte veel pole"
+    "noData": "Punkte veel pole",
+    "allTime": "Kogu aeg"
   },
   "points": {
     "earned": "+{points} punkti!",

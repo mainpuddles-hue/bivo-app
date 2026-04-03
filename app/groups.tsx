@@ -81,7 +81,7 @@ function GroupSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors
   const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
 
   return (
-    <View style={[s.groupCard, { backgroundColor: colors.card }]}>
+    <View style={[s.groupCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <Animated.View style={[s.skelCircle, { backgroundColor: colors.muted, opacity }]} />
       <View style={s.groupCardMiddle}>
         <Animated.View style={[s.skelLine, { width: '60%', height: 14, backgroundColor: colors.muted, opacity }]} />

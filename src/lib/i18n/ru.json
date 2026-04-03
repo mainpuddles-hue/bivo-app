@@ -37,7 +37,8 @@
     "loginRequired": "Войдите в систему",
     "you": "вы",
     "and": "и",
-    "ok": "OK"
+    "ok": "OK",
+    "dismiss": "Закрыть"
   },
   "nav": {
     "feed": "Главная",
@@ -2508,7 +2509,8 @@
     "yourRank": "Ваше место",
     "points": "баллов",
     "thisMonth": "В этом месяце",
-    "noData": "Баллов пока нет"
+    "noData": "Баллов пока нет",
+    "allTime": "За всё время"
   },
   "points": {
     "earned": "+{points} баллов!",
