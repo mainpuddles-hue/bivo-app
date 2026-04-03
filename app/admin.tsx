@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback } from 'react'
 import {
   View, Text, ScrollView, Pressable, TextInput, StyleSheet,
@@ -123,8 +125,8 @@ function AdminScreenInner() {
           unreviewedFlags: flagsRes.count ?? 0,
         })
       }
-    } catch {
-      // Non-critical — silent fail
+    } catch (err) {
+      if (__DEV__) console.warn('[admin] loadData failed:', err)
     }
   }, [activeTab, isAdmin, supabase])
 
@@ -147,8 +149,8 @@ function AdminScreenInner() {
         .ilike('name', `%${userSearch.trim()}%`)
         .limit(20)
       setUsers((data ?? []) as unknown as AdminUser[])
-    } catch {
-      // ignore
+    } catch (err) {
+      if (__DEV__) console.warn('[admin] searchUsers failed:', err)
     }
     setSearchingUsers(false)
   }, [userSearch, supabase])

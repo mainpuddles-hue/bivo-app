@@ -91,8 +91,7 @@ export function useLocationDetection(userId: string | null) {
           isWaitlist = (countryData as any)?.is_waitlist ?? false
           countryDisplayName = (countryData as any)?.name ?? null
         } catch {
-          // If countries table doesn't exist or query fails,
-          // fall back to checking if country is Finland
+          // Intentional: countries table may not exist — fall back to Finland check
           isSupported = countryCode === 'FI'
         }
 
@@ -127,7 +126,7 @@ export function useLocationDetection(userId: string | null) {
             .catch(() => {})
         }
       } catch {
-        // On any error, assume Finland (don't block users)
+        // Intentional: on any error, assume Finland (don't block users)
         if (mounted) {
           setLocation(l => ({
             ...l,

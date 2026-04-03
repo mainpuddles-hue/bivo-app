@@ -28,5 +28,5 @@ export async function triggerPush(params: PushParams): Promise<void> {
       headers,
       body: JSON.stringify(params),
     })
-  } catch {} // Non-blocking — never fail the main action
+  } catch {} // Intentional: non-critical notification — never fail the main action
 }

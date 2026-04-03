@@ -16,9 +16,13 @@ const EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
 const HF_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${EMBEDDING_MODEL}`
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://tackbird.fi',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
+const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
+const hfToken = Deno.env.get('HF_API_TOKEN')
 
 const HF_TIMEOUT_MS = 15000 // 15 second timeout for HuggingFace API
 const MAX_RETRIES = 2       // Retry once on transient failures
@@ -80,6 +84,22 @@ serve(async (req) => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // JWT authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const body = await req.json()
     const { post_id } = body
 

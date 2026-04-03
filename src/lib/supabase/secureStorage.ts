@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 // On web, AsyncStorage uses localStorage (no secure alternative)
 let SecureStore: any = null
 if (Platform.OS !== 'web') {
-  try { SecureStore = require('expo-secure-store') } catch {}
+  try { SecureStore = require('expo-secure-store') } catch {} // Intentional: expo-secure-store may not be available
 }
 
 const SECURE_KEYS = ['supabase.auth.token', 'sb-wfsghkseyyxkkalcqtzq-auth-token']
@@ -20,7 +20,7 @@ export const secureStorage = {
       try {
         const secureValue = await SecureStore.getItemAsync(key.replace(/[^a-zA-Z0-9._-]/g, '_'))
         if (secureValue !== null) return secureValue
-      } catch {}
+      } catch {} // Intentional: fall through to AsyncStorage when SecureStore fails
       // Fallback to AsyncStorage (large values or SecureStore miss)
     }
     return AsyncStorage.getItem(key)
@@ -36,7 +36,7 @@ export const secureStorage = {
         try {
           await SecureStore.setItemAsync(key.replace(/[^a-zA-Z0-9._-]/g, '_'), value)
           return
-        } catch {}
+        } catch {} // Intentional: fall through to AsyncStorage when SecureStore fails
       }
     }
     await AsyncStorage.setItem(key, value)
@@ -45,7 +45,7 @@ export const secureStorage = {
     if (SecureStore && isSecureKey(key)) {
       try {
         await SecureStore.deleteItemAsync(key.replace(/[^a-zA-Z0-9._-]/g, '_'))
-      } catch {}
+      } catch {} // Intentional: best-effort SecureStore cleanup
     }
     await AsyncStorage.removeItem(key)
   },

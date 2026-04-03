@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp, Crown, CheckCircle } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -234,6 +234,11 @@ export default function CreateScreen() {
   const { suggestion: priceSuggestion } = usePriceSuggestion(selectedType, selectedTags, userNeighborhood)
   const boosts = useBoosts(currentUserId)
 
+  // Refresh boost balance when screen gains focus (e.g. returning from boosts purchase screen)
+  useFocusEffect(useCallback(() => {
+    boosts.refreshBalance()
+  }, [boosts.refreshBalance]))
+
   // Smart default: auto-populate location from user's neighborhood
   useEffect(() => {
     if (userNeighborhood && !location && step === 'form') {
@@ -421,7 +426,7 @@ export default function CreateScreen() {
         sort_order: idx + 1,
       }))
       const { error: imgError } = await (supabase.from('post_images') as any).insert(extras)
-      if (imgError) console.error('[create] post_images insert failed:', imgError.message)
+      if (imgError && __DEV__) console.error('[create] post_images insert failed:', imgError.message)
     }
 
     if (failedCount > 0 && uploadedUrls.length > 0) {
@@ -588,7 +593,7 @@ export default function CreateScreen() {
         const mainImageUrl = await uploadImages(user.id, post.id)
         if (mainImageUrl) {
           const { error: imgUrlError } = await (supabase.from('posts') as any).update({ image_url: mainImageUrl }).eq('id', post.id)
-          if (imgUrlError) console.error('[create] image_url update failed:', imgUrlError.message)
+          if (imgUrlError && __DEV__) console.error('[create] image_url update failed:', imgUrlError.message)
         } else {
           // ALL image uploads failed — ask user whether to keep post without images or retry
           const userChoice = await new Promise<'publish' | 'retry'>(resolve => {
@@ -604,7 +609,13 @@ export default function CreateScreen() {
           })
           if (userChoice === 'retry') {
             // Delete the already-inserted post and bail out so user can retry
-            await (supabase.from('posts') as any).delete().eq('id', post.id)
+            if (post?.id) {
+              const { error: deleteError } = await (supabase.from('posts') as any).delete().eq('id', post.id)
+              if (deleteError) {
+                console.error('[create] rollback delete failed:', deleteError.message)
+                Alert.alert(t('common.error'), t('create.rollbackFailed') ?? 'Failed to clean up — please delete the draft from your profile')
+              }
+            }
             setSubmitting(false)
             setUploadStatus('')
             return
@@ -649,7 +660,7 @@ export default function CreateScreen() {
           icon: 'CalendarDays',
         })
         if (eventError) {
-          console.error('[create] event insert failed:', eventError.message)
+          if (__DEV__) console.error('[create] event insert failed:', eventError.message)
           Alert.alert(t('common.error'), t('create.eventCreateFailed') ?? 'Event creation failed')
         }
       }

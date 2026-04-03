@@ -95,7 +95,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
   const userTrustLevel = computeTrustLevelFromBadges(user?.user_badges)
 
-  const isAnonymous = (post as any).is_anonymous === true
+  const isAnonymous = post.is_anonymous === true
   const isUrgentPost = post.is_urgent && post.expires_at && new Date(post.expires_at).getTime() > Date.now()
   const [showMore, setShowMore] = useState(false)
 
@@ -126,13 +126,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
         onInteraction?.(post.id, 'click')
         // Seed posts have fake IDs — don't navigate to detail (would show eternal spinner)
-        if ((post as any).is_seed) return
+        if (post.is_seed) return
         router.push(`/post/${post.id}`)
       }}
       onLongPress={async () => {
         if (!isHumanAction()) return
         if (!userId) { router.push('/(auth)/login'); return }
-        if ((post as any).is_seed) return
+        if (post.is_seed) return
         if (savingRef.current) return
         savingRef.current = true
         try {
@@ -301,7 +301,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
           {post.title}
         </Text>
-        {(post as any).is_seed && (
+        {post.is_seed && (
           <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
         )}
 
@@ -378,7 +378,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
 
                 // Block interactions on seed posts (fake IDs cause FK violations)
-                if ((post as any).is_seed) return
+                if (post.is_seed) return
 
                 if (liked) {
                   const prevCount = likeCount
@@ -454,7 +454,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               e.stopPropagation?.()
               if (!isHumanAction()) return
               if (!userId) { router.push('/(auth)/login'); return }
-              if ((post as any).is_seed) return
+              if (post.is_seed) return
               if (savingRef.current) return
               savingRef.current = true
               try {

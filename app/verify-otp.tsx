@@ -102,7 +102,7 @@ export default function VerifyOtpScreen() {
             type: 'recovery',
           })
           if (sessionError) {
-            console.warn('[verify-otp] Failed to establish recovery session:', sessionError.message)
+            if (__DEV__) console.warn('[verify-otp] Failed to establish recovery session:', sessionError.message)
           }
         }
         trackEvent('auth_login_success' as any)

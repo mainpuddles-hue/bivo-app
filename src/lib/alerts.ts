@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 // HSL Digitransit API + Ilmatieteen laitos API — alert fetchers
 
 export interface TransitAlert {
@@ -86,7 +88,8 @@ export async function fetchHSLAlerts(): Promise<TransitAlert[]> {
           endTime: a.effectiveEndDate ? new Date(a.effectiveEndDate * 1000).toISOString() : null,
         }
       })
-  } catch {
+  } catch (err) {
+    if (__DEV__) console.warn('[alerts] fetchTransitAlerts failed:', err)
     return []
   }
 }
@@ -134,7 +137,8 @@ export async function fetchWeatherAlerts(): Promise<WeatherAlert[]> {
     }
 
     return alerts
-  } catch {
+  } catch (err) {
+    if (__DEV__) console.warn('[alerts] fetchWeatherAlerts failed:', err)
     return []
   }
 }

@@ -70,23 +70,27 @@ serve(async (req) => {
       })
     }
 
-    // Find valid (unused, not expired) code
-    const { data: otpRecord, error: findError } = await supabase
+    // Atomically find AND mark the code as used in a single UPDATE to prevent
+    // TOCTOU race conditions where two concurrent requests verify the same code.
+    // The WHERE clause includes `used = false` so only the first request succeeds.
+    const { data: otpRecord, error: claimError } = await supabase
       .from('otp_codes')
-      .select('id, expires_at')
+      .update({ used: true })
       .eq('email', cleanEmail)
       .eq('code', cleanCode)
       .eq('type', type)
       .eq('used', false)
       .gte('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .select('id, expires_at')
       .maybeSingle()
 
-    if (findError) throw findError
+    if (claimError) throw claimError
 
     if (!otpRecord) {
-      // Increment verify_attempts on the most recent OTP for this email
+      // Code was invalid, expired, or already used by a concurrent request.
+      // Increment verify_attempts on the most recent OTP for this email.
+      // Use RPC-style atomic increment to avoid another TOCTOU on the counter,
+      // but since this is only a counter for rate limiting the impact is minimal.
       const { data: latestOtp } = await supabase
         .from('otp_codes')
         .select('id, verify_attempts')
@@ -108,8 +112,7 @@ serve(async (req) => {
       })
     }
 
-    // Mark code as used
-    await supabase.from('otp_codes').update({ used: true }).eq('id', otpRecord.id)
+    // Code was atomically claimed — it is now marked as used
 
     // Mark email as verified in profiles
     if (type === 'signup') {

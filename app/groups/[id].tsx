@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import {
   View, Text, FlatList, RefreshControl, StyleSheet,
@@ -165,7 +167,7 @@ export default function GroupDetailScreen() {
       }
       setTableExists(true)
       setGroup(data as unknown as GroupInfo)
-    } catch { /* silent */ }
+    } catch (err) { if (__DEV__) console.warn('[group] fetchGroup failed:', err) }
   }, [supabase, id])
 
   const checkMembership = useCallback(async () => {
@@ -174,7 +176,7 @@ export default function GroupDetailScreen() {
       const { data } = await supabase.from('group_members').select('role').eq('group_id', id).eq('user_id', currentUserId).single()
       if (data) { setIsMember(true); setIsAdmin((data as any).role === 'admin') }
       else { setIsMember(false); setIsAdmin(false) }
-    } catch { setIsMember(false) }
+    } catch { setIsMember(false) } // Intentional: table may not exist
   }, [supabase, id, currentUserId])
 
   const fetchPosts = useCallback(async () => {
@@ -188,7 +190,7 @@ export default function GroupDetailScreen() {
         setPosts([]); return
       }
       setPosts((data ?? []) as unknown as GroupPost[])
-    } catch { setPosts([]) }
+    } catch (err) { if (__DEV__) console.warn('[group] fetchPosts failed:', err); setPosts([]) }
     finally { setLoading(false); setRefreshing(false) }
   }, [supabase, id])
 
@@ -201,7 +203,7 @@ export default function GroupDetailScreen() {
       const postIds = (groupPostIds as any[]).map(p => p.id)
       const { data } = await supabase.from('group_post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', postIds)
       if (data) setLikedPosts(new Set((data as any[]).map((d) => d.post_id)))
-    } catch { /* Table may not exist */ }
+    } catch {} // Intentional: group_post_likes table may not exist
   }, [supabase, id, currentUserId])
 
   useEffect(() => { fetchGroup() }, [fetchGroup])
@@ -221,7 +223,7 @@ export default function GroupDetailScreen() {
   }, [supabase, id, currentUserId])
 
   const handleRefresh = useCallback(() => {
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
     setRefreshing(true); fetchGroup(); fetchPosts()
     if (currentUserId) { checkMembership(); fetchLikes() }
   }, [fetchGroup, fetchPosts, checkMembership, fetchLikes, currentUserId])
@@ -232,7 +234,7 @@ export default function GroupDetailScreen() {
     if (!id || !currentUserId || !group) return
     if (joiningRef.current) return
     joiningRef.current = true
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
     if (isMember) {
       setIsMember(false); setIsAdmin(false)
       try {
@@ -255,7 +257,7 @@ export default function GroupDetailScreen() {
   const handleSendPost = useCallback(async () => {
     if (!id || !currentUserId || (!postText.trim() && !postImage)) return
     setSending(true)
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     try {
       let imageUrl: string | null = null
       if (postImage) {
@@ -286,7 +288,7 @@ export default function GroupDetailScreen() {
     likingGroupPostRef.current = true
     const post = posts.find(p => p.id === postId)
     if (!post) { likingGroupPostRef.current = false; return }
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     const alreadyLiked = likedPosts.has(postId)
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, like_count: p.like_count + (alreadyLiked ? -1 : 1) } : p))
     setLikedPosts(prev => { const n = new Set(prev); if (alreadyLiked) n.delete(postId); else n.add(postId); return n })
@@ -313,7 +315,7 @@ export default function GroupDetailScreen() {
         .select('*, user:profiles!group_post_comments_user_id_fkey(id, name, avatar_url)')
         .eq('post_id', postId).order('created_at', { ascending: true })
       setComments((data ?? []) as unknown as GroupComment[])
-    } catch { setComments([]) }
+    } catch (err) { if (__DEV__) console.warn('[group] fetchComments failed:', err); setComments([]) }
     finally { setLoadingComments(false) }
   }, [supabase])
 
@@ -325,7 +327,7 @@ export default function GroupDetailScreen() {
   const handleSendComment = useCallback(async (postId: string) => {
     if (!currentUserId || !commentText.trim()) return
     setSendingComment(true)
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     try {
       await (supabase.from('group_post_comments') as any).insert({ post_id: postId, user_id: currentUserId, content: commentText.trim() })
       await (supabase.from('group_posts') as any).update({ comment_count: (posts.find(p => p.id === postId)?.comment_count ?? 0) + 1 }).eq('id', postId)
@@ -345,7 +347,7 @@ export default function GroupDetailScreen() {
         setPosts(prev => prev.map(p => p.id === comment.post_id ? { ...p, comment_count: newCount } : p))
       }
       setComments(prev => prev.filter(c => c.id !== comment.id))
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
   }, [supabase, posts, t])
 
@@ -361,7 +363,7 @@ export default function GroupDetailScreen() {
       await (supabase.from('group_posts') as any).update({ content: editPostContent.trim() }).eq('id', editingPostId)
       setPosts(prev => prev.map(p => p.id === editingPostId ? { ...p, content: editPostContent.trim() } : p))
       setEditingPostId(null); setEditPostContent('')
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
     finally { setSavingPostEdit(false) }
   }, [editingPostId, editPostContent, supabase, t])
@@ -378,7 +380,7 @@ export default function GroupDetailScreen() {
           await (supabase.from('group_posts') as any).delete().eq('id', postId)
           setPosts(prev => prev.filter(p => p.id !== postId))
           if (expandedPostId === postId) { setExpandedPostId(null); setComments([]) }
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
         } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
       }},
     ])
@@ -393,7 +395,7 @@ export default function GroupDetailScreen() {
         .select('*, user:profiles!group_members_user_id_fkey(id, name, avatar_url)')
         .eq('group_id', id).order('role', { ascending: true })
       setMembers((data ?? []) as unknown as GroupMember[])
-    } catch { setMembers([]) }
+    } catch (err) { if (__DEV__) console.warn('[group] fetchMembers failed:', err); setMembers([]) }
     finally { setLoadingMembers(false) }
   }, [supabase, id])
 
@@ -407,7 +409,7 @@ export default function GroupDetailScreen() {
           await (supabase.from('groups') as any).update({ member_count: Math.max(0, group.member_count - 1) }).eq('id', id)
           setGroup(prev => prev ? { ...prev, member_count: Math.max(0, prev.member_count - 1) } : prev)
           setMembers(prev => prev.filter(m => m.user_id !== member.user_id))
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
         } catch { Alert.alert(t('common.error'), t('groups.removeError')) }
       }},
     ])
@@ -425,7 +427,7 @@ export default function GroupDetailScreen() {
       }).eq('id', id)
       setGroup(prev => prev ? { ...prev, name: data.name, description: data.description || null, neighborhood: data.neighborhood, is_public: data.is_public } : prev)
       setShowEditModal(false)
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('groups.createError')) }
     finally { setSavingEdit(false) }
   }, [id, supabase, t])
@@ -448,7 +450,7 @@ export default function GroupDetailScreen() {
           await (supabase.from('group_posts') as any).delete().eq('group_id', id)
           await (supabase.from('group_members') as any).delete().eq('group_id', id)
           await (supabase.from('groups') as any).delete().eq('id', id)
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
           router.back()
         } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
       }},

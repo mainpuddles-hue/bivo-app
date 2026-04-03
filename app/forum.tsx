@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
@@ -178,7 +180,7 @@ export default function ForumScreen() {
       setHasMore(newData.length >= pageSize)
       if (pageNum === 0) setPosts(newData)
       else setPosts(prev => [...prev, ...newData])
-    } catch { if (pageNum === 0) setPosts([]) }
+    } catch (err) { if (__DEV__) console.warn('[forum] fetchPosts failed:', err); if (pageNum === 0) setPosts([]) }
     finally { setLoading(false); setRefreshing(false); setLoadingMore(false) }
   }, [supabase, activeCategory, neighborhoodFilter, sortBy])
 
@@ -204,13 +206,13 @@ export default function ForumScreen() {
           data.forEach((v: any) => { if (v.post_id) postVotes.add(v.post_id); if (v.reply_id) replyVotes.add(v.reply_id) })
           setVotedPosts(postVotes); setVotedReplies(replyVotes)
         }
-      } catch { /* Table may not exist */ }
+      } catch {} // Intentional: forum_votes table may not exist
     }
     fetchVotes()
   }, [supabase, currentUserId])
 
   const handleRefresh = useCallback(() => {
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
     setRefreshing(true); setPage(0); fetchPosts(0)
   }, [fetchPosts])
 
@@ -224,7 +226,7 @@ export default function ForumScreen() {
     if (!currentUserId) return
     if (votingPostRef.current) return
     votingPostRef.current = true
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     const alreadyVoted = votedPosts.has(post.id)
     setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: p.upvote_count + (alreadyVoted ? -1 : 1) } : p))
     if (selectedPost?.id === post.id) setSelectedPost(prev => prev ? { ...prev, upvote_count: prev.upvote_count + (alreadyVoted ? -1 : 1) } : prev)
@@ -249,7 +251,7 @@ export default function ForumScreen() {
     if (!currentUserId) return
     if (votingReplyRef.current) return
     votingReplyRef.current = true
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     const alreadyVoted = votedReplies.has(reply.id)
     setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: r.upvote_count + (alreadyVoted ? -1 : 1) } : r))
     setVotedReplies(prev => { const next = new Set(prev); if (alreadyVoted) next.delete(reply.id); else next.add(reply.id); return next })
@@ -276,7 +278,7 @@ export default function ForumScreen() {
         .select('*, user:profiles!forum_replies_user_id_fkey(id, name, avatar_url, naapurusto)')
         .eq('post_id', post.id).order('created_at', { ascending: true })
       setReplies((data ?? []) as unknown as ForumReply[])
-    } catch { /* Table may not exist */ }
+    } catch {} // Intentional: forum_replies table may not exist
     finally { setLoadingReplies(false) }
   }, [supabase])
 
@@ -296,7 +298,7 @@ export default function ForumScreen() {
             .select('*, user:profiles!forum_posts_user_id_fkey(id, name, avatar_url, naapurusto)')
             .eq('id', thread).single()
           if (data) openPostDetail(data as unknown as ForumPost)
-        } catch { /* silent */ }
+        } catch {} // Intentional: thread may have been deleted
       })()
     }
   }, [thread, loading, posts, supabase, openPostDetail])
@@ -333,7 +335,7 @@ export default function ForumScreen() {
         }
       }
       setReplyText('')
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('forum.replyError')) }
     finally { setSendingReply(false) }
   }, [currentUserId, selectedPost, replyText, supabase, t, awardPoints])
@@ -348,7 +350,7 @@ export default function ForumScreen() {
           await (supabase.from('forum_posts') as any).delete().eq('id', postId)
           setPosts(prev => prev.filter(p => p.id !== postId))
           if (selectedPost?.id === postId) setSelectedPost(null)
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
         } catch { Alert.alert(t('common.error'), t('post.deleteFailed')) }
       }},
     ])
@@ -365,7 +367,7 @@ export default function ForumScreen() {
         setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
       }
       setReplies(prev => prev.filter(r => r.id !== reply.id))
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('forum.deleteReply')) }
   }, [supabase, selectedPost, t])
 
@@ -381,7 +383,7 @@ export default function ForumScreen() {
       setPosts(prev => prev.map(p => p.id === editingPost.id ? updated : p))
       if (selectedPost?.id === editingPost.id) setSelectedPost(updated)
       setEditingPost(null)
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('forum.publishError')) }
     finally { setSavingEdit(false) }
   }, [editingPost, editTitle, editContent, supabase, selectedPost, t])
@@ -406,7 +408,7 @@ export default function ForumScreen() {
         awardPoints(currentUserId, 'post_created', (data as any).id).catch(() => {})
       }
       setNewTitle(''); setNewContent(''); setNewCategory(null); setShowCreateModal(false)
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('forum.publishError')) }
     finally { setPublishing(false) }
   }, [currentUserId, userNeighborhood, supabase, t, awardPoints])
@@ -458,7 +460,7 @@ export default function ForumScreen() {
       {/* Filters */}
       <View style={[s.filterBar, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <Pressable
-          onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}; setNeighborhoodFilter(prev => prev ? null : userNeighborhood) }}
+          onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setNeighborhoodFilter(prev => prev ? null : userNeighborhood) }}
           style={[s.neighborhoodChip, { backgroundColor: neighborhoodFilter ? `${colors.primary}14` : isDark ? colors.card : colors.muted, borderColor: neighborhoodFilter ? colors.primary : 'transparent' }]}
         >
           <MapPin size={12} color={neighborhoodFilter ? colors.primary : colors.mutedForeground} />
@@ -469,7 +471,7 @@ export default function ForumScreen() {
             const isActive = activeCategory === cat.key
             const chipColor = cat.key ? cat.color : colors.primary
             return (
-              <Pressable key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}; setActiveCategory(cat.key) }}
+              <Pressable key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setActiveCategory(cat.key) }}
                 style={[s.categoryChip, isActive ? { backgroundColor: chipColor } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
                 <Text style={[s.categoryChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
               </Pressable>
@@ -483,7 +485,7 @@ export default function ForumScreen() {
         {(['newest', 'popular'] as const).map((opt) => {
           const isActive = sortBy === opt
           return (
-            <Pressable key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}; setSortBy(opt) }}
+            <Pressable key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setSortBy(opt) }}
               style={[s.sortChip, isActive ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
               <Text style={[s.sortChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
                 {opt === 'newest' ? t('forum.sortNewest') : t('forum.sortPopular')}
@@ -524,7 +526,7 @@ export default function ForumScreen() {
 
       {/* FAB */}
       {tableExists && currentUserId && (
-        <Pressable onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}; setShowCreateModal(true) }}
+        <Pressable onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setShowCreateModal(true) }}
           style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.accent }]}
           accessibilityRole="button"
           accessibilityLabel={t('forum.create')}>

@@ -449,15 +449,24 @@ export function useFeedData() {
     }
   }, [supabase])
 
-  // ── Auto-refresh feed when returning from another screen (e.g. create) ──
+  // ── Auto-refresh feed when returning from another screen (e.g. create, profile) ──
   // Uses fetchPostsRef to avoid stale closure with empty deps
+  // Also refreshes followedIds so the "Following" filter stays in sync after follow/unfollow
+  const currentUserIdRef = useRef(currentUserId)
+  currentUserIdRef.current = currentUserId
   useFocusEffect(useCallback(() => {
     focusCountRef.current++
     if (focusCountRef.current > 1) {
       offsetRef.current = 0
       fetchPostsRef.current(true)
+      // Refresh followedIds to sync after follow/unfollow on profile screens
+      const uid = currentUserIdRef.current
+      if (uid) {
+        supabase.from('user_follows').select('followed_id').eq('follower_id', uid)
+          .then(({ data }) => { if (data) setFollowedIds(data.map((f: any) => f.followed_id)) })
+      }
     }
-  }, []))
+  }, [supabase]))
 
   // ── Actions ──
   const handleRefresh = useCallback(() => {

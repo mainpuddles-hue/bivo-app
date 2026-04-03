@@ -136,7 +136,8 @@ serve(async (req) => {
     const boostEnd = new Date(boostStart.getTime() + durationHours * 60 * 60 * 1000)
 
     // 8. Atomic balance decrement
-    // Try RPC first (true atomic SQL decrement), fall back to optimistic concurrency
+    // Try RPC first (true atomic SQL decrement with WHERE balance > 0),
+    // fall back to optimistic concurrency with the same guard.
     let remainingBalance: number
 
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
@@ -145,15 +146,17 @@ serve(async (req) => {
     )
 
     if (!rpcError && rpcResult !== null) {
-      // RPC succeeded — returns new balance (or -1 if was already 0)
-      remainingBalance = typeof rpcResult === 'number' ? rpcResult : 0
+      // RPC succeeded — returns new balance, or -1 if balance was already 0
+      remainingBalance = typeof rpcResult === 'number' ? rpcResult : -1
 
       if (remainingBalance < 0) {
-        // Balance was already 0 — rollback to 0
+        // Balance was already 0 — no rollback needed because the RPC should
+        // use `WHERE balance > 0`. If an older RPC version went to -1, fix it.
         await supabase
           .from('user_boosts')
           .update({ balance: 0, updated_at: new Date().toISOString() })
           .eq('user_id', user.id)
+          .lt('balance', 0)
 
         return new Response(JSON.stringify({ error: 'No boost credits available' }), {
           status: 400,
@@ -161,7 +164,8 @@ serve(async (req) => {
         })
       }
     } else {
-      // Fallback: optimistic concurrency control via conditional update
+      // Fallback: optimistic concurrency control via conditional update.
+      // The WHERE clause includes `balance > 0` to prevent going negative.
       const { data: currentBoost } = await supabase
         .from('user_boosts')
         .select('balance')
@@ -175,7 +179,7 @@ serve(async (req) => {
         })
       }
 
-      // Only update if balance hasn't changed since we read it (optimistic lock)
+      // Only update if balance hasn't changed AND is still positive (optimistic lock)
       const { data: updated, error: updateError } = await supabase
         .from('user_boosts')
         .update({
@@ -184,6 +188,7 @@ serve(async (req) => {
         })
         .eq('user_id', user.id)
         .eq('balance', currentBoost.balance)
+        .gt('balance', 0)
         .select('balance')
         .single()
 

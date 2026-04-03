@@ -7,7 +7,7 @@ export async function shareContent(data: { title?: string; text?: string; url?: 
       try {
         await navigator.share({ title: data.title, text: data.text, url: data.url })
         return true
-      } catch { /* user cancelled */ }
+      } catch {} // Intentional: user cancelled or share unavailable
     }
     // Clipboard fallback
     const copyText = data.url || data.text || ''
@@ -15,7 +15,7 @@ export async function shareContent(data: { title?: string; text?: string; url?: 
       try {
         await navigator.clipboard.writeText(copyText)
         return true
-      } catch {}
+      } catch {} // Intentional: clipboard access denied
     }
     return false
   }
@@ -24,9 +24,8 @@ export async function shareContent(data: { title?: string; text?: string; url?: 
     const msg = data.url ? `${data.text ?? ''}\n\n${data.url}` : (data.text ?? '')
     await Share.share({ message: msg, title: data.title })
     return true
-  } catch {
-    return false
-  }
+  } catch {} // Intentional: user cancelled share
+  return false
 }
 
 /** Download content as a file on web, Share on native */
@@ -46,7 +45,6 @@ export async function downloadAsFile(content: string, filename: string, mimeType
   try {
     await Share.share({ message: content })
     return true
-  } catch {
-    return false
-  }
+  } catch {} // Intentional: user cancelled share
+  return false
 }

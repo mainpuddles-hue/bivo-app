@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
@@ -130,7 +132,7 @@ export default function GroupsScreen() {
           .eq('id', user.id)
           .single()
         if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto as string)
-      } catch {}
+      } catch {} // Intentional: profile table columns may be missing
     }
     fetchUser()
   }, [supabase])
@@ -178,7 +180,8 @@ export default function GroupsScreen() {
         (g) => !myIds.has(g.id)
       )
       setSuggestedGroups(suggested)
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[groups] fetchGroups failed:', err)
       setMyGroups([])
       setSuggestedGroups([])
     } finally {
@@ -195,7 +198,7 @@ export default function GroupsScreen() {
   }, [fetchGroups, currentUserId])
 
   const handleRefresh = useCallback(() => {
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
     setRefreshing(true)
     fetchGroups()
   }, [fetchGroups])
@@ -206,7 +209,7 @@ export default function GroupsScreen() {
     if (!currentUserId) return
     if (joiningGroupRef.current) return
     joiningGroupRef.current = true
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
 
     // Optimistic
     setJoinedIds((prev) => { const n = new Set(prev); n.add(group.id); return n })
@@ -240,7 +243,7 @@ export default function GroupsScreen() {
     }
 
     setCreating(true)
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
 
     try {
       const { data, error } = await (supabase.from('groups') as any)
@@ -470,7 +473,7 @@ export default function GroupsScreen() {
       <Pressable
         style={[s.fab, { backgroundColor: colors.accent, bottom: insets.bottom + 20 }]}
         onPress={() => {
-          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
           setShowCreateModal(true)
         }}
         accessibilityRole="button"

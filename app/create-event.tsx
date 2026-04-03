@@ -23,6 +23,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { getCachedUserId } from '@/lib/authCache'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { CommunityEvent } from '@/lib/types'
 
 type EventCategory = CommunityEvent['category']
@@ -37,6 +38,14 @@ const EVENT_CATEGORIES: { key: EventCategory; labelKey: string; color: string }[
 ]
 
 export default function CreateEventScreen() {
+  return (
+    <ScreenErrorBoundary screenName="CreateEvent">
+      <CreateEventScreenInner />
+    </ScreenErrorBoundary>
+  )
+}
+
+function CreateEventScreenInner() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()

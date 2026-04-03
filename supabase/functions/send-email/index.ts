@@ -18,27 +18,38 @@ const corsHeaders = {
 // In-memory rate limit store: userId -> { count, windowStart }
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>()
 
+/** Escape HTML special characters to prevent XSS in email templates */
+function escapeHtml(str: unknown): string {
+  if (str === null || str === undefined) return ''
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }> = {
   booking_confirmation: (data) => ({
-    subject: `Varaus vahvistettu: ${data.post_title}`,
+    subject: `Varaus vahvistettu: ${escapeHtml(data.post_title)}`,
     html: `
       <h2>Varauksesi on vahvistettu!</h2>
-      <p><strong>${data.post_title}</strong></p>
-      <p>Päivämäärä: ${data.dates}</p>
-      <p>Summa: ${data.amount}€</p>
+      <p><strong>${escapeHtml(data.post_title)}</strong></p>
+      <p>Päivämäärä: ${escapeHtml(data.dates)}</p>
+      <p>Summa: ${escapeHtml(data.amount)}€</p>
       <p>Viesti palveluntarjoajalle löytyy TackBird-sovelluksesta.</p>
       <br>
       <p>— TackBird</p>
     `,
   }),
   payment_receipt: (data) => ({
-    subject: `Maksukuitti: ${data.amount}€`,
+    subject: `Maksukuitti: ${escapeHtml(data.amount)}€`,
     html: `
       <h2>Maksu onnistui</h2>
-      <p><strong>${data.description}</strong></p>
-      <p>Summa: ${data.amount}€</p>
-      <p>Päivämäärä: ${data.date}</p>
-      <p>Stripe-viite: ${data.stripe_id}</p>
+      <p><strong>${escapeHtml(data.description)}</strong></p>
+      <p>Summa: ${escapeHtml(data.amount)}€</p>
+      <p>Päivämäärä: ${escapeHtml(data.date)}</p>
+      <p>Stripe-viite: ${escapeHtml(data.stripe_id)}</p>
       <br>
       <p>— TackBird</p>
     `,
@@ -46,7 +57,7 @@ const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }
   welcome: (data) => ({
     subject: 'Tervetuloa TackBirdiin!',
     html: `
-      <h2>Tervetuloa ${data.name}!</h2>
+      <h2>Tervetuloa ${escapeHtml(data.name)}!</h2>
       <p>Naapurustosi odottaa sinua.</p>
       <p>Aloita luomalla ensimmäinen postaus tai selaamalla naapuruston ilmoituksia.</p>
       <br>

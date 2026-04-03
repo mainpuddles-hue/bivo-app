@@ -152,22 +152,74 @@ serve(async (req) => {
       })
     }
 
-    // 9. Upsert user_boosts: increment balance by credits
-    const { data: currentBoost } = await supabase
-      .from('user_boosts')
-      .select('balance')
-      .eq('user_id', user.id)
-      .single()
+    // 9. Atomic balance increment via RPC, with read-then-write fallback.
+    // The RPC `increment_boost_balance` does `SET balance = balance + p_credits`
+    // atomically in SQL, preventing lost updates from concurrent requests.
+    let newBalance: number = credits // safe default — overwritten on success
 
-    const newBalance = (currentBoost?.balance ?? 0) + credits
+    const { data: rpcResult, error: rpcError } = await supabase.rpc(
+      'increment_boost_balance',
+      { p_user_id: user.id, p_credits: credits }
+    )
 
-    await supabase
-      .from('user_boosts')
-      .upsert({
-        user_id: user.id,
-        balance: newBalance,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+    if (!rpcError && rpcResult !== null && typeof rpcResult === 'number') {
+      newBalance = rpcResult
+    } else {
+      // Fallback: use conditional upsert with optimistic concurrency.
+      // First check if user_boosts row exists.
+      const { data: currentBoost } = await supabase
+        .from('user_boosts')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single()
+
+      if (currentBoost) {
+        // Row exists: conditional update (optimistic lock on current balance)
+        const { data: updated, error: updateError } = await supabase
+          .from('user_boosts')
+          .update({
+            balance: currentBoost.balance + credits,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+          .eq('balance', currentBoost.balance)
+          .select('balance')
+          .single()
+
+        if (updateError || !updated) {
+          // Concurrent modification — retry once with fresh read
+          const { data: retry } = await supabase
+            .from('user_boosts')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single()
+          const retryBalance = (retry?.balance ?? 0) + credits
+          await supabase
+            .from('user_boosts')
+            .update({ balance: retryBalance, updated_at: new Date().toISOString() })
+            .eq('user_id', user.id)
+          newBalance = retryBalance
+        } else {
+          newBalance = updated.balance
+        }
+      } else {
+        // No row yet: insert new record
+        const { error: insertErr } = await supabase
+          .from('user_boosts')
+          .insert({
+            user_id: user.id,
+            balance: credits,
+            updated_at: new Date().toISOString(),
+          })
+
+        if (insertErr) {
+          // Race: another request just inserted — update instead
+          await supabase.rpc('increment_boost_balance', { p_user_id: user.id, p_credits: credits })
+            .then(({ data }) => { newBalance = typeof data === 'number' ? data : credits })
+        }
+        newBalance = newBalance! ?? credits
+      }
+    }
 
     // 10. Insert boost_purchases record
     await supabase

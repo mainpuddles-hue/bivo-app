@@ -55,6 +55,7 @@ export function useCityConfig(cityId: string | null) {
           loading: false,
         })
       } catch {
+        // Intentional: cities/neighborhoods tables may not exist yet
         if (mounted) setConfig(c => ({ ...c, loading: false }))
       }
     }

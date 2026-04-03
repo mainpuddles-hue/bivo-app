@@ -13,7 +13,7 @@ const hfToken = Deno.env.get('HF_API_TOKEN')
 const HF_API_URL = 'https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://tackbird.fi',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

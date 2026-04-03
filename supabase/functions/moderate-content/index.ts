@@ -13,7 +13,7 @@ function getEnvOrThrow(key: string): string {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://tackbird.fi',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -134,6 +134,22 @@ serve(async (req) => {
   try {
     const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
     const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // JWT authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     let body
     try {
@@ -156,7 +172,6 @@ serve(async (req) => {
 
     // Check for duplicate/repeat posting (same user, similar title in last hour)
     if (user_id) {
-      const supabase = createClient(supabaseUrl, supabaseServiceKey)
       const { data: recentPosts } = await supabase
         .from('posts')
         .select('title')

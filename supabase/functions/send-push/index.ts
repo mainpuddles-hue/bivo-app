@@ -115,9 +115,14 @@ async function removeInvalidToken(supabase: any, userId: string) {
     .catch(() => {})
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://tackbird.fi',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' } })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
@@ -125,19 +130,34 @@ serve(async (req) => {
     const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // JWT authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     let body
     try {
       body = await req.json()
     } catch {
       return new Response(JSON.stringify({ error: 'Invalid request body' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
     const { user_id, title, body: pushBody, type, data, post_id } = body as PushPayload
 
     if (!user_id || !title || !pushBody || !type) {
       return new Response(JSON.stringify({ error: 'Missing fields' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
@@ -155,7 +175,7 @@ serve(async (req) => {
       if ((recentUrgentCount ?? 0) > 1) {
         return new Response(
           JSON.stringify({ sent: 0, type: 'urgent_rate_limited', reason: 'Too many urgent posts in 30 minutes' }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
       }
 
@@ -238,7 +258,7 @@ serve(async (req) => {
 
         return new Response(
           JSON.stringify({ sent: sent.length, type: 'urgent_broadcast', neighborhood }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
       }
     }
@@ -255,7 +275,7 @@ serve(async (req) => {
     if (!profile?.push_token) {
       return new Response(
         JSON.stringify({ sent: false, reason: 'no_push_token' }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
@@ -269,7 +289,7 @@ serve(async (req) => {
       // For now, skip sending but don't lose the notification (it's already in notifications table)
       return new Response(
         JSON.stringify({ sent: false, reason: 'quiet_hours', queued: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
@@ -298,7 +318,7 @@ serve(async (req) => {
         }
         return new Response(
           JSON.stringify({ sent: result.success, type: 'batched', count }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
       }
     }
@@ -313,13 +333,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ sent: result.success, type: isImmediate ? 'immediate' : 'standard' }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err: any) {
     console.error('[send-push]', err.message)
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }
 })

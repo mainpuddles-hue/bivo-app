@@ -31,9 +31,8 @@ export function isIAPAvailable(): boolean {
   try {
     require('react-native-iap')
     return true
-  } catch {
-    return false
-  }
+  } catch {} // Intentional: native module not available in Expo Go
+  return false
 }
 
 // Sandbox mode detection

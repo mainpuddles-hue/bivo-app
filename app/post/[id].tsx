@@ -274,9 +274,18 @@ function PostDetailScreenInner() {
       if (existing) {
         router.push(`/messages/${(existing as any).id}`)
       } else {
-        const { data: newConv, error } = await (supabase.from('conversations') as any)
+        const { data: newConv, error: insertError } = await (supabase.from('conversations') as any)
           .insert({ user1_id: userId, user2_id: post.user_id, post_id: id }).select('id').single()
-        if (error) { Alert.alert(t('common.error'), error?.message || t('messages.conversationCreateFailed')); return }
+        if (insertError?.code === '23505') {
+          // Unique constraint violation — race condition, re-query existing conversation
+          const { data: existingConv } = await supabase
+            .from('conversations').select('id')
+            .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
+            .maybeSingle()
+          if (existingConv) { router.push(`/messages/${(existingConv as any).id}`); return }
+          Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return
+        }
+        if (insertError) { Alert.alert(t('common.error'), insertError?.message || t('messages.conversationCreateFailed')); return }
         if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
         router.push(`/messages/${newConv.id}`)
       }

@@ -246,6 +246,8 @@ export interface Message {
   content: string
   image_url: string | null
   is_read: boolean
+  is_deleted?: boolean
+  deleted_at?: string
   created_at: string
 }
 

@@ -55,17 +55,29 @@ serve(async (req) => {
         // Determine which booking table to update
         const bookingTable = type === 'rental' ? 'rental_bookings' : 'service_bookings'
 
+        // Extract payment_intent ID for refund lookups later
+        const sessionPaymentIntent = typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : (session.payment_intent as any)?.id ?? null
+
         // Update booking status to 'paid'
         if (bookingId) {
           await supabase
             .from(bookingTable)
-            .update({ status: 'paid', stripe_session_id: session.id })
+            .update({
+              status: 'paid',
+              stripe_session_id: session.id,
+              stripe_payment_intent_id: sessionPaymentIntent,
+            })
             .eq('id', bookingId)
         } else if (session.id) {
           // Fallback: find by session ID
           await supabase
             .from(bookingTable)
-            .update({ status: 'paid' })
+            .update({
+              status: 'paid',
+              stripe_payment_intent_id: sessionPaymentIntent,
+            })
             .eq('stripe_session_id', session.id)
         }
 
@@ -85,6 +97,7 @@ serve(async (req) => {
             post_id: post_id || null,
             booking_id: bookingId || null,
             stripe_session_id: session.id,
+            stripe_payment_intent_id: sessionPaymentIntent,
           })
         }
 
@@ -141,18 +154,52 @@ serve(async (req) => {
           : charge.payment_intent?.id
 
         if (paymentIntentId) {
-          // Update payment record
-          await supabase
-            .from('payments')
-            .update({ status: 'refunded' })
-            .eq('stripe_session_id', paymentIntentId)
+          // paymentIntentId is a pi_xxx, not a cs_xxx (session ID).
+          // First, try to look up the Checkout Session that created this PaymentIntent
+          // so we can match on stripe_session_id (cs_xxx) stored in our tables.
+          let sessionId: string | null = null
+          try {
+            const sessions = await stripe.checkout.sessions.list({
+              payment_intent: paymentIntentId,
+              limit: 1,
+            })
+            sessionId = sessions.data?.[0]?.id ?? null
+          } catch (e: any) {
+            console.warn(`[webhook] Could not look up session for ${paymentIntentId}: ${e.message}`)
+          }
 
-          // Find and update booking
-          for (const table of ['rental_bookings', 'service_bookings']) {
+          if (sessionId) {
+            // Primary path: match on the session ID stored in our records
             await supabase
-              .from(table)
+              .from('payments')
               .update({ status: 'refunded' })
-              .eq('stripe_session_id', paymentIntentId)
+              .eq('stripe_session_id', sessionId)
+
+            for (const table of ['rental_bookings', 'service_bookings']) {
+              await supabase
+                .from(table)
+                .update({ status: 'refunded' })
+                .eq('stripe_session_id', sessionId)
+            }
+          } else {
+            // Fallback: try matching on payment_intent_id column if it exists,
+            // or log a warning so it can be handled manually.
+            const { data: paymentByPI } = await supabase
+              .from('payments')
+              .update({ status: 'refunded' })
+              .eq('stripe_payment_intent_id', paymentIntentId)
+              .select('id')
+
+            if (!paymentByPI?.length) {
+              console.warn(`[webhook] No payment record found for refund pi=${paymentIntentId}`)
+            }
+
+            for (const table of ['rental_bookings', 'service_bookings']) {
+              await supabase
+                .from(table)
+                .update({ status: 'refunded' })
+                .eq('stripe_payment_intent_id', paymentIntentId)
+            }
           }
         }
 

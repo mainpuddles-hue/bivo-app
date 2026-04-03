@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface RateLimitConfig {
@@ -37,8 +39,9 @@ export async function checkRateLimit(action: string): Promise<boolean> {
     valid.push(now)
     await AsyncStorage.setItem(key, JSON.stringify(valid))
     return true
-  } catch {
-    return true // Allow on error
+  } catch (err) {
+    if (__DEV__) console.warn('[rateLimiter] checkRateLimit error:', err)
+    return true // Allow on error — don't block users due to rate limiter bugs
   }
 }
 
