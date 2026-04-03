@@ -638,6 +638,9 @@ export default function BookingsScreen() {
             />
           }
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
         />
       )}
     </View>

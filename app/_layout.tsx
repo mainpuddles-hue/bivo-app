@@ -15,8 +15,11 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { useLocationDetection } from '@/hooks/useLocationDetection'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
+import { OfflineBanner } from '@/components/OfflineBanner'
 import { setAnalyticsUser, trackEvent, trackRetention } from '@/lib/analytics'
 import { clearAuthCache } from '@/lib/authCache'
+import { useAppStateManager } from '@/hooks/useAppState'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 
 // Initialize Sentry error reporting (no-op in __DEV__)
 initSentry()
@@ -456,6 +459,8 @@ function RootLayoutInner() {
   useAnalyticsSetup()
   useAuthStateListener()
   useSessionGuard()
+  useAppStateManager() // Disconnect realtime when backgrounded
+  const network = useNetworkStatus() // Offline detection
 
   // Location-aware international system
   const userId = useCurrentUserId()
@@ -509,6 +514,7 @@ function RootLayoutInner() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <OfflineBanner visible={network.isConnected === false} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />

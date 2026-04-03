@@ -312,7 +312,7 @@ export default function OrganizationScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {/* Business info */}
         <View style={[styles.businessCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.businessName, { color: colors.foreground }]}>

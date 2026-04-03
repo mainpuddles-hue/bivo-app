@@ -245,7 +245,7 @@ export default function CreateAdScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {/* Title */}
         <Text style={[styles.label, { color: colors.foreground }]}>{t('create.title')} *</Text>
         <TextInput
