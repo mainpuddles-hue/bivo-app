@@ -62,10 +62,10 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={[styles.pulseCircle, { backgroundColor: '#EF444430' }]}>
-          <Zap size={14} color="#EF4444" fill="#EF4444" />
+        <View style={[styles.pulseCircle, { backgroundColor: isDark ? '#EF444440' : '#EF444420' }]}>
+          <Zap size={14} color={colors.destructive} fill={colors.destructive} />
         </View>
-        <Text style={[styles.headerText, { color: '#EF4444' }]}>
+        <Text style={[styles.headerText, { color: colors.destructive }]}>
           {t('urgency.juuriNyt')} ({urgentPosts.length})
         </Text>
       </View>

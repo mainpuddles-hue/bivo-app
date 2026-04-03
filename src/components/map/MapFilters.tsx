@@ -51,7 +51,7 @@ export function MapFilters({
               hitSlop={10}
               onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
             >
-              <ArrowLeft size={14} color="#FFF" />
+              <ArrowLeft size={14} color={colors.primaryForeground} />
               <Text style={[styles.backPillText, { color: colors.primaryForeground }]}>
                 {activeFilter === 'posts' ? t('map.layerPosts') : activeFilter === 'events' ? t('map.layerEvents') : t('map.layerPlaces')}
               </Text>

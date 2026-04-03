@@ -182,7 +182,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
               }}
               style={[styles.detailActionBtn, { backgroundColor: item.color }]}
             >
-              <ExternalLink size={16} color="#FFF" />
+              <ExternalLink size={16} color={colors.primaryForeground} />
               <Text style={styles.detailActionText}>{t('map.viewPost')}</Text>
             </Pressable>
           )}
@@ -191,7 +191,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
               onPress={() => Linking.openURL((item.sourceData as CityEvent).info_url!).catch(() => {})}
               style={[styles.detailActionBtn, { backgroundColor: item.color }]}
             >
-              <ExternalLink size={16} color="#FFF" />
+              <ExternalLink size={16} color={colors.primaryForeground} />
               <Text style={styles.detailActionText}>{t('map.moreInfo')}</Text>
             </Pressable>
           )}
@@ -200,7 +200,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
               onPress={() => Linking.openURL((item.sourceData as LocalPlace).website!).catch(() => {})}
               style={[styles.detailActionBtn, { backgroundColor: item.color }]}
             >
-              <ExternalLink size={16} color="#FFF" />
+              <ExternalLink size={16} color={colors.primaryForeground} />
               <Text style={styles.detailActionText}>{t('map.website')}</Text>
             </Pressable>
           )}

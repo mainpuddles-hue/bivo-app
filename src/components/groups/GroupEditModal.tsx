@@ -126,7 +126,7 @@ function GroupEditModalInner({
               style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: (saving || !editName.trim()) ? 0.6 : 1 }]}
             >
               {saving ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
               ) : (
                 <Text style={{ color: colors.primaryForeground, fontSize: 14, fontFamily: fonts.bodySemi }}>
                   {t('groups.saveChanges')}

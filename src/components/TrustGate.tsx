@@ -79,8 +79,8 @@ export function TrustGateModal({
 
           {currentLevel === 1 && onVerifyPress && (
             <Pressable onPress={() => { onClose(); onVerifyPress() }} style={({ pressed }) => [styles.actionBtn, { backgroundColor: TRUST_TIERS[2].color }, pressed && { opacity: 0.7 }]}>
-              <ShieldCheck size={18} color="#FFFFFF" />
-              <Text style={styles.actionBtnText}>{t('trust.verifyNow')}</Text>
+              <ShieldCheck size={18} color={colors.primaryForeground} />
+              <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('trust.verifyNow')}</Text>
             </Pressable>
           )}
 

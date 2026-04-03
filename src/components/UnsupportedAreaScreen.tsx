@@ -110,7 +110,7 @@ export function UnsupportedAreaScreen({
         <View
           style={[
             styles.iconCircle,
-            { backgroundColor: isDark ? '#1E3A2F' : '#E8F5E9' },
+            { backgroundColor: isDark ? `${colors.primary}20` : `${colors.primary}15` },
           ]}
         >
           <Globe size={48} color={colors.primary} strokeWidth={1.5} />
@@ -154,7 +154,7 @@ export function UnsupportedAreaScreen({
 
         {/* Waitlist section */}
         {submitted ? (
-          <View style={[styles.successCard, { backgroundColor: isDark ? '#1E3A2F' : '#E8F5E9' }]}>
+          <View style={[styles.successCard, { backgroundColor: isDark ? `${colors.primary}20` : `${colors.primary}15` }]}>
             <Check size={20} color={colors.success} />
             <Text style={[styles.successText, { color: colors.success }]}>
               {t('unsupported.waitlistSuccess')}

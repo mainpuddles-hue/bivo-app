@@ -237,7 +237,7 @@ function OnboardingScreenInner() {
   const renderWelcome = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <View style={s.welcomeContent}>
-        <View style={[s.logoBigCircle, { backgroundColor: colors.primary }]}>
+        <View style={[s.logoBigCircle, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
           <TackBirdLogo size={56} color={colors.primaryForeground} />
         </View>
 

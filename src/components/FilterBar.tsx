@@ -48,7 +48,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
           >
             <Text style={[
               styles.chipText,
-              { color: isActive ? '#FFFFFF' : cat.color }
+              { color: isActive ? colors.primaryForeground : cat.color }
             ]}>
               {t(cat.label)}
             </Text>
