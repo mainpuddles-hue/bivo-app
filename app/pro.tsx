@@ -84,7 +84,7 @@ export default function ProScreen() {
 
       const { url } = await res.json()
       if (url) {
-        await Linking.openURL(url)
+        await Linking.openURL(url).catch(() => {})
       }
     } catch (err: any) {
       setError(err.message ?? t('pro.checkoutError'))

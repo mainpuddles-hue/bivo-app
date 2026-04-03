@@ -72,7 +72,7 @@ export function useStripePayment() {
 
       // Open Stripe Checkout in browser (supports card + Apple Pay + Google Pay)
       if (url) {
-        await Linking.openURL(url)
+        await Linking.openURL(url).catch(() => {})
       }
 
       setLoading(false)

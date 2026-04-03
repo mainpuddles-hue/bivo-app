@@ -545,7 +545,7 @@ function ConversationScreenInner() {
               if (!url) return null
               return (
                 <Pressable
-                  onPress={() => Linking.openURL(url)}
+                  onPress={() => Linking.openURL(url).catch(() => {})}
                   style={[s.linkPreview, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
                 >
                   <ExternalLink size={14} color={colors.primary} />

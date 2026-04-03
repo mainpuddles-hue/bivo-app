@@ -185,13 +185,13 @@ export default function UpgradeBusinessScreen() {
         const { url } = await checkoutRes.json()
         if (url) {
           // Don't set is_business here — webhook will confirm after payment
-          await Linking.openURL(url)
+          await Linking.openURL(url).catch(() => {})
         }
       } else {
         const { url } = await res.json()
         if (url) {
           // Don't set is_business here — webhook will confirm after payment
-          await Linking.openURL(url)
+          await Linking.openURL(url).catch(() => {})
         }
       }
 

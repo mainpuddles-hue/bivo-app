@@ -220,7 +220,7 @@ export default function CreateAdScreen() {
 
       const { url } = await res.json()
       if (url) {
-        await Linking.openURL(url)
+        await Linking.openURL(url).catch(() => {})
         // Don't navigate away — user will return via deep link after payment
         return
       }

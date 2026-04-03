@@ -99,7 +99,7 @@ export const DiscoverySection = memo(function DiscoverySection({
           return (
             <Pressable
               key={place.id}
-              onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`)}
+              onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`).catch(() => {})}
               style={styles.placeCompact}
             >
               <View style={[styles.placeCircle, { backgroundColor: `${catColor}26` }]}>

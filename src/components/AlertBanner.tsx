@@ -44,7 +44,7 @@ export function AlertBanner() {
             key={alert.id}
             onPress={() => {
               if (alert.type === 'transit' && alert.url) {
-                Linking.openURL(alert.url)
+                Linking.openURL(alert.url).catch(() => {})
               } else {
                 setExpandedId(prev => prev === alert.id ? null : alert.id)
               }

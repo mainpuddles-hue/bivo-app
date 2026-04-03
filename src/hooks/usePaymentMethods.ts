@@ -56,7 +56,7 @@ export function usePaymentMethods(userId: string | null) {
 
       if (res.ok) {
         const { url } = await res.json()
-        if (url) await Linking.openURL(url)
+        if (url) await Linking.openURL(url).catch(() => {})
       }
     } catch {
       // Silently fail — user can retry
