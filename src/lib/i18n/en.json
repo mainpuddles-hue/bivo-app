@@ -128,7 +128,8 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday",
-    "sunday": "Sunday"
+    "sunday": "Sunday",
+    "atTime": "at"
   },
   "post": {
     "save": "Save",
@@ -520,7 +521,8 @@
     "loginHint": "Log in to view your conversations and chat with your neighbors.",
     "quickReply": "Quick reply",
     "attachImage": "Attach image",
-    "searchConversations": "Search conversations"
+    "searchConversations": "Search conversations",
+    "showActive": "Show active conversations"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -907,7 +909,8 @@
     "otpInvalid": "Invalid code. Please check and try again.",
     "sessionExpired": "Your session has expired. Please log in again.",
     "hidePassword": "Hide password",
-    "showPassword": "Show password"
+    "showPassword": "Show password",
+    "invalidEmail": "Invalid email address"
   },
   "onboarding": {
     "welcome": "Welcome to TackBird!",
@@ -1305,7 +1308,7 @@
     "preview": "Preview",
     "publish": "Publish",
     "publishing": "Publishing...",
-    "published": "Post published!",
+    "published": "Your listing has been published!",
     "createFailed": "Failed to create post",
     "dailyFeeRequired": "Set a daily fee for rental posts",
     "eventDateRequired": "Choose a date for the event",
@@ -1375,7 +1378,6 @@
     "discard": "Discard",
     "priceCannotBeNegative": "Price cannot be negative",
     "eventDateInPast": "Event date cannot be in the past",
-    "published": "Your listing has been published!",
     "visibleTo": "Visible to neighbors in {neighborhood}",
     "share": "Share",
     "listing": "Listing",
@@ -1395,7 +1397,8 @@
     "conditionFair": "Fair",
     "conditionPoor": "Poor",
     "conditionBadge": "{condition} condition",
-    "freeItem": "Free"
+    "freeItem": "Free",
+    "invalidDateFormat": "Use YYYY-MM-DD format"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1678,7 +1681,8 @@
     "eventUnsaved": "Event removed from saved",
     "placeSaved": "Place saved",
     "placeUnsaved": "Place removed from saved",
-    "removed": "Post removed from saved"
+    "removed": "Post removed from saved",
+    "openInMaps": "Open in Maps"
   },
   "error": {
     "pageLoadFailed": "Page could not be loaded",
@@ -2147,7 +2151,9 @@
     "allTiersUnlocked": "All tiers unlocked!",
     "codeInput": "Invite code (optional)",
     "invalidCode": "Invalid invite code",
-    "codeApplied": "Invite code applied!"
+    "codeApplied": "Invite code applied!",
+    "invites": "invites",
+    "points": "points"
   },
   "pwa": {
     "installTitle": "Add TackBird to home screen",
@@ -2411,7 +2417,8 @@
     "cancelEdit": "Cancel",
     "searchPosts": "Search posts...",
     "searchResults": "results",
-    "inviteMembers": "Invite neighbors!"
+    "inviteMembers": "Invite neighbors!",
+    "notFound": "Group not found"
   },
   "greeting": {
     "morning": "Good morning",

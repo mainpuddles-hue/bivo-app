@@ -128,7 +128,8 @@
     "thursday": "torsdag",
     "friday": "fredag",
     "saturday": "lördag",
-    "sunday": "söndag"
+    "sunday": "söndag",
+    "atTime": "kl."
   },
   "post": {
     "save": "Spara",
@@ -500,7 +501,8 @@
     "loginHint": "Logga in for att se dina konversationer och chatta med dina grannar.",
     "quickReply": "Snabbsvar",
     "attachImage": "Bifoga bild",
-    "searchConversations": "Sök konversationer"
+    "searchConversations": "Sök konversationer",
+    "showActive": "Visa aktiva konversationer"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -887,7 +889,8 @@
     "otpInvalid": "Ogiltig kod. Kontrollera och försök igen.",
     "sessionExpired": "Din session har gått ut. Logga in igen.",
     "hidePassword": "Dölj lösenord",
-    "showPassword": "Visa lösenord"
+    "showPassword": "Visa lösenord",
+    "invalidEmail": "Ogiltig e-postadress"
   },
   "onboarding": {
     "welcome": "Välkommen till TackBird!",
@@ -1285,7 +1288,7 @@
     "preview": "Förhandsgranskning",
     "publish": "Publicera",
     "publishing": "Publicerar...",
-    "published": "Inlägg publicerat!",
+    "published": "Din annons har publicerats!",
     "createFailed": "Kunde inte skapa inlägg",
     "dailyFeeRequired": "Ange dagspris för uthyrningsinlägg",
     "eventDateRequired": "Välj ett datum för evenemanget",
@@ -1355,7 +1358,6 @@
     "discard": "Kasta bort",
     "priceCannotBeNegative": "Priset kan inte vara negativt",
     "eventDateInPast": "Evenemangets datum kan inte vara i det förflutna",
-    "published": "Din annons har publicerats!",
     "visibleTo": "Synlig för grannar i {neighborhood}",
     "share": "Dela",
     "listing": "Annons",
@@ -1375,7 +1377,8 @@
     "conditionFair": "Godtagbar",
     "conditionPoor": "Dålig",
     "conditionBadge": "{condition} skick",
-    "freeItem": "Gratis"
+    "freeItem": "Gratis",
+    "invalidDateFormat": "Använd formatet ÅÅÅÅ-MM-DD"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1658,7 +1661,8 @@
     "eventUnsaved": "Evenemang borttaget från sparade",
     "placeSaved": "Plats sparad",
     "placeUnsaved": "Plats borttagen från sparade",
-    "removed": "Inlägg borttaget från sparade"
+    "removed": "Inlägg borttaget från sparade",
+    "openInMaps": "Öppna i kartor"
   },
   "error": {
     "pageLoadFailed": "Sidan kunde inte laddas",
@@ -2127,7 +2131,9 @@
     "allTiersUnlocked": "Alla nivåer upplåsta!",
     "codeInput": "Inbjudningskod (valfritt)",
     "invalidCode": "Ogiltig inbjudningskod",
-    "codeApplied": "Inbjudningskod använd!"
+    "codeApplied": "Inbjudningskod använd!",
+    "invites": "inbjudningar",
+    "points": "poäng"
   },
   "pwa": {
     "installTitle": "Lägg till TackBird på hemskärmen",
@@ -2391,7 +2397,8 @@
     "cancelEdit": "Avbryt",
     "searchPosts": "Sök inlägg...",
     "searchResults": "resultat",
-    "inviteMembers": "Bjud in grannar!"
+    "inviteMembers": "Bjud in grannar!",
+    "notFound": "Gruppen hittades inte"
   },
   "greeting": {
     "morning": "God morgon",

@@ -128,7 +128,8 @@
     "thursday": "torstai",
     "friday": "perjantai",
     "saturday": "lauantai",
-    "sunday": "sunnuntai"
+    "sunday": "sunnuntai",
+    "atTime": "klo"
   },
   "post": {
     "save": "Tallenna",
@@ -520,7 +521,8 @@
     "loginHint": "Kirjaudu sisään nähdäksesi keskustelusi ja jutellaksesi naapureidesi kanssa.",
     "quickReply": "Pikavastaus",
     "attachImage": "Liitä kuva",
-    "searchConversations": "Hae keskusteluja"
+    "searchConversations": "Hae keskusteluja",
+    "showActive": "Näytä aktiiviset keskustelut"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -907,7 +909,8 @@
     "otpInvalid": "Virheellinen koodi. Tarkista ja yritä uudelleen.",
     "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
     "hidePassword": "Piilota salasana",
-    "showPassword": "Näytä salasana"
+    "showPassword": "Näytä salasana",
+    "invalidEmail": "Virheellinen sähköpostiosoite"
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
@@ -1305,7 +1308,7 @@
     "preview": "Esikatselu",
     "publish": "Julkaise",
     "publishing": "Julkaistaan...",
-    "published": "Ilmoitus julkaistu!",
+    "published": "Ilmoituksesi on julkaistu!",
     "createFailed": "Ilmoituksen luonti epäonnistui",
     "dailyFeeRequired": "Aseta päivähinta lainaa-ilmoitukselle",
     "eventDateRequired": "Valitse päivämäärä tapahtumalle",
@@ -1375,7 +1378,6 @@
     "discard": "Hylkää",
     "priceCannotBeNegative": "Hinta ei voi olla negatiivinen",
     "eventDateInPast": "Tapahtuman päivämäärä ei voi olla menneisyydessä",
-    "published": "Ilmoituksesi on julkaistu!",
     "visibleTo": "Näkyy naapureille alueella {neighborhood}",
     "share": "Jaa",
     "listing": "Ilmoitus",
@@ -1395,7 +1397,8 @@
     "conditionFair": "Kohtalainen",
     "conditionPoor": "Heikko",
     "conditionBadge": "{condition} kunto",
-    "freeItem": "Ilmainen"
+    "freeItem": "Ilmainen",
+    "invalidDateFormat": "Käytä muotoa VVVV-KK-PP"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -1678,7 +1681,8 @@
     "eventUnsaved": "Tapahtuma poistettu tallennetuista",
     "placeSaved": "Paikka tallennettu",
     "placeUnsaved": "Paikka poistettu tallennetuista",
-    "removed": "Ilmoitus poistettu tallennetuista"
+    "removed": "Ilmoitus poistettu tallennetuista",
+    "openInMaps": "Avaa kartassa"
   },
   "error": {
     "pageLoadFailed": "Sivua ei voitu ladata",
@@ -2147,7 +2151,9 @@
     "allTiersUnlocked": "Kaikki tasot avattu!",
     "codeInput": "Kutsukoodi (valinnainen)",
     "invalidCode": "Virheellinen kutsukoodi",
-    "codeApplied": "Kutsukoodi käytetty!"
+    "codeApplied": "Kutsukoodi käytetty!",
+    "invites": "kutsua",
+    "points": "pistettä"
   },
   "pwa": {
     "installTitle": "Lisää TackBird kotinäytölle",
@@ -2411,7 +2417,8 @@
     "cancelEdit": "Peruuta",
     "searchPosts": "Hae viestejä...",
     "searchResults": "tulosta",
-    "inviteMembers": "Kutsu naapureita!"
+    "inviteMembers": "Kutsu naapureita!",
+    "notFound": "Ryhmää ei löydy"
   },
   "greeting": {
     "morning": "Huomenta",

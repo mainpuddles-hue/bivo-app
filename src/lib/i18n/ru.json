@@ -127,7 +127,8 @@
     "thursday": "четверг",
     "friday": "пятница",
     "saturday": "суббота",
-    "sunday": "воскресенье"
+    "sunday": "воскресенье",
+    "atTime": "в"
   },
   "post": {
     "save": "Сохранить",
@@ -514,7 +515,8 @@
     "quickReplyOk": "Подходит?",
     "quickReply": "Быстрый ответ",
     "attachImage": "Прикрепить фото",
-    "searchConversations": "Поиск бесед"
+    "searchConversations": "Поиск бесед",
+    "showActive": "Показать активные разговоры"
   },
   "conversation": {
     "startPrompt": "Начните беседу, написав сообщение",
@@ -895,7 +897,8 @@
     "otpTooShort": "Введите 6-значный код",
     "otpExpired": "Код истёк. Запросите новый код.",
     "otpInvalid": "Неверный код. Проверьте и попробуйте снова.",
-    "sessionExpired": "Ваша сессия истекла. Пожалуйста, войдите снова."
+    "sessionExpired": "Ваша сессия истекла. Пожалуйста, войдите снова.",
+    "invalidEmail": "Неверный адрес электронной почты"
   },
   "onboarding": {
     "welcome": "Добро пожаловать в TackBird!",
@@ -1290,7 +1293,7 @@
     "preview": "Предпросмотр",
     "publish": "Опубликовать",
     "publishing": "Публикация...",
-    "published": "Объявление опубликовано!",
+    "published": "Ваше объявление опубликовано!",
     "createFailed": "Не удалось создать объявление",
     "dailyFeeRequired": "Укажите цену за день",
     "eventDateRequired": "Выберите дату события",
@@ -1351,7 +1354,6 @@
     "noExternalLinks": "Внешние ссылки не разрешены",
     "noExternalApps": "Ведите общение внутри TackBird",
     "tooShort": "Напишите более подробное описание",
-    "published": "Ваше объявление опубликовано!",
     "visibleTo": "Видно соседям в районе {neighborhood}",
     "share": "Поделиться",
     "listing": "Объявление",
@@ -1359,7 +1361,8 @@
     "discussion": "Обсуждение",
     "listingHint": "Нужно, предлагаю, бесплатно...",
     "eventHint": "Организуйте событие в районе",
-    "discussionHint": "Начните обсуждение на форуме"
+    "discussionHint": "Начните обсуждение на форуме",
+    "invalidDateFormat": "Используйте формат ГГГГ-ММ-ДД"
   },
   "locationPicker": {
     "useCurrentLocation": "Использовать текущее местоположение",
@@ -1639,7 +1642,8 @@
     "eventUnsaved": "Событие удалено из сохранённых",
     "placeSaved": "Место сохранено",
     "placeUnsaved": "Место удалено из сохранённых",
-    "removed": "Объявление удалено из сохранённых"
+    "removed": "Объявление удалено из сохранённых",
+    "openInMaps": "Открыть на карте"
   },
   "error": {
     "pageLoadFailed": "Не удалось загрузить страницу",
@@ -2091,7 +2095,9 @@
     "inviteCount": "Приглашённые соседи",
     "inviteDesc": "Поделитесь кодом и расширьте соседство",
     "inviteTitle": "Пригласите соседей",
-    "invitedYou": "{inviterName} пригласил(а) вас!"
+    "invitedYou": "{inviterName} пригласил(а) вас!",
+    "invites": "приглашений",
+    "points": "очков"
   },
   "pwa": {
     "installTitle": "Добавьте TackBird на главный экран",
@@ -2352,7 +2358,8 @@
     "saveEdit": "Сохранить",
     "cancelEdit": "Отмена",
     "searchPosts": "Поиск сообщений...",
-    "searchResults": "результатов"
+    "searchResults": "результатов",
+    "notFound": "Группа не найдена"
   },
   "greeting": {
     "morning": "Доброе утро",

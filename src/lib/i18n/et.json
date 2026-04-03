@@ -127,7 +127,8 @@
     "thursday": "neljapäev",
     "friday": "reede",
     "saturday": "laupäev",
-    "sunday": "pühapäev"
+    "sunday": "pühapäev",
+    "atTime": "kell"
   },
   "post": {
     "save": "Salvesta",
@@ -314,28 +315,28 @@
     "catNature": "Loodus",
     "catKids": "Lastele",
     "catOther": "Muu",
-    "messageOrganizer": "Saada korraldajale s\u00f5num",
-    "communityEventsTitle": "Kogukonna s\u00fcndmused",
-    "noUpcomingEvents": "Tulevaid s\u00fcndmusi pole",
-    "createFirstEvent": "Loo esimene s\u00fcndmus!",
-    "showAllEvents": "N\u00e4ita k\u00f5iki",
+    "messageOrganizer": "Saada korraldajale sõnum",
+    "communityEventsTitle": "Kogukonna sündmused",
+    "noUpcomingEvents": "Tulevaid sündmusi pole",
+    "createFirstEvent": "Loo esimene sündmus!",
+    "showAllEvents": "Näita kõiki",
     "participantsCount": "{count} osalejat",
     "participantsCountMax": "{count}/{max} osalejat",
-    "isFull": "T\u00e4is",
+    "isFull": "Täis",
     "joinEvent": "Osale",
     "requestSpot": "Taotle kohta",
-    "leaveEvent": "T\u00fchista",
+    "leaveEvent": "Tühista",
     "pendingApproval": "Ootab kinnitust",
     "organizer": "Korraldaja",
-    "editEventAction": "Muuda s\u00fcndmust",
-    "cancelEvent": "T\u00fchista s\u00fcndmus",
-    "cancelEventConfirm": "Kas soovid kindlasti selle s\u00fcndmuse t\u00fchistada?",
-    "eventCancelled": "S\u00fcndmus t\u00fchistatud",
-    "cancelFailed": "T\u00fchistamine eba\u00f5nnestus",
-    "joinFailed": "Liitumine eba\u00f5nnestus",
-    "leaveFailed": "Lahkumine eba\u00f5nnestus",
-    "eventNotFound": "S\u00fcndmust ei leitud",
-    "eventEnded": "See s\u00fcndmus on l\u00f5ppenud"
+    "editEventAction": "Muuda sündmust",
+    "cancelEvent": "Tühista sündmus",
+    "cancelEventConfirm": "Kas soovid kindlasti selle sündmuse tühistada?",
+    "eventCancelled": "Sündmus tühistatud",
+    "cancelFailed": "Tühistamine ebaõnnestus",
+    "joinFailed": "Liitumine ebaõnnestus",
+    "leaveFailed": "Lahkumine ebaõnnestus",
+    "eventNotFound": "Sündmust ei leitud",
+    "eventEnded": "See sündmus on lõppenud"
   },
   "activity": {
     "activities": "Koos",
@@ -514,7 +515,8 @@
     "quickReplyOk": "Sobib?",
     "quickReply": "Kiire vastus",
     "attachImage": "Lisa pilt",
-    "searchConversations": "Otsi vestlusi"
+    "searchConversations": "Otsi vestlusi",
+    "showActive": "Näita aktiivseid vestlusi"
   },
   "conversation": {
     "startPrompt": "Alusta vestlust kirjutades sõnumi",
@@ -727,7 +729,7 @@
     "passwordChangeFailed": "Parooli vahetamine ebaõnnestus",
     "passwordTooShort": "Parool peab olema vähemalt 8 tähemärki",
     "passwordTooWeak": "Parool peab sisaldama suurtähte ja numbrit",
-    "passwordNeedsUppercase": "Lisa suurt\u00e4ht (A-Z)",
+    "passwordNeedsUppercase": "Lisa suurtäht (A-Z)",
     "passwordNeedsNumber": "Lisa number (0-9)",
     "passwordStrong": "Tugev parool",
     "changingPassword": "Vahetamine...",
@@ -895,7 +897,8 @@
     "otpTooShort": "Sisesta 6-kohaline kood",
     "otpExpired": "Kood on aegunud. Palun taotle uut koodi.",
     "otpInvalid": "Vale kood. Kontrolli ja proovi uuesti.",
-    "sessionExpired": "Sinu seanss on aegunud. Palun logi uuesti sisse."
+    "sessionExpired": "Sinu seanss on aegunud. Palun logi uuesti sisse.",
+    "invalidEmail": "Vigane e-posti aadress"
   },
   "onboarding": {
     "welcome": "Tere tulemast TackBirdi!",
@@ -1290,7 +1293,7 @@
     "preview": "Eelvaade",
     "publish": "Avalda",
     "publishing": "Avaldamine...",
-    "published": "Kuulutus avaldatud!",
+    "published": "Sinu kuulutus on avaldatud!",
     "createFailed": "Kuulutuse loomine ebaõnnestus",
     "dailyFeeRequired": "Määra päevahind laenuta-kuulutusele",
     "eventDateRequired": "Vali sündmuse kuupäev",
@@ -1351,7 +1354,6 @@
     "noExternalLinks": "Välislingid ei ole lubatud",
     "noExternalApps": "Hoia vestlused TackBirdi sees",
     "tooShort": "Palun kirjuta pikem kirjeldus",
-    "published": "Sinu kuulutus on avaldatud!",
     "visibleTo": "Nähtav naabritele piirkonnas {neighborhood}",
     "share": "Jaga",
     "listing": "Kuulutus",
@@ -1359,7 +1361,8 @@
     "discussion": "Arutelu",
     "listingHint": "Vajan, pakun, tasuta...",
     "eventHint": "Korralda sündmus naabruskonnas",
-    "discussionHint": "Alusta arutelu foorumil"
+    "discussionHint": "Alusta arutelu foorumil",
+    "invalidDateFormat": "Kasuta formaati AAAA-KK-PP"
   },
   "locationPicker": {
     "useCurrentLocation": "Kasuta praegust asukohta",
@@ -1612,7 +1615,7 @@
     "resultCount": "{count} tulemust",
     "semanticMatch": "Sarnane vaste",
     "thisMonth": "Sel kuul",
-    "tabEvents": "S\u00fcndmused",
+    "tabEvents": "Sündmused",
     "tabGroups": "Grupid"
   },
   "saved": {
@@ -1639,7 +1642,8 @@
     "eventUnsaved": "Sündmus eemaldatud salvestatutest",
     "placeSaved": "Koht salvestatud",
     "placeUnsaved": "Koht eemaldatud salvestatutest",
-    "removed": "Kuulutus eemaldatud salvestatutest"
+    "removed": "Kuulutus eemaldatud salvestatutest",
+    "openInMaps": "Ava kaardil"
   },
   "error": {
     "pageLoadFailed": "Lehte ei saanud laadida",
@@ -1792,8 +1796,8 @@
     "outOfArea": "Oled piirkonnast väljas",
     "outOfAreaDesc": "Sündmused ja kohad kuvatakse ainult linnas {city}",
     "changeCity": "Vaheta linn",
-    "businesses": "Ettev\u00f5tted",
-    "showProfile": "N\u00e4ita profiili"
+    "businesses": "Ettevõtted",
+    "showProfile": "Näita profiili"
   },
   "privacy": {
     "title": "Andmekaitseteade",
@@ -2091,7 +2095,9 @@
     "inviteCount": "Kutsutud naabrid",
     "inviteDesc": "Jaga oma kutsekoodi ja kasvata naabruskonda",
     "inviteTitle": "Kutsu oma naabrid",
-    "invitedYou": "{inviterName} kutsus sind!"
+    "invitedYou": "{inviterName} kutsus sind!",
+    "invites": "kutset",
+    "points": "punkti"
   },
   "pwa": {
     "installTitle": "Lisa TackBird avakuvale",
@@ -2352,7 +2358,8 @@
     "saveEdit": "Salvesta",
     "cancelEdit": "Tühista",
     "searchPosts": "Otsi sõnumeid...",
-    "searchResults": "tulemust"
+    "searchResults": "tulemust",
+    "notFound": "Gruppi ei leitud"
   },
   "greeting": {
     "morning": "Tere hommikust",
