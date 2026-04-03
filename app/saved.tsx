@@ -348,8 +348,10 @@ function SavedScreenInner() {
               places.map((place) => (
                 <Pressable
                   key={place.id}
-                  onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.address ?? ''))}`)}
+                  onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.address ?? ''))}`).catch(() => {})}
                   style={[s.eventCard, { backgroundColor: colors.card }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${place.name} — ${t('saved.openInMaps')}`}
                 >
                   <View style={[s.eventIcon, { backgroundColor: `${colors.primary}15` }]}>
                     <MapPin size={20} color={colors.primary} />

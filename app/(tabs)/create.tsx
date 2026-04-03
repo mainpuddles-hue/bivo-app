@@ -956,6 +956,7 @@ export default function CreateScreen() {
               maxLength={100}
               returnKeyType="next"
               autoCapitalize="sentences"
+              accessibilityLabel={t('post.titleLabel')}
             />
             <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
           </View>
@@ -972,6 +973,7 @@ export default function CreateScreen() {
               multiline
               numberOfLines={4}
               textAlignVertical="top"
+              accessibilityLabel={t('post.descriptionLabel')}
               maxLength={2000}
             />
             <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.pro : colors.mutedForeground }]}>{description.length}/2000</Text>

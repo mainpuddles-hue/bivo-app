@@ -87,7 +87,7 @@ function HelpScreenInner() {
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('help.title')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
         <Text style={[s.subtitle, { color: colors.mutedForeground }]}>{t('help.subtitle')}</Text>
 
         {FAQ_CATEGORIES.map((category, ci) => (

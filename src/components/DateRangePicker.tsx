@@ -147,13 +147,13 @@ export default function DateRangePicker({
     <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {/* Month navigation */}
       <View style={styles.monthNav}>
-        <Pressable onPress={goToPrevMonth} hitSlop={12} disabled={!canGoPrev} style={{ opacity: canGoPrev ? 1 : 0.3 }}>
+        <Pressable onPress={goToPrevMonth} hitSlop={12} disabled={!canGoPrev} style={{ opacity: canGoPrev ? 1 : 0.3, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Previous month">
           <ChevronLeft size={20} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.monthTitle, { color: colors.foreground }]}>
           {months[viewMonth]} {viewYear}
         </Text>
-        <Pressable onPress={goToNextMonth} hitSlop={12}>
+        <Pressable onPress={goToNextMonth} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Next month">
           <ChevronRight size={20} color={colors.foreground} />
         </Pressable>
       </View>

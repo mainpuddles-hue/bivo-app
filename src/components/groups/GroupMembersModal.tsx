@@ -49,7 +49,7 @@ function GroupMembersModalInner({
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <Pressable style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]} onPress={onClose}>
-        <Pressable style={[styles.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20 }]} onPress={() => {}}>
+        <View style={[styles.modalContent, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20 }]}>
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.foreground }]}>
               {memberCount || 0} {t('groups.members')}
@@ -90,7 +90,7 @@ function GroupMembersModalInner({
               )}
             />
           )}
-        </Pressable>
+        </View>
       </Pressable>
     </Modal>
   )

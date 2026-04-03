@@ -22,7 +22,7 @@ function TermsScreenInner() {
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('terms.title')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <Text style={[s.updated, { color: colors.mutedForeground }]}>{t('terms.updated')}</Text>
 

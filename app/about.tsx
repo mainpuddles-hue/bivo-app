@@ -25,7 +25,7 @@ function AboutScreenInner() {
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('about.title')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
         {/* Logo & name */}
         <View style={s.logoSection}>
           <View style={[s.logoPlaceholder, { backgroundColor: colors.primary }]}>

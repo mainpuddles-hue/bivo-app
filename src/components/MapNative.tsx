@@ -197,7 +197,7 @@ export default function MapScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Top Bar ── */}
       <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)', borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={12}>
+        <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Pressable
@@ -210,7 +210,7 @@ export default function MapScreen() {
           </Text>
           <ChevronDown size={14} color={colors.mutedForeground} />
         </Pressable>
-        <Pressable onPress={() => { if (showSearch) { setShowSearch(false); setSearchQuery('') } else { setShowSearch(true) } }} style={styles.topBarIcon} hitSlop={8}>
+        <Pressable onPress={() => { if (showSearch) { setShowSearch(false); setSearchQuery('') } else { setShowSearch(true) } }} style={styles.topBarIcon} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.search')}>
           <Search size={20} color={showSearch ? colors.primary : colors.mutedForeground} />
         </Pressable>
       </View>

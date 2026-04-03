@@ -107,7 +107,7 @@ export default function ProScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>TackBird Pro</Text>

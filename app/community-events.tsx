@@ -164,7 +164,7 @@ function CommunityEventsScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
