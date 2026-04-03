@@ -110,12 +110,16 @@ export default function ProfileScreen() {
     }
 
     // Counts
-    const [postsRes, followersRes, followingRes, savedRes] = await Promise.all([
+    const [postsSettled, followersSettled, followingSettled, savedSettled] = await Promise.allSettled([
       supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
       supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
     ])
+    const postsRes = postsSettled.status === 'fulfilled' ? postsSettled.value : { count: 0 }
+    const followersRes = followersSettled.status === 'fulfilled' ? followersSettled.value : { count: 0 }
+    const followingRes = followingSettled.status === 'fulfilled' ? followingSettled.value : { count: 0 }
+    const savedRes = savedSettled.status === 'fulfilled' ? savedSettled.value : { count: 0 }
     setPostCount(postsRes.count ?? 0)
     setFollowerCount(followersRes.count ?? 0)
     setFollowingCount(followingRes.count ?? 0)

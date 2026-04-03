@@ -23,7 +23,7 @@ function BoostsScreenInner() {
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    getCachedUserId().then(id => setUserId(id))
+    getCachedUserId().then(id => setUserId(id)).catch(() => {})
   }, [])
 
   const { balance, tier, loading, purchasing, activeBoosts, purchaseBoost, refreshBalance } = useBoosts(userId)
@@ -164,7 +164,7 @@ function BoostsScreenInner() {
           <View style={styles.activeSection}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('boost.activeBoosts')}</Text>
             {activeBoosts.map(boost => (
-              <View key={boost.id} style={[styles.activeBoostCard, { backgroundColor: colors.card, borderColor: `${colors.accent}40` }]}>
+              <Pressable key={boost.id} onPress={() => router.push(`/post/${boost.post_id}` as any)} style={({ pressed }) => [styles.activeBoostCard, { backgroundColor: colors.card, borderColor: `${colors.accent}40` }, pressed && { opacity: 0.7 }]}>
                 <TrendingUp size={16} color={colors.accent} />
                 <View style={styles.activeBoostInfo}>
                   <Text style={[styles.activeBoostTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -177,7 +177,7 @@ function BoostsScreenInner() {
                     </Text>
                   </View>
                 </View>
-              </View>
+              </Pressable>
             ))}
           </View>
         )}

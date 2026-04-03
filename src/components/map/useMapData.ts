@@ -224,7 +224,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     try {
       const today = new Date().toISOString().split('T')[0]
       const { south, north, west, east } = cityBounds
-      const [postsRes, eventsRes, cityEventsData, tmData] = await Promise.all([
+      const [postsSettled, eventsSettled, cityEventsSettled, tmSettled] = await Promise.allSettled([
         supabase.from('posts')
           .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
           .eq('is_active', true)
@@ -246,6 +246,10 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
         fetchNearbyEvents(cityCenter.lat, cityCenter.lng, 10),
         fetchTicketmasterEvents(),
       ])
+      const postsRes = postsSettled.status === 'fulfilled' ? postsSettled.value : { data: null, error: null }
+      const eventsRes = eventsSettled.status === 'fulfilled' ? eventsSettled.value : { data: null, error: null }
+      const cityEventsData = cityEventsSettled.status === 'fulfilled' ? cityEventsSettled.value : []
+      const tmData = tmSettled.status === 'fulfilled' ? tmSettled.value : []
       if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
       const linkedEvents = cityEventsData
@@ -281,7 +285,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
 
   const fetchData = useCallback(async () => {
     setLoading(true)
-    await Promise.all([fetchGlobalData(), fetchPlaces()])
+    await Promise.allSettled([fetchGlobalData(), fetchPlaces()])
     setLoading(false)
   }, [fetchGlobalData, fetchPlaces])
 

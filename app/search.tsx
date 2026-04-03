@@ -596,7 +596,7 @@ function SearchScreenInner() {
       setHasMore((posts ?? []).length >= 20)
 
       // Search users, events, and groups in parallel
-      const [usersRes, eventsRes, groupsRes] = await Promise.all([
+      const [usersSettled, eventsSettled, groupsSettled] = await Promise.allSettled([
         supabase
           .from('profiles')
           .select('id, name, avatar_url, naapurusto')
@@ -631,6 +631,9 @@ function SearchScreenInner() {
       ])
       if (controller.signal.aborted) return
 
+      const usersRes = usersSettled.status === 'fulfilled' ? usersSettled.value : { data: null }
+      const eventsRes = eventsSettled.status === 'fulfilled' ? eventsSettled.value : { data: [] }
+      const groupsRes = groupsSettled.status === 'fulfilled' ? groupsSettled.value : { data: [] }
       let userResultsData = (usersRes.data ?? []) as any[]
       if (blockedIds.size > 0) {
         userResultsData = userResultsData.filter((u: any) => !blockedIds.has(u.id))
@@ -938,22 +941,22 @@ function SearchScreenInner() {
       {/* Results tabs */}
       {searched && !loading && (
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('places.posts')} accessibilityState={{ selected: activeTab === 'posts' }}>
             <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('places.posts')} ({results.length})
             </Text>
           </Pressable>
-          <Pressable onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          <Pressable onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('common.user')} accessibilityState={{ selected: activeTab === 'users' }}>
             <Text style={[s.tabText, { color: activeTab === 'users' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('common.user')} ({userResults.length})
             </Text>
           </Pressable>
-          <Pressable onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          <Pressable onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabEvents')} accessibilityState={{ selected: activeTab === 'events' }}>
             <Text style={[s.tabText, { color: activeTab === 'events' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('search.tabEvents')} ({eventResults.length})
             </Text>
           </Pressable>
-          <Pressable onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          <Pressable onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
             <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('search.tabGroups')} ({groupResults.length})
             </Text>

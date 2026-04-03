@@ -465,6 +465,8 @@ function LoginScreenInner() {
                     onPress={() => setShowPassword(!showPassword)}
                     style={styles.eyeBtn}
                     hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                   >
                     {showPassword ? (
                       <EyeOff size={20} color={colors.mutedForeground} />

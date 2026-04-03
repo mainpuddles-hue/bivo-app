@@ -50,7 +50,7 @@ export default function UpgradeBusinessScreen() {
   // Feature flag gate — redirect if Business accounts are disabled
   useEffect(() => {
     if (!FEATURES.BUSINESS_ACCOUNT) {
-      router.back()
+      router.replace('/(tabs)')
     }
   }, [router])
 

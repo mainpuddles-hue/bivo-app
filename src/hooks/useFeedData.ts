@@ -83,7 +83,7 @@ export function useFeedData() {
 
   // ── Fetch current user ID for like functionality ──
   useEffect(() => {
-    getCachedUserId().then(id => { if (id) setCurrentUserId(id) })
+    getCachedUserId().then(id => { if (id) setCurrentUserId(id) }).catch(() => {})
   }, [supabase])
 
   // ── Request location permission once, cache result ──
@@ -288,10 +288,12 @@ export function useFeedData() {
       // Batch-fetch liked/saved status to avoid N+1 queries in PostCard
       if (newPosts.length > 0 && currentUserId) {
         const postIds = newPosts.map(p => p.id)
-        const [{ data: likedData }, { data: savedData }] = await Promise.all([
+        const [likedSettled, savedSettled] = await Promise.allSettled([
           supabase.from('post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
           supabase.from('saved_posts').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
         ])
+        const { data: likedData } = likedSettled.status === 'fulfilled' ? likedSettled.value : { data: null }
+        const { data: savedData } = savedSettled.status === 'fulfilled' ? savedSettled.value : { data: null }
         const likedSet = new Set((likedData ?? []).map((l: any) => l.post_id))
         const savedSet = new Set((savedData ?? []).map((s: any) => s.post_id))
         newPosts.forEach(p => {
@@ -462,8 +464,9 @@ export function useFeedData() {
       // Refresh followedIds to sync after follow/unfollow on profile screens
       const uid = currentUserIdRef.current
       if (uid) {
-        supabase.from('user_follows').select('followed_id').eq('follower_id', uid)
+        Promise.resolve(supabase.from('user_follows').select('followed_id').eq('follower_id', uid))
           .then(({ data }) => { if (data) setFollowedIds(data.map((f: any) => f.followed_id)) })
+          .catch(() => {})
       }
     }
   }, [supabase]))
@@ -476,8 +479,9 @@ export function useFeedData() {
     offsetRef.current = 0
     // Refresh follows on pull-to-refresh (replaces realtime channel)
     if (currentUserId) {
-      supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId)
+      Promise.resolve(supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId))
         .then(({ data }) => { if (data) setFollowedIds(data.map((f: any) => f.followed_id)) })
+        .catch(() => {})
     }
     fetchPosts(true).finally(() => setRefreshing(false))
     fetchExtraContent()

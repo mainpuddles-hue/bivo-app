@@ -107,18 +107,21 @@ export default function PublicProfileScreen() {
     setProfile(prof)
 
     // Parallel fetches
-    const [postsRes, followersRes, followingRes] = await Promise.all([
+    const [postsSettled, followersSettled, followingSettled] = await Promise.allSettled([
       supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_active', true),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', userId),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId),
     ])
+    const postsRes = postsSettled.status === 'fulfilled' ? postsSettled.value : { count: 0 }
+    const followersRes = followersSettled.status === 'fulfilled' ? followersSettled.value : { count: 0 }
+    const followingRes = followingSettled.status === 'fulfilled' ? followingSettled.value : { count: 0 }
     setPostCount(postsRes.count ?? 0)
     setFollowerCount(followersRes.count ?? 0)
     setFollowingCount(followingRes.count ?? 0)
 
     // Check follow/block status + transaction history for reviews
     if (user) {
-      const [followRes, blockRes, convRes, existingReviewRes] = await Promise.all([
+      const [followSettled, blockSettled, convSettled, existingReviewSettled] = await Promise.allSettled([
         supabase.from('user_follows').select('id').eq('follower_id', user.id).eq('followed_id', userId).maybeSingle(),
         supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', userId).maybeSingle(),
         // Check if there's been a conversation (transaction proxy) between users
@@ -128,6 +131,10 @@ export default function PublicProfileScreen() {
         // Check for existing review
         supabase.from('reviews').select('id').eq('reviewer_id', user.id).eq('reviewed_id', userId).maybeSingle(),
       ])
+      const followRes = followSettled.status === 'fulfilled' ? followSettled.value : { data: null }
+      const blockRes = blockSettled.status === 'fulfilled' ? blockSettled.value : { data: null }
+      const convRes = convSettled.status === 'fulfilled' ? convSettled.value : { data: null }
+      const existingReviewRes = existingReviewSettled.status === 'fulfilled' ? existingReviewSettled.value : { data: null }
       setIsFollowing(!!followRes.data)
       setIsBlocked(!!blockRes.data)
       setHasTransaction(!!convRes.data)

@@ -110,6 +110,8 @@ export interface Profile {
   business_lat?: number | null
   business_lng?: number | null
   business_category?: string | null
+  city_id?: string
+  push_token?: string | null
   created_at: string
   updated_at: string
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, Pressable, StyleSheet, Share, Alert } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import {
@@ -44,6 +44,9 @@ export function ReferralCard({ userId }: ReferralCardProps) {
 
   const [copied, setCopied] = useState(false)
   const [code, setCode] = useState<string | null>(inviteCode)
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current) }, [])
 
   useEffect(() => {
     setCode(inviteCode)
@@ -61,7 +64,8 @@ export function ReferralCard({ userId }: ReferralCardProps) {
     if (!c) return
     await Clipboard.setStringAsync(c)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+    copiedTimerRef.current = setTimeout(() => setCopied(false), 2000)
   }, [ensureCode])
 
   const handleShare = useCallback(async () => {

@@ -134,8 +134,20 @@ function useNotificationNavigation() {
             break
 
           case 'booking':
-            if (data.postId) {
+            if (data.bookingId) {
+              router.push(`/booking/${data.bookingId}` as any)
+            } else if (data.postId) {
               router.push(`/post/${data.postId}`)
+            } else {
+              router.push('/notifications')
+            }
+            break
+
+          case 'event':
+            if (data.eventId) {
+              router.push(`/event/${data.eventId}` as any)
+            } else {
+              router.push('/notifications')
             }
             break
 

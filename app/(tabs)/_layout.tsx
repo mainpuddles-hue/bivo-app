@@ -67,7 +67,7 @@ export default function TabLayout() {
     let mounted = true
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (mounted && user) setUserId(user.id)
-    })
+    }).catch(() => {})
     return () => { mounted = false }
   }, [supabase])
 

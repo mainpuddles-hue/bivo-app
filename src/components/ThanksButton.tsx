@@ -110,7 +110,7 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
       await (supabase.from('notifications') as any).insert({
         user_id: toUserId,
         from_user_id: fromUserId,
-        type: 'thanks',
+        type: 'thanks_received',
         title: t('thanks.notification', { name: '' }),
         body: t('thanks.sent'),
         link_type: postId ? 'post' : 'profile',

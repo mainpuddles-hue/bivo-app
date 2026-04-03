@@ -832,7 +832,9 @@
     "expired": "Expired",
     "distanceKm": "{distance} km",
     "verified": "Verified",
-    "tapToOpen": "Tap to open listing"
+    "tapToOpen": "Tap to open listing",
+    "hide": "Hide post",
+    "moreOptions": "More options"
   },
   "auth": {
     "login": "Log in",
@@ -903,7 +905,9 @@
     "otpTooShort": "Enter the 6-digit code",
     "otpExpired": "Code has expired. Please request a new one.",
     "otpInvalid": "Invalid code. Please check and try again.",
-    "sessionExpired": "Your session has expired. Please log in again."
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password"
   },
   "onboarding": {
     "welcome": "Welcome to TackBird!",
@@ -1695,6 +1699,7 @@
     "newMessage": "New message",
     "newReview": "New review",
     "newFollower": "New follower",
+    "reviewReceived": "New review received",
     "preferences": "Notification preferences",
     "prefMessages": "Messages",
     "prefReviews": "Reviews",
@@ -1748,6 +1753,8 @@
     "deleteNotification": "Delete notification",
     "expanded": "Show all",
     "collapsed": "Hide",
+    "commentReply": "replied to your comment",
+    "eventJoined": "joined your event",
     "loginRequired": "Log in to see notifications",
     "loginHint": "Log in to stay updated on what's happening in your neighborhood."
   },

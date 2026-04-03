@@ -24,12 +24,13 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   const now = ctx.now ?? Date.now()
 
   // Recency: exponential decay, half-life 24 hours
-  const hoursOld = (now - new Date(post.created_at).getTime()) / 3600000
+  const createdMs = new Date(post.created_at).getTime()
+  const hoursOld = Math.max(0, isNaN(createdMs) ? 0 : (now - createdMs) / 3600000)
   const recency = 1 / (1 + hoursOld / 24)
 
   // Engagement: normalize to 0-1 (cap at 20 interactions)
   const interactions = (post.like_count ?? 0) + (post.comment_count ?? 0) * 2
-  const engagement = Math.min(1, interactions / 20)
+  const engagement = Math.min(1, Math.max(0, interactions / 20))
 
   // Urgency: urgent posts or nappaa expiring within 8h
   let urgency = 0

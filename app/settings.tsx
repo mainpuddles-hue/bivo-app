@@ -511,6 +511,7 @@ export default function SettingsScreen() {
                     placeholderTextColor={colors.mutedForeground}
                     maxLength={50}
                     autoFocus
+                    accessibilityLabel={t('settings.displayName')}
                   />
                   <Text style={{ fontSize: 11, color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>
                     {nameText.length}/50
@@ -531,7 +532,7 @@ export default function SettingsScreen() {
                   </View>
                 </View>
               ) : (
-                <Pressable onPress={() => setEditingName(true)} style={s.row}>
+                <Pressable onPress={() => setEditingName(true)} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.displayName')}>
                   <User size={18} color={colors.mutedForeground} />
                   <Text style={[s.rowText, { color: colors.foreground }]}>{profile.name}</Text>
                   <Pencil size={14} color={colors.mutedForeground} />
@@ -560,7 +561,7 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {(['fi', 'en', 'sv'] as Locale[]).map((l) => (
-            <Pressable key={l} onPress={() => setLocale(l)} style={s.row}>
+            <Pressable key={l} onPress={() => setLocale(l)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locale === l }} accessibilityLabel={langLabel(l)}>
               <Globe size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{langLabel(l)}</Text>
               <View style={[locale === l ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
@@ -572,7 +573,7 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.theme')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {THEME_OPTIONS.map(({ key, label, icon: Icon }) => (
-            <Pressable key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark'); setDirty(true) }} style={s.row}>
+            <Pressable key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark'); setDirty(true) }} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
               <Icon size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[theme === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
@@ -647,7 +648,7 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.profileVisibility')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {VISIBILITY_OPTIONS.map(({ key, label }) => (
-            <Pressable key={key} onPress={() => markDirty(setVisibility)(key)} style={s.row}>
+            <Pressable key={key} onPress={() => markDirty(setVisibility)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: visibility === key }} accessibilityLabel={t(label)}>
               <Eye size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[visibility === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
@@ -659,7 +660,7 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.locationAccuracy')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {LOCATION_ACCURACY_OPTIONS.map(({ key, label, desc }) => (
-            <Pressable key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={s.row}>
+            <Pressable key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locationAccuracy === key }} accessibilityLabel={t(label)}>
               <MapPin size={18} color={colors.mutedForeground} />
               <View style={{ flex: 1 }}>
                 <Text style={[s.rowText, { color: colors.foreground, flex: undefined }]}>{t(label)}</Text>
@@ -696,6 +697,7 @@ export default function SettingsScreen() {
                   onValueChange={(val) => { notifPrefs.updatePreference(type, val); setDirty(true) }}
                   trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
                   thumbColor={notifPrefs.preferences[type] ? colors.primary : colors.mutedForeground}
+                  accessibilityLabel={t(label)}
                 />
               </View>
             ))
@@ -710,6 +712,7 @@ export default function SettingsScreen() {
                 disabled={push.isLoading}
                 trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
                 thumbColor={push.isSubscribed ? colors.primary : colors.mutedForeground}
+                accessibilityLabel={t('settings.pushNotifications')}
               />
             </View>
           )}
@@ -784,6 +787,7 @@ export default function SettingsScreen() {
                     placeholder={t('settings.currentPasswordPlaceholder')}
                     placeholderTextColor={colors.mutedForeground}
                     secureTextEntry
+                    accessibilityLabel={t('auth.password')}
                   />
                 )}
                 <TextInput
@@ -793,6 +797,7 @@ export default function SettingsScreen() {
                   placeholder={t('settings.newPasswordPlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
                   secureTextEntry
+                  accessibilityLabel={t('auth.newPassword')}
                 />
                 {/* Inline password strength feedback (error prevention) */}
                 {newPw.length > 0 && (
@@ -828,7 +833,7 @@ export default function SettingsScreen() {
         {/* Saved items */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('saved.title')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/saved')} style={s.row}>
+          <Pressable onPress={() => router.push('/saved')} style={s.row} accessibilityRole="button" accessibilityLabel={t('saved.title')}>
             <Bookmark size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('saved.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />

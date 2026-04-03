@@ -361,6 +361,20 @@ function PostDetailScreenInner() {
           post_id: id as string,
         })
       }
+      // Notify parent comment author about the reply
+      if (replyToComment && replyToComment.user_id !== userId && replyToComment.user_id !== post?.user_id) {
+        try {
+          await (supabase.from('notifications') as any).insert({
+            user_id: replyToComment.user_id,
+            from_user_id: userId,
+            type: 'comment',
+            title: t('notifications.commentReply'),
+            body: content.slice(0, 100),
+            link_type: 'post',
+            link_id: id,
+          })
+        } catch {}
+      }
       // Speed badge check for urgent posts
       if (post?.is_urgent && userId && post.user_id) {
         checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})

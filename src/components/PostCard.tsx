@@ -197,7 +197,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 )}
               </View>
             ) : (
-              <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo}>
+              <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo} accessibilityRole="button" accessibilityLabel={user?.name ?? t('postCard.anonymousUser')}>
                 <View style={styles.avatarContainer}>
                   {user?.avatar_url ? (
                     <Image source={{ uri: user.avatar_url }} style={[
@@ -486,6 +486,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {showMore && (
             <Pressable
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.share')}
               onPress={async (e) => {
                 e.stopPropagation?.()
                 try {
@@ -501,6 +503,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {showMore && (
             <Pressable
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('post.report')}
               onPress={(e) => {
                 e.stopPropagation?.()
                 setShowMore(false)
@@ -516,6 +520,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {showMore && userId && (
             <Pressable
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('postCard.hide')}
               onPress={(e) => {
                 e.stopPropagation?.()
                 setShowMore(false)
@@ -531,6 +537,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {/* More toggle */}
           <Pressable
             hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('postCard.moreOptions')}
+            accessibilityState={{ expanded: showMore }}
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
             style={[styles.actionItem, !showMore && { opacity: 0.5 }]}
           >

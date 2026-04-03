@@ -3,7 +3,7 @@
 // quiet hours, and urgent auto-matching.
 //
 // Priority levels:
-//   immediate: urgent_help, new_message, booking_paid → send NOW
+//   immediate: urgent_help, new_message → send NOW (bypasses quiet hours)
 //   batch: like, follow, thanks, comment → batch every 15 min
 //
 // Quiet hours: 22:00-07:00 Helsinki time → delay until 07:00
@@ -36,10 +36,7 @@ function isQuietHours(): boolean {
 }
 
 // Notification types and their priority
-const IMMEDIATE_TYPES = new Set([
-  'urgent_help', 'juuri_nyt', 'new_message', 'booking_paid',
-  'service_paid', 'booking_confirmed', 'service_confirmed',
-])
+const IMMEDIATE_TYPES = new Set(['urgent_help', 'new_message'])
 
 const BATCH_TYPES = new Set([
   'post_like', 'post_comment', 'new_follower', 'thanks_received',

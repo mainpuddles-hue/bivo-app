@@ -16,7 +16,7 @@ export function AlertBanner() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchAllAlerts().then(setAlerts)
+    fetchAllAlerts().then(setAlerts).catch(() => {})
   }, [])
 
   const handleDismiss = useCallback((id: string) => {

@@ -40,7 +40,7 @@ export default function ProScreen() {
   // Feature flag gate — redirect if Pro subscription is disabled
   useEffect(() => {
     if (!APP_FEATURES.PRO_SUBSCRIPTION) {
-      router.back()
+      router.replace('/(tabs)')
     }
   }, [router])
 

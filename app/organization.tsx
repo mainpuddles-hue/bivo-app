@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
 const MAX_IMAGES = 10
@@ -34,6 +35,13 @@ export default function OrganizationScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+
+  // Feature flag gate — redirect if Business accounts are disabled
+  useEffect(() => {
+    if (!FEATURES.BUSINESS_ACCOUNT) {
+      router.replace('/(tabs)')
+    }
+  }, [router])
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [ads, setAds] = useState<AdStats[]>([])

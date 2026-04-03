@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken, ScrollView } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, Trophy, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
@@ -117,6 +117,7 @@ function FeedScreenInner() {
   const { t, locale } = useI18n()
   const router = useRouter()
   const insets = useSafeAreaInsets()
+  const params = useLocalSearchParams<{ openNeighborhoodPicker?: string }>()
 
   const feed = useFeedData()
   const supabase = useSupabase()
@@ -124,6 +125,13 @@ function FeedScreenInner() {
   const { recordActivity, currentStreak } = useStreak(feed.currentUserId)
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
+
+  // Open neighborhood picker when navigated from settings with param
+  useEffect(() => {
+    if (params.openNeighborhoodPicker === '1') {
+      feed.setShowNeighborhoodPicker(true)
+    }
+  }, [params.openNeighborhoodPicker])
 
   // ── Evening digest state ──
   const [digestData, setDigestData] = useState<{ posts: number; events: number; threads: number } | null>(null)
@@ -236,7 +244,7 @@ function FeedScreenInner() {
   useEffect(() => {
     AsyncStorage.getItem('tackbird_last_feed_visit').then(val => {
       if (val) setLastFeedVisit(val)
-    })
+    }).catch(() => {})
     return () => {
       AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString())
     }

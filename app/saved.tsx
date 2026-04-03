@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, Animated } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, Animated, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -346,7 +346,11 @@ function SavedScreenInner() {
               />
             ) : (
               places.map((place) => (
-                <View key={place.id} style={[s.eventCard, { backgroundColor: colors.card }]}>
+                <Pressable
+                  key={place.id}
+                  onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.address ?? ''))}`)}
+                  style={[s.eventCard, { backgroundColor: colors.card }]}
+                >
                   <View style={[s.eventIcon, { backgroundColor: `${colors.primary}15` }]}>
                     <MapPin size={20} color={colors.primary} />
                   </View>
@@ -365,7 +369,7 @@ function SavedScreenInner() {
                   <Pressable onPress={() => handleUnsavePlace(place.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')}>
                     <BookmarkCheck size={18} color={colors.primary} />
                   </Pressable>
-                </View>
+                </Pressable>
               ))
             )
           )}

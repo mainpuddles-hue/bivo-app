@@ -66,7 +66,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
       if (stored === 'en' || stored === 'sv' || stored === 'et' || stored === 'ru') setLocaleState(stored)
-    })
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {

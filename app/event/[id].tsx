@@ -115,6 +115,20 @@ function EventDetailScreenInner() {
       if (error) {
         Alert.alert(t('common.error'), t('events.joinFailed'))
       } else {
+        // Notify event creator about new participant
+        if (event.creator_id && event.creator_id !== userId) {
+          try {
+            await (supabase.from('notifications') as any).insert({
+              user_id: event.creator_id,
+              from_user_id: userId,
+              type: 'event_reminder',
+              title: t('notifications.eventJoined'),
+              body: event.title,
+              link_type: 'event',
+              link_id: event.id,
+            })
+          } catch {}
+        }
         await fetchEvent()
       }
     } catch {

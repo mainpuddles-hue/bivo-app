@@ -173,7 +173,7 @@ export default function GroupDetailScreen() {
   const checkMembership = useCallback(async () => {
     if (!id || !currentUserId) return
     try {
-      const { data } = await supabase.from('group_members').select('role').eq('group_id', id).eq('user_id', currentUserId).single()
+      const { data } = await supabase.from('group_members').select('role').eq('group_id', id).eq('user_id', currentUserId).maybeSingle()
       if (data) { setIsMember(true); setIsAdmin((data as any).role === 'admin') }
       else { setIsMember(false); setIsAdmin(false) }
     } catch { setIsMember(false) } // Intentional: table may not exist

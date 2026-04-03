@@ -100,7 +100,7 @@ function BookingDetailScreenInner() {
   // Feature flag gate — redirect if Payments are disabled
   useEffect(() => {
     if (!FEATURES.PAYMENTS) {
-      router.back()
+      router.replace('/(tabs)')
     }
   }, [router])
 

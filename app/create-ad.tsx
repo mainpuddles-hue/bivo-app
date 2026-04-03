@@ -57,7 +57,7 @@ export default function CreateAdScreen() {
   // Feature flag gate — redirect if Ad campaigns are disabled
   useEffect(() => {
     if (!FEATURES.AD_CAMPAIGNS) {
-      router.back()
+      router.replace('/(tabs)')
     }
   }, [router])
 

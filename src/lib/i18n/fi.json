@@ -832,7 +832,9 @@
     "expired": "Vanhentunut",
     "distanceKm": "{distance} km",
     "verified": "Vahvistettu",
-    "tapToOpen": "Avaa ilmoitus napauttamalla"
+    "tapToOpen": "Avaa ilmoitus napauttamalla",
+    "hide": "Piilota ilmoitus",
+    "moreOptions": "Lisää vaihtoehtoja"
   },
   "auth": {
     "login": "Kirjaudu",
@@ -903,7 +905,9 @@
     "otpTooShort": "Syötä 6-numeroinen koodi",
     "otpExpired": "Koodi on vanhentunut. Pyydä uusi koodi.",
     "otpInvalid": "Virheellinen koodi. Tarkista ja yritä uudelleen.",
-    "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen."
+    "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
+    "hidePassword": "Piilota salasana",
+    "showPassword": "Näytä salasana"
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
@@ -1699,6 +1703,7 @@
     "newMessage": "Uusi viesti",
     "newReview": "Uusi arvostelu",
     "newFollower": "Uusi seuraaja",
+    "reviewReceived": "Uusi arvostelu vastaanotettu",
     "preferences": "Ilmoitusasetukset",
     "prefMessages": "Viestit",
     "prefReviews": "Arvostelut",
@@ -1748,6 +1753,8 @@
     "deleteNotification": "Poista ilmoitus",
     "expanded": "Näytä kaikki",
     "collapsed": "Piilota",
+    "commentReply": "vastasi kommenttiisi",
+    "eventJoined": "liittyi tapahtumaasi",
     "loginRequired": "Kirjaudu sisään nähdäksesi ilmoitukset",
     "loginHint": "Kirjaudu sisään pysyäksesi ajan tasalla naapurustosi tapahtumista."
   },
