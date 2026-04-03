@@ -83,6 +83,19 @@ export function usePushNotifications(userId: string | null) {
 
     checkExistingToken()
 
+    // Re-sync token periodically (tokens can rotate)
+    const tokenSyncInterval = setInterval(async () => {
+      if (!mounted || !userId) return
+      try {
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? PROJECT_ID
+        const freshToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data
+        if (mounted && freshToken && freshToken !== token) {
+          await saveTokenToBackend(userId, freshToken)
+          setToken(freshToken)
+        }
+      } catch {} // Non-critical
+    }, 24 * 60 * 60 * 1000) // Once per day
+
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         if (__DEV__) console.log('[push] received:', notification.request.identifier)
@@ -91,8 +104,9 @@ export function usePushNotifications(userId: string | null) {
     return () => {
       mounted = false
       notificationListener.current?.remove()
+      clearInterval(tokenSyncInterval)
     }
-  }, [userId])
+  }, [userId, token])
 
   const subscribe = useCallback(async () => {
     if (isWeb || !userId) return

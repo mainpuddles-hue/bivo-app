@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { initSentry } from '@/lib/sentry'
+import { initSentry, setSentryUser, addSentryBreadcrumb } from '@/lib/sentry'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -20,6 +20,7 @@ import { setAnalyticsUser, trackEvent, trackRetention } from '@/lib/analytics'
 import { clearAuthCache } from '@/lib/authCache'
 import { useAppStateManager } from '@/hooks/useAppState'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
+import { useGlobalErrorRecovery } from '@/hooks/useGlobalErrorRecovery'
 
 // Initialize Sentry error reporting (no-op in __DEV__)
 initSentry()
@@ -184,10 +185,12 @@ function useAnalyticsSetup() {
         if (!mounted) return
         if (user) {
           setAnalyticsUser(user.id)
+          setSentryUser(user.id)
           trackEvent('app_opened')
           trackRetention(user.id)
         } else {
           setAnalyticsUser(null)
+          setSentryUser(null)
         }
       } catch {
         // Ignore — analytics is non-critical
@@ -454,12 +457,20 @@ function useSessionGuard() {
 
 function RootLayoutInner() {
   const { colors, isDark } = useTheme()
+  const navSegments = useSegments()
   useOnboardingGuard()
   useNotificationNavigation()
   useAnalyticsSetup()
   useAuthStateListener()
   useSessionGuard()
+
+  // Track navigation for Sentry crash reports
+  useEffect(() => {
+    const screen = navSegments.join('/')
+    if (screen) addSentryBreadcrumb(screen)
+  }, [navSegments])
   useAppStateManager() // Disconnect realtime when backgrounded
+  useGlobalErrorRecovery() // Catch unhandled promise rejections
   const network = useNetworkStatus() // Offline detection
 
   // Location-aware international system
