@@ -56,17 +56,17 @@ interface TrustProgressProps {
 // the component and cannot access useTheme(). These map to colors.destructive,
 // colors.pro, and colors.primary respectively. To fix, pass `colors` as a
 // parameter from the calling component — skipped for now to avoid signature changes.
-function getScoreColor(score: number): string {
-  if (score < 40) return '#D94F4F'
-  if (score < 75) return '#F59E0B'
-  return '#2D6B5E'
+function getScoreColor(score: number, colors: { destructive: string; pro: string; primary: string }): string {
+  if (score < 40) return colors.destructive
+  if (score < 75) return colors.pro
+  return colors.primary
 }
 
 export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, onVerifyPress }: TrustProgressProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
 
-  const scoreColor = getScoreColor(score)
+  const scoreColor = getScoreColor(score, colors)
   const factorEntries = Object.entries(factors)
 
   return (

@@ -126,7 +126,7 @@ export default function TabLayout() {
       onRequestClose={() => setShowCreateMenu(false)}
     >
       <Pressable style={s.backdrop} onPress={() => setShowCreateMenu(false)}>
-        <View style={[s.sheet, { backgroundColor: colors.card }]}>
+        <View style={[s.sheet, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
           <View style={[s.handle, { backgroundColor: colors.border }]} />
 
           <Pressable
@@ -224,7 +224,7 @@ const s = StyleSheet.create({
     width: 20, height: 3, borderRadius: 1.5,
   },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingBottom: 32, paddingTop: 8 },
+  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingTop: 8 },
   handle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
   sheetRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12, minHeight: 56 },
   sheetIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

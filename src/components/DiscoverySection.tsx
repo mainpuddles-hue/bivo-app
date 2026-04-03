@@ -54,7 +54,7 @@ export const DiscoverySection = memo(function DiscoverySection({
     return (
       <View style={{ gap: 10 }}>
         <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
-          <View style={[styles.sectionBar, { backgroundColor: '#3B7DD8' }]} />
+          <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
         </View>
         <HorizontalSkeleton colors={colors} width={56} height={56} />
@@ -71,7 +71,7 @@ export const DiscoverySection = memo(function DiscoverySection({
     <View style={{ gap: 10 }}>
       {/* Section header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 4 }}>
-        <View style={[styles.sectionBar, { backgroundColor: '#3B7DD8' }]} />
+        <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />
         <Text style={[styles.sectionTitle, { color: colors.foreground, marginLeft: 10 }]}>{placesSectionTitle}</Text>
         <View style={{ flex: 1 }} />
         <Pressable

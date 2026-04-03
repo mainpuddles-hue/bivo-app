@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native'
 import { Flag, X, Check } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -91,6 +91,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <Pressable style={s.backdrop} onPress={handleClose}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
         <Pressable style={[s.card, { backgroundColor: colors.card }]} onPress={() => {}}>
           {/* Header */}
           <View style={s.header}>
@@ -120,6 +121,8 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
                   <Pressable
                     key={r}
                     onPress={() => setReason(r)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: reason === r }}
                     style={[
                       s.reasonItem,
                       { borderColor: reason === r ? colors.destructive : colors.border },
@@ -167,6 +170,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
             </>
           )}
         </Pressable>
+        </KeyboardAvoidingView>
       </Pressable>
     </Modal>
   )

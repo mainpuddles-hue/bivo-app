@@ -485,7 +485,7 @@ export default function ProfileScreen() {
 
         {/* Stats — simplified to 4 primary stats */}
         <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Pressable style={({ pressed }) => [s.stat, pressed && { opacity: 0.7 }]} onPress={() => followerCount > 0 ? openFollowList('followers') : null} accessibilityLabel={`${followerCount} ${t('profile.followers')}`} accessibilityRole="button">
+          <Pressable style={({ pressed }) => [s.stat, pressed && followerCount > 0 && { opacity: 0.7 }]} onPress={() => followerCount > 0 ? openFollowList('followers') : null} accessibilityLabel={`${followerCount} ${t('profile.followers')}`} accessibilityRole="button" accessibilityState={{ disabled: followerCount === 0 }}>
             <Text style={[s.statNum, { color: followerCount === 0 ? colors.primary : colors.foreground }]}>
               {followerCount === 0 ? '\u2013' : followerCount}
             </Text>

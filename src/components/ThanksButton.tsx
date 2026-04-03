@@ -28,7 +28,6 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
 
   // Animation
   const scaleAnim = useRef(new Animated.Value(1)).current
-  const colorAnim = useRef(new Animated.Value(0)).current
 
   // Check if already thanked + get count
   useEffect(() => {
@@ -87,12 +86,6 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
       }),
     ]).start()
 
-    Animated.timing(colorAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start()
-
     try {
       // 1. Insert thanks record
       const { error } = await (supabase.from('thanks') as any).insert({
@@ -129,12 +122,11 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
       setHasThanked(false)
       setThanksCount(c => c - 1)
       scaleAnim.setValue(1)
-      colorAnim.setValue(0)
       Alert.alert(t('common.error'), t('thanks.sendFailed'))
     } finally {
       setSending(false)
     }
-  }, [fromUserId, toUserId, postId, hasThanked, sending, supabase, awardPoints, t, scaleAnim, colorAnim])
+  }, [fromUserId, toUserId, postId, hasThanked, sending, supabase, awardPoints, t, scaleAnim])
 
   // Don't render if no user or same user
   if (!fromUserId || fromUserId === toUserId) return null

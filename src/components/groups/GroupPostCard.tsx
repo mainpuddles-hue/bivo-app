@@ -159,9 +159,9 @@ function GroupPostCardInner({
                 style={[styles.saveBtn, { backgroundColor: colors.primary, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.6 : 1, paddingVertical: 8 }]}
               >
                 {savingPostEdit ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
-                  <Text style={{ color: '#FFFFFF', fontSize: 13, fontFamily: fonts.bodySemi, textAlign: 'center' }}>
+                  <Text style={{ color: colors.primaryForeground, fontSize: 13, fontFamily: fonts.bodySemi, textAlign: 'center' }}>
                     {t('groups.saveEdit')}
                   </Text>
                 )}

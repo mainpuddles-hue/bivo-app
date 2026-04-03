@@ -27,7 +27,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { haversineKm } from '@/lib/geo'
 import type { Post, PostType } from '@/lib/types'
 
-const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''}/functions/v1`
 
 const HISTORY_KEY = 'tackbird-search-history'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
