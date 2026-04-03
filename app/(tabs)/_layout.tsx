@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { enableFreeze } from 'react-native-screens'
-import { Tabs, useRouter } from 'expo-router'
+import { Tabs, useRouter, usePathname } from 'expo-router'
 import { View, Text, StyleSheet, Modal, Pressable } from 'react-native'
 
 // Freeze inactive screens to save memory and CPU
@@ -60,12 +60,14 @@ export default function TabLayout() {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const router = useRouter()
+  const pathname = usePathname()
   const insets = useSafeAreaInsets()
   const tabBarBg = isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)'
   const supabase = useSupabase()
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)
   const [showCreateMenu, setShowCreateMenu] = useState(false)
+  const isFeedTab = pathname === '/' || pathname === ''
 
   useEffect(() => {
     let mounted = true
@@ -77,7 +79,7 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-    <Header />
+    {!isFeedTab && <Header />}
     <Tabs
       screenOptions={{
         headerShown: false,

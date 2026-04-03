@@ -362,7 +362,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         )}
 
         {/* Action row: Like count · Comment count · Save · More ... Distance on RIGHT */}
-        <View style={[styles.actionRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border + '40' }]} accessibilityRole="toolbar">
+        <View style={[styles.actionRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border + '40' }]} accessibilityRole="toolbar" onStartShouldSetResponder={() => true}>
           {/* Like button — always show */}
           <Pressable
             hitSlop={8}
