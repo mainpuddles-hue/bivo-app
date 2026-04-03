@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Pressable, StyleSheet, Appearance } from 'react-native'
 import { AlertTriangle, RotateCcw } from 'lucide-react-native'
 import * as Sentry from '@sentry/react-native'
 
@@ -20,6 +20,8 @@ interface State {
  * Uses hardcoded Finnish + English strings because this component wraps
  * ABOVE ThemeProvider and I18nProvider — if those crash, we still need
  * to show a recovery screen.
+ *
+ * Uses Appearance.getColorScheme() for dark mode support without ThemeProvider.
  */
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -45,21 +47,23 @@ export class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback
 
+      const isDark = Appearance.getColorScheme() === 'dark'
+
       return (
-        <View style={styles.container}>
-          <View style={styles.iconCircle}>
-            <AlertTriangle size={40} color="#D94F4F" />
+        <View style={[styles.container, isDark && styles.containerDark]}>
+          <View style={[styles.iconCircle, isDark && styles.iconCircleDark]}>
+            <AlertTriangle size={40} color={isDark ? '#EF4444' : '#D94F4F'} />
           </View>
-          <Text style={styles.title}>Jokin meni pieleen</Text>
-          <Text style={styles.subtitle}>
-            Sovelluksessa tapahtui odottamaton virhe. Yrita uudelleen.
+          <Text style={[styles.title, isDark && styles.titleDark]}>Jokin meni pieleen</Text>
+          <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+            Sovelluksessa tapahtui odottamaton virhe. Yritä uudelleen.
           </Text>
-          <Text style={styles.subtitleEn}>
+          <Text style={[styles.subtitleEn, isDark && styles.subtitleEnDark]}>
             Something went wrong. Please try again.
           </Text>
           {__DEV__ && this.state.error && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorDetail} numberOfLines={6}>
+            <View style={[styles.errorBox, isDark && styles.errorBoxDark]}>
+              <Text style={[styles.errorDetail, isDark && styles.errorDetailDark]} numberOfLines={6}>
                 {this.state.error.message}
               </Text>
             </View>
@@ -68,11 +72,14 @@ export class ErrorBoundary extends React.Component<Props, State> {
             onPress={this.handleRetry}
             style={({ pressed }) => [
               styles.retryBtn,
+              isDark && styles.retryBtnDark,
               pressed && styles.retryBtnPressed,
             ]}
+            accessibilityRole="button"
+            accessibilityLabel="Yritä uudelleen / Try again"
           >
             <RotateCcw size={18} color="#FFFFFF" />
-            <Text style={styles.retryText}>Yrita uudelleen / Try again</Text>
+            <Text style={styles.retryText}>Yritä uudelleen / Try again</Text>
           </Pressable>
         </View>
       )
@@ -90,6 +97,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
   },
+  containerDark: {
+    backgroundColor: '#121212',
+  },
   iconCircle: {
     width: 80,
     height: 80,
@@ -99,6 +109,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 24,
   },
+  iconCircleDark: {
+    backgroundColor: '#EF444420',
+  },
   title: {
     fontSize: 22,
     fontWeight: '700',
@@ -107,12 +120,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
+  titleDark: {
+    color: '#E8E6E0',
+  },
   subtitle: {
     fontSize: 15,
     color: '#6B7280',
     lineHeight: 22,
     textAlign: 'center',
     marginBottom: 4,
+  },
+  subtitleDark: {
+    color: '#9CA3AF',
   },
   subtitleEn: {
     fontSize: 13,
@@ -121,6 +140,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
+  subtitleEnDark: {
+    color: '#6B7280',
+  },
   errorBox: {
     backgroundColor: '#FEF2F2',
     borderRadius: 12,
@@ -128,11 +150,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     maxWidth: '100%',
   },
+  errorBoxDark: {
+    backgroundColor: '#450A0A',
+  },
   errorDetail: {
     fontSize: 12,
     color: '#991B1B',
     fontFamily: 'monospace',
     lineHeight: 18,
+  },
+  errorDetailDark: {
+    color: '#FCA5A5',
   },
   retryBtn: {
     flexDirection: 'row',
@@ -148,6 +176,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
+  },
+  retryBtnDark: {
+    backgroundColor: '#6FCF97',
+    shadowColor: '#6FCF97',
   },
   retryBtnPressed: {
     opacity: 0.85,

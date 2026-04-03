@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Pressable, StyleSheet, Appearance } from 'react-native'
 import { AlertCircle, RotateCcw } from 'lucide-react-native'
 
 interface Props {
@@ -18,18 +18,7 @@ interface State {
  * Lightweight screen-level Error Boundary.
  *
  * Shows an inline error card instead of a full-screen crash.
- * Use this inside individual screens that are high-risk (complex data flows,
- * native modules, realtime connections).
- *
- * This component lives INSIDE providers, so it could use hooks — but since
- * it's a class component it uses hardcoded colors that match Helsinki Dusk.
- * The inline card is small enough that the surrounding screen (tabs, header)
- * remains visible.
- *
- * NOTE: Dark mode issue — hardcoded light-mode colors (#FFFFFF card, #1A1A1A text)
- * will look wrong on dark backgrounds. Converting to a function component would
- * break Error Boundary behaviour (getDerivedStateFromError requires a class).
- * A wrapper pattern (class boundary + inner FC for theming) could fix this later.
+ * Uses Appearance.getColorScheme() for dark mode support without ThemeProvider.
  */
 export class ScreenErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -53,18 +42,20 @@ export class ScreenErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const isDark = Appearance.getColorScheme() === 'dark'
+
       return (
         <View style={styles.wrapper}>
-          <View style={styles.card}>
+          <View style={[styles.card, isDark && styles.cardDark]}>
             <View style={styles.iconRow}>
-              <AlertCircle size={22} color="#D94F4F" />
-              <Text style={styles.title}>Virhe / Error</Text>
+              <AlertCircle size={22} color={isDark ? '#EF4444' : '#D94F4F'} />
+              <Text style={[styles.title, isDark && styles.titleDark]}>Virhe / Error</Text>
             </View>
-            <Text style={styles.description}>
-              Jotain meni pieleen. Yrita ladata uudelleen.
+            <Text style={[styles.description, isDark && styles.descriptionDark]}>
+              Jotain meni pieleen. Yritä ladata uudelleen.
             </Text>
             {__DEV__ && this.state.error && (
-              <Text style={styles.errorDetail} numberOfLines={3}>
+              <Text style={[styles.errorDetail, isDark && styles.errorDetailDark]} numberOfLines={3}>
                 {this.state.error.message}
               </Text>
             )}
@@ -72,11 +63,14 @@ export class ScreenErrorBoundary extends React.Component<Props, State> {
               onPress={this.handleRetry}
               style={({ pressed }) => [
                 styles.retryBtn,
+                isDark && styles.retryBtnDark,
                 pressed && styles.retryBtnPressed,
               ]}
+              accessibilityRole="button"
+              accessibilityLabel="Yritä uudelleen / Try again"
             >
               <RotateCcw size={15} color="#FFFFFF" />
-              <Text style={styles.retryText}>Yrita uudelleen</Text>
+              <Text style={styles.retryText}>Yritä uudelleen</Text>
             </Pressable>
           </View>
         </View>
@@ -107,6 +101,10 @@ const styles = StyleSheet.create({
     elevation: 3,
     gap: 12,
   },
+  cardDark: {
+    backgroundColor: '#1E1E1E',
+    shadowOpacity: 0.3,
+  },
   iconRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -118,10 +116,16 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     letterSpacing: -0.2,
   },
+  titleDark: {
+    color: '#E8E6E0',
+  },
   description: {
     fontSize: 14,
     color: '#6B7280',
     lineHeight: 20,
+  },
+  descriptionDark: {
+    color: '#9CA3AF',
   },
   errorDetail: {
     fontSize: 11,
@@ -133,6 +137,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     overflow: 'hidden',
   },
+  errorDetailDark: {
+    color: '#FCA5A5',
+    backgroundColor: '#450A0A',
+  },
   retryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -142,6 +150,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     marginTop: 4,
+  },
+  retryBtnDark: {
+    backgroundColor: '#6FCF97',
   },
   retryBtnPressed: {
     opacity: 0.85,

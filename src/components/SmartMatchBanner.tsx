@@ -32,7 +32,7 @@ export const SmartMatchBanner = memo(function SmartMatchBanner({ matches, onDism
       onPress={() => router.push(`/post/${match.postId}`)}
       style={[styles.banner, { backgroundColor: `${colors.primary}14`, borderColor: `${colors.primary}33` }]}
     >
-      <View style={styles.iconWrap}>
+      <View style={[styles.iconWrap, { backgroundColor: `${colors.primary}1F` }]}>
         <Zap size={18} color={colors.primary} fill={colors.primary} />
       </View>
       <View style={styles.content}>
@@ -66,7 +66,6 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(45,107,94,0.12)',
   },
   content: { flex: 1, gap: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

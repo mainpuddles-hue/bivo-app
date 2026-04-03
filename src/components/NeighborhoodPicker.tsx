@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, Modal, Animated, Dimensions, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, ScrollView, Pressable, StyleSheet, Modal, Animated, useWindowDimensions, TouchableWithoutFeedback } from 'react-native'
 import { MapPin, Check, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { NEIGHBORHOODS } from '@/lib/constants'
-
-const SCREEN_HEIGHT = Dimensions.get('window').height
 
 export interface NeighborhoodPickerProps {
   visible: boolean
@@ -20,7 +18,8 @@ export interface NeighborhoodPickerProps {
 export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onSelect, neighborhoods }: NeighborhoodPickerProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current
+  const { height: screenHeight } = useWindowDimensions()
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current
   const backdropAnim = useRef(new Animated.Value(0)).current
   const [showModal, setShowModal] = useState(false)
   const touchStartY = useRef(0)
@@ -34,7 +33,7 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
       ]).start()
     } else {
       Animated.parallel([
-        Animated.timing(slideAnim, { toValue: SCREEN_HEIGHT, duration: 250, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: screenHeight, duration: 250, useNativeDriver: true }),
         Animated.timing(backdropAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
       ]).start(() => setShowModal(false))
     }
@@ -60,7 +59,7 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
           {
             backgroundColor: colors.background,
             transform: [{ translateY: slideAnim }],
-            maxHeight: SCREEN_HEIGHT * 0.7,
+            maxHeight: screenHeight * 0.7,
           },
         ]}
         onTouchStart={(e) => { touchStartY.current = e.nativeEvent.pageY }}

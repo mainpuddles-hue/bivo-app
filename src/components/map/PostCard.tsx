@@ -52,7 +52,7 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
             ) : (
               <View style={[styles.postAvatarPlaceholder, { backgroundColor: `${item.color}20` }]}>
                 <Text style={[styles.postAvatarInitial, { color: item.color }]}>
-                  {(userName ?? '?')[0].toUpperCase()}
+                  {(userName || '?')[0].toUpperCase()}
                 </Text>
               </View>
             )}

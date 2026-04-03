@@ -5,7 +5,7 @@ import {
   Pressable,
   Modal,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
   FlatList,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
@@ -25,8 +25,6 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated'
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
-
 const AnimatedImage = Animated.createAnimatedComponent(Image)
 
 interface ImageGalleryProps {
@@ -36,7 +34,7 @@ interface ImageGalleryProps {
   onClose: () => void
 }
 
-function ZoomableImage({ uri }: { uri: string }) {
+function ZoomableImage({ uri, screenWidth, screenHeight }: { uri: string; screenWidth: number; screenHeight: number }) {
   const scale = useSharedValue(1)
   const savedScale = useSharedValue(1)
   const translateX = useSharedValue(0)
@@ -103,10 +101,10 @@ function ZoomableImage({ uri }: { uri: string }) {
 
   return (
     <GestureDetector gesture={composed}>
-      <Animated.View style={[zoomStyles.imageWrapper, { width: SCREEN_WIDTH }]}>
+      <Animated.View style={[zoomStyles.imageWrapper, { width: screenWidth }]}>
         <AnimatedImage
           source={{ uri }}
-          style={[zoomStyles.image, animatedStyle]}
+          style={[{ width: screenWidth, height: screenHeight }, animatedStyle]}
           contentFit="contain"
           transition={200}
         />
@@ -121,14 +119,11 @@ const zoomStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  image: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-  },
 })
 
 export default function ImageGallery({ images, initialIndex = 0, visible, onClose }: ImageGalleryProps) {
   const insets = useSafeAreaInsets()
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [controlsVisible, setControlsVisible] = useState(true)
   const flatListRef = useRef<FlatList>(null)
@@ -138,23 +133,23 @@ export default function ImageGallery({ images, initialIndex = 0, visible, onClos
   }, [])
 
   const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH)
+    const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth)
     if (index >= 0 && index < images.length) {
       setCurrentIndex(index)
     }
-  }, [images.length])
+  }, [images.length, screenWidth])
 
   const getItemLayout = useCallback((_: unknown, index: number) => ({
-    length: SCREEN_WIDTH,
-    offset: SCREEN_WIDTH * index,
+    length: screenWidth,
+    offset: screenWidth * index,
     index,
-  }), [])
+  }), [screenWidth])
 
   const renderItem = useCallback(({ item }: { item: string }) => (
-    <Pressable onPress={toggleControls} style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}>
-      <ZoomableImage uri={item} />
+    <Pressable onPress={toggleControls} style={{ width: screenWidth, height: screenHeight }}>
+      <ZoomableImage uri={item} screenWidth={screenWidth} screenHeight={screenHeight} />
     </Pressable>
-  ), [toggleControls])
+  ), [toggleControls, screenWidth, screenHeight])
 
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
