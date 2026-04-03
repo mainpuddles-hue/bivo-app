@@ -343,7 +343,8 @@ function ConversationScreenInner() {
       const blob = await response.blob()
       if (blob.size > MAX_MSG_FILE_SIZE) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
       const arrayBuffer = await blob.arrayBuffer()
-      await supabase.storage.from('message-images').upload(path, arrayBuffer, { contentType: `image/${ext}` })
+      const { error: uploadError } = await supabase.storage.from('message-images').upload(path, arrayBuffer, { contentType: `image/${ext}` })
+      if (uploadError) throw uploadError
       const { data: urlData } = supabase.storage.from('message-images').getPublicUrl(path)
       await (supabase.from('messages') as any).insert({
         conversation_id: id, sender_id: userId,
