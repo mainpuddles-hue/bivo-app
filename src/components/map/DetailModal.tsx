@@ -170,6 +170,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           )}
         </View>
 
+        <View style={{ flex: 1 }} />
         {/* Actions */}
         <View style={styles.detailActions}>
           {item.kind === 'post' && (
@@ -213,6 +214,8 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           <Pressable
             onPress={handleShare}
             style={[styles.detailActionBtn, { backgroundColor: colors.muted, flex: 0, paddingHorizontal: 14 }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.share')}
           >
             <ExternalLink size={16} color={colors.foreground} />
           </Pressable>
@@ -286,7 +289,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     padding: 20,
-    marginTop: 'auto' as any,
   },
   detailActionBtn: {
     flex: 1,

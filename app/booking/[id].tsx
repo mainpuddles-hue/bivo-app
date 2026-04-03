@@ -303,7 +303,7 @@ function BookingDetailScreenInner() {
     if (!booking.start_date || !booking.end_date) return 0
     const s = new Date(booking.start_date); const e = new Date(booking.end_date)
     const d = Math.max(1, Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)))
-    return d > 0 ? d : 0
+    return d > 0 ? d : 1
   })())
 
   return (

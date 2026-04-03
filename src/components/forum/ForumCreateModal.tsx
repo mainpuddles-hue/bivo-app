@@ -116,7 +116,7 @@ function ForumCreateModalInner({
                 >
                   <Text style={[
                     styles.categoryChipText,
-                    { color: isActive ? '#FFFFFF' : colors.mutedForeground },
+                    { color: isActive ? colors.primaryForeground : colors.mutedForeground },
                     isActive && { fontFamily: fonts.bodySemi },
                   ]}>
                     {t(cat.labelKey)}

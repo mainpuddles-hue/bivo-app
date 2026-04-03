@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native'
+import { View, Text, ActivityIndicator, StyleSheet, Platform, Pressable } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -180,14 +180,16 @@ function AuthCallbackScreenInner() {
       {error ? (
         <View style={styles.errorBox}>
           <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
-          <Text
-            style={[styles.backLink, { color: colors.primary }]}
+          <Pressable
             onPress={() => router.replace('/(auth)/login')}
             accessibilityLabel={t('auth.backToLogin')}
             accessibilityRole="button"
+            style={{ minHeight: 44, justifyContent: 'center' }}
           >
-            {t('auth.backToLogin')}
-          </Text>
+            <Text style={[styles.backLink, { color: colors.primary }]}>
+              {t('auth.backToLogin')}
+            </Text>
+          </Pressable>
         </View>
       ) : (
         <View style={styles.loadingBox}>

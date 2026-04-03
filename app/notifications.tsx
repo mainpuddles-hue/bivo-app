@@ -149,7 +149,7 @@ function NotificationsScreenInner() {
       const prioritized = prioritizeNotifications(raw)
       setNotifications(prioritized)
     } catch {
-      // Network error — show empty state
+      setNotifications([])
     } finally {
       setLoading(false)
       setRefreshing(false)

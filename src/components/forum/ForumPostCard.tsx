@@ -161,12 +161,12 @@ function ForumPostCardInner({
               </Text>
             )}
           </Pressable>
-          <View style={styles.actionBtn}>
+          <Pressable onPress={() => onSelect(post)} style={styles.actionBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={`${post.comment_count} ${t('forum.replies')}`}>
             <MessageCircle size={14} color={colors.mutedForeground} strokeWidth={1.8} />
             <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
               {post.comment_count > 0 ? `${post.comment_count} ${t('forum.replies')}` : t('forum.beFirstReply')}
             </Text>
-          </View>
+          </Pressable>
           {post.user_id === currentUserId && (
             <>
               <Pressable

@@ -156,9 +156,13 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     position: 'absolute',
-    top: 14,
-    right: 14,
+    top: 10,
+    right: 10,
     zIndex: 10,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   suomifiHeader: {
     paddingVertical: 20,
