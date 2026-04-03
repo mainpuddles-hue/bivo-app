@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Switch, ActivityIndicator, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -103,20 +105,17 @@ export default function OrganizationScreen() {
                   .eq('ad_id', ad.id)
                   .eq('type', 'click')
                 clicks = clickCount ?? 0
-              } catch {
-                // Table may not exist yet
-              }
+              } catch {} // Intentional: ad_impressions table may not exist yet
               return { ...ad, impressions, clicks }
             })
           )
           setAds(adsWithStats)
         }
-      } catch {
-        // advertisements table may not exist yet
-      }
+      } catch {} // Intentional: advertisements table may not exist yet
 
         setLoading(false)
-      } catch {
+      } catch (err) {
+        if (__DEV__) console.warn('[organization] load failed:', err)
         setLoading(false)
       }
     }
@@ -189,8 +188,8 @@ export default function OrganizationScreen() {
         if (publicUrl) {
           newUrls.push(publicUrl)
         }
-      } catch {
-        // Skip failed uploads
+      } catch (err) {
+        if (__DEV__) console.warn('[organization] image upload failed:', err)
       }
     }
 

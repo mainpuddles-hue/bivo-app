@@ -103,7 +103,7 @@ function PaymentSuccessScreenInner() {
             })
             found = true
           }
-        } catch {}
+        } catch {} // Intentional: ad table may not exist
       }
 
       if (!found) setNotFound(true)

@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -82,7 +84,7 @@ export default function LeaderboardScreen() {
           }))
         }
       } catch {
-        // RPC may not exist — fall through to all-time query
+        // Intentional: monthly leaderboard RPC may not exist — fall through to all-time
       }
 
       // If monthly RPC worked, use it; otherwise fall back to all-time total_points
@@ -143,7 +145,8 @@ export default function LeaderboardScreen() {
           }
         }
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[leaderboard] fetch failed:', err)
       setUsers([])
     } finally {
       setLoading(false)

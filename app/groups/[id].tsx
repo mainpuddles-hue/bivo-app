@@ -259,12 +259,17 @@ export default function GroupDetailScreen() {
     setSending(true)
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     try {
+      const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+      const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
       let imageUrl: string | null = null
       if (postImage) {
-        const ext = postImage.split('.').pop() || 'jpg'
+        const ext = (postImage.split('.').pop() || 'jpg').toLowerCase()
+        if (!ALLOWED_EXTS.includes(ext)) { Alert.alert(t('common.error'), t('create.imageTooLarge')); setSending(false); return }
         const fileName = `group_${id}_${Date.now()}.${ext}`
         const response = await fetch(postImage)
         const blob = await response.blob()
+        if (blob.size > MAX_FILE_SIZE) { Alert.alert(t('common.error'), t('create.imageTooLarge')); setSending(false); return }
         const arrayBuffer = await blob.arrayBuffer()
         const { error: uploadError } = await supabase.storage.from('group-images').upload(fileName, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
         if (!uploadError) { const { data: urlData } = supabase.storage.from('group-images').getPublicUrl(fileName); imageUrl = urlData.publicUrl }

@@ -199,7 +199,8 @@ export default function ProfileScreen() {
       const blob = await response.blob()
       if (blob.size > MAX_AVATAR_SIZE) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       const arrayBuffer = await blob.arrayBuffer()
-      await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
+      if (uploadError) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
       // Append cache-busting param so the new avatar is fetched (same URL path after upsert)
       const avatarUrlWithCacheBust = `${urlData.publicUrl}?t=${Date.now()}`
@@ -429,7 +430,7 @@ export default function ProfileScreen() {
                 {bioText.length}/200
               </Text>
               <View style={s.bioActions}>
-                <Pressable onPress={() => setEditingBio(false)}><X size={20} color={colors.mutedForeground} /></Pressable>
+                <Pressable onPress={() => { setEditingBio(false); setBioText(profile?.bio ?? '') }}><X size={20} color={colors.mutedForeground} /></Pressable>
                 <Pressable onPress={handleSaveBio} style={({ pressed }) => [s.bioSaveBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}>
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>{t('common.save')}</Text>
                 </Pressable>

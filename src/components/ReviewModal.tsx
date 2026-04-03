@@ -87,7 +87,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
           link_type: 'profile',
           link_id: user.id,
         })
-      } catch {}
+      } catch {} // Intentional: non-critical notification
 
       // Award points for writing a review
       awardPoints(user.id, 'review_written', reviewedUserId).catch(() => {})

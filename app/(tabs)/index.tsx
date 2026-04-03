@@ -216,7 +216,7 @@ function FeedScreenInner() {
   useEffect(() => {
     AsyncStorage.getItem('tackbird_hidden_posts').then(val => {
       if (val) {
-        try { setHiddenIds(new Set(JSON.parse(val))) } catch {}
+        try { setHiddenIds(new Set(JSON.parse(val))) } catch {} // Intentional: corrupted cache
       }
     })
   }, [])

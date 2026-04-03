@@ -163,7 +163,7 @@ function NotificationsScreenInner() {
       if (!cachedId) return
       await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', cachedId).eq('is_read', false)
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-    } catch {}
+    } catch {} // Intentional: non-critical — mark-all-read is best-effort
   }, [supabase])
 
   // 1c: Delete notification
@@ -171,7 +171,7 @@ function NotificationsScreenInner() {
     try {
       await (supabase.from('notifications') as any).delete().eq('id', notifId)
       setNotifications(prev => prev.filter(n => n.id !== notifId))
-    } catch {}
+    } catch {} // Intentional: non-critical notification delete
   }, [supabase])
 
   const handleLongPress = useCallback((item: PrioritizedNotification) => {

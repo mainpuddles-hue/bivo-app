@@ -162,8 +162,8 @@ function SavedScreenInner() {
         }
       }
 
-    } catch {
-      // Network error
+    } catch (err) {
+      if (__DEV__) console.warn('[saved] loadSaved failed:', err)
     } finally {
       setLoading(false)
       setRefreshing(false)

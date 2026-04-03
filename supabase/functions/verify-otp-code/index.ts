@@ -42,6 +42,12 @@ serve(async (req) => {
     const cleanEmail = email.trim().toLowerCase()
     const cleanCode = code.trim()
 
+    if (!/^\d{6}$/.test(cleanCode)) {
+      return new Response(JSON.stringify({ error: 'Invalid code format' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // ── Brute-force protection ──────────────────────────────────
     // Count failed verification attempts in the last 15 minutes for this email.
     // Uses the verify_attempts column on otp_codes rows as a cumulative counter.

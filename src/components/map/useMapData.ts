@@ -189,7 +189,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
               setSelectedNeighborhood('__gps__')
               return
             }
-          } catch {}
+          } catch {} // Intentional: location permission may be denied
           if (!cancelled) setNeighborhoodModalVisible(true)
         }
       } else if (!cancelled) {
@@ -203,7 +203,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
             setSelectedNeighborhood('__gps__')
             return
           }
-        } catch {}
+        } catch {} // Intentional: location permission may be denied
         if (!cancelled) setNeighborhoodModalVisible(true)
       }
     })()
@@ -647,7 +647,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
       setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
       return { latitude: loc.coords.latitude, longitude: loc.coords.longitude }
-    } catch {}
+    } catch {} // Intentional: location permission may be denied
     return null
   }, [userLocation])
 

@@ -86,7 +86,8 @@ const prhAdapter: BusinessAdapter = {
           address: company.addresses?.[0]?.street ?? undefined,
           companyForm: company.companyForms?.[0]?.name ?? undefined,
         }
-      } catch {
+      } catch (err) {
+        if (__DEV__) console.warn('[prh] direct API fallback failed:', err)
         return null
       }
     }

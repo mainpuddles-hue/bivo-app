@@ -188,7 +188,7 @@ export default function PublicProfileScreen() {
     if (!currentUserId) { router.push('/(auth)/login'); return }
     if (followingRef.current) return
     followingRef.current = true
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     const wasFollowing = isFollowing
     const prevCount = followerCount
     try {
@@ -214,7 +214,7 @@ export default function PublicProfileScreen() {
               link_type: 'profile',
               link_id: currentUserId,
             })
-          } catch {}
+          } catch {} // Intentional: non-critical notification
         }
       }
     } finally {
@@ -275,13 +275,13 @@ export default function PublicProfileScreen() {
               try {
                 await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
                 Alert.alert(t('common.success'), t('profile.unblocked'))
-              } catch { setIsBlocked(true) }
+              } catch (err) { setIsBlocked(true); if (__DEV__) console.warn('[profile] unblock failed:', err); Alert.alert(t('common.error')) }
             } else {
               setIsBlocked(true)
               try {
                 await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
                 Alert.alert(t('common.success'), t('profile.blocked'))
-              } catch { setIsBlocked(false) }
+              } catch (err) { setIsBlocked(false); if (__DEV__) console.warn('[profile] block failed:', err); Alert.alert(t('common.error')) }
             }
           },
         },

@@ -42,6 +42,13 @@ serve(async (req) => {
     }
     const { email, type = 'signup' } = body
 
+    const validTypes = ['signup', 'recovery']
+    if (!validTypes.includes(type)) {
+      return new Response(JSON.stringify({ error: 'Invalid type' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     if (!email || typeof email !== 'string') {
       return new Response(JSON.stringify({ error: 'Email required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },

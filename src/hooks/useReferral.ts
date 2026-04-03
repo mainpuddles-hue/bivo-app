@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback } from 'react'
 import { Alert } from 'react-native'
 import { useSupabase } from './useSupabase'
@@ -43,7 +45,7 @@ export function useReferral(userId: string | null) {
           setInviteCount((profile as any).invite_count ?? 0)
         }
       } catch {
-        // Network error or missing columns — use defaults
+        // Intentional: network error or missing columns — use defaults
       } finally {
         setLoading(false)
       }
@@ -99,10 +101,11 @@ export function useReferral(userId: string | null) {
       })
       if (rpcError) throw rpcError
     } catch {
-      // Fallback: non-atomic read-then-write
-      await (supabase.from('profiles') as any)
+      // Intentional: RPC may not exist — fallback to non-atomic read-then-write
+      const { error: fallbackErr } = await (supabase.from('profiles') as any)
         .update({ invite_count: newCount })
         .eq('id', (inviter as any).id)
+      if (fallbackErr && __DEV__) console.warn('[referral] invite_count update failed:', fallbackErr.message)
     }
 
     // Award points to both — use referenceId for dedup to prevent double-awarding
@@ -117,20 +120,23 @@ export function useReferral(userId: string | null) {
       await awardPoints((inviter as any).id, 'first_post_bonus') // Reuse action for bonus
       // Award badge if tier has one
       if (newTier.badgeType) {
-        await (supabase.from('user_badges') as any)
+        const { error: badgeErr } = await (supabase.from('user_badges') as any)
           .insert({ user_id: (inviter as any).id, badge_type: newTier.badgeType })
+        if (badgeErr && __DEV__) console.warn('[referral] badge insert failed:', badgeErr.message)
       }
       // Grant Pro trial if tier has one
       if (newTier.proTrialDays > 0) {
         const proExpires = new Date(Date.now() + newTier.proTrialDays * 86400000).toISOString()
-        await (supabase.from('profiles') as any)
+        const { error: proErr } = await (supabase.from('profiles') as any)
           .update({ is_pro: true, pro_expires_at: proExpires })
           .eq('id', (inviter as any).id)
+        if (proErr && __DEV__) console.warn('[referral] pro trial grant failed:', proErr.message)
       }
     }
 
     return true
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[referral] applyInviteCode failed:', err)
       return false
     }
   }, [userId, supabase, awardPoints])

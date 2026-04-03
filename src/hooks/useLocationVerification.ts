@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback } from 'react'
 import * as Location from 'expo-location'
 import { haversineKm } from '@/lib/geo'
@@ -84,7 +86,8 @@ export function useLocationVerification() {
         setStatus('unverified')
         return false
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[locationVerification] verify failed:', err)
       setStatus('error')
       return false
     }

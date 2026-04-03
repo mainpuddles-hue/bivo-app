@@ -76,7 +76,7 @@ export function useFeedData() {
   useEffect(() => {
     AsyncStorage.getItem(FEED_CACHE_KEY).then(cached => {
       if (cached && posts.length === 0) {
-        try { setPosts(JSON.parse(cached)) } catch {}
+        try { setPosts(JSON.parse(cached)) } catch {} // Intentional: corrupted cache
       }
     }).catch(() => {})
   }, [])

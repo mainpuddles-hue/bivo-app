@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useRef } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from './useSupabase'
@@ -41,7 +43,7 @@ export function useStreak(userId: string | null) {
           })
         }
       } catch {
-        // Silently fail — streak will show default values
+        // Intentional: streak columns may not exist — show default values
       }
     }
 
@@ -93,11 +95,16 @@ export function useStreak(userId: string | null) {
       const newLongest = Math.max(currentStreak.longestStreak, newStreak)
       const multiplier = newStreak >= 30 ? 3 : newStreak >= 7 ? 2 : 1
 
-      await (supabase.from('profiles') as any).update({
+      const { error: streakError } = await (supabase.from('profiles') as any).update({
         current_streak: newStreak,
         longest_streak: newLongest,
         last_active_date: today,
       }).eq('id', userId)
+      if (streakError) {
+        if (__DEV__) console.warn('[useStreak] streak update failed:', streakError.message)
+        recordingRef.current = false
+        return
+      }
 
       // Cache today's date to prevent redundant DB writes on subsequent feed loads
       await AsyncStorage.setItem(STREAK_CACHE_KEY, today).catch(() => {})
@@ -109,7 +116,7 @@ export function useStreak(userId: string | null) {
         multiplier,
       })
     } catch {
-      // Silently fail — streak update is non-critical
+      // Intentional: streak update is non-critical — silently fail
     } finally {
       recordingRef.current = false
     }

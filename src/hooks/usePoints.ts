@@ -28,7 +28,7 @@ export function usePoints() {
           .eq('reference_id', referenceId)
         if ((count ?? 0) > 0) return // Already awarded
       } catch {
-        // Table might not exist — continue
+        // Intentional: user_points table might not exist — continue
       }
     }
 
@@ -49,7 +49,7 @@ export function usePoints() {
       })
       if (rpcError) throw rpcError
     } catch {
-      // Fallback: use increment_field RPC which is more generic
+      // Intentional: increment_points RPC may not exist — try increment_field
       try {
         const { error: rpcError2 } = await (supabase.rpc as any)('increment_field', {
           table_name: 'profiles',
@@ -59,7 +59,7 @@ export function usePoints() {
         })
         if (rpcError2) throw rpcError2
       } catch {
-        // Last resort: direct update with read-then-write.
+        // Intentional: increment_field RPC may not exist — last resort: direct update.
         // NOTE: This is NOT atomic and susceptible to race conditions if two
         // awards happen simultaneously. The proper fix is to ensure the
         // increment_points RPC exists in the database:
@@ -75,7 +75,7 @@ export function usePoints() {
             .update({ total_points: current + points })
             .eq('id', userId)
         } catch {
-          // Silently fail — points just won't update
+          // Intentional: non-critical — points just won't update
         }
       }
     }

@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import React, { useState, useEffect, useCallback } from 'react'
 import {
   View,
@@ -93,8 +95,8 @@ function CreateEventScreenInner() {
         setMaxParticipants(e.max_participants != null ? String(e.max_participants) : '')
         setApprovalRequired(e.approval_required ?? false)
         setImageUri(e.image_url ?? null)
-      } catch {
-        // Event may not exist
+      } catch (err) {
+        if (__DEV__) console.warn('[create-event] edit load failed:', err)
       } finally {
         if (mounted) setEditLoading(false)
       }
@@ -161,6 +163,13 @@ function CreateEventScreenInner() {
       return
     }
 
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dateRegex.test(eventDate.trim())) {
+      Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+      setSubmitting(false)
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -178,18 +187,32 @@ function CreateEventScreenInner() {
       }
 
       // Upload image if selected
+      const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+      const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
       let uploadedImageUrl: string | null = null
       if (imageUri) {
         const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
+        if (!ALLOWED_EXTS.includes(fileExt)) {
+          Alert.alert(t('common.error'), t('create.imageTooLarge'))
+          setSubmitting(false)
+          return
+        }
         const fileName = `community-event-${currentUserId}-${Date.now()}.${fileExt}`
         const filePath = `events/${fileName}`
 
         const response = await fetch(imageUri)
         const blob = await response.blob()
+        if (blob.size > MAX_FILE_SIZE) {
+          Alert.alert(t('common.error'), t('create.imageTooLarge'))
+          setSubmitting(false)
+          return
+        }
+        const arrayBuffer = await blob.arrayBuffer()
 
         const { error: uploadError } = await supabase.storage
           .from('event-images')
-          .upload(filePath, blob, { contentType: `image/${fileExt}`, upsert: false })
+          .upload(filePath, arrayBuffer, { contentType: `image/${fileExt}`, upsert: false })
 
         if (!uploadError) {
           const { data: urlData } = supabase.storage

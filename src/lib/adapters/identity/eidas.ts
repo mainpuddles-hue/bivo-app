@@ -49,7 +49,7 @@ const eidasAdapter: IdentityAdapter = {
         return { verified: !!data.verified, pending: !!data.pending }
       }
     } catch {
-      // Edge Function not available
+      // Intentional: Edge Function may not be deployed yet
     }
     return { verified: false, pending: false }
   },

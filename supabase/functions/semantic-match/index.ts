@@ -55,7 +55,12 @@ serve(async (req) => {
       })
     }
 
-    const body = await req.json()
+    let body
+    try { body = await req.json() } catch {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     const {
       query,           // text to find matches for
       post_id,         // OR: find matches for this post's embedding

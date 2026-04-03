@@ -106,7 +106,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   useEffect(() => {
     try {
       Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start()
-    } catch {}
+    } catch {} // Intentional: animation failure is non-critical
   }, [fadeAnim])
 
   const distanceText = useMemo(() => {
@@ -422,7 +422,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                           link_type: 'post',
                           link_id: post.id,
                         })
-                      } catch {}
+                      } catch {} // Intentional: non-critical notification
                     }
                   }
                 }
@@ -490,7 +490,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 try {
                   Haptics.selectionAsync()
                   await Share.share({ message: post.title + '\n' + APP_URL + '/post/' + post.id })
-                } catch {}
+                } catch {} // Intentional: user cancelled share
               }}
               style={styles.actionItem}
             >

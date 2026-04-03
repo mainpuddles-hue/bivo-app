@@ -460,7 +460,7 @@ export default function ForumScreen() {
       {/* Filters */}
       <View style={[s.filterBar, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <Pressable
-          onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setNeighborhoodFilter(prev => prev ? null : userNeighborhood) }}
+          onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setNeighborhoodFilter(prev => prev ? null : userNeighborhood) }}
           style={[s.neighborhoodChip, { backgroundColor: neighborhoodFilter ? `${colors.primary}14` : isDark ? colors.card : colors.muted, borderColor: neighborhoodFilter ? colors.primary : 'transparent' }]}
         >
           <MapPin size={12} color={neighborhoodFilter ? colors.primary : colors.mutedForeground} />
@@ -471,7 +471,7 @@ export default function ForumScreen() {
             const isActive = activeCategory === cat.key
             const chipColor = cat.key ? cat.color : colors.primary
             return (
-              <Pressable key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setActiveCategory(cat.key) }}
+              <Pressable key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setActiveCategory(cat.key) }}
                 style={[s.categoryChip, isActive ? { backgroundColor: chipColor } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
                 <Text style={[s.categoryChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
               </Pressable>
@@ -485,7 +485,7 @@ export default function ForumScreen() {
         {(['newest', 'popular'] as const).map((opt) => {
           const isActive = sortBy === opt
           return (
-            <Pressable key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setSortBy(opt) }}
+            <Pressable key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setSortBy(opt) }}
               style={[s.sortChip, isActive ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
               <Text style={[s.sortChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
                 {opt === 'newest' ? t('forum.sortNewest') : t('forum.sortPopular')}
@@ -526,7 +526,7 @@ export default function ForumScreen() {
 
       {/* FAB */}
       {tableExists && currentUserId && (
-        <Pressable onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms; setShowCreateModal(true) }}
+        <Pressable onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setShowCreateModal(true) }}
           style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.accent }]}
           accessibilityRole="button"
           accessibilityLabel={t('forum.create')}>

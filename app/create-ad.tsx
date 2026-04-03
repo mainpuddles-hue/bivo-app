@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useEffect } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -95,9 +97,7 @@ export default function CreateAdScreen() {
           if (nhData && nhData.length > 0) {
             setCityNeighborhoods((nhData as any[]).map((n: any) => n.name))
           }
-        } catch {
-          // city_neighborhoods table may not exist — use static fallback
-        }
+        } catch {} // Intentional: city_neighborhoods table may not exist
       }
     }
     load()
@@ -118,22 +118,28 @@ export default function CreateAdScreen() {
     }
   }, [])
 
+  const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
   const uploadImage = useCallback(async (uri: string, userId: string): Promise<string | null> => {
     try {
-      const ext = uri.split('.').pop() ?? 'jpg'
+      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
+      if (!ALLOWED_EXTS.includes(ext)) return null
       const fileName = `${userId}/${Date.now()}.${ext}`
       const response = await fetch(uri)
       const blob = await response.blob()
+      if (blob.size > MAX_FILE_SIZE) return null
+      const arrayBuffer = await blob.arrayBuffer()
 
       const { data, error } = await supabase.storage
         .from('ads')
-        .upload(fileName, blob, { contentType: `image/${ext}`, upsert: false })
+        .upload(fileName, arrayBuffer, { contentType: `image/${ext}`, upsert: false })
 
       if (error) {
         // Fallback: try 'post-images' bucket
         const { data: fallbackData, error: fallbackError } = await supabase.storage
           .from('post-images')
-          .upload(`ads/${fileName}`, blob, { contentType: `image/${ext}`, upsert: false })
+          .upload(`ads/${fileName}`, arrayBuffer, { contentType: `image/${ext}`, upsert: false })
         if (fallbackError) return null
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(`ads/${fileName}`)
         return urlData?.publicUrl ?? null
@@ -141,7 +147,8 @@ export default function CreateAdScreen() {
 
       const { data: urlData } = supabase.storage.from('ads').getPublicUrl(fileName)
       return urlData?.publicUrl ?? null
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[create-ad] image upload failed:', err)
       return null
     }
   }, [supabase])

@@ -509,7 +509,7 @@ export default function CreateScreen() {
     }
 
     // All validation passed — give success haptic feedback
-    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     setSubmitting(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -549,7 +549,7 @@ export default function CreateScreen() {
           }
         }
       } catch {
-        // Moderation service unavailable — allow the post through
+        // Intentional: moderation service unavailable — allow post through
         // and rely on async moderation as fallback
       }
 
@@ -612,7 +612,7 @@ export default function CreateScreen() {
             if (post?.id) {
               const { error: deleteError } = await (supabase.from('posts') as any).delete().eq('id', post.id)
               if (deleteError) {
-                console.error('[create] rollback delete failed:', deleteError.message)
+                if (__DEV__) console.error('[create] rollback delete failed:', deleteError.message)
                 Alert.alert(t('common.error'), t('create.rollbackFailed') ?? 'Failed to clean up — please delete the draft from your profile')
               }
             }
@@ -645,6 +645,11 @@ export default function CreateScreen() {
         }
 
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
+        if (maxAtt !== null && (isNaN(maxAtt) || maxAtt < 1)) {
+          Alert.alert(t('common.error'), t('create.invalidMaxCapacity') ?? 'Invalid max capacity')
+          setSubmitting(false)
+          return
+        }
 
         const { error: eventError } = await (supabase.from('events') as any).insert({
           post_id: post.id,

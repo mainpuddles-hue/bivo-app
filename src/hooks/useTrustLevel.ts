@@ -184,7 +184,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
             }
           }
         } catch {
-          // RPC unavailable — use client-side computation only
+          // Intentional: RPC unavailable — use client-side computation only
         }
 
         // Evict oldest entries if cache exceeds max size
@@ -206,7 +206,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
           fetchedAt: Date.now(),
         })
       } catch {
-        // Graceful fallback — keep default signals (tier 1) and score 0
+        // Intentional: graceful fallback — keep default signals (tier 1) and score 0
       } finally {
         if (fetchingForRef.current === userId) fetchingForRef.current = null
         if (mounted) setLoading(false)

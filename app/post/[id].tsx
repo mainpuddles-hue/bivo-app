@@ -208,7 +208,8 @@ function PostDetailScreenInner() {
           const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
           const syncedCount = realCount ?? Math.max(0, prevCount - 1)
           setLikeCount(syncedCount)
-          await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
+          const { error: syncErr } = await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
+          if (syncErr && __DEV__) console.warn('[post] like_count sync failed:', syncErr.message)
         }
       } else {
         setIsLiked(true); setLikeCount(c => c + 1)
@@ -219,7 +220,8 @@ function PostDetailScreenInner() {
           const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
           const syncedCount = realCount ?? (prevCount + 1)
           setLikeCount(syncedCount)
-          await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
+          const { error: syncErr2 } = await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
+          if (syncErr2 && __DEV__) console.warn('[post] like_count sync failed:', syncErr2.message)
           // Create notification for post author (not for self-likes)
           if (post?.user_id && post.user_id !== userId) {
             try {
@@ -232,7 +234,7 @@ function PostDetailScreenInner() {
                 link_type: 'post',
                 link_id: id,
               })
-            } catch {}
+            } catch {} // Intentional: non-critical notification
           }
         }
       }
@@ -333,7 +335,8 @@ function PostDetailScreenInner() {
           .select('*', { count: 'exact', head: true })
           .eq('post_id', id)
         const syncedCount = realCommentCount ?? (post.comment_count ?? 0) + 1
-        await (supabase.from('posts') as any).update({ comment_count: syncedCount }).eq('id', id)
+        const { error: countErr } = await (supabase.from('posts') as any).update({ comment_count: syncedCount }).eq('id', id)
+        if (countErr && __DEV__) console.warn('[post] comment_count sync failed:', countErr.message)
         setPost(prev => prev ? { ...prev, comment_count: syncedCount } : prev)
       }
       if (parentId) {
@@ -411,12 +414,15 @@ function PostDetailScreenInner() {
       return
     }
     setBoosting(true)
-    const success = await boosts.useBoostOnPost(id)
-    if (success) {
-      setPost(prev => prev ? { ...prev, is_boosted: true } : prev)
-      Alert.alert(t('boost.title'), t('boost.boostSuccess'))
+    try {
+      const success = await boosts.useBoostOnPost(id)
+      if (success) {
+        setPost(prev => prev ? { ...prev, is_boosted: true } : prev)
+        Alert.alert(t('boost.title'), t('boost.boostSuccess'))
+      }
+    } finally {
+      setBoosting(false)
     }
-    setBoosting(false)
   }, [id, userId, boosting, boosts, t, router])
 
   // Get remaining boost time for display
@@ -489,14 +495,18 @@ function PostDetailScreenInner() {
   const handleSaveEdit = useCallback(async () => {
     if (!post || saving) return
     setSaving(true)
-    const { error } = await (supabase.from('posts') as any)
-      .update({ title: editTitle.trim(), description: editDescription.trim(), location: editLocation.trim() || null })
-      .eq('id', post.id)
-    setSaving(false)
-    if (error) { Alert.alert(t('common.error'), t('post.updateFailed')) }
-    else {
+    try {
+      const { error } = await (supabase.from('posts') as any)
+        .update({ title: editTitle.trim(), description: editDescription.trim(), location: editLocation.trim() || null })
+        .eq('id', post.id)
+      if (error) throw error
       setPost(prev => prev ? { ...prev, title: editTitle.trim(), description: editDescription.trim(), location: editLocation.trim() || null } : prev)
       setEditModalVisible(false); Alert.alert(t('post.updated'))
+    } catch (err) {
+      Alert.alert(t('common.error'), t('post.updateFailed'))
+      if (__DEV__) console.warn('[PostDetail] edit save failed:', err)
+    } finally {
+      setSaving(false)
     }
   }, [post, editTitle, editDescription, editLocation, saving, supabase, t])
 
@@ -528,8 +538,8 @@ function PostDetailScreenInner() {
         .eq('post_id', id)
         .limit(50)
       setLikers((data ?? []).map((d: any) => d.user).filter(Boolean))
-    } catch {
-      // Graceful — keep empty
+    } catch (err) {
+      if (__DEV__) console.warn('[post] fetchLikers failed:', err)
     }
     setLoadingLikers(false)
   }, [id, supabase])

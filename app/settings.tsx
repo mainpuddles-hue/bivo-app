@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -120,16 +122,16 @@ export default function SettingsScreen() {
         try {
           const { data: cityData } = await supabase.from('cities').select('name').eq('id', cid).single()
           if (cityData) setUserCityName((cityData as any).name)
-        } catch { /* city table may not exist */ }
+        } catch {} // Intentional: cities table may not exist
       }
       // Fetch available cities
       try {
         const { data: citiesData } = await supabase.from('cities').select('id, name').order('name')
         if (citiesData && citiesData.length > 0) setAvailableCities(citiesData as any[])
-      } catch { /* silently ignore */ }
+      } catch {} // Intentional: cities table may not exist
       // Theme is handled by ThemeProvider
-      } catch {
-        // Network error — show whatever we have
+      } catch (err) {
+        if (__DEV__) console.warn('[settings] load failed:', err)
       }
     }
     load()

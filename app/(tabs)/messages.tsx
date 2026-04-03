@@ -47,7 +47,7 @@ export default function MessagesScreen() {
         const stored = await AsyncStorage.getItem(PINNED_KEY)
         if (cancelled) return
         if (stored) setPinnedIds(JSON.parse(stored))
-      } catch {}
+      } catch {} // Intentional: corrupted cache — use default empty
     }
     loadPinned()
     return () => { cancelled = true }

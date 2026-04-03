@@ -121,7 +121,8 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
       setIsVerified(true)
       setStatus('success')
       setShowModal(false)
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[verification] verification failed:', err)
       setError('verification_failed')
       setStatus('error')
     } finally {

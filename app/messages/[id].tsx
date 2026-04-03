@@ -390,7 +390,11 @@ function ConversationScreenInner() {
         ),
       }))
     } else {
-      // Add reaction
+      // Add reaction — optimistic update then revert on failure
+      setReactions(prev => ({
+        ...prev,
+        [targetId]: [...(prev[targetId] ?? []), { emoji, user_id: userId }],
+      }))
       try {
         await (supabase.from('message_reactions') as any).insert({
           message_id: targetId,
@@ -398,12 +402,14 @@ function ConversationScreenInner() {
           emoji,
         })
       } catch {
-        // Silently fail — reaction just won't save
+        // Revert optimistically added reaction on failure
+        setReactions(prev => ({
+          ...prev,
+          [targetId]: (prev[targetId] ?? []).filter(
+            r => !(r.user_id === userId && r.emoji === emoji)
+          ),
+        }))
       }
-      setReactions(prev => ({
-        ...prev,
-        [targetId]: [...(prev[targetId] ?? []), { emoji, user_id: userId }],
-      }))
     }
     setSelectedMessageId(null)
   }, [selectedMessageId, userId, reactions, supabase])
