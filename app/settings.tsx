@@ -397,7 +397,9 @@ export default function SettingsScreen() {
     try {
       // Try RPC first for server-side cascade deletion
       const { error: rpcError } = await (supabase.rpc as any)('delete_user_account')
-      if (rpcError) {
+      if (!rpcError) {
+        Alert.alert(t('common.success'), t('settings.accountDeleted'))
+      } else if (rpcError) {
         // RPC failed — attempt manual cleanup of user data before signout
         // Note: fallback cannot delete the Supabase auth record (requires service role).
         // User may need to contact support for full account removal.
@@ -573,7 +575,7 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.theme')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {THEME_OPTIONS.map(({ key, label, icon: Icon }) => (
-            <Pressable key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark'); setDirty(true) }} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
+            <Pressable key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark') }} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
               <Icon size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[theme === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
@@ -593,21 +595,30 @@ export default function SettingsScreen() {
                       key={city.id}
                       onPress={async () => {
                         if (city.id === userCityId) { setShowCityPicker(false); return }
-                        setUserCityId(city.id)
-                        setUserCityName(city.name)
-                        setShowCityPicker(false)
                         if (profile) {
-                          await (supabase.from('profiles') as any).update({ city_id: city.id, naapurusto: null }).eq('id', profile.id)
-                          setProfile(prev => prev ? { ...prev, naapurusto: null as any } : null)
-                          // After changing city, neighborhood is reset — prompt user to pick a new one
-                          Alert.alert(
-                            t('settings.cityChanged') ?? city.name,
-                            t('settings.pickNewNeighborhood') ?? t('onboarding.neighborhoodSubtitle'),
-                            [{
-                              text: t('common.ok') ?? 'OK',
-                              onPress: () => router.push({ pathname: '/', params: { openNeighborhoodPicker: '1' } }),
-                            }]
-                          )
+                          try {
+                            const { error } = await (supabase.from('profiles') as any).update({ city_id: city.id, naapurusto: null }).eq('id', profile.id)
+                            if (error) throw error
+                            setUserCityId(city.id)
+                            setUserCityName(city.name)
+                            setShowCityPicker(false)
+                            setProfile(prev => prev ? { ...prev, naapurusto: null as any } : null)
+                            // After changing city, neighborhood is reset — prompt user to pick a new one
+                            Alert.alert(
+                              t('settings.cityChanged') ?? city.name,
+                              t('settings.pickNewNeighborhood') ?? t('onboarding.neighborhoodSubtitle'),
+                              [{
+                                text: t('common.ok') ?? 'OK',
+                                onPress: () => router.push({ pathname: '/', params: { openNeighborhoodPicker: '1' } }),
+                              }]
+                            )
+                          } catch {
+                            Alert.alert(t('common.error'), t('settings.saveFailed'))
+                          }
+                        } else {
+                          setUserCityId(city.id)
+                          setUserCityName(city.name)
+                          setShowCityPicker(false)
                         }
                       }}
                       style={s.row}
@@ -694,7 +705,7 @@ export default function SettingsScreen() {
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
                 <Switch
                   value={notifPrefs.preferences[type]}
-                  onValueChange={(val) => { notifPrefs.updatePreference(type, val); setDirty(true) }}
+                  onValueChange={(val) => { notifPrefs.updatePreference(type, val) }}
                   trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
                   thumbColor={notifPrefs.preferences[type] ? colors.primary : colors.mutedForeground}
                   accessibilityLabel={t(label)}

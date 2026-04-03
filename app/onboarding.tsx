@@ -195,6 +195,11 @@ function OnboardingScreenInner() {
         trackEvent('onboarding_invite_code' as any, { hasCode: true })
         const success = await applyInviteCode(referralInput.trim())
         setReferralStatus(success ? 'applied' : 'invalid')
+        if (!success) {
+          // Don't navigate — let user see the error and try again or proceed
+          setSaving(false)
+          return
+        }
       }
 
       // Mark onboarding complete locally

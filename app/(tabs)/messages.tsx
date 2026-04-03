@@ -38,6 +38,8 @@ export default function MessagesScreen() {
   const [pinnedIds, setPinnedIds] = useState<string[]>([])
   const mountedRef = useRef(true)
   useEffect(() => { return () => { mountedRef.current = false } }, [])
+  const conversationsRef = useRef(conversations)
+  conversationsRef.current = conversations
 
   // Load pinned conversations from AsyncStorage
   useEffect(() => {
@@ -199,19 +201,19 @@ export default function MessagesScreen() {
   // Fetch conversations on mount and re-fetch when screen gains focus (e.g. after reading messages)
   useFocusEffect(useCallback(() => { fetchConversations() }, [fetchConversations]))
 
-  // Realtime for new messages — filter to only relevant conversations
+  // Realtime for new messages — always refetch on any INSERT
+  // Uses ref to avoid tearing down channel when conversations array changes
   useEffect(() => {
     if (!userId) return
     const channel = supabase
       .channel(`messages-list-${userId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload: any) => {
-        // Only refetch if the message belongs to one of our conversations
-        if (!conversations.some(c => c.id === payload.new.conversation_id)) return
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        // Always refetch — covers both existing and new conversations
         fetchConversations()
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [userId, supabase, fetchConversations, conversations])
+  }, [userId, supabase, fetchConversations])
 
   const handleArchive = useCallback(async (convId: string) => {
     const conv = conversations.find(c => c.id === convId)

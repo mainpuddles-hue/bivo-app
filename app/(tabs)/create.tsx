@@ -646,6 +646,8 @@ export default function CreateScreen() {
 
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
         if (maxAtt !== null && (isNaN(maxAtt) || maxAtt < 1)) {
+          // Delete the orphaned post that was already inserted
+          try { await (supabase.from('posts') as any).delete().eq('id', post.id) } catch {}
           Alert.alert(t('common.error'), t('create.invalidMaxCapacity') ?? 'Invalid max capacity')
           setSubmitting(false)
           return
@@ -906,6 +908,7 @@ export default function CreateScreen() {
                     setTarjoanType('service')
                     setSelectedTags([])
                     setItemCondition(null)
+                    setServicePrice('')
                   }}
                   style={[
                     styles.tarjoanTypeChip,

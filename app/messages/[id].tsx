@@ -250,6 +250,25 @@ function ConversationScreenInner() {
       const sorted = (older ?? []).reverse() as Message[]
       setMessages(prev => [...sorted, ...prev])
       setHasOlder((older ?? []).length >= PAGE_SIZE)
+
+      // Fetch reactions for older messages
+      if (sorted.length > 0) {
+        try {
+          const olderMsgIds = sorted.map(m => m.id)
+          const { data: olderReactions } = await supabase
+            .from('message_reactions')
+            .select('*')
+            .in('message_id', olderMsgIds)
+          if (olderReactions) {
+            const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
+            for (const r of olderReactions as any[]) {
+              if (!grouped[r.message_id]) grouped[r.message_id] = []
+              grouped[r.message_id].push({ emoji: r.emoji, user_id: r.user_id })
+            }
+            setReactions(prev => ({ ...prev, ...grouped }))
+          }
+        } catch {} // message_reactions table may not exist
+      }
     } catch {
       // Silently fail — user can retry
     } finally {
@@ -328,6 +347,10 @@ function ConversationScreenInner() {
 
   const handleSendImage = useCallback(async () => {
     if (!userId) return
+    if (!await checkRateLimit('message')) {
+      Alert.alert(t('common.error'), getRateLimitMessage('message'))
+      return
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.6,
