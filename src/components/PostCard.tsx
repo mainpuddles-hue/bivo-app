@@ -203,7 +203,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                     <Image source={{ uri: user.avatar_url }} style={[
                       styles.avatar,
                       { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
-                    ]} contentFit="cover" cachePolicy="memory-disk" />
+                    ]} contentFit="cover" cachePolicy="memory-disk" recyclingKey={user.avatar_url} />
                   ) : (
                     <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
                       <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
@@ -264,6 +264,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               onError={() => setImgError(true)}
               accessibilityLabel={post.title}
               cachePolicy="memory-disk"
+              recyclingKey={post.image_url!}
             />
             {/* Multi-image badge */}
             {post.images && post.images.length > 1 && (

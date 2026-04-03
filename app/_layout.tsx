@@ -21,6 +21,7 @@ import { clearAuthCache } from '@/lib/authCache'
 import { useAppStateManager } from '@/hooks/useAppState'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useGlobalErrorRecovery } from '@/hooks/useGlobalErrorRecovery'
+import { useOTAUpdate } from '@/hooks/useOTAUpdate'
 
 // Initialize Sentry error reporting (no-op in __DEV__)
 initSentry()
@@ -471,6 +472,7 @@ function RootLayoutInner() {
   }, [navSegments])
   useAppStateManager() // Disconnect realtime when backgrounded
   useGlobalErrorRecovery() // Catch unhandled promise rejections
+  useOTAUpdate() // Check for OTA updates on launch
   const network = useNetworkStatus() // Offline detection
 
   // Location-aware international system

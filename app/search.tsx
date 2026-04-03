@@ -989,6 +989,8 @@ function SearchScreenInner() {
         <FlatList
           data={results}
           keyExtractor={item => item.id}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => (
             <View>
               {(item as any)._semanticMatch && (
