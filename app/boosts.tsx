@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
+    lineHeight: 28,
     fontWeight: '700',
     letterSpacing: -0.3,
     fontFamily: fonts.headingSemi,
@@ -243,6 +244,7 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
   tierCard: {
@@ -261,10 +263,12 @@ const styles = StyleSheet.create({
   },
   tierLabel: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: fonts.bodySemi,
   },
   durationLabel: {
     fontSize: 12,
+    lineHeight: 16,
     fontFamily: fonts.body,
   },
   tierBadge: {
@@ -274,6 +278,7 @@ const styles = StyleSheet.create({
   },
   tierBadgeText: {
     fontSize: 11,
+    lineHeight: 16,
     fontFamily: fonts.bodySemi,
   },
   tierItem: {
@@ -286,11 +291,13 @@ const styles = StyleSheet.create({
   },
   tierItemText: {
     fontSize: 12,
+    lineHeight: 16,
     fontFamily: fonts.body,
     flex: 1,
   },
   sectionTitle: {
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: fonts.headingSemi,
     marginTop: 8,
   },
@@ -299,6 +306,7 @@ const styles = StyleSheet.create({
   },
   sandboxNote: {
     fontSize: 11,
+    lineHeight: 16,
     fontFamily: fonts.body,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -321,6 +329,7 @@ const styles = StyleSheet.create({
   },
   activeBoostTitle: {
     fontSize: 13,
+    lineHeight: 18,
     fontFamily: fonts.bodyMedium,
   },
   activeBoostMeta: {
@@ -330,6 +339,7 @@ const styles = StyleSheet.create({
   },
   activeBoostTime: {
     fontSize: 11,
+    lineHeight: 16,
     fontFamily: fonts.body,
   },
   hint: {
@@ -337,6 +347,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     textAlign: 'center',
     marginTop: 8,
-    lineHeight: 17,
+    lineHeight: 16,
   },
 })

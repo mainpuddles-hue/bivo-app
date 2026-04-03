@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    lineHeight: 14,
   },
   image: {
     width: '100%',
@@ -163,6 +164,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.2,
     fontFamily: fonts.headingSemi,
+    lineHeight: 22,
   },
   description: {
     fontSize: 13,
@@ -173,6 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fonts.bodyMedium,
     marginTop: 2,
+    lineHeight: 16,
   },
   ctaBtn: {
     flexDirection: 'row',
@@ -187,5 +190,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 })

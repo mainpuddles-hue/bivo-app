@@ -52,6 +52,10 @@ interface TrustProgressProps {
   onVerifyPress?: () => void
 }
 
+// TODO: This function uses hardcoded hex colors because it's defined outside
+// the component and cannot access useTheme(). These map to colors.destructive,
+// colors.pro, and colors.primary respectively. To fix, pass `colors` as a
+// parameter from the calling component — skipped for now to avoid signature changes.
 function getScoreColor(score: number): string {
   if (score < 40) return '#D94F4F'
   if (score < 75) return '#F59E0B'
@@ -130,7 +134,7 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
           <Text style={[styles.verifyExplainer, { color: colors.mutedForeground }]}>
             {t('trust.hintVerifyId')}
           </Text>
-          <Pressable onPress={onVerifyPress} style={[styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }]}>
+          <Pressable onPress={onVerifyPress} style={({ pressed }) => [styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }, pressed && { opacity: 0.7 }]}>
             <ShieldCheck size={16} color="#FFFFFF" />
             <Text style={styles.verifyBtnText}>{t('trust.verifyNow')}</Text>
           </Pressable>

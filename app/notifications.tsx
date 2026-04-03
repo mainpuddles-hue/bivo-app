@@ -248,7 +248,7 @@ function NotificationsScreenInner() {
         <View style={{ flex: 1 }} />
         {/* 1b: Mark all as read button with label */}
         {unreadCount > 0 && (
-          <Pressable onPress={markAllRead} hitSlop={8} style={styles.markAllReadBtn} accessibilityRole="button" accessibilityLabel={t('notifications.markAllRead')}>
+          <Pressable onPress={markAllRead} hitSlop={8} style={({ pressed }) => [styles.markAllReadBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('notifications.markAllRead')}>
             <CheckCheck size={18} color={colors.primary} />
             <Text style={[styles.markAllReadText, { color: colors.primary }]}>{t('notifications.markAllRead')}</Text>
           </Pressable>
@@ -264,11 +264,12 @@ function NotificationsScreenInner() {
             accessibilityRole="button"
             accessibilityLabel={t(f.label)}
             accessibilityState={{ selected: activeFilter === f.key }}
-            style={[
+            style={({ pressed }) => [
               styles.filterChip,
               activeFilter === f.key
                 ? { backgroundColor: colors.primary }
                 : { backgroundColor: isDark ? colors.card : colors.muted },
+              pressed && { opacity: 0.7 },
             ]}
           >
             <Text style={[

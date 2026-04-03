@@ -552,7 +552,7 @@ export default function ForumScreen() {
           <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
             <Pressable onPress={() => setEditingPost(null)} hitSlop={8}><X size={22} color={colors.foreground} /></Pressable>
             <Text style={[s.modalTitle, { color: colors.foreground }]}>{t('forum.editPostTitle')}</Text>
-            <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={[s.publishBtn, { backgroundColor: colors.primary, opacity: savingEdit ? 0.6 : 1 }]}>
+            <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={({ pressed }) => [s.publishBtn, { backgroundColor: colors.primary, opacity: savingEdit ? 0.6 : pressed ? 0.7 : 1 }]}>
               {savingEdit ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[s.publishBtnText, { color: colors.primaryForeground }]}>{t('forum.saveEdit')}</Text>}
             </Pressable>
           </View>
@@ -607,19 +607,19 @@ const s = StyleSheet.create({
   header: { zIndex: 40, borderBottomWidth: StyleSheet.hairlineWidth },
   headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 48, paddingHorizontal: 16 },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  headerTitle: { fontSize: 20, lineHeight: 28, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   headerSpacer: { width: 40 },
   filterBar: { paddingHorizontal: 16, paddingVertical: 10, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, alignSelf: 'flex-start', borderWidth: 1 },
-  neighborhoodChipText: { fontSize: 12, fontFamily: fonts.bodyMedium },
+  neighborhoodChipText: { fontSize: 12, lineHeight: 16, fontFamily: fonts.bodyMedium },
   categoryChips: { gap: 8, paddingRight: 4 },
   categoryChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  categoryChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
+  categoryChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
   sortRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   sortChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  sortChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
+  sortChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
   newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
-  newPostsBannerText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  newPostsBannerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   listHeaderGap: { height: 4 },
   card: { borderRadius: 12, overflow: 'hidden', flexDirection: 'row', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
@@ -630,14 +630,14 @@ const s = StyleSheet.create({
   skelLine: { height: 10, borderRadius: 5 },
   fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 },
   emptyState: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 12 },
-  emptyTitle: { fontSize: 18, fontFamily: fonts.headingSemi, letterSpacing: -0.18 },
+  emptyTitle: { fontSize: 18, lineHeight: 24, fontFamily: fonts.headingSemi, letterSpacing: -0.18 },
   emptyHint: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20 },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 56, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  modalTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, textAlign: 'center', paddingHorizontal: 8 },
+  modalTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, textAlign: 'center', paddingHorizontal: 8 },
   modalSection: { paddingHorizontal: 16, paddingTop: 14 },
   publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, minWidth: 80, alignItems: 'center' },
-  publishBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
-  titleInput: { fontSize: 15, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
+  publishBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
+  titleInput: { fontSize: 15, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
   contentInput: { flex: 1, fontSize: 15, fontFamily: fonts.body, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
 })

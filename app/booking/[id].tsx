@@ -332,7 +332,7 @@ function BookingDetailScreenInner() {
             <Text style={[styles.postTitle, { color: colors.foreground }]} numberOfLines={2}>
               {booking.post?.title ?? t('rental.deletedPost')}
             </Text>
-            <Text style={{ fontSize: 12, color: isService ? colors.info : colors.primary, fontFamily: fonts.bodySemi }}>
+            <Text style={{ fontSize: 12, color: isService ? colors.info : colors.primary, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
               {isService ? t('service.services') : t('rental.booking')}
             </Text>
           </View>
@@ -347,7 +347,7 @@ function BookingDetailScreenInner() {
             <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={44} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>{booking.other_user.name ?? t('common.user')}</Text>
-              <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>{t(`booking.otherParty`)}</Text>
+              <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 16 }}>{t(`booking.otherParty`)}</Text>
             </View>
           </Pressable>
         )}
@@ -403,7 +403,7 @@ function BookingDetailScreenInner() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.dates')}</Text>
             <View style={styles.dateRow}>
               <Calendar size={16} color={colors.mutedForeground} />
-              <Text style={{ fontSize: 15, color: colors.foreground, fontFamily: fonts.bodyMedium }}>
+              <Text style={{ fontSize: 15, color: colors.foreground, fontFamily: fonts.bodyMedium, lineHeight: 20 }}>
                 {formatDateRange(booking.start_date, booking.end_date, locale)}
               </Text>
             </View>
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   scrollContent: { padding: 16, gap: 12 },
-  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 104 },
+  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 104, lineHeight: 22 },
 
   // Post card
   postCard: {
@@ -547,13 +547,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14,
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
   },
-  userName: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
+  userName: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
 
   // Section card
   section: {
     padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: 10,
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi },
+  sectionTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
 
   // Status badge
   statusBadgeLarge: {
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   },
   statusTextLarge: {
     fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5,
-    fontFamily: fonts.bodySemi,
+    fontFamily: fonts.bodySemi, lineHeight: 20,
   },
 
   // Timeline
@@ -579,11 +579,11 @@ const styles = StyleSheet.create({
 
   // Price breakdown
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  priceLabel: { fontSize: 14, fontFamily: fonts.body },
-  priceValue: { fontSize: 14, fontFamily: fonts.bodyMedium },
+  priceLabel: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
+  priceValue: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   priceTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, marginTop: 4 },
-  priceTotalLabel: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi },
-  priceTotalValue: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
+  priceTotalLabel: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
+  priceTotalValue: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 24 },
 
   // Actions
   actionsContainer: { gap: 8, marginTop: 8 },
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48,
   },
-  actionBtnText: { fontSize: 15, fontFamily: fonts.bodySemi },
+  actionBtnText: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })
 
 export default function BookingDetailScreen() {

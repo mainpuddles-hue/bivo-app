@@ -462,7 +462,7 @@ export default function SettingsScreen() {
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('settings.title')}</Text>
         <View style={{ flex: 1 }} />
         {dirty && (
-          <Pressable onPress={handleSave} disabled={saving} style={[s.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}>
+          <Pressable onPress={handleSave} disabled={saving} style={({ pressed }) => [s.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : pressed ? 0.7 : 1 }]}>
             {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Save size={16} color={colors.primaryForeground} />}
             <Text style={[s.saveBtnText, { color: colors.primaryForeground }]}>{t('common.save')}</Text>
           </Pressable>
@@ -510,19 +510,19 @@ export default function SettingsScreen() {
                     maxLength={50}
                     autoFocus
                   />
-                  <Text style={{ fontSize: 11, color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
+                  <Text style={{ fontSize: 11, color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>
                     {nameText.length}/50
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Pressable onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.muted }}>
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi }}>{t('common.cancel')}</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>{t('common.cancel')}</Text>
                     </Pressable>
                     <Pressable
                       onPress={handleSaveName}
                       disabled={savingName || !nameText.trim()}
                       style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
                     >
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
                         {savingName ? '...' : t('common.save')}
                       </Text>
                     </Pressable>
@@ -661,7 +661,7 @@ export default function SettingsScreen() {
               <MapPin size={18} color={colors.mutedForeground} />
               <View style={{ flex: 1 }}>
                 <Text style={[s.rowText, { color: colors.foreground, flex: undefined }]}>{t(label)}</Text>
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body }}>{t(desc)}</Text>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>{t(desc)}</Text>
               </View>
               <View style={[locationAccuracy === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
             </Pressable>
@@ -725,14 +725,14 @@ export default function SettingsScreen() {
                   <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
                 ) : (
                   <Pressable onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                       4,99 {'\u20AC'}{t('pro.perMonth')}
                     </Text>
                   </Pressable>
                 )}
               </Pressable>
               {profile?.is_pro && profile?.pro_expires_at && (
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12, fontFamily: fonts.body }}>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12, fontFamily: fonts.body, lineHeight: 16 }}>
                   {t('pro.renewsOn', { date: new Date(profile.pro_expires_at).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB') })}
                 </Text>
               )}
@@ -756,7 +756,7 @@ export default function SettingsScreen() {
                 {profile?.is_business ? (
                   <Text style={[s.proBadge, { color: colors.success }]}>{t('business.active')}</Text>
                 ) : (
-                  <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>{t('business.monthlyPrice')}</Text>
+                  <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 16 }}>{t('business.monthlyPrice')}</Text>
                 )}
               </Pressable>
             </View>
@@ -769,7 +769,7 @@ export default function SettingsScreen() {
           <View style={{ padding: 16, gap: 10 }}>
             <Text style={[s.rowText, { color: colors.foreground, fontWeight: '600' }]}>{t('settings.changePassword')}</Text>
             {isOAuthUser ? (
-              <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body }}>
+              <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 18 }}>
                 {t('settings.passwordManagedByOAuth', { provider: (oauthProvider ?? 'OAuth').charAt(0).toUpperCase() + (oauthProvider ?? 'OAuth').slice(1) })}
               </Text>
             ) : (
@@ -796,16 +796,16 @@ export default function SettingsScreen() {
                 {newPw.length > 0 && (
                   <View style={{ gap: 2, marginTop: 2 }}>
                     {newPw.length < 8 && (
-                      <Text style={{ fontSize: 11, color: colors.destructive, fontFamily: fonts.body }}>{t('settings.passwordTooShort')}</Text>
+                      <Text style={{ fontSize: 11, color: colors.destructive, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordTooShort')}</Text>
                     )}
                     {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
-                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsUppercase')}</Text>
+                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordNeedsUppercase')}</Text>
                     )}
                     {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
-                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body }}>{t('settings.passwordNeedsNumber')}</Text>
+                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordNeedsNumber')}</Text>
                     )}
                     {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
-                      <Text style={{ fontSize: 11, color: colors.success, fontFamily: fonts.body }}>{t('settings.passwordStrong')}</Text>
+                      <Text style={{ fontSize: 11, color: colors.success, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordStrong')}</Text>
                     )}
                   </View>
                 )}
@@ -814,7 +814,7 @@ export default function SettingsScreen() {
                   disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
                   style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
                     {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
                   </Text>
                 </Pressable>
@@ -855,12 +855,12 @@ export default function SettingsScreen() {
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={handleExport} disabled={exporting} style={s.row}>
+          <Pressable onPress={handleExport} disabled={exporting} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             {exporting ? <ActivityIndicator size="small" color={colors.primary} /> : <Download size={18} color={colors.mutedForeground} />}
             <View style={{ flex: 1 }}>
               <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
               {exporting && exportProgress ? (
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body }}>{exportProgress}</Text>
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>{exportProgress}</Text>
               ) : null}
             </View>
             {!exporting && <ChevronRight size={16} color={colors.mutedForeground} />}
@@ -870,7 +870,7 @@ export default function SettingsScreen() {
         {/* Blocked users */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.blockedUsers')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/blocked')} style={s.row}>
+          <Pressable onPress={() => router.push('/blocked')} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             <ShieldBan size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.blockedUsers')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
@@ -880,27 +880,27 @@ export default function SettingsScreen() {
         {/* About & info links */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.about')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/about' as any)} style={s.row}>
+          <Pressable onPress={() => router.push('/about' as any)} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             <Info size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('about.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
-          <Pressable onPress={() => router.push('/help' as any)} style={s.row}>
+          <Pressable onPress={() => router.push('/help' as any)} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             <HelpCircle size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('help.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
-          <Pressable onPress={() => router.push('/privacy')} style={s.row}>
+          <Pressable onPress={() => router.push('/privacy')} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             <Lock size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
-          <Pressable onPress={() => router.push('/terms')} style={s.row}>
+          <Pressable onPress={() => router.push('/terms')} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             <FileText size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
-          <Pressable onPress={() => Linking.openURL('mailto:tuki@tackbird.fi?subject=TackBird%20palaute')} style={s.row}>
+          <Pressable onPress={() => Linking.openURL('mailto:tuki@tackbird.fi?subject=TackBird%20palaute')} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             <Bug size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
@@ -912,7 +912,7 @@ export default function SettingsScreen() {
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('admin.title')}</Text>
             <View style={[s.card, { backgroundColor: colors.card }]}>
-              <Pressable onPress={() => router.push('/admin' as any)} style={s.row}>
+              <Pressable onPress={() => router.push('/admin' as any)} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
                 <Shield size={18} color={colors.destructive} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t('admin.title')}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} />
@@ -924,16 +924,16 @@ export default function SettingsScreen() {
         {/* Danger zone */}
         <Text style={[s.section, { color: colors.destructive }]}>{t('settings.deleteAccount')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={handleDeleteAccount} style={s.row}>
+          <Pressable onPress={handleDeleteAccount} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}>
             <Trash2 size={18} color={colors.destructive} />
             <Text style={[s.rowText, { color: colors.destructive }]}>{t('settings.deletePermanently')}</Text>
           </Pressable>
         </View>
 
         {/* Logout */}
-        <Pressable onPress={handleLogout} style={[s.logoutBtn, { backgroundColor: colors.card }]}>
+        <Pressable onPress={handleLogout} style={({ pressed }) => [s.logoutBtn, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
           <LogOut size={18} color={colors.destructive} />
-          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi }}>{t('settings.logout')}</Text>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('settings.logout')}</Text>
         </Pressable>
 
         {/* App version */}
@@ -995,18 +995,18 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, minHeight: 44,
   },
-  saveBtnText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+  saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
-  section: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
+  section: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  rowText: { fontSize: 15, flex: 1, fontFamily: fonts.body },
+  rowText: { fontSize: 15, lineHeight: 20, flex: 1, fontFamily: fonts.body },
   radio: { width: 18, height: 18, borderRadius: 9 },
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
-  proBadge: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+  proBadge: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   upgradeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
-  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
+  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, lineHeight: 20, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
   changePwBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -1015,9 +1015,9 @@ const s = StyleSheet.create({
   verifiedBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
-  verifiedText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  verifiedText: { fontSize: 12, lineHeight: 16, fontWeight: '500', fontFamily: fonts.bodyMedium },
   versionText: {
-    fontSize: 12, textAlign: 'center', marginTop: 24, marginBottom: 8, fontFamily: fonts.body,
+    fontSize: 12, lineHeight: 16, textAlign: 'center', marginTop: 24, marginBottom: 8, fontFamily: fonts.body,
   },
   deleteBackdrop: {
     flex: 1,
@@ -1040,6 +1040,7 @@ const s = StyleSheet.create({
   },
   deleteTitle: {
     fontSize: 18,
+    lineHeight: 24,
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
   },
@@ -1050,6 +1051,7 @@ const s = StyleSheet.create({
   },
   deleteLabel: {
     fontSize: 13,
+    lineHeight: 18,
     fontWeight: '600',
     marginTop: 4,
     fontFamily: fonts.bodySemi,
@@ -1060,6 +1062,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
   deleteActions: {
@@ -1075,6 +1078,7 @@ const s = StyleSheet.create({
   },
   deleteCancelText: {
     fontSize: 14,
+    lineHeight: 20,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
@@ -1086,6 +1090,7 @@ const s = StyleSheet.create({
   },
   deleteConfirmText: {
     fontSize: 14,
+    lineHeight: 20,
     fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: fonts.bodySemi,

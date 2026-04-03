@@ -316,28 +316,28 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         {(post.daily_fee != null || post.service_price != null || post.location || (post.type === 'tarjoan' && post.tags?.includes('tarjoan_item'))) && (
           <View style={styles.metaRow}>
             {post.daily_fee != null && (
-              <View style={[styles.priceBadge, { backgroundColor: isDark ? '#2D2010' : '#FDF6E8' }]}>
+              <View style={[styles.priceBadge, { backgroundColor: isDark ? CATEGORIES.lainaa.bgDark : CATEGORIES.lainaa.bgLight }]}>
                 <Text style={[styles.priceText, { color: CATEGORIES.lainaa.color }]}>
                   {t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })}
                 </Text>
               </View>
             )}
             {post.service_price != null && post.service_price > 0 && (
-              <View style={[styles.priceBadge, { backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }]}>
+              <View style={[styles.priceBadge, { backgroundColor: isDark ? CATEGORIES.tarjoan.bgDark : CATEGORIES.tarjoan.bgLight }]}>
                 <Text style={[styles.priceText, { color: CATEGORIES.tarjoan.color }]}>
                   {formatPrice(post.service_price, locale)}
                 </Text>
               </View>
             )}
             {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price == null || post.service_price === 0) && (
-              <View style={[styles.priceBadge, { backgroundColor: isDark ? '#101A2D' : '#EBF2FE' }]}>
+              <View style={[styles.priceBadge, { backgroundColor: isDark ? CATEGORIES.ilmaista.bgDark : CATEGORIES.ilmaista.bgLight }]}>
                 <Text style={[styles.priceText, { color: CATEGORIES.ilmaista.color }]}>
                   {t('create.freeItem')}
                 </Text>
               </View>
             )}
             {post.type === 'tarjoan' && post.tags?.some(tag => tag.startsWith('condition_')) && (
-              <View style={[styles.conditionBadge, { backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }]}>
+              <View style={[styles.conditionBadge, { backgroundColor: isDark ? CATEGORIES.tarjoan.bgDark : CATEGORIES.tarjoan.bgLight }]}>
                 <Text style={[styles.conditionBadgeText, { color: CATEGORIES.tarjoan.color }]}>
                   {(() => {
                     const condTag = post.tags?.find(tag => tag.startsWith('condition_'))
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
   userNameBlock: { flexShrink: 1, minWidth: 0 },
   userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   userName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
-  timeAgoDot: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14.3, flexShrink: 0 },
+  timeAgoDot: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, flexShrink: 0 },
 
   // Avatar
   avatarContainer: { position: 'relative' },
@@ -621,28 +621,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12,
     alignSelf: 'flex-start',
   },
-  expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 11.7, fontFamily: fonts.bodySemi },
+  expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
 
   // Title + description
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.15 },
   seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 14 },
-  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
-  priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14.3, fontFamily: fonts.bodySemi },
+  priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
   conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
   conditionBadgeText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
-  locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14.3 },
+  locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14 },
 
   // Action row
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8, paddingTop: 8 },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },
-  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
+  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
-  popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14.3 },
+  popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14 },
   distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 3 },
   distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
 

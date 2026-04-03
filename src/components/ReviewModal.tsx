@@ -163,9 +163,9 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
                 style={[s.submitBtn, { backgroundColor: colors.primary, opacity: loading || rating === 0 ? 0.6 : 1 }]}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
-                  <Text style={s.submitText}>{t('profile.submitReview')}</Text>
+                  <Text style={[s.submitText, { color: colors.primaryForeground }]}>{t('profile.submitReview')}</Text>
                 )}
               </Pressable>
             </>
@@ -201,12 +201,14 @@ const s = StyleSheet.create({
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
+    lineHeight: 24,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     marginTop: 4,
+    lineHeight: 18,
   },
   starRow: {
     flexDirection: 'row',
@@ -221,11 +223,13 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     minHeight: 100,
+    lineHeight: 20,
   },
   charCount: {
     fontSize: 11,
     textAlign: 'right',
     marginTop: -8,
+    lineHeight: 16,
   },
   submitBtn: {
     borderRadius: 12,
@@ -239,7 +243,7 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    color: '#FFFFFF',
+    lineHeight: 22,
   },
   successContainer: {
     alignItems: 'center',
@@ -250,5 +254,6 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 22,
   },
 })

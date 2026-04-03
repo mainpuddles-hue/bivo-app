@@ -32,7 +32,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
             key={type}
             accessibilityLabel={t(cat.label)}
             onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
-            style={[
+            style={({ pressed }) => [
               styles.chip,
               isActive
                 ? { backgroundColor: cat.color }
@@ -41,6 +41,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
                     borderWidth: 1,
                     borderColor: cat.color + '30',
                   },
+              pressed && { opacity: 0.7 },
             ]}
           >
             <Text style={[
@@ -65,5 +66,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     minHeight: 36,
   },
-  chipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
+  chipText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
 })

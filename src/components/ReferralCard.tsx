@@ -88,7 +88,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
     <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {/* Header */}
       <View style={s.headerRow}>
-        <View style={[s.iconCircle, { backgroundColor: isDark ? '#2D6B5E30' : '#2D6B5E15' }]}>
+        <View style={[s.iconCircle, { backgroundColor: `${colors.primary}${isDark ? '30' : '15'}` }]}>
           <Gift size={20} color={colors.primary} />
         </View>
         <Text style={[s.title, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
@@ -97,7 +97,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
       </View>
 
       {/* Invite Code */}
-      <View style={[s.codeRow, { backgroundColor: isDark ? colors.muted : '#F5F5F5' }]}>
+      <View style={[s.codeRow, { backgroundColor: isDark ? colors.muted : colors.background }]}>
         <View style={s.codeLeft}>
           <Text style={[s.codeLabel, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {t('referral.yourCode')}
@@ -109,17 +109,17 @@ export function ReferralCard({ userId }: ReferralCardProps) {
         <View style={s.codeActions}>
           <Pressable
             onPress={handleCopy}
-            style={[s.codeBtn, { backgroundColor: copied ? '#10B98120' : colors.primary + '15' }]}
+            style={({ pressed }) => [s.codeBtn, { backgroundColor: copied ? `${colors.success}20` : `${colors.primary}15` }, pressed && { opacity: 0.7 }]}
           >
             {copied ? (
-              <Check size={16} color="#10B981" />
+              <Check size={16} color={colors.success} />
             ) : (
               <Copy size={16} color={colors.primary} />
             )}
           </Pressable>
           <Pressable
             onPress={handleShare}
-            style={[s.codeBtn, { backgroundColor: colors.primary + '15' }]}
+            style={({ pressed }) => [s.codeBtn, { backgroundColor: colors.primary + '15' }, pressed && { opacity: 0.7 }]}
           >
             <Share2 size={16} color={colors.primary} />
           </Pressable>
@@ -127,7 +127,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
       </View>
 
       {copied && (
-        <Text style={[s.copiedText, { color: '#10B981', fontFamily: fonts.body }]}>
+        <Text style={[s.copiedText, { color: colors.success, fontFamily: fonts.body }]}>
           {t('referral.copied')}
         </Text>
       )}
@@ -143,14 +143,14 @@ export function ReferralCard({ userId }: ReferralCardProps) {
               {t('referral.invitesLeft').replace('{count}', String(invitesLeft))}
             </Text>
           ) : (
-            <Text style={[s.invitesLeftText, { color: '#10B981', fontFamily: fonts.bodySemi }]}>
+            <Text style={[s.invitesLeftText, { color: colors.success, fontFamily: fonts.bodySemi }]}>
               {t('referral.allTiersUnlocked')}
             </Text>
           )}
         </View>
 
         {/* Progress bar */}
-        <View style={[s.progressTrack, { backgroundColor: isDark ? '#333333' : '#E5E5E5' }]}>
+        <View style={[s.progressTrack, { backgroundColor: colors.border }]}>
           <View
             style={[
               s.progressFill,

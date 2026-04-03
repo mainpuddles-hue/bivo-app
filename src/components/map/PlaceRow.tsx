@@ -126,12 +126,12 @@ const styles = StyleSheet.create({
   placeCatText: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14.3,
+    lineHeight: 14,
   },
   placeDistance: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   placeDirectionsBtn: {
     paddingHorizontal: 8,
@@ -140,6 +140,6 @@ const styles = StyleSheet.create({
   placeDirectionsText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
 })

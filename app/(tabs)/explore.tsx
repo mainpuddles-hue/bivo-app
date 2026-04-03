@@ -738,6 +738,7 @@ const s = StyleSheet.create({
     fontSize: 20,
     letterSpacing: -0.3,
     fontFamily: fonts.headingSemi,
+    lineHeight: 28,
   },
   chipRow: {
     flexDirection: 'row',
@@ -757,6 +758,7 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
   chipCount: {
     paddingHorizontal: 8,
@@ -769,6 +771,7 @@ const s = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700' as const,
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
   scroll: { flex: 1 },
   scrollContent: {
@@ -797,6 +800,7 @@ const s = StyleSheet.create({
     fontSize: 18,
     fontFamily: fonts.headingSemi,
     marginTop: 4,
+    lineHeight: 24,
   },
   mapTeaserHint: {
     fontSize: 13,
@@ -822,6 +826,7 @@ const s = StyleSheet.create({
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     flex: 1,
+    lineHeight: 20,
   },
 
   // Cards
@@ -854,11 +859,13 @@ const s = StyleSheet.create({
   cardMeta: {
     fontSize: 12,
     fontFamily: fonts.body,
+    lineHeight: 16,
   },
   cardDateText: {
     fontSize: 13,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 18,
   },
 
   // Event icon box
@@ -891,6 +898,7 @@ const s = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
 
   // Empty state
@@ -906,6 +914,7 @@ const s = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     fontFamily: fonts.headingSemi,
+    lineHeight: 22,
   },
   emptyHint: {
     fontSize: 13,
@@ -924,6 +933,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 
   // Community section
@@ -945,11 +955,13 @@ const s = StyleSheet.create({
   seeAllText: {
     fontSize: 13,
     fontFamily: fonts.bodySemi,
+    lineHeight: 18,
   },
   sectionTitle: {
     fontSize: 16,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.16,
+    lineHeight: 22,
   },
   groupDot: {
     width: 36,
@@ -962,6 +974,7 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     fontFamily: fonts.headingSemi,
+    lineHeight: 20,
   },
   communityCard: {
     flexDirection: 'row',
@@ -973,12 +986,12 @@ const s = StyleSheet.create({
   communityCardTitle: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
-    lineHeight: 18.2,
+    lineHeight: 20,
   },
   communityCardHint: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   errorRow: {
     flexDirection: 'row' as const,
@@ -993,6 +1006,7 @@ const s = StyleSheet.create({
     fontSize: 13,
     fontFamily: fonts.bodySemi,
     flex: 1,
+    lineHeight: 18,
   },
 
   // Community events carousel
@@ -1037,6 +1051,7 @@ const s = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 16,
   },
   ceCardMeta: {
     flexDirection: 'row',
@@ -1046,6 +1061,7 @@ const s = StyleSheet.create({
   ceCardMetaText: {
     fontSize: 11,
     fontFamily: fonts.body,
+    lineHeight: 16,
   },
 })
 

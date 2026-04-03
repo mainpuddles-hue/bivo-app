@@ -659,6 +659,7 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
+    lineHeight: 28,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
   },
@@ -674,6 +675,7 @@ const s = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: fonts.body,
     paddingVertical: 4,
   },
@@ -681,6 +683,7 @@ const s = StyleSheet.create({
   scrollContainer: { paddingHorizontal: 16, paddingTop: 16 },
   sectionTitle: {
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: fonts.headingSemi,
     marginBottom: 12,
   },
@@ -702,6 +705,7 @@ const s = StyleSheet.create({
   },
   groupAvatarText: {
     fontSize: 18,
+    lineHeight: 24,
     fontFamily: fonts.heading,
   },
   groupCardMiddle: {
@@ -710,6 +714,7 @@ const s = StyleSheet.create({
   },
   groupName: {
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.headingSemi,
   },
   groupMeta: {
@@ -718,6 +723,7 @@ const s = StyleSheet.create({
   },
   groupMetaText: {
     fontSize: 12,
+    lineHeight: 16,
     fontFamily: fonts.body,
   },
   joinButton: {
@@ -727,6 +733,7 @@ const s = StyleSheet.create({
   },
   joinButtonText: {
     fontSize: 13,
+    lineHeight: 18,
     fontFamily: fonts.bodySemi,
   },
   emptyContainer: {
@@ -737,6 +744,7 @@ const s = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: fonts.bodyMedium,
     textAlign: 'center',
   },
@@ -750,11 +758,13 @@ const s = StyleSheet.create({
   },
   emptySectionText: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: fonts.bodyMedium,
     textAlign: 'center',
   },
   emptySectionSub: {
     fontSize: 12,
+    lineHeight: 16,
     fontFamily: fonts.body,
     textAlign: 'center',
   },
@@ -792,6 +802,7 @@ const s = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
+    lineHeight: 24,
     fontFamily: fonts.heading,
   },
   modalScroll: {
@@ -799,12 +810,14 @@ const s = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 13,
+    lineHeight: 18,
     fontFamily: fonts.bodySemi,
     marginBottom: 6,
     marginTop: 12,
   },
   textInput: {
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.body,
     borderWidth: 1,
     borderRadius: 12,
@@ -813,6 +826,7 @@ const s = StyleSheet.create({
   },
   textArea: {
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.body,
     borderWidth: 1,
     borderRadius: 12,
@@ -834,6 +848,7 @@ const s = StyleSheet.create({
   },
   chipText: {
     fontSize: 13,
+    lineHeight: 18,
     fontFamily: fonts.bodyMedium,
   },
   pickerButton: {
@@ -843,6 +858,7 @@ const s = StyleSheet.create({
   },
   pickerButtonText: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
   toggleRow: {
@@ -859,6 +875,7 @@ const s = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: fonts.bodyMedium,
   },
   submitButton: {
@@ -872,6 +889,7 @@ const s = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: fonts.bodySemi,
   },
   neighborhoodItem: {
@@ -881,6 +899,7 @@ const s = StyleSheet.create({
   },
   neighborhoodText: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
   // Skeleton

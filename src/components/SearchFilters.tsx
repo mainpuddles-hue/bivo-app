@@ -166,7 +166,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
     return (
       <Pressable
         onPress={() => toggleSection(key)}
-        style={[styles.sectionHeader, { borderBottomColor: colors.border }]}
+        style={({ pressed }) => [styles.sectionHeader, { borderBottomColor: colors.border }, pressed && { opacity: 0.7 }]}
       >
         <View style={styles.sectionHeaderLeft}>
           {icon}
@@ -383,7 +383,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                       <Pressable
                         key={step}
                         onPress={() => setLocal(prev => ({ ...prev, distanceKm: step }))}
-                        style={[
+                        style={({ pressed }) => [
                           styles.distanceStep,
                           {
                             backgroundColor:
@@ -393,6 +393,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                                   ? colors.card
                                   : colors.muted,
                           },
+                          pressed && { opacity: 0.7 },
                         ]}
                       >
                         <Text
@@ -431,7 +432,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                     <Pressable
                       key={nh}
                       onPress={() => toggleNeighborhood(nh)}
-                      style={[
+                      style={({ pressed }) => [
                         styles.nhChip,
                         selected
                           ? { backgroundColor: colors.primary }
@@ -440,6 +441,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                               borderColor: colors.border,
                               borderWidth: 1,
                             },
+                        pressed && { opacity: 0.7 },
                       ]}
                     >
                       {selected && <Check size={12} color={colors.primaryForeground} />}
@@ -474,7 +476,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                   <Pressable
                     key={opt.key}
                     onPress={() => setLocal(prev => ({ ...prev, sortBy: opt.key }))}
-                    style={[
+                    style={({ pressed }) => [
                       styles.sortOption,
                       {
                         backgroundColor: selected
@@ -482,6 +484,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                           : 'transparent',
                         borderColor: selected ? colors.primary : colors.border,
                       },
+                      pressed && { opacity: 0.7 },
                     ]}
                   >
                     <View
@@ -523,7 +526,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
         >
           <Pressable
             onPress={handleClear}
-            style={[styles.footerBtn, styles.footerBtnSecondary, { borderColor: colors.border }]}
+            style={({ pressed }) => [styles.footerBtn, styles.footerBtnSecondary, { borderColor: colors.border }, pressed && { opacity: 0.7 }]}
           >
             <Text style={[styles.footerBtnText, { color: colors.foreground }]}>
               {t('search.clearAll')}
@@ -531,7 +534,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           </Pressable>
           <Pressable
             onPress={handleApply}
-            style={[styles.footerBtn, styles.footerBtnPrimary, { backgroundColor: colors.primary }]}
+            style={({ pressed }) => [styles.footerBtn, styles.footerBtnPrimary, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}
           >
             <Text style={[styles.footerBtnText, { color: colors.primaryForeground }]}>
               {t('search.apply')}
@@ -555,7 +558,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '700' },
+  headerTitle: { fontSize: 18, fontWeight: '700', lineHeight: 24 },
   headerBadge: {
     minWidth: 20,
     height: 20,
@@ -564,9 +567,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
-  headerBadgeText: { fontSize: 11, fontWeight: '700' },
+  headerBadgeText: { fontSize: 11, fontWeight: '700', lineHeight: 16 },
   clearBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  clearText: { fontSize: 13, fontWeight: '500' },
+  clearText: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
   scrollContent: { paddingBottom: 20 },
   sectionHeader: {
     flexDirection: 'row',
@@ -577,19 +580,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  sectionTitle: { fontSize: 15, fontWeight: '600' },
+  sectionTitle: { fontSize: 15, fontWeight: '600', lineHeight: 20 },
   sectionBody: { paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   priceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   priceInputWrap: { flex: 1, gap: 4 },
-  inputLabel: { fontSize: 12, fontWeight: '500' },
+  inputLabel: { fontSize: 12, fontWeight: '500', lineHeight: 16 },
   priceInput: {
     height: 44,
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 14,
     fontSize: 15,
+    lineHeight: 20,
   },
-  priceDash: { fontSize: 18, paddingBottom: 10 },
+  priceDash: { fontSize: 18, paddingBottom: 10, lineHeight: 24 },
   dateRow: { flexDirection: 'row', gap: 12 },
   dateInputWrap: { flex: 1, gap: 4 },
   dateInput: {
@@ -598,9 +602,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     fontSize: 15,
+    lineHeight: 20,
   },
-  locationHint: { fontSize: 13, textAlign: 'center', paddingVertical: 8 },
-  distanceLabel: { fontSize: 20, fontWeight: '700', textAlign: 'center' },
+  locationHint: { fontSize: 13, textAlign: 'center', paddingVertical: 8, lineHeight: 18 },
+  distanceLabel: { fontSize: 20, fontWeight: '700', textAlign: 'center', lineHeight: 28 },
   distanceSteps: {
     flexDirection: 'row',
     gap: 6,
@@ -615,7 +620,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 10,
   },
-  distanceStepText: { fontSize: 13, fontWeight: '600' },
+  distanceStepText: { fontSize: 13, fontWeight: '600', lineHeight: 18 },
   chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   nhChip: {
     flexDirection: 'row',
@@ -625,7 +630,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 16,
   },
-  nhChipText: { fontSize: 13, fontWeight: '500' },
+  nhChipText: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
   sortOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -644,7 +649,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sortRadioDot: { width: 8, height: 8, borderRadius: 4 },
-  sortText: { fontSize: 14, fontWeight: '500' },
+  sortText: { fontSize: 14, fontWeight: '500', lineHeight: 20 },
   footer: {
     flexDirection: 'row',
     gap: 12,
@@ -661,5 +666,5 @@ const styles = StyleSheet.create({
   },
   footerBtnSecondary: { borderWidth: 1 },
   footerBtnPrimary: {},
-  footerBtnText: { fontSize: 15, fontWeight: '600' },
+  footerBtnText: { fontSize: 15, fontWeight: '600', lineHeight: 20 },
 })

@@ -167,21 +167,21 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16,
   },
-  faqQuestion: { fontSize: 15, fontFamily: fonts.bodyMedium, flex: 1 },
+  faqQuestion: { fontSize: 15, lineHeight: 20, fontFamily: fonts.bodyMedium, flex: 1 },
   faqAnswer: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 },
-  answerText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 21 },
-  contactTitle: { fontSize: 16, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
+  answerText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
+  contactTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
   contactDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   contactBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 12, minHeight: 48,
   },
-  contactBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
+  contactBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   linkRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     padding: 16,
   },
-  linkText: { fontSize: 15, fontFamily: fonts.bodyMedium },
+  linkText: { fontSize: 15, lineHeight: 20, fontFamily: fonts.bodyMedium },
 })
 
 export default function HelpScreen() {

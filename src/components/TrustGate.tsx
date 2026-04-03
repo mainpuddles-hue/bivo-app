@@ -32,7 +32,7 @@ export function TrustGateModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
-          <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={12}>
+          <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]} hitSlop={12}>
             <X size={20} color={colors.mutedForeground} />
           </Pressable>
 
@@ -78,13 +78,13 @@ export function TrustGateModal({
           )}
 
           {currentLevel === 1 && onVerifyPress && (
-            <Pressable onPress={() => { onClose(); onVerifyPress() }} style={[styles.actionBtn, { backgroundColor: TRUST_TIERS[2].color }]}>
+            <Pressable onPress={() => { onClose(); onVerifyPress() }} style={({ pressed }) => [styles.actionBtn, { backgroundColor: TRUST_TIERS[2].color }, pressed && { opacity: 0.7 }]}>
               <ShieldCheck size={18} color="#FFFFFF" />
               <Text style={styles.actionBtnText}>{t('trust.verifyNow')}</Text>
             </Pressable>
           )}
 
-          <Pressable onPress={onClose} style={[styles.dismissBtn, { backgroundColor: colors.muted }]}>
+          <Pressable onPress={onClose} style={({ pressed }) => [styles.dismissBtn, { backgroundColor: colors.muted }, pressed && { opacity: 0.7 }]}>
             <Text style={[styles.dismissBtnText, { color: colors.foreground }]}>{t('common.close')}</Text>
           </Pressable>
         </Pressable>

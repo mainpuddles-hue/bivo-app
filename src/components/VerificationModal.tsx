@@ -45,7 +45,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             </View>
             <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.successTitle')}</Text>
             <Text style={[styles.description, { color: colors.mutedForeground }]}>{t('verification.successMessage')}</Text>
-            <Pressable onPress={onClose} style={[styles.primaryBtn, { backgroundColor: '#10B981' }]}>
+            <Pressable onPress={onClose} style={({ pressed }) => [styles.primaryBtn, { backgroundColor: '#10B981' }, pressed && { opacity: 0.7 }]}>
               <Text style={styles.primaryBtnText}>{t('verification.backToApp')}</Text>
             </Pressable>
           </Pressable>
@@ -58,7 +58,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
-          <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={12}>
+          <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]} hitSlop={12}>
             <X size={20} color={colors.mutedForeground} />
           </Pressable>
 
@@ -119,7 +119,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
           <Pressable
             onPress={onConfirm}
             disabled={loading}
-            style={[styles.primaryBtn, { backgroundColor: loading ? colors.muted : brandColor }]}
+            style={({ pressed }) => [styles.primaryBtn, { backgroundColor: loading ? colors.muted : brandColor }, pressed && { opacity: 0.7 }]}
           >
             {loading ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
@@ -131,7 +131,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             )}
           </Pressable>
 
-          <Pressable onPress={onClose} style={[styles.cancelBtn, { backgroundColor: colors.muted }]}>
+          <Pressable onPress={onClose} style={({ pressed }) => [styles.cancelBtn, { backgroundColor: colors.muted }, pressed && { opacity: 0.7 }]}>
             <Text style={[styles.cancelBtnText, { color: colors.foreground }]}>{t('common.cancel')}</Text>
           </Pressable>
         </Pressable>

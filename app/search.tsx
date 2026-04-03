@@ -820,13 +820,13 @@ function SearchScreenInner() {
       {/* Save search + active filter indicator */}
       {searched && filterCount > 0 && (
         <View style={[s.activeFilterBar, { backgroundColor: `${colors.primary}10`, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setFiltersVisible(true)} style={s.activeFilterInfo}>
+          <Pressable onPress={() => setFiltersVisible(true)} style={({ pressed }) => [s.activeFilterInfo, pressed && { opacity: 0.7 }]}>
             <SlidersHorizontal size={14} color={colors.primary} />
             <Text style={[s.activeFilterText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
               {t('search.activeFilters', { count: filterCount })}
             </Text>
           </Pressable>
-          <Pressable onPress={saveCurrentSearch} hitSlop={8} style={s.saveSearchBtn}>
+          <Pressable onPress={saveCurrentSearch} hitSlop={8} style={({ pressed }) => [s.saveSearchBtn, pressed && { opacity: 0.7 }]}>
             <Star size={14} color={colors.primary} />
             <Text style={[s.saveSearchText, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('search.saveThisSearch')}</Text>
           </Pressable>
@@ -1143,49 +1143,49 @@ const s = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, height: 48,
   },
-  searchInput: { flex: 1, fontSize: 15, fontFamily: fonts.body },
+  searchInput: { flex: 1, fontSize: 15, fontFamily: fonts.body, lineHeight: 20 },
   filterButton: { position: 'relative', padding: 4 },
   filterBadge: {
     position: 'absolute', top: -2, right: -4,
     minWidth: 16, height: 16, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
   },
-  filterBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi },
+  filterBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 16 },
   activeFilterBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   activeFilterInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activeFilterText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
+  activeFilterText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   saveSearchBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  saveSearchText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  saveSearchText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   chipSections: { gap: 0 },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
   filterChipOutline: { borderWidth: 1 },
-  filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   chipDivider: { width: 1, height: 24, alignSelf: 'center', marginHorizontal: 8, borderRadius: 1 },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
   tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   list: { padding: 16, paddingBottom: 100 },
   discovery: { padding: 16, gap: 24, paddingBottom: 100 },
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi },
+  sectionTitle: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
     borderWidth: 1,
   },
-  recentChipText: { fontSize: 13, fontFamily: fonts.body },
+  recentChipText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  historyText: { fontSize: 14, fontFamily: fonts.body },
-  savedFilterHint: { fontSize: 11, marginTop: 1, fontFamily: fonts.body },
+  historyText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
+  savedFilterHint: { fontSize: 11, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
   hintText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   categoryGrid: { gap: 8 },
   categoryCard: {
@@ -1196,26 +1196,26 @@ const s = StyleSheet.create({
     width: 44, height: 44, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
   },
-  categoryCardText: { fontSize: 15, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi },
+  categoryCardText: { fontSize: 15, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
   empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
-  emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi },
-  emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
+  emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi, lineHeight: 22 },
+  emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body, lineHeight: 20 },
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   searchEventIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
-  userName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
-  userNh: { fontSize: 13, fontFamily: fonts.body },
+  userName: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  userNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   resultCountRow: { paddingHorizontal: 16, paddingVertical: 8 },
-  resultCountText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  resultCountText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 18 },
   trendingList: { gap: 8 },
   trendingCard: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
   },
   trendingDot: { width: 10, height: 10, borderRadius: 5 },
-  trendingTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
-  trendingCat: { fontSize: 11, marginTop: 1, fontFamily: fonts.body },
+  trendingTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  trendingCat: { fontSize: 11, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  trendingLikeCount: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  semanticLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, paddingLeft: 2, fontFamily: fonts.bodyMedium },
+  trendingLikeCount: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  semanticLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, paddingLeft: 2, fontFamily: fonts.bodyMedium, lineHeight: 16 },
 })

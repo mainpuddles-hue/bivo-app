@@ -629,9 +629,11 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontSize: 14,
+    lineHeight: 20,
   },
   label: {
     fontSize: 14,
+    lineHeight: 20,
     marginTop: 12,
     marginBottom: 6,
   },
@@ -641,6 +643,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 15,
+    lineHeight: 20,
   },
   multilineInput: {
     minHeight: 100,
@@ -648,6 +651,7 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: 12,
+    lineHeight: 16,
     textAlign: 'right',
     marginTop: 4,
   },
@@ -670,6 +674,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     fontSize: 15,
+    lineHeight: 20,
   },
   chipContainer: {
     flexDirection: 'row',
@@ -689,6 +694,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 14,
+    lineHeight: 20,
   },
   toggleRow: {
     flexDirection: 'row',
@@ -706,9 +712,11 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 15,
+    lineHeight: 20,
   },
   toggleDescription: {
     fontSize: 13,
+    lineHeight: 18,
     marginTop: 2,
   },
   submitButton: {
@@ -721,6 +729,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: fonts.bodySemi,
   },
 })

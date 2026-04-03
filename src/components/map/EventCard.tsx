@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 12,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   eventContent: {
     padding: 14,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
     flex: 1,
   },
   cardBadgeRow: {
@@ -187,11 +187,11 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14.3,
+    lineHeight: 14,
   },
   distance: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
 })

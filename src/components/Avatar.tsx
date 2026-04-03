@@ -16,6 +16,7 @@ export function Avatar({ url, name, size = 36, borderColor, borderWidth }: Avata
   const radius = size / 2
   const initial = (name || '?').charAt(0).toUpperCase()
   const fontSize = size < 24 ? 8 : size < 36 ? 10 : size < 48 ? 13 : size < 64 ? 18 : 32
+  const lineHeight = size < 24 ? 10 : size < 36 ? 14 : size < 48 ? 18 : size < 64 ? 24 : 42
 
   if (url) {
     return (
@@ -35,7 +36,7 @@ export function Avatar({ url, name, size = 36, borderColor, borderWidth }: Avata
       { width: size, height: size, borderRadius: radius, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' },
       borderColor ? { borderWidth: borderWidth ?? 1, borderColor } : undefined,
     ]}>
-      <Text style={{ fontSize, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{initial}</Text>
+      <Text style={{ fontSize, lineHeight, fontWeight: '600', color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>{initial}</Text>
     </View>
   )
 }

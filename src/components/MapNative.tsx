@@ -412,7 +412,7 @@ export default function MapScreen() {
                 {t('map.noSearchResults')} '{searchQuery}'
               </Text>
               <Pressable onPress={() => setSearchQuery('')} style={[styles.emptyActionBtn, { borderColor: colors.accent }]}>
-                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 21 }}>{t('map.clearSearch')}</Text>
+                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('map.clearSearch')}</Text>
               </Pressable>
             </>
           ) : activeFilter !== 'all' ? (
@@ -421,7 +421,7 @@ export default function MapScreen() {
                 {t('map.noContentInArea')} {displayNeighborhood}
               </Text>
               <Pressable onPress={() => setActiveFilter('all')} style={[styles.emptyActionBtn, { borderColor: colors.accent }]}>
-                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 21 }}>{t('map.showAll')}</Text>
+                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('map.showAll')}</Text>
               </Pressable>
             </>
           ) : (
@@ -437,7 +437,7 @@ export default function MapScreen() {
                 <Text style={styles.emptyCreateBtnText}>{t('map.createFirstPost')}</Text>
               </Pressable>
               <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
-                <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 15.6 }}>{t('map.tryAnotherArea')}</Text>
+                <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 16 }}>{t('map.tryAnotherArea')}</Text>
               </Pressable>
             </>
           )}
@@ -471,7 +471,7 @@ export default function MapScreen() {
                 {loadingMore ? (
                   <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
-                  <Pressable onPress={handleLoadMore} style={[styles.loadMoreBtn, { borderColor: colors.border }]}>
+                  <Pressable onPress={handleLoadMore} style={({ pressed }) => [styles.loadMoreBtn, { borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
                     <Text style={[styles.loadMoreText, { color: colors.primary }]}>
                       {t('map.loadMoreEvents')} ({totalEvents} {t('map.totalEvents')})
                     </Text>
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headingSemi,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    lineHeight: 16.9,
+    lineHeight: 18,
   },
   sectionCountBadge: {
     minWidth: 24,
@@ -673,13 +673,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: fonts.body,
-    lineHeight: 21,
+    lineHeight: 20,
     paddingVertical: 4,
   },
   searchCount: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14.3,
+    lineHeight: 14,
     paddingHorizontal: 16,
     paddingBottom: 4,
   },
@@ -697,7 +697,7 @@ const styles = StyleSheet.create({
   emptyHint: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
     textAlign: 'center',
     paddingHorizontal: 32,
   },
@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     fontFamily: fonts.body,
-    lineHeight: 21,
+    lineHeight: 20,
     textAlign: 'center',
     paddingHorizontal: 24,
   },
@@ -740,7 +740,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 14,
     fontFamily: fonts.bodySemi,
-    lineHeight: 21,
+    lineHeight: 20,
   },
   mapToggleBtn: {
     position: 'absolute',
@@ -770,7 +770,7 @@ const styles = StyleSheet.create({
   loadMoreText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   emptyCard: {
     marginHorizontal: 12,
@@ -789,7 +789,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontFamily: fonts.body,
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 20,
     textAlign: 'center',
   },
   clusterMarker: {
@@ -848,7 +848,7 @@ const styles = StyleSheet.create({
   businessToggleText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   businessCard: {
     position: 'absolute',
@@ -907,12 +907,12 @@ const styles = StyleSheet.create({
   businessCategoryText: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14.3,
+    lineHeight: 14,
   },
   businessCardAddress: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   businessCardButton: {
     alignItems: 'center',
@@ -923,6 +923,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 14,
     fontFamily: fonts.bodySemi,
-    lineHeight: 21,
+    lineHeight: 20,
   },
 })

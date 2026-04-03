@@ -707,7 +707,7 @@ const s = StyleSheet.create({
   appName: {
     fontSize: 32,
     letterSpacing: 1.7,
-    lineHeight: 38,
+    lineHeight: 42,
   },
   tagline: {
     fontSize: 20,
@@ -936,7 +936,7 @@ const s = StyleSheet.create({
   },
   primaryBtnText: {
     fontSize: 16,
-    lineHeight: 23,
+    lineHeight: 22,
   },
   dots: {
     flexDirection: 'row',

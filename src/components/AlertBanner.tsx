@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Linking } from 'react-native'
 import { AlertTriangle, Bus, X, ChevronDown, ChevronUp } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { fonts } from '@/lib/fonts'
+import { CATEGORIES } from '@/lib/constants'
 import { fetchAllAlerts, type AppAlert } from '@/lib/alerts'
 
 // Module-level — survives component remounts
@@ -33,9 +34,9 @@ export function AlertBanner() {
       {shownAlerts.map(alert => {
         const isWeather = alert.type === 'weather'
         const isSevere = alert.severity === 'severe' || alert.severity === 'warning'
-        const bgColor = isSevere ? '#D94F4F18' : '#E8A05018'
-        const borderColor = isSevere ? '#D94F4F44' : '#E8A05044'
-        const iconColor = isSevere ? '#D94F4F' : '#E8A050'
+        const bgColor = isSevere ? `${colors.destructive}18` : `${CATEGORIES.nappaa.color}18`
+        const borderColor = isSevere ? `${colors.destructive}44` : `${CATEGORIES.nappaa.color}44`
+        const iconColor = isSevere ? colors.destructive : CATEGORIES.nappaa.color
         const isExpanded = expandedId === alert.id
 
         return (
@@ -48,7 +49,7 @@ export function AlertBanner() {
                 setExpandedId(prev => prev === alert.id ? null : alert.id)
               }
             }}
-            style={[styles.alertCard, { backgroundColor: bgColor, borderColor }]}
+            style={({ pressed }) => [styles.alertCard, { backgroundColor: bgColor, borderColor }, pressed && { opacity: 0.7 }]}
           >
             <View style={styles.alertHeader}>
               {isWeather ? (

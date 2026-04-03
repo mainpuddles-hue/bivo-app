@@ -486,6 +486,7 @@ const s = StyleSheet.create({
   },
   tabText: {
     fontSize: 13,
+    lineHeight: 18,
     fontFamily: fonts.bodyMedium,
   },
   content: {
@@ -514,6 +515,7 @@ const s = StyleSheet.create({
   },
   flagBadgeText: {
     fontSize: 11,
+    lineHeight: 16,
     fontFamily: fonts.bodySemi,
   },
   reviewedBadge: {
@@ -526,10 +528,12 @@ const s = StyleSheet.create({
   },
   reviewedText: {
     fontSize: 11,
+    lineHeight: 16,
     fontFamily: fonts.bodyMedium,
   },
   flagTitle: {
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.bodySemi,
     marginBottom: 4,
   },
@@ -541,6 +545,7 @@ const s = StyleSheet.create({
   },
   flagDate: {
     fontSize: 12,
+    lineHeight: 16,
     fontFamily: fonts.body,
     marginBottom: 8,
   },
@@ -559,6 +564,7 @@ const s = StyleSheet.create({
   },
   actionText: {
     fontSize: 13,
+    lineHeight: 18,
     fontFamily: fonts.bodyMedium,
   },
   searchRow: {
@@ -574,6 +580,7 @@ const s = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
   userRow: {
@@ -591,10 +598,12 @@ const s = StyleSheet.create({
   },
   userName: {
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.bodySemi,
   },
   userMeta: {
     fontSize: 12,
+    lineHeight: 16,
     fontFamily: fonts.body,
     marginTop: 2,
   },
@@ -605,6 +614,7 @@ const s = StyleSheet.create({
   },
   bannedText: {
     fontSize: 11,
+    lineHeight: 16,
     fontFamily: fonts.bodySemi,
   },
   banBtn: {
@@ -625,11 +635,13 @@ const s = StyleSheet.create({
   },
   statValue: {
     fontSize: 32,
+    lineHeight: 40,
     fontFamily: fonts.heading,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 13,
+    lineHeight: 18,
     fontFamily: fonts.bodyMedium,
     textAlign: 'center',
   },
@@ -641,6 +653,7 @@ const s = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
+    lineHeight: 20,
     fontFamily: fonts.bodyMedium,
     textAlign: 'center',
     maxWidth: 280,

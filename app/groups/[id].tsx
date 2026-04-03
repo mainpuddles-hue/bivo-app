@@ -462,7 +462,7 @@ export default function GroupDetailScreen() {
     return (
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
+          <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
             <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
           </Pressable>
           <Text style={[ps.headerTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
@@ -481,7 +481,7 @@ export default function GroupDetailScreen() {
     return (
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
+          <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
             <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
           </Pressable>
           <Text style={[ps.headerTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
@@ -552,14 +552,14 @@ export default function GroupDetailScreen() {
           )}
         </View>
         <View style={ps.infoActions}>
-          <Pressable style={ps.membersBtn} onPress={() => { setShowMembers(true); fetchMembers() }}>
+          <Pressable style={({ pressed }) => [ps.membersBtn, pressed && { opacity: 0.7 }]} onPress={() => { setShowMembers(true); fetchMembers() }}>
             <Users size={16} color={colors.primary} strokeWidth={1.8} />
             <Text style={[ps.membersBtnText, { color: colors.primary }]}>
               {group.member_count <= 1 ? t('groups.inviteMembers') : `${group.member_count} ${t('groups.members')}`}
             </Text>
           </Pressable>
           <Pressable
-            style={[ps.joinLeaveBtn, { backgroundColor: isMember ? 'transparent' : colors.accent, borderColor: isMember ? colors.destructive : colors.accent, borderWidth: isMember ? 1 : 0 }]}
+            style={({ pressed }) => [ps.joinLeaveBtn, { backgroundColor: isMember ? 'transparent' : colors.accent, borderColor: isMember ? colors.destructive : colors.accent, borderWidth: isMember ? 1 : 0 }, pressed && { opacity: 0.7 }]}
             onPress={handleJoinLeave}
           >
             {isMember ? (
@@ -582,7 +582,7 @@ export default function GroupDetailScreen() {
     >
       {/* Header */}
       <View style={[ps.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
+        <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
           <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
         </Pressable>
         <View style={ps.headerCenter}>
@@ -592,7 +592,7 @@ export default function GroupDetailScreen() {
           </Text>}
         </View>
         {isAdmin ? (
-          <Pressable style={ps.headerBtn} hitSlop={8} onPress={() => setShowEditModal(true)}>
+          <Pressable style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8} onPress={() => setShowEditModal(true)}>
             <Pencil size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </Pressable>
         ) : <View style={ps.headerBtn} />}
@@ -617,7 +617,7 @@ export default function GroupDetailScreen() {
 
       {newPostsBanner && (
         <Pressable onPress={() => { setNewPostsBanner(false); setLoading(true); fetchPosts() }}
-          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 12, alignItems: 'center', backgroundColor: colors.primary }}>
+          style={({ pressed }) => [{ marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 12, alignItems: 'center', backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}>
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.primaryForeground }}>{t('groups.newPostsBanner')}</Text>
         </Pressable>
       )}
@@ -652,9 +652,9 @@ export default function GroupDetailScreen() {
             </View>
           )}
           <View style={ps.postInputRow}>
-            <Pressable onPress={handlePickImage} style={ps.imageBtn} hitSlop={8}><ImagePlus size={20} color={colors.mutedForeground} strokeWidth={1.8} /></Pressable>
+            <Pressable onPress={handlePickImage} style={({ pressed }) => [ps.imageBtn, pressed && { opacity: 0.7 }]} hitSlop={8}><ImagePlus size={20} color={colors.mutedForeground} strokeWidth={1.8} /></Pressable>
             <TextInput style={[ps.postInput, { color: colors.foreground, backgroundColor: colors.muted }]} placeholder={t('groups.writePost')} placeholderTextColor={colors.mutedForeground} value={postText} onChangeText={setPostText} multiline maxLength={2000} />
-            <Pressable style={[ps.sendBtn, { backgroundColor: (postText.trim() || postImage) ? colors.accent : colors.muted }]} onPress={handleSendPost} disabled={sending || (!postText.trim() && !postImage)}>
+            <Pressable style={({ pressed }) => [ps.sendBtn, { backgroundColor: (postText.trim() || postImage) ? colors.accent : colors.muted }, pressed && { opacity: 0.7 }]} onPress={handleSendPost} disabled={sending || (!postText.trim() && !postImage)}>
               {sending ? <ActivityIndicator size="small" color={colors.accentForeground} /> : <Send size={18} color={(postText.trim() || postImage) ? colors.accentForeground : colors.mutedForeground} strokeWidth={1.8} />}
             </Pressable>
           </View>

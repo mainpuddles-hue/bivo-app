@@ -218,7 +218,7 @@ function ForumThreadViewInner({
 
             {/* Replies header with sort toggle */}
             {onToggleReplySort && replies.length > 1 && (
-              <Pressable onPress={onToggleReplySort} style={styles.sortToggle} hitSlop={8}>
+              <Pressable onPress={onToggleReplySort} style={({ pressed }) => [styles.sortToggle, pressed && { opacity: 0.7 }]} hitSlop={8}>
                 <Text style={[styles.sortToggleText, { color: colors.primary }]}>
                   {replySortNewest ? t('forum.newestFirst') : t('forum.oldestFirst')}
                 </Text>

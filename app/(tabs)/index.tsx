@@ -84,7 +84,7 @@ function CommunityCard({ item, type, colors, t, onPress }: {
     : `${item.upvote_count ?? 0} \u2191 \u00B7 ${item.comment_count ?? 0} ${t('feed.replies')}`
 
   return (
-    <Pressable onPress={onPress} style={[communityCardStyles.row, { backgroundColor: colors.muted }]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [communityCardStyles.row, { backgroundColor: colors.muted }, pressed && { opacity: 0.7 }]}>
       <View style={[communityCardStyles.iconWrap, { backgroundColor: iconConfig.bg }]}>
         <iconConfig.Icon size={18} color={iconConfig.color} />
       </View>

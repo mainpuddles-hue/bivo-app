@@ -130,7 +130,7 @@ export default function TabLayout() {
           <View style={[s.handle, { backgroundColor: colors.border }]} />
 
           <Pressable
-            style={s.sheetRow}
+            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
             accessibilityLabel={t('create.listing')}
             accessibilityRole="button"
             onPress={() => { setShowCreateMenu(false); router.push('/(tabs)/create') }}
@@ -146,7 +146,7 @@ export default function TabLayout() {
           </Pressable>
 
           <Pressable
-            style={s.sheetRow}
+            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
             accessibilityLabel={t('create.event')}
             accessibilityRole="button"
             onPress={() => { setShowCreateMenu(false); router.push('/create-event') }}
@@ -162,7 +162,7 @@ export default function TabLayout() {
           </Pressable>
 
           <Pressable
-            style={s.sheetRow}
+            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
             accessibilityLabel={t('create.discussion')}
             accessibilityRole="button"
             onPress={() => { setShowCreateMenu(false); router.push('/forum') }}

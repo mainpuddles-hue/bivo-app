@@ -23,7 +23,8 @@ import { isValidUUID } from '@/lib/validation'
 import { getCachedUserId } from '@/lib/authCache'
 import type { CommunityEvent, EventParticipant } from '@/lib/types'
 
-// Category color map
+// TODO: These are external event category colors (not post type colors from CATEGORIES constant).
+// They don't map to the theme or CATEGORIES — keep hardcoded until a shared event-category palette exists.
 const CATEGORY_COLORS: Record<string, string> = {
   social: '#8B5CF6',
   sports: '#EF4444',
@@ -294,14 +295,14 @@ function EventDetailScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header bar */}
       <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.7 }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
         <View style={s.headerActions}>
-          <Pressable onPress={handleShare} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.share')}>
+          <Pressable onPress={handleShare} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.7 }} accessibilityRole="button" accessibilityLabel={t('common.share')}>
             <Share2 size={20} color={colors.foreground} />
           </Pressable>
-          <Pressable onPress={() => setReportModalVisible(true)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Report">
+          <Pressable onPress={() => setReportModalVisible(true)} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.7 }} accessibilityRole="button" accessibilityLabel="Report">
             <Flag size={20} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -408,9 +409,9 @@ function EventDetailScreenInner() {
               disabled={actionDisabled}
               accessibilityRole="button"
               accessibilityLabel={actionLabel}
-              style={[
+              style={({ pressed }) => [
                 s.actionButton,
-                { backgroundColor: actionDisabled ? colors.muted : actionColor, opacity: actionDisabled ? 0.6 : 1 },
+                { backgroundColor: actionDisabled ? colors.muted : actionColor, opacity: actionDisabled ? 0.6 : pressed ? 0.7 : 1 },
               ]}
             >
               <Text style={[s.actionButtonText, { color: actionDisabled ? colors.mutedForeground : colors.primaryForeground }]}>
@@ -426,7 +427,7 @@ function EventDetailScreenInner() {
             onPress={() => router.push(`/profile/${event.creator!.id}` as any)}
             accessibilityRole="button"
             accessibilityLabel={`${event.creator.name}, ${t('events.organizer')}`}
-            style={[s.creatorCard, { backgroundColor: colors.card }]}
+            style={({ pressed }) => [s.creatorCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
           >
             <Avatar url={event.creator.avatar_url} name={event.creator.name} size={44} />
             <View style={s.creatorInfo}>
@@ -444,7 +445,7 @@ function EventDetailScreenInner() {
             onPress={handleMessageCreator}
             accessibilityRole="button"
             accessibilityLabel={t('events.messageOrganizer')}
-            style={[s.messageCreatorBtn, { backgroundColor: colors.primary }]}
+            style={({ pressed }) => [s.messageCreatorBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}
           >
             <MessageCircle size={18} color={colors.primaryForeground} strokeWidth={1.8} />
             <Text style={[s.messageCreatorText, { color: colors.primaryForeground }]}>
@@ -460,7 +461,7 @@ function EventDetailScreenInner() {
               onPress={() => router.push(`/create-event?edit=${event.id}` as any)}
               accessibilityRole="button"
               accessibilityLabel={t('events.editEventAction')}
-              style={[s.creatorActionBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+              style={({ pressed }) => [s.creatorActionBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
             >
               <Text style={[s.creatorActionText, { color: colors.primary }]}>{t('events.editEventAction')}</Text>
             </Pressable>
@@ -468,7 +469,7 @@ function EventDetailScreenInner() {
               onPress={handleCancelEvent}
               accessibilityRole="button"
               accessibilityLabel={t('events.cancelEvent')}
-              style={[s.creatorActionBtn, { backgroundColor: `${colors.destructive}10`, borderColor: colors.destructive }]}
+              style={({ pressed }) => [s.creatorActionBtn, { backgroundColor: `${colors.destructive}10`, borderColor: colors.destructive }, pressed && { opacity: 0.7 }]}
             >
               <Text style={[s.creatorActionText, { color: colors.destructive }]}>{t('events.cancelEvent')}</Text>
             </Pressable>
@@ -513,6 +514,7 @@ const s = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     fontFamily: fonts.body,
+    lineHeight: 20,
   },
 
   // Hero
@@ -544,6 +546,7 @@ const s = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
 
   // Title
@@ -555,6 +558,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+    lineHeight: 30,
   },
 
   // Ended banner
@@ -570,6 +574,7 @@ const s = StyleSheet.create({
   endedBannerText: {
     fontSize: 13,
     fontFamily: fonts.bodySemi,
+    lineHeight: 18,
   },
 
   // Info rows
@@ -583,6 +588,7 @@ const s = StyleSheet.create({
   infoText: {
     fontSize: 15,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
 
   // Description
@@ -597,6 +603,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    lineHeight: 16,
   },
   descriptionText: {
     fontSize: 15,
@@ -618,6 +625,7 @@ const s = StyleSheet.create({
   participantsText: {
     fontSize: 15,
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
   avatarRow: {
     flexDirection: 'row',
@@ -639,6 +647,7 @@ const s = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
   actionButton: {
     borderRadius: 12,
@@ -651,6 +660,7 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 22,
   },
 
   // Creator card
@@ -671,6 +681,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.headingSemi,
+    lineHeight: 20,
   },
   organizerBadge: {
     alignSelf: 'flex-start',
@@ -682,6 +693,7 @@ const s = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
 
   // Message creator button
@@ -700,6 +712,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 
   // Creator actions
@@ -720,6 +733,7 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 })
 

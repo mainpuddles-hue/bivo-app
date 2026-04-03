@@ -29,7 +29,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
   return (
     <Pressable
       onPress={() => event.info_url ? Linking.openURL(event.info_url) : router.push('/community-events' as any)}
-      style={[styles.todayEventCard, { backgroundColor: colors.card }]}
+      style={({ pressed }) => [styles.todayEventCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
       accessibilityRole="button"
       accessibilityLabel={getCityEventName(event, locale)}
     >
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
     width: 56, height: 56, alignItems: 'center', justifyContent: 'center',
   },
   todayEventInfo: { flex: 1, gap: 2 },
-  todayEventName: { fontSize: 14, fontFamily: fonts.headingSemi, letterSpacing: -0.16 },
-  todayEventLocation: { fontSize: 11, fontFamily: fonts.body, flex: 1 },
+  todayEventName: { fontSize: 14, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 20 },
+  todayEventLocation: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 16 },
 })

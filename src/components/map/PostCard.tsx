@@ -176,12 +176,12 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14.3,
+    lineHeight: 14,
   },
   meta: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
     flex: 1,
   },
   bottomRow: {
@@ -193,12 +193,12 @@ const styles = StyleSheet.create({
   distance: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   userName: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
     flex: 1,
   },
 })

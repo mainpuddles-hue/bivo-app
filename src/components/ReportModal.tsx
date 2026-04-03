@@ -159,9 +159,9 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
                 style={[s.submitBtn, { backgroundColor: colors.destructive, opacity: loading || !reason ? 0.6 : 1 }]}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
-                  <Text style={s.submitText}>{t('report.submit')}</Text>
+                  <Text style={[s.submitText, { color: colors.primaryForeground }]}>{t('report.submit')}</Text>
                 )}
               </Pressable>
             </>
@@ -202,12 +202,14 @@ const s = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.3,
     fontFamily: fonts.headingSemi,
+    lineHeight: 24,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
     marginTop: 4,
     fontFamily: fonts.bodySemi,
+    lineHeight: 18,
   },
   reasonList: {
     gap: 6,
@@ -225,6 +227,7 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
   },
   radio: {
     width: 16,
@@ -245,12 +248,14 @@ const s = StyleSheet.create({
     fontSize: 14,
     minHeight: 80,
     fontFamily: fonts.body,
+    lineHeight: 20,
   },
   charCount: {
     fontSize: 11,
     textAlign: 'right',
     marginTop: -8,
     fontFamily: fonts.body,
+    lineHeight: 16,
   },
   submitBtn: {
     borderRadius: 12,
@@ -263,8 +268,8 @@ const s = StyleSheet.create({
   submitText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
     fontFamily: fonts.bodySemi,
+    lineHeight: 22,
   },
   successContainer: {
     alignItems: 'center',
@@ -275,5 +280,6 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 22,
   },
 })

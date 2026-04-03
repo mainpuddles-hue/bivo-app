@@ -159,13 +159,13 @@ const s = StyleSheet.create({
     padding: 16, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   userInfo: { flex: 1, gap: 2 },
-  userName: { fontSize: 15, fontFamily: fonts.bodySemi },
-  userNh: { fontSize: 13, fontFamily: fonts.body },
+  userName: { fontSize: 15, lineHeight: 20, fontFamily: fonts.bodySemi },
+  userNh: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   unblockBtn: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12,
     minWidth: 100, alignItems: 'center',
   },
-  unblockText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  unblockText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
 })
 
 export default function BlockedUsersScreen() {

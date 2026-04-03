@@ -193,7 +193,7 @@ function GroupPostCardInner({
 
         {/* Actions */}
         <View style={styles.postActions}>
-          <Pressable style={styles.actionBtn} onPress={() => onLike(post.id)}>
+          <Pressable style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]} onPress={() => onLike(post.id)}>
             <Heart
               size={18}
               color={isLiked ? colors.destructive : colors.mutedForeground}
@@ -204,7 +204,7 @@ function GroupPostCardInner({
               {post.like_count || 0}
             </Text>
           </Pressable>
-          <Pressable style={styles.actionBtn} onPress={() => onToggleComments(post.id)}>
+          <Pressable style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]} onPress={() => onToggleComments(post.id)}>
             <MessageCircle
               size={18}
               color={isExpanded ? colors.primary : colors.mutedForeground}

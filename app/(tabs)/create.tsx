@@ -833,7 +833,7 @@ export default function CreateScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
-          <Pressable onPress={handleBackToCategory} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <Pressable onPress={handleBackToCategory} hitSlop={12} style={({ pressed }) => [{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
           {cat && (
@@ -847,7 +847,7 @@ export default function CreateScreen() {
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Pro upsell banner */}
           {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
-            <Pressable onPress={() => router.push('/pro')} style={[styles.proBanner, { backgroundColor: `${colors.pro}12` }]}>
+            <Pressable onPress={() => router.push('/pro')} style={({ pressed }) => [styles.proBanner, { backgroundColor: `${colors.pro}12` }, pressed && { opacity: 0.7 }]}>
               <Crown size={16} color={colors.pro} />
               <Text style={[styles.proBannerText, { color: colors.pro }]}>{t('pro.createBanner')}</Text>
               <ChevronRight size={14} color={colors.pro} />
@@ -872,7 +872,7 @@ export default function CreateScreen() {
                 </View>
               ))}
               {images.length < 5 && (
-                <Pressable onPress={pickImage} style={[styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.card }]}>
+                <Pressable onPress={pickImage} style={({ pressed }) => [styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
                   <Camera size={24} color={colors.mutedForeground} />
                   <Text style={[styles.addImageText, { color: colors.mutedForeground }]}>{images.length === 0 ? t('create.addImage') : `${images.length}/5`}</Text>
                 </Pressable>

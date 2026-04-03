@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+    lineHeight: 14,
   },
   row: {
     flexDirection: 'row',
@@ -92,10 +93,12 @@ const styles = StyleSheet.create({
   creditsText: {
     fontSize: 15,
     fontFamily: fonts.headingSemi,
+    lineHeight: 20,
   },
   priceText: {
     fontSize: 13,
     fontFamily: fonts.body,
+    lineHeight: 18,
   },
   buyBtn: {
     paddingHorizontal: 16,
@@ -105,5 +108,6 @@ const styles = StyleSheet.create({
   buyText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
 })

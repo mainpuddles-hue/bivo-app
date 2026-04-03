@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.18,
-    lineHeight: 22.5,
+    lineHeight: 24,
   },
   neighborhoodRow: {
     flexDirection: 'row',
@@ -142,12 +142,12 @@ const styles = StyleSheet.create({
   neighborhoodRowText: {
     fontSize: 14,
     fontFamily: fonts.body,
-    lineHeight: 21,
+    lineHeight: 20,
     flex: 1,
   },
   neighborhoodRowDist: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
 })

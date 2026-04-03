@@ -750,14 +750,14 @@ function PostDetailScreenInner() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Save" accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
-        <Pressable onPress={handleShare} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Share"><Share2 size={22} color={colors.mutedForeground} /></Pressable>
+        <Pressable onPress={toggleSave} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="Save" accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
+        <Pressable onPress={handleShare} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="Share"><Share2 size={22} color={colors.mutedForeground} /></Pressable>
         {isAuthor ? (
-          <Pressable onPress={handleMorePress} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="More options"><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleMorePress} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="More options"><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
         ) : userId ? (
-          <Pressable onPress={handleReport} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Report"><Flag size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleReport} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="Report"><Flag size={22} color={colors.mutedForeground} /></Pressable>
         ) : null}
       </View>
 
@@ -811,21 +811,21 @@ function PostDetailScreenInner() {
           {/* Author action buttons */}
           {isAuthor && (
             <View style={styles.authorActionsRow}>
-              <Pressable onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
+              <Pressable onPress={openEditModal} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
                 <Pencil size={14} color={colors.primary} />
                 <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.edit')}</Text>
               </Pressable>
               {post.is_active ? (
-                <Pressable onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
+                <Pressable onPress={handleMarkClosed} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
                   <XCircle size={14} color={colors.mutedForeground} />
                   <Text style={[styles.authorActionText, { color: colors.mutedForeground }]}>{t('post.markClosed')}</Text>
                 </Pressable>
               ) : (
-                <Pressable onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
+                <Pressable onPress={handleReopen} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
                   <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.reopen')}</Text>
                 </Pressable>
               )}
-              <Pressable onPress={handleDelete} style={[styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
+              <Pressable onPress={handleDelete} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
                 <Trash2 size={14} color={colors.destructive} />
                 <Text style={[styles.authorActionText, { color: colors.destructive }]}>{t('post.delete')}</Text>
               </Pressable>
@@ -837,7 +837,7 @@ function PostDetailScreenInner() {
             <Pressable
               onPress={handleBoostPost}
               disabled={boosting}
-              style={[styles.boostBtn, { backgroundColor: `${colors.accent}15`, borderColor: `${colors.accent}40` }]}
+              style={({ pressed }) => [styles.boostBtn, { backgroundColor: `${colors.accent}15`, borderColor: `${colors.accent}40` }, pressed && { opacity: 0.7 }]}
               accessibilityRole="button"
               accessibilityLabel={t('boost.boostThis')}
             >
@@ -871,7 +871,7 @@ function PostDetailScreenInner() {
           {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: '#7C5CBF', fontFamily: fonts.bodySemi }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#7C5CBF', fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                   {(() => {
                     const condTag = post.tags?.find((tag: string) => tag.startsWith('condition_'))
                     if (!condTag) return ''
@@ -890,14 +890,14 @@ function PostDetailScreenInner() {
           )}
 
           {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (
-            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
+            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={({ pressed }) => [styles.bookingBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
             </Pressable>
           )}
 
           {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price != null && post.service_price > 0 && !post.tags?.includes('tarjoan_item') && !isAuthor && (
-            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
+            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={({ pressed }) => [styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
               <ShoppingBag size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>
             </Pressable>
@@ -912,7 +912,7 @@ function PostDetailScreenInner() {
           {post.type === 'tapahtuma' && (
             <Pressable
               onPress={() => router.push('/community-events' as any)}
-              style={styles.communityEventsLink}
+              style={({ pressed }) => [styles.communityEventsLink, pressed && { opacity: 0.7 }]}
               accessibilityRole="link"
               accessibilityLabel={t('post.browseCommunityEvents')}
             >
@@ -930,7 +930,7 @@ function PostDetailScreenInner() {
 
           {/* Action row — like + count, comment + count (bookmark/share/flag in header) */}
           <View style={styles.actionRow}>
-            <Pressable onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
+            <Pressable onPress={toggleLike} style={({ pressed }) => [styles.actionItem, pressed && { opacity: 0.7 }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
               <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
               {likeCount > 0 && (
                 <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
@@ -1008,7 +1008,7 @@ function PostDetailScreenInner() {
                 <View key={c.id}>
                   {renderCommentItem(c, false)}
                   {replies.length > 0 && (
-                    <Pressable onPress={() => toggleReplies(c.id)} style={styles.showRepliesBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}>
+                    <Pressable onPress={() => toggleReplies(c.id)} style={({ pressed }) => [styles.showRepliesBtn, pressed && { opacity: 0.7 }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}>
                       {isExpanded ? <ChevronUp size={14} color={colors.primary} /> : <ChevronDown size={14} color={colors.primary} />}
                       <Text style={[styles.showRepliesText, { color: colors.primary }]}>
                         {isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}
@@ -1042,12 +1042,12 @@ function PostDetailScreenInner() {
                 <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
                   hitSlop={8}
                   accessibilityRole="button" accessibilityLabel="Send comment"
-                  style={[styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim() || sendingComment) ? 0.5 : 1 }]}>
+                  style={({ pressed }) => [styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim() || sendingComment) ? 0.5 : pressed ? 0.7 : 1 }]}>
                   <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
                 </Pressable>
               </View>
               {commentText.length > 0 && (
-                <Text style={{ fontSize: 11, color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', paddingRight: 4, fontFamily: fonts.body }}>
+                <Text style={{ fontSize: 11, color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', paddingRight: 4, fontFamily: fonts.body, lineHeight: 16 }}>
                   {commentText.length}/500
                 </Text>
               )}
@@ -1072,13 +1072,13 @@ function PostDetailScreenInner() {
             </View>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')} *</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} />
-            <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body }}>{editTitle.length}/100</Text>
+            <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editTitle.length}/100</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.descriptionLabel')}</Text>
             <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} />
-            <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body }}>{editDescription.length}/2000</Text>
+            <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} />
-            <Pressable onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }]}>
+            <Pressable onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={({ pressed }) => [styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }, pressed && { opacity: 0.7 }]}>
               {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.saveChanges')}</Text>}
             </Pressable>
           </View>
@@ -1121,7 +1121,7 @@ function PostDetailScreenInner() {
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
               <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
               <Pressable onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
-                style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }]}>
+                style={({ pressed }) => [styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }, pressed && { opacity: 0.7 }]}>
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
               </Pressable>
             </ScrollView>
@@ -1145,8 +1145,8 @@ function PostDetailScreenInner() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 }}>
                 <Avatar url={user.avatar_url} name={user.name} size={36} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 14, fontFamily: fonts.bodySemi, color: colors.foreground }} numberOfLines={1}>{user.name ?? t('common.user')}</Text>
-                  <Text style={{ fontSize: 12, fontFamily: fonts.body, color: colors.mutedForeground }}>{t('service.provider')}</Text>
+                  <Text style={{ fontSize: 14, fontFamily: fonts.bodySemi, color: colors.foreground, lineHeight: 20 }} numberOfLines={1}>{user.name ?? t('common.user')}</Text>
+                  <Text style={{ fontSize: 12, fontFamily: fonts.body, color: colors.mutedForeground, lineHeight: 16 }}>{t('service.provider')}</Text>
                 </View>
               </View>
             )}
@@ -1163,7 +1163,7 @@ function PostDetailScreenInner() {
               maxLength={500}
             />
             {serviceNotes.length > 0 && (
-              <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body }}>
+              <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>
                 {serviceNotes.length}/500
               </Text>
             )}
@@ -1196,7 +1196,7 @@ function PostDetailScreenInner() {
             <Pressable
               onPress={handlePayForService}
               disabled={sendingService || paymentLoading}
-              style={[styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : (category?.color ?? colors.primary), marginTop: 16, marginBottom: 8 }]}
+              style={({ pressed }) => [styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : (category?.color ?? colors.primary), marginTop: 16, marginBottom: 8 }, pressed && { opacity: 0.7 }]}
             >
               {sendingService || paymentLoading ? (
                 <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -1220,7 +1220,7 @@ function PostDetailScreenInner() {
         }]}>
           <Pressable
             onPress={handleMessage}
-            style={[ctaStyles.messageBtn, { backgroundColor: colors.primary }]}
+            style={({ pressed }) => [ctaStyles.messageBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}
             accessibilityRole="button" accessibilityLabel="Send message"
           >
             <MessageCircle size={18} color={colors.primaryForeground} />
@@ -1248,7 +1248,7 @@ function PostDetailScreenInner() {
                 renderItem={({ item }) => (
                   <Pressable onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
                     <Avatar url={item.avatar_url} name={item.name} size={40} />
-                    <Text style={{ fontSize: 15, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1 }}>{item.name}</Text>
+                    <Text style={{ fontSize: 15, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
                   </Pressable>
                 )}
                 ListEmptyComponent={<Text style={{ textAlign: 'center', color: colors.mutedForeground, paddingVertical: 20, fontFamily: fonts.body }}>{t('post.noLikes')}</Text>}
@@ -1279,31 +1279,31 @@ const styles = StyleSheet.create({
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
   body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 14 },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
-  closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
   authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 36 },
-  authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi },
+  authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
   categoryText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
-  expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
-  proText: { fontSize: 13, fontFamily: fonts.bodySemi },
+  proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
-  boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
-  price: { fontSize: 18, fontFamily: fonts.heading },
-  eventDate: { fontSize: 15, fontFamily: fonts.bodyMedium },
+  boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+  price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
+  eventDate: { fontSize: 15, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 22 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
-  communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi },
+  communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  locationText: { fontSize: 14, fontFamily: fonts.body },
+  locationText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
   // Action row — unified like PostCard
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, paddingHorizontal: 2 },
-  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 15.6 },
+  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
 
   // Author card — compact single row
   authorCard: { paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
@@ -1315,63 +1315,63 @@ const styles = StyleSheet.create({
   authorLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   authorNh: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
 
-  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100 },
+  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100, lineHeight: 22 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  commentTitle: { fontSize: 16, fontFamily: fonts.headingSemi },
+  commentTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
   commentRow: { flexDirection: 'row', gap: 8 },
   commentAvatar: { width: 32, height: 32, borderRadius: 16 },
   commentBody: { flex: 1, gap: 2 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  commentName: { fontSize: 13, fontFamily: fonts.bodySemi },
-  commentTime: { fontSize: 11, fontFamily: fonts.body },
-  commentContent: { fontSize: 14, fontFamily: fonts.body, lineHeight: 19 },
+  commentName: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+  commentTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },
+  commentContent: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, minHeight: 32, paddingVertical: 4 },
-  replyBtnText: { fontSize: 11, fontFamily: fonts.bodyMedium },
+  replyBtnText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   replyRow: { marginLeft: 32, paddingLeft: 12 },
   replyLine: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, borderRadius: 1 },
   replyAvatar: { width: 24, height: 24, borderRadius: 12 },
   showRepliesBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 42, marginTop: 4 },
-  showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi },
+  showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
-  replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium },
+  replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
-  commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36 },
+  commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36, lineHeight: 20 },
   commentSendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
   modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 8, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi },
-  modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8 },
-  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body, minHeight: 44, marginTop: 4 },
+  modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi, lineHeight: 24 },
+  modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8, lineHeight: 18 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body, minHeight: 44, marginTop: 4, lineHeight: 20 },
   modalTextArea: { minHeight: 120 },
   saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 12, marginTop: 16, minHeight: 48 },
-  saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
+  saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  relatedTitle: { fontSize: 16, fontFamily: fonts.headingSemi },
+  relatedTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
   relatedScroll: { gap: 8 },
   relatedCard: { width: 160, borderRadius: 12, overflow: 'hidden' },
   relatedImage: { width: 160, height: 100, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
   relatedCardBody: { padding: 8, gap: 4 },
   relatedCardTitle: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 17 },
-  relatedCardLocation: { fontSize: 11, fontFamily: fonts.body },
+  relatedCardLocation: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },
   bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, alignSelf: 'flex-start' },
-  bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
-  bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi },
-  bookingFee: { fontSize: 15, fontFamily: fonts.heading },
-  bookingTotalPrice: { fontSize: 18, fontFamily: fonts.heading },
+  bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
+  bookingFee: { fontSize: 15, fontFamily: fonts.heading, lineHeight: 20 },
+  bookingTotalPrice: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 12, marginTop: 12 },
   datesSummaryItem: { flex: 1, gap: 2 },
   datesSummaryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3 },
-  datesSummaryValue: { fontSize: 14, fontFamily: fonts.bodySemi },
+  datesSummaryValue: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 16, marginTop: 12, gap: 8 },
-  pricingTitle: { fontSize: 14, fontFamily: fonts.headingSemi, marginBottom: 4 },
+  pricingTitle: { fontSize: 14, fontFamily: fonts.headingSemi, marginBottom: 4, lineHeight: 20 },
   pricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pricingLabel: { fontSize: 13, fontFamily: fonts.body },
-  pricingValue: { fontSize: 13, fontFamily: fonts.bodyMedium },
+  pricingLabel: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
+  pricingValue: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
   pricingTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, marginTop: 4 },
-  pricingTotalLabel: { fontSize: 15, fontFamily: fonts.bodySemi },
+  pricingTotalLabel: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
   confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 17 },
-  errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8 },
+  errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48 },
 })
 
@@ -1386,7 +1386,7 @@ const ctaStyles = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 12,
   },
-  messageBtnText: { fontSize: 15, fontFamily: fonts.bodySemi },
+  messageBtnText: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })
 
 export default function PostDetailScreen() {

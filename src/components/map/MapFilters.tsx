@@ -188,11 +188,11 @@ const styles = StyleSheet.create({
   filterPillText: {
     fontSize: 12,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
   backPillText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 15.6,
+    lineHeight: 16,
   },
 })

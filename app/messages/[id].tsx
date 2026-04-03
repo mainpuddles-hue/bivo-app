@@ -681,7 +681,7 @@ function ConversationScreenInner() {
               </Pressable>
             )}
             {hasOlder ? (
-              <Pressable onPress={loadOlder} style={[s.loadOlderBtn, { borderColor: colors.border }]}>
+              <Pressable onPress={loadOlder} style={({ pressed }) => [s.loadOlderBtn, { borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
                 <Text style={[s.loadOlderText, { color: colors.primary }]}>
                   {loadingOlder ? t('common.loading') : t('conversation.loadOlder')}
                 </Text>
@@ -698,7 +698,7 @@ function ConversationScreenInner() {
       {showScrollBtn && (
         <Pressable
           onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          style={[s.scrollBtn, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }]}
+          style={({ pressed }) => [s.scrollBtn, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }, pressed && { opacity: 0.7 }]}
         >
           <ChevronDown size={20} color={colors.foreground} />
         </Pressable>
@@ -721,20 +721,20 @@ function ConversationScreenInner() {
                 <Pressable
                   key={emoji}
                   onPress={() => handleReaction(emoji)}
-                  style={s.reactionPickerItem}
+                  style={({ pressed }) => [s.reactionPickerItem, pressed && { opacity: 0.7 }]}
                 >
                   <Text style={s.reactionPickerEmoji}>{emoji}</Text>
                 </Pressable>
               ))}
             </View>
             {canCopy && (
-              <Pressable onPress={handleCopyMessage} style={[s.deleteRow, { borderTopColor: colors.border }]}>
+              <Pressable onPress={handleCopyMessage} style={({ pressed }) => [s.deleteRow, { borderTopColor: colors.border }, pressed && { opacity: 0.7 }]}>
                 <Copy size={16} color={colors.foreground} />
                 <Text style={[s.deleteText, { color: colors.foreground }]}>{t('conversation.copyMessage') ?? 'Kopioi'}</Text>
               </Pressable>
             )}
             {canDelete && (
-              <Pressable onPress={handleDeleteMessage} style={[s.deleteRow, { borderTopColor: colors.border }]}>
+              <Pressable onPress={handleDeleteMessage} style={({ pressed }) => [s.deleteRow, { borderTopColor: colors.border }, pressed && { opacity: 0.7 }]}>
                 <Trash2 size={16} color={colors.destructive} />
                 <Text style={[s.deleteText, { color: colors.destructive }]}>{t('conversation.deleteMessage')}</Text>
               </Pressable>

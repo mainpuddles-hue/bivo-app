@@ -272,7 +272,7 @@ export default function CreateAdScreen() {
             </Pressable>
           </View>
         ) : (
-          <Pressable onPress={handlePickImage} style={[styles.imagePicker, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Pressable onPress={handlePickImage} style={({ pressed }) => [styles.imagePicker, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
             <Camera size={24} color={colors.mutedForeground} />
             <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>{t('create.addPhotos')}</Text>
           </Pressable>

@@ -108,7 +108,7 @@ function PaymentSettingsScreenInner() {
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.methods')}</Text>
           <View style={[s.card, { backgroundColor: colors.card }]}>
             {/* Card */}
-            <Pressable style={s.row} accessibilityLabel={t('payment.card')} accessibilityRole="button">
+            <Pressable style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityLabel={t('payment.card')} accessibilityRole="button">
               <CreditCard size={20} color={colors.primary} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.card')}</Text>
               <Text style={[s.statusText, { color: colors.primary }]}>{t('payment.available')}</Text>

@@ -375,12 +375,12 @@ const s = StyleSheet.create({
   filterText: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   monthLabel: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 17,
+    lineHeight: 16,
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
@@ -437,7 +437,7 @@ const s = StyleSheet.create({
   neighborhood: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 17,
+    lineHeight: 16,
   },
   pointsWrap: {
     flexDirection: 'row',

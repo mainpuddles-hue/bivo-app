@@ -462,7 +462,7 @@ export default function PublicProfileScreen() {
 
           {/* Action buttons */}
           <View style={s.actions}>
-            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
+            <Pressable onPress={handleFollow} style={({ pressed }) => [s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
               {isFollowing ? (
                 <UserMinus size={16} color={colors.foreground} />
               ) : (
@@ -472,7 +472,7 @@ export default function PublicProfileScreen() {
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </Pressable>
-            <Pressable onPress={handleMessage} disabled={creatingConversation} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
+            <Pressable onPress={handleMessage} disabled={creatingConversation} style={({ pressed }) => [s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : pressed ? 0.7 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
               <MessageCircle size={16} color={colors.foreground} />
               <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
@@ -480,7 +480,7 @@ export default function PublicProfileScreen() {
 
           {/* Write Review button */}
           {currentUserId && hasTransaction && !hasExistingReview && (
-            <Pressable onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Pressable onPress={() => setShowReviewModal(true)} style={({ pressed }) => [s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
               <PenLine size={16} color={colors.pro} />
               <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
             </Pressable>
@@ -697,13 +697,13 @@ export default function PublicProfileScreen() {
           {/* Block / Report */}
           {currentUserId && currentUserId !== userId && (
             <View style={s.dangerActions}>
-              <Pressable onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+              <Pressable onPress={handleBlock} style={({ pressed }) => [s.dangerBtn, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
                 <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
                 <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
                   {isBlocked ? t('post.unblock') : t('post.block')}
                 </Text>
               </Pressable>
-              <Pressable onPress={handleReport} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+              <Pressable onPress={handleReport} style={({ pressed }) => [s.dangerBtn, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
                 <Flag size={18} color={colors.mutedForeground} />
                 <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
               </Pressable>
@@ -810,7 +810,7 @@ export default function PublicProfileScreen() {
 
           {/* Action buttons */}
           <View style={s.actions}>
-            <Pressable onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
+            <Pressable onPress={handleFollow} style={({ pressed }) => [s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
               {isFollowing ? (
                 <UserMinus size={16} color={colors.foreground} />
               ) : (
@@ -820,7 +820,7 @@ export default function PublicProfileScreen() {
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </Pressable>
-            <Pressable onPress={handleMessage} disabled={creatingConversation} style={[s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
+            <Pressable onPress={handleMessage} disabled={creatingConversation} style={({ pressed }) => [s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : pressed ? 0.7 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
               <MessageCircle size={16} color={colors.foreground} />
               <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
@@ -828,7 +828,7 @@ export default function PublicProfileScreen() {
 
           {/* Write Review button — only if user has had a transaction and hasn't reviewed yet */}
           {currentUserId && hasTransaction && !hasExistingReview && (
-            <Pressable onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
+            <Pressable onPress={() => setShowReviewModal(true)} style={({ pressed }) => [s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
               <PenLine size={16} color={colors.pro} />
               <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
             </Pressable>
@@ -999,13 +999,13 @@ export default function PublicProfileScreen() {
         {/* Block / Report */}
         {currentUserId && currentUserId !== userId && (
           <View style={s.dangerActions}>
-            <Pressable onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+            <Pressable onPress={handleBlock} style={({ pressed }) => [s.dangerBtn, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
               <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
               <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
                 {isBlocked ? t('post.unblock') : t('post.block')}
               </Text>
             </Pressable>
-            <Pressable onPress={handleReport} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+            <Pressable onPress={handleReport} style={({ pressed }) => [s.dangerBtn, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
               <Flag size={18} color={colors.mutedForeground} />
               <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
             </Pressable>
