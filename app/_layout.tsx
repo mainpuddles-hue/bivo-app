@@ -18,10 +18,12 @@ import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { setAnalyticsUser, trackEvent, trackRetention } from '@/lib/analytics'
 import { clearAuthCache } from '@/lib/authCache'
+import { fetchRemoteFlags } from '@/lib/featureFlags'
 import { useAppStateManager } from '@/hooks/useAppState'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useGlobalErrorRecovery } from '@/hooks/useGlobalErrorRecovery'
 import { useOTAUpdate } from '@/hooks/useOTAUpdate'
+import { useMemoryWarning } from '@/hooks/useMemoryWarning'
 
 // Initialize Sentry error reporting (no-op in __DEV__)
 initSentry()
@@ -179,6 +181,9 @@ function useAnalyticsSetup() {
   const supabase = useSupabase()
 
   useEffect(() => {
+    // Fetch remote feature flags on startup (non-blocking)
+    fetchRemoteFlags().catch(() => {})
+
     let mounted = true
     async function init() {
       try {
@@ -473,6 +478,7 @@ function RootLayoutInner() {
   useAppStateManager() // Disconnect realtime when backgrounded
   useGlobalErrorRecovery() // Catch unhandled promise rejections
   useOTAUpdate() // Check for OTA updates on launch
+  useMemoryWarning() // Clear image cache on iOS memory pressure
   const network = useNetworkStatus() // Offline detection
 
   // Location-aware international system
