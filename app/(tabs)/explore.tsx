@@ -27,6 +27,9 @@ import { getCityEventName } from '@/lib/eventHelpers'
 import { haversineKm, isInCityBounds } from '@/lib/geo'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
+import { rankEvents } from '@/lib/eventAlgorithm'
+import { trackEventClick, getClickHistory } from '@/lib/eventInteractions'
+import { useEventInterests } from '@/hooks/useEventInterests'
 
 // ── Types ──
 
@@ -90,6 +93,19 @@ function ExploreScreenInner() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [fetchError, setFetchError] = useState(false)
+
+  // Event personalization
+  const { interests: eventInterests } = useEventInterests()
+  const [clickHistory, setClickHistory] = useState<{ category: string; timestamp: number }[]>([])
+  useEffect(() => { getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp })))) }, [])
+
+  // Sort/filter state for Events sub-tab
+  const [eventSort, setEventSort] = useState<'recommended' | 'today' | 'week' | 'all'>('recommended')
+  const [eventCategories, setEventCategories] = useState<string[]>([])
+
+  // Sort/filter state for Places sub-tab
+  const [placeSort, setPlaceSort] = useState<'nearest' | 'alpha'>('nearest')
+  const [placeCategories, setPlaceCategories] = useState<string[]>([])
 
   // Data state
   const [communityEvents, setCommunityEvents] = useState<EventPreview[]>([])
@@ -229,21 +245,41 @@ function ExploreScreenInner() {
     return !isInCityBounds(userLocation.latitude, userLocation.longitude, HKI_BOUNDS)
   }, [userLocation, HKI_BOUNDS])
 
-  // ── Sorted places with distance ──
+  // ── Sorted & filtered places with distance ──
   const sortedPlaces = useMemo(() => {
-    if (!userLocation) return places.slice(0, 20)
-    return [...places]
+    let result = [...places]
+
+    // Apply category filter
+    if (placeCategories.length > 0) {
+      result = result.filter(p => placeCategories.includes(p.category))
+    }
+
+    if (placeSort === 'alpha') {
+      return result
+        .map(p => ({
+          ...p,
+          _distance: userLocation
+            ? haversineKm(userLocation.latitude, userLocation.longitude, p.latitude, p.longitude)
+            : 0,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'fi'))
+        .slice(0, 20)
+    }
+
+    // Default: nearest
+    if (!userLocation) return result.slice(0, 20)
+    return result
       .map(p => ({
         ...p,
         _distance: haversineKm(userLocation.latitude, userLocation.longitude, p.latitude, p.longitude),
       }))
       .sort((a, b) => a._distance - b._distance)
       .slice(0, 20)
-  }, [places, userLocation])
+  }, [places, userLocation, placeSort, placeCategories])
 
-  // ── All events combined, deduplicated & sorted ──
+  // ── All events combined, deduplicated, sorted & filtered ──
   const allEvents = useMemo(() => {
-    const combined: Array<{ id: string; title: string; date: string; location: string | null; isFree: boolean; infoUrl: string | null; isCity: boolean }> = []
+    const combined: Array<{ id: string; title: string; date: string; location: string | null; isFree: boolean; infoUrl: string | null; isCity: boolean; category: string }> = []
     const seenTitles = new Set<string>()
 
     for (const e of communityEvents) {
@@ -258,6 +294,7 @@ function ExploreScreenInner() {
         isFree: false,
         infoUrl: null,
         isCity: false,
+        category: '',
       })
     }
 
@@ -274,11 +311,39 @@ function ExploreScreenInner() {
         isFree: e.is_free,
         infoUrl: e.info_url,
         isCity: true,
+        category: e.category ?? '',
       })
     }
 
-    return combined.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [communityEvents, cityEvents, locale])
+    // Apply time filter
+    const now = new Date()
+    let filtered = combined
+    if (eventSort === 'today') {
+      const todayStr = now.toISOString().slice(0, 10)
+      filtered = filtered.filter(e => e.date.slice(0, 10) === todayStr)
+    } else if (eventSort === 'week') {
+      const weekEnd = new Date(now.getTime() + 7 * 86400000)
+      filtered = filtered.filter(e => {
+        const d = new Date(e.date)
+        return d >= now && d <= weekEnd
+      })
+    }
+
+    // Apply category filter
+    if (eventCategories.length > 0) {
+      filtered = filtered.filter(e => {
+        const cat = e.category.toLowerCase()
+        return eventCategories.some(c => cat.includes(c))
+      })
+    }
+
+    // Sort: recommended uses personalization algorithm, others use chronological
+    if (eventSort === 'recommended') {
+      const ranked = rankEvents(filtered, eventInterests, clickHistory, userLocation)
+      return ranked
+    }
+    return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }, [communityEvents, cityEvents, locale, eventSort, eventCategories, eventInterests, clickHistory, userLocation])
 
   // ── Tab chips config with counts ──
   const tabCounts = useMemo(() => ({
@@ -292,6 +357,74 @@ function ExploreScreenInner() {
     { key: 'events', labelKey: 'nav.events', Icon: CalendarDays },
     { key: 'places', labelKey: 'places.places', Icon: MapPin },
   ]
+
+  // ── Event sort options ──
+  const eventSortOptions: { key: typeof eventSort; labelKey: string }[] = [
+    { key: 'recommended', labelKey: 'explore.sortRecommended' },
+    { key: 'today', labelKey: 'explore.sortToday' },
+    { key: 'week', labelKey: 'explore.sortWeek' },
+    { key: 'all', labelKey: 'explore.sortAll' },
+  ]
+
+  // ── Event category options ──
+  const eventCategoryOptions: { key: string; labelKey: string }[] = [
+    { key: '', labelKey: 'explore.catAll' },
+    { key: 'music', labelKey: 'explore.catMusic' },
+    { key: 'sport', labelKey: 'explore.catSport' },
+    { key: 'culture', labelKey: 'explore.catCulture' },
+    { key: 'food', labelKey: 'explore.catFood' },
+    { key: 'family', labelKey: 'explore.catFamily' },
+    { key: 'nature', labelKey: 'explore.catNature' },
+    { key: 'festival', labelKey: 'explore.catFestival' },
+    { key: 'other', labelKey: 'explore.catOther' },
+  ]
+
+  // ── Place sort options ──
+  const placeSortOptions: { key: typeof placeSort; labelKey: string }[] = [
+    { key: 'nearest', labelKey: 'explore.sortNearest' },
+    { key: 'alpha', labelKey: 'explore.sortAlpha' },
+  ]
+
+  // ── Place category options ──
+  const placeCategoryOptions: { key: string; labelKey: string }[] = [
+    { key: '', labelKey: 'explore.catAll' },
+    { key: 'restaurant', labelKey: 'explore.catRestaurants' },
+    { key: 'cafe', labelKey: 'explore.catCafes' },
+    { key: 'bar', labelKey: 'explore.catBars' },
+    { key: 'culture', labelKey: 'explore.catCulture' },
+    { key: 'library', labelKey: 'explore.catLibraries' },
+    { key: 'sport', labelKey: 'explore.catSports' },
+    { key: 'health', labelKey: 'explore.catHealth' },
+    { key: 'shop', labelKey: 'explore.catShops' },
+  ]
+
+  // ── Toggle event category ──
+  const toggleEventCategory = useCallback((cat: string) => {
+    if (cat === '') {
+      setEventCategories([])
+      return
+    }
+    setEventCategories(prev => {
+      if (prev.includes(cat)) {
+        return prev.filter(c => c !== cat)
+      }
+      return [...prev, cat]
+    })
+  }, [])
+
+  // ── Toggle place category ──
+  const togglePlaceCategory = useCallback((cat: string) => {
+    if (cat === '') {
+      setPlaceCategories([])
+      return
+    }
+    setPlaceCategories(prev => {
+      if (prev.includes(cat)) {
+        return prev.filter(c => c !== cat)
+      }
+      return [...prev, cat]
+    })
+  }, [])
 
   // ── Open Google Maps for a place ──
   const openPlaceInMaps = useCallback((place: LocalPlace) => {
@@ -604,6 +737,58 @@ function ExploreScreenInner() {
         {/* ── Events sub-tab ── */}
         {activeTab === 'events' && (
           <>
+            {/* Sort row */}
+            <View style={s.filterRow}>
+              {eventSortOptions.map(opt => {
+                const active = eventSort === opt.key
+                return (
+                  <Pressable
+                    key={opt.key}
+                    onPress={() => setEventSort(opt.key)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={[
+                      s.filterChip,
+                      { backgroundColor: active ? colors.primary : colors.muted },
+                    ]}
+                  >
+                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                      {t(opt.labelKey)}
+                    </Text>
+                  </Pressable>
+                )
+              })}
+            </View>
+
+            {/* Category row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={s.filterRow}
+              style={s.filterScrollWrap}
+            >
+              {eventCategoryOptions.map(opt => {
+                const isAll = opt.key === ''
+                const active = isAll ? eventCategories.length === 0 : eventCategories.includes(opt.key)
+                return (
+                  <Pressable
+                    key={opt.key || '_all'}
+                    onPress={() => toggleEventCategory(opt.key)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={[
+                      s.filterChip,
+                      { backgroundColor: active ? colors.primary : colors.muted },
+                    ]}
+                  >
+                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                      {t(opt.labelKey)}
+                    </Text>
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+
             {loading ? (
               <SectionSkeleton count={5} />
             ) : allEvents.length === 0 ? (
@@ -629,6 +814,9 @@ function ExploreScreenInner() {
                     accessibilityLabel={`${event.title}, ${formatEventDateShort(event.date, locale)}${event.location ? `, ${event.location}` : ''}${event.isFree ? `, ${t('events.free')}` : ''}`}
                     style={[s.card, { backgroundColor: colors.card }]}
                     onPress={() => {
+                      trackEventClick(event.id, event.category).then(() =>
+                        getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))))
+                      )
                       if (event.infoUrl) {
                         Linking.openURL(event.infoUrl).catch(() => {})
                       } else {
@@ -668,6 +856,58 @@ function ExploreScreenInner() {
         {/* ── Places sub-tab ── */}
         {activeTab === 'places' && (
           <>
+            {/* Sort row */}
+            <View style={s.filterRow}>
+              {placeSortOptions.map(opt => {
+                const active = placeSort === opt.key
+                return (
+                  <Pressable
+                    key={opt.key}
+                    onPress={() => setPlaceSort(opt.key)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={[
+                      s.filterChip,
+                      { backgroundColor: active ? colors.primary : colors.muted },
+                    ]}
+                  >
+                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                      {t(opt.labelKey)}
+                    </Text>
+                  </Pressable>
+                )
+              })}
+            </View>
+
+            {/* Category row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={s.filterRow}
+              style={s.filterScrollWrap}
+            >
+              {placeCategoryOptions.map(opt => {
+                const isAll = opt.key === ''
+                const active = isAll ? placeCategories.length === 0 : placeCategories.includes(opt.key)
+                return (
+                  <Pressable
+                    key={opt.key || '_all'}
+                    onPress={() => togglePlaceCategory(opt.key)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={[
+                      s.filterChip,
+                      { backgroundColor: active ? colors.primary : colors.muted },
+                    ]}
+                  >
+                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                      {t(opt.labelKey)}
+                    </Text>
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+
             {loading ? (
               <SectionSkeleton count={5} />
             ) : sortedPlaces.length === 0 ? (
@@ -771,6 +1011,27 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
+  // Filter chip rows
+  filterRow: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  filterScrollWrap: {
+    marginBottom: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  filterChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+  },
+
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 16,
