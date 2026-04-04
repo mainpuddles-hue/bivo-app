@@ -208,7 +208,11 @@ export default function PublicProfileScreen() {
         setIsFollowing(true)
         setFollowerCount(c => c + 1)
         const { error } = await (supabase.from('user_follows') as any).insert({ follower_id: currentUserId, followed_id: userId })
-        if (error) { setIsFollowing(false); setFollowerCount(prevCount) }
+        if (error) {
+          // Duplicate key = already following
+          if (error.code === '23505') { setIsFollowing(true) }
+          else { setIsFollowing(false); setFollowerCount(prevCount) }
+        }
         else {
           // Create notification for the followed user
           try {
