@@ -26,6 +26,7 @@ import { GroupCommentList } from '@/components/groups/GroupCommentList'
 import { GroupMembersModal } from '@/components/groups/GroupMembersModal'
 import { GroupEditModal } from '@/components/groups/GroupEditModal'
 import { ReportModal } from '@/components/ReportModal'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
@@ -45,18 +46,7 @@ interface GroupInfo {
 
 // ── Skeleton ──
 function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
-  const shimmer = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    )
-    anim.start()
-    return () => anim.stop()
-  }, [shimmer])
-  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+  const opacity = useShimmer()
   return (
     <View style={[ps.postCard, { backgroundColor: colors.card }]}>
       <View style={ps.postUserRow}>

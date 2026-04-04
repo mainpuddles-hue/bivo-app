@@ -20,7 +20,7 @@ import { fonts } from '@/lib/fonts'
 import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -532,10 +532,10 @@ export default function SettingsScreen() {
                     {nameText.length}/50
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <Pressable onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.muted }}>
+                    <PressableOpacity onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.muted }}>
                       <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>{t('common.cancel')}</Text>
-                    </Pressable>
-                    <Pressable
+                    </PressableOpacity>
+                    <PressableOpacity
                       onPress={handleSaveName}
                       disabled={savingName || !nameText.trim()}
                       style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
@@ -543,15 +543,15 @@ export default function SettingsScreen() {
                       <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
                         {savingName ? '...' : t('common.save')}
                       </Text>
-                    </Pressable>
+                    </PressableOpacity>
                   </View>
                 </View>
               ) : (
-                <Pressable onPress={() => setEditingName(true)} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.displayName')}>
+                <PressableOpacity onPress={() => setEditingName(true)} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.displayName')}>
                   <User size={18} color={colors.mutedForeground} />
                   <Text style={[s.rowText, { color: colors.foreground }]}>{profile.name}</Text>
                   <Pencil size={14} color={colors.mutedForeground} />
-                </Pressable>
+                </PressableOpacity>
               )}
             </View>
           </>
@@ -576,11 +576,11 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {(['fi', 'en', 'sv'] as Locale[]).map((l) => (
-            <Pressable key={l} onPress={() => setLocale(l)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locale === l }} accessibilityLabel={langLabel(l)}>
+            <PressableOpacity key={l} onPress={() => setLocale(l)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locale === l }} accessibilityLabel={langLabel(l)}>
               <Globe size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{langLabel(l)}</Text>
               <View style={[locale === l ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </Pressable>
+            </PressableOpacity>
           ))}
         </View>
 
@@ -588,11 +588,11 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.theme')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {THEME_OPTIONS.map(({ key, label, icon: Icon }) => (
-            <Pressable key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark') }} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
+            <PressableOpacity key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark') }} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
               <Icon size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[theme === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </Pressable>
+            </PressableOpacity>
           ))}
         </View>
 
@@ -604,7 +604,7 @@ export default function SettingsScreen() {
               {showCityPicker ? (
                 <>
                   {availableCities.map((city) => (
-                    <Pressable
+                    <PressableOpacity
                       key={city.id}
                       onPress={async () => {
                         if (city.id === userCityId) { setShowCityPicker(false); return }
@@ -639,15 +639,15 @@ export default function SettingsScreen() {
                       <MapPin size={18} color={city.id === userCityId ? colors.primary : colors.mutedForeground} />
                       <Text style={[s.rowText, { color: colors.foreground }]}>{city.name}</Text>
                       <View style={[city.id === userCityId ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-                    </Pressable>
+                    </PressableOpacity>
                   ))}
                 </>
               ) : (
-                <Pressable onPress={() => setShowCityPicker(true)} style={s.row}>
+                <PressableOpacity onPress={() => setShowCityPicker(true)} style={s.row}>
                   <MapPin size={18} color={colors.primary} />
                   <Text style={[s.rowText, { color: colors.foreground }]}>{userCityName}</Text>
                   <ChevronRight size={16} color={colors.mutedForeground} />
-                </Pressable>
+                </PressableOpacity>
               )}
             </View>
           </>
@@ -656,7 +656,7 @@ export default function SettingsScreen() {
         {/* Neighborhood — allows user to change neighborhood after onboarding */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('onboarding.chooseNeighborhood')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => {
+          <PressableOpacity onPress={() => {
             // Navigate to feed where NeighborhoodPicker is accessible
             router.push({ pathname: '/', params: { openNeighborhoodPicker: '1' } })
           }} style={s.row}>
@@ -665,18 +665,18 @@ export default function SettingsScreen() {
               {profile?.naapurusto ?? userCityName}
             </Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Profile Visibility */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.profileVisibility')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {VISIBILITY_OPTIONS.map(({ key, label }) => (
-            <Pressable key={key} onPress={() => markDirty(setVisibility)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: visibility === key }} accessibilityLabel={t(label)}>
+            <PressableOpacity key={key} onPress={() => markDirty(setVisibility)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: visibility === key }} accessibilityLabel={t(label)}>
               <Eye size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[visibility === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </Pressable>
+            </PressableOpacity>
           ))}
         </View>
 
@@ -684,14 +684,14 @@ export default function SettingsScreen() {
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.locationAccuracy')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
           {LOCATION_ACCURACY_OPTIONS.map(({ key, label, desc }) => (
-            <Pressable key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locationAccuracy === key }} accessibilityLabel={t(label)}>
+            <PressableOpacity key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locationAccuracy === key }} accessibilityLabel={t(label)}>
               <MapPin size={18} color={colors.mutedForeground} />
               <View style={{ flex: 1 }}>
                 <Text style={[s.rowText, { color: colors.foreground, flex: undefined }]}>{t(label)}</Text>
                 <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>{t(desc)}</Text>
               </View>
               <View style={[locationAccuracy === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </Pressable>
+            </PressableOpacity>
           ))}
         </View>
 
@@ -747,19 +747,19 @@ export default function SettingsScreen() {
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.proSubscription')}</Text>
             <View style={[s.card, { backgroundColor: colors.card }]}>
-              <Pressable onPress={() => router.push('/pro')} style={s.row}>
+              <PressableOpacity onPress={() => router.push('/pro')} style={s.row}>
                 <Crown size={18} color={colors.pro} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Pro</Text>
                 {profile?.is_pro ? (
                   <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
                 ) : (
-                  <Pressable onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
+                  <PressableOpacity onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
                     <Text style={{ fontSize: 12, fontWeight: '600', color: '#1A1A1A', fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                       4,99 {'\u20AC'}{t('pro.perMonth')}
                     </Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )}
-              </Pressable>
+              </PressableOpacity>
               {profile?.is_pro && profile?.pro_expires_at && (
                 <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12, fontFamily: fonts.body, lineHeight: 16 }}>
                   {t('pro.renewsOn', { date: new Date(profile.pro_expires_at).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB') })}
@@ -774,7 +774,7 @@ export default function SettingsScreen() {
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('business.upgrade')}</Text>
             <View style={[s.card, { backgroundColor: colors.card }]}>
-              <Pressable
+              <PressableOpacity
                 onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
                 style={s.row}
               >
@@ -787,7 +787,7 @@ export default function SettingsScreen() {
                 ) : (
                   <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 16 }}>{t('business.monthlyPrice')}</Text>
                 )}
-              </Pressable>
+              </PressableOpacity>
             </View>
           </>
         )}
@@ -842,7 +842,7 @@ export default function SettingsScreen() {
                     )}
                   </View>
                 )}
-                <Pressable
+                <PressableOpacity
                   onPress={handleChangePassword}
                   disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
                   style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
@@ -850,7 +850,7 @@ export default function SettingsScreen() {
                   <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
                     {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
                   </Text>
-                </Pressable>
+                </PressableOpacity>
               </>
             )}
           </View>
@@ -859,11 +859,11 @@ export default function SettingsScreen() {
         {/* Saved items */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('saved.title')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/saved')} style={s.row} accessibilityRole="button" accessibilityLabel={t('saved.title')}>
+          <PressableOpacity onPress={() => router.push('/saved')} style={s.row} accessibilityRole="button" accessibilityLabel={t('saved.title')}>
             <Bookmark size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('saved.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Payment Settings */}
@@ -871,16 +871,16 @@ export default function SettingsScreen() {
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.settings')}</Text>
             <View style={[s.card, { backgroundColor: colors.card }]}>
-              <Pressable onPress={() => router.push('/payment-settings' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('payment.settings')}>
+              <PressableOpacity onPress={() => router.push('/payment-settings' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('payment.settings')}>
                 <CreditCard size={18} color={colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.settings')}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} />
-              </Pressable>
-              <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.paymentHistory')}>
+              </PressableOpacity>
+              <PressableOpacity onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.paymentHistory')}>
                 <CreditCard size={18} color={colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.paymentHistory')}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} />
-              </Pressable>
+              </PressableOpacity>
             </View>
           </>
         )}
@@ -994,10 +994,10 @@ export default function SettingsScreen() {
               autoCapitalize="characters"
             />
             <View style={s.deleteActions}>
-              <Pressable onPress={() => setDeleteModalVisible(false)} style={[s.deleteCancelBtn, { backgroundColor: colors.muted }]}>
+              <PressableOpacity onPress={() => setDeleteModalVisible(false)} style={[s.deleteCancelBtn, { backgroundColor: colors.muted }]}>
                 <Text style={[s.deleteCancelText, { color: colors.foreground }]}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
+              </PressableOpacity>
+              <PressableOpacity
                 onPress={handleConfirmDelete}
                 disabled={deleteConfirmText.toUpperCase() !== (t('settings.deleteConfirmWord') ?? '').toUpperCase() || deletingAccount}
                 style={[s.deleteConfirmBtn, { backgroundColor: colors.destructive, opacity: deleteConfirmText.toUpperCase() !== (t('settings.deleteConfirmWord') ?? '').toUpperCase() || deletingAccount ? 0.5 : 1 }]}
@@ -1007,7 +1007,7 @@ export default function SettingsScreen() {
                 ) : (
                   <Text style={s.deleteConfirmText}>{t('settings.deletePermanently')}</Text>
                 )}
-              </Pressable>
+              </PressableOpacity>
             </View>
           </Pressable>
         </Pressable>

@@ -13,6 +13,7 @@ import { ModalCloseButton } from '@/components/ui'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -44,18 +45,7 @@ const FORUM_CATEGORIES: ForumCategoryFilterDef[] = [
 
 // ── Skeleton ──
 function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
-  const shimmer = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    )
-    anim.start()
-    return () => anim.stop()
-  }, [shimmer])
-  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+  const opacity = useShimmer()
   return (
     <View style={[s.card, { backgroundColor: colors.card }]}>
       <View style={[s.categoryBar, { backgroundColor: colors.muted }]} />

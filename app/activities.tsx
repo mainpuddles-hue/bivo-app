@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
   Pressable, Modal, TextInput, Alert, KeyboardAvoidingView,
@@ -20,6 +20,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
+import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 // ── Types ──
@@ -151,18 +152,7 @@ function formatSchedule(
 // ── Skeleton ──
 
 function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors'] }) {
-  const shimmer = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    )
-    anim.start()
-    return () => anim.stop()
-  }, [shimmer])
-  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+  const opacity = useShimmer()
 
   return (
     <View style={{ gap: 12 }}>

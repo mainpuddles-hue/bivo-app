@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet } from 'react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -250,7 +251,7 @@ export default function MessagesScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
-        <Pressable
+        <PressableOpacity
           onPress={() => setShowArchived(!showArchived)}
           hitSlop={8}
           style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
@@ -259,7 +260,7 @@ export default function MessagesScreen() {
           accessibilityState={{ selected: showArchived }}
         >
           <Archive size={20} color={showArchived ? colors.primary : colors.mutedForeground} />
-        </Pressable>
+        </PressableOpacity>
       </View>
 
       {/* Search */}
@@ -278,7 +279,7 @@ export default function MessagesScreen() {
           accessibilityRole="search"
         />
         {searchQuery.length > 0 && (
-          <Pressable
+          <PressableOpacity
             onPress={() => setSearchQuery('')}
             hitSlop={8}
             style={{ minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}
@@ -286,7 +287,7 @@ export default function MessagesScreen() {
             accessibilityRole="button"
           >
             <X size={16} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         )}
       </View>
 
@@ -366,14 +367,14 @@ export default function MessagesScreen() {
                 {t('messages.loginRequired')}
               </Text>
               <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.loginHint')}</Text>
-              <Pressable
+              <PressableOpacity
                 onPress={() => router.push('/(auth)/login')}
                 style={[styles.loginBtn, { backgroundColor: colors.primary }]}
                 accessibilityRole="button"
                 accessibilityLabel={t('auth.login')}
               >
                 <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{t('auth.login')}</Text>
-              </Pressable>
+              </PressableOpacity>
             </View>
           ) : (
             <View style={styles.empty}>

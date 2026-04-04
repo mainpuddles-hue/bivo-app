@@ -2,6 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
@@ -96,14 +97,14 @@ function DiscoveryView({
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
             {history.map((h) => (
-              <Pressable
+              <PressableOpacity
                 key={h}
                 onPress={() => handleHistoryChipTap(h)}
                 style={[s.recentChip, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
               >
                 <Clock size={12} color={colors.mutedForeground} />
                 <Text style={[s.recentChipText, { color: colors.foreground, fontFamily: fonts.body }]}>{h}</Text>
-                <Pressable
+                <PressableOpacity
                   onPress={(e) => {
                     e.stopPropagation?.()
                     removeFromHistory(h)
@@ -111,8 +112,8 @@ function DiscoveryView({
                   hitSlop={8}
                 >
                   <X size={12} color={colors.mutedForeground} />
-                </Pressable>
-              </Pressable>
+                </PressableOpacity>
+              </PressableOpacity>
             ))}
           </ScrollView>
         </View>
@@ -129,7 +130,7 @@ function DiscoveryView({
             const savedFilterCount = countActiveFilters(saved.filters)
             return (
               <View key={saved.id} style={s.historyRow}>
-                <Pressable
+                <PressableOpacity
                   onPress={() => loadSavedSearch(saved)}
                   style={s.historyBtn}
                 >
@@ -142,10 +143,10 @@ function DiscoveryView({
                       </Text>
                     )}
                   </View>
-                </Pressable>
-                <Pressable onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
+                </PressableOpacity>
+                <PressableOpacity onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
                   <Trash2 size={14} color={colors.mutedForeground} />
-                </Pressable>
+                </PressableOpacity>
               </View>
             )
           })}
@@ -165,7 +166,7 @@ function DiscoveryView({
             {trendingPosts.map((tp) => {
               const tpCat = CATEGORIES[tp.type as PostType]
               return (
-                <Pressable
+                <PressableOpacity
                   key={tp.id}
                   onPress={() => router.push(`/post/${tp.id}` as any)}
                   style={[s.trendingCard, { backgroundColor: colors.card }]}
@@ -183,7 +184,7 @@ function DiscoveryView({
                     <Heart size={12} color={colors.destructive} fill={colors.destructive} />
                     <Text style={[s.trendingLikeCount, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{tp.like_count}</Text>
                   </View>
-                </Pressable>
+                </PressableOpacity>
               )
             })}
           </View>
@@ -204,7 +205,7 @@ function DiscoveryView({
           }).map(([type, cat]) => {
             const CatIcon = CATEGORY_ICON_MAP[cat.icon]
             return (
-              <Pressable
+              <PressableOpacity
                 key={type}
                 onPress={() => {
                   try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -221,7 +222,7 @@ function DiscoveryView({
                 </View>
                 <Text style={[s.categoryCardText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t(cat.label)}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} style={{ marginLeft: 'auto' }} />
-              </Pressable>
+              </PressableOpacity>
             )
           })}
         </View>
@@ -789,9 +790,9 @@ function SearchScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header with search */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <View style={[s.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <SearchIcon size={18} color={colors.mutedForeground} />
           <TextInput
@@ -807,20 +808,20 @@ function SearchScreenInner() {
             accessibilityRole="search"
           />
           {query.length > 0 && (
-            <Pressable onPress={() => { setQuery(''); setResults([]); setDbResultCount(0); setUserResults([]); setSearched(false) }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
+            <PressableOpacity onPress={() => { setQuery(''); setResults([]); setDbResultCount(0); setUserResults([]); setSearched(false) }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
               <X size={18} color={colors.mutedForeground} />
-            </Pressable>
+            </PressableOpacity>
           )}
         </View>
         {/* Filter button */}
-        <Pressable onPress={() => setFiltersVisible(true)} hitSlop={8} style={s.filterButton} accessibilityRole="button" accessibilityLabel={t('search.filters')}>
+        <PressableOpacity onPress={() => setFiltersVisible(true)} hitSlop={8} style={s.filterButton} accessibilityRole="button" accessibilityLabel={t('search.filters')}>
           <SlidersHorizontal size={20} color={filterCount > 0 ? colors.primary : colors.mutedForeground} />
           {filterCount > 0 && (
             <View style={[s.filterBadge, { backgroundColor: colors.primary }]}>
               <Text style={[s.filterBadgeText, { color: colors.primaryForeground }]}>{filterCount}</Text>
             </View>
           )}
-        </Pressable>
+        </PressableOpacity>
       </View>
 
       {/* Save search + active filter indicator */}
@@ -844,7 +845,7 @@ function SearchScreenInner() {
         <View style={s.chipSections}>
           {/* Category chips */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
-            <Pressable
+            <PressableOpacity
               onPress={() => handleCategoryFilter(null)}
               accessibilityRole="button"
               accessibilityLabel={t('common.all')}
@@ -852,13 +853,13 @@ function SearchScreenInner() {
               style={[s.filterChip, !activeFilter ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
             >
               <Text style={[s.filterText, { color: !activeFilter ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t('common.all')}</Text>
-            </Pressable>
+            </PressableOpacity>
             {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
               if (type === 'lainaa' && !FEATURES.LENDING) return false
               if (type === 'nappaa' && !FEATURES.GRAB) return false
               return true
             }).map(([type, cat]) => (
-              <Pressable
+              <PressableOpacity
                 key={type}
                 onPress={() => handleCategoryFilter(type)}
                 accessibilityRole="button"
@@ -867,14 +868,14 @@ function SearchScreenInner() {
                 style={[s.filterChip, activeFilter === type ? { backgroundColor: cat.color } : { backgroundColor: isDark ? colors.card : colors.muted }]}
               >
                 <Text style={[s.filterText, { color: activeFilter === type ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t(cat.label)}</Text>
-              </Pressable>
+              </PressableOpacity>
             ))}
           </ScrollView>
 
           {/* Time + Sort chips */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
             {TIME_FILTERS.map(tf => (
-              <Pressable
+              <PressableOpacity
                 key={tf.key}
                 onPress={() => handleTimeFilter(tf.key)}
                 style={[
@@ -892,11 +893,11 @@ function SearchScreenInner() {
                     ? { color: colors.primaryForeground }
                     : { color: colors.mutedForeground },
                 ]}>{tf.label}</Text>
-              </Pressable>
+              </PressableOpacity>
             ))}
             <View style={[s.chipDivider, { backgroundColor: colors.border }]} />
             {SORT_CHIPS.map(sc => (
-              <Pressable
+              <PressableOpacity
                 key={sc.key}
                 onPress={() => {
                   try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -924,7 +925,7 @@ function SearchScreenInner() {
                     ? { color: colors.primaryForeground }
                     : { color: colors.mutedForeground },
                 ]}>{sc.label}</Text>
-              </Pressable>
+              </PressableOpacity>
             ))}
           </ScrollView>
         </View>
@@ -944,26 +945,26 @@ function SearchScreenInner() {
       {/* Results tabs */}
       {searched && !loading && (
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('places.posts')} accessibilityState={{ selected: activeTab === 'posts' }}>
+          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('places.posts')} accessibilityState={{ selected: activeTab === 'posts' }}>
             <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('places.posts')} ({results.length})
             </Text>
-          </Pressable>
-          <Pressable onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('common.user')} accessibilityState={{ selected: activeTab === 'users' }}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('common.user')} accessibilityState={{ selected: activeTab === 'users' }}>
             <Text style={[s.tabText, { color: activeTab === 'users' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('common.user')} ({userResults.length})
             </Text>
-          </Pressable>
-          <Pressable onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabEvents')} accessibilityState={{ selected: activeTab === 'events' }}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabEvents')} accessibilityState={{ selected: activeTab === 'events' }}>
             <Text style={[s.tabText, { color: activeTab === 'events' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('search.tabEvents')} ({eventResults.length})
             </Text>
-          </Pressable>
-          <Pressable onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
             <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('search.tabGroups')} ({groupResults.length})
             </Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
       )}
 
@@ -1021,7 +1022,7 @@ function SearchScreenInner() {
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
-            <Pressable
+            <PressableOpacity
               onPress={() => router.push(`/event/${item.id}` as any)}
               style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
@@ -1045,7 +1046,7 @@ function SearchScreenInner() {
                 )}
               </View>
               <ChevronRight size={16} color={colors.mutedForeground} />
-            </Pressable>
+            </PressableOpacity>
           )}
           ItemSeparatorComponent={SearchSeparator8}
           ListEmptyComponent={
@@ -1065,7 +1066,7 @@ function SearchScreenInner() {
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
-            <Pressable
+            <PressableOpacity
               onPress={() => router.push(`/groups/${item.id}` as any)}
               style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
@@ -1087,7 +1088,7 @@ function SearchScreenInner() {
                 )}
               </View>
               <ChevronRight size={16} color={colors.mutedForeground} />
-            </Pressable>
+            </PressableOpacity>
           )}
           ItemSeparatorComponent={SearchSeparator8}
           ListEmptyComponent={
@@ -1107,7 +1108,7 @@ function SearchScreenInner() {
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
-            <Pressable onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
+            <PressableOpacity onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
               <Avatar url={item.avatar_url} name={item.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
@@ -1118,7 +1119,7 @@ function SearchScreenInner() {
                   </View>
                 )}
               </View>
-            </Pressable>
+            </PressableOpacity>
           )}
           ItemSeparatorComponent={SearchSeparator8}
           ListEmptyComponent={

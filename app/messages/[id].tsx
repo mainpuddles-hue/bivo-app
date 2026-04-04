@@ -2,6 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert, Linking } from 'react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -500,7 +501,7 @@ function ConversationScreenInner() {
           ) : !isMine ? (
             <View style={{ width: 28 }} />
           ) : null}
-          <Pressable
+          <PressableOpacity
             onLongPress={() => handleLongPress(item.id)}
             delayLongPress={400}
             style={{ maxWidth: '78%' }}
@@ -544,7 +545,7 @@ function ConversationScreenInner() {
               const url = extractUrl(item.content)
               if (!url) return null
               return (
-                <Pressable
+                <PressableOpacity
                   onPress={() => Linking.openURL(url).catch(() => {})}
                   style={[s.linkPreview, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
                 >
@@ -553,14 +554,14 @@ function ConversationScreenInner() {
                     <Text style={[s.linkDomain, { color: colors.foreground }]} numberOfLines={1}>{getDomain(url)}</Text>
                     <Text style={[s.linkAction, { color: colors.primary }]}>{t('messages.openLink')}</Text>
                   </View>
-                </Pressable>
+                </PressableOpacity>
               )
             })()}
             {/* Reactions display */}
             {groupedReactions.length > 0 && (
               <View style={[s.reactionsRow, isMine ? s.reactionsRowMine : s.reactionsRowTheirs]}>
                 {groupedReactions.map((r) => (
-                  <Pressable
+                  <PressableOpacity
                     key={r.emoji}
                     onPress={() => handleReaction(r.emoji, item.id)}
                     style={[
@@ -573,11 +574,11 @@ function ConversationScreenInner() {
                     {r.count > 1 && (
                       <Text style={[s.reactionCount, { color: colors.mutedForeground }]}>{r.count}</Text>
                     )}
-                  </Pressable>
+                  </PressableOpacity>
                 ))}
               </View>
             )}
-          </Pressable>
+          </PressableOpacity>
         </View>
       </View>
     )
@@ -604,7 +605,7 @@ function ConversationScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
-          <Pressable
+          <PressableOpacity
             onPress={() => router.back()}
             hitSlop={12}
             style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
@@ -612,7 +613,7 @@ function ConversationScreenInner() {
             accessibilityLabel={t('common.back') ?? 'Go back'}
           >
             <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          </PressableOpacity>
           <Text style={[s.headerName, { color: colors.foreground }]}>{t('messages.title')}</Text>
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
@@ -622,7 +623,7 @@ function ConversationScreenInner() {
           <Text style={{ fontSize: 14, color: colors.mutedForeground, textAlign: 'center', marginBottom: 24, fontFamily: fonts.body }}>
             {t('messages.conversationNotFoundDesc') ?? 'Keskustelu on ehkä poistettu tai sitä ei ole olemassa.'}
           </Text>
-          <Pressable
+          <PressableOpacity
             onPress={() => router.replace('/(tabs)/messages' as any)}
             style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
             accessibilityRole="button"
@@ -631,7 +632,7 @@ function ConversationScreenInner() {
             <Text style={{ color: colors.primaryForeground, fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium }}>
               {t('errors.backToMessages') ?? 'Takaisin viesteihin'}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
       </View>
     )
@@ -644,7 +645,7 @@ function ConversationScreenInner() {
     >
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => router.back()}
           hitSlop={12}
           style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
@@ -653,20 +654,20 @@ function ConversationScreenInner() {
           accessibilityHint={t('messages.backToConversations') ?? 'Returns to conversations list'}
         >
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
-        <Pressable onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} hitSlop={8} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
+        </PressableOpacity>
+        <PressableOpacity onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} hitSlop={8} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
           <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
-        </Pressable>
-        <Pressable onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
+        </PressableOpacity>
+        <PressableOpacity onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
           <Text style={[s.headerName, { color: colors.foreground }]} numberOfLines={1}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
           {otherTyping ? (
             <Text style={[s.headerSub, { color: colors.primary }]}>{t('messages.typing')}</Text>
           ) : otherUser?.naapurusto ? (
             <Text style={[s.headerSub, { color: colors.mutedForeground }]}>{otherUser.naapurusto}</Text>
           ) : null}
-        </Pressable>
+        </PressableOpacity>
         {otherUser && (
-          <Pressable
+          <PressableOpacity
             onPress={() => setShowReportModal(true)}
             hitSlop={8}
             style={{ padding: 8 }}
@@ -674,7 +675,7 @@ function ConversationScreenInner() {
             accessibilityLabel={t('report.title')}
           >
             <Flag size={18} color={colors.mutedForeground} strokeWidth={1.8} />
-          </Pressable>
+          </PressableOpacity>
         )}
       </View>
 
@@ -699,7 +700,7 @@ function ConversationScreenInner() {
         ListHeaderComponent={
           <View>
             {linkedPost && (
-              <Pressable
+              <PressableOpacity
                 onPress={() => router.push(`/post/${linkedPost.id}`)}
                 style={[contextStyles.card, { backgroundColor: isDark ? colors.card : colors.muted }]}
               >
@@ -711,7 +712,7 @@ function ConversationScreenInner() {
                   <Text style={[contextStyles.title, { color: colors.foreground }]} numberOfLines={1}>{linkedPost.title}</Text>
                 </View>
                 <ChevronRight size={14} color={colors.mutedForeground} />
-              </Pressable>
+              </PressableOpacity>
             )}
             {hasOlder ? (
               <Pressable onPress={loadOlder} style={({ pressed }) => [s.loadOlderBtn, { borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
@@ -785,7 +786,7 @@ function ConversationScreenInner() {
           keyboardShouldPersistTaps="handled"
         >
           {quickReplies.map((reply, i) => (
-            <Pressable
+            <PressableOpacity
               key={i}
               onPress={() => handleQuickReply(reply)}
               style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: colors.border }]}
@@ -794,14 +795,14 @@ function ConversationScreenInner() {
             >
               <Text style={[s.quickReplyText, { color: colors.foreground }]}>{reply}</Text>
               <Send size={11} color={colors.primary} />
-            </Pressable>
+            </PressableOpacity>
           ))}
         </ScrollView>
       )}
 
       {/* Input */}
       <View style={[s.inputBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
-        <Pressable
+        <PressableOpacity
           onPress={handleSendImage}
           style={s.imageBtn}
           hitSlop={8}
@@ -809,7 +810,7 @@ function ConversationScreenInner() {
           accessibilityLabel={t('messages.attachImage') ?? 'Attach image'}
         >
           <ImageIcon size={22} color={colors.mutedForeground} />
-        </Pressable>
+        </PressableOpacity>
         <TextInput
           style={[s.textInput, { backgroundColor: colors.muted, color: colors.foreground }]}
           value={input}
@@ -820,7 +821,7 @@ function ConversationScreenInner() {
           maxLength={2000}
           blurOnSubmit={false}
         />
-        <Pressable
+        <PressableOpacity
           onPress={handleSend}
           disabled={!input.trim() || sending}
           hitSlop={8}
@@ -829,7 +830,7 @@ function ConversationScreenInner() {
           style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted, opacity: (!input.trim() || sending) ? 0.5 : 1 }]}
         >
           <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
-        </Pressable>
+        </PressableOpacity>
       </View>
 
       {/* Report Modal */}
