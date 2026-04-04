@@ -71,7 +71,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
   const handleShare = useCallback(async () => {
     const c = await ensureCode()
     if (!c) return
-    const message = t('referral.shareText').replace('{code}', c)
+    const message = `${t('referral.shareText').replace('{code}', c)}\n\nhttps://tackbird.fi/invite/${c}`
     try {
       await Share.share({ message })
     } catch {

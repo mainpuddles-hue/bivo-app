@@ -22,6 +22,7 @@ import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { BackButton, PressableOpacity } from '@/components/ui'
+import { useReferral, type ApplyResult } from '@/hooks/useReferral'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -88,6 +89,11 @@ export default function SettingsScreen() {
 
   // Neighborhood picker
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
+
+  // Referral code
+  const referral = useReferral(profile?.id ?? null)
+  const [referralInput, setReferralInput] = useState('')
+  const [referralStatus, setReferralStatus] = useState<'idle' | 'loading' | ApplyResult>('idle')
 
   // Account info
   const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null)
@@ -856,6 +862,75 @@ export default function SettingsScreen() {
             )}
           </View>
         </View>
+
+        {/* Referral code — only show if user hasn't used one yet */}
+        {!referral.invitedBy && !referral.loading && (
+          <>
+            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('referral.applyCodeTitle')}</Text>
+            <View style={[s.card, { backgroundColor: colors.card, padding: 16, gap: 12 }]}>
+              <Text style={{ fontSize: 13, lineHeight: 18, color: colors.mutedForeground, fontFamily: fonts.body }}>
+                {t('referral.applyCodeDesc')}
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TextInput
+                  value={referralInput}
+                  onChangeText={(text) => { setReferralInput(text.toUpperCase()); setReferralStatus('idle') }}
+                  placeholder={t('referral.applyCodePlaceholder')}
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[s.input, {
+                    flex: 1,
+                    backgroundColor: colors.muted,
+                    color: colors.foreground,
+                    borderColor: referralStatus === 'success' ? colors.success : referralStatus === 'invalid' || referralStatus === 'self' || referralStatus === 'error' ? colors.destructive : colors.border,
+                    fontFamily: fonts.body,
+                    letterSpacing: 2,
+                  }]}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  maxLength={12}
+                />
+                <PressableOpacity
+                  onPress={async () => {
+                    const code = referralInput.trim()
+                    if (code.length < 4) return
+                    setReferralStatus('loading')
+                    const result = await referral.applyInviteCode(code)
+                    setReferralStatus(result)
+                  }}
+                  disabled={referralInput.trim().length < 4 || referralStatus === 'loading'}
+                  style={[s.changePwBtn, {
+                    backgroundColor: colors.primary,
+                    paddingHorizontal: 20,
+                    opacity: referralInput.trim().length < 4 || referralStatus === 'loading' ? 0.5 : 1,
+                  }]}
+                >
+                  {referralStatus === 'loading' ? (
+                    <ActivityIndicator size="small" color={colors.primaryForeground} />
+                  ) : (
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
+                      {t('referral.applyCodeSubmit')}
+                    </Text>
+                  )}
+                </PressableOpacity>
+              </View>
+              {referralStatus === 'success' && (
+                <Text style={{ fontSize: 12, color: colors.success, fontFamily: fonts.body }}>{t('referral.applyCodeSuccess')}</Text>
+              )}
+              {referralStatus === 'already_referred' && (
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>{t('referral.applyCodeAlreadyReferred')}</Text>
+              )}
+              {referralStatus === 'invalid' && (
+                <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body }}>{t('referral.applyCodeNotFound')}</Text>
+              )}
+              {referralStatus === 'self' && (
+                <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body }}>{t('referral.applyCodeSelfReferral')}</Text>
+              )}
+              {referralStatus === 'error' && (
+                <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body }}>{t('referral.applyCodeError')}</Text>
+              )}
+            </View>
+          </>
+        )}
 
         {/* Saved items */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('saved.title')}</Text>

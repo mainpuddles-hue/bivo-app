@@ -185,9 +185,9 @@ function OnboardingScreenInner() {
       // Apply referral code FIRST (before profile update) — if invalid, user can retry
       if (referralInput.trim()) {
         trackEvent('onboarding_invite_code' as any, { hasCode: true })
-        const success = await applyInviteCode(referralInput.trim())
-        setReferralStatus(success ? 'applied' : 'invalid')
-        if (!success) {
+        const result = await applyInviteCode(referralInput.trim())
+        setReferralStatus(result === 'success' ? 'applied' : 'invalid')
+        if (result !== 'success') {
           setSaving(false)
           return
         }
