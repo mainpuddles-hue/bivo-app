@@ -45,7 +45,7 @@ export function usePriceSuggestion(type: string | null, tags: string[], neighbor
 
     return () => { controller.abort() }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, tags.join(','), neighborhood, supabase])
+  }, [type, JSON.stringify(tags), neighborhood, supabase])
 
   return { suggestion, loading }
 }

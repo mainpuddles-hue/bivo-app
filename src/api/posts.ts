@@ -36,7 +36,11 @@ export async function fetchPosts(options: FetchPostsOptions = {}): Promise<{ pos
     .range(offset, offset + limit - 1)
 
   if (filter) query = query.eq('type', filter)
-  if (neighborhood) query = query.or(`target_naapurusto.eq.${neighborhood},target_naapurusto.is.null`)
+  if (neighborhood) {
+    // Sanitize neighborhood to prevent PostgREST filter injection
+    const safeNeighborhood = neighborhood.replace(/[^a-zA-ZäöåÄÖÅ0-9_\- ]/g, '')
+    if (safeNeighborhood) query = query.or(`target_naapurusto.eq.${safeNeighborhood},target_naapurusto.is.null`)
+  }
 
   const { data, error } = await query
 

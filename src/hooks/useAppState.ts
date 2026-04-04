@@ -11,6 +11,8 @@ import { useSupabase } from './useSupabase'
 export function useAppStateManager(onForeground?: () => void) {
   const supabase = useSupabase()
   const appStateRef = useRef<AppStateStatus>(AppState.currentState)
+  const onForegroundRef = useRef(onForeground)
+  onForegroundRef.current = onForeground
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -19,7 +21,7 @@ export function useAppStateManager(onForeground?: () => void) {
       if (prevState.match(/inactive|background/) && nextState === 'active') {
         // Returning to foreground — reconnect realtime
         supabase.realtime.connect()
-        onForeground?.()
+        onForegroundRef.current?.()
       } else if (nextState.match(/inactive|background/) && prevState === 'active') {
         // Going to background — disconnect realtime to save resources
         supabase.realtime.disconnect()
@@ -31,5 +33,5 @@ export function useAppStateManager(onForeground?: () => void) {
     return () => {
       subscription.remove()
     }
-  }, [supabase, onForeground])
+  }, [supabase])
 }

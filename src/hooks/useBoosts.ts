@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Alert } from 'react-native'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useI18n } from '@/lib/i18n'
@@ -36,6 +36,7 @@ export function useBoosts(userId: string | null) {
         .select('balance, tier, monthly_grants_remaining')
         .eq('user_id', userId)
         .single()
+      if (!mountedRef.current) return
       if (data) {
         setBalance((data as any).balance ?? 0)
         setTier(((data as any).tier as BoostTier) ?? 'free')
@@ -48,22 +49,21 @@ export function useBoosts(userId: string | null) {
         .eq('user_id', userId)
         .eq('is_active', true)
         .gt('boost_end', new Date().toISOString())
+      if (!mountedRef.current) return
       setActiveBoosts((boosts as ActiveBoost[] | null) ?? [])
     } catch {
       // Silently fail — data will be empty defaults
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }, [userId, supabase])
 
+  const mountedRef = useRef(true)
+
   useEffect(() => {
-    let mounted = true
-    const run = async () => {
-      await fetchBalance()
-      if (!mounted) return
-    }
-    run()
-    return () => { mounted = false }
+    mountedRef.current = true
+    fetchBalance()
+    return () => { mountedRef.current = false }
   }, [fetchBalance])
 
   // Purchase boosts (sandbox or real IAP)

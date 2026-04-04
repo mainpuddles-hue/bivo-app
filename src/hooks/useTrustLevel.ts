@@ -214,7 +214,11 @@ export function useTrustLevel(userId?: string | null): TrustResult {
     }
 
     fetchSignals()
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+      // Clear the fetching lock so remounts can fetch again
+      if (fetchingForRef.current === userId) fetchingForRef.current = null
+    }
   }, [userId, supabase])
 
   const clientLevel = useMemo(() => computeTrustLevel(signals), [signals])

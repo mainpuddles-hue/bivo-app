@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { Platform, Linking } from 'react-native'
 import { useSupabase } from '@/hooks/useSupabase'
 
@@ -24,9 +24,13 @@ interface PaymentOptions {
 export function useStripePayment() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const payingRef = useRef(false)
   const supabase = useSupabase()
 
   const createPayment = useCallback(async (options: PaymentOptions): Promise<string | null> => {
+    // Guard against double payment from rapid taps
+    if (payingRef.current) return null
+    payingRef.current = true
     setLoading(true)
     setError(null)
 
@@ -34,7 +38,6 @@ export function useStripePayment() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
         setError('Kirjaudu sisään maksaaksesi')
-        setLoading(false)
         return null
       }
 
@@ -64,7 +67,6 @@ export function useStripePayment() {
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         setError(body.error ?? 'Maksu epäonnistui')
-        setLoading(false)
         return null
       }
 
@@ -75,12 +77,13 @@ export function useStripePayment() {
         await Linking.openURL(url).catch(() => {})
       }
 
-      setLoading(false)
       return session_id ?? null
     } catch (err) {
       setError('Maksuyhteys epäonnistui')
-      setLoading(false)
       return null
+    } finally {
+      setLoading(false)
+      payingRef.current = false
     }
   }, [supabase])
 

@@ -879,7 +879,7 @@ export default function CreateScreen() {
             <Text style={[styles.label, { color: colors.foreground }]}>{t('create.images')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageRow}>
               {images.map((uri, idx) => (
-                <View key={idx} style={styles.imageThumb}>
+                <View key={uri} style={styles.imageThumb}>
                   <Image source={{ uri }} style={styles.imageThumbImg} contentFit="cover" />
                   <PressableOpacity onPress={() => removeImage(idx)} style={styles.imageRemoveBtn}>
                     <X size={12} color={colors.primaryForeground} />
