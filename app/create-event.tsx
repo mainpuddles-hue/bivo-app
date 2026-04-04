@@ -26,6 +26,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
 import type { CommunityEvent } from '@/lib/types'
 
@@ -66,6 +67,8 @@ function CreateEventScreenInner() {
   const [eventDate, setEventDate] = useState('')
   const [eventTime, setEventTime] = useState('')
   const [locationName, setLocationName] = useState('')
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLng, setLocationLng] = useState<number | null>(null)
   const [category, setCategory] = useState<EventCategory>('social')
   const [maxParticipants, setMaxParticipants] = useState('')
   const [approvalRequired, setApprovalRequired] = useState(false)
@@ -231,8 +234,8 @@ function CreateEventScreenInner() {
         event_date: isoDate,
         event_end_date: null,
         location_name: locationName.trim() || null,
-        location_lat: null,
-        location_lng: null,
+        location_lat: locationLat,
+        location_lng: locationLng,
         category,
         max_participants: parsedMax,
         approval_required: approvalRequired,
@@ -468,18 +471,14 @@ function CreateEventScreenInner() {
         <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
           {t('events.location')}
         </Text>
-        <View style={[styles.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <MapPin size={18} color={colors.mutedForeground} />
-          <TextInput
-            style={[styles.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
-            value={locationName}
-            onChangeText={setLocationName}
-            placeholder={t('events.placeholderLocation')}
-            placeholderTextColor={colors.mutedForeground}
-            maxLength={200}
-            accessibilityLabel={t('events.location')}
-          />
-        </View>
+        <LocationAutocomplete
+          value={locationName}
+          onChangeText={(text) => { setLocationName(text); if (!text.trim()) { setLocationLat(null); setLocationLng(null) } }}
+          onSelect={({ name, lat, lng }) => { setLocationName(name); setLocationLat(lat); setLocationLng(lng) }}
+          placeholder={t('events.placeholderLocation')}
+          accessibilityLabel={t('events.location')}
+          showIcon
+        />
 
         {/* Category */}
         <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>

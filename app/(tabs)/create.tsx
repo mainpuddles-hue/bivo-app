@@ -25,6 +25,7 @@ import { VerificationModal } from '@/components/VerificationModal'
 import { TrustBadge } from '@/components/TrustBadge'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
@@ -1001,12 +1002,12 @@ export default function CreateScreen() {
               <View style={styles.field}>
                 <Text style={[styles.label, { color: colors.foreground }]}>{t('post.locationLabel')}</Text>
                 <View style={styles.locationRow}>
-                  <TextInput
-                    style={[styles.input, styles.locationInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  <LocationAutocomplete
                     value={location}
                     onChangeText={(text) => { setLocation(text); if (!text.trim()) { setLatitude(null); setLongitude(null) } }}
+                    onSelect={({ name, lat, lng }) => { setLocation(name); setLatitude(lat); setLongitude(lng) }}
                     placeholder={t('post.locationLabel')}
-                    placeholderTextColor={colors.mutedForeground}
+                    style={styles.locationInput}
                   />
                   <PressableOpacity
                     onPress={handleOpenMapPicker}
