@@ -76,7 +76,10 @@ export async function markMessagesRead(conversationId: string, userId: string): 
     .eq('is_read', false)
 }
 
-/** Find or create a conversation between two users */
+/** Find or create a conversation between two users.
+ *  Uses retry-on-duplicate to handle TOCTOU race conditions:
+ *  if two users simultaneously create a conversation, the second insert
+ *  will fail and we'll return the existing one instead. */
 export async function findOrCreateConversation(
   userId: string,
   otherUserId: string,
@@ -86,16 +89,20 @@ export async function findOrCreateConversation(
     throw new Error('Invalid user ID')
   }
 
-  // Check for existing conversation
-  const { data: existing } = await supabase()
-    .from('conversations')
-    .select('id')
-    .or(`and(user1_id.eq.${userId},user2_id.eq.${otherUserId}),and(user1_id.eq.${otherUserId},user2_id.eq.${userId})`)
-    .maybeSingle()
+  const findExisting = async () => {
+    const { data } = await supabase()
+      .from('conversations')
+      .select('id')
+      .or(`and(user1_id.eq.${userId},user2_id.eq.${otherUserId}),and(user1_id.eq.${otherUserId},user2_id.eq.${userId})`)
+      .maybeSingle()
+    return data ? (data as any).id as string : null
+  }
 
-  if (existing) return (existing as any).id
+  // 1. Check for existing conversation
+  const existingId = await findExisting()
+  if (existingId) return existingId
 
-  // Create new conversation
+  // 2. Try to create — if a race condition causes a duplicate, catch it
   const { data, error } = await (supabase().from('conversations') as any)
     .insert({
       user1_id: userId,
@@ -105,6 +112,14 @@ export async function findOrCreateConversation(
     .select('id')
     .single()
 
-  if (error) throw error
+  if (error) {
+    // Duplicate key / unique violation — another client won the race
+    if (error.code === '23505') {
+      const raceId = await findExisting()
+      if (raceId) return raceId
+    }
+    throw error
+  }
+
   return (data as any).id
 }
