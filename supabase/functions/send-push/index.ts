@@ -21,13 +21,22 @@ function getEnvOrThrow(key: string): string {
 // Expo push notification API
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
 
-// Helsinki timezone offset (EET = UTC+2, EEST = UTC+3)
+// Helsinki timezone — uses Intl for correct DST transitions
 function getHelsinkiHour(): number {
-  const now = new Date()
-  // Simple offset: March-October is EEST (UTC+3), November-February is EET (UTC+2)
-  const month = now.getUTCMonth()
-  const offset = (month >= 2 && month <= 9) ? 3 : 2
-  return (now.getUTCHours() + offset) % 24
+  try {
+    const helsinkiTime = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Europe/Helsinki',
+      hour: 'numeric',
+      hour12: false,
+    }).format(new Date())
+    return parseInt(helsinkiTime, 10)
+  } catch {
+    // Fallback: approximate offset (March-October = UTC+3, else UTC+2)
+    const now = new Date()
+    const month = now.getUTCMonth()
+    const offset = (month >= 2 && month <= 9) ? 3 : 2
+    return (now.getUTCHours() + offset) % 24
+  }
 }
 
 function isQuietHours(): boolean {
