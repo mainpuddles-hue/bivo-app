@@ -327,7 +327,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     flex: 1,
     lineHeight: 20,

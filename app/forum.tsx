@@ -666,6 +666,6 @@ const s = StyleSheet.create({
   modalSection: { paddingHorizontal: 16, paddingTop: 14 },
   publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, minWidth: 80, alignItems: 'center' },
   publishBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
-  titleInput: { fontSize: 15, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
-  contentInput: { flex: 1, fontSize: 15, fontFamily: fonts.body, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
+  titleInput: { fontSize: 14, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
+  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
 })

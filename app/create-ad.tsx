@@ -333,7 +333,7 @@ export default function CreateAdScreen() {
           onPress={() => setShowNeighborhoods(!showNeighborhoods)}
           style={[styles.input, styles.pickerBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <Text style={{ color: targetNeighborhood ? colors.foreground : colors.mutedForeground, fontSize: 15, fontFamily: fonts.body }}>
+          <Text style={{ color: targetNeighborhood ? colors.foreground : colors.mutedForeground, fontSize: 14, fontFamily: fonts.body }}>
             {targetNeighborhood ?? t('ads.allAreas')}
           </Text>
         </Pressable>
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, fontFamily: fonts.body,
+    paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,
   },
   textArea: { minHeight: 100, textAlignVertical: 'top' },
   imagePicker: {

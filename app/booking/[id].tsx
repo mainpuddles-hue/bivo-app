@@ -408,7 +408,7 @@ function BookingDetailScreenInner() {
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.dates')}</Text>
             <View style={styles.dateRow}>
               <Calendar size={16} color={colors.mutedForeground} />
-              <Text style={{ fontSize: 15, color: colors.foreground, fontFamily: fonts.bodyMedium, lineHeight: 20 }}>
+              <Text style={{ fontSize: 14, color: colors.foreground, fontFamily: fonts.bodyMedium, lineHeight: 20 }}>
                 {formatDateRange(booking.start_date, booking.end_date, locale)}
               </Text>
             </View>
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   section: {
     padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: 10,
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
 
   // Status badge
   statusBadgeLarge: {
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48,
   },
-  actionBtnText: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  actionBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })
 
 export default function BookingDetailScreen() {

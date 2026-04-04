@@ -723,7 +723,7 @@ const s = StyleSheet.create({
     lineHeight: 28,
   },
   slogan: {
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
     marginTop: 4,
@@ -798,7 +798,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   trustItemText: {
-    fontSize: 15,
+    fontSize: 14,
     flex: 1,
     lineHeight: 22,
   },

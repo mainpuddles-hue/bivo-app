@@ -628,7 +628,7 @@ function ConversationScreenInner() {
             accessibilityRole="button"
             accessibilityLabel={t('errors.backToMessages') ?? 'Back to messages'}
           >
-            <Text style={{ color: colors.primaryForeground, fontSize: 15, fontWeight: '600', fontFamily: fonts.bodyMedium }}>
+            <Text style={{ color: colors.primaryForeground, fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium }}>
               {t('errors.backToMessages') ?? 'Takaisin viesteihin'}
             </Text>
           </Pressable>
@@ -852,7 +852,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerAvatar: { width: 36, height: 36, borderRadius: 18 },
-  headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodyMedium },
+  headerName: { fontSize: 14, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodyMedium },
   headerSub: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   msgList: { padding: 16, gap: 4, flexGrow: 1 },
   dateHeader: { fontSize: 12, fontWeight: '500', lineHeight: 16, textAlign: 'center', marginVertical: 16, fontFamily: fonts.bodyMedium },
@@ -864,7 +864,7 @@ const s = StyleSheet.create({
   bubbleMine: { borderBottomRightRadius: 4 },
   bubbleTheirs: { borderBottomLeftRadius: 4 },
   msgImage: { width: 200, height: 150, borderRadius: 12, marginBottom: 4 },
-  msgText: { fontSize: 15, lineHeight: 20, fontFamily: fonts.body },
+  msgText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
   msgTime: { fontSize: 10, lineHeight: 14, fontFamily: fonts.body },
@@ -905,7 +905,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth,
   },
-  deleteText: { fontSize: 15, fontWeight: '500', lineHeight: 20, fontFamily: fonts.bodyMedium },
+  deleteText: { fontSize: 14, fontWeight: '500', lineHeight: 20, fontFamily: fonts.bodyMedium },
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
     paddingHorizontal: 16, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth,
@@ -913,7 +913,7 @@ const s = StyleSheet.create({
   imageBtn: { paddingBottom: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   textInput: {
     flex: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 12,
-    fontSize: 15, maxHeight: 120, minHeight: 40, fontFamily: fonts.body,
+    fontSize: 14, maxHeight: 120, minHeight: 40, fontFamily: fonts.body,
   },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,

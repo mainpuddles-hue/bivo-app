@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     borderRadius: 12, padding: 16,
   },
-  toggleText: { fontSize: 15, flex: 1, fontFamily: fonts.bodyMedium },
+  toggleText: { fontSize: 14, flex: 1, fontFamily: fonts.bodyMedium },
   createAdBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48,
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   },
   adCard: { borderRadius: 12, padding: 16, gap: 8 },
   adHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  adTitle: { fontSize: 15, flex: 1, fontFamily: fonts.bodySemi },
+  adTitle: { fontSize: 14, flex: 1, fontFamily: fonts.bodySemi },
   adStatus: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   adStatusText: { fontSize: 11, fontFamily: fonts.bodySemi },
   adDates: { fontSize: 12, fontFamily: fonts.body },
@@ -627,13 +627,13 @@ const styles = StyleSheet.create({
   imageHint: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
   textArea: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 14,
     minHeight: 100, lineHeight: 22, fontFamily: fonts.body,
   },
   charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body,
   },
   geocodeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
   contactRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   contactInput: {
     flex: 1, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body,
   },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',

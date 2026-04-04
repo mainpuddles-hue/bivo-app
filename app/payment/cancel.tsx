@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.body,
     textAlign: 'center',
     lineHeight: 21,

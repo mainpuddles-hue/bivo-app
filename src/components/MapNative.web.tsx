@@ -17,5 +17,5 @@ export default function MapWebFallback() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16 },
-  text: { fontSize: 15, fontFamily: fonts.body, textAlign: 'center' },
+  text: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
 })

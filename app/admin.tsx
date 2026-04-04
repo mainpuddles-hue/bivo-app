@@ -534,7 +534,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
   },
   flagTitle: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.bodySemi,
     marginBottom: 4,
@@ -582,7 +582,7 @@ const s = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.body,
   },
@@ -600,7 +600,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   userName: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.bodySemi,
   },
@@ -655,7 +655,7 @@ const s = StyleSheet.create({
     gap: 16,
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.bodyMedium,
     textAlign: 'center',

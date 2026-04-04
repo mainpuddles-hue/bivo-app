@@ -970,7 +970,7 @@ const s = StyleSheet.create({
   activityTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   activityMetaBadge: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
-  menuText: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  menuText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   loginBtn: { marginHorizontal: 16, marginTop: 64, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   modalContainer: { flex: 1 },
@@ -978,7 +978,7 @@ const s = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
-  followName: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  followName: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 8 },
   multiplierText: { fontSize: 9, fontWeight: '800', fontFamily: fonts.bodySemi },
   // My Posts tab

@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   locationText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
   },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   availableTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 16,
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.body,
   },
   waitlistBtn: {
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   continueBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
   },

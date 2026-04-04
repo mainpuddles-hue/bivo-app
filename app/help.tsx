@@ -167,7 +167,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16,
   },
-  faqQuestion: { fontSize: 15, lineHeight: 20, fontFamily: fonts.bodyMedium, flex: 1 },
+  faqQuestion: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodyMedium, flex: 1 },
   faqAnswer: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 },
   answerText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   contactTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
@@ -181,7 +181,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     padding: 16,
   },
-  linkText: { fontSize: 15, lineHeight: 20, fontFamily: fonts.bodyMedium },
+  linkText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodyMedium },
 })
 
 export default function HelpScreen() {

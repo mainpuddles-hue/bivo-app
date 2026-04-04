@@ -965,7 +965,7 @@ export default function SettingsScreen() {
         {/* Logout */}
         <Pressable onPress={handleLogout} style={({ pressed }) => [s.logoutBtn, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.logout')}>
           <LogOut size={18} color={colors.destructive} />
-          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('settings.logout')}</Text>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('settings.logout')}</Text>
         </Pressable>
 
         {/* App version */}
@@ -1033,12 +1033,12 @@ const s = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  rowText: { fontSize: 15, lineHeight: 20, flex: 1, fontFamily: fonts.body },
+  rowText: { fontSize: 14, lineHeight: 20, flex: 1, fontFamily: fonts.body },
   radio: { width: 18, height: 18, borderRadius: 9 },
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
   proBadge: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   upgradeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
-  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, lineHeight: 20, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
+  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, lineHeight: 20, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
   changePwBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -1093,7 +1093,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.body,
   },

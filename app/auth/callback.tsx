@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   loadingBox: { alignItems: 'center', gap: 16 },
   loadingText: { fontSize: 14, fontFamily: fonts.body },
   errorBox: { alignItems: 'center', gap: 16 },
-  errorText: { fontSize: 15, fontFamily: fonts.body, textAlign: 'center' },
+  errorText: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
   backLink: { fontSize: 14, fontFamily: fonts.bodyMedium },
 })
 

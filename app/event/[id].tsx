@@ -528,7 +528,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.body,
     lineHeight: 20,
   },
@@ -602,7 +602,7 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   infoText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
   },
@@ -622,7 +622,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   descriptionText: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 22,
     fontFamily: fonts.body,
   },
@@ -639,7 +639,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   participantsText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
   },
@@ -694,7 +694,7 @@ const s = StyleSheet.create({
     gap: 4,
   },
   creatorName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.headingSemi,
     lineHeight: 20,
@@ -725,7 +725,7 @@ const s = StyleSheet.create({
     minHeight: 48,
   },
   messageCreatorText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,

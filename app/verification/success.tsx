@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   content: { flex: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 64 },
   iconCircle: { width: 104, height: 104, borderRadius: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
-  subtitle: { fontSize: 15, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
+  subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
   unlockedCard: { width: '100%', borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 16, marginBottom: 32 },
   unlockedTitle: { fontSize: 16, fontFamily: fonts.heading, marginBottom: 4 },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },

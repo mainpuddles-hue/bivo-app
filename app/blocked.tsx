@@ -159,7 +159,7 @@ const s = StyleSheet.create({
     padding: 16, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   userInfo: { flex: 1, gap: 2 },
-  userName: { fontSize: 15, lineHeight: 20, fontFamily: fonts.bodySemi },
+  userName: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   userNh: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   unblockBtn: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12,

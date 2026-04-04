@@ -250,7 +250,7 @@ const s = StyleSheet.create({
   },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  rowText: { fontSize: 15, fontFamily: fonts.body, lineHeight: 20, flex: 1 },
+  rowText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, flex: 1 },
   statusText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   statusBadgeText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },

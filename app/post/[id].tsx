@@ -1278,7 +1278,7 @@ function PostDetailScreenInner() {
                 renderItem={({ item }) => (
                   <Pressable onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
                     <Avatar url={item.avatar_url} name={item.name} size={40} />
-                    <Text style={{ fontSize: 15, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
                   </Pressable>
                 )}
                 ListEmptyComponent={<Text style={{ textAlign: 'center', color: colors.mutedForeground, paddingVertical: 20, fontFamily: fonts.body }}>{t('post.noLikes')}</Text>}
@@ -1323,8 +1323,8 @@ const styles = StyleSheet.create({
   boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
   boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
-  eventDate: { fontSize: 15, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 22 },
+  eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -1372,7 +1372,7 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi, lineHeight: 24 },
   modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8, lineHeight: 18 },
-  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, fontFamily: fonts.body, minHeight: 44, marginTop: 4, lineHeight: 20 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body, minHeight: 44, marginTop: 4, lineHeight: 20 },
   modalTextArea: { minHeight: 120 },
   saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 12, marginTop: 16, minHeight: 48 },
   saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
@@ -1387,7 +1387,7 @@ const styles = StyleSheet.create({
   bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, alignSelf: 'flex-start' },
   bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
-  bookingFee: { fontSize: 15, fontFamily: fonts.heading, lineHeight: 20 },
+  bookingFee: { fontSize: 14, fontFamily: fonts.heading, lineHeight: 20 },
   bookingTotalPrice: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 12, marginTop: 12 },
   datesSummaryItem: { flex: 1, gap: 2 },
@@ -1399,7 +1399,7 @@ const styles = StyleSheet.create({
   pricingLabel: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   pricingValue: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
   pricingTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, marginTop: 4 },
-  pricingTotalLabel: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  pricingTotalLabel: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 17 },
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48 },
@@ -1416,7 +1416,7 @@ const ctaStyles = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 12,
   },
-  messageBtnText: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  messageBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })
 
 export default function PostDetailScreen() {

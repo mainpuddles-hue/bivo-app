@@ -142,5 +142,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  itemText: { fontSize: 15, fontFamily: fonts.body, flex: 1 },
+  itemText: { fontSize: 14, fontFamily: fonts.body, flex: 1 },
 })

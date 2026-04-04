@@ -1144,7 +1144,7 @@ const s = StyleSheet.create({
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body, lineHeight: 22 },
   // Rating summary card
   ratingCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
-  ratingCardTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
+  ratingCardTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
   ratingOverview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingStarsCol: { alignItems: 'center', gap: 4 },
   ratingBigNum: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 22 },
@@ -1160,7 +1160,7 @@ const s = StyleSheet.create({
   verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   // Activity summary
   activitySummaryCard: { borderRadius: 12, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },
-  activitySummaryTitle: { fontSize: 15, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
+  activitySummaryTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
   activitySummaryText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   recentPostsRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
   recentPostThumb: { flex: 1 },
@@ -1283,7 +1283,7 @@ const bs = StyleSheet.create({
     gap: 6,
   },
   ratingText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     fontFamily: fonts.heading,
     lineHeight: 22,

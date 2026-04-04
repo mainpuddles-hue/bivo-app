@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   rowAmount: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
   },
   miniStatus: {

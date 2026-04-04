@@ -309,7 +309,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
   heroTitle: { fontSize: 28, lineHeight: 36, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
-  heroSubtitle: { fontSize: 15, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
+  heroSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
   activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, marginTop: 8,
@@ -359,7 +359,7 @@ const s = StyleSheet.create({
     alignItems: 'center', paddingVertical: 16, borderRadius: 12,
     borderWidth: 1, minHeight: 48,
   },
-  manageBtnText: { fontSize: 15, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
+  manageBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   errorText: { fontSize: 13, lineHeight: 18, textAlign: 'center', fontFamily: fonts.body },
   termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   iosInfoCard: {

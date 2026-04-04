@@ -431,7 +431,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   rankText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.heading,
     lineHeight: 20,
   },
@@ -440,7 +440,7 @@ const s = StyleSheet.create({
     gap: 2,
   },
   name: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -455,7 +455,7 @@ const s = StyleSheet.create({
     gap: 4,
   },
   points: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.heading,
     lineHeight: 20,
   },
@@ -465,7 +465,7 @@ const s = StyleSheet.create({
     paddingTop: 60,
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.body,
     lineHeight: 20,
   },

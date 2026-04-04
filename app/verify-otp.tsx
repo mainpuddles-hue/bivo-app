@@ -327,14 +327,14 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headingSemi,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 8,
     fontFamily: fonts.body,
   },
   emailDisplay: {
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
     marginBottom: 32,
     fontFamily: fonts.bodySemi,

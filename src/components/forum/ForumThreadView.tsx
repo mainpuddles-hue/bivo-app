@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 20, fontFamily: fonts.heading, letterSpacing: -0.2, lineHeight: 26,
   },
   detailContent: {
-    fontSize: 15, fontFamily: fonts.body, lineHeight: 22,
+    fontSize: 14, fontFamily: fonts.body, lineHeight: 22,
   },
   detailActions: {
     flexDirection: 'row', alignItems: 'center', gap: 20, paddingTop: 4,

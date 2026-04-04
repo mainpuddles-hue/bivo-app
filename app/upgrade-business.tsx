@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
   heroTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.3, fontFamily: fonts.heading },
-  heroSubtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
+  heroSubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
   heroPrice: { fontSize: 22, fontWeight: '800', marginTop: 8, fontFamily: fonts.heading },
   benefitsCard: { borderRadius: 12, padding: 16, gap: 12 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16, paddingVertical: 16, fontSize: 15, fontFamily: fonts.body,
+    paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,
   },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   categoryChip: {

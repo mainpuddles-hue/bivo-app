@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   headerText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.15,
   },

@@ -564,12 +564,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderWidth: 1, borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 8,
   },
-  googleBtnText: { fontSize: 15, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
+  googleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   appleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 16,
   },
-  appleBtnText: { fontSize: 15, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
+  appleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   dividerLine: { flex: 1, height: 1 },
   dividerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   form: { gap: 12 },
   input: {
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
-    fontSize: 15, lineHeight: 20, minHeight: 48, fontFamily: fonts.body,
+    fontSize: 14, lineHeight: 20, minHeight: 48, fontFamily: fonts.body,
   },
   eyeBtn: { position: 'absolute', right: 4, top: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   forgotLink: { fontSize: 13, lineHeight: 18, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   successBox: {
     borderRadius: 12, padding: 24, alignItems: 'center', gap: 12,
   },
-  successText: { fontSize: 15, lineHeight: 20, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
+  successText: { fontSize: 14, lineHeight: 20, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 4 },
   checkbox: { minWidth: 44, minHeight: 44, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },

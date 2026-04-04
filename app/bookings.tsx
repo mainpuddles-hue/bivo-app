@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   itemTitle: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.bodySemi,
   },

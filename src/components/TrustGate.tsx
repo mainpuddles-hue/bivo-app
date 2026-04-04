@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actionBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,

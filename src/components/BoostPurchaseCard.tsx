@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   creditsText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     lineHeight: 20,
   },

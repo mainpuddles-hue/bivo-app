@@ -851,7 +851,7 @@ const s = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
     fontFamily: fonts.headingSemi,
@@ -930,7 +930,7 @@ const s = StyleSheet.create({
     minHeight: 44,
   },
   emptyCtaText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,

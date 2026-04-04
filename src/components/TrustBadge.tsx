@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scoreValue: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     fontWeight: '700',
     lineHeight: 20,

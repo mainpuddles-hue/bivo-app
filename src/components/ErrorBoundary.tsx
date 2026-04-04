@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     color: '#E8E6E0',
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#6B7280',
     lineHeight: 22,
     textAlign: 'center',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.97 }],
   },
   retryText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
   },

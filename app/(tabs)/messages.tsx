@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   },
   convContent: { flex: 1, gap: 4 },
   convNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  convName: { fontSize: 15, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodyMedium },
+  convName: { fontSize: 14, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodyMedium },
   previewRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   convPreview: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },

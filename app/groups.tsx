@@ -725,7 +725,7 @@ const s = StyleSheet.create({
     gap: 2,
   },
   groupName: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.headingSemi,
   },
@@ -828,7 +828,7 @@ const s = StyleSheet.create({
     marginTop: 12,
   },
   textInput: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.body,
     borderWidth: 1,
@@ -837,7 +837,7 @@ const s = StyleSheet.create({
     paddingVertical: 16,
   },
   textArea: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.body,
     borderWidth: 1,

@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
   },
   multilineInput: {
@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
   inputInner: {
     flex: 1,
     paddingVertical: 16,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
   },
   chipContainer: {
@@ -743,7 +743,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   toggleLabel: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
   },
   toggleDescription: {
