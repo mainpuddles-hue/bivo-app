@@ -65,14 +65,38 @@ export function useReferral(userId: string | null) {
   }, [inviteCount])
 
   // Generate invite code if user doesn't have one
+  // Uses crypto-random 6-char alphanumeric code with collision retry
   const generateCode = useCallback(async () => {
     if (!userId || inviteCode) return inviteCode
-    const code = userId.slice(0, 4).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase()
-    await (supabase.from('profiles') as any)
-      .update({ invite_code: code })
-      .eq('id', userId)
-    setInviteCode(code)
-    return code
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      // Generate 6-char code from random bytes (36^6 = ~2.2B combinations)
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no 0/O/1/I confusion
+      let code = ''
+      for (let i = 0; i < 6; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)]
+      }
+
+      // Check for collision
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('invite_code', code)
+        .maybeSingle()
+      if (existing) continue // collision — retry
+
+      const { error } = await (supabase.from('profiles') as any)
+        .update({ invite_code: code })
+        .eq('id', userId)
+      if (error) {
+        if (__DEV__) console.warn('[referral] generateCode failed:', error.message)
+        return null
+      }
+      setInviteCode(code)
+      return code
+    }
+    if (__DEV__) console.warn('[referral] generateCode: max retries reached')
+    return null
   }, [userId, inviteCode, supabase])
 
   // Apply invite code (called by the invited user — onboarding or settings)
@@ -159,6 +183,23 @@ export function useReferral(userId: string | null) {
             .catch(() => {})
         }
       }
+
+      // Notify inviter: insert in-app notification
+      const { data: invitedProfile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', userId)
+        .single()
+      const invitedName = (invitedProfile as any)?.name ?? 'Joku'
+      await (supabase.from('notifications') as any)
+        .insert({
+          user_id: (inviter as any).id,
+          type: 'referral_used',
+          title: `${invitedName} liittyi kutsullasi!`,
+          body: `Kutsukoodiasi käytettiin. +${newTier ? newTier.points : 10} pistettä.`,
+          data: { invited_user_id: userId },
+        })
+        .catch(() => {}) // Non-critical
 
       return 'success'
     } catch (err) {

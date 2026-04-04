@@ -61,6 +61,10 @@ const VALID_ROUTES: Record<string, { params?: string[]; validate?: (params: Reco
     params: ['id'],
     validate: (p) => isValidUUID(p.id),
   },
+  '/invite/:code': {
+    params: ['code'],
+    validate: (p) => /^[A-Z0-9]{4,12}$/i.test(p.code),
+  },
 }
 
 /**

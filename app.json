@@ -91,6 +91,11 @@
               "scheme": "https",
               "host": "tackbird.fi",
               "pathPrefix": "/bookings"
+            },
+            {
+              "scheme": "https",
+              "host": "tackbird.fi",
+              "pathPrefix": "/invite"
             }
           ],
           "category": [
