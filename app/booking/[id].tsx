@@ -7,6 +7,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
+import { ImageWithFallback } from '@/components/ImageWithFallback'
 import {
   ArrowLeft, MessageCircle, Package, ShoppingBag, CheckCircle, XCircle,
   RotateCcw, Star, Calendar, Check,
@@ -324,7 +325,7 @@ function BookingDetailScreenInner() {
           accessibilityLabel={booking.post?.title ?? t('booking.viewPost')}
         >
           {booking.post?.image_url ? (
-            <Image source={{ uri: booking.post.image_url }} style={styles.postImage} contentFit="cover" />
+            <ImageWithFallback uri={booking.post.image_url} style={styles.postImage} contentFit="cover" fallbackIcon={isService ? <ShoppingBag size={28} color={colors.mutedForeground} /> : <Package size={28} color={colors.mutedForeground} />} />
           ) : (
             <View style={[styles.postImage, styles.postImageFb, { backgroundColor: colors.muted }]}>
               {isService ? <ShoppingBag size={28} color={colors.mutedForeground} /> : <Package size={28} color={colors.mutedForeground} />}

@@ -5,6 +5,7 @@ import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, Act
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
+import { ImageWithFallback } from '@/components/ImageWithFallback'
 import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, ShoppingBag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -358,13 +359,7 @@ export default function BookingsScreen() {
         style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>
-          {item.post?.image_url ? (
-            <Image source={{ uri: item.post.image_url }} style={styles.itemImage} contentFit="cover" />
-          ) : (
-            <View style={[styles.itemImage, styles.itemImageFb, { backgroundColor: colors.muted }]}>
-              <Package size={24} color={colors.mutedForeground} />
-            </View>
-          )}
+          <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<Package size={24} color={colors.mutedForeground} />} />
           <View style={styles.cardInfo}>
             <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
               {item.post?.title ?? t('rental.deletedPost')}
@@ -480,13 +475,7 @@ export default function BookingsScreen() {
         style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
       >
         <View style={styles.cardTop}>
-          {item.post?.image_url ? (
-            <Image source={{ uri: item.post.image_url }} style={styles.itemImage} contentFit="cover" />
-          ) : (
-            <View style={[styles.itemImage, styles.itemImageFb, { backgroundColor: colors.muted }]}>
-              <ShoppingBag size={24} color={colors.mutedForeground} />
-            </View>
-          )}
+          <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<ShoppingBag size={24} color={colors.mutedForeground} />} />
           <View style={styles.cardInfo}>
             <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
               {item.post?.title ?? t('service.deletedPost')}

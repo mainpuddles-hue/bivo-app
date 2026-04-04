@@ -11,6 +11,7 @@ import {
   Phone, Globe, Building2, Camera, BadgeCheck,
 } from 'lucide-react-native'
 import { Image } from 'expo-image'
+import { ImageWithFallback } from '@/components/ImageWithFallback'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -962,7 +963,7 @@ export default function PublicProfileScreen() {
               {posts.slice(0, 3).map(post => (
                 <Pressable key={post.id} onPress={() => router.push(`/post/${post.id}` as any)} style={s.recentPostThumb}>
                   {post.image_url ? (
-                    <Image source={{ uri: post.image_url }} style={s.recentPostImg} contentFit="cover" />
+                    <ImageWithFallback uri={post.image_url} style={s.recentPostImg} contentFit="cover" />
                   ) : (
                     <View style={[s.recentPostImg, { backgroundColor: colors.muted }]}>
                       <Text style={[s.recentPostImgPlaceholder, { color: colors.mutedForeground }]} numberOfLines={1}>{post.title}</Text>
