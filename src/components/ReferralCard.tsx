@@ -243,7 +243,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderRadius: 12,
-    padding: 14,
+    padding: 16,
   },
   codeLeft: {
     gap: 2,

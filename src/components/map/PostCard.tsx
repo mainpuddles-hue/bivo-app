@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   postBody: {
     flex: 1,
     flexDirection: 'row',
-    padding: 14,
+    padding: 16,
     gap: 12,
   },
   cardImage: {

@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     marginHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
   },
   primaryBtnText: {

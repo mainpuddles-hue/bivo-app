@@ -60,7 +60,7 @@ export const SmartMatchBanner = memo(function SmartMatchBanner({ matches, onDism
 const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 14, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 12,
     borderRadius: 12, borderWidth: 1,
   },
   iconWrap: {

@@ -1320,7 +1320,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
+  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
   boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },

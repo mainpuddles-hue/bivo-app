@@ -18,6 +18,7 @@ import { shareContent } from '@/lib/share'
 import { Avatar } from '@/components/Avatar'
 import { ReportModal } from '@/components/ReportModal'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { formatEventDate } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { getCachedUserId } from '@/lib/authCache'
@@ -232,9 +233,7 @@ function EventDetailScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
         </View>
         <View style={s.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -247,9 +246,7 @@ function EventDetailScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
         </View>
         <View style={s.loadingContainer}>
           <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('events.eventNotFound')}</Text>

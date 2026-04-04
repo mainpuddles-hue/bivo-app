@@ -18,6 +18,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { formatPrice, formatDateRange } from '@/lib/format'
@@ -276,7 +277,7 @@ function BookingDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <BackButton />
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
           <View style={{ flex: 1 }} />
         </View>
@@ -289,7 +290,7 @@ function BookingDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <BackButton />
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
           <View style={{ flex: 1 }} />
         </View>
@@ -311,7 +312,7 @@ function BookingDetailScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button"><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        <BackButton />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
         <View style={{ flex: 1 }} />
       </View>
@@ -549,7 +550,7 @@ const styles = StyleSheet.create({
 
   // User card
   userCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14,
+    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
   },
   userName: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
@@ -562,7 +563,7 @@ const styles = StyleSheet.create({
 
   // Status badge
   statusBadgeLarge: {
-    alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
+    alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8,
   },
   statusTextLarge: {
     fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5,

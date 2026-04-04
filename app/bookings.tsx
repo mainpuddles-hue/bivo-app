@@ -19,6 +19,7 @@ import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 
 function BookingCardSkeleton() {
@@ -546,9 +547,7 @@ export default function BookingsScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('bookings.title')}</Text>
         <View style={{ flex: 1 }} />
       </View>
@@ -738,7 +737,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     minHeight: 44,
@@ -755,7 +754,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   statusFilterChip: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },

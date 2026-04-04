@@ -15,6 +15,7 @@ import { fonts } from '@/lib/fonts'
 import { formatPrice as formatPriceUtil } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -239,9 +240,7 @@ export default function CreateAdScreen() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('ads.create')}</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -467,7 +466,7 @@ const styles = StyleSheet.create({
   },
   ctaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   ctaChip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
   ctaChipText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   pickerBtn: { justifyContent: 'center' },
@@ -476,14 +475,14 @@ const styles = StyleSheet.create({
     maxHeight: 200, overflow: 'hidden',
   },
   neighborhoodItem: {
-    paddingHorizontal: 14, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   neighborhoodText: { fontSize: 14, fontFamily: fonts.body },
   durationRow: { flexDirection: 'row', gap: 10 },
   durationCard: {
     flex: 1, borderRadius: 12, borderWidth: 1.5,
-    padding: 14, alignItems: 'center', gap: 2,
+    padding: 16, alignItems: 'center', gap: 2,
   },
   durationDays: { fontSize: 24, fontWeight: '800', fontFamily: fonts.heading },
   durationLabel: { fontSize: 12, fontFamily: fonts.body },

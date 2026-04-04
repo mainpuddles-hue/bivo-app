@@ -20,6 +20,7 @@ import { fonts } from '@/lib/fonts'
 import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -474,9 +475,7 @@ export default function SettingsScreen() {
     <ScreenErrorBoundary screenName="Settings">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('settings.title')}</Text>
         <View style={{ flex: 1 }} />
         {dirty && (
@@ -1027,7 +1026,7 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 20, letterSpacing: -0.3, lineHeight: 28, fontFamily: fonts.headingSemi },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, minHeight: 44,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, minHeight: 44,
   },
   saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },

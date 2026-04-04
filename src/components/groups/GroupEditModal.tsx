@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     borderRadius: 12,
     borderWidth: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
   },
   toggleChip: {

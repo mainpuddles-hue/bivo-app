@@ -191,19 +191,19 @@ const styles = StyleSheet.create({
     gap: 8, paddingRight: 4,
   },
   categoryChip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
   },
   categoryChipText: {
     fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17,
   },
   titleInput: {
     fontSize: 16, fontFamily: fonts.headingSemi, borderRadius: 12,
-    borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1, paddingHorizontal: 16, paddingVertical: 12,
     letterSpacing: -0.16,
   },
   contentInput: {
     flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 12,
-    borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1, paddingHorizontal: 16, paddingVertical: 12,
     lineHeight: 20, minHeight: 160,
   },
 })

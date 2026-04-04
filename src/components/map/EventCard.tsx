@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   eventContent: {
-    padding: 14,
+    padding: 16,
     gap: 8,
   },
   title: {

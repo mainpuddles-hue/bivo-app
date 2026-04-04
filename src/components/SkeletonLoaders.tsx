@@ -185,7 +185,7 @@ export function PostDetailSkeleton() {
 
 const sectionSkel = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden' },
-  cardRow: { flexDirection: 'row', padding: 14, gap: 12, alignItems: 'center' },
+  cardRow: { flexDirection: 'row', padding: 16, gap: 12, alignItems: 'center' },
   circle: { width: 40, height: 40, borderRadius: 20 },
   content: { flex: 1, gap: 3 },
 })

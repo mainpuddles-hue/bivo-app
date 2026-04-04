@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
@@ -286,9 +287,7 @@ export default function OrganizationScreen() {
       <ScreenErrorBoundary screenName="Organization">
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.dashboard')}</Text>
           <View style={{ width: 24 }} />
         </View>
@@ -305,9 +304,7 @@ export default function OrganizationScreen() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.dashboard')}</Text>
         <View style={{ width: 24 }} />
       </View>

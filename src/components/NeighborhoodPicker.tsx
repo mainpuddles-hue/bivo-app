@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   list: { paddingBottom: 40 },
   item: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 20, paddingVertical: 14,
+    paddingHorizontal: 20, paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   itemText: { fontSize: 14, fontFamily: fonts.body, flex: 1 },

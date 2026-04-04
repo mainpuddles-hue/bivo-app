@@ -14,6 +14,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { formatTimeAgo } from '@/lib/format'
 
 type Tab = 'flags' | 'users' | 'stats'
@@ -210,9 +211,7 @@ function AdminScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.header, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('admin.accessDenied')}</Text>
           <View style={{ width: 24 }} />
         </View>
@@ -234,9 +233,7 @@ function AdminScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <View style={s.headerCenter}>
           <Shield size={18} color={colors.destructive} />
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('admin.title')}</Text>
@@ -481,7 +478,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
@@ -560,7 +557,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
     minHeight: 44,

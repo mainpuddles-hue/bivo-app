@@ -312,7 +312,7 @@ const s = StyleSheet.create({
   heroSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
   activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginTop: 8,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginTop: 8,
   },
   activeBadgeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   renewsText: { fontSize: 13, lineHeight: 18, marginTop: 8, fontFamily: fonts.body },

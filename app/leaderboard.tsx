@@ -13,6 +13,7 @@ import { Avatar } from '@/components/Avatar'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { FEATURES } from '@/lib/featureFlags'
 
 interface LeaderboardUser {
@@ -255,9 +256,7 @@ export default function LeaderboardScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -378,7 +377,7 @@ const s = StyleSheet.create({
     paddingBottom: 4,
   },
   filterChip: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },

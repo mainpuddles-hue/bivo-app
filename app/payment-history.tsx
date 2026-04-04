@@ -11,6 +11,7 @@ import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { formatPrice } from '@/lib/format'
 
 type PaymentStatus = 'paid' | 'refunded' | 'pending' | 'failed'
@@ -191,9 +192,7 @@ function PaymentHistoryScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('payment.history')}</Text>
         <View style={{ flex: 1 }} />
       </View>

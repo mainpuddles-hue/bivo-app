@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     gap: 12,
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
     right: 12,
     borderRadius: 16,
     borderWidth: 1,
-    padding: 14,
+    padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,

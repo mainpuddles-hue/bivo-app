@@ -1179,7 +1179,7 @@ const s = StyleSheet.create({
   saveSearchText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   chipSections: { gap: 0 },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
+  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
   filterChipOutline: { borderWidth: 1 },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   chipDivider: { width: 1, height: 24, alignSelf: 'center', marginHorizontal: 8, borderRadius: 1 },

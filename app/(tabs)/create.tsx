@@ -1740,7 +1740,7 @@ const styles = StyleSheet.create({
   modalContainer: { flex: 1 },
   modalHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 16, paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
@@ -1752,7 +1752,7 @@ const styles = StyleSheet.create({
   confirmBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   coordsDisplay: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 14, paddingVertical: 12,
+    marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 16, paddingVertical: 12,
     borderRadius: 12,
   },
   coordsDisplayText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.body },

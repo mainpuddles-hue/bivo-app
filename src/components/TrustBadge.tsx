@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   progress: {
     borderRadius: 12,
-    padding: 14,
+    padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },

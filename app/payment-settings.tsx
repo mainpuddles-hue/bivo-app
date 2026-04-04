@@ -13,6 +13,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { usePaymentMethods } from '@/hooks/usePaymentMethods'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 
 function PaymentSettingsScreenInner() {
   const { colors, isDark } = useTheme()
@@ -91,9 +92,7 @@ function PaymentSettingsScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('payment.settings')}</Text>
         <View style={{ flex: 1 }} />
       </View>

@@ -19,6 +19,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
@@ -314,9 +315,7 @@ export default function PublicProfileScreen() {
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
         </View>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
       </View>
@@ -329,9 +328,7 @@ export default function PublicProfileScreen() {
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.profileHidden') ?? 'Profiili ei ole julkinen'}</Text>
@@ -345,9 +342,7 @@ export default function PublicProfileScreen() {
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.notFound')}</Text>
@@ -376,9 +371,7 @@ export default function PublicProfileScreen() {
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          <BackButton />
           <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>
             {profile.business_name || profile.name}
           </Text>
@@ -783,9 +776,7 @@ export default function PublicProfileScreen() {
     <ScreenErrorBoundary screenName="PublicProfile">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
         <View style={{ flex: 1 }} />
       </View>
@@ -1133,7 +1124,7 @@ const s = StyleSheet.create({
   dangerActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
   dangerBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, padding: 14, borderRadius: 12,
+    gap: 8, padding: 16, borderRadius: 12,
   },
   dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   reviewBtn: {
@@ -1220,7 +1211,7 @@ const bs = StyleSheet.create({
   // Info card
   infoCard: {
     borderRadius: 12,
-    padding: 18,
+    padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
@@ -1318,7 +1309,7 @@ const bs = StyleSheet.create({
   // Location card
   locationCard: {
     borderRadius: 12,
-    padding: 18,
+    padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
@@ -1358,7 +1349,7 @@ const bs = StyleSheet.create({
   // Contact card
   contactCard: {
     borderRadius: 12,
-    padding: 18,
+    padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },

@@ -11,6 +11,7 @@ import { fonts } from '@/lib/fonts'
 import { EmptyState } from '@/components/EmptyState'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
@@ -261,9 +262,7 @@ function NotificationsScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('nav.notifications')}</Text>
         {unreadCount > 0 && (
           <View style={[styles.headerBadge, { backgroundColor: colors.accent }]}>
@@ -449,7 +448,7 @@ const styles = StyleSheet.create({
   markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   markAllReadText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
+  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
   sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
   sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 17 },

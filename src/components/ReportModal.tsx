@@ -263,7 +263,7 @@ const s = StyleSheet.create({
   },
   submitBtn: {
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,

@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     height: 160,
   },
   content: {
-    padding: 14,
+    padding: 16,
     gap: 8,
   },
   title: {
