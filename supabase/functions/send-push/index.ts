@@ -285,6 +285,38 @@ serve(async (req) => {
       )
     }
 
+    // Check user's notification preferences — respect opt-out
+    // Map push types to preference types (e.g. 'post_like' → 'likes', 'new_message' → 'messages')
+    const TYPE_TO_PREF: Record<string, string> = {
+      post_like: 'likes',
+      post_comment: 'comments',
+      new_follower: 'follows',
+      new_message: 'messages',
+      review_received: 'reviews',
+      thanks_received: 'nappaa',
+      badge_earned: 'system',
+      forum_reply: 'comments',
+      nearby_post: 'nearby_posts',
+      event_reminder: 'events',
+      event_invite: 'events',
+    }
+    const prefType = TYPE_TO_PREF[type]
+    if (prefType) {
+      const { data: prefRow } = await supabase
+        .from('notification_preferences')
+        .select('enabled')
+        .eq('user_id', user_id)
+        .eq('type', prefType)
+        .maybeSingle()
+      // If user explicitly disabled this type, skip push (notification row in DB remains)
+      if (prefRow && prefRow.enabled === false) {
+        return new Response(
+          JSON.stringify({ sent: false, reason: 'user_opted_out', type: prefType }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+    }
+
     // Check priority
     const isImmediate = IMMEDIATE_TYPES.has(type)
     const isBatch = BATCH_TYPES.has(type)

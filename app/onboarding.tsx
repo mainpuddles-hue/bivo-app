@@ -408,42 +408,44 @@ function OnboardingScreenInner() {
       </PressableOpacity>
 
       <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 24 }]}>
-        {t('onboarding.selectCity')}
+        Helsinki
       </Text>
 
-      {/* City picker row */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cityRow}>
-        {(cities.length > 0 ? cities : Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name }))).map((city) => {
-          const isSelected = selectedCity === city.id
-          return (
-            <PressableOpacity
-              key={city.id}
-              onPress={() => { setSelectedCity(city.id); trackEvent('onboarding_city_selected' as any, { city: city.id }) }}
-              style={[
-                s.cityChip,
-                isSelected
-                  ? { backgroundColor: colors.primary }
-                  : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-              ]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={city.name}
-            >
-              <Text
+      {/* City picker row — hidden until multi-city launch (only Helsinki supported) */}
+      {cities.length > 1 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cityRow}>
+          {(cities.length > 0 ? cities : Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name }))).map((city) => {
+            const isSelected = selectedCity === city.id
+            return (
+              <PressableOpacity
+                key={city.id}
+                onPress={() => { setSelectedCity(city.id); trackEvent('onboarding_city_selected' as any, { city: city.id }) }}
                 style={[
-                  s.cityChipText,
-                  {
-                    color: isSelected ? colors.primaryForeground : colors.foreground,
-                    fontFamily: isSelected ? fonts.bodySemi : fonts.body,
-                  },
+                  s.cityChip,
+                  isSelected
+                    ? { backgroundColor: colors.primary }
+                    : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                 ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={city.name}
               >
-                {city.name}
-              </Text>
-            </PressableOpacity>
-          )
-        })}
-      </ScrollView>
+                <Text
+                  style={[
+                    s.cityChipText,
+                    {
+                      color: isSelected ? colors.primaryForeground : colors.foreground,
+                      fontFamily: isSelected ? fonts.bodySemi : fonts.body,
+                    },
+                  ]}
+                >
+                  {city.name}
+                </Text>
+              </PressableOpacity>
+            )
+          })}
+        </ScrollView>
+      )}
 
       <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, marginTop: 8 }]}>
         {t('onboarding.neighborhoodSubtitle')}

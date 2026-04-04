@@ -600,8 +600,8 @@ export default function SettingsScreen() {
           ))}
         </View>
 
-        {/* City — allows user to change city */}
-        {availableCities.length > 0 && (
+        {/* City — hidden until multi-city launch (only Helsinki supported) */}
+        {availableCities.length > 1 && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.city')}</Text>
             <View style={[s.card, { backgroundColor: colors.card }]}>
