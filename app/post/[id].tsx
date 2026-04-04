@@ -21,6 +21,7 @@ import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
 import { ReportModal } from '@/components/ReportModal'
 import { Avatar } from '@/components/Avatar'
 import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
+import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { FEATURES } from '@/lib/featureFlags'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
 import { useStripePayment } from '@/hooks/useStripePayment'
@@ -116,6 +117,14 @@ function PostDetailScreenInner() {
     const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).single()
     if (data) {
       const p = data as unknown as Post
+      // Apply location_accuracy privacy for other users' posts
+      const accuracy = (p.user as any)?.location_accuracy
+      if (accuracy && accuracy !== 'exact' && cachedId !== p.user_id) {
+        const result = applyLocationAccuracy(accuracy, (p as any).latitude, (p as any).longitude, p.location)
+        ;(p as any).latitude = result.latitude
+        ;(p as any).longitude = result.longitude
+        p.location = result.location
+      }
       setPost(p)
       setLikeCount(p.like_count ?? 0)
       trackEvent('post_viewed', { post_id: id as string, type: p.type })

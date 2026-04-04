@@ -12,6 +12,7 @@ import type { Post, PostType, Event, CityEvent, LocalPlace } from '@/lib/types'
 import { useSupabase } from '@/hooks/useSupabase'
 import { isToday, isTomorrow, isWithinDays } from '@/lib/dateHelpers'
 import { haversineKm } from '@/lib/geo'
+import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import type { ListItem, StableMarker, FilterKey, Section, ItemKind } from './types'
 import { LAYER_COLORS, PLACE_LABEL, PLACES_INITIAL_LIMIT, formatDistance } from './constants'
 
@@ -226,7 +227,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       const { south, north, west, east } = cityBounds
       const [postsSettled, eventsSettled, cityEventsSettled, tmSettled] = await Promise.allSettled([
         supabase.from('posts')
-          .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url)')
+          .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url, location_accuracy)')
           .eq('is_active', true)
           .not('latitude', 'is', null)
           .not('longitude', 'is', null)
@@ -250,7 +251,22 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       const eventsRes = eventsSettled.status === 'fulfilled' ? eventsSettled.value : { data: null, error: null }
       const cityEventsData = cityEventsSettled.status === 'fulfilled' ? cityEventsSettled.value : []
       const tmData = tmSettled.status === 'fulfilled' ? tmSettled.value : []
-      if (postsRes.data) setPosts(postsRes.data as unknown as Post[])
+      if (postsRes.data) {
+        // Apply location_accuracy privacy: blur or hide coordinates for 'area'/'city' users
+        const privacyFiltered = (postsRes.data as any[]).reduce<Post[]>((acc, p) => {
+          const accuracy = (p.user as any)?.location_accuracy
+          if (accuracy && accuracy !== 'exact') {
+            const result = applyLocationAccuracy(accuracy, p.latitude, p.longitude, p.location)
+            if (result.latitude == null || result.longitude == null) return acc // 'city' → skip on map
+            p.latitude = result.latitude
+            p.longitude = result.longitude
+            p.location = result.location
+          }
+          acc.push(p as Post)
+          return acc
+        }, [])
+        setPosts(privacyFiltered)
+      }
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
       const linkedEvents = cityEventsData
       const tmEvents = tmData
