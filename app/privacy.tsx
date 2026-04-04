@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { BackButton } from '@/components/ui'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -16,9 +17,7 @@ function PrivacyScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('privacy.title')}</Text>
       </View>
 

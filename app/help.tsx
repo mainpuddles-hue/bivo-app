@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 
 interface FAQItem {
   question: string
@@ -81,9 +82,7 @@ function HelpScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('help.title')}</Text>
       </View>
 

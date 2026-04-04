@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
 
@@ -88,9 +89,7 @@ function BlockedUsersScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('blocked.title')}</Text>
         <View style={{ flex: 1 }} />
       </View>

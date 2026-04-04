@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PostCardSkeleton } from '@/components/SkeletonLoaders'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BackButton } from '@/components/ui'
 import type { Post } from '@/lib/types'
 
 type SavedTab = 'posts' | 'events' | 'places'
@@ -230,9 +231,7 @@ function SavedScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        <BackButton />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('saved.title')}</Text>
       </View>
 
