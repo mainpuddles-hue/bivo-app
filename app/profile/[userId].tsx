@@ -19,7 +19,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
@@ -541,7 +541,7 @@ export default function PublicProfileScreen() {
                   {profile.naapurusto}
                 </Text>
               )}
-              <Pressable
+              <PressableOpacity
                 style={[bs.mapButton, { backgroundColor: `${colors.primary}12` }]}
                 onPress={() => {
                   const url = `https://www.google.com/maps/search/?api=1&query=${profile.business_lat},${profile.business_lng}`
@@ -552,7 +552,7 @@ export default function PublicProfileScreen() {
                 <Text style={[bs.mapButtonText, { color: colors.primary }]}>
                   {t('business.showOnMap')}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             </View>
           )}
 
@@ -564,7 +564,7 @@ export default function PublicProfileScreen() {
               </Text>
 
               {profile.business_phone && (
-                <Pressable
+                <PressableOpacity
                   style={bs.contactRow}
                   onPress={() => Linking.openURL(`tel:${profile.business_phone}`).catch(() => {})}
                 >
@@ -577,11 +577,11 @@ export default function PublicProfileScreen() {
                     </Text>
                     <Text style={[bs.contactValue, { color: colors.primary }]}>{profile.business_phone}</Text>
                   </View>
-                </Pressable>
+                </PressableOpacity>
               )}
 
               {profile.business_website && (
-                <Pressable
+                <PressableOpacity
                   style={bs.contactRow}
                   onPress={() => {
                     const url = profile.business_website!.startsWith('http') ? profile.business_website! : `https://${profile.business_website}`
@@ -599,7 +599,7 @@ export default function PublicProfileScreen() {
                       {profile.business_website}
                     </Text>
                   </View>
-                </Pressable>
+                </PressableOpacity>
               )}
 
               {businessHours && Object.keys(businessHours).length > 0 && (
@@ -952,7 +952,7 @@ export default function PublicProfileScreen() {
           {posts.length > 0 && (
             <View style={s.recentPostsRow}>
               {posts.slice(0, 3).map(post => (
-                <Pressable key={post.id} onPress={() => router.push(`/post/${post.id}` as any)} style={s.recentPostThumb}>
+                <PressableOpacity key={post.id} onPress={() => router.push(`/post/${post.id}` as any)} style={s.recentPostThumb}>
                   {post.image_url ? (
                     <ImageWithFallback uri={post.image_url} style={s.recentPostImg} contentFit="cover" />
                   ) : (
@@ -960,7 +960,7 @@ export default function PublicProfileScreen() {
                       <Text style={[s.recentPostImgPlaceholder, { color: colors.mutedForeground }]} numberOfLines={1}>{post.title}</Text>
                     </View>
                   )}
-                </Pressable>
+                </PressableOpacity>
               ))}
             </View>
           )}
@@ -968,12 +968,12 @@ export default function PublicProfileScreen() {
 
         {/* Tabs */}
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
             <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground }]}>{t('profile.posts')}</Text>
-          </Pressable>
-          <Pressable onPress={() => setActiveTab('reviews')} style={[s.tab, activeTab === 'reviews' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => setActiveTab('reviews')} style={[s.tab, activeTab === 'reviews' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
             <Text style={[s.tabText, { color: activeTab === 'reviews' ? colors.primary : colors.mutedForeground }]}>{t('profile.reviews')}</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Posts tab */}

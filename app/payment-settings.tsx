@@ -13,7 +13,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { usePaymentMethods } from '@/hooks/usePaymentMethods'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 
 function PaymentSettingsScreenInner() {
   const { colors, isDark } = useTheme()
@@ -175,7 +175,7 @@ function PaymentSettingsScreenInner() {
                   </Text>
 
                   {!isConnectOnboarded && (
-                    <Pressable
+                    <PressableOpacity
                       onPress={handleStartConnect}
                       disabled={connecting}
                       style={[s.connectBtn, { backgroundColor: colors.primary, opacity: connecting ? 0.6 : 1 }]}
@@ -190,7 +190,7 @@ function PaymentSettingsScreenInner() {
                           <ChevronRight size={16} color={colors.primaryForeground} />
                         </>
                       )}
-                    </Pressable>
+                    </PressableOpacity>
                   )}
                 </View>
               </View>
@@ -211,11 +211,11 @@ function PaymentSettingsScreenInner() {
           {/* Transaction History */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.history')}</Text>
           <View style={[s.card, { backgroundColor: colors.card }]}>
-            <Pressable onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityLabel={t('payment.history')} accessibilityRole="button">
+            <PressableOpacity onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityLabel={t('payment.history')} accessibilityRole="button">
               <History size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.history')}</Text>
               <ChevronRight size={16} color={colors.mutedForeground} />
-            </Pressable>
+            </PressableOpacity>
           </View>
 
           {/* Security Note */}

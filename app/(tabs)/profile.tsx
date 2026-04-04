@@ -379,8 +379,8 @@ export default function ProfileScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
-        <PressableOpacity onPress={() => router.push('/settings')} hitSlop={8} accessibilityLabel={t('settings.title')} accessibilityRole="button">
-          <Settings size={22} color={colors.mutedForeground} />
+        <PressableOpacity onPress={() => router.push('/settings')} hitSlop={8} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={t('settings.title')} accessibilityRole="button">
+          <Settings size={20} color={colors.mutedForeground} />
         </PressableOpacity>
       </View>
 

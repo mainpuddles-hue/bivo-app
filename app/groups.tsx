@@ -13,6 +13,7 @@ import {
   ArrowLeft, Plus, ChevronRight, Search, X, Users, Lock, Globe,
 } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -305,7 +306,7 @@ export default function GroupsScreen() {
   const renderGroupCard = useCallback((group: Group, isMine: boolean) => {
     const catColor = CATEGORY_COLORS[group.category] || colors.primary
     return (
-      <Pressable
+      <PressableOpacity
         key={group.id}
         style={[s.groupCard, {
           backgroundColor: colors.card,
@@ -352,7 +353,7 @@ export default function GroupsScreen() {
             </Text>
           </Pressable>
         )}
-      </Pressable>
+      </PressableOpacity>
     )
   }, [colors, isDark, t, router, handleJoin])
 
@@ -363,9 +364,9 @@ export default function GroupsScreen() {
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         {/* Header */}
         <View style={[s.header, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          </PressableOpacity>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
             {t('groups.title')}
           </Text>
@@ -387,15 +388,15 @@ export default function GroupsScreen() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <PressableOpacity onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>
           {t('groups.title')}
         </Text>
-        <Pressable onPress={() => setShowSearch(!showSearch)} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.search')}>
+        <PressableOpacity onPress={() => setShowSearch(!showSearch)} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.search')}>
           <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
-        </Pressable>
+        </PressableOpacity>
       </View>
 
       {/* Search bar */}
@@ -412,9 +413,9 @@ export default function GroupsScreen() {
             autoFocus
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+            <PressableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
               <X size={16} color={colors.mutedForeground} strokeWidth={1.8} />
-            </Pressable>
+            </PressableOpacity>
           )}
         </View>
       )}
@@ -470,7 +471,7 @@ export default function GroupsScreen() {
       )}
 
       {/* FAB */}
-      <Pressable
+      <PressableOpacity
         style={[s.fab, { backgroundColor: colors.accent, bottom: insets.bottom + 20 }]}
         onPress={() => {
           try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
@@ -480,7 +481,7 @@ export default function GroupsScreen() {
         accessibilityLabel={t('groups.create')}
       >
         <Plus size={24} color={colors.accentForeground} strokeWidth={2} />
-      </Pressable>
+      </PressableOpacity>
 
       {/* Create Group Modal */}
       <Modal visible={showCreateModal} animationType="slide" transparent onRequestClose={() => setShowCreateModal(false)}>
@@ -491,9 +492,9 @@ export default function GroupsScreen() {
               <Text style={[s.modalTitle, { color: colors.foreground }]}>
                 {t('groups.create')}
               </Text>
-              <Pressable onPress={() => setShowCreateModal(false)} hitSlop={8}>
+              <PressableOpacity onPress={() => setShowCreateModal(false)} hitSlop={8}>
                 <X size={22} color={colors.mutedForeground} strokeWidth={1.8} />
-              </Pressable>
+              </PressableOpacity>
             </View>
 
             <ScrollView style={s.modalScroll} showsVerticalScrollIndicator={false}>
@@ -533,7 +534,7 @@ export default function GroupsScreen() {
                 {GROUP_CATEGORIES.map((cat) => {
                   const isActive = newCategory === cat.key
                   return (
-                    <Pressable
+                    <PressableOpacity
                       key={cat.key}
                       style={[
                         s.chip,
@@ -547,7 +548,7 @@ export default function GroupsScreen() {
                       <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                         {t(cat.labelKey)}
                       </Text>
-                    </Pressable>
+                    </PressableOpacity>
                   )
                 })}
               </View>
@@ -556,7 +557,7 @@ export default function GroupsScreen() {
               <Text style={[s.inputLabel, { color: colors.foreground }]}>
                 {t('groups.neighborhood')}
               </Text>
-              <Pressable
+              <PressableOpacity
                 style={[s.textInput, s.pickerButton, { backgroundColor: colors.muted, borderColor: colors.border }]}
                 onPress={() => setShowNeighborhoodPicker(true)}
               >
@@ -564,7 +565,7 @@ export default function GroupsScreen() {
                   {newNeighborhood || t('groups.neighborhood')}
                 </Text>
                 <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.8} />
-              </Pressable>
+              </PressableOpacity>
 
               {/* Public/Private toggle */}
               <View style={s.toggleRow}>
@@ -586,7 +587,7 @@ export default function GroupsScreen() {
               </View>
 
               {/* Submit */}
-              <Pressable
+              <PressableOpacity
                 style={[s.submitButton, { backgroundColor: creating ? colors.muted : colors.accent }]}
                 onPress={handleCreate}
                 disabled={creating}
@@ -598,7 +599,7 @@ export default function GroupsScreen() {
                     {t('groups.create')}
                   </Text>
                 )}
-              </Pressable>
+              </PressableOpacity>
             </ScrollView>
           </Pressable>
         </Pressable>
@@ -612,15 +613,15 @@ export default function GroupsScreen() {
               <Text style={[s.modalTitle, { color: colors.foreground }]}>
                 {t('groups.neighborhood')}
               </Text>
-              <Pressable onPress={() => setShowNeighborhoodPicker(false)} hitSlop={8}>
+              <PressableOpacity onPress={() => setShowNeighborhoodPicker(false)} hitSlop={8}>
                 <X size={22} color={colors.mutedForeground} strokeWidth={1.8} />
-              </Pressable>
+              </PressableOpacity>
             </View>
             <FlatList
               data={NEIGHBORHOODS as readonly string[]}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
-                <Pressable
+                <PressableOpacity
                   style={[s.neighborhoodItem, {
                     backgroundColor: newNeighborhood === item ? colors.muted : 'transparent',
                   }]}
@@ -634,7 +635,7 @@ export default function GroupsScreen() {
                   }]}>
                     {item}
                   </Text>
-                </Pressable>
+                </PressableOpacity>
               )}
             />
           </Pressable>

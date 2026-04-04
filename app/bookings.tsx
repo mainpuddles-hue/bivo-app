@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator, Animated } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, Alert, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
@@ -19,7 +19,7 @@ import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 
 function BookingCardSkeleton() {
@@ -353,7 +353,7 @@ export default function BookingsScreen() {
     const canReview = item.status === 'completed'
 
     return (
-      <Pressable
+      <PressableOpacity
         onPress={() => router.push(`/booking/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
@@ -396,7 +396,7 @@ export default function BookingsScreen() {
         {(canConfirm || canCancel || canMarkReturned || canReview) && (
           <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
             {canConfirm && (
-              <Pressable
+              <PressableOpacity
                 onPress={() => handleConfirm(item)}
                 disabled={isActionLoading(item.id)}
                 style={[styles.actionBtn, { backgroundColor: colors.success }]}
@@ -409,10 +409,10 @@ export default function BookingsScreen() {
                     <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text>
                   </>
                 )}
-              </Pressable>
+              </PressableOpacity>
             )}
             {canMarkReturned && (
-              <Pressable
+              <PressableOpacity
                 onPress={() => handleMarkReturned(item)}
                 disabled={isActionLoading(item.id)}
                 style={[styles.actionBtn, { backgroundColor: colors.primary }]}
@@ -425,30 +425,30 @@ export default function BookingsScreen() {
                     <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.returnItem')}</Text>
                   </>
                 )}
-              </Pressable>
+              </PressableOpacity>
             )}
             {canCancel && (
-              <Pressable
+              <PressableOpacity
                 onPress={() => handleCancel(item)}
                 disabled={isActionLoading(item.id)}
                 style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}
               >
                 <XCircle size={14} color={colors.destructive} />
                 <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('rental.cancelBooking')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
             {canReview && (
-              <Pressable
+              <PressableOpacity
                 onPress={() => handleLeaveReview(item)}
                 style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}
               >
                 <Star size={14} color={colors.pro} />
                 <Text style={[styles.actionBtnText, { color: colors.pro }]}>{t('rental.leaveReview')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
           </View>
         )}
-      </Pressable>
+      </PressableOpacity>
     )
   }, [colors, isDark, activeTab, router, t, locale, handleConfirm, handleCancel, handleMarkReturned, handleLeaveReview, actionLoading])
 
@@ -469,7 +469,7 @@ export default function BookingsScreen() {
     const canReview = item.status === 'completed'
 
     return (
-      <Pressable
+      <PressableOpacity
         onPress={() => router.push(`/booking/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
@@ -508,37 +508,37 @@ export default function BookingsScreen() {
         {(canConfirm || canStart || canComplete || canCancel || canReview) && (
           <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
             {canConfirm && (
-              <Pressable onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
+              <PressableOpacity onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
                 <CheckCircle size={14} color={colors.primaryForeground} />
                 <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.acceptJob')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
             {canStart && (
-              <Pressable onPress={() => handleServiceStart(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.primary }]}>
+              <PressableOpacity onPress={() => handleServiceStart(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.primary }]}>
                 <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
             {canComplete && (
-              <Pressable onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
+              <PressableOpacity onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
                 <CheckCircle size={14} color={colors.primaryForeground} />
                 <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.markDone')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
             {canCancel && (
-              <Pressable onPress={() => handleServiceCancel(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}>
+              <PressableOpacity onPress={() => handleServiceCancel(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}>
                 <XCircle size={14} color={colors.destructive} />
                 <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('service.cancelBooking')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
             {canReview && (
-              <Pressable onPress={() => { const id = isBuyer ? item.provider_id : item.buyer_id; router.push(`/profile/${id}` as any) }} style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}>
+              <PressableOpacity onPress={() => { const id = isBuyer ? item.provider_id : item.buyer_id; router.push(`/profile/${id}` as any) }} style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}>
                 <Star size={14} color={colors.pro} />
                 <Text style={[styles.actionBtnText, { color: colors.pro }]}>{t('rental.leaveReview')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
           </View>
         )}
-      </Pressable>
+      </PressableOpacity>
     )
   }, [colors, isDark, userId, router, t, locale, handleServiceConfirm, handleServiceStart, handleServiceComplete, handleServiceCancel, actionLoading])
 
@@ -554,36 +554,36 @@ export default function BookingsScreen() {
 
       {/* Tabs */}
       <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => setActiveTab('borrower')}
           style={[styles.tab, activeTab === 'borrower' && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
         >
           <Text style={[styles.tabText, { color: activeTab === 'borrower' ? colors.primary : colors.mutedForeground }]}>
             {t('rental.myRentals')} ({borrowerCount})
           </Text>
-        </Pressable>
-        <Pressable
+        </PressableOpacity>
+        <PressableOpacity
           onPress={() => setActiveTab('lender')}
           style={[styles.tab, activeTab === 'lender' && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
         >
           <Text style={[styles.tabText, { color: activeTab === 'lender' ? colors.primary : colors.mutedForeground }]}>
             {t('rental.lendingOut')} ({lenderCount})
           </Text>
-        </Pressable>
-        <Pressable
+        </PressableOpacity>
+        <PressableOpacity
           onPress={() => setActiveTab('services')}
           style={[styles.tab, activeTab === 'services' && { borderBottomColor: TARJOAN_COLOR, borderBottomWidth: 2 }]}
         >
           <Text style={[styles.tabText, { color: activeTab === 'services' ? TARJOAN_COLOR : colors.mutedForeground }]}>
             {t('service.services')} ({serviceCount})
           </Text>
-        </Pressable>
+        </PressableOpacity>
       </View>
 
       {/* Status filter chips */}
       <View style={styles.statusFilterRow}>
         {(['active', 'past'] as const).map(f => (
-          <Pressable
+          <PressableOpacity
             key={f}
             onPress={() => setStatusFilter(f)}
             style={[styles.statusFilterChip, { backgroundColor: statusFilter === f ? colors.primary : (isDark ? colors.card : colors.muted) }]}
@@ -591,7 +591,7 @@ export default function BookingsScreen() {
             <Text style={[styles.statusFilterText, { color: statusFilter === f ? colors.primaryForeground : colors.mutedForeground }]}>
               {t(`bookings.${f}`)}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         ))}
       </View>
 

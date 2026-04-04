@@ -28,6 +28,7 @@ import { GroupEditModal } from '@/components/groups/GroupEditModal'
 import { ReportModal } from '@/components/ReportModal'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { isValidUUID } from '@/lib/validation'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
 import type { GroupMember } from '@/components/groups/GroupMembersModal'
@@ -624,7 +625,7 @@ export default function GroupDetailScreen() {
         <View style={[ps.searchBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <Search size={16} color={colors.mutedForeground} strokeWidth={1.8} />
           <TextInput style={[ps.searchInput, { color: colors.foreground }]} placeholder={t('groups.searchPosts')} placeholderTextColor={colors.mutedForeground} value={searchQuery} onChangeText={setSearchQuery} />
-          {searchQuery.length > 0 && <Pressable onPress={() => setSearchQuery('')} hitSlop={8}><X size={16} color={colors.mutedForeground} strokeWidth={1.8} /></Pressable>}
+          {searchQuery.length > 0 && <PressableOpacity onPress={() => setSearchQuery('')} hitSlop={8}><X size={16} color={colors.mutedForeground} strokeWidth={1.8} /></PressableOpacity>}
         </View>
       )}
 
@@ -669,7 +670,7 @@ export default function GroupDetailScreen() {
           {postImage && (
             <View style={ps.imagePreviewRow}>
               <Image source={{ uri: postImage }} style={ps.imagePreview} contentFit="cover" />
-              <Pressable onPress={() => setPostImage(null)} style={ps.removeImageBtn}><X size={14} color="#FFF" strokeWidth={2} /></Pressable>
+              <PressableOpacity onPress={() => setPostImage(null)} style={ps.removeImageBtn}><X size={14} color="#FFF" strokeWidth={2} /></PressableOpacity>
             </View>
           )}
           <View style={ps.postInputRow}>

@@ -39,7 +39,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
 import { BoostBadge } from '@/components/BoostBadge'
-import { ModalCloseButton } from '@/components/ui'
+import { ModalCloseButton, PressableOpacity } from '@/components/ui'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -737,10 +737,10 @@ function PostDetailScreenInner() {
         </View>
         <Text style={[styles.commentContent, { color: colors.foreground }]}>{c.content}</Text>
         {userId && (
-          <Pressable onPress={() => setReplyToComment(c)} style={styles.replyBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.reply')}>
+          <PressableOpacity onPress={() => setReplyToComment(c)} style={styles.replyBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.reply')}>
             <Reply size={12} color={colors.mutedForeground} />
             <Text style={[styles.replyBtnText, { color: colors.mutedForeground }]}>{t('post.reply')}</Text>
-          </Pressable>
+          </PressableOpacity>
         )}
       </View>
     </View>
@@ -750,7 +750,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
         </View>
         <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}>
           <PostDetailSkeleton />
@@ -763,7 +763,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
         </View>
         <Text style={[styles.notFound, { color: colors.mutedForeground }]}>{t('post.notFound')}</Text>
       </View>
@@ -796,17 +796,17 @@ function PostDetailScreenInner() {
         {/* Image gallery — tap to open fullscreen */}
         {allImages.length > 0 && (
           allImages.length === 1 ? (
-            <Pressable onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
+            <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
               <Image source={{ uri: allImages[0] }} style={styles.heroImage} contentFit="cover" transition={300} />
-            </Pressable>
+            </PressableOpacity>
           ) : (
             <FlatList
               horizontal pagingEnabled data={allImages}
               keyExtractor={(item, i) => `${item}-${i}`}
               renderItem={({ item, index }) => (
-                <Pressable onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
+                <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
                   <Image source={{ uri: item }} style={styles.heroImage} contentFit="cover" />
-                </Pressable>
+                </PressableOpacity>
               )}
               showsHorizontalScrollIndicator={false}
             />
@@ -964,9 +964,9 @@ function PostDetailScreenInner() {
             <Pressable onPress={toggleLike} style={({ pressed }) => [styles.actionItem, pressed && { opacity: 0.7 }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
               <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
               {likeCount > 0 && (
-                <Pressable onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
+                <PressableOpacity onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
                   <Text style={[styles.actionText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>
-                </Pressable>
+                </PressableOpacity>
               )}
             </Pressable>
             <View style={styles.actionItem}>
@@ -979,7 +979,7 @@ function PostDetailScreenInner() {
 
           {/* Author card — compact, like feed PostCard */}
           <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Pressable onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow} accessibilityRole="button" accessibilityLabel={user?.name ?? t('common.user')}>
+            <PressableOpacity onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow} accessibilityRole="button" accessibilityLabel={user?.name ?? t('common.user')}>
               <Avatar url={user?.avatar_url} name={user?.name} size={32} />
               <View style={styles.authorCardInfo}>
                 <View style={styles.authorNameRow}>
@@ -998,7 +998,7 @@ function PostDetailScreenInner() {
                   </View>
                 )}
               </View>
-            </Pressable>
+            </PressableOpacity>
           </View>
 
           {/* Related posts */}
@@ -1009,7 +1009,7 @@ function PostDetailScreenInner() {
                 {relatedPosts.map((rp) => {
                   const rpCat = CATEGORIES[rp.type as PostType]
                   return (
-                    <Pressable key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card }]}>
+                    <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card }]}>
                       {rp.image_url ? (<Image source={{ uri: rp.image_url }} style={styles.relatedImage} contentFit="cover" />) : (
                         <View style={[styles.relatedImage, { backgroundColor: rpCat ? (isDark ? rpCat.bgDark : rpCat.bgLight) : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
                           {rpCat && CATEGORY_ICON_MAP[rpCat.icon] && (() => { const I = CATEGORY_ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
@@ -1019,7 +1019,7 @@ function PostDetailScreenInner() {
                         <Text style={[styles.relatedCardTitle, { color: colors.foreground }]} numberOfLines={2}>{rp.title}</Text>
                         {rp.location && (<View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><MapPin size={10} color={colors.mutedForeground} /><Text style={[styles.relatedCardLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{rp.location}</Text></View>)}
                       </View>
-                    </Pressable>
+                    </PressableOpacity>
                   )
                 })}
               </ScrollView>
@@ -1057,7 +1057,7 @@ function PostDetailScreenInner() {
                 <Text style={[styles.replyIndicatorText, { color: colors.primary }]} numberOfLines={1}>
                   {t('post.replyingTo', { name: replyToComment.user?.name ?? t('common.user') })}
                 </Text>
-                <Pressable onPress={() => setReplyToComment(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><X size={14} color={colors.mutedForeground} /></Pressable>
+                <PressableOpacity onPress={() => setReplyToComment(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><X size={14} color={colors.mutedForeground} /></PressableOpacity>
               </View>
             )}
 
@@ -1277,10 +1277,10 @@ function PostDetailScreenInner() {
                 data={likers}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                  <Pressable onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
+                  <PressableOpacity onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
                     <Avatar url={item.avatar_url} name={item.name} size={40} />
                     <Text style={{ fontSize: 14, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )}
                 ListEmptyComponent={<Text style={{ textAlign: 'center', color: colors.mutedForeground, paddingVertical: 20, fontFamily: fonts.body }}>{t('post.noLikes')}</Text>}
               />

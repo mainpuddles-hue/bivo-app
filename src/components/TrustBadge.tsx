@@ -92,8 +92,8 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
         </View>
       </View>
 
-      {/* Factor breakdown */}
-      {factorEntries.length > 0 && (
+      {/* Factor breakdown — DEV only (raw scores confuse users) */}
+      {__DEV__ && factorEntries.length > 0 && (
         <View style={styles.factors}>
           {factorEntries.map(([key, value]) => (
             <Text key={key} style={[styles.factorText, { color: colors.mutedForeground }]}>
@@ -131,9 +131,6 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
 
       {level === 1 && onVerifyPress && (
         <>
-          <Text style={[styles.verifyExplainer, { color: colors.mutedForeground }]}>
-            {t('trust.hintVerifyId')}
-          </Text>
           <Pressable onPress={onVerifyPress} style={({ pressed }) => [styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }, pressed && { opacity: 0.7 }]}>
             <ShieldCheck size={16} color={colors.primaryForeground} />
             <Text style={[styles.verifyBtnText, { color: colors.primaryForeground }]}>{t('trust.verifyNow')}</Text>

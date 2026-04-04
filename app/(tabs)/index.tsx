@@ -5,6 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, Trophy, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
+import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -416,9 +417,9 @@ function FeedScreenInner() {
               digestData.threads > 0 ? `${digestData.threads} ${t('feed.newDiscussions')}` : null,
             ].filter(Boolean).join(' \u00B7 ')}
           </Text>
-          <Pressable onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 4, right: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
+          <PressableOpacity onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 4, right: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
             <XIcon size={14} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
       )}
 
@@ -428,9 +429,9 @@ function FeedScreenInner() {
           <Text style={[styles.missedBannerText, { color: colors.primaryForeground }]}>
             {t('feed.missedPosts', { count: missedCount })}
           </Text>
-          <Pressable onPress={() => setShowMissedBanner(false)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
+          <PressableOpacity onPress={() => setShowMissedBanner(false)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
             <XIcon size={16} color={colors.primaryForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
       )}
 
@@ -459,25 +460,25 @@ function FeedScreenInner() {
 
       {/* New posts banner */}
       {feed.hasNewPosts && (
-        <Pressable
+        <PressableOpacity
           onPress={feed.handleRefresh}
           style={[styles.newBanner, { backgroundColor: isDark ? `${colors.primary}1F` : `${colors.primary}14` }]}
         >
           <Sparkles size={14} color={colors.primary} />
           <Text style={[styles.newBannerText, { color: colors.primary }]}>{t('feed.newPosts')}</Text>
           <RefreshCw size={14} color={colors.primary} style={{ opacity: 0.7 }} />
-        </Pressable>
+        </PressableOpacity>
       )}
 
       {/* Error — compact inline */}
       {feed.error && (
-        <Pressable
+        <PressableOpacity
           onPress={feed.handleRefresh}
           style={[styles.errorRow, { backgroundColor: `${colors.destructive}10` }]}
         >
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={[styles.errorRowText, { color: colors.destructive }]} numberOfLines={1}>{feed.error}</Text>
-        </Pressable>
+        </PressableOpacity>
       )}
 
       {/* "Uusimmat ilmoitukset" section header removed — feed IS the listings */}
@@ -503,10 +504,10 @@ function FeedScreenInner() {
         <Text style={[styles.coldStartHint, { color: colors.mutedForeground }]}>
           {t('map.beFirstInArea', { area: feed.userNeighborhood ?? 'Helsinki' })}
         </Text>
-        <Pressable onPress={() => router.push('/(tabs)/create')} style={[styles.coldStartBtn, { backgroundColor: colors.primary }]}>
+        <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[styles.coldStartBtn, { backgroundColor: colors.primary }]}>
           <Plus size={16} color={colors.primaryForeground} />
           <Text style={[styles.coldStartBtnText, { color: colors.primaryForeground }]}>{t('events.heroCreateCTA')}</Text>
-        </Pressable>
+        </PressableOpacity>
       </View>
     )
   }, [feed.loading, feed.userNeighborhood, colors, t, router])
@@ -538,13 +539,13 @@ function FeedScreenInner() {
       {/* Sticky filter bar */}
       <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: 8 }]}>
         <View style={styles.neighborhoodRow}>
-          <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
+          <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
             <MapPin size={12} color={colors.mutedForeground} />
             <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
               {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
             </Text>
             <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
-          </Pressable>
+          </PressableOpacity>
 {/* Streak badge removed — cleaner header */}
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 8, alignItems: 'center', paddingHorizontal: 16 }}>

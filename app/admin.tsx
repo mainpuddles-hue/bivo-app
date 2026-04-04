@@ -5,6 +5,7 @@ import {
   View, Text, ScrollView, Pressable, TextInput, StyleSheet,
   ActivityIndicator, Alert, RefreshControl,
 } from 'react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Shield, Search, Ban, EyeOff, Check, AlertTriangle, Users, BarChart3, Flag } from 'lucide-react-native'
@@ -244,7 +245,7 @@ function AdminScreenInner() {
       {/* Tab chips */}
       <View style={s.tabs}>
         {TAB_CONFIG.map(({ key, label, icon: Icon }) => (
-          <Pressable
+          <PressableOpacity
             key={key}
             onPress={() => setActiveTab(key)}
             accessibilityLabel={label}
@@ -262,7 +263,7 @@ function AdminScreenInner() {
             <Text style={[s.tabText, { color: activeTab === key ? colors.primaryForeground : colors.mutedForeground }]}>
               {label}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         ))}
       </View>
 
@@ -320,7 +321,7 @@ function AdminScreenInner() {
                   {!flag.reviewed && (
                     <View style={s.actions}>
                       {flag.post_id && (
-                        <Pressable
+                        <PressableOpacity
                           onPress={() => hidePost(flag.post_id!, flag.id)}
                           style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
                           accessibilityLabel={t('admin.hidePost')}
@@ -328,9 +329,9 @@ function AdminScreenInner() {
                         >
                           <EyeOff size={14} color={colors.destructive} />
                           <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.hidePost')}</Text>
-                        </Pressable>
+                        </PressableOpacity>
                       )}
-                      <Pressable
+                      <PressableOpacity
                         onPress={() => allowPost(flag.id)}
                         style={[s.actionBtn, { backgroundColor: colors.accent + '15' }]}
                         accessibilityLabel={t('admin.allowPost')}
@@ -338,9 +339,9 @@ function AdminScreenInner() {
                       >
                         <Check size={14} color={colors.accent} />
                         <Text style={[s.actionText, { color: colors.accent }]}>{t('admin.allowPost')}</Text>
-                      </Pressable>
+                      </PressableOpacity>
                       {flag.post?.user_id && (
-                        <Pressable
+                        <PressableOpacity
                           onPress={() => toggleBan(flag.post!.user_id, false)}
                           style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
                           accessibilityLabel={t('admin.banUser')}
@@ -348,7 +349,7 @@ function AdminScreenInner() {
                         >
                           <Ban size={14} color={colors.destructive} />
                           <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.banUser')}</Text>
-                        </Pressable>
+                        </PressableOpacity>
                       )}
                     </View>
                   )}
@@ -392,7 +393,7 @@ function AdminScreenInner() {
                       {user.naapurusto} {'\u2022'} {t('admin.trustScore')}: {user.total_points ?? 0}
                     </Text>
                   </View>
-                  <Pressable
+                  <PressableOpacity
                     onPress={() => toggleBan(user.id, !!user.is_banned)}
                     style={[
                       s.banBtn,
@@ -406,7 +407,7 @@ function AdminScreenInner() {
                     ) : (
                       <Ban size={16} color={colors.destructive} />
                     )}
-                  </Pressable>
+                  </PressableOpacity>
                 </View>
               </View>
             ))}

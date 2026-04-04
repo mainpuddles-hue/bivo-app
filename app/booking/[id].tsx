@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert,
+  View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
@@ -18,7 +18,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { formatPrice, formatDateRange } from '@/lib/format'
@@ -319,7 +319,7 @@ function BookingDetailScreenInner() {
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 60 }]} showsVerticalScrollIndicator={false}>
         {/* Post info card */}
-        <Pressable
+        <PressableOpacity
           onPress={() => booking.post?.id && router.push(`/post/${booking.post.id}` as any)}
           style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
           accessibilityRole="button"
@@ -340,11 +340,11 @@ function BookingDetailScreenInner() {
               {isService ? t('service.services') : t('rental.booking')}
             </Text>
           </View>
-        </Pressable>
+        </PressableOpacity>
 
         {/* Other party info */}
         {booking.other_user && (
-          <Pressable
+          <PressableOpacity
             onPress={() => router.push(`/profile/${booking.other_user!.id}` as any)}
             style={[styles.userCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
             accessibilityRole="button"
@@ -355,7 +355,7 @@ function BookingDetailScreenInner() {
               <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>{booking.other_user.name ?? t('common.user')}</Text>
               <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 16 }}>{t(`booking.otherParty`)}</Text>
             </View>
-          </Pressable>
+          </PressableOpacity>
         )}
 
         {/* Status badge */}
@@ -448,7 +448,7 @@ function BookingDetailScreenInner() {
         {/* Action buttons */}
         <View style={styles.actionsContainer}>
           {canConfirm && (
-            <Pressable
+            <PressableOpacity
               onPress={handleConfirm}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: colors.success }]}
@@ -458,10 +458,10 @@ function BookingDetailScreenInner() {
               {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
                 <><CheckCircle size={16} color={colors.primaryForeground} /><Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text></>
               )}
-            </Pressable>
+            </PressableOpacity>
           )}
           {canStart && (
-            <Pressable
+            <PressableOpacity
               onPress={handleStartWork}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: colors.primary }]}
@@ -469,10 +469,10 @@ function BookingDetailScreenInner() {
               accessibilityRole="button"
             >
               <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
-            </Pressable>
+            </PressableOpacity>
           )}
           {canComplete && (
-            <Pressable
+            <PressableOpacity
               onPress={handleComplete}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: colors.primary }]}
@@ -484,10 +484,10 @@ function BookingDetailScreenInner() {
                   {booking.type === 'rental' ? t('rental.returnItem') : t('service.markDone')}
                 </Text></>
               )}
-            </Pressable>
+            </PressableOpacity>
           )}
           {canCancel && (
-            <Pressable
+            <PressableOpacity
               onPress={handleCancel}
               disabled={actionLoading}
               style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}
@@ -496,10 +496,10 @@ function BookingDetailScreenInner() {
             >
               <XCircle size={16} color={colors.destructive} />
               <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('rental.cancelBooking')}</Text>
-            </Pressable>
+            </PressableOpacity>
           )}
           {canReview && (
-            <Pressable
+            <PressableOpacity
               onPress={handleLeaveReview}
               style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}
               accessibilityLabel={t('rental.leaveReview')}
@@ -507,12 +507,12 @@ function BookingDetailScreenInner() {
             >
               <Star size={16} color={colors.pro} />
               <Text style={[styles.actionBtnText, { color: colors.pro }]}>{t('rental.leaveReview')}</Text>
-            </Pressable>
+            </PressableOpacity>
           )}
 
           {/* Send message button */}
           {booking.other_user && (
-            <Pressable
+            <PressableOpacity
               onPress={handleSendMessage}
               style={[styles.actionBtn, { backgroundColor: colors.primary }]}
               accessibilityLabel={t('booking.sendMessage')}
@@ -520,7 +520,7 @@ function BookingDetailScreenInner() {
             >
               <MessageCircle size={16} color={colors.primaryForeground} />
               <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('booking.sendMessage')}</Text>
-            </Pressable>
+            </PressableOpacity>
           )}
         </View>
       </ScrollView>

@@ -11,7 +11,7 @@ import { fonts } from '@/lib/fonts'
 import { EmptyState } from '@/components/EmptyState'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
@@ -368,14 +368,14 @@ function NotificationsScreenInner() {
                     </Text>
                     {/* 1a: Group expand chevron */}
                     {isGroupedMulti && (
-                      <Pressable
+                      <PressableOpacity
                         onPress={() => toggleGroup(groupKey)}
                         hitSlop={12}
                         style={[styles.groupExpandBtn, { backgroundColor: `${colors.primary}1A` }]}
                       >
                         <Text style={[styles.groupBadgeText, { color: colors.primary }]}>{item.groupCount}</Text>
                         <ChevronIcon size={12} color={colors.primary} />
-                      </Pressable>
+                      </PressableOpacity>
                     )}
                   </View>
                 </View>

@@ -15,7 +15,7 @@ import { fonts } from '@/lib/fonts'
 import { formatPrice as formatPriceUtil } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -274,9 +274,9 @@ export default function CreateAdScreen() {
         {imageUri ? (
           <View style={styles.imagePreview}>
             <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" />
-            <Pressable onPress={() => setImageUri(null)} style={[styles.removeImage, { backgroundColor: colors.destructive }]} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
+            <PressableOpacity onPress={() => setImageUri(null)} style={[styles.removeImage, { backgroundColor: colors.destructive }]} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
               <X size={14} color={colors.primaryForeground} />
-            </Pressable>
+            </PressableOpacity>
           </View>
         ) : (
           <Pressable onPress={handlePickImage} style={({ pressed }) => [styles.imagePicker, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
@@ -301,7 +301,7 @@ export default function CreateAdScreen() {
         <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.ctaText')}</Text>
         <View style={styles.ctaRow}>
           {CTA_OPTIONS.map(opt => (
-            <Pressable
+            <PressableOpacity
               key={opt.value}
               onPress={() => setCtaText(opt.value)}
               style={[
@@ -322,32 +322,32 @@ export default function CreateAdScreen() {
               >
                 {locale === 'fi' ? opt.fi : locale === 'sv' ? opt.sv : opt.en}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           ))}
         </View>
 
         {/* Target neighborhood */}
         <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.targetNeighborhood')}</Text>
-        <Pressable
+        <PressableOpacity
           onPress={() => setShowNeighborhoods(!showNeighborhoods)}
           style={[styles.input, styles.pickerBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <Text style={{ color: targetNeighborhood ? colors.foreground : colors.mutedForeground, fontSize: 14, fontFamily: fonts.body }}>
             {targetNeighborhood ?? t('ads.allAreas')}
           </Text>
-        </Pressable>
+        </PressableOpacity>
         {showNeighborhoods && (
           <View style={[styles.neighborhoodList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Pressable
+            <PressableOpacity
               onPress={() => { setTargetNeighborhood(null); setShowNeighborhoods(false) }}
               style={[styles.neighborhoodItem, { borderBottomColor: colors.border }]}
             >
               <Text style={[styles.neighborhoodText, { color: !targetNeighborhood ? colors.primary : colors.foreground }]}>
                 {t('ads.allAreas')}
               </Text>
-            </Pressable>
+            </PressableOpacity>
             {(cityNeighborhoods.length > 0 ? cityNeighborhoods : NEIGHBORHOODS).map(n => (
-              <Pressable
+              <PressableOpacity
                 key={n}
                 onPress={() => { setTargetNeighborhood(n); setShowNeighborhoods(false) }}
                 style={[styles.neighborhoodItem, { borderBottomColor: colors.border }]}
@@ -355,7 +355,7 @@ export default function CreateAdScreen() {
                 <Text style={[styles.neighborhoodText, { color: targetNeighborhood === n ? colors.primary : colors.foreground }]}>
                   {n}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             ))}
           </View>
         )}
@@ -364,7 +364,7 @@ export default function CreateAdScreen() {
         <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.duration')}</Text>
         <View style={styles.durationRow}>
           {DURATION_OPTIONS.map(opt => (
-            <Pressable
+            <PressableOpacity
               key={opt.days}
               onPress={() => setDuration(opt.days)}
               style={[
@@ -384,7 +384,7 @@ export default function CreateAdScreen() {
               <Text style={[styles.durationPrice, { color: duration === opt.days ? colors.primary : colors.mutedForeground }]}>
                 {formatPrice(opt.days * pricePerDay)}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           ))}
         </View>
 
@@ -413,7 +413,7 @@ export default function CreateAdScreen() {
         )}
 
         {/* Submit */}
-        <Pressable
+        <PressableOpacity
           onPress={handleSubmit}
           disabled={submitting || !title.trim()}
           style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !title.trim() ? 0.6 : 1 }]}
@@ -431,7 +431,7 @@ export default function CreateAdScreen() {
               </Text>
             </>
           )}
-        </Pressable>
+        </PressableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
     </ScreenErrorBoundary>

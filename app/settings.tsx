@@ -20,6 +20,7 @@ import { fonts } from '@/lib/fonts'
 import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { BackButton, PressableOpacity } from '@/components/ui'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
@@ -84,6 +85,9 @@ export default function SettingsScreen() {
   const [userCityName, setUserCityName] = useState<string>('Helsinki')
   const [showCityPicker, setShowCityPicker] = useState(false)
   const [availableCities, setAvailableCities] = useState<{ id: string; name: string }[]>([])
+
+  // Neighborhood picker
+  const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
 
   // Account info
   const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null)
@@ -622,7 +626,7 @@ export default function SettingsScreen() {
                               t('settings.pickNewNeighborhood') ?? t('onboarding.neighborhoodSubtitle'),
                               [{
                                 text: t('common.ok') ?? 'OK',
-                                onPress: () => router.push({ pathname: '/', params: { openNeighborhoodPicker: '1' } }),
+                                onPress: () => setShowNeighborhoodPicker(true),
                               }]
                             )
                           } catch {
@@ -656,10 +660,7 @@ export default function SettingsScreen() {
         {/* Neighborhood — allows user to change neighborhood after onboarding */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('onboarding.chooseNeighborhood')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressableOpacity onPress={() => {
-            // Navigate to feed where NeighborhoodPicker is accessible
-            router.push({ pathname: '/', params: { openNeighborhoodPicker: '1' } })
-          }} style={s.row}>
+          <PressableOpacity onPress={() => setShowNeighborhoodPicker(true)} style={s.row}>
             <MapPin size={18} color={colors.primary} />
             <Text style={[s.rowText, { color: colors.foreground }]}>
               {profile?.naapurusto ?? userCityName}
@@ -974,6 +975,24 @@ export default function SettingsScreen() {
           TackBird v{appVersion}
         </Text>
       </ScrollView>
+
+      {/* Neighborhood Picker */}
+      <NeighborhoodPicker
+        visible={showNeighborhoodPicker}
+        onClose={() => setShowNeighborhoodPicker(false)}
+        selectedNeighborhood={profile?.naapurusto ?? null}
+        onSelect={async (nh) => {
+          if (!profile) return
+          try {
+            const { error } = await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', profile.id)
+            if (error) throw error
+            setProfile(prev => prev ? { ...prev, naapurusto: nh as any } : null)
+            setShowNeighborhoodPicker(false)
+          } catch {
+            Alert.alert(t('common.error'), t('settings.saveFailed'))
+          }
+        }}
+      />
 
       {/* Delete Account Confirmation Modal */}
       <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>

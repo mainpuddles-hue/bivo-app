@@ -14,6 +14,7 @@ import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { fonts } from '@/lib/fonts'
 import { trackEvent } from '@/lib/analytics'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 
 function AppleLogo({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) {
   return (
@@ -353,7 +354,7 @@ function LoginScreenInner() {
         {/* Mode toggle */}
             {mode !== 'forgot' && (
               <View style={[styles.modeToggle, { backgroundColor: colors.muted }]}>
-                <Pressable
+                <PressableOpacity
                   onPress={() => setMode('login')}
                   style={[styles.modeBtn, mode === 'login' && { backgroundColor: colors.card, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }]}
                   accessibilityRole="tab"
@@ -363,8 +364,8 @@ function LoginScreenInner() {
                   <Text style={[styles.modeText, { color: mode === 'login' ? colors.foreground : colors.mutedForeground }]}>
                     {t('auth.login')}
                   </Text>
-                </Pressable>
-                <Pressable
+                </PressableOpacity>
+                <PressableOpacity
                   onPress={() => setMode('register')}
                   style={[styles.modeBtn, mode === 'register' && { backgroundColor: colors.card, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }]}
                   accessibilityRole="tab"
@@ -374,13 +375,13 @@ function LoginScreenInner() {
                   <Text style={[styles.modeText, { color: mode === 'register' ? colors.foreground : colors.mutedForeground }]}>
                     {t('auth.register')}
                   </Text>
-                </Pressable>
+                </PressableOpacity>
               </View>
             )}
 
             {/* Google OAuth */}
             {mode !== 'forgot' && (
-              <Pressable
+              <PressableOpacity
                 onPress={handleGoogleOAuth}
                 style={[styles.googleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
                 accessibilityRole="button"
@@ -390,12 +391,12 @@ function LoginScreenInner() {
                 <Text style={[styles.googleBtnText, { color: colors.foreground }]}>
                   {t('auth.signInWithGoogle')}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )}
 
             {/* Apple Sign-In (native only, supported devices) */}
             {mode !== 'forgot' && Platform.OS !== 'web' && appleAvailable && (
-              <Pressable
+              <PressableOpacity
                 onPress={handleAppleSignIn}
                 style={[styles.appleBtn, { backgroundColor: colors.foreground, borderWidth: 1, borderColor: isDark ? colors.border : colors.foreground }]}
                 accessibilityRole="button"
@@ -405,7 +406,7 @@ function LoginScreenInner() {
                 <Text style={[styles.appleBtnText, { color: colors.primaryForeground }]}>
                   {t('auth.signInWithApple')}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )}
 
             {/* Divider */}
@@ -464,7 +465,7 @@ function LoginScreenInner() {
                     textContentType={mode === 'register' ? 'newPassword' : 'password'}
                     accessibilityLabel={t('auth.password')}
                   />
-                  <Pressable
+                  <PressableOpacity
                     onPress={() => setShowPassword(!showPassword)}
                     style={styles.eyeBtn}
                     hitSlop={8}
@@ -476,7 +477,7 @@ function LoginScreenInner() {
                     ) : (
                       <Eye size={20} color={colors.mutedForeground} />
                     )}
-                  </Pressable>
+                  </PressableOpacity>
                 </View>
               )}
 
@@ -487,20 +488,20 @@ function LoginScreenInner() {
 
               {/* Forgot password link */}
               {mode === 'login' && (
-                <Pressable
+                <PressableOpacity
                   onPress={() => setMode('forgot')}
                   accessibilityRole="link"
                   accessibilityLabel={t('auth.forgotPassword')}
                   style={{ minHeight: 44, justifyContent: 'center' }}
                 >
                   <Text style={[styles.forgotLink, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
-                </Pressable>
+                </PressableOpacity>
               )}
 
               {/* Terms checkbox (register mode only) */}
               {mode === 'register' && (
                 <View style={styles.termsRow}>
-                  <Pressable
+                  <PressableOpacity
                     onPress={() => setTermsAccepted(!termsAccepted)}
                     style={styles.checkbox}
                     hitSlop={8}
@@ -509,7 +510,7 @@ function LoginScreenInner() {
                     accessibilityLabel={t('auth.acceptTerms')}
                   >
                     {termsAccepted ? <View style={[styles.emptyCheckbox, { borderColor: colors.primary }]}><Check size={16} color={colors.primary} /></View> : <View style={[styles.emptyCheckbox, { borderColor: colors.border }]} />}
-                  </Pressable>
+                  </PressableOpacity>
                   <Text style={[styles.termsText, { color: colors.mutedForeground }]}>
                     {t('auth.acceptTerms')}{' '}
                     <Text onPress={() => router.push('/terms')} style={{ color: colors.primary }}>{t('auth.termsLink')}</Text>
@@ -520,7 +521,7 @@ function LoginScreenInner() {
               )}
 
               {/* Submit */}
-              <Pressable
+              <PressableOpacity
                 onPress={handleSubmit}
                 disabled={loading || (mode === 'register' && !termsAccepted)}
                 style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: (loading || (mode === 'register' && !termsAccepted)) ? 0.6 : 1 }]}
@@ -534,13 +535,13 @@ function LoginScreenInner() {
                     {mode === 'forgot' ? t('auth.sendResetLink') : mode === 'login' ? t('auth.login') : t('auth.register')}
                   </Text>
                 )}
-              </Pressable>
+              </PressableOpacity>
 
               {/* Back to login from forgot */}
               {mode === 'forgot' && (
-                <Pressable onPress={() => setMode('login')} style={{ alignSelf: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }}>
+                <PressableOpacity onPress={() => setMode('login')} style={{ alignSelf: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={[styles.linkText, { color: colors.primary }]}>{t('auth.backToLogin')}</Text>
-                </Pressable>
+                </PressableOpacity>
               )}
             </View>
       </ScrollView>

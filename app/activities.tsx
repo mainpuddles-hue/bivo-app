@@ -15,6 +15,7 @@ import {
   Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2,
   RefreshCw, Check,
 } from 'lucide-react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -442,7 +443,7 @@ function ActivitiesScreenInner() {
             </View>
             {/* Creator */}
             {item.creator && (
-              <Pressable
+              <PressableOpacity
                 onPress={() => router.push(`/profile/${item.creator!.id}` as any)}
                 style={st.creatorRow}
               >
@@ -450,7 +451,7 @@ function ActivitiesScreenInner() {
                 <Text style={[st.metaText, { color: colors.primary }]} numberOfLines={1}>
                   {item.creator.name}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )}
           </View>
           {/* Category badge */}
@@ -467,7 +468,7 @@ function ActivitiesScreenInner() {
               <Text style={[st.joinBtnText, { color: colors.mutedForeground }]}>{t('activity.full')}</Text>
             </View>
           ) : (
-            <Pressable
+            <PressableOpacity
               onPress={() => toggleMembership(item.id)}
               style={[
                 st.joinBtn,
@@ -480,7 +481,7 @@ function ActivitiesScreenInner() {
               <Text style={[st.joinBtnText, { color: item.is_member ? colors.primaryForeground : catColor }]}>
                 {item.is_member ? t('activity.joined') : t('activity.joinActivity')}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           )}
         </View>
       </View>
@@ -494,13 +495,13 @@ function ActivitiesScreenInner() {
     <View style={[st.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* ── Header ── */}
       <View style={[st.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={st.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={st.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <Text style={[st.headerTitle, { color: colors.foreground }]}>
           {t('activities.title')}
         </Text>
-        <Pressable
+        <PressableOpacity
           onPress={() => {
             if (!userId) { router.push('/(auth)/login'); return }
             setShowCreateModal(true)
@@ -508,7 +509,7 @@ function ActivitiesScreenInner() {
           style={[st.addBtn, { backgroundColor: colors.primary }]}
         >
           <Plus size={18} color={colors.primaryForeground} strokeWidth={2.5} />
-        </Pressable>
+        </PressableOpacity>
       </View>
 
       {/* ── Filter chips ── */}
@@ -521,7 +522,7 @@ function ActivitiesScreenInner() {
         {FILTER_CHIPS.map((chip) => {
           const isActive = filterCategory === chip.key
           return (
-            <Pressable
+            <PressableOpacity
               key={chip.key}
               onPress={() => setFilterCategory(chip.key)}
               style={[
@@ -537,7 +538,7 @@ function ActivitiesScreenInner() {
               ]}>
                 {t(chip.labelKey)}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           )
         })}
       </ScrollView>
@@ -571,7 +572,7 @@ function ActivitiesScreenInner() {
               <Text style={[st.emptyHint, { color: colors.mutedForeground }]}>
                 {t('activity.noActivitiesHint')}
               </Text>
-              <Pressable
+              <PressableOpacity
                 onPress={() => {
                   if (!userId) { router.push('/(auth)/login'); return }
                   setShowCreateModal(true)
@@ -582,14 +583,14 @@ function ActivitiesScreenInner() {
                 <Text style={[st.emptyBtnText, { color: colors.primaryForeground }]}>
                   {t('activities.create')}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             </View>
           }
         />
       )}
 
       {/* ── FAB ── */}
-      <Pressable
+      <PressableOpacity
         onPress={() => {
           if (!userId) { router.push('/(auth)/login'); return }
           setShowCreateModal(true)
@@ -599,7 +600,7 @@ function ActivitiesScreenInner() {
         accessibilityLabel={t('activities.create')}
       >
         <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
-      </Pressable>
+      </PressableOpacity>
 
       {/* ══════════════════════════════════════════════════
            Create Activity Modal
@@ -620,9 +621,9 @@ function ActivitiesScreenInner() {
               <Text style={[st.modalTitle, { color: colors.foreground }]}>
                 {t('activities.create')}
               </Text>
-              <Pressable onPress={() => setShowCreateModal(false)} hitSlop={12}>
+              <PressableOpacity onPress={() => setShowCreateModal(false)} hitSlop={12}>
                 <X size={24} color={colors.foreground} />
-              </Pressable>
+              </PressableOpacity>
             </View>
 
             <ScrollView
@@ -666,7 +667,7 @@ function ActivitiesScreenInner() {
                   {CATEGORIES.map((cat) => {
                     const isSelected = createCategory === cat.key
                     return (
-                      <Pressable
+                      <PressableOpacity
                         key={cat.key}
                         onPress={() => setCreateCategory(cat.key)}
                         style={[
@@ -680,7 +681,7 @@ function ActivitiesScreenInner() {
                         <Text style={[st.catChipText, { color: isSelected ? colors.primaryForeground : cat.color }]}>
                           {t(cat.labelKey)}
                         </Text>
-                      </Pressable>
+                      </PressableOpacity>
                     )
                   })}
                 </View>
@@ -693,7 +694,7 @@ function ActivitiesScreenInner() {
                   {SCHEDULE_TYPES.map((sched) => {
                     const isSelected = createScheduleType === sched.key
                     return (
-                      <Pressable
+                      <PressableOpacity
                         key={sched.key}
                         onPress={() => setCreateScheduleType(sched.key)}
                         style={[
@@ -706,7 +707,7 @@ function ActivitiesScreenInner() {
                         <Text style={[st.schedChipText, { color: isSelected ? colors.primaryForeground : colors.mutedForeground }]}>
                           {t(sched.labelKey)}
                         </Text>
-                      </Pressable>
+                      </PressableOpacity>
                     )
                   })}
                 </View>
@@ -720,7 +721,7 @@ function ActivitiesScreenInner() {
                     {DAYS_OF_WEEK.map((day) => {
                       const isSelected = createScheduleDay === day.key
                       return (
-                        <Pressable
+                        <PressableOpacity
                           key={day.key}
                           onPress={() => setCreateScheduleDay(day.key)}
                           style={[
@@ -733,7 +734,7 @@ function ActivitiesScreenInner() {
                           <Text style={[st.dayChipText, { color: isSelected ? colors.primaryForeground : colors.mutedForeground }]}>
                             {t(day.labelKey).slice(0, 2).toUpperCase()}
                           </Text>
-                        </Pressable>
+                        </PressableOpacity>
                       )
                     })}
                   </View>
@@ -782,7 +783,7 @@ function ActivitiesScreenInner() {
               </View>
 
               {/* Create button */}
-              <Pressable
+              <PressableOpacity
                 onPress={handleCreate}
                 disabled={creating}
                 style={[st.createBtn, { backgroundColor: creating ? colors.muted : colors.primary }]}
@@ -797,7 +798,7 @@ function ActivitiesScreenInner() {
                     </Text>
                   </>
                 )}
-              </Pressable>
+              </PressableOpacity>
             </ScrollView>
           </View>
         </KeyboardAvoidingView>

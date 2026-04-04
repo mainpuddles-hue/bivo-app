@@ -26,6 +26,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import type { CommunityEvent } from '@/lib/types'
 
 type EventCategory = CommunityEvent['category']
@@ -304,14 +305,14 @@ function CreateEventScreenInner() {
           },
         ]}
       >
-        <Pressable
+        <PressableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <Text
           style={[styles.headerTitle, { color: colors.foreground, fontFamily: fonts.heading }]}
           accessibilityRole="header"
@@ -333,7 +334,7 @@ function CreateEventScreenInner() {
         showsVerticalScrollIndicator={false}
       >
         {/* Image Picker */}
-        <Pressable
+        <PressableOpacity
           onPress={pickImage}
           style={[
             styles.imagePicker,
@@ -352,7 +353,7 @@ function CreateEventScreenInner() {
                 style={styles.previewImage}
                 contentFit="cover"
               />
-              <Pressable
+              <PressableOpacity
                 onPress={removeImage}
                 style={[styles.removeImageButton, { backgroundColor: colors.destructive }]}
                 hitSlop={8}
@@ -360,7 +361,7 @@ function CreateEventScreenInner() {
                 accessibilityRole="button"
               >
                 <X size={16} color="#FFFFFF" />
-              </Pressable>
+              </PressableOpacity>
             </View>
           ) : (
             <View style={styles.imagePickerContent}>
@@ -370,7 +371,7 @@ function CreateEventScreenInner() {
               </Text>
             </View>
           )}
-        </Pressable>
+        </PressableOpacity>
 
         {/* Title */}
         <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
@@ -488,7 +489,7 @@ function CreateEventScreenInner() {
           {EVENT_CATEGORIES.map((cat) => {
             const selected = category === cat.key
             return (
-              <Pressable
+              <PressableOpacity
                 key={cat.key}
                 onPress={() => {
                   setCategory(cat.key)
@@ -517,7 +518,7 @@ function CreateEventScreenInner() {
                 >
                   {t(cat.labelKey)}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )
           })}
         </View>
@@ -560,7 +561,7 @@ function CreateEventScreenInner() {
         </View>
 
         {/* Submit button */}
-        <Pressable
+        <PressableOpacity
           onPress={handleSubmit}
           disabled={!canSubmit}
           style={[
@@ -588,7 +589,7 @@ function CreateEventScreenInner() {
               {edit ? (t('common.save') ?? t('events.publish')) : t('events.publish')}
             </Text>
           )}
-        </Pressable>
+        </PressableOpacity>
       </ScrollView>
       )}
     </KeyboardAvoidingView>

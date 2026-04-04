@@ -25,6 +25,7 @@ import { VerificationModal } from '@/components/VerificationModal'
 import { TrustBadge } from '@/components/TrustBadge'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
@@ -879,9 +880,9 @@ export default function CreateScreen() {
               {images.map((uri, idx) => (
                 <View key={idx} style={styles.imageThumb}>
                   <Image source={{ uri }} style={styles.imageThumbImg} contentFit="cover" />
-                  <Pressable onPress={() => removeImage(idx)} style={styles.imageRemoveBtn}>
+                  <PressableOpacity onPress={() => removeImage(idx)} style={styles.imageRemoveBtn}>
                     <X size={12} color={colors.primaryForeground} />
-                  </Pressable>
+                  </PressableOpacity>
                   {idx === 0 && (
                     <View style={[styles.mainImageBadge, { backgroundColor: colors.primary }]}>
                       <Text style={[styles.mainImageBadgeText, { color: colors.primaryForeground }]}>{t('create.mainImage')}</Text>
@@ -903,7 +904,7 @@ export default function CreateScreen() {
             <View style={styles.field}>
               <Text style={[styles.label, { color: colors.foreground }]}>{t('create.tarjoanTypeHint')}</Text>
               <View style={styles.tagGrid}>
-                <Pressable
+                <PressableOpacity
                   onPress={() => {
                     setTarjoanType('service')
                     setSelectedTags([])
@@ -921,8 +922,8 @@ export default function CreateScreen() {
                   <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'service' ? colors.primaryForeground : colors.foreground }]}>
                     {t('create.tarjoanService')}
                   </Text>
-                </Pressable>
-                <Pressable
+                </PressableOpacity>
+                <PressableOpacity
                   onPress={() => {
                     setTarjoanType('item')
                     setSelectedTags([])
@@ -939,7 +940,7 @@ export default function CreateScreen() {
                   <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'item' ? colors.primaryForeground : colors.foreground }]}>
                     {t('create.tarjoanItem')}
                   </Text>
-                </Pressable>
+                </PressableOpacity>
               </View>
             </View>
           )}
@@ -980,7 +981,7 @@ export default function CreateScreen() {
           </View>
 
           {/* Details toggle */}
-          <Pressable
+          <PressableOpacity
             onPress={() => setShowDetails(p => !p)}
             style={[styles.detailsToggle, { borderColor: colors.border }]}
           >
@@ -992,7 +993,7 @@ export default function CreateScreen() {
             ) : (
               <ChevronDown size={16} color={colors.primary} />
             )}
-          </Pressable>
+          </PressableOpacity>
 
           {showDetails && (
             <>
@@ -1007,13 +1008,13 @@ export default function CreateScreen() {
                     placeholder={t('post.locationLabel')}
                     placeholderTextColor={colors.mutedForeground}
                   />
-                  <Pressable
+                  <PressableOpacity
                     onPress={handleOpenMapPicker}
                     style={[styles.mapPickerBtn, { backgroundColor: colors.primary }]}
                   >
                     <MapPin size={16} color={colors.primaryForeground} />
                     <Text style={[styles.mapPickerBtnText, { color: colors.primaryForeground }]}>{t('locationPicker.pickFromMap')}</Text>
-                  </Pressable>
+                  </PressableOpacity>
                 </View>
                 {latitude !== null && longitude !== null && (
                   <Text style={[styles.coordsText, { color: colors.mutedForeground }]}>
@@ -1106,7 +1107,7 @@ export default function CreateScreen() {
                     {CONDITION_OPTIONS.map((opt) => {
                       const isSelected = itemCondition === opt.id
                       return (
-                        <Pressable
+                        <PressableOpacity
                           key={opt.id}
                           onPress={() => setItemCondition(isSelected ? null : opt.id)}
                           style={[
@@ -1120,7 +1121,7 @@ export default function CreateScreen() {
                           <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
                             {t(opt.label)}
                           </Text>
-                        </Pressable>
+                        </PressableOpacity>
                       )
                     })}
                   </View>
@@ -1196,7 +1197,7 @@ export default function CreateScreen() {
                     {availableTags.map((tag) => {
                       const isSelected = selectedTags.includes(tag.id)
                       return (
-                        <Pressable
+                        <PressableOpacity
                           key={tag.id}
                           onPress={() => toggleTag(tag.id)}
                           style={[
@@ -1210,7 +1211,7 @@ export default function CreateScreen() {
                           <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
                             {t(tag.label)}
                           </Text>
-                        </Pressable>
+                        </PressableOpacity>
                       )
                     })}
                   </View>
@@ -1226,7 +1227,7 @@ export default function CreateScreen() {
                   {EXPIRATION_OPTIONS.map((opt) => {
                     const isSelected = expirationDays === opt.days
                     return (
-                      <Pressable
+                      <PressableOpacity
                         key={opt.days}
                         onPress={() => setExpirationDays(opt.days)}
                         style={[
@@ -1239,7 +1240,7 @@ export default function CreateScreen() {
                         <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
                           {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}
                         </Text>
-                      </Pressable>
+                      </PressableOpacity>
                     )
                   })}
                 </View>
@@ -1283,7 +1284,7 @@ export default function CreateScreen() {
                   {isUrgent && (
                     <View style={styles.urgencyOptions}>
                       {[2, 4, 8].map((h) => (
-                        <Pressable
+                        <PressableOpacity
                           key={h}
                           onPress={() => setUrgencyHours(h)}
                           style={[
@@ -1295,7 +1296,7 @@ export default function CreateScreen() {
                           <Text style={[styles.urgencyOptionText, { color: urgencyHours === h ? colors.destructive : colors.foreground }]}>
                             {h}h
                           </Text>
-                        </Pressable>
+                        </PressableOpacity>
                       ))}
                     </View>
                   )}
@@ -1339,16 +1340,16 @@ export default function CreateScreen() {
                 </View>
               )}
               {!boostPost && boosts.balance <= 0 && (
-                <Pressable onPress={() => router.push('/boosts')} style={[styles.boostUpsell, { backgroundColor: `${colors.accent}10` }]}>
+                <PressableOpacity onPress={() => router.push('/boosts')} style={[styles.boostUpsell, { backgroundColor: `${colors.accent}10` }]}>
                   <Text style={[styles.boostUpsellText, { color: colors.accent }]}>{t('boost.buyBoosts')}</Text>
                   <ChevronRight size={14} color={colors.accent} />
-                </Pressable>
+                </PressableOpacity>
               )}
             </View>
           )}
 
           {/* Submit */}
-          <Pressable
+          <PressableOpacity
             onPress={handleSubmit}
             disabled={submitting}
             style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting ? 0.6 : 1 }]}
@@ -1364,7 +1365,7 @@ export default function CreateScreen() {
             ) : (
               <Text style={[styles.submitText, { color: colors.primaryForeground }]}>{t('create.publish')}</Text>
             )}
-          </Pressable>
+          </PressableOpacity>
         </ScrollView>
 
         {/* Success celebration overlay */}
@@ -1404,7 +1405,7 @@ export default function CreateScreen() {
                   {t('create.visibleTo', { neighborhood: successNeighborhood })}
                 </Text>
               )}
-              <Pressable
+              <PressableOpacity
                 onPress={async () => {
                   // Cancel the auto-navigation timeout so it doesn't fire during/after sharing
                   if (successTimeoutRef.current) {
@@ -1425,7 +1426,7 @@ export default function CreateScreen() {
                 style={[styles.shareBtn, { backgroundColor: colors.primary }]}
               >
                 <Text style={[styles.shareBtnText, { color: colors.primaryForeground }]}>{t('create.share')}</Text>
-              </Pressable>
+              </PressableOpacity>
             </Pressable>
           </Pressable>
         </Modal>
@@ -1440,9 +1441,9 @@ export default function CreateScreen() {
           <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('locationPicker.title')}</Text>
-              <Pressable onPress={() => setMapModalVisible(false)} hitSlop={12}>
+              <PressableOpacity onPress={() => setMapModalVisible(false)} hitSlop={12}>
                 <X size={24} color={colors.foreground} />
-              </Pressable>
+              </PressableOpacity>
             </View>
 
             {/* Map — web uses embedded Leaflet */}
@@ -1501,7 +1502,7 @@ export default function CreateScreen() {
 
             {/* Confirm button */}
             <View style={styles.modalFooter}>
-              <Pressable
+              <PressableOpacity
                 onPress={handleConfirmMapLocation}
                 disabled={!tempMapCoords}
                 style={[
@@ -1512,7 +1513,7 @@ export default function CreateScreen() {
                 <Text style={[styles.confirmBtnText, { color: tempMapCoords ? colors.primaryForeground : colors.mutedForeground }]}>
                   {t('locationPicker.confirm')}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             </View>
           </View>
         </Modal>

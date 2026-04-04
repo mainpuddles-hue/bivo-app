@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { FEATURES as APP_FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
@@ -107,9 +108,9 @@ export default function ProScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>TackBird Pro</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -175,7 +176,7 @@ export default function ProScreen() {
             <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('pro.upgradeToPro').toUpperCase()}</Text>
             <View style={s.pricingRow}>
               {/* Monthly */}
-              <Pressable
+              <PressableOpacity
                 onPress={() => setSelectedPlan('monthly')}
                 style={[
                   s.pricingCard,
@@ -190,10 +191,10 @@ export default function ProScreen() {
                   4.99 {'\u20AC'}
                 </Text>
                 <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>{t('pro.perMonth')}</Text>
-              </Pressable>
+              </PressableOpacity>
 
               {/* Yearly */}
-              <Pressable
+              <PressableOpacity
                 onPress={() => setSelectedPlan('yearly')}
                 style={[
                   s.pricingCard,
@@ -212,7 +213,7 @@ export default function ProScreen() {
                 </Text>
                 <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>{t('pro.perYear')}</Text>
                 <Text style={[s.pricingSubtext, { color: colors.pro }]}>3.33 {'\u20AC'}{t('pro.perMonth')}</Text>
-              </Pressable>
+              </PressableOpacity>
             </View>
 
             {/* Auto-renewal disclosure (Apple Guidelines 3.1.2) */}
@@ -221,7 +222,7 @@ export default function ProScreen() {
             </Text>
 
             {/* Subscribe button */}
-            <Pressable
+            <PressableOpacity
               onPress={handleSubscribe}
               disabled={purchasing}
               style={[s.subscribeBtn, { backgroundColor: colors.pro, opacity: purchasing ? 0.6 : 1 }]}
@@ -241,20 +242,20 @@ export default function ProScreen() {
                   </Text>
                 </>
               )}
-            </Pressable>
+            </PressableOpacity>
           </>
         )}
 
         {/* Restore Purchases (required by Apple for IAP) */}
         {Platform.OS === 'ios' && (
-          <Pressable
+          <PressableOpacity
             onPress={() => Alert.alert(t('pro.restorePurchases'), t('pro.restorePurchasesInfo'))}
             style={[s.restoreBtn, { borderColor: colors.border }]}
           >
             <Text style={[s.restoreBtnText, { color: colors.mutedForeground }]}>
               {t('pro.restorePurchases')}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         )}
 
         {/* iOS: Subscription will be available via App Store */}
@@ -269,14 +270,14 @@ export default function ProScreen() {
 
         {/* Manage subscription */}
         {isPro && (
-          <Pressable
+          <PressableOpacity
             onPress={() => router.push('/payment-settings' as any)}
             style={[s.manageBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
             <Text style={[s.manageBtnText, { color: colors.foreground }]}>
               {t('pro.manageSubscription')}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         )}
 
         {/* Error */}

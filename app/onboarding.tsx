@@ -36,6 +36,7 @@ import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { NEIGHBORHOODS, CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { useLocationVerification } from '@/hooks/useLocationVerification'
 import { useReferral } from '@/hooks/useReferral'
 import { trackEvent } from '@/lib/analytics'
@@ -253,7 +254,7 @@ function OnboardingScreenInner() {
       </View>
 
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => goToPage(1)}
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
@@ -263,7 +264,7 @@ function OnboardingScreenInner() {
             {t('onboarding.next')}
           </Text>
           <ArrowRight size={18} color={colors.primaryForeground} />
-        </Pressable>
+        </PressableOpacity>
         {renderDots()}
       </View>
     </View>
@@ -308,7 +309,7 @@ function OnboardingScreenInner() {
       </View>
 
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => goToPage(2)}
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
@@ -318,8 +319,8 @@ function OnboardingScreenInner() {
             {t('onboarding.next')}
           </Text>
           <ChevronRight size={18} color={colors.primaryForeground} />
-        </Pressable>
-        <Pressable
+        </PressableOpacity>
+        <PressableOpacity
           onPress={() => goToPage(3)}
           hitSlop={8}
           accessibilityRole="button"
@@ -328,7 +329,7 @@ function OnboardingScreenInner() {
           <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {t('onboarding.skip')}
           </Text>
-        </Pressable>
+        </PressableOpacity>
         {renderDots()}
       </View>
     </View>
@@ -369,7 +370,7 @@ function OnboardingScreenInner() {
       </View>
 
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => goToPage(3)}
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
@@ -379,8 +380,8 @@ function OnboardingScreenInner() {
             {t('onboarding.next')}
           </Text>
           <ChevronRight size={18} color={colors.primaryForeground} />
-        </Pressable>
-        <Pressable
+        </PressableOpacity>
+        <PressableOpacity
           onPress={() => goToPage(3)}
           hitSlop={8}
           accessibilityRole="button"
@@ -389,7 +390,7 @@ function OnboardingScreenInner() {
           <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {t('onboarding.skip')}
           </Text>
-        </Pressable>
+        </PressableOpacity>
         {renderDots()}
       </View>
     </View>
@@ -399,12 +400,12 @@ function OnboardingScreenInner() {
   const renderNeighborhood = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       {/* Back button so user can return to previous slides and change choices */}
-      <Pressable onPress={() => goToPage(2)} style={s.backBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+      <PressableOpacity onPress={() => goToPage(2)} style={s.backBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
         <ArrowRight size={18} color={colors.mutedForeground} style={{ transform: [{ rotate: '180deg' }] }} />
         <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
           {t('common.back')}
         </Text>
-      </Pressable>
+      </PressableOpacity>
 
       <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 24 }]}>
         {t('onboarding.selectCity')}
@@ -415,7 +416,7 @@ function OnboardingScreenInner() {
         {(cities.length > 0 ? cities : Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name }))).map((city) => {
           const isSelected = selectedCity === city.id
           return (
-            <Pressable
+            <PressableOpacity
               key={city.id}
               onPress={() => { setSelectedCity(city.id); trackEvent('onboarding_city_selected' as any, { city: city.id }) }}
               style={[
@@ -439,7 +440,7 @@ function OnboardingScreenInner() {
               >
                 {city.name}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           )
         })}
       </ScrollView>
@@ -517,7 +518,7 @@ function OnboardingScreenInner() {
           filteredNeighborhoods.map((nh) => {
             const isSelected = selectedNeighborhood === nh
             return (
-              <Pressable
+              <PressableOpacity
                 key={nh}
                 onPress={() => { setSelectedNeighborhood(nh); trackEvent('onboarding_neighborhood_selected' as any, { neighborhood: nh }) }}
                 style={[
@@ -543,7 +544,7 @@ function OnboardingScreenInner() {
                 >
                   {nh}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )
           })
         )}
@@ -620,7 +621,7 @@ function OnboardingScreenInner() {
       </View>
 
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
-        <Pressable
+        <PressableOpacity
           onPress={handleComplete}
           disabled={saving || !selectedNeighborhood}
           style={[
@@ -654,7 +655,7 @@ function OnboardingScreenInner() {
               />
             </>
           )}
-        </Pressable>
+        </PressableOpacity>
         {renderDots()}
       </View>
     </View>

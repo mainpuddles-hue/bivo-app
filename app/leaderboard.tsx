@@ -13,7 +13,7 @@ import { Avatar } from '@/components/Avatar'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { FEATURES } from '@/lib/featureFlags'
 
 interface LeaderboardUser {
@@ -263,7 +263,7 @@ export default function LeaderboardScreen() {
 
       {/* Filter chips */}
       <View style={s.filterRow}>
-        <Pressable
+        <PressableOpacity
           onPress={() => setFilter('all')}
           accessibilityRole="button"
           accessibilityLabel={t('leaderboard.allNeighborhoods')}
@@ -278,9 +278,9 @@ export default function LeaderboardScreen() {
           <Text style={[s.filterText, { color: filter === 'all' ? colors.primaryForeground : colors.foreground }]}>
             {t('leaderboard.allNeighborhoods')}
           </Text>
-        </Pressable>
+        </PressableOpacity>
         {userNeighborhood && (
-          <Pressable
+          <PressableOpacity
             onPress={() => setFilter('neighborhood')}
             accessibilityRole="button"
             accessibilityLabel={userNeighborhood}
@@ -295,7 +295,7 @@ export default function LeaderboardScreen() {
             <Text style={[s.filterText, { color: filter === 'neighborhood' ? colors.primaryForeground : colors.foreground }]}>
               {userNeighborhood}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         )}
       </View>
 
@@ -304,11 +304,11 @@ export default function LeaderboardScreen() {
 
       {/* Pro upsell banner */}
       {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
-        <Pressable onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: `${colors.pro}12` }]}>
+        <PressableOpacity onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: `${colors.pro}12` }]}>
           <Crown size={16} color={colors.pro} />
           <Text style={[s.proBannerText, { color: colors.pro }]}>{t('pro.leaderboardBanner')}</Text>
           <ChevronRight size={14} color={colors.pro} />
-        </Pressable>
+        </PressableOpacity>
       )}
 
       {loading ? (
