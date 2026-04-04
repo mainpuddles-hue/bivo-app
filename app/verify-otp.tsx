@@ -9,6 +9,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { trackEvent } from '@/lib/analytics'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 
 type OtpMode = 'signup' | 'recovery'
 
@@ -177,9 +178,9 @@ export default function VerifyOtpScreen() {
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Content */}
@@ -233,7 +234,7 @@ export default function VerifyOtpScreen() {
           ) : null}
 
           {/* Verify button */}
-          <Pressable
+          <PressableOpacity
             onPress={handleVerify}
             disabled={loading || code.length < 6}
             style={[
@@ -254,14 +255,14 @@ export default function VerifyOtpScreen() {
                 {t('auth.otpVerify')}
               </Text>
             )}
-          </Pressable>
+          </PressableOpacity>
 
           {/* Resend link */}
           <View style={styles.resendRow}>
             <Text style={[styles.resendLabel, { color: colors.mutedForeground }]}>
               {t('auth.otpNotReceived')}
             </Text>
-            <Pressable onPress={handleResend} disabled={resendCooldown > 0 || resending} accessibilityRole="button" accessibilityLabel={t('auth.otpResend')}>
+            <PressableOpacity onPress={handleResend} disabled={resendCooldown > 0 || resending} accessibilityRole="button" accessibilityLabel={t('auth.otpResend')}>
               <View style={styles.resendBtnInner}>
                 {resending ? (
                   <ActivityIndicator size={14} color={colors.primary} />
@@ -279,7 +280,7 @@ export default function VerifyOtpScreen() {
                     : t('auth.otpResend')}
                 </Text>
               </View>
-            </Pressable>
+            </PressableOpacity>
           </View>
         </View>
       </View>

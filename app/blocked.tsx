@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
 
@@ -121,7 +121,7 @@ function BlockedUsersScreenInner() {
                     )}
                   </View>
 
-                  <Pressable
+                  <PressableOpacity
                     onPress={() => handleUnblock(item.blocked_id, user?.name ?? null)}
                     disabled={unblocking === item.blocked_id}
                     style={[s.unblockBtn, { backgroundColor: colors.destructive, opacity: unblocking === item.blocked_id ? 0.5 : 1 }]}
@@ -133,7 +133,7 @@ function BlockedUsersScreenInner() {
                     ) : (
                       <Text style={[s.unblockText, { color: colors.primaryForeground }]}>{t('blocked.removeBlock')}</Text>
                     )}
-                  </Pressable>
+                  </PressableOpacity>
                 </View>
               )
             })}

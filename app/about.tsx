@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 
 function AboutScreenInner() {
   const { colors } = useTheme()
@@ -42,28 +42,28 @@ function AboutScreenInner() {
 
         {/* Links */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
             <FileText size={18} color={colors.mutedForeground} />
             <Text style={[s.linkText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
             <ExternalLink size={14} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
-          <Pressable onPress={() => router.push('/privacy')} style={s.linkRow} accessibilityLabel={t('settings.privacy')} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/privacy')} style={s.linkRow} accessibilityLabel={t('settings.privacy')} accessibilityRole="button">
             <Lock size={18} color={colors.mutedForeground} />
             <Text style={[s.linkText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
             <ExternalLink size={14} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
-          <Pressable onPress={() => router.push('/help' as any)} style={s.linkRow} accessibilityLabel={t('help.title')} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/help' as any)} style={s.linkRow} accessibilityLabel={t('help.title')} accessibilityRole="button">
             <HelpCircle size={18} color={colors.mutedForeground} />
             <Text style={[s.linkText, { color: colors.foreground }]}>{t('help.title')}</Text>
             <ExternalLink size={14} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Website */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable
+          <PressableOpacity
             onPress={() => Linking.openURL('https://tackbird.fi').catch(() => {})}
             style={s.linkRow}
             accessibilityLabel="tackbird.fi"
@@ -71,7 +71,7 @@ function AboutScreenInner() {
           >
             <ExternalLink size={18} color={colors.primary} />
             <Text style={[s.linkText, { color: colors.primary }]}>tackbird.fi</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Credits */}

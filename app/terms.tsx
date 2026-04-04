@@ -6,7 +6,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 
 function TermsScreenInner() {
   const { colors } = useTheme()
@@ -60,9 +60,9 @@ function TermsScreenInner() {
           {/* Section 6: Privacy */}
           <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('terms.section6Title')}</Text>
           <Text style={[s.paragraph, { color: colors.mutedForeground }]}>{t('terms.section6Content')}</Text>
-          <Pressable onPress={() => router.push('/privacy')} accessibilityLabel={t('terms.section6Link')} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/privacy')} accessibilityLabel={t('terms.section6Link')} accessibilityRole="button">
             <Text style={[s.link, { color: colors.primary }]}>{t('terms.section6Link')} →</Text>
-          </Pressable>
+          </PressableOpacity>
 
           {/* Section 7: Limitation of Liability */}
           <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('terms.section7Title')}</Text>

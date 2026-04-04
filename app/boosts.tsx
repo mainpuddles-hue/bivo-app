@@ -11,6 +11,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { BOOST_PRODUCTS, getDiscountedPrice, formatBoostPrice, getBoostDurationHours, isSandboxMode } from '@/lib/iap'
 import { BoostPurchaseCard } from '@/components/BoostPurchaseCard'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 import type { BoostTier } from '@/lib/types'
 
@@ -59,9 +60,9 @@ function BoostsScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
             <ArrowLeft size={24} color={colors.foreground} />
-          </Pressable>
+          </PressableOpacity>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('boost.title')}</Text>
           <View style={{ width: 24 }} />
         </View>
@@ -76,9 +77,9 @@ function BoostsScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('boost.title')}</Text>
         <View style={{ width: 24 }} />
       </View>

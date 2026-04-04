@@ -39,6 +39,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
 import { BoostBadge } from '@/components/BoostBadge'
+import { ModalCloseButton } from '@/components/ui'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -1098,7 +1099,7 @@ function PostDetailScreenInner() {
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.editPost')}</Text>
-              <Pressable onPress={() => setEditModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
+              <ModalCloseButton onClose={() => setEditModalVisible(false)} />
             </View>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')} *</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} />
@@ -1122,7 +1123,7 @@ function PostDetailScreenInner() {
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('rental.booking')}</Text>
-                <Pressable onPress={() => setBookingModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
+                <ModalCloseButton onClose={() => setBookingModalVisible(false)} />
               </View>
               {/* Step indicator — reduces cognitive load on multi-step flow */}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -1165,7 +1166,7 @@ function PostDetailScreenInner() {
           <Pressable style={[styles.modalContent, { backgroundColor: colors.card }]} onPress={() => {}}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('service.bookService')}</Text>
-              <Pressable onPress={() => setServiceModalVisible(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
+              <ModalCloseButton onClose={() => setServiceModalVisible(false)} />
             </View>
 
             <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
@@ -1267,7 +1268,7 @@ function PostDetailScreenInner() {
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.likedBy')}</Text>
-              <Pressable onPress={() => setShowLikersModal(false)} hitSlop={12}><X size={22} color={colors.mutedForeground} /></Pressable>
+              <ModalCloseButton onClose={() => setShowLikersModal(false)} />
             </View>
             {loadingLikers ? (
               <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />

@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -100,9 +100,9 @@ function PrivacyScreenInner() {
         {/* Data export CTA */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <Text style={[s.paragraph, { color: colors.mutedForeground }]}>{t('privacy.right1')}</Text>
-          <Pressable onPress={() => router.push('/settings')} accessibilityLabel={t('settings.export')} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/settings')} accessibilityLabel={t('settings.export')} accessibilityRole="button">
             <Text style={[s.link, { color: colors.primary }]}>{t('settings.export')} →</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
       </ScrollView>
     </View>

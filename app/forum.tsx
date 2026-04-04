@@ -9,6 +9,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
+import { ModalCloseButton } from '@/components/ui'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -578,7 +579,7 @@ export default function ForumScreen() {
       <Modal visible={!!editingPost} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditingPost(null)}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[s.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
-            <Pressable onPress={() => setEditingPost(null)} hitSlop={8}><X size={22} color={colors.foreground} /></Pressable>
+            <ModalCloseButton onClose={() => setEditingPost(null)} />
             <Text style={[s.modalTitle, { color: colors.foreground }]}>{t('forum.editPostTitle')}</Text>
             <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={({ pressed }) => [s.publishBtn, { backgroundColor: colors.primary, opacity: savingEdit ? 0.6 : pressed ? 0.7 : 1 }]}>
               {savingEdit ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[s.publishBtnText, { color: colors.primaryForeground }]}>{t('forum.saveEdit')}</Text>}

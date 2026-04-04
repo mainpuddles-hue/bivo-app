@@ -11,7 +11,7 @@ import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { formatPrice } from '@/lib/format'
 
 type PaymentStatus = 'paid' | 'refunded' | 'pending' | 'failed'
@@ -125,7 +125,7 @@ function PaymentHistoryScreenInner() {
     })
 
     return (
-      <Pressable
+      <PressableOpacity
         onPress={() => setExpandedId(prev => prev === item.id ? null : item.id)}
         style={[styles.paymentRow, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
@@ -173,18 +173,18 @@ function PaymentHistoryScreenInner() {
               <Text style={[styles.detailValue, { color: statusColor }]}>{t(STATUS_KEYS[item.status])}</Text>
             </View>
             {item.post_id && (
-              <Pressable
+              <PressableOpacity
                 onPress={() => router.push(`/post/${item.post_id}` as any)}
                 style={[styles.viewPostBtn, { borderColor: colors.border }]}
                 accessibilityLabel={t('post.viewPost') ?? 'View post'}
                 accessibilityRole="button"
               >
                 <Text style={[styles.viewPostBtnText, { color: colors.primary }]}>{t('post.viewPost') ?? 'View post'}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
           </View>
         )}
-      </Pressable>
+      </PressableOpacity>
     )
   }
 

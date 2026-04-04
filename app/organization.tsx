@@ -12,7 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
@@ -334,7 +334,7 @@ export default function OrganizationScreen() {
             {businessImages.map((uri, i) => (
               <View key={`${uri}-${i}`} style={styles.imageThumbWrap}>
                 <Image source={{ uri }} style={styles.imageThumb} contentFit="cover" />
-                <Pressable
+                <PressableOpacity
                   style={[styles.imageDeleteBtn, { backgroundColor: colors.destructive }]}
                   onPress={() => removeImage(i)}
                   hitSlop={8}
@@ -342,11 +342,11 @@ export default function OrganizationScreen() {
                   accessibilityLabel={t('common.delete')}
                 >
                   <X size={12} color={colors.primaryForeground} />
-                </Pressable>
+                </PressableOpacity>
               </View>
             ))}
             {businessImages.length < MAX_IMAGES && (
-              <Pressable
+              <PressableOpacity
                 style={[styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.muted }]}
                 onPress={pickImage}
                 disabled={uploading}
@@ -361,7 +361,7 @@ export default function OrganizationScreen() {
                     <Text style={[styles.addImageText, { color: colors.primary }]}>{t('business.addPhoto')}</Text>
                   </>
                 )}
-              </Pressable>
+              </PressableOpacity>
             )}
           </ScrollView>
           <Text style={[styles.imageHint, { color: colors.mutedForeground }]}>
@@ -402,7 +402,7 @@ export default function OrganizationScreen() {
             placeholderTextColor={colors.mutedForeground}
             maxLength={200}
           />
-          <Pressable
+          <PressableOpacity
             style={[styles.geocodeBtn, { backgroundColor: `${colors.primary}18` }]}
             onPress={geocodeAddress}
             disabled={geocoding || !businessAddress.trim()}
@@ -415,7 +415,7 @@ export default function OrganizationScreen() {
                 <Text style={[styles.geocodeBtnText, { color: colors.primary }]}>{t('business.geocode')}</Text>
               </>
             )}
-          </Pressable>
+          </PressableOpacity>
           {businessLat != null && businessLng != null && (
             <Text style={[styles.coordsText, { color: colors.success }]}>
               {businessLat.toFixed(5)}, {businessLng.toFixed(5)}
@@ -456,7 +456,7 @@ export default function OrganizationScreen() {
         </View>
 
         {/* ===== Save All Button ===== */}
-        <Pressable
+        <PressableOpacity
           onPress={saveAll}
           disabled={saving}
           style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}
@@ -474,7 +474,7 @@ export default function OrganizationScreen() {
               </Text>
             </>
           )}
-        </Pressable>
+        </PressableOpacity>
 
         {/* Map presence toggle */}
         <View style={[styles.toggleCard, { backgroundColor: colors.card }]}>
@@ -489,7 +489,7 @@ export default function OrganizationScreen() {
         </View>
 
         {/* Create ad button */}
-        <Pressable
+        <PressableOpacity
           onPress={() => router.push('/create-ad')}
           style={[styles.createAdBtn, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
@@ -499,7 +499,7 @@ export default function OrganizationScreen() {
           <Text style={[styles.createAdText, { color: colors.primaryForeground }]}>
             {t('ads.create')}
           </Text>
-        </Pressable>
+        </PressableOpacity>
 
         {/* Ad stats */}
         {ads.length > 0 && (

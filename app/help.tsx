@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 
 interface FAQItem {
   question: string
@@ -99,13 +99,13 @@ function HelpScreenInner() {
                 return (
                   <View key={key}>
                     {qi > 0 && <View style={[s.divider, { backgroundColor: colors.border }]} />}
-                    <Pressable onPress={() => toggleItem(key)} style={s.faqRow} accessibilityRole="button">
+                    <PressableOpacity onPress={() => toggleItem(key)} style={s.faqRow} accessibilityRole="button">
                       <Text style={[s.faqQuestion, { color: colors.foreground }]}>{t(item.questionKey)}</Text>
                       {isExpanded
                         ? <ChevronUp size={18} color={colors.mutedForeground} />
                         : <ChevronDown size={18} color={colors.mutedForeground} />
                       }
-                    </Pressable>
+                    </PressableOpacity>
                     {isExpanded && (
                       <View style={s.faqAnswer}>
                         <Text style={[s.answerText, { color: colors.mutedForeground }]}>{t(item.answerKey)}</Text>
@@ -122,7 +122,7 @@ function HelpScreenInner() {
         <View style={[s.card, { backgroundColor: colors.card, marginTop: 16 }]}>
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
-          <Pressable
+          <PressableOpacity
             onPress={() => Linking.openURL('mailto:tuki@tackbird.fi').catch(() => Alert.alert(t('common.error'), t('common.error')))}
             style={[s.contactBtn, { backgroundColor: colors.primary }]}
             accessibilityLabel="tuki@tackbird.fi"
@@ -130,20 +130,20 @@ function HelpScreenInner() {
           >
             <Mail size={16} color={colors.primaryForeground} />
             <Text style={[s.contactBtnText, { color: colors.primaryForeground }]}>tuki@tackbird.fi</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Links to terms and privacy */}
         <View style={[s.card, { backgroundColor: colors.card, marginTop: 12 }]}>
-          <Pressable onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
             <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.terms')}</Text>
             <ExternalLink size={14} color={colors.primary} />
-          </Pressable>
+          </PressableOpacity>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
-          <Pressable onPress={() => router.push('/privacy')} style={s.linkRow} accessibilityLabel={t('settings.privacy')} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/privacy')} style={s.linkRow} accessibilityLabel={t('settings.privacy')} accessibilityRole="button">
             <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.privacy')}</Text>
             <ExternalLink size={14} color={colors.primary} />
-          </Pressable>
+          </PressableOpacity>
         </View>
       </ScrollView>
     </View>

@@ -17,6 +17,7 @@ import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatEventDateShort } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import type { CommunityEvent } from '@/lib/types'
 
 type CategoryFilter = 'all' | 'social' | 'sports' | 'culture' | 'nature' | 'kids' | 'other'
@@ -107,7 +108,7 @@ function CommunityEventsScreenInner() {
       : t('events.participantsCount', { count: participantCount })
 
     return (
-      <Pressable
+      <PressableOpacity
         onPress={() => router.push(`/event/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.title}, ${formatEventDateShort(item.event_date, locale)}`}
@@ -162,7 +163,7 @@ function CommunityEventsScreenInner() {
             </View>
           </View>
         </View>
-      </Pressable>
+      </PressableOpacity>
     )
   }, [colors, t, locale, router])
 
@@ -172,9 +173,9 @@ function CommunityEventsScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -189,7 +190,7 @@ function CommunityEventsScreenInner() {
         {CATEGORY_FILTERS.map(({ key, labelKey }) => {
           const isActive = categoryFilter === key
           return (
-            <Pressable
+            <PressableOpacity
               key={key}
               onPress={() => setCategoryFilter(key)}
               accessibilityRole="tab"
@@ -203,7 +204,7 @@ function CommunityEventsScreenInner() {
               <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           )
         })}
       </ScrollView>
@@ -227,7 +228,7 @@ function CommunityEventsScreenInner() {
             <View style={s.emptyState}>
               <CalendarDays size={48} color={colors.mutedForeground} strokeWidth={1.3} />
               <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('events.noUpcomingEvents')}</Text>
-              <Pressable
+              <PressableOpacity
                 onPress={() => router.push('/create-event' as any)}
                 accessibilityRole="button"
                 accessibilityLabel={t('events.createFirstEvent')}
@@ -235,7 +236,7 @@ function CommunityEventsScreenInner() {
               >
                 <Plus size={18} color={colors.primaryForeground} strokeWidth={2} />
                 <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('events.createFirstEvent')}</Text>
-              </Pressable>
+              </PressableOpacity>
             </View>
           )
         }

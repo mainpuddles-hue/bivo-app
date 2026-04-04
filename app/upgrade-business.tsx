@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { getBusinessAdapter } from '@/lib/adapters'
 import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
@@ -215,9 +216,9 @@ export default function UpgradeBusinessScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -282,7 +283,7 @@ export default function UpgradeBusinessScreen() {
         <Text style={[styles.label, { color: colors.foreground }]}>{t('business.category')}</Text>
         <View style={styles.categoryRow}>
           {BUSINESS_CATEGORIES.map(cat => (
-            <Pressable
+            <PressableOpacity
               key={cat.id}
               onPress={() => setCategory(cat.id)}
               style={[
@@ -302,7 +303,7 @@ export default function UpgradeBusinessScreen() {
               ]}>
                 {getCategoryLabel(cat.id)}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           ))}
         </View>
 
@@ -319,7 +320,7 @@ export default function UpgradeBusinessScreen() {
         {/* Submit — Stripe flow (Android/web only) */}
         {Platform.OS !== 'ios' && (
           <>
-            <Pressable
+            <PressableOpacity
               onPress={handleUpgrade}
               disabled={submitting || !businessName.trim() || !vatId.trim()}
               style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !businessName.trim() || !vatId.trim() ? 0.6 : 1 }]}
@@ -337,7 +338,7 @@ export default function UpgradeBusinessScreen() {
                   </Text>
                 </>
               )}
-            </Pressable>
+            </PressableOpacity>
 
             <Text style={[styles.terms, { color: colors.mutedForeground }]}>
               {t('pro.cancelAnytime')}. {t('business.termsNote')}
