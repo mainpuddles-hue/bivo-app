@@ -311,7 +311,10 @@ function ActivitiesScreenInner() {
           activity_id: activityId,
           user_id: userId,
         })
-        if (error) throw error
+        if (error) {
+          if (error.code === '23505') { /* already a member */ }
+          else throw error
+        }
         setActivities(prev => prev.map(a =>
           a.id === activityId
             ? { ...a, is_member: true, member_count: (a.member_count ?? 0) + 1 }

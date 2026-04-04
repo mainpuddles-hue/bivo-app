@@ -234,10 +234,17 @@ export default function ForumScreen() {
     try {
       if (alreadyVoted) {
         await (supabase.from('forum_votes') as any).delete().eq('user_id', currentUserId).eq('post_id', post.id)
-        await (supabase.from('forum_posts') as any).update({ upvote_count: Math.max(0, post.upvote_count - 1) }).eq('id', post.id)
       } else {
-        await (supabase.from('forum_votes') as any).insert({ user_id: currentUserId, post_id: post.id, vote_type: 'up' })
-        await (supabase.from('forum_posts') as any).update({ upvote_count: post.upvote_count + 1 }).eq('id', post.id)
+        const { error: voteErr } = await (supabase.from('forum_votes') as any).insert({ user_id: currentUserId, post_id: post.id, vote_type: 'up' })
+        if (voteErr && voteErr.code === '23505') { /* already voted */ }
+        else if (voteErr) throw voteErr
+      }
+      // Sync count from source of truth
+      const { count } = await supabase.from('forum_votes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
+      if (count != null) {
+        setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: count } : p))
+        if (selectedPost?.id === post.id) setSelectedPost(prev => prev ? { ...prev, upvote_count: count } : prev)
+        ;(supabase.from('forum_posts') as any).update({ upvote_count: count }).eq('id', post.id).then(() => {}).catch(() => {})
       }
     } catch {
       setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: post.upvote_count } : p))
@@ -258,10 +265,16 @@ export default function ForumScreen() {
     try {
       if (alreadyVoted) {
         await (supabase.from('forum_votes') as any).delete().eq('user_id', currentUserId).eq('reply_id', reply.id)
-        await (supabase.from('forum_replies') as any).update({ upvote_count: Math.max(0, reply.upvote_count - 1) }).eq('id', reply.id)
       } else {
-        await (supabase.from('forum_votes') as any).insert({ user_id: currentUserId, reply_id: reply.id, vote_type: 'up' })
-        await (supabase.from('forum_replies') as any).update({ upvote_count: reply.upvote_count + 1 }).eq('id', reply.id)
+        const { error: voteErr } = await (supabase.from('forum_votes') as any).insert({ user_id: currentUserId, reply_id: reply.id, vote_type: 'up' })
+        if (voteErr && voteErr.code === '23505') { /* already voted */ }
+        else if (voteErr) throw voteErr
+      }
+      // Sync count from source of truth
+      const { count } = await supabase.from('forum_votes').select('*', { count: 'exact', head: true }).eq('reply_id', reply.id)
+      if (count != null) {
+        setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: count } : r))
+        ;(supabase.from('forum_replies') as any).update({ upvote_count: count }).eq('id', reply.id).then(() => {}).catch(() => {})
       }
     } catch {
       setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: reply.upvote_count } : r))

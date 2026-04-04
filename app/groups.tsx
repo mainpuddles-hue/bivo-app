@@ -217,14 +217,23 @@ export default function GroupsScreen() {
     setMyGroups((prev) => [{ ...group, member_count: group.member_count + 1 }, ...prev])
 
     try {
-      await (supabase.from('group_members') as any).insert({
+      const { error: insertError } = await (supabase.from('group_members') as any).insert({
         group_id: group.id,
         user_id: currentUserId,
         role: 'member',
       })
-      await (supabase.from('groups') as any)
+      if (insertError) {
+        if (insertError.code === '23505') {
+          // Already a member — just refresh
+          fetchGroups()
+          return
+        }
+        throw insertError
+      }
+      // Fire-and-forget member count sync
+      ;(supabase.from('groups') as any)
         .update({ member_count: group.member_count + 1 })
-        .eq('id', group.id)
+        .eq('id', group.id).then(() => {}).catch(() => {})
     } catch {
       // Revert
       setJoinedIds((prev) => { const n = new Set(prev); n.delete(group.id); return n })

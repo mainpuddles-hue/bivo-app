@@ -157,7 +157,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           } else {
             setSaved(true)
             const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
-            if (error) setSaved(false)
+            if (error) {
+              if (error.code !== '23505') setSaved(false) // 23505 = already saved
+            }
           }
         } finally { savingRef.current = false }
       }}

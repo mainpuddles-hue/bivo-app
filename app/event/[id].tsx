@@ -113,7 +113,9 @@ function EventDetailScreenInner() {
       const { error } = await (supabase.from('community_event_participants') as any)
         .insert({ event_id: event.id, user_id: userId, status })
       if (error) {
-        Alert.alert(t('common.error'), t('events.joinFailed'))
+        if (error.code !== '23505') Alert.alert(t('common.error'), t('events.joinFailed'))
+        // 23505 = already joined — just refresh
+        await fetchEvent()
       } else {
         // Notify event creator about new participant
         if (event.creator_id && event.creator_id !== userId) {

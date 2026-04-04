@@ -93,7 +93,10 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
         to_user_id: toUserId,
         post_id: postId ?? null,
       })
-      if (error) throw error
+      if (error) {
+        if (error.code === '23505') return // Already thanked — ignore duplicate
+        throw error
+      }
 
       // 2. Award points
       await awardPoints(fromUserId, 'thanks_given', toUserId)

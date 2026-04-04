@@ -247,7 +247,10 @@ function PostDetailScreenInner() {
       } else {
         setIsSaved(true)
         const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: id, user_id: userId })
-        if (error) { setIsSaved(wasSaved) }
+        if (error) {
+          if (error.code === '23505') { /* already saved */ }
+          else { setIsSaved(wasSaved) }
+        }
       }
     } finally { savingRef.current = false }
   }, [userId, isSaved, id, supabase, router])
