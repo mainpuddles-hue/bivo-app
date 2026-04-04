@@ -153,7 +153,7 @@ export default function ImageGallery({ images, initialIndex = 0, visible, onClos
   ), [toggleControls, screenWidth, screenHeight])
 
   return (
-    <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
+    <Modal visible={visible} animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>
       <GestureHandlerRootView style={styles.root}>
         <View style={styles.container}>
           {/* Image list */}

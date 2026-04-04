@@ -755,7 +755,7 @@ export default function SettingsScreen() {
                   <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
                 ) : (
                   <Pressable onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF', fontFamily: fonts.bodySemi, lineHeight: 16 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#1A1A1A', fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                       4,99 {'\u20AC'}{t('pro.perMonth')}
                     </Text>
                   </Pressable>

@@ -78,8 +78,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
             accessibilityRole="button"
             accessibilityLabel="Yritä uudelleen / Try again"
           >
-            <RotateCcw size={18} color="#FFFFFF" />
-            <Text style={styles.retryText}>Yritä uudelleen / Try again</Text>
+            <RotateCcw size={18} color={isDark ? '#121212' : '#FFFFFF'} />
+            <Text style={[styles.retryText, isDark && { color: '#121212' }]}>Yritä uudelleen / Try again</Text>
           </Pressable>
         </View>
       )
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   subtitleEnDark: {
-    color: '#6B7280',
+    color: '#9CA3AF',
   },
   errorBox: {
     backgroundColor: '#FEF2F2',

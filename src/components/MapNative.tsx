@@ -513,7 +513,7 @@ export default function MapScreen() {
                   selectedBusiness.avatar_url ??
                   undefined,
               }}
-              style={styles.businessCardImage}
+              style={[styles.businessCardImage, { backgroundColor: colors.muted }]}
               contentFit="cover"
             />
             <View style={styles.businessCardInfo}>
@@ -886,7 +886,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: '#E5E5E5',
+    // backgroundColor set inline via colors.muted for dark mode support
   },
   businessCardInfo: {
     flex: 1,

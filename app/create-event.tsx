@@ -265,7 +265,7 @@ function CreateEventScreenInner() {
         return
       }
 
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      try { await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       Alert.alert(t('common.success'), edit ? t('events.updated') ?? t('events.created') : t('events.created'))
 
       if (resultId) {
@@ -490,7 +490,7 @@ function CreateEventScreenInner() {
                 key={cat.key}
                 onPress={() => {
                   setCategory(cat.key)
-                  Haptics.selectionAsync()
+                  try { Haptics.selectionAsync() } catch {}
                 }}
                 style={[
                   styles.chip,

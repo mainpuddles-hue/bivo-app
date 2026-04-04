@@ -69,8 +69,8 @@ export class ScreenErrorBoundary extends React.Component<Props, State> {
               accessibilityRole="button"
               accessibilityLabel="Yritä uudelleen / Try again"
             >
-              <RotateCcw size={15} color="#FFFFFF" />
-              <Text style={styles.retryText}>Yritä uudelleen</Text>
+              <RotateCcw size={16} color={isDark ? '#121212' : '#FFFFFF'} />
+              <Text style={[styles.retryText, isDark && { color: '#121212' }]}>Yritä uudelleen</Text>
             </Pressable>
           </View>
         </View>
