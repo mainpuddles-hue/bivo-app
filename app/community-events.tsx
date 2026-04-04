@@ -6,6 +6,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
+import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, CalendarDays, MapPin, Users, Plus,
@@ -65,7 +66,14 @@ function CommunityEventsScreenInner() {
       if (error) {
         if (__DEV__) console.log('[community-events] fetch error:', error.message)
       }
-      setEvents((data ?? []) as CommunityEvent[])
+      let events = (data ?? []) as CommunityEvent[]
+      // Filter out events from blocked users
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const blocked = await getBlockedUserIds(user.id)
+        if (blocked.size > 0) events = events.filter(e => !blocked.has((e as any).creator_id))
+      }
+      setEvents(events)
     } catch (err) {
       if (__DEV__) console.log('[community-events] error:', err)
     } finally {

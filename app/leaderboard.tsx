@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
+import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { ArrowLeft, Zap, Trophy, Crown, ChevronRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -109,7 +110,13 @@ export default function LeaderboardScreen() {
         data = result.data ?? []
       }
 
-      setUsers(data as unknown as LeaderboardUser[])
+      // Filter out blocked users
+      let filtered = data as unknown as LeaderboardUser[]
+      if (currentUserId) {
+        const blocked = await getBlockedUserIds(currentUserId)
+        if (blocked.size > 0) filtered = filtered.filter(u => !blocked.has(u.id))
+      }
+      setUsers(filtered)
 
       // Find current user's rank
       if (currentUserId) {

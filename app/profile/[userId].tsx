@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, useWindowDimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
+import { clearBlockedCache } from '@/lib/blockedUsers'
 import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
   Flag, ShieldBan, Crown, PenLine, Zap, ShieldCheck, Clock, CalendarDays, CheckCircle2,
@@ -285,12 +286,14 @@ export default function PublicProfileScreen() {
               setIsBlocked(false)
               try {
                 await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
+                clearBlockedCache()
                 Alert.alert(t('common.success'), t('profile.unblocked'))
               } catch (err) { setIsBlocked(true); if (__DEV__) console.warn('[profile] unblock failed:', err); Alert.alert(t('common.error')) }
             } else {
               setIsBlocked(true)
               try {
                 await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
+                clearBlockedCache()
                 Alert.alert(t('common.success'), t('profile.blocked'))
               } catch (err) { setIsBlocked(false); if (__DEV__) console.warn('[profile] block failed:', err); Alert.alert(t('common.error')) }
             }

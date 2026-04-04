@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
+import { getBlockedUserIds } from '@/lib/blockedUsers'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, Plus, MapPin, Users, X, Clock,
@@ -262,6 +263,11 @@ function ActivitiesScreenInner() {
         }))
       }
 
+      // Filter out activities from blocked users
+      if (user) {
+        const blocked = await getBlockedUserIds(user.id)
+        if (blocked.size > 0) activityList = activityList.filter(a => !blocked.has((a as any).creator_id))
+      }
       setActivities(activityList)
     } catch (err) {
       if (__DEV__) console.log('[activities] fetchActivities error:', err)

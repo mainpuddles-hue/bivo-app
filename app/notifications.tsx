@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
+import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { Image } from 'expo-image'
 import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2, LogIn } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -145,7 +146,12 @@ function NotificationsScreenInner() {
         .eq('user_id', cachedId)
         .order('created_at', { ascending: false })
         .limit(100)
-      const raw = (data ?? []) as unknown as Notification[]
+      let raw = (data ?? []) as unknown as Notification[]
+      // Filter out notifications from blocked users
+      if (cachedId) {
+        const blocked = await getBlockedUserIds(cachedId)
+        if (blocked.size > 0) raw = raw.filter(n => !n.from_user_id || !blocked.has(n.from_user_id))
+      }
       const prioritized = prioritizeNotifications(raw)
       setNotifications(prioritized)
     } catch {

@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
+import { getBlockedUserIds } from '@/lib/blockedUsers'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -176,7 +177,12 @@ export default function ForumScreen() {
         return
       }
       setTableExists(true)
-      const newData = (data ?? []) as unknown as ForumPost[]
+      let newData = (data ?? []) as unknown as ForumPost[]
+      // Filter out blocked users
+      if (currentUserId) {
+        const blocked = await getBlockedUserIds(currentUserId)
+        if (blocked.size > 0) newData = newData.filter(p => !blocked.has(p.user_id))
+      }
       setHasMore(newData.length >= pageSize)
       if (pageNum === 0) setPosts(newData)
       else setPosts(prev => [...prev, ...newData])
