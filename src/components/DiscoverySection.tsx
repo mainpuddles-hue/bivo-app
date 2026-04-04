@@ -151,5 +151,5 @@ const styles = StyleSheet.create({
   },
   placeCircleText: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading },
   placeCompactName: { fontSize: 11, fontFamily: fonts.body, textAlign: 'center', lineHeight: 14 },
-  placeCategoryLabel: { fontSize: 9, fontFamily: fonts.body, textAlign: 'center', lineHeight: 12 },
+  placeCategoryLabel: { fontSize: 11, fontFamily: fonts.body, textAlign: 'center', lineHeight: 12 },
 })

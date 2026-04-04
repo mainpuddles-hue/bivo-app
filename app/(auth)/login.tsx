@@ -435,6 +435,7 @@ function LoginScreenInner() {
                   placeholder={t('auth.namePlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
                   autoCapitalize="words"
+                  textContentType="name"
                   accessibilityLabel={t('auth.name')}
                 />
               )}
@@ -447,6 +448,7 @@ function LoginScreenInner() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
+                textContentType="emailAddress"
                 accessibilityLabel={t('auth.email')}
               />
               {mode !== 'forgot' && (
@@ -459,6 +461,7 @@ function LoginScreenInner() {
                     placeholderTextColor={colors.mutedForeground}
                     secureTextEntry={!showPassword}
                     autoComplete="password"
+                    textContentType={mode === 'register' ? 'newPassword' : 'password'}
                     accessibilityLabel={t('auth.password')}
                   />
                   <Pressable

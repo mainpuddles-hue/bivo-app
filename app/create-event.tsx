@@ -437,6 +437,7 @@ function CreateEventScreenInner() {
                 onChangeText={setEventDate}
                 placeholder="2026-04-15"
                 placeholderTextColor={colors.mutedForeground}
+                keyboardType="numeric"
                 maxLength={10}
                 accessibilityLabel={t('events.eventDate')}
               />
@@ -453,6 +454,7 @@ function CreateEventScreenInner() {
                 value={eventTime}
                 onChangeText={setEventTime}
                 placeholder="18:00"
+                keyboardType="numbers-and-punctuation"
                 placeholderTextColor={colors.mutedForeground}
                 maxLength={5}
                 accessibilityLabel={t('events.eventTime')}

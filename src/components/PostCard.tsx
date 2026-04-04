@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12,
     alignSelf: 'flex-start',
   },
-  expirationText: { fontSize: 9, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
+  expirationText: { fontSize: 11, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
 
   // Title + description
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.15 },

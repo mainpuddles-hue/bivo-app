@@ -491,7 +491,7 @@ export default function GroupDetailScreen() {
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
-            <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
+            <ArrowLeft size={24} color={colors.foreground} strokeWidth={1.8} />
           </Pressable>
           <Text style={[ps.headerTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
           <View style={ps.headerBtn} />
@@ -512,7 +512,7 @@ export default function GroupDetailScreen() {
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
-            <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
+            <ArrowLeft size={24} color={colors.foreground} strokeWidth={1.8} />
           </Pressable>
           <Text style={[ps.headerTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
           <View style={ps.headerBtn} />
@@ -614,7 +614,7 @@ export default function GroupDetailScreen() {
       {/* Header */}
       <View style={[ps.header, { borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} style={({ pressed }) => [ps.headerBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
-          <ArrowLeft size={22} color={colors.foreground} strokeWidth={1.8} />
+          <ArrowLeft size={24} color={colors.foreground} strokeWidth={1.8} />
         </Pressable>
         <View style={ps.headerCenter}>
           <Text style={[ps.headerTitle, { color: colors.foreground }]} numberOfLines={1}>{group?.name || t('groups.title')}</Text>

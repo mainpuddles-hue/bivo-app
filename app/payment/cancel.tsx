@@ -42,7 +42,7 @@ function PaymentCancelScreenInner() {
             accessibilityLabel={t('payment.backToHome')}
             accessibilityRole="button"
           >
-            <ArrowLeft size={18} color={colors.foreground} />
+            <ArrowLeft size={24} color={colors.foreground} />
             <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>{t('payment.backToHome')}</Text>
           </Pressable>
         </View>

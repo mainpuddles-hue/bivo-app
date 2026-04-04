@@ -1672,7 +1672,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     paddingVertical: 2, alignItems: 'center',
   },
-  mainImageBadgeText: { fontSize: 8, fontWeight: '600', fontFamily: fonts.bodySemi },
+  mainImageBadgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   addImageBtn: {
     width: 80, height: 80, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,

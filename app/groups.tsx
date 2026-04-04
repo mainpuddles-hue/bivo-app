@@ -418,6 +418,7 @@ export default function GroupsScreen() {
             placeholderTextColor={colors.mutedForeground}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            returnKeyType="search"
             autoFocus
           />
           {searchQuery.length > 0 && (

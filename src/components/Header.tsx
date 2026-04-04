@@ -106,5 +106,5 @@ const styles = StyleSheet.create({
     minWidth: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
   },
-  badgeText: { fontSize: 9, fontFamily: fonts.bodyMedium, lineHeight: 12 },
+  badgeText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 12 },
 })

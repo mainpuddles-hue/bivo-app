@@ -980,7 +980,7 @@ const s = StyleSheet.create({
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
   followName: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 8 },
-  multiplierText: { fontSize: 9, fontWeight: '800', fontFamily: fonts.bodySemi },
+  multiplierText: { fontSize: 11, fontWeight: '800', fontFamily: fonts.bodySemi },
   // My Posts tab
   myPostItem: { gap: 8, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
