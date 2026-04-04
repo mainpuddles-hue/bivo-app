@@ -302,10 +302,8 @@ function ExploreScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Sub-header */}
-      <View style={[s.header, { borderBottomColor: colors.border, paddingTop: 12 }]}>
+      <View style={[s.header, { borderBottomColor: colors.border, paddingTop: 12, minHeight: 44 }]}>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('explore.title')}</Text>
-        {/* Spacer to match messages/profile header layout (space-between needs 2 children) */}
-        <View style={{ width: 44 }} />
       </View>
 
       {/* Tab chips */}
