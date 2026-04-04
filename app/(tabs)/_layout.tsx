@@ -67,7 +67,6 @@ export default function TabLayout() {
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)
   const [showCreateMenu, setShowCreateMenu] = useState(false)
-  const isFeedTab = pathname === '/' || pathname === ''
 
   useEffect(() => {
     let mounted = true
@@ -79,7 +78,7 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-    {!isFeedTab && <Header />}
+    <Header />
     <Tabs
       screenOptions={{
         headerShown: false,

@@ -65,13 +65,25 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   // Animated like heart
   const likeAnim = useRef(new Animated.Value(1)).current
 
-  // Check if current user has liked/saved this post
+  // Sync state when post prop changes (e.g., feed refresh)
+  useEffect(() => {
+    if (!likingRef.current) {
+      if (post.is_liked !== undefined) setLiked(post.is_liked)
+      setLikeCount(post.like_count ?? 0)
+    }
+  }, [post.id, post.is_liked, post.like_count])
+
+  useEffect(() => {
+    if (!savingRef.current && post.is_saved !== undefined) {
+      setSaved(post.is_saved)
+    }
+  }, [post.id, post.is_saved])
+
+  // Check if current user has liked/saved this post (only when state not provided)
   useEffect(() => {
     if (!userId) return
-    // Skip DB check if the post already carries like/save state
     if (post.is_liked !== undefined && post.is_saved !== undefined) return
     let mounted = true
-
 
     if (post.is_liked === undefined) {
       supabase.from('post_likes').select('id').eq('post_id', post.id).eq('user_id', userId).maybeSingle()
@@ -370,61 +382,56 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
             accessibilityState={{ selected: liked }}
             onPress={async (e) => {
-              e.stopPropagation?.()
               if (!isHumanAction()) return
               if (!userId) { router.push('/(auth)/login'); return }
-              if (post.user_id === userId) return // Can't like own post
+              if (post.user_id === userId) return
+              if (post.is_seed) return
               if (likingRef.current) return
               likingRef.current = true
               try {
                 try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
 
-                // Block interactions on seed posts (fake IDs cause FK violations)
-                if (post.is_seed) return
+                const wasLiked = liked
+                const prevCount = likeCount
 
-                if (liked) {
-                  const prevCount = likeCount
-                  setLiked(false)
-                  setLikeCount(c => Math.max(0, c - 1))
-                  const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-                  if (error) { setLiked(true); setLikeCount(prevCount) }
-                  else {
-                    // Re-read actual count from post_likes (source of truth) to avoid divergence
-                    const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
-                    const syncedCount = realCount ?? Math.max(0, prevCount - 1)
-                    setLikeCount(syncedCount)
-                    await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', post.id)
-                  }
-                } else {
-                  const prevCount = likeCount
-                  setLiked(true)
-                  setLikeCount(c => c + 1)
+                // Optimistic update
+                setLiked(!wasLiked)
+                setLikeCount(wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1)
+
+                if (!wasLiked) {
                   Animated.sequence([
                     Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
                     Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
                   ]).start()
-                  const { error } = await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
-                  if (error) { setLiked(false); setLikeCount(prevCount) }
-                  else {
-                    // Re-read actual count from post_likes (source of truth) to avoid divergence
-                    const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
-                    const syncedCount = realCount ?? (prevCount + 1)
-                    setLikeCount(syncedCount)
-                    await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', post.id)
+                }
+
+                // DB operation
+                const { error } = wasLiked
+                  ? await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+                  : await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
+
+                if (error) {
+                  // Rollback on error
+                  setLiked(wasLiked)
+                  setLikeCount(prevCount)
+                } else {
+                  // Sync count from source of truth
+                  const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
+                  if (realCount != null) {
+                    setLikeCount(realCount)
+                    // Fire-and-forget: sync denormalized count on posts table
+                    ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', post.id).then(() => {}).catch(() => {})
+                  }
+
+                  if (!wasLiked) {
                     onInteraction?.(post.id, 'like')
-                    // Notify post author about the like (skip if own post)
+                    // Notification (fire-and-forget)
                     if (post.user_id && post.user_id !== userId) {
-                      try {
-                        await (supabase.from('notifications') as any).insert({
-                          user_id: post.user_id,
-                          from_user_id: userId,
-                          type: 'post_like',
-                          title: t('post.liked'),
-                          body: post.title,
-                          link_type: 'post',
-                          link_id: post.id,
-                        })
-                      } catch {} // Intentional: non-critical notification
+                      ;(supabase.from('notifications') as any).insert({
+                        user_id: post.user_id, from_user_id: userId,
+                        type: 'post_like', title: t('post.liked'),
+                        body: post.title, link_type: 'post', link_id: post.id,
+                      }).then(() => {}).catch(() => {})
                     }
                   }
                 }

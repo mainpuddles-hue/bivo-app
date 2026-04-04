@@ -536,7 +536,7 @@ function FeedScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar */}
-      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: insets.top + 8 }]}>
+      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: 8 }]}>
         <View style={styles.neighborhoodRow}>
           <Pressable onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
             <MapPin size={12} color={colors.mutedForeground} />
@@ -592,7 +592,7 @@ function FeedScreenInner() {
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isCommunity' in item ? `community-${(item as any)._isCommunity}-${item.id}` : '_isAd' in item ? `ad-${item.id}` : item.id)}
-        contentContainerStyle={[styles.list, { paddingTop: insets.top + FILTER_BAR_CONTENT_HEIGHT }]}
+        contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_CONTENT_HEIGHT }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
