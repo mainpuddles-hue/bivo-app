@@ -33,6 +33,9 @@ const HISTORY_KEY = 'tackbird-search-history'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
 const MAX_HISTORY = 5
 
+const SearchSeparator16 = () => <View style={{ height: 16 }} />
+const SearchSeparator8 = () => <View style={{ height: 8 }} />
+
 type TimeFilter = 'all' | 'today' | 'week' | 'month'
 
 interface SavedSearch {
@@ -1002,7 +1005,7 @@ function SearchScreenInner() {
             </View>
           )}
           contentContainerStyle={s.list}
-          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          ItemSeparatorComponent={SearchSeparator16}
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} /> : null}
@@ -1044,7 +1047,7 @@ function SearchScreenInner() {
               <ChevronRight size={16} color={colors.mutedForeground} />
             </Pressable>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ItemSeparatorComponent={SearchSeparator8}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
@@ -1086,7 +1089,7 @@ function SearchScreenInner() {
               <ChevronRight size={16} color={colors.mutedForeground} />
             </Pressable>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ItemSeparatorComponent={SearchSeparator8}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
@@ -1117,7 +1120,7 @@ function SearchScreenInner() {
               </View>
             </Pressable>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ItemSeparatorComponent={SearchSeparator8}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
