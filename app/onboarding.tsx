@@ -181,6 +181,17 @@ function OnboardingScreenInner() {
         return
       }
 
+      // Apply referral code FIRST (before profile update) — if invalid, user can retry
+      if (referralInput.trim()) {
+        trackEvent('onboarding_invite_code' as any, { hasCode: true })
+        const success = await applyInviteCode(referralInput.trim())
+        setReferralStatus(success ? 'applied' : 'invalid')
+        if (!success) {
+          setSaving(false)
+          return
+        }
+      }
+
       // Save selected city + neighborhood + mark onboarding completed in profile
       const updateData: Record<string, any> = {
         naapurusto: selectedNeighborhood,
@@ -190,19 +201,6 @@ function OnboardingScreenInner() {
       await (supabase.from('profiles') as any)
         .update(updateData)
         .eq('id', user.id)
-
-      // Apply referral code if entered — uses useReferral hook which handles
-      // points, badges, tier rewards, and Pro trial grants
-      if (referralInput.trim()) {
-        trackEvent('onboarding_invite_code' as any, { hasCode: true })
-        const success = await applyInviteCode(referralInput.trim())
-        setReferralStatus(success ? 'applied' : 'invalid')
-        if (!success) {
-          // Don't navigate — let user see the error and try again or proceed
-          setSaving(false)
-          return
-        }
-      }
 
       // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
