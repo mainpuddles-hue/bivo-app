@@ -239,15 +239,23 @@ export default function GroupDetailScreen() {
       setIsMember(false); setIsAdmin(false)
       try {
         await (supabase.from('group_members') as any).delete().eq('group_id', id).eq('user_id', currentUserId)
-        await (supabase.from('groups') as any).update({ member_count: Math.max(0, group.member_count - 1) }).eq('id', id)
-        setGroup(prev => prev ? { ...prev, member_count: Math.max(0, prev.member_count - 1) } : prev)
+        // Sync member count from source of truth
+        const { count } = await supabase.from('group_members').select('*', { count: 'exact', head: true }).eq('group_id', id)
+        const realCount = count ?? Math.max(0, group.member_count - 1)
+        setGroup(prev => prev ? { ...prev, member_count: realCount } : prev)
+        ;(supabase.from('groups') as any).update({ member_count: realCount }).eq('id', id).then(() => {}).catch(() => {})
       } catch { setIsMember(true); Alert.alert(t('common.error'), t('groups.leaveError')) }
     } else {
       setIsMember(true)
       try {
-        await (supabase.from('group_members') as any).insert({ group_id: id, user_id: currentUserId, role: 'member' })
-        await (supabase.from('groups') as any).update({ member_count: group.member_count + 1 }).eq('id', id)
-        setGroup(prev => prev ? { ...prev, member_count: prev.member_count + 1 } : prev)
+        const { error: joinErr } = await (supabase.from('group_members') as any).insert({ group_id: id, user_id: currentUserId, role: 'member' })
+        if (joinErr && joinErr.code === '23505') { /* already member */ }
+        else if (joinErr) throw joinErr
+        // Sync member count from source of truth
+        const { count } = await supabase.from('group_members').select('*', { count: 'exact', head: true }).eq('group_id', id)
+        const realCount = count ?? group.member_count + 1
+        setGroup(prev => prev ? { ...prev, member_count: realCount } : prev)
+        ;(supabase.from('groups') as any).update({ member_count: realCount }).eq('id', id).then(() => {}).catch(() => {})
       } catch { setIsMember(false); Alert.alert(t('common.error'), t('groups.joinError')) }
     }
     joiningRef.current = false
@@ -300,10 +308,16 @@ export default function GroupDetailScreen() {
     try {
       if (alreadyLiked) {
         await (supabase.from('group_post_likes') as any).delete().eq('user_id', currentUserId).eq('post_id', postId)
-        await (supabase.from('group_posts') as any).update({ like_count: Math.max(0, post.like_count - 1) }).eq('id', postId)
       } else {
-        await (supabase.from('group_post_likes') as any).insert({ user_id: currentUserId, post_id: postId })
-        await (supabase.from('group_posts') as any).update({ like_count: post.like_count + 1 }).eq('id', postId)
+        const { error: likeErr } = await (supabase.from('group_post_likes') as any).insert({ user_id: currentUserId, post_id: postId })
+        if (likeErr && likeErr.code === '23505') { /* already liked */ }
+        else if (likeErr) throw likeErr
+      }
+      // Sync count from source of truth
+      const { count } = await supabase.from('group_post_likes').select('*', { count: 'exact', head: true }).eq('post_id', postId)
+      if (count != null) {
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, like_count: count } : p))
+        ;(supabase.from('group_posts') as any).update({ like_count: count }).eq('id', postId).then(() => {}).catch(() => {})
       }
     } catch {
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, like_count: post.like_count } : p))
