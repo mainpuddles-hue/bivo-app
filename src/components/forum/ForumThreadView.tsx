@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
   },
   categoryBadgeText: {
-    fontSize: 10, fontFamily: fonts.bodySemi, lineHeight: 14,
+    fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14,
   },
   detailTitle: {
     fontSize: 20, fontFamily: fonts.heading, letterSpacing: -0.2, lineHeight: 26,

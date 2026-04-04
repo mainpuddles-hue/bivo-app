@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
   },
   categoryBadgeText: {
-    fontSize: 10, fontFamily: fonts.bodySemi, lineHeight: 14,
+    fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14,
   },
   cardTitle: {
     fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 21,

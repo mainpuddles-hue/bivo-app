@@ -99,7 +99,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
 
         {/* Content */}
         <View style={styles.detailBody}>
-          <Text style={[styles.detailTitle, { color: colors.foreground }]}>{item.title}</Text>
+          <Text style={[styles.detailTitle, { color: colors.foreground }]} numberOfLines={3}>{item.title}</Text>
 
           {/* Date & time */}
           {item.sortDate && (

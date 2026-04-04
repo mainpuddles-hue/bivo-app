@@ -204,7 +204,7 @@ const s = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
   },
-  tabLabel: { fontSize: 10, fontWeight: '500', fontFamily: fonts.body },
+  tabLabel: { fontSize: 11, fontWeight: '500', fontFamily: fonts.body },
   badge: {
     position: 'absolute' as const,
     top: -4,
@@ -219,7 +219,7 @@ const s = StyleSheet.create({
   },
   badgeText: {
     color: '#FFFFFF', // always white on destructive background
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700' as const,
     lineHeight: 12,
     fontFamily: fonts.bodySemi,

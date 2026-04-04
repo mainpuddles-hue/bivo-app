@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   countdownText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
   },
   cardTitle: {
@@ -196,12 +196,12 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   locationText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.body,
     flex: 1,
   },
   userName: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.body,
   },
 })

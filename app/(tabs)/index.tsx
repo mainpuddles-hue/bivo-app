@@ -107,7 +107,7 @@ const communityCardStyles = StyleSheet.create({
     width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
   },
   center: { flex: 1, justifyContent: 'center' },
-  label: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 14 },
+  label: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 14 },
   title: { fontSize: 14, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 20 },
   subtitle: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
 })

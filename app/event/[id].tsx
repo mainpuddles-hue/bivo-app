@@ -349,7 +349,7 @@ function EventDetailScreenInner() {
         </View>
 
         {/* Title */}
-        <Text style={[s.title, { color: colors.foreground }]}>{event.title}</Text>
+        <Text style={[s.title, { color: colors.foreground }]} numberOfLines={3}>{event.title}</Text>
 
         {/* Past event banner */}
         {isPast && (
@@ -375,7 +375,7 @@ function EventDetailScreenInner() {
         {event.location_name && (
           <View style={s.infoRow}>
             <MapPin size={18} color={colors.primary} strokeWidth={1.6} />
-            <Text style={[s.infoText, { color: colors.foreground }]}>{event.location_name}</Text>
+            <Text style={[s.infoText, { color: colors.foreground }]} numberOfLines={2}>{event.location_name}</Text>
           </View>
         )}
 
@@ -447,7 +447,7 @@ function EventDetailScreenInner() {
           >
             <Avatar url={event.creator.avatar_url} name={event.creator.name} size={44} />
             <View style={s.creatorInfo}>
-              <Text style={[s.creatorName, { color: colors.foreground }]}>{event.creator.name}</Text>
+              <Text style={[s.creatorName, { color: colors.foreground }]} numberOfLines={1}>{event.creator.name}</Text>
               <View style={[s.organizerBadge, { backgroundColor: `${colors.primary}15` }]}>
                 <Text style={[s.organizerBadgeText, { color: colors.primary }]}>{t('events.organizer')}</Text>
               </View>

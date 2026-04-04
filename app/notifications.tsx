@@ -361,7 +361,7 @@ function NotificationsScreenInner() {
                   <Text style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && { fontWeight: '600' }]} numberOfLines={2}>
                     {getGroupedTitle(item, t)}
                   </Text>
-                  {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={1}>{item.body}</Text>}
+                  {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={2}>{item.body}</Text>}
                   <View style={styles.notifMeta}>
                     {/* 1d: Relative timestamps (already handled by formatTimeAgo) */}
                     <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     minWidth: 18, height: 22, borderRadius: 11,
     paddingHorizontal: 6,
   },
-  groupBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
+  groupBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
   unreadDot: { width: 8, height: 8, borderRadius: 4, alignSelf: 'center' as const },
   // 1a: Expanded group styles
   expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 12, paddingVertical: 4, marginBottom: 4 },

@@ -936,7 +936,7 @@ const st = StyleSheet.create({
     borderRadius: 8,
   },
   categoryBadgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },

@@ -1677,7 +1677,7 @@ const styles = StyleSheet.create({
     width: 80, height: 80, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
-  addImageText: { fontSize: 10, fontFamily: fonts.body },
+  addImageText: { fontSize: 11, fontFamily: fonts.body },
   tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,

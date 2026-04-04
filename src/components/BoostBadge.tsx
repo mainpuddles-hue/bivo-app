@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   text: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     lineHeight: 13,
   },

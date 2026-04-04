@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   commentTime: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.body,
     lineHeight: 14,
     marginTop: 2,

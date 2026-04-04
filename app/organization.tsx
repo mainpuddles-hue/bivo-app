@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
     width: 90, height: 90, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
-  addImageText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi },
+  addImageText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   imageHint: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
   textArea: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,

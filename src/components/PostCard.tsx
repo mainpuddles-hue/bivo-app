@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
     flexShrink: 0,
   },
-  categoryBadgeText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
+  categoryBadgeText: { fontSize: 11, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
   newDot: {
     width: 6, height: 6, borderRadius: 3, marginLeft: 2,
   },
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12,
     paddingHorizontal: 8, paddingVertical: 3,
   },
-  multiImageText: { fontSize: 10, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
+  multiImageText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
   proBadgeOnImage: {
     position: 'absolute', top: 8, right: 8,
     width: 26, height: 26, borderRadius: 13,
@@ -650,7 +650,7 @@ const styles = StyleSheet.create({
 
   // Title + description
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.15 },
-  seedLabel: { fontSize: 10, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 14 },
+  seedLabel: { fontSize: 11, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 14 },
   description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
   // Meta (price + location)
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
   conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
-  conditionBadgeText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
+  conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14 },
 
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
   popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14 },
   distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 3 },
-  distanceText: { fontSize: 10, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
+  distanceText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
 
   // Badges
   proMicroBadge: {

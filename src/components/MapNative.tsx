@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   sectionCount: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.bodyMedium,
     lineHeight: 13,
   },

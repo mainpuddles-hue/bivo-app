@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   miniStatusText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 0.3,

@@ -1314,7 +1314,7 @@ const styles = StyleSheet.create({
   authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 36 },
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
-  categoryText: { fontSize: 10, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
+  categoryText: { fontSize: 11, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
   expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },

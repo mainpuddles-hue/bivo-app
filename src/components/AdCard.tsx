@@ -110,7 +110,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
 
         {/* Business name */}
         {ad.business?.name && (
-          <Text style={[styles.businessName, { color: colors.mutedForeground }]}>
+          <Text style={[styles.businessName, { color: colors.mutedForeground }]} numberOfLines={1}>
             {ad.business.name}
           </Text>
         )}
@@ -118,7 +118,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
         {/* CTA button */}
         {ad.cta_text && ad.link_url && (
           <View style={[styles.ctaBtn, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.ctaText, { color: colors.primaryForeground }]}>
+            <Text style={[styles.ctaText, { color: colors.primaryForeground }]} numberOfLines={1}>
               {ad.cta_text}
             </Text>
             <ExternalLink size={14} color={colors.primaryForeground} />
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   sponsoredText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',

@@ -74,5 +74,5 @@ const styles = StyleSheet.create({
   scoreBadge: {
     paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8,
   },
-  scoreText: { fontSize: 10, fontWeight: '700', fontFamily: fonts.bodySemi },
+  scoreText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi },
 })

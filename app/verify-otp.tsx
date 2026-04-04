@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 28,
+    fontSize: 32,
     letterSpacing: 8,
     textAlign: 'center',
     minHeight: 64,

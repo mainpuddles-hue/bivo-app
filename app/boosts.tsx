@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   balanceNumber: {
-    fontSize: 36,
+    fontSize: 32,
     fontFamily: fonts.heading,
     lineHeight: 42,
   },

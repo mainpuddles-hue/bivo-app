@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     minWidth: 20, height: 20, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
   },
-  unreadText: { fontSize: 10, fontWeight: '700', lineHeight: 14, fontFamily: fonts.bodySemi },
+  unreadText: { fontSize: 11, fontWeight: '700', lineHeight: 14, fontFamily: fonts.bodySemi },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 76 },
   empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.headingSemi },

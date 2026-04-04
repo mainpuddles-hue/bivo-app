@@ -34,7 +34,7 @@ function FeedContextHeaderInner({ neighborhood, postCount, loading, cityName }: 
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.greetingLine, { color: colors.primary }]}>
+      <Text style={[styles.greetingLine, { color: colors.primary }]} numberOfLines={1}>
         {greeting},{' '}
         <Text style={styles.area}>{area}</Text>!
       </Text>

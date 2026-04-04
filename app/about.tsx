@@ -102,7 +102,7 @@ const s = StyleSheet.create({
     width: 80, height: 80, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
   },
-  logoText: { fontSize: 28, fontFamily: fonts.heading },
+  logoText: { fontSize: 32, fontFamily: fonts.heading },
   appName: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.5 },
   versionText: { fontSize: 14, fontFamily: fonts.body },
   tagline: { fontSize: 14, fontFamily: fonts.body, marginTop: 4 },

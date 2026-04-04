@@ -308,7 +308,7 @@ const s = StyleSheet.create({
     width: 96, height: 96, borderRadius: 48,
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
-  heroTitle: { fontSize: 28, lineHeight: 36, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
+  heroTitle: { fontSize: 32, lineHeight: 36, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
   heroSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
   activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -341,7 +341,7 @@ const s = StyleSheet.create({
     padding: 16, alignItems: 'center', gap: 4, position: 'relative', overflow: 'hidden',
   },
   pricingLabel: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
-  pricingPrice: { fontSize: 28, lineHeight: 36, fontWeight: '800', fontFamily: fonts.heading },
+  pricingPrice: { fontSize: 32, lineHeight: 36, fontWeight: '800', fontFamily: fonts.heading },
   pricingPeriod: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   pricingSubtext: { fontSize: 12, lineHeight: 16, fontWeight: '600', marginTop: 2, fontFamily: fonts.bodySemi },
   saveBadge: {
@@ -349,7 +349,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 3,
     transform: [{ rotate: '30deg' }],
   },
-  saveBadgeText: { fontSize: 10, lineHeight: 14, fontWeight: '800', fontFamily: fonts.bodySemi },
+  saveBadgeText: { fontSize: 11, lineHeight: 14, fontWeight: '800', fontFamily: fonts.bodySemi },
   subscribeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10, paddingVertical: 16, borderRadius: 12, marginTop: 4, minHeight: 48,

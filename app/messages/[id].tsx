@@ -867,7 +867,7 @@ const s = StyleSheet.create({
   msgText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
-  msgTime: { fontSize: 10, lineHeight: 14, fontFamily: fonts.body },
+  msgTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   reactionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   reactionsRowMine: { justifyContent: 'flex-end' },
   reactionsRowTheirs: { justifyContent: 'flex-start' },
@@ -948,7 +948,7 @@ const contextStyles = StyleSheet.create({
   },
   image: { width: 40, height: 40, borderRadius: 8 },
   info: { flex: 1, gap: 4 },
-  label: { fontSize: 10, lineHeight: 14, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
+  label: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
   title: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
 })
 
