@@ -173,7 +173,7 @@ export default function VerifyOtpScreen() {
 
   return (
     <ScreenErrorBoundary screenName="VerifyOtp">
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: colors.border }]}>

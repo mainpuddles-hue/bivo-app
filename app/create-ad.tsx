@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
+import { formatPrice as formatPriceUtil } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Profile } from '@/lib/types'
@@ -231,7 +232,7 @@ export default function CreateAdScreen() {
     }
   }, [title, description, imageUri, linkUrl, ctaText, targetNeighborhood, duration, profile, pricePerDay, totalPrice, supabase, router, t, uploadImage])
 
-  const formatPrice = (cents: number) => `${(cents / 100).toFixed(2).replace('.', ',')} \u20AC`
+  const formatPrice = (cents: number) => formatPriceUtil(cents / 100, locale)
 
   return (
     <ScreenErrorBoundary screenName="CreateAd">

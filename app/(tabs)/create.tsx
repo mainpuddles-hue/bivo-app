@@ -848,7 +848,7 @@ export default function CreateScreen() {
 
   return (
     <ScreenErrorBoundary screenName="Create">
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
           <Pressable onPress={handleBackToCategory} hitSlop={12} style={({ pressed }) => [{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
