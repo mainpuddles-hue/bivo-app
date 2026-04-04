@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
 
   // Profile editor styles
   editorCard: { borderRadius: 12, padding: 16, gap: 10 },
-  imageScroll: { gap: 10, paddingVertical: 4 },
+  imageScroll: { gap: 12, paddingVertical: 4 },
   imageThumbWrap: { position: 'relative' },
   imageThumb: { width: 90, height: 90, borderRadius: 12 },
   imageDeleteBtn: {
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
   },
   geocodeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 10, borderRadius: 12,
+    gap: 8, paddingVertical: 10, borderRadius: 12,
   },
   geocodeBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   coordsText: { fontSize: 12, fontFamily: fonts.body },

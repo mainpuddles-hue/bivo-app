@@ -345,7 +345,7 @@ const s = StyleSheet.create({
   cardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   cardMetaText: {
     fontSize: 13,

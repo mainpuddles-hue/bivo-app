@@ -70,7 +70,7 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
 const styles = StyleSheet.create({
   placeRow: {
     marginHorizontal: 12,
-    marginVertical: 5,
+    marginVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
@@ -99,14 +99,14 @@ const styles = StyleSheet.create({
   },
   showAllPlacesBtn: {
     marginHorizontal: 12,
-    marginVertical: 5,
+    marginVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    gap: 6,
+    gap: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,

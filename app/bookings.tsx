@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     marginTop: 2,
   },
   userName: {
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   },
   cardRight: {
     alignItems: 'flex-end',
-    gap: 6,
+    gap: 8,
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -737,7 +737,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 8,

@@ -90,7 +90,7 @@ export const DiscoverySection = memo(function DiscoverySection({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 14, paddingHorizontal: 4, paddingBottom: 2 }}
+        contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingBottom: 2 }}
       >
         {nearbyPlaces.slice(0, 6).map((place) => {
           const catColor = PLACE_COLORS[place.category] || '#95A5A6'
@@ -131,7 +131,7 @@ export const DiscoverySection = memo(function DiscoverySection({
 
 const styles = StyleSheet.create({
   // ── Section header ──
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4 },
   sectionBar: { width: 3, height: 16, borderRadius: 1.5 },
   sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1 },
 
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
 
   // ── Nearby Place Card ──
   placeCompact: {
-    width: 72, alignItems: 'center', gap: 6,
+    width: 72, alignItems: 'center', gap: 8,
   },
   placeCircle: {
     width: 56, height: 56, borderRadius: 28,

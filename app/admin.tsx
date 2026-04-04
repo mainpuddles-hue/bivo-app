@@ -480,7 +480,7 @@ const s = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
@@ -542,7 +542,7 @@ const s = StyleSheet.create({
   flagDetails: {
     fontSize: 13,
     fontFamily: fonts.body,
-    marginBottom: 6,
+    marginBottom: 8,
     lineHeight: 18,
   },
   flagDate: {

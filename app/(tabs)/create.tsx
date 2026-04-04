@@ -1035,7 +1035,7 @@ export default function CreateScreen() {
                     keyboardType="decimal-pad"
                   />
                   {priceSuggestion && selectedType === 'lainaa' && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 4 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 4 }}>
                       <TrendingUp size={14} color={colors.primary} />
                       <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.bodyMedium }}>
                         {t('create.priceSuggestionDaily', {
@@ -1068,7 +1068,7 @@ export default function CreateScreen() {
                     <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice })}</Text>
                   ) : null}
                   {priceSuggestion && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 4 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 4 }}>
                       <TrendingUp size={14} color={colors.primary} />
                       <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.bodyMedium }}>
                         {t('create.priceSuggestion', {
@@ -1618,7 +1618,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   headerBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
   },
   headerBadgeText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', fontFamily: fonts.bodyMedium },
@@ -1686,7 +1686,7 @@ const styles = StyleSheet.create({
   tagText: { fontSize: 13, fontFamily: fonts.body },
   detailsToggle: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth,
+    gap: 8, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth, minHeight: 48,
   },
   detailsToggleText: { fontSize: 14, fontFamily: fonts.bodySemi },
@@ -1702,7 +1702,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingVertical: 12, paddingHorizontal: 4, gap: 12,
   },
-  anonymousInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  anonymousInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   anonymousHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 15, marginTop: 2 },
 
   // Pro banner
@@ -1730,7 +1730,7 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
   locationInput: { flex: 1 },
   mapPickerBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 12, borderRadius: 12, minHeight: 48,
   },
   mapPickerBtnText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -1769,7 +1769,7 @@ const styles = StyleSheet.create({
 
   // Tarjoan sub-type selector
   tarjoanTypeChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingVertical: 10, borderRadius: 16, minHeight: 40,
     flex: 1, justifyContent: 'center',
   },

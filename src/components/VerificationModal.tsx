@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 24,
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   suomifiTitle: {
     fontSize: 22,

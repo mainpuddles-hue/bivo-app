@@ -394,7 +394,7 @@ const s = StyleSheet.create({
   },
   tabItem: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 8, borderRadius: 8,
+    gap: 8, paddingVertical: 8, borderRadius: 8,
   },
   tabItemActive: { borderRadius: 8 },
   tabText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },

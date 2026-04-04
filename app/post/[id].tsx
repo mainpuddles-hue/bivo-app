@@ -899,7 +899,7 @@ function PostDetailScreenInner() {
           )}
 
           {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: colors.purpleMuted }}>
                 <Text style={{ fontSize: 12, fontWeight: '600', color: colors.purple, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                   {(() => {
@@ -1320,18 +1320,18 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
+  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
   boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22 },
-  communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
+  communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   locationText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
   // Action row — unified like PostCard
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 2 },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, paddingHorizontal: 2 },
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
 
@@ -1362,7 +1362,7 @@ const styles = StyleSheet.create({
   replyAvatar: { width: 24, height: 24, borderRadius: 12 },
   showRepliesBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 42, marginTop: 4 },
   showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
+  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
   replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
   commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36, lineHeight: 20 },

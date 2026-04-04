@@ -220,12 +220,12 @@ const s = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
-    gap: 14,
+    gap: 12,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   iconCircle: {
     width: 36,
@@ -300,12 +300,12 @@ const s = StyleSheet.create({
     borderRadius: 4,
   },
   tierList: {
-    gap: 6,
+    gap: 8,
   },
   tierRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 12,

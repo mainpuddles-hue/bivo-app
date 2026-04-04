@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
 
   // Section card
   section: {
-    padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: 10,
+    padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: 12,
   },
   sectionTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
 

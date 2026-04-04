@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     paddingTop: 16, gap: 12,
   },
   cardUserRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
   },
   cardUserInfo: {
     flex: 1, gap: 1,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 20, paddingTop: 4,
   },
   detailActionBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
   },
   detailActionText: {
@@ -340,14 +340,14 @@ const styles = StyleSheet.create({
     fontSize: 14, fontFamily: fonts.body, lineHeight: 20,
   },
   actionBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
   },
   actionText: {
     fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 17,
   },
   replyBar: {
-    flexDirection: 'row', alignItems: 'flex-end', gap: 10,
+    flexDirection: 'row', alignItems: 'flex-end', gap: 12,
     paddingHorizontal: 16, paddingTop: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },

@@ -216,12 +216,12 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
   reasonList: {
-    gap: 6,
+    gap: 8,
   },
   reasonItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 12,

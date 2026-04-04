@@ -149,7 +149,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           {item.kind === 'place' && (() => {
             const pl = item.sourceData as LocalPlace
             return (
-              <View style={{ gap: 6, marginTop: 8 }}>
+              <View style={{ gap: 8, marginTop: 8 }}>
                 {pl.opening_hours && (
                   <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{t('places.openingHours')}: {pl.opening_hours}</Text>
                 )}
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   detailLabel: {
     fontSize: 12,
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   detailBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingVertical: 4,
     borderRadius: 12,
   },
   detailDesc: {
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   detailActions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     padding: 20,
   },
   detailActionBtn: {

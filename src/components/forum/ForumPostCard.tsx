@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     flex: 1, padding: 16, gap: 8,
   },
   cardUserRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
   },
   cardUserInfo: {
     flex: 1, gap: 1,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 16, paddingTop: 4,
   },
   actionBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
   },
   actionText: {

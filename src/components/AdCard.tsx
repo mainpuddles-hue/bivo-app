@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 4,
     alignSelf: 'flex-start',
     borderBottomRightRadius: 8,
   },
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 14,
-    gap: 6,
+    gap: 8,
   },
   title: {
     fontSize: 16,
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
     paddingVertical: 10,
     borderRadius: 12,
     marginTop: 6,

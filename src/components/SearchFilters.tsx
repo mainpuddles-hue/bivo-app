@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
   distanceLabel: { fontSize: 20, fontWeight: '700', textAlign: 'center', lineHeight: 28, fontFamily: fonts.heading },
   distanceSteps: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     justifyContent: 'center',
     flexWrap: 'wrap',
   },

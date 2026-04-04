@@ -1097,20 +1097,20 @@ const s = StyleSheet.create({
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
-  badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' },
+  badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
   proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 8, width: '100%', paddingHorizontal: 16 },
+  actions: { flexDirection: 'row', gap: 12, marginTop: 8, width: '100%', paddingHorizontal: 16 },
   followBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 12, borderRadius: 12,
+    gap: 8, paddingVertical: 12, borderRadius: 12,
   },
   followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 12, borderRadius: 12, borderWidth: 1,
+    gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1,
   },
   messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
@@ -1130,7 +1130,7 @@ const s = StyleSheet.create({
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
   reviewTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   reviewComment: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  dangerActions: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  dangerActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
   dangerBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, padding: 14, borderRadius: 12,
@@ -1155,7 +1155,7 @@ const s = StyleSheet.create({
   ratingBarFill: { height: 8, borderRadius: 4 },
   ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20, fontFamily: fonts.body, lineHeight: 16 },
   // Verification card
-  verificationCard: { borderRadius: 12, padding: 16, gap: 10, borderWidth: StyleSheet.hairlineWidth },
+  verificationCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
   verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   // Activity summary
@@ -1179,7 +1179,7 @@ const bs = StyleSheet.create({
   },
   heroCarouselContent: {
     paddingHorizontal: 16,
-    gap: 10,
+    gap: 12,
   },
   heroImage: {
     height: HERO_IMAGE_HEIGHT,
@@ -1221,17 +1221,17 @@ const bs = StyleSheet.create({
   infoCard: {
     borderRadius: 12,
     padding: 18,
-    gap: 14,
+    gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
   infoCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
   },
   infoCardHeaderText: {
     flex: 1,
-    gap: 6,
+    gap: 8,
   },
   businessName: {
     fontSize: 22,
@@ -1258,7 +1258,7 @@ const bs = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
@@ -1280,7 +1280,7 @@ const bs = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   ratingText: {
     fontSize: 14,
@@ -1319,7 +1319,7 @@ const bs = StyleSheet.create({
   locationCard: {
     borderRadius: 12,
     padding: 18,
-    gap: 10,
+    gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
   locationCardHeader: {
@@ -1359,7 +1359,7 @@ const bs = StyleSheet.create({
   contactCard: {
     borderRadius: 12,
     padding: 18,
-    gap: 14,
+    gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
   contactCardTitle: {
@@ -1395,7 +1395,7 @@ const bs = StyleSheet.create({
 
   // Hours
   hoursSection: {
-    gap: 10,
+    gap: 12,
   },
   hoursGrid: {
     gap: 4,

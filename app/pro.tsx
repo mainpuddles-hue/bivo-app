@@ -311,7 +311,7 @@ const s = StyleSheet.create({
   heroTitle: { fontSize: 32, lineHeight: 36, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
   heroSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
   activeBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, marginTop: 8,
   },
   activeBadgeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -352,7 +352,7 @@ const s = StyleSheet.create({
   saveBadgeText: { fontSize: 11, lineHeight: 14, fontWeight: '800', fontFamily: fonts.bodySemi },
   subscribeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 10, paddingVertical: 16, borderRadius: 12, marginTop: 4, minHeight: 48,
+    gap: 12, paddingVertical: 16, borderRadius: 12, marginTop: 4, minHeight: 48,
   },
   subscribeBtnText: { fontSize: 16, lineHeight: 22, fontWeight: '700', fontFamily: fonts.bodySemi },
   manageBtn: {

@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   progress: {
     borderRadius: 12,
     padding: 14,
-    gap: 10,
+    gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
   progressHeader: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   factors: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
   },
   factorText: {
     fontSize: 11,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
     paddingVertical: 10,
     borderRadius: 12,
     marginTop: 4,

@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 16,
     padding: 24,
-    gap: 14,
+    gap: 12,
     alignItems: 'center',
   },
   closeBtn: {

@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     gap: 8, paddingRight: 4,
   },
   categoryChip: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
   },
   categoryChipText: {
     fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17,

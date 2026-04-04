@@ -825,7 +825,7 @@ const s = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontFamily: fonts.bodySemi,
-    marginBottom: 6,
+    marginBottom: 8,
     marginTop: 12,
   },
   textInput: {

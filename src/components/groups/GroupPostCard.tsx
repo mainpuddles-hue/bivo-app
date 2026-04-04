@@ -96,7 +96,7 @@ function GroupPostCardInner({
           <Pressable
             onPress={() => { if (post.user?.id && onUserPress) onUserPress(post.user.id) }}
             disabled={!onUserPress || !post.user?.id}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
           >
             <Avatar url={post.user?.avatar_url} name={post.user?.name} size={36} />
             <View style={styles.postUserInfo}>
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   postUserRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     marginBottom: 8,
   },
   postUserInfo: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
   actionText: {
     fontSize: 13,

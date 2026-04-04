@@ -597,7 +597,7 @@ const s = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 4,
   },
@@ -611,7 +611,7 @@ const s = StyleSheet.create({
   descriptionSection: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    gap: 6,
+    gap: 8,
   },
   sectionLabel: {
     fontSize: 12,

@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 10,
+    gap: 12,
   },
   topBarIcon: {
     width: 44,
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     marginHorizontal: 12,
-    marginVertical: 5,
+    marginVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',

@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   locationText: {
     fontSize: 14,
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
-    gap: 6,
+    gap: 8,
   },
   availableTitle: {
     fontSize: 14,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
   },
   continueBtnText: {
     fontSize: 14,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 12,

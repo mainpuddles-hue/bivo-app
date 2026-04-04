@@ -851,13 +851,13 @@ const st = StyleSheet.create({
   // Filters
   filterRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 20,
   },
   filterChipText: {
@@ -927,7 +927,7 @@ const st = StyleSheet.create({
   creatorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     marginTop: 2,
   },
   categoryBadge: {
@@ -950,7 +950,7 @@ const st = StyleSheet.create({
   joinBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 12,
@@ -985,7 +985,7 @@ const st = StyleSheet.create({
   emptyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
@@ -1070,7 +1070,7 @@ const st = StyleSheet.create({
   catChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
@@ -1092,7 +1092,7 @@ const st = StyleSheet.create({
   },
   dayRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
   dayChip: {
     flex: 1,

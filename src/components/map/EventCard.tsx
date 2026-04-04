@@ -111,7 +111,7 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
 const styles = StyleSheet.create({
   eventCard: {
     marginHorizontal: 12,
-    marginVertical: 5,
+    marginVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   eventContent: {
     padding: 14,
-    gap: 6,
+    gap: 8,
   },
   title: {
     fontSize: 16,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   cardBadgeRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
     alignItems: 'center',
     marginTop: 2,
   },

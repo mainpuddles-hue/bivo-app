@@ -1026,7 +1026,7 @@ const s = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, letterSpacing: -0.3, lineHeight: 28, fontFamily: fonts.headingSemi },
   saveBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, minHeight: 44,
   },
   saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -1070,7 +1070,7 @@ const s = StyleSheet.create({
   deleteHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   deleteTitle: {
     fontSize: 18,
@@ -1101,7 +1101,7 @@ const s = StyleSheet.create({
   },
   deleteActions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     marginTop: 8,
   },
   deleteCancelBtn: {

@@ -98,7 +98,7 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
 const styles = StyleSheet.create({
   postCard: {
     marginHorizontal: 12,
-    marginVertical: 5,
+    marginVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   cardBadgeRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
     alignItems: 'center',
   },
   badge: {
