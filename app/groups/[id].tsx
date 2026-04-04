@@ -394,8 +394,10 @@ export default function GroupDetailScreen() {
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
         try {
-          await (supabase.from('group_post_comments') as any).delete().eq('post_id', postId)
-          await (supabase.from('group_post_likes') as any).delete().eq('post_id', postId)
+          await Promise.allSettled([
+            (supabase.from('group_post_comments') as any).delete().eq('post_id', postId),
+            (supabase.from('group_post_likes') as any).delete().eq('post_id', postId),
+          ])
           await (supabase.from('group_posts') as any).delete().eq('id', postId)
           setPosts(prev => prev.filter(p => p.id !== postId))
           if (expandedPostId === postId) { setExpandedPostId(null); setComments([]) }
@@ -463,11 +465,15 @@ export default function GroupDetailScreen() {
             .eq('group_id', id)
           const allPostIds = (allPosts ?? []).map((p: any) => p.id)
           if (allPostIds.length > 0) {
-            await (supabase.from('group_post_comments') as any).delete().in('post_id', allPostIds)
-            await (supabase.from('group_post_likes') as any).delete().in('post_id', allPostIds)
+            await Promise.allSettled([
+              (supabase.from('group_post_comments') as any).delete().in('post_id', allPostIds),
+              (supabase.from('group_post_likes') as any).delete().in('post_id', allPostIds),
+            ])
           }
-          await (supabase.from('group_posts') as any).delete().eq('group_id', id)
-          await (supabase.from('group_members') as any).delete().eq('group_id', id)
+          await Promise.allSettled([
+            (supabase.from('group_posts') as any).delete().eq('group_id', id),
+            (supabase.from('group_members') as any).delete().eq('group_id', id),
+          ])
           await (supabase.from('groups') as any).delete().eq('id', id)
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
           router.back()

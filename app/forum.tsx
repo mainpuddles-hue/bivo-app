@@ -359,7 +359,10 @@ export default function ForumScreen() {
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
         try {
-          await (supabase.from('forum_replies') as any).delete().eq('post_id', postId)
+          await Promise.allSettled([
+            (supabase.from('forum_votes') as any).delete().eq('post_id', postId),
+            (supabase.from('forum_replies') as any).delete().eq('post_id', postId),
+          ])
           await (supabase.from('forum_posts') as any).delete().eq('id', postId)
           setPosts(prev => prev.filter(p => p.id !== postId))
           if (selectedPost?.id === postId) setSelectedPost(null)
@@ -372,6 +375,7 @@ export default function ForumScreen() {
   // ── Delete reply ──
   const handleDeleteReply = useCallback(async (reply: ForumReply) => {
     try {
+      await (supabase.from('forum_votes') as any).delete().eq('reply_id', reply.id).catch(() => {})
       await (supabase.from('forum_replies') as any).delete().eq('id', reply.id)
       if (selectedPost) {
         const newCount = Math.max(0, selectedPost.comment_count - 1)
