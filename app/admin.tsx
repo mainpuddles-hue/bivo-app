@@ -201,7 +201,7 @@ function AdminScreenInner() {
   if (loading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
       </View>
     )
   }

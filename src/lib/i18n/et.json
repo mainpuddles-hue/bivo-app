@@ -176,6 +176,7 @@
     "quickMessageSent": "Sõnum saadetud!",
     "comments": "Kommentaarid",
     "addComment": "Lisa kommentaar...",
+    "sendComment": "Saada kommentaar",
     "notFound": "Kuulutust ei leitud",
     "cannotMessageSelf": "Sa ei saa saata sõnumit iseendale",
     "markClosed": "Märgi suletuks",

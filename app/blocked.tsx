@@ -96,7 +96,7 @@ function BlockedUsersScreenInner() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
       ) : blockedUsers.length === 0 ? (
         <EmptyState
           icon={<ShieldOff size={36} color={colors.primary} />}

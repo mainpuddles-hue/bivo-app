@@ -40,12 +40,12 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
       <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
         <Pressable style={styles.overlay} onPress={onClose}>
           <Pressable style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
-            <View style={[styles.successCircle, { backgroundColor: '#10B98118' }]}>
-              <CheckCircle size={48} color="#10B981" />
+            <View style={[styles.successCircle, { backgroundColor: `${colors.success}18` }]}>
+              <CheckCircle size={48} color={colors.success} />
             </View>
             <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.successTitle')}</Text>
             <Text style={[styles.description, { color: colors.mutedForeground }]}>{t('verification.successMessage')}</Text>
-            <Pressable onPress={onClose} style={({ pressed }) => [styles.primaryBtn, { backgroundColor: '#10B981' }, pressed && { opacity: 0.7 }]}>
+            <Pressable onPress={onClose} style={({ pressed }) => [styles.primaryBtn, { backgroundColor: colors.success }, pressed && { opacity: 0.7 }]}>
               <Text style={styles.primaryBtnText}>{t('verification.backToApp')}</Text>
             </Pressable>
           </Pressable>

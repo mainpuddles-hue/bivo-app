@@ -310,7 +310,7 @@ export default function PublicProfileScreen() {
             <ArrowLeft size={24} color={colors.foreground} />
           </Pressable>
         </View>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
       </View>
       </ScreenErrorBoundary>
     )

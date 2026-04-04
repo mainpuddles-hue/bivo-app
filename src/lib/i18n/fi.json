@@ -177,6 +177,7 @@
     "quickMessageSent": "Viesti lähetetty!",
     "comments": "Kommentit",
     "addComment": "Lisää kommentti...",
+    "sendComment": "Lähetä kommentti",
     "notFound": "Ilmoitusta ei löytynyt",
     "cannotMessageSelf": "Et voi lähettää viestiä itsellesi",
     "markClosed": "Merkitse suljetuksi",

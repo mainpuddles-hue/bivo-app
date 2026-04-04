@@ -125,7 +125,7 @@ function PaymentSuccessScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
       ) : (
         <View style={styles.content}>
           {/* Success icon */}

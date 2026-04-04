@@ -24,6 +24,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated'
+import { fonts } from '@/lib/fonts'
 
 const AnimatedImage = Animated.createAnimatedComponent(Image)
 
@@ -233,6 +234,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
   closeBtn: {
     position: 'absolute',

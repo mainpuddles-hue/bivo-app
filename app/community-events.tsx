@@ -215,7 +215,7 @@ function CommunityEventsScreenInner() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
         }
         ListEmptyComponent={
-          loading ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} /> : (
+          loading ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} /> : (
             <View style={s.emptyState}>
               <CalendarDays size={48} color={colors.mutedForeground} strokeWidth={1.3} />
               <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('events.noUpcomingEvents')}</Text>

@@ -12,6 +12,8 @@ export const colors = {
     pro: '#F59E0B',
     success: '#2B8A62',
     info: '#3B82F6',
+    purple: '#7C5CBF',
+    purpleMuted: '#F4EFFF',
     primaryForeground: '#FFFFFF',
     accentForeground: '#FFFFFF',
   },
@@ -28,6 +30,8 @@ export const colors = {
     pro: '#FBBF24',
     success: '#34D399',
     info: '#60A5FA',
+    purple: '#9B7FD4',
+    purpleMuted: '#1A1525',
     primaryForeground: '#121212',
     accentForeground: '#121212',
   },
@@ -46,6 +50,8 @@ export type ThemeColors = {
   pro: string
   success: string
   info: string
+  purple: string
+  purpleMuted: string
   primaryForeground: string
   accentForeground: string
 }

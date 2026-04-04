@@ -177,6 +177,7 @@
     "quickMessageSent": "Message sent!",
     "comments": "Comments",
     "addComment": "Add a comment...",
+    "sendComment": "Send comment",
     "notFound": "Post not found",
     "cannotMessageSelf": "You cannot message yourself",
     "markClosed": "Mark as closed",

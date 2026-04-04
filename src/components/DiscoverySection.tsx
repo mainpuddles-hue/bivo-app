@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   showAllBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 2,
   },
-  showAllText: { fontSize: 13, fontWeight: '600' },
+  showAllText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // ── Nearby Place Card ──
   placeCompact: {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     width: 56, height: 56, borderRadius: 28,
     alignItems: 'center', justifyContent: 'center',
   },
-  placeCircleText: { fontSize: 20, fontWeight: '700' },
+  placeCircleText: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading },
   placeCompactName: { fontSize: 11, fontFamily: fonts.body, textAlign: 'center', lineHeight: 14 },
   placeCategoryLabel: { fontSize: 9, fontFamily: fonts.body, textAlign: 'center', lineHeight: 12 },
 })

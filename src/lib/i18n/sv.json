@@ -177,6 +177,7 @@
     "quickMessageSent": "Meddelande skickat!",
     "comments": "Kommentarer",
     "addComment": "Lägg till en kommentar...",
+    "sendComment": "Skicka kommentar",
     "notFound": "Annonsen hittades inte",
     "cannotMessageSelf": "Du kan inte skicka meddelanden till dig själv",
     "markClosed": "Markera som stängd",

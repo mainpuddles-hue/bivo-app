@@ -739,7 +739,7 @@ function PostDetailScreenInner() {
         </View>
         <Text style={[styles.commentContent, { color: colors.foreground }]}>{c.content}</Text>
         {userId && (
-          <Pressable onPress={() => setReplyToComment(c)} style={styles.replyBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel="Reply">
+          <Pressable onPress={() => setReplyToComment(c)} style={styles.replyBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.reply')}>
             <Reply size={12} color={colors.mutedForeground} />
             <Text style={[styles.replyBtnText, { color: colors.mutedForeground }]}>{t('post.reply')}</Text>
           </Pressable>
@@ -785,12 +785,12 @@ function PostDetailScreenInner() {
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={toggleSave} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="Save" accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
-        <Pressable onPress={handleShare} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="Share"><Share2 size={22} color={colors.mutedForeground} /></Pressable>
+        <Pressable onPress={toggleSave} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
+        <Pressable onPress={handleShare} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.share')}><Share2 size={22} color={colors.mutedForeground} /></Pressable>
         {isAuthor ? (
-          <Pressable onPress={handleMorePress} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="More options"><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleMorePress} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
         ) : userId ? (
-          <Pressable onPress={handleReport} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel="Report"><Flag size={22} color={colors.mutedForeground} /></Pressable>
+          <Pressable onPress={handleReport} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.report')}><Flag size={22} color={colors.mutedForeground} /></Pressable>
         ) : null}
       </View>
 
@@ -898,13 +898,13 @@ function PostDetailScreenInner() {
           )}
 
           {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price == null || post.service_price === 0) && (
-            <Text style={[styles.price, { color: '#3B7DD8' }]}>{t('create.freeItem')}</Text>
+            <Text style={[styles.price, { color: colors.info }]}>{t('create.freeItem')}</Text>
           )}
 
           {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: isDark ? '#1A1525' : '#F4EFFF' }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: '#7C5CBF', fontFamily: fonts.bodySemi, lineHeight: 16 }}>
+              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: colors.purpleMuted }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.purple, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                   {(() => {
                     const condTag = post.tags?.find((tag: string) => tag.startsWith('condition_'))
                     if (!condTag) return ''
@@ -1074,7 +1074,7 @@ function PostDetailScreenInner() {
                 />
                 <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
                   hitSlop={8}
-                  accessibilityRole="button" accessibilityLabel="Send comment"
+                  accessibilityRole="button" accessibilityLabel={t('post.sendComment')}
                   style={({ pressed }) => [styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim() || sendingComment) ? 0.5 : pressed ? 0.7 : 1 }]}>
                   <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
                 </Pressable>
@@ -1254,7 +1254,7 @@ function PostDetailScreenInner() {
           <Pressable
             onPress={handleMessage}
             style={({ pressed }) => [ctaStyles.messageBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}
-            accessibilityRole="button" accessibilityLabel="Send message"
+            accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
           >
             <MessageCircle size={18} color={colors.primaryForeground} />
             <Text style={[ctaStyles.messageBtnText, { color: colors.primaryForeground }]}>

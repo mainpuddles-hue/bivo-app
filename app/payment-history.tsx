@@ -199,7 +199,7 @@ function PaymentHistoryScreenInner() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
       ) : (
         <FlatList
           data={payments}

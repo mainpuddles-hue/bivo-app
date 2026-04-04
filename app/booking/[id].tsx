@@ -279,7 +279,7 @@ function BookingDetailScreenInner() {
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
           <View style={{ flex: 1 }} />
         </View>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
       </View>
     )
   }
