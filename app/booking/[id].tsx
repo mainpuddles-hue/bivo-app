@@ -5,7 +5,7 @@ import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, MessageCircle, Package, ShoppingBag, CheckCircle, XCircle,

@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, Animated, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, Bookmark, BookmarkCheck, CalendarDays, MapPin,
@@ -170,7 +170,7 @@ function SavedScreenInner() {
     }
   }, [supabase, router, locale])
 
-  useEffect(() => { loadSaved() }, [loadSaved])
+  useFocusEffect(useCallback(() => { loadSaved() }, [loadSaved]))
 
   const handleUnsavePost = useCallback(async (postId: string) => {
     if (unsavingId) return

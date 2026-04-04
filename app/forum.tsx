@@ -7,7 +7,7 @@ import {
   Platform, Alert, Animated,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -184,7 +184,7 @@ export default function ForumScreen() {
     finally { setLoading(false); setRefreshing(false); setLoadingMore(false) }
   }, [supabase, activeCategory, neighborhoodFilter, sortBy])
 
-  useEffect(() => { setPage(0); setLoading(true); fetchPosts(0) }, [fetchPosts])
+  useFocusEffect(useCallback(() => { setPage(0); setLoading(true); fetchPosts(0) }, [fetchPosts]))
 
   // ── Real-time listener ──
   useEffect(() => {

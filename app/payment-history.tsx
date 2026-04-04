@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Receipt, ChevronRight, CreditCard } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -106,7 +106,7 @@ function PaymentHistoryScreenInner() {
     setRefreshing(false)
   }, [supabase])
 
-  useEffect(() => { fetchPayments() }, [fetchPayments])
+  useFocusEffect(useCallback(() => { fetchPayments() }, [fetchPayments]))
 
   const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
 

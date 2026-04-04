@@ -5,7 +5,7 @@ import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import {
   ArrowLeft, Share2, Flag, CalendarDays, MapPin, Users, Clock, MessageCircle, XCircle,
@@ -101,7 +101,7 @@ function EventDetailScreenInner() {
     }
   }, [id, supabase])
 
-  useEffect(() => { fetchEvent() }, [fetchEvent])
+  useFocusEffect(useCallback(() => { fetchEvent() }, [fetchEvent]))
 
   // ── Join / Leave logic ──
   const handleJoin = useCallback(async () => {

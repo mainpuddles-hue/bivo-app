@@ -7,7 +7,7 @@ import {
   KeyboardAvoidingView, Platform, Alert, Animated,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import * as ImagePicker from 'expo-image-picker'
@@ -206,7 +206,7 @@ export default function GroupDetailScreen() {
     } catch {} // Intentional: group_post_likes table may not exist
   }, [supabase, id, currentUserId])
 
-  useEffect(() => { fetchGroup() }, [fetchGroup])
+  useFocusEffect(useCallback(() => { fetchGroup() }, [fetchGroup]))
   useEffect(() => { if (currentUserId) { checkMembership(); fetchLikes() } }, [checkMembership, fetchLikes, currentUserId])
   useEffect(() => { if (id) { setLoading(true); fetchPosts() } }, [fetchPosts, id])
 

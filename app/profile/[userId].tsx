@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, useWindowDimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
   Flag, ShieldBan, Crown, PenLine, Zap, ShieldCheck, Clock, CalendarDays, CheckCircle2,
@@ -187,7 +187,7 @@ export default function PublicProfileScreen() {
     setRefreshing(false)
   }, [userId, supabase, router])
 
-  useEffect(() => { loadProfile() }, [loadProfile])
+  useFocusEffect(useCallback(() => { loadProfile() }, [loadProfile]))
 
   const followingRef = useRef(false)
   const [creatingConversation, setCreatingConversation] = useState(false)

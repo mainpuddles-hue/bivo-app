@@ -7,7 +7,7 @@ import {
   Platform, Animated, ActivityIndicator,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, Plus, MapPin, Users, X, Clock,
@@ -271,7 +271,7 @@ function ActivitiesScreenInner() {
     }
   }, [supabase])
 
-  useEffect(() => { fetchActivities() }, [fetchActivities])
+  useFocusEffect(useCallback(() => { fetchActivities() }, [fetchActivities]))
 
   // ── Toggle membership ──
   const togglingRef = useRef(false)

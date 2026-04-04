@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Zap, Trophy, Crown, ChevronRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -175,10 +175,10 @@ export default function LeaderboardScreen() {
     init()
   }, [supabase])
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     setLoading(true)
     fetchLeaderboard(filter === 'neighborhood' ? userNeighborhood : null)
-  }, [filter, userNeighborhood, fetchLeaderboard])
+  }, [filter, userNeighborhood, fetchLeaderboard]))
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true)

@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, ShoppingBag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -209,7 +209,7 @@ export default function BookingsScreen() {
     }
   }, [supabase, t])
 
-  useEffect(() => { fetchBookings() }, [fetchBookings])
+  useFocusEffect(useCallback(() => { fetchBookings() }, [fetchBookings]))
 
   const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active']
   const PAST_STATUSES: BookingStatus[] = ['completed', 'cancelled', 'disputed', 'refunded']

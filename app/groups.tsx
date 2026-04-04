@@ -7,7 +7,7 @@ import {
   Platform, Alert, Animated, Dimensions,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, Plus, ChevronRight, Search, X, Users, Lock, Globe,
@@ -190,12 +190,12 @@ export default function GroupsScreen() {
     }
   }, [supabase, currentUserId])
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (currentUserId) {
       setLoading(true)
       fetchGroups()
     }
-  }, [fetchGroups, currentUserId])
+  }, [fetchGroups, currentUserId]))
 
   const handleRefresh = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms

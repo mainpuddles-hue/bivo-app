@@ -6,7 +6,7 @@ import {
   ActivityIndicator, Alert, RefreshControl,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Shield, Search, Ban, EyeOff, Check, AlertTriangle, Users, BarChart3, Flag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -130,7 +130,7 @@ function AdminScreenInner() {
     }
   }, [activeTab, isAdmin, supabase])
 
-  useEffect(() => { loadData() }, [loadData])
+  useFocusEffect(useCallback(() => { loadData() }, [loadData]))
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
