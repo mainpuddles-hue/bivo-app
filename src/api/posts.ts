@@ -60,10 +60,12 @@ export async function fetchPost(id: string): Promise<Post | null> {
 /** Toggle like on a post — returns new like state */
 export async function toggleLike(postId: string, userId: string, currentlyLiked: boolean): Promise<boolean> {
   if (currentlyLiked) {
-    await (supabase().from('post_likes') as any).delete().eq('post_id', postId).eq('user_id', userId)
+    const { error } = await (supabase().from('post_likes') as any).delete().eq('post_id', postId).eq('user_id', userId)
+    if (error) throw error
     return false
   } else {
-    await (supabase().from('post_likes') as any).insert({ post_id: postId, user_id: userId })
+    const { error } = await (supabase().from('post_likes') as any).insert({ post_id: postId, user_id: userId })
+    if (error) throw error
     return true
   }
 }
@@ -71,10 +73,12 @@ export async function toggleLike(postId: string, userId: string, currentlyLiked:
 /** Toggle save on a post — returns new save state */
 export async function toggleSave(postId: string, userId: string, currentlySaved: boolean): Promise<boolean> {
   if (currentlySaved) {
-    await (supabase().from('saved_posts') as any).delete().eq('post_id', postId).eq('user_id', userId)
+    const { error } = await (supabase().from('saved_posts') as any).delete().eq('post_id', postId).eq('user_id', userId)
+    if (error) throw error
     return false
   } else {
-    await (supabase().from('saved_posts') as any).insert({ post_id: postId, user_id: userId })
+    const { error } = await (supabase().from('saved_posts') as any).insert({ post_id: postId, user_id: userId })
+    if (error) throw error
     return true
   }
 }
@@ -90,8 +94,9 @@ export async function createComment(postId: string, userId: string, content: str
   return data
 }
 
-/** Delete a post and all related data */
-export async function deletePost(postId: string): Promise<void> {
+/** Delete a post and all related data. Requires userId for ownership verification. */
+export async function deletePost(postId: string, userId?: string): Promise<void> {
+  // Clean up related data first (RLS may restrict to own records — use allSettled)
   await Promise.allSettled([
     (supabase().from('post_comments') as any).delete().eq('post_id', postId),
     (supabase().from('post_likes') as any).delete().eq('post_id', postId),
@@ -100,6 +105,9 @@ export async function deletePost(postId: string): Promise<void> {
     (supabase().from('post_embeddings') as any).delete().eq('post_id', postId),
     (supabase().from('notifications') as any).delete().eq('link_id', postId).eq('link_type', 'post'),
   ])
-  const { error } = await (supabase().from('posts') as any).delete().eq('id', postId)
+  // Delete the post itself — add ownership filter when userId is provided
+  let query = (supabase().from('posts') as any).delete().eq('id', postId)
+  if (userId) query = query.eq('user_id', userId)
+  const { error } = await query
   if (error) throw error
 }

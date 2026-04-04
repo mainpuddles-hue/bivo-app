@@ -129,14 +129,14 @@ const styles = StyleSheet.create({
   eventImage: {
     width: '100%',
     height: 140,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   eventImagePlaceholder: {
     width: '100%',
     height: 140,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',

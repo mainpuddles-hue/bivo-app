@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { ChevronLeft, ChevronRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 interface DateRangePickerProps {
   startDate: string | null
@@ -277,6 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: -0.2,
+    fontFamily: fonts.heading,
   },
   weekRow: {
     flexDirection: 'row',
@@ -304,12 +306,14 @@ const styles = StyleSheet.create({
   dayText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
   weekdayText: {
     fontSize: 11,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    fontFamily: fonts.bodySemi,
   },
   blockedText: {
     textDecorationLine: 'line-through',

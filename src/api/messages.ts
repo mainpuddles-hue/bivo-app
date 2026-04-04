@@ -13,7 +13,9 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
 
   const { data, error } = await supabase()
     .from('conversations')
-    .select('*, user1:profiles!conversations_user1_id_fkey(id, name, avatar_url), user2:profiles!conversations_user2_id_fkey(id, name, avatar_url), last_message:messages(content, created_at, sender_id, image_url)')
+    .select('*, user1:profiles!conversations_user1_id_fkey(id, name, avatar_url), user2:profiles!conversations_user2_id_fkey(id, name, avatar_url), last_message:messages!inner(content, created_at, sender_id, image_url)')
+    // Note: Supabase returns nested relations as arrays. The messages screen
+    // should pick last_message[0] (most recent) after sorting by updated_at.
     .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
     .order('updated_at', { ascending: false })
     .limit(50)
@@ -43,11 +45,14 @@ export async function fetchMessages(conversationId: string, limit = 30, before?:
 
 /** Send a text message */
 export async function sendMessage(conversationId: string, senderId: string, content: string): Promise<Message> {
+  const trimmed = content.trim()
+  if (!trimmed) throw new Error('Message cannot be empty')
+
   const { data, error } = await (supabase().from('messages') as any)
     .insert({
       conversation_id: conversationId,
       sender_id: senderId,
-      content: content.trim(),
+      content: trimmed,
     })
     .select('*')
     .single()

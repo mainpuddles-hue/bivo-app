@@ -269,6 +269,11 @@ function useAuthStateListener() {
   const { t } = useI18n()
   const authSegmentsRef = useRef(segments)
   authSegmentsRef.current = segments
+  // Use refs for t and router to avoid re-subscribing on locale/navigation changes
+  const tRef = useRef(t)
+  tRef.current = t
+  const routerRef = useRef(router)
+  routerRef.current = router
 
   // Track whether the initial auth state has been resolved so we don't
   // treat the first SIGNED_OUT as a session expiry on cold start.
@@ -315,23 +320,23 @@ function useAuthStateListener() {
 
             if ((banProfile as any)?.is_banned) {
               await supabase.auth.signOut()
-              Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+              Alert.alert(tRef.current('auth.accountBanned'), tRef.current('auth.accountBannedDesc'))
               return
             }
 
             const flag = await AsyncStorage.getItem('onboarding_complete')
             if (flag === 'true') {
-              if (mounted) router.replace('/')
+              if (mounted) routerRef.current.replace('/')
               return
             }
             if ((banProfile as any)?.naapurusto) {
               await AsyncStorage.setItem('onboarding_complete', 'true')
-              if (mounted) router.replace('/')
+              if (mounted) routerRef.current.replace('/')
             } else {
-              if (mounted) router.replace('/onboarding')
+              if (mounted) routerRef.current.replace('/onboarding')
             }
           } catch {
-            if (mounted) router.replace('/')
+            if (mounted) routerRef.current.replace('/')
           }
         }, 100)
         timers.push(timer)
@@ -359,13 +364,13 @@ function useAuthStateListener() {
           if (isSessionExpiry) {
             // Session expired — show alert then redirect
             Alert.alert(
-              t('common.error'),
-              t('auth.sessionExpired'),
-              [{ text: 'OK', onPress: () => { if (mounted) router.replace('/(auth)/login') } }]
+              tRef.current('common.error'),
+              tRef.current('auth.sessionExpired'),
+              [{ text: 'OK', onPress: () => { if (mounted) routerRef.current.replace('/(auth)/login') } }]
             )
           } else if (initialCheckDoneRef.current) {
             // Deliberate sign-out (not initial load)
-            router.replace('/(auth)/login')
+            routerRef.current.replace('/(auth)/login')
           }
           // If initialCheckDoneRef is false, this is the initial SIGNED_OUT on cold start
           // with no session — don't redirect (the onboarding guard handles routing)
@@ -391,15 +396,15 @@ function useAuthStateListener() {
           if (!mounted) return
 
           Alert.alert(
-            t('common.error'),
-            t('auth.sessionExpired'),
-            [{ text: 'OK', onPress: () => { if (mounted) router.replace('/(auth)/login') } }]
+            tRef.current('common.error'),
+            tRef.current('auth.sessionExpired'),
+            [{ text: 'OK', onPress: () => { if (mounted) routerRef.current.replace('/(auth)/login') } }]
           )
         }, 100)
         timers.push(timer)
       } else if (event === 'PASSWORD_RECOVERY' && session) {
         const timer = setTimeout(() => {
-          if (mounted) router.replace('/settings')
+          if (mounted) routerRef.current.replace('/settings')
         }, 100)
         timers.push(timer)
       }
@@ -410,7 +415,7 @@ function useAuthStateListener() {
       timers.forEach(clearTimeout)
       subscription.unsubscribe()
     }
-  }, [supabase, router, t])
+  }, [supabase]) // Removed router and t — use refs to avoid re-subscriptions on locale/nav changes
 }
 
 /**
@@ -425,6 +430,11 @@ function useSessionGuard() {
   const { t } = useI18n()
   const segmentsRef = useRef(segments)
   segmentsRef.current = segments
+  // Use refs for t and router to avoid interval re-creation on locale/nav changes
+  const tRef = useRef(t)
+  tRef.current = t
+  const routerRef = useRef(router)
+  routerRef.current = router
 
   useEffect(() => {
     const PROTECTED_CHECK_INTERVAL = 60000 // 60 seconds
@@ -444,9 +454,9 @@ function useSessionGuard() {
         if (!session) {
           clearAuthCache()
           Alert.alert(
-            t('common.error'),
-            t('auth.sessionExpired'),
-            [{ text: 'OK', onPress: () => { if (mounted) router.replace('/(auth)/login') } }]
+            tRef.current('common.error'),
+            tRef.current('auth.sessionExpired'),
+            [{ text: 'OK', onPress: () => { if (mounted) routerRef.current.replace('/(auth)/login') } }]
           )
         }
       } catch {
@@ -458,7 +468,7 @@ function useSessionGuard() {
       mounted = false
       clearInterval(interval)
     }
-  }, [supabase, router, t])
+  }, [supabase]) // Removed router and t — use refs to avoid interval re-creation
 }
 
 function RootLayoutInner() {

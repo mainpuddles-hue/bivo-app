@@ -7,9 +7,10 @@ import { X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { FORUM_CATEGORY_COLORS } from '@/lib/constants'
 import type { ForumCategory } from './ForumPostCard'
 
-// ── Category definitions ──
+// ── Category definitions — colors from centralized constants ──
 export interface ForumCategoryDef {
   key: ForumCategory
   labelKey: string
@@ -17,10 +18,10 @@ export interface ForumCategoryDef {
 }
 
 export const FORUM_CATEGORY_DEFS: ForumCategoryDef[] = [
-  { key: 'vinkit', labelKey: 'forum.tips', color: '#4CAF6A' },
-  { key: 'kysymykset', labelKey: 'forum.questions', color: '#3B7DD8' },
-  { key: 'tapahtumat', labelKey: 'forum.events', color: '#2B8A62' },
-  { key: 'uutiset', labelKey: 'forum.news', color: '#8E44AD' },
+  { key: 'vinkit', labelKey: 'forum.tips', color: FORUM_CATEGORY_COLORS.vinkit },
+  { key: 'kysymykset', labelKey: 'forum.questions', color: FORUM_CATEGORY_COLORS.kysymykset },
+  { key: 'tapahtumat', labelKey: 'forum.events', color: FORUM_CATEGORY_COLORS.tapahtumat },
+  { key: 'uutiset', labelKey: 'forum.news', color: FORUM_CATEGORY_COLORS.uutiset },
 ]
 
 interface ForumCreateModalProps {

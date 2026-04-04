@@ -98,10 +98,12 @@ export function useNotificationPreferences() {
   }, [supabase])
 
   const updatePreference = useCallback(async (type: NotificationType, enabled: boolean) => {
+    // Capture original value BEFORE optimistic update for correct rollback
+    const originalValue = preferences[type]
+
     // Optimistic update
     setPreferences((prev) => {
       const next = { ...prev, [type]: enabled }
-      // Update cache in background
       AsyncStorage.setItem(CACHE_KEY, JSON.stringify(next)).catch(() => {})
       return next
     })
@@ -114,15 +116,15 @@ export function useNotificationPreferences() {
         { onConflict: 'user_id,type' }
       )
     } catch {
-      // Revert on failure — flip back to opposite of what we set
+      // Revert on failure — use captured original value (safe for rapid toggles)
       setPreferences((prev) => {
-        const reverted = { ...prev, [type]: !prev[type] }
+        const reverted = { ...prev, [type]: originalValue }
         AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reverted)).catch(() => {})
         return reverted
       })
       Alert.alert('Error', 'Notification preference update failed. Please try again.')
     }
-  }, [userId, supabase])
+  }, [userId, supabase, preferences])
 
   return { preferences, loading, updatePreference }
 }

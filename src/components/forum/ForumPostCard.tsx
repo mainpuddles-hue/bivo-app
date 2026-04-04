@@ -43,12 +43,9 @@ export interface ForumReply {
   user?: ForumPostUser | null
 }
 
-export const CATEGORY_COLORS: Record<string, string> = {
-  vinkit: '#4CAF6A',
-  kysymykset: '#3B7DD8',
-  tapahtumat: '#2B8A62',
-  uutiset: '#8E44AD',
-}
+// Centralized — import from constants to avoid duplication
+import { FORUM_CATEGORY_COLORS } from '@/lib/constants'
+export const CATEGORY_COLORS = FORUM_CATEGORY_COLORS
 
 interface ForumPostCardProps {
   post: ForumPost

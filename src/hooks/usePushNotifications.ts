@@ -48,6 +48,9 @@ export function usePushNotifications(userId: string | null) {
   const [isLoading, setIsLoading] = useState(false)
   const [token, setToken] = useState<string | null>(null)
   const notificationListener = useRef<Notifications.EventSubscription | null>(null)
+  // Use ref to avoid stale closure in interval and to prevent re-render loop
+  const tokenRef = useRef<string | null>(null)
+  tokenRef.current = token
 
   useEffect(() => {
     // Skip on web — push notifications are not supported
@@ -84,12 +87,13 @@ export function usePushNotifications(userId: string | null) {
     checkExistingToken()
 
     // Re-sync token periodically (tokens can rotate)
+    // Uses tokenRef to avoid stale closure and prevent effect re-runs
     const tokenSyncInterval = setInterval(async () => {
       if (!mounted || !userId) return
       try {
         const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? PROJECT_ID
         const freshToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data
-        if (mounted && freshToken && freshToken !== token) {
+        if (mounted && freshToken && freshToken !== tokenRef.current) {
           await saveTokenToBackend(userId, freshToken)
           setToken(freshToken)
         }
@@ -106,7 +110,7 @@ export function usePushNotifications(userId: string | null) {
       notificationListener.current?.remove()
       clearInterval(tokenSyncInterval)
     }
-  }, [userId, token])
+  }, [userId]) // Removed `token` — use tokenRef to avoid re-render loop
 
   const subscribe = useCallback(async () => {
     if (isWeb || !userId) return

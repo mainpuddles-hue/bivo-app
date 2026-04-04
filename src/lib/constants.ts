@@ -146,6 +146,23 @@ export const TIER_3_REQUIREMENTS = {
   noActiveReports: true,
 }
 
+// Centralized forum category colors — used by ForumPostCard and ForumCreateModal
+export const FORUM_CATEGORY_COLORS: Record<string, string> = {
+  vinkit: '#4CAF6A',
+  kysymykset: '#3B7DD8',
+  tapahtumat: '#2B8A62',
+  uutiset: '#8E44AD',
+} as const
+
+// Event source badge colors — used by map EventCard and DetailModal
+export const EVENT_SOURCE_COLORS = {
+  helsinki: '#8E44AD',
+  ticketmaster: '#E91E63',
+  community: '#2B8A62',
+  free: '#2B8A62',
+  paid: '#E8A050',
+} as const
+
 // DEPRECATED: Use useCityConfig hook instead. Kept as offline fallback for Helsinki.
 export const NEIGHBORHOODS = [
   'Kallio', 'Sörnäinen', 'Vallila', 'Hermanni', 'Alppiharju',

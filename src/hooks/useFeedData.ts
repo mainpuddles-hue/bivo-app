@@ -429,12 +429,17 @@ export function useFeedData() {
   const fetchPostsRef = useRef(fetchPosts)
   fetchPostsRef.current = fetchPosts
 
+  // Trigger initial fetch and re-fetch when filters/sort change.
+  // Uses a version counter instead of depending on fetchPosts identity
+  // to avoid cascading re-fetches when user state (location, follows, etc.) updates.
+  const fetchVersionRef = useRef(0)
   useEffect(() => {
+    fetchVersionRef.current++
     setLoading(true)
     offsetRef.current = 0
-    fetchPosts(true)
+    fetchPostsRef.current(true)
     return () => { abortRef.current?.abort() }
-  }, [fetchPosts])
+  }, [activeFilter, sortBy, showFollowing]) // Only re-fetch when user explicitly changes filters
 
   // ── Realtime with 5s debounce — INSERT only (UPDATE/DELETE refresh on pull-to-refresh) ──
   useEffect(() => {
@@ -483,7 +488,7 @@ export function useFeedData() {
         .then(({ data }) => { if (data) setFollowedIds(data.map((f: any) => f.followed_id)) })
         .catch(() => {})
     }
-    fetchPosts(true).finally(() => setRefreshing(false))
+    fetchPosts(true) // fetchPosts handles setRefreshing(false) in its finally block
     fetchExtraContent()
   }, [fetchPosts, fetchExtraContent, currentUserId, supabase])
 

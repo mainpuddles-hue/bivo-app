@@ -25,6 +25,7 @@ import * as Location from 'expo-location'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { NEIGHBORHOODS } from '@/lib/constants'
+import { fonts } from '@/lib/fonts'
 
 export type SortOption = 'newest' | 'closest' | 'most_liked' | 'price_asc' | 'price_desc'
 
@@ -558,7 +559,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '700', lineHeight: 24 },
+  headerTitle: { fontSize: 18, fontWeight: '700', lineHeight: 24, fontFamily: fonts.heading },
   headerBadge: {
     minWidth: 20,
     height: 20,
@@ -567,9 +568,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
-  headerBadgeText: { fontSize: 11, fontWeight: '700', lineHeight: 16 },
+  headerBadgeText: { fontSize: 11, fontWeight: '700', lineHeight: 16, fontFamily: fonts.bodySemi },
   clearBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  clearText: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
+  clearText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   scrollContent: { paddingBottom: 20 },
   sectionHeader: {
     flexDirection: 'row',
@@ -580,11 +581,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  sectionTitle: { fontSize: 15, fontWeight: '600', lineHeight: 20 },
+  sectionTitle: { fontSize: 15, fontWeight: '600', lineHeight: 20, fontFamily: fonts.headingSemi },
   sectionBody: { paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   priceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   priceInputWrap: { flex: 1, gap: 4 },
-  inputLabel: { fontSize: 12, fontWeight: '500', lineHeight: 16 },
+  inputLabel: { fontSize: 12, fontWeight: '500', lineHeight: 16, fontFamily: fonts.bodyMedium },
   priceInput: {
     height: 44,
     borderWidth: 1,
@@ -592,6 +593,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     lineHeight: 20,
+    fontFamily: fonts.body,
   },
   priceDash: { fontSize: 18, paddingBottom: 10, lineHeight: 24 },
   dateRow: { flexDirection: 'row', gap: 12 },
@@ -603,9 +605,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     lineHeight: 20,
+    fontFamily: fonts.body,
   },
-  locationHint: { fontSize: 13, textAlign: 'center', paddingVertical: 8, lineHeight: 18 },
-  distanceLabel: { fontSize: 20, fontWeight: '700', textAlign: 'center', lineHeight: 28 },
+  locationHint: { fontSize: 13, textAlign: 'center', paddingVertical: 8, lineHeight: 18, fontFamily: fonts.body },
+  distanceLabel: { fontSize: 20, fontWeight: '700', textAlign: 'center', lineHeight: 28, fontFamily: fonts.heading },
   distanceSteps: {
     flexDirection: 'row',
     gap: 6,
@@ -620,7 +623,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 10,
   },
-  distanceStepText: { fontSize: 13, fontWeight: '600', lineHeight: 18 },
+  distanceStepText: { fontSize: 13, fontWeight: '600', lineHeight: 18, fontFamily: fonts.bodySemi },
   chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   nhChip: {
     flexDirection: 'row',
@@ -630,7 +633,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 16,
   },
-  nhChipText: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
+  nhChipText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   sortOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -649,7 +652,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sortRadioDot: { width: 8, height: 8, borderRadius: 4 },
-  sortText: { fontSize: 14, fontWeight: '500', lineHeight: 20 },
+  sortText: { fontSize: 14, fontWeight: '500', lineHeight: 20, fontFamily: fonts.bodyMedium },
   footer: {
     flexDirection: 'row',
     gap: 12,
@@ -666,5 +669,5 @@ const styles = StyleSheet.create({
   },
   footerBtnSecondary: { borderWidth: 1 },
   footerBtnPrimary: {},
-  footerBtnText: { fontSize: 15, fontWeight: '600', lineHeight: 20 },
+  footerBtnText: { fontSize: 15, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodySemi },
 })
