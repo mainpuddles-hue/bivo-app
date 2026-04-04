@@ -730,15 +730,12 @@ function ExploreScreenInner() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: {
-    fontSize: 20,
-    letterSpacing: -0.3,
-    fontFamily: fonts.headingSemi,
-    lineHeight: 28,
+    fontSize: 20, fontWeight: '700', letterSpacing: -0.3,
+    fontFamily: fonts.headingSemi, lineHeight: 28,
   },
   chipRow: {
     flexDirection: 'row',
