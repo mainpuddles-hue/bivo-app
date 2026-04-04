@@ -853,7 +853,7 @@ const st = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   filterChip: {
     paddingHorizontal: 14,

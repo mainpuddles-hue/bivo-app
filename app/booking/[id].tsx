@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
 
   // Status badge
   statusBadgeLarge: {
-    alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8,
+    alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
   },
   statusTextLarge: {
     fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5,

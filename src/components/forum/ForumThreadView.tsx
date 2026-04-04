@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   detailActionBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8,
   },
   detailActionText: {
     fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   replyInput: {
     flex: 1, borderRadius: 20, borderWidth: 1,
-    paddingHorizontal: 16, paddingVertical: 10,
+    paddingHorizontal: 16, paddingVertical: 12,
     fontSize: 14, fontFamily: fonts.body, maxHeight: 100,
   },
   sendBtn: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   sortToggle: {
     alignSelf: 'flex-end',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 4,
   },
   sortToggleText: {

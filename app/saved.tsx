@@ -398,7 +398,7 @@ const s = StyleSheet.create({
   },
   tabItemActive: { borderRadius: 8 },
   tabText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
-  tabBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
+  tabBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   tabBadgeText: { fontSize: 11, lineHeight: 16, fontFamily: fonts.heading },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 12 },

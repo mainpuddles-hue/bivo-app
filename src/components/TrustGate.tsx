@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   dismissBtn: {
     width: '100%',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
   },

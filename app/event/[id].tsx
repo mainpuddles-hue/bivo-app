@@ -701,7 +701,7 @@ const s = StyleSheet.create({
   },
   organizerBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 3,
     borderRadius: 8,
   },

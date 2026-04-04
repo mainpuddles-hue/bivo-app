@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     paddingTop: 24,
     borderBottomLeftRadius: 0,

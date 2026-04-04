@@ -639,7 +639,7 @@ export default function GroupDetailScreen() {
       )}
 
       {searchQuery.length > 0 && (
-        <View style={{ paddingHorizontal: 16, paddingVertical: 6, backgroundColor: colors.background }}>
+        <View style={{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.background }}>
           <Text style={{ fontSize: 12, fontFamily: fonts.bodyMedium, color: colors.mutedForeground }}>
             {posts.filter(p => p.content.toLowerCase().includes(searchQuery.toLowerCase())).length} {t('groups.searchResults')}
           </Text>
@@ -648,7 +648,7 @@ export default function GroupDetailScreen() {
 
       {newPostsBanner && (
         <Pressable onPress={() => { setNewPostsBanner(false); setLoading(true); fetchPosts() }}
-          style={({ pressed }) => [{ marginHorizontal: 16, marginTop: 8, paddingVertical: 10, borderRadius: 12, alignItems: 'center', backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}>
+          style={({ pressed }) => [{ marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}>
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.primaryForeground }}>{t('groups.newPostsBanner')}</Text>
         </Pressable>
       )}
@@ -742,7 +742,7 @@ const ps = StyleSheet.create({
   groupName: { fontSize: 20, fontFamily: fonts.heading, marginBottom: 4 },
   groupDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 12 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  badge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
   badgeText: { fontSize: 12, fontFamily: fonts.bodyMedium },
   infoActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   membersBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -757,7 +757,7 @@ const ps = StyleSheet.create({
   removeImageBtn: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   postInputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   imageBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  postInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, maxHeight: 100 },
+  postInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12, maxHeight: 100 },
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   emptyText: { fontSize: 16, fontFamily: fonts.bodyMedium, textAlign: 'center' },

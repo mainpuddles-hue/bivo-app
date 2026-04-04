@@ -220,7 +220,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 14,
     minHeight: 100,
     lineHeight: 20,

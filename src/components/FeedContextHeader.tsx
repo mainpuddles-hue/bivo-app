@@ -50,7 +50,7 @@ export const FeedContextHeader = memo(FeedContextHeaderInner)
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: 8,
     gap: 2,
     minHeight: 60,
     justifyContent: 'center',

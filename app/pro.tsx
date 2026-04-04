@@ -312,7 +312,7 @@ const s = StyleSheet.create({
   heroSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
   activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, marginTop: 8,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginTop: 8,
   },
   activeBadgeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   renewsText: { fontSize: 13, lineHeight: 18, marginTop: 8, fontFamily: fonts.body },
@@ -324,7 +324,7 @@ const s = StyleSheet.create({
   comparisonCard: { borderRadius: 12, overflow: 'hidden' },
   comparisonHeader: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   comparisonIconCol: { width: 32 },
   comparisonFreeCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },

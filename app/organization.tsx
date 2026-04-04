@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   businessCard: { borderRadius: 12, padding: 16, gap: 6 },
   businessName: { fontSize: 20, fontFamily: fonts.headingSemi },
   vatId: { fontSize: 13, fontFamily: fonts.body },
-  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 8 },
+  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 8 },
   statusText: { fontSize: 12, fontFamily: fonts.bodySemi },
   toggleCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
   },
   geocodeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 10, borderRadius: 12,
+    gap: 8, paddingVertical: 12, borderRadius: 12,
   },
   geocodeBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   coordsText: { fontSize: 12, fontFamily: fonts.body },

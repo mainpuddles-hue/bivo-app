@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   placeDirectionsBtn: {
     paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
   placeDirectionsText: {
     fontSize: 12,

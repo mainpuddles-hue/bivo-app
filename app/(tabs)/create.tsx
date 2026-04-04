@@ -1619,7 +1619,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   headerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8,
   },
   headerBadgeText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', fontFamily: fonts.bodyMedium },
   categoryGrid: { padding: 16, gap: 12 },
@@ -1723,7 +1723,7 @@ const styles = StyleSheet.create({
   },
   successTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, textAlign: 'center' },
   successSubtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
-  shareBtn: { borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10, marginTop: 4 },
+  shareBtn: { borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
   shareBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // Location picker
@@ -1752,7 +1752,7 @@ const styles = StyleSheet.create({
   confirmBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   coordsDisplay: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 14, paddingVertical: 10,
+    marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 14, paddingVertical: 12,
     borderRadius: 12,
   },
   coordsDisplayText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.body },
@@ -1770,7 +1770,7 @@ const styles = StyleSheet.create({
   // Tarjoan sub-type selector
   tarjoanTypeChip: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 16, minHeight: 40,
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16, minHeight: 40,
     flex: 1, justifyContent: 'center',
   },
   tarjoanTypeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },

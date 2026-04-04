@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     maxHeight: 200, overflow: 'hidden',
   },
   neighborhoodItem: {
-    paddingHorizontal: 14, paddingVertical: 10,
+    paddingHorizontal: 14, paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   neighborhoodText: { fontSize: 14, fontFamily: fonts.body },

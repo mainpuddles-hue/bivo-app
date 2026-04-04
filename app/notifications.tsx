@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   headerBadge: {
     minWidth: 22, height: 22, borderRadius: 11,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
   },
   headerBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 14 },
   markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
   groupExpandBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 2,
     minWidth: 18, height: 22, borderRadius: 11,
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
   },
   groupBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
   unreadDot: { width: 8, height: 8, borderRadius: 4, alignSelf: 'center' as const },

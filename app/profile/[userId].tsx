@@ -1242,7 +1242,7 @@ const bs = StyleSheet.create({
   },
   categoryBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 3,
     borderRadius: 8,
   },
@@ -1344,7 +1344,7 @@ const bs = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 12,
     marginTop: 4,
   },

@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
     borderRadius: 16,
-    padding: 6,
+    padding: 8,
   },
   gpsButton: {
     position: 'absolute',
@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
   },
   sectionCount: {
     fontSize: 11,
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   searchInput: {
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
   },
   emptyActionBtn: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
     marginTop: 4,
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
   },
   loadMoreBtn: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 20,
     borderWidth: 1,
   },
@@ -834,8 +834,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
     shadowColor: '#000',
@@ -916,7 +916,7 @@ const styles = StyleSheet.create({
   },
   businessCardButton: {
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 12,
   },
   businessCardButtonText: {

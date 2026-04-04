@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   container: { gap: 8 },
   alertCard: {
     borderRadius: 12, borderWidth: 1,
-    paddingHorizontal: 12, paddingVertical: 10,
+    paddingHorizontal: 12, paddingVertical: 12,
   },
   alertHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

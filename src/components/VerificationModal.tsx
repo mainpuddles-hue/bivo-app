@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     marginHorizontal: 20,
     marginBottom: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
   },

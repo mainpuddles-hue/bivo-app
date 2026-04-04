@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     left: 16,
     backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 16,
   },
   counterText: {
