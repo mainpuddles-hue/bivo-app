@@ -321,6 +321,7 @@ function PostDetailScreenInner() {
     setSendingComment(true)
     const content = commentText.trim()
     const parentId = replyToComment?.id ?? null
+    const parentCommentAuthor = replyToComment?.user_id ?? null
     setCommentText('')
     setReplyToComment(null)
     try {
@@ -362,10 +363,10 @@ function PostDetailScreenInner() {
         })
       }
       // Notify parent comment author about the reply
-      if (replyToComment && replyToComment.user_id !== userId && replyToComment.user_id !== post?.user_id) {
+      if (parentCommentAuthor && parentCommentAuthor !== userId && parentCommentAuthor !== post?.user_id) {
         try {
           await (supabase.from('notifications') as any).insert({
-            user_id: replyToComment.user_id,
+            user_id: parentCommentAuthor,
             from_user_id: userId,
             type: 'comment',
             title: t('notifications.commentReply'),
