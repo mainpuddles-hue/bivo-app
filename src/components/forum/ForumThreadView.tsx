@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17,
   },
   divider: {
-    height: 1, marginVertical: 8,
+    height: StyleSheet.hairlineWidth, marginVertical: 8,
   },
   replyCard: {
     borderRadius: 12, padding: 12, gap: 8,

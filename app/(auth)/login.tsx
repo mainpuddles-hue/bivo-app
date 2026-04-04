@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
   },
   appleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  dividerLine: { flex: 1, height: 1 },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dividerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   forgotTitle: { fontSize: 20, lineHeight: 28, fontWeight: '700', fontFamily: fonts.heading },
   forgotHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
