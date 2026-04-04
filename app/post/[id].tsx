@@ -199,43 +199,36 @@ function PostDetailScreenInner() {
     try {
       const wasLiked = isLiked
       const prevCount = likeCount
-      if (wasLiked) {
-        setIsLiked(false); setLikeCount(c => Math.max(0, c - 1))
-        const { error } = await (supabase.from('post_likes') as any).delete().eq('post_id', id).eq('user_id', userId)
-        if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
-        else {
-          // Re-read actual count from post_likes (source of truth) to avoid divergence
-          const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
-          const syncedCount = realCount ?? Math.max(0, prevCount - 1)
-          setLikeCount(syncedCount)
-          const { error: syncErr } = await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
-          if (syncErr && __DEV__) console.warn('[post] like_count sync failed:', syncErr.message)
-        }
+
+      // Optimistic update
+      setIsLiked(!wasLiked)
+      setLikeCount(wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1)
+
+      // Single DB operation
+      const { error } = wasLiked
+        ? await (supabase.from('post_likes') as any).delete().eq('post_id', id).eq('user_id', userId)
+        : await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
+
+      if (error) {
+        if (__DEV__) console.warn('[post] like failed:', error.message, error.code)
+        setIsLiked(wasLiked)
+        setLikeCount(prevCount)
+        // Duplicate key = already liked, re-sync
+        if (error.code === '23505') setIsLiked(true)
       } else {
-        setIsLiked(true); setLikeCount(c => c + 1)
-        const { error } = await (supabase.from('post_likes') as any).insert({ post_id: id, user_id: userId })
-        if (error) { setIsLiked(wasLiked); setLikeCount(prevCount) }
-        else {
-          // Re-read actual count from post_likes (source of truth) to avoid divergence
-          const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
-          const syncedCount = realCount ?? (prevCount + 1)
-          setLikeCount(syncedCount)
-          const { error: syncErr2 } = await (supabase.from('posts') as any).update({ like_count: syncedCount }).eq('id', id)
-          if (syncErr2 && __DEV__) console.warn('[post] like_count sync failed:', syncErr2.message)
-          // Create notification for post author (not for self-likes)
-          if (post?.user_id && post.user_id !== userId) {
-            try {
-              await (supabase.from('notifications') as any).insert({
-                user_id: post.user_id,
-                from_user_id: userId,
-                type: 'post_like',
-                title: t('post.liked'),
-                body: post.title,
-                link_type: 'post',
-                link_id: id,
-              })
-            } catch {} // Intentional: non-critical notification
-          }
+        // Sync count from source of truth
+        const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
+        if (realCount != null) {
+          setLikeCount(realCount)
+          ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', id).then(() => {}).catch(() => {})
+        }
+        // Notification (fire-and-forget)
+        if (!wasLiked && post?.user_id && post.user_id !== userId) {
+          ;(supabase.from('notifications') as any).insert({
+            user_id: post.user_id, from_user_id: userId,
+            type: 'post_like', title: t('post.liked'),
+            body: post.title, link_type: 'post', link_id: id,
+          }).then(() => {}).catch(() => {})
         }
       }
     } finally { likingRef.current = false }

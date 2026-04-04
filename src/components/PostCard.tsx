@@ -412,8 +412,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
                 if (error) {
                   // Rollback on error
+                  if (__DEV__) console.warn('[PostCard] like failed:', error.message, error.code, error.details)
                   setLiked(wasLiked)
                   setLikeCount(prevCount)
+                  // If it's a duplicate key error, the like already exists — re-sync state
+                  if (error.code === '23505') {
+                    setLiked(!wasLiked) // actually it WAS already liked/unliked
+                  }
                 } else {
                   // Sync count from source of truth
                   const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
