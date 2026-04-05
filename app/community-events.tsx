@@ -7,43 +7,36 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
-import { Image } from 'expo-image'
 import {
-  ArrowLeft, CalendarDays, MapPin, Users, Plus,
+  ArrowLeft, CalendarDays, Plus, TrendingUp, Coffee,
 } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
-import { formatEventDateShort } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
-import type { CommunityEvent } from '@/lib/types'
+import { EventCard } from '@/components/EventCard'
+import { TableCard } from '@/components/TableCard'
+import { isTableEvent, isExpiredEvent } from '@/lib/eventHelpers'
+import type { CommunityEvent, EventCategory } from '@/lib/types'
 
-type CategoryFilter = 'all' | 'social' | 'sports' | 'culture' | 'nature' | 'kids' | 'other'
+type CategoryFilter = 'all' | EventCategory
 
-const CATEGORY_FILTERS: { key: CategoryFilter; labelKey: string }[] = [
-  { key: 'all', labelKey: 'events.categoryAll' },
-  { key: 'social', labelKey: 'events.catSocial' },
-  { key: 'sports', labelKey: 'events.catSports' },
-  { key: 'culture', labelKey: 'events.catCulture' },
-  { key: 'nature', labelKey: 'events.catNature' },
-  { key: 'kids', labelKey: 'events.catKids' },
-  { key: 'other', labelKey: 'events.catOther' },
+const CATEGORY_FILTERS: { key: CategoryFilter; labelKey: string; color: string }[] = [
+  { key: 'all', labelKey: 'events.categoryAll', color: '#6B7280' },
+  { key: 'social', labelKey: 'events.catSocial', color: '#7C5CBF' },
+  { key: 'sports', labelKey: 'events.catSports', color: '#2B8A62' },
+  { key: 'culture', labelKey: 'events.catCulture', color: '#3B7DD8' },
+  { key: 'nature', labelKey: 'events.catNature', color: '#4CAF6A' },
+  { key: 'kids', labelKey: 'events.catKids', color: '#E8A050' },
+  { key: 'other', labelKey: 'events.catOther', color: '#6B7280' },
 ]
-
-const CATEGORY_COLORS: Record<string, string> = {
-  social: '#8B5CF6',
-  sports: '#EF4444',
-  culture: '#F59E0B',
-  nature: '#10B981',
-  kids: '#EC4899',
-  other: '#6B7280',
-}
 
 function CommunityEventsScreenInner() {
   const { colors, isDark } = useTheme()
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
@@ -55,14 +48,12 @@ function CommunityEventsScreenInner() {
 
   const fetchEvents = useCallback(async () => {
     try {
-      const now = new Date().toISOString()
       const { data, error } = await (supabase
         .from('community_events')
         .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)') as any)
         .eq('is_active', true)
-        .gte('event_date', now)
         .order('event_date', { ascending: true })
-        .limit(100)
+        .limit(150)
 
       if (error) {
         if (__DEV__) console.log('[community-events] fetch error:', error.message)
@@ -94,80 +85,161 @@ function CommunityEventsScreenInner() {
     fetchEvents()
   }, [fetchEvents])
 
+  // Split events into regular events and tables
+  const { regularEvents, tableEvents, trendingEvents } = useMemo(() => {
+    const now = new Date()
+    const upcoming = events.filter(e => !isExpiredEvent(e))
+    const regular = upcoming.filter(e => !isTableEvent(e))
+    const tables = upcoming.filter(e => isTableEvent(e))
+
+    // Trending = top 5 events by participant count
+    const trending = [...regular]
+      .sort((a, b) => (b.participant_count ?? 0) - (a.participant_count ?? 0))
+      .slice(0, 5)
+      .filter(e => (e.participant_count ?? 0) > 0)
+
+    return { regularEvents: regular, tableEvents: tables, trendingEvents: trending }
+  }, [events])
+
   const filteredEvents = useMemo(() => {
-    if (categoryFilter === 'all') return events
-    return events.filter(e => e.category === categoryFilter)
-  }, [events, categoryFilter])
+    if (categoryFilter === 'all') return regularEvents
+    return regularEvents.filter(e => e.category === categoryFilter)
+  }, [regularEvents, categoryFilter])
 
-  const renderEventCard = useCallback(({ item }: { item: CommunityEvent }) => {
-    const catColor = CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.other
-    const catLabel = t(CATEGORY_FILTERS.find(f => f.key === item.category)?.labelKey ?? 'events.catOther')
-    const participantCount = item.participant_count ?? 0
-    const participantsLabel = item.max_participants
-      ? t('events.participantsCountMax', { count: participantCount, max: item.max_participants })
-      : t('events.participantsCount', { count: participantCount })
+  const handleQuickJoin = useCallback(async (eventId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      await (supabase.from('community_event_participants') as any)
+        .upsert(
+          { event_id: eventId, user_id: user.id, status: 'joined' },
+          { onConflict: 'event_id,user_id', ignoreDuplicates: true },
+        )
+      // Refresh to update counts
+      fetchEvents()
+    } catch (err) {
+      if (__DEV__) console.log('[community-events] quick join error:', err)
+    }
+  }, [supabase, fetchEvents])
 
-    return (
-      <PressableOpacity
-        onPress={() => router.push(`/event/${item.id}` as any)}
-        accessibilityRole="button"
-        accessibilityLabel={`${item.title}, ${formatEventDateShort(item.event_date, locale)}`}
-        style={[s.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-      >
-        <View style={s.cardBody}>
-          {/* Image or placeholder */}
-          {item.image_url ? (
-            <Image
-              source={{ uri: item.image_url }}
-              style={s.cardImage}
-              contentFit="cover"
-            />
-          ) : (
-            <View style={[s.cardImagePlaceholder, { backgroundColor: `${catColor}18` }]}>
-              <CalendarDays size={28} color={catColor} strokeWidth={1.4} />
-            </View>
-          )}
-
-          {/* Content */}
-          <View style={s.cardContent}>
-            <View style={s.cardTitleRow}>
-              <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
-                {item.title}
-              </Text>
-              <View style={[s.catBadge, { backgroundColor: `${catColor}20` }]}>
-                <Text style={[s.catBadgeText, { color: catColor }]}>{catLabel}</Text>
-              </View>
-            </View>
-
-            <View style={s.cardMeta}>
-              <CalendarDays size={14} color={colors.primary} strokeWidth={1.6} />
-              <Text style={[s.cardMetaText, { color: colors.primary }]}>
-                {formatEventDateShort(item.event_date, locale)}
-              </Text>
-            </View>
-
-            {item.location_name && (
-              <View style={s.cardMeta}>
-                <MapPin size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                <Text style={[s.cardMetaText, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {item.location_name}
-                </Text>
-              </View>
-            )}
-
-            <View style={s.cardMeta}>
-              <Users size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-              <Text style={[s.cardMetaText, { color: colors.mutedForeground }]}>
-                {participantsLabel}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </PressableOpacity>
-    )
-  }, [colors, t, locale, router])
+  const renderEventCard = useCallback(({ item }: { item: CommunityEvent }) => (
+    <EventCard event={item} />
+  ), [])
 
   const keyExtractor = useCallback((item: CommunityEvent) => item.id, [])
+
+  // ── Section header component ──
+  const SectionHeader = useCallback(({ icon: Icon, iconColor, title, actionLabel, onAction }: {
+    icon: any; iconColor: string; title: string; actionLabel?: string; onAction?: () => void
+  }) => (
+    <View style={s.sectionHeader}>
+      <View style={s.sectionTitleRow}>
+        <Icon size={18} color={iconColor} strokeWidth={2} />
+        <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+          {title}
+        </Text>
+      </View>
+      {actionLabel && onAction && (
+        <Pressable onPress={onAction} hitSlop={8}>
+          <Text style={[s.sectionAction, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
+            {actionLabel}
+          </Text>
+        </Pressable>
+      )}
+    </View>
+  ), [colors, fonts])
+
+  // ── Tables horizontal list ──
+  const renderTableSection = () => {
+    if (tableEvents.length === 0 && !loading) return null
+
+    return (
+      <View style={s.section}>
+        <SectionHeader
+          icon={Coffee}
+          iconColor="#8B5E3C"
+          title={t('tables.title')}
+          actionLabel={t('events.showAllEvents')}
+          onAction={() => {}}
+        />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.horizontalList}
+        >
+          {tableEvents.map(event => (
+            <TableCard key={event.id} event={event} onJoin={handleQuickJoin} />
+          ))}
+
+          {/* Create table card */}
+          <Pressable
+            onPress={() => {
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+              router.push('/create-table' as any)
+            }}
+            style={({ pressed }) => [
+              s.createTableCard,
+              { backgroundColor: isDark ? colors.card : '#F9FAFB', borderColor: colors.border },
+              pressed && { opacity: 0.8 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('tables.create')}
+          >
+            <View style={[s.createTableIcon, { backgroundColor: `${colors.primary}15` }]}>
+              <Plus size={24} color={colors.primary} strokeWidth={2} />
+            </View>
+            <Text style={[s.createTableText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
+              {t('tables.create')}
+            </Text>
+          </Pressable>
+        </ScrollView>
+      </View>
+    )
+  }
+
+  // ── Trending horizontal list ──
+  const renderTrendingSection = () => {
+    if (trendingEvents.length === 0) return null
+
+    return (
+      <View style={s.section}>
+        <SectionHeader
+          icon={TrendingUp}
+          iconColor={colors.primary}
+          title={t('events.trending')}
+        />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.horizontalList}
+        >
+          {trendingEvents.map(event => (
+            <View key={event.id} style={s.trendingCardWrap}>
+              <EventCard event={event} compact />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    )
+  }
+
+  // ── FlatList header ──
+  const ListHeader = useMemo(() => (
+    <View>
+      {/* Tables section */}
+      {renderTableSection()}
+
+      {/* Trending section */}
+      {renderTrendingSection()}
+
+      {/* "All Events" label */}
+      {filteredEvents.length > 0 && (
+        <Text style={[s.allEventsLabel, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+          {t('events.communityEventsTitle')}
+        </Text>
+      )}
+    </View>
+  ), [tableEvents, trendingEvents, filteredEvents.length, colors, t, isDark, handleQuickJoin])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
@@ -177,7 +249,15 @@ function CommunityEventsScreenInner() {
           <ArrowLeft size={24} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
-        <View style={{ width: 24 }} />
+        <Pressable
+          onPress={() => router.push('/create-event' as any)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('events.create')}
+          style={s.backBtn}
+        >
+          <Plus size={22} color={colors.primary} strokeWidth={2} />
+        </Pressable>
       </View>
 
       {/* Category filter chips */}
@@ -187,7 +267,7 @@ function CommunityEventsScreenInner() {
         contentContainerStyle={s.chipRow}
         style={s.chipScroll}
       >
-        {CATEGORY_FILTERS.map(({ key, labelKey }) => {
+        {CATEGORY_FILTERS.map(({ key, labelKey, color }) => {
           const isActive = categoryFilter === key
           return (
             <PressableOpacity
@@ -201,6 +281,9 @@ function CommunityEventsScreenInner() {
                 { backgroundColor: isActive ? colors.primary : colors.muted },
               ]}
             >
+              {key !== 'all' && (
+                <View style={[s.chipDot, { backgroundColor: isActive ? colors.primaryForeground : color }]} />
+              )}
               <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
@@ -214,10 +297,11 @@ function CommunityEventsScreenInner() {
         data={filteredEvents}
         renderItem={renderEventCard}
         keyExtractor={keyExtractor}
+        ListHeaderComponent={ListHeader}
         contentContainerStyle={[
           s.listContent,
           { paddingBottom: insets.bottom + 32 },
-          filteredEvents.length === 0 && s.emptyContainer,
+          filteredEvents.length === 0 && !loading && s.emptyContainer,
         ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -262,6 +346,12 @@ const s = StyleSheet.create({
     letterSpacing: -0.3,
     lineHeight: 28,
   },
+  backBtn: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   chipScroll: {
     flexGrow: 0,
     flexShrink: 0,
@@ -273,9 +363,17 @@ const s = StyleSheet.create({
     paddingVertical: 12,
   },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+  },
+  chipDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   chipText: {
     fontSize: 14,
@@ -283,7 +381,6 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
   listContent: {
-    paddingHorizontal: 16,
     paddingTop: 4,
     gap: 12,
   },
@@ -292,66 +389,73 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Event card
-  eventCard: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+  // Sections
+  section: {
+    marginBottom: 8,
   },
-  cardBody: {
+  sectionHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  cardImage: {
-    width: 120,
-    height: 120,
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  cardImagePlaceholder: {
-    width: 120,
-    height: 120,
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 24,
+  },
+  sectionAction: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  horizontalList: {
+    paddingHorizontal: 16,
+    gap: 12,
+    paddingBottom: 4,
+  },
+  trendingCardWrap: {
+    width: 260,
+  },
+
+  // Create table card
+  createTableCard: {
+    width: 180,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    padding: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  createTableIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardContent: {
-    flex: 1,
-    padding: 12,
-    gap: 4,
-  },
-  cardTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  cardTitle: {
-    fontSize: 14,
-    fontFamily: fonts.headingSemi,
-    flex: 1,
-    lineHeight: 20,
-  },
-  catBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  catBadgeText: {
-    fontSize: 11,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
-  },
-  cardMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  cardMetaText: {
+  createTableText: {
     fontSize: 13,
-    fontFamily: fonts.body,
+    fontWeight: '600',
     lineHeight: 18,
+    textAlign: 'center',
+  },
+
+  // All events label
+  allEventsLabel: {
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 24,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
 
   // Empty state

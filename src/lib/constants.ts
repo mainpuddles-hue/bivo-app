@@ -154,6 +154,17 @@ export const FORUM_CATEGORY_COLORS: Record<string, string> = {
   uutiset: '#8E44AD',
 } as const
 
+// Quick event ("Pöytä") categories
+export const TABLE_CATEGORIES = {
+  coffee: { emoji: '☕', color: '#8B5E3C', bgLight: '#FDF5F0', bgDark: '#2A1E15', label: 'tables.catCoffee' },
+  lunch: { emoji: '🍽️', color: '#E8A050', bgLight: '#FFF5E8', bgDark: '#2D2010', label: 'tables.catLunch' },
+  walk: { emoji: '🚶', color: '#4CAF6A', bgLight: '#E8F7EF', bgDark: '#102D1A', label: 'tables.catWalk' },
+  sports: { emoji: '⚽', color: '#3B7DD8', bgLight: '#EBF2FE', bgDark: '#101A2D', label: 'tables.catSports' },
+  hangout: { emoji: '🤝', color: '#7C5CBF', bgLight: '#F4EFFF', bgDark: '#1A1525', label: 'tables.catHangout' },
+} as const
+
+export const EVENT_CHAT_PAGE_SIZE = 30
+
 // Event source badge colors — used by map EventCard and DetailModal
 export const EVENT_SOURCE_COLORS = {
   helsinki: '#8E44AD',

@@ -338,7 +338,11 @@
     "joinFailed": "Liitumine ebaõnnestus",
     "leaveFailed": "Lahkumine ebaõnnestus",
     "eventNotFound": "Sündmust ei leitud",
-    "eventEnded": "See sündmus on lõppenud"
+    "eventEnded": "See sündmus on lõppenud",
+    "trending": "Populaarsed",
+    "groupChat": "Grupivestlus",
+    "openChat": "Ava vestlus",
+    "chatMembers": "{count} liiget"
   },
   "activity": {
     "activities": "Koos",
@@ -518,7 +522,8 @@
     "quickReply": "Kiire vastus",
     "attachImage": "Lisa pilt",
     "searchConversations": "Otsi vestlusi",
-    "showActive": "Näita aktiivseid vestlusi"
+    "showActive": "Näita aktiivseid vestlusi",
+    "eventChats": "Ürituste vestlused"
   },
   "conversation": {
     "startPrompt": "Alusta vestlust kirjutades sõnumi",
@@ -1364,7 +1369,9 @@
     "listingHint": "Vajan, pakun, tasuta...",
     "eventHint": "Korralda sündmus naabruskonnas",
     "discussionHint": "Alusta arutelu foorumil",
-    "invalidDateFormat": "Kasuta formaati AAAA-KK-PP"
+    "invalidDateFormat": "Kasuta formaati AAAA-KK-PP",
+    "quickEvent": "Kiirüritus",
+    "quickEventHint": "Kohvile, jalutama või koosistuma — kohe"
   },
   "locationPicker": {
     "useCurrentLocation": "Kasuta praegust asukohta",
@@ -2600,5 +2607,43 @@
   },
   "rateLimit": {
     "tooManyActions": "Liiga palju toiminguid. Oota hetk ja proovi uuesti."
+  },
+  "tables": {
+    "title": "Kiirüritused",
+    "create": "Loo kiirüritus",
+    "whatToDo": "Mida teeme?",
+    "whatPlaceholder": "nt. Kohvi Kohvikus X",
+    "when": "Millal?",
+    "where": "Kus?",
+    "wherePlaceholder": "Lisa asukoht",
+    "maxParticipants": "Max osalejaid",
+    "category": "Kategooria",
+    "catCoffee": "Kohv",
+    "catLunch": "Lõuna",
+    "catWalk": "Jalutuskäik",
+    "catSports": "Sport",
+    "catHangout": "Koosolemine",
+    "expiresIn": "Algab {time} pärast",
+    "expired": "Lõppenud",
+    "quickJoin": "Liitu",
+    "spotsOpen": "{count} kohta vaba",
+    "spotsFull": "Täis",
+    "created": "Kiirüritus loodud!",
+    "createFailed": "Kiirürituse loomine ebaõnnestus",
+    "duration": "Kestus",
+    "duration30m": "30 min",
+    "duration1h": "1 tund",
+    "duration2h": "2 tundi",
+    "durationCustom": "Muu"
+  },
+  "eventChat": {
+    "title": "Ürituse vestlus",
+    "placeholder": "Kirjuta sõnum...",
+    "memberJoined": "{name} liitus",
+    "memberLeft": "{name} lahkus",
+    "noMessages": "Sõnumeid pole veel. Alusta vestlust!",
+    "members": "Liikmed",
+    "viewEvent": "Vaata üritust",
+    "sendFailed": "Sõnumi saatmine ebaõnnestus"
   }
 }

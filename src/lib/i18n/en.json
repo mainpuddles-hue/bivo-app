@@ -339,7 +339,11 @@
     "joinFailed": "Failed to join",
     "leaveFailed": "Failed to leave",
     "eventNotFound": "Event not found",
-    "eventEnded": "This event has ended"
+    "eventEnded": "This event has ended",
+    "trending": "Trending",
+    "groupChat": "Group Chat",
+    "openChat": "Open chat",
+    "chatMembers": "{count} members"
   },
   "activity": {
     "activities": "Together",
@@ -524,7 +528,8 @@
     "quickReply": "Quick reply",
     "attachImage": "Attach image",
     "searchConversations": "Search conversations",
-    "showActive": "Show active conversations"
+    "showActive": "Show active conversations",
+    "eventChats": "Event Chats"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -1400,7 +1405,9 @@
     "conditionPoor": "Poor",
     "conditionBadge": "{condition} condition",
     "freeItem": "Free",
-    "invalidDateFormat": "Use YYYY-MM-DD format"
+    "invalidDateFormat": "Use YYYY-MM-DD format",
+    "quickEvent": "Quick Event",
+    "quickEventHint": "Coffee, walk, or hangout — right now"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -2682,5 +2689,43 @@
   },
   "rateLimit": {
     "tooManyActions": "Too many actions. Please wait a moment and try again."
+  },
+  "tables": {
+    "title": "Quick Events",
+    "create": "Create quick event",
+    "whatToDo": "What are we doing?",
+    "whatPlaceholder": "e.g. Coffee at Kahvila X",
+    "when": "When?",
+    "where": "Where?",
+    "wherePlaceholder": "Add location",
+    "maxParticipants": "Max people",
+    "category": "Category",
+    "catCoffee": "Coffee",
+    "catLunch": "Lunch",
+    "catWalk": "Walk",
+    "catSports": "Sports",
+    "catHangout": "Hangout",
+    "expiresIn": "Starts in {time}",
+    "expired": "Ended",
+    "quickJoin": "Join",
+    "spotsOpen": "{count} spots left",
+    "spotsFull": "Full",
+    "created": "Quick event created!",
+    "createFailed": "Failed to create quick event",
+    "duration": "Duration",
+    "duration30m": "30 min",
+    "duration1h": "1 hour",
+    "duration2h": "2 hours",
+    "durationCustom": "Custom"
+  },
+  "eventChat": {
+    "title": "Event Chat",
+    "placeholder": "Write a message...",
+    "memberJoined": "{name} joined",
+    "memberLeft": "{name} left",
+    "noMessages": "No messages yet. Start the conversation!",
+    "members": "Members",
+    "viewEvent": "View event",
+    "sendFailed": "Failed to send message"
   }
 }

@@ -319,7 +319,11 @@
     "catKids": "Barn",
     "catOther": "Övrigt",
     "messageOrganizer": "Meddelande till arrangören",
-    "eventEnded": "Detta evenemang har avslutats"
+    "eventEnded": "Detta evenemang har avslutats",
+    "trending": "Trendande",
+    "groupChat": "Gruppchatt",
+    "openChat": "Öppna chatt",
+    "chatMembers": "{count} medlemmar"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -504,7 +508,8 @@
     "quickReply": "Snabbsvar",
     "attachImage": "Bifoga bild",
     "searchConversations": "Sök konversationer",
-    "showActive": "Visa aktiva konversationer"
+    "showActive": "Visa aktiva konversationer",
+    "eventChats": "Eventchattar"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -1380,7 +1385,9 @@
     "conditionPoor": "Dålig",
     "conditionBadge": "{condition} skick",
     "freeItem": "Gratis",
-    "invalidDateFormat": "Använd formatet ÅÅÅÅ-MM-DD"
+    "invalidDateFormat": "Använd formatet ÅÅÅÅ-MM-DD",
+    "quickEvent": "Snabbevent",
+    "quickEventHint": "Kaffe, promenad eller häng — just nu"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -2662,5 +2669,43 @@
   },
   "rateLimit": {
     "tooManyActions": "För många åtgärder. Vänta en stund och försök igen."
+  },
+  "tables": {
+    "title": "Snabbevent",
+    "create": "Skapa snabbevent",
+    "whatToDo": "Vad gör vi?",
+    "whatPlaceholder": "t.ex. Kaffe på Café X",
+    "when": "När?",
+    "where": "Var?",
+    "wherePlaceholder": "Lägg till plats",
+    "maxParticipants": "Max deltagare",
+    "category": "Kategori",
+    "catCoffee": "Kaffe",
+    "catLunch": "Lunch",
+    "catWalk": "Promenad",
+    "catSports": "Sport",
+    "catHangout": "Häng",
+    "expiresIn": "Börjar om {time}",
+    "expired": "Avslutat",
+    "quickJoin": "Gå med",
+    "spotsOpen": "{count} platser kvar",
+    "spotsFull": "Fullt",
+    "created": "Snabbevent skapat!",
+    "createFailed": "Kunde inte skapa snabbevent",
+    "duration": "Längd",
+    "duration30m": "30 min",
+    "duration1h": "1 timme",
+    "duration2h": "2 timmar",
+    "durationCustom": "Annan"
+  },
+  "eventChat": {
+    "title": "Eventchatt",
+    "placeholder": "Skriv ett meddelande...",
+    "memberJoined": "{name} gick med",
+    "memberLeft": "{name} lämnade",
+    "noMessages": "Inga meddelanden ännu. Starta konversationen!",
+    "members": "Medlemmar",
+    "viewEvent": "Visa event",
+    "sendFailed": "Kunde inte skicka meddelande"
   }
 }

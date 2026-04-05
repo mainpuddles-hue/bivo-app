@@ -6,13 +6,14 @@ import { View, Text, StyleSheet, Modal, Pressable } from 'react-native'
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Newspaper, Plus, MessageCircle, User, Compass, FileText, CalendarDays, ChevronRight } from 'lucide-react-native'
+import { Newspaper, Plus, MessageCircle, User, Compass, FileText, CalendarDays, ChevronRight, Coffee } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { Header } from '@/components/Header'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useUnreadCount } from '@/hooks/useUnreadCount'
+import { useEventChatUnread } from '@/hooks/useEventChatUnread'
 
 function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
   icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
@@ -66,6 +67,8 @@ export default function TabLayout() {
   const supabase = useSupabase()
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)
+  const eventChatUnread = useEventChatUnread(userId)
+  const totalUnread = unreadCount + eventChatUnread
   const [showCreateMenu, setShowCreateMenu] = useState(false)
 
   useEffect(() => {
@@ -117,7 +120,7 @@ export default function TabLayout() {
       }} />
       <Tabs.Screen name="messages" options={{
         tabBarAccessibilityLabel: t('nav.messages'),
-        tabBarIcon: ({ focused }) => <TabIcon icon={MessageCircle} label={t('nav.messages')} focused={focused} colors={colors} badge={unreadCount} />,
+        tabBarIcon: ({ focused }) => <TabIcon icon={MessageCircle} label={t('nav.messages')} focused={focused} colors={colors} badge={totalUnread} />,
       }} />
       <Tabs.Screen name="profile" options={{
         tabBarAccessibilityLabel: t('nav.profile'),
@@ -162,6 +165,22 @@ export default function TabLayout() {
             <View style={s.sheetText}>
               <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.event')}</Text>
               <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.eventHint')}</Text>
+            </View>
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
+            accessibilityLabel={t('create.quickEvent')}
+            accessibilityRole="button"
+            onPress={() => { setShowCreateMenu(false); router.push('/create-table') }}
+          >
+            <View style={[s.sheetIcon, { backgroundColor: '#8B5E3C15' }]}>
+              <Coffee size={20} color="#8B5E3C" />
+            </View>
+            <View style={s.sheetText}>
+              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.quickEvent')}</Text>
+              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.quickEventHint')}</Text>
             </View>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>

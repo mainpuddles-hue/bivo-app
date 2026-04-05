@@ -1,8 +1,10 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet } from 'react-native'
+import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView } from 'react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn } from 'lucide-react-native'
+import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { Avatar } from '@/components/Avatar'
@@ -13,7 +15,20 @@ import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { isValidUUID } from '@/lib/validation'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { getTableCategoryEmoji } from '@/lib/eventHelpers'
 import type { Conversation } from '@/lib/types'
+
+interface EventChatItem {
+  conversation_id: string
+  event_id: string
+  event_title: string
+  event_category: string
+  event_date: string
+  member_count: number
+  unread_count: number
+  last_message_content: string | null
+  last_message_at: string | null
+}
 
 const PINNED_KEY = 'pinned_conversations'
 
@@ -35,6 +50,7 @@ export default function MessagesScreen() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showArchived, setShowArchived] = useState(false)
   const [pinnedIds, setPinnedIds] = useState<string[]>([])
+  const [eventChats, setEventChats] = useState<EventChatItem[]>([])
   const mountedRef = useRef(true)
   useEffect(() => { return () => { mountedRef.current = false } }, [])
   const conversationsRef = useRef(conversations)
@@ -214,6 +230,76 @@ export default function MessagesScreen() {
     return () => { supabase.removeChannel(channel) }
   }, [userId, supabase, fetchConversations])
 
+  // Fetch event group chats the user is a member of
+  const fetchEventChats = useCallback(async () => {
+    if (!userId || !mountedRef.current) return
+    try {
+      // Get conversation IDs where user is a member (group chats)
+      const { data: memberships } = await (supabase.from('conversation_members') as any)
+        .select('conversation_id')
+        .eq('user_id', userId)
+
+      if (!memberships || memberships.length === 0 || !mountedRef.current) return
+
+      const convIds = (memberships as any[]).map((m: any) => m.conversation_id)
+
+      // Get events linked to those conversations
+      const { data: events } = await (supabase.from('community_events') as any)
+        .select('id, title, category, event_date, conversation_id')
+        .in('conversation_id', convIds)
+        .order('event_date', { ascending: false })
+
+      if (!events || !mountedRef.current) return
+
+      // Get unread counts + last messages for each conversation
+      const items: EventChatItem[] = []
+      for (const ev of events as any[]) {
+        if (!ev.conversation_id) continue
+
+        // Count unread
+        const { count: unread } = await (supabase.from('messages') as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('conversation_id', ev.conversation_id)
+          .neq('sender_id', userId)
+          .eq('is_read', false)
+
+        // Last message
+        const { data: lastMsg } = await (supabase.from('messages') as any)
+          .select('content, created_at')
+          .eq('conversation_id', ev.conversation_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        // Member count
+        const { count: members } = await (supabase.from('conversation_members') as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('conversation_id', ev.conversation_id)
+
+        items.push({
+          conversation_id: ev.conversation_id,
+          event_id: ev.id,
+          event_title: ev.title,
+          event_category: ev.category ?? '',
+          event_date: ev.event_date,
+          member_count: members ?? 0,
+          unread_count: unread ?? 0,
+          last_message_content: lastMsg?.content ?? null,
+          last_message_at: lastMsg?.created_at ?? null,
+        })
+      }
+
+      if (mountedRef.current) setEventChats(items)
+    } catch (err) {
+      if (__DEV__) console.warn('[messages] fetchEventChats error:', err)
+    }
+  }, [userId, supabase])
+
+  // Fetch event chats when userId changes or screen gains focus
+  useFocusEffect(useCallback(() => {
+    if (userId) fetchEventChats()
+  }, [userId, fetchEventChats]))
+
   const handleArchive = useCallback(async (convId: string) => {
     const conv = conversations.find(c => c.id === convId)
     if (!conv || !userId) return
@@ -295,7 +381,58 @@ export default function MessagesScreen() {
         data={filtered}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchConversations() }} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchConversations(); fetchEventChats() }} tintColor={colors.primary} />}
+        ListHeaderComponent={eventChats.length > 0 && !showArchived ? (
+          <View style={styles.eventChatsSection}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              {t('messages.eventChats')}
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.eventChatsScroll}>
+              {eventChats.map((ec) => {
+                const emoji = getTableCategoryEmoji(ec.event_category)
+                return (
+                  <Pressable
+                    key={ec.conversation_id}
+                    onPress={() => router.push(`/event-chat/${ec.conversation_id}` as any)}
+                    style={({ pressed }) => [
+                      styles.eventChatCard,
+                      { backgroundColor: isDark ? colors.card : '#F9FAFB', borderColor: colors.border },
+                      pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={ec.event_title}
+                  >
+                    <View style={styles.eventChatTop}>
+                      <Text style={styles.eventChatEmoji}>{emoji}</Text>
+                      {ec.unread_count > 0 && (
+                        <View style={[styles.eventChatBadge, { backgroundColor: colors.destructive }]}>
+                          <Text style={styles.eventChatBadgeText}>
+                            {ec.unread_count > 9 ? '9+' : ec.unread_count}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.eventChatTitle, { color: colors.foreground }]} numberOfLines={2}>
+                      {ec.event_title}
+                    </Text>
+                    <View style={styles.eventChatMeta}>
+                      <Users size={10} color={colors.mutedForeground} />
+                      <Text style={[styles.eventChatMetaText, { color: colors.mutedForeground }]}>
+                        {ec.member_count}
+                      </Text>
+                    </View>
+                    {ec.last_message_content && (
+                      <Text style={[styles.eventChatPreview, { color: colors.mutedForeground }]} numberOfLines={1}>
+                        {ec.last_message_content}
+                      </Text>
+                    )}
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+            <View style={[styles.sectionDivider, { backgroundColor: colors.border }]} />
+          </View>
+        ) : null}
         renderItem={({ item }) => {
           const other = item.other_user as any
           const unread = item.unread_count ?? 0
@@ -444,4 +581,34 @@ const styles = StyleSheet.create({
   emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
   loginBtn: { marginTop: 8, borderRadius: 12, paddingVertical: 16, paddingHorizontal: 32, alignItems: 'center' },
   loginBtnText: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.bodySemi },
+  // Event chats section
+  eventChatsSection: { paddingTop: 8 },
+  sectionTitle: {
+    fontSize: 14, fontWeight: '700', lineHeight: 20,
+    fontFamily: fonts.bodySemi, paddingHorizontal: 16, marginBottom: 8,
+  },
+  eventChatsScroll: { paddingHorizontal: 12, gap: 10 },
+  eventChatCard: {
+    width: 140, borderRadius: 14, borderWidth: 1,
+    padding: 12, gap: 4,
+  },
+  eventChatTop: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+  },
+  eventChatEmoji: { fontSize: 22 },
+  eventChatBadge: {
+    minWidth: 18, height: 18, borderRadius: 9,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+  },
+  eventChatBadgeText: {
+    color: '#FFFFFF', fontSize: 10, fontWeight: '700', lineHeight: 12,
+    fontFamily: fonts.bodySemi,
+  },
+  eventChatTitle: {
+    fontSize: 13, fontWeight: '600', lineHeight: 18, fontFamily: fonts.bodySemi,
+  },
+  eventChatMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  eventChatMetaText: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
+  eventChatPreview: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
+  sectionDivider: { height: StyleSheet.hairlineWidth, marginTop: 12, marginHorizontal: 16 },
 })

@@ -338,7 +338,11 @@
     "joinFailed": "Не удалось присоединиться",
     "leaveFailed": "Не удалось покинуть",
     "eventNotFound": "Событие не найдено",
-    "eventEnded": "Это событие завершилось"
+    "eventEnded": "Это событие завершилось",
+    "trending": "В тренде",
+    "groupChat": "Групповой чат",
+    "openChat": "Открыть чат",
+    "chatMembers": "{count} участников"
   },
   "activity": {
     "activities": "Вместе",
@@ -518,7 +522,8 @@
     "quickReply": "Быстрый ответ",
     "attachImage": "Прикрепить фото",
     "searchConversations": "Поиск бесед",
-    "showActive": "Показать активные разговоры"
+    "showActive": "Показать активные разговоры",
+    "eventChats": "Чаты мероприятий"
   },
   "conversation": {
     "startPrompt": "Начните беседу, написав сообщение",
@@ -1364,7 +1369,9 @@
     "listingHint": "Нужно, предлагаю, бесплатно...",
     "eventHint": "Организуйте событие в районе",
     "discussionHint": "Начните обсуждение на форуме",
-    "invalidDateFormat": "Используйте формат ГГГГ-ММ-ДД"
+    "invalidDateFormat": "Используйте формат ГГГГ-ММ-ДД",
+    "quickEvent": "Быстрая встреча",
+    "quickEventHint": "На кофе, прогулку или встречу — прямо сейчас"
   },
   "locationPicker": {
     "useCurrentLocation": "Использовать текущее местоположение",
@@ -2600,5 +2607,43 @@
   },
   "rateLimit": {
     "tooManyActions": "Слишком много действий. Подождите немного и попробуйте снова."
+  },
+  "tables": {
+    "title": "Быстрые встречи",
+    "create": "Создать быструю встречу",
+    "whatToDo": "Что делаем?",
+    "whatPlaceholder": "напр. Кофе в кафе X",
+    "when": "Когда?",
+    "where": "Где?",
+    "wherePlaceholder": "Добавить место",
+    "maxParticipants": "Макс. участников",
+    "category": "Категория",
+    "catCoffee": "Кофе",
+    "catLunch": "Обед",
+    "catWalk": "Прогулка",
+    "catSports": "Спорт",
+    "catHangout": "Встреча",
+    "expiresIn": "Начало через {time}",
+    "expired": "Завершено",
+    "quickJoin": "Присоединиться",
+    "spotsOpen": "Осталось {count} мест",
+    "spotsFull": "Мест нет",
+    "created": "Быстрая встреча создана!",
+    "createFailed": "Не удалось создать встречу",
+    "duration": "Длительность",
+    "duration30m": "30 мин",
+    "duration1h": "1 час",
+    "duration2h": "2 часа",
+    "durationCustom": "Другое"
+  },
+  "eventChat": {
+    "title": "Чат мероприятия",
+    "placeholder": "Написать сообщение...",
+    "memberJoined": "{name} присоединился",
+    "memberLeft": "{name} вышел",
+    "noMessages": "Сообщений пока нет. Начните общение!",
+    "members": "Участники",
+    "viewEvent": "Посмотреть мероприятие",
+    "sendFailed": "Не удалось отправить сообщение"
   }
 }

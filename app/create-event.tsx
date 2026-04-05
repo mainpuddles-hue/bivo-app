@@ -28,6 +28,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
+import { createEventChat } from '@/lib/eventChatHelpers'
 import type { CommunityEvent } from '@/lib/types'
 
 type EventCategory = CommunityEvent['category']
@@ -256,11 +257,16 @@ function CreateEventScreenInner() {
         resultId = res.data?.id ?? edit
       } else {
         const res = await (supabase.from('community_events') as any)
-          .insert({ ...eventPayload, creator_id: currentUserId })
+          .insert({ ...eventPayload, event_type: 'event', creator_id: currentUserId })
           .select('id')
           .single()
         error = res.error
         resultId = res.data?.id
+
+        // Auto-create group chat for the event (soft fail)
+        if (!error && resultId && currentUserId) {
+          createEventChat(supabase, resultId, title.trim(), currentUserId).catch(() => {})
+        }
       }
 
       if (error) {

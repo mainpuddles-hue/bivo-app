@@ -22,6 +22,7 @@ import { BackButton } from '@/components/ui'
 import { formatEventDate } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { getCachedUserId } from '@/lib/authCache'
+import { addMemberToChat, removeMemberFromChat } from '@/lib/eventChatHelpers'
 import type { CommunityEvent, EventParticipant } from '@/lib/types'
 
 // TODO: These are external event category colors (not post type colors from CATEGORIES constant).
@@ -118,6 +119,8 @@ function EventDetailScreenInner() {
         // 23505 = already joined — just refresh
         await fetchEvent()
       } else {
+        // Add user to event group chat (soft fail)
+        addMemberToChat(supabase, event.id, userId).catch(() => {})
         // Notify event creator about new participant
         if (event.creator_id && event.creator_id !== userId) {
           try {
@@ -152,6 +155,8 @@ function EventDetailScreenInner() {
       if (error) {
         Alert.alert(t('common.error'), t('events.leaveFailed'))
       } else {
+        // Remove user from event group chat (soft fail)
+        removeMemberFromChat(supabase, event.id, userId).catch(() => {})
         await fetchEvent()
       }
     } catch {
@@ -452,6 +457,25 @@ function EventDetailScreenInner() {
           </Pressable>
         )}
 
+        {/* Group Chat button — show for participants and creator */}
+        {event.conversation_id && (myStatus === 'joined' || myStatus === 'approved' || isCreator) && (
+          <Pressable
+            onPress={() => router.push(`/event-chat/${event.conversation_id}` as any)}
+            accessibilityRole="button"
+            accessibilityLabel={t('events.groupChat')}
+            style={({ pressed }) => [
+              s.groupChatBtn,
+              { backgroundColor: isDark ? colors.card : '#F0F9FF', borderColor: `${colors.primary}30` },
+              pressed && { opacity: 0.7 },
+            ]}
+          >
+            <MessageCircle size={18} color={colors.primary} strokeWidth={1.8} />
+            <Text style={[s.groupChatText, { color: colors.primary }]}>
+              {t('events.openChat')}
+            </Text>
+          </Pressable>
+        )}
+
         {/* Message organizer */}
         {event.creator && !isCreator && (
           <Pressable
@@ -707,6 +731,26 @@ const s = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
+  },
+
+  // Group chat button
+  groupChatBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    minHeight: 48,
+  },
+  groupChatText: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 20,
   },
 
   // Message creator button

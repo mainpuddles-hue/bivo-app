@@ -339,7 +339,11 @@
     "joinFailed": "Liittyminen epäonnistui",
     "leaveFailed": "Poistuminen epäonnistui",
     "eventNotFound": "Tapahtumaa ei löytynyt",
-    "eventEnded": "Tämä tapahtuma on päättynyt"
+    "eventEnded": "Tämä tapahtuma on päättynyt",
+    "trending": "Trendaavat",
+    "groupChat": "Ryhmächat",
+    "openChat": "Avaa chat",
+    "chatMembers": "{count} jäsentä"
   },
   "activity": {
     "activities": "Porukalla",
@@ -524,7 +528,8 @@
     "quickReply": "Pikavastaus",
     "attachImage": "Liitä kuva",
     "searchConversations": "Hae keskusteluja",
-    "showActive": "Näytä aktiiviset keskustelut"
+    "showActive": "Näytä aktiiviset keskustelut",
+    "eventChats": "Tapahtumachatit"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -1400,7 +1405,9 @@
     "conditionPoor": "Heikko",
     "conditionBadge": "{condition} kunto",
     "freeItem": "Ilmainen",
-    "invalidDateFormat": "Käytä muotoa VVVV-KK-PP"
+    "invalidDateFormat": "Käytä muotoa VVVV-KK-PP",
+    "quickEvent": "Pikatapahtuma",
+    "quickEventHint": "Kahville, kävelylle tai hengailemaan — heti"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -2682,5 +2689,43 @@
   },
   "rateLimit": {
     "tooManyActions": "Liian monta toimintoa. Odota hetki ja yritä uudelleen."
+  },
+  "tables": {
+    "title": "Pikatapahtumat",
+    "create": "Luo pikatapahtuma",
+    "whatToDo": "Mitä tehdään?",
+    "whatPlaceholder": "esim. Kahvit Kahvila X:ssä",
+    "when": "Milloin?",
+    "where": "Missä?",
+    "wherePlaceholder": "Lisää sijainti",
+    "maxParticipants": "Max osallistujia",
+    "category": "Kategoria",
+    "catCoffee": "Kahvi",
+    "catLunch": "Lounas",
+    "catWalk": "Kävely",
+    "catSports": "Urheilu",
+    "catHangout": "Hengailu",
+    "expiresIn": "Alkaa {time} päästä",
+    "expired": "Päättynyt",
+    "quickJoin": "Liity",
+    "spotsOpen": "{count} paikkaa jäljellä",
+    "spotsFull": "Täynnä",
+    "created": "Pikatapahtuma luotu!",
+    "createFailed": "Pikatapahtuman luonti epäonnistui",
+    "duration": "Kesto",
+    "duration30m": "30 min",
+    "duration1h": "1 tunti",
+    "duration2h": "2 tuntia",
+    "durationCustom": "Muu"
+  },
+  "eventChat": {
+    "title": "Tapahtumachat",
+    "placeholder": "Kirjoita viesti...",
+    "memberJoined": "{name} liittyi",
+    "memberLeft": "{name} poistui",
+    "noMessages": "Ei vielä viestejä. Aloita keskustelu!",
+    "members": "Jäsenet",
+    "viewEvent": "Näytä tapahtuma",
+    "sendFailed": "Viestin lähetys epäonnistui"
   }
 }

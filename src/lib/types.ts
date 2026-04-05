@@ -116,6 +116,10 @@ export interface Profile {
   updated_at: string
 }
 
+export type EventCategory = 'social' | 'sports' | 'culture' | 'nature' | 'kids' | 'other'
+export type EventType = 'event' | 'table'
+export type TableCategory = 'coffee' | 'lunch' | 'walk' | 'sports' | 'hangout'
+
 export interface CommunityEvent {
   id: string
   creator_id: string
@@ -127,18 +131,22 @@ export interface CommunityEvent {
   location_name: string | null
   location_lat: number | null
   location_lng: number | null
-  category: 'social' | 'sports' | 'culture' | 'nature' | 'kids' | 'other'
+  category: EventCategory
+  event_type: EventType
   max_participants: number | null
   approval_required: boolean
   naapurusto: string | null
   city_id: string
+  conversation_id: string | null
   is_active: boolean
   created_at: string
+  updated_at: string
   // Joined fields
   creator?: { id: string; name: string; avatar_url: string | null }
   participant_count?: number
   is_participant?: boolean
   my_status?: 'joined' | 'pending' | 'approved' | 'rejected' | null
+  participants?: EventParticipant[]
 }
 
 export interface EventParticipant {
