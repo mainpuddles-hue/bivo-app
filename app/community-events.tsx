@@ -16,6 +16,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { EventCardSkeleton, TableCardSkeleton } from '@/components/SkeletonLoaders'
 import { PressableOpacity } from '@/components/ui'
 import { EventCard } from '@/components/EventCard'
 import { TableCard } from '@/components/TableCard'
@@ -172,7 +173,12 @@ function CommunityEventsScreenInner() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={s.horizontalList}
         >
-          {tableEvents.map(event => (
+          {loading && tableEvents.length === 0 ? (
+            <>
+              <TableCardSkeleton />
+              <TableCardSkeleton />
+            </>
+          ) : tableEvents.map(event => (
             <TableCard key={event.id} event={event} onJoin={handleQuickJoin} />
           ))}
 
@@ -314,7 +320,13 @@ function CommunityEventsScreenInner() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
         }
         ListEmptyComponent={
-          loading ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} /> : (
+          loading ? (
+            <View style={{ gap: 16, padding: 16 }}>
+              <EventCardSkeleton />
+              <EventCardSkeleton />
+              <EventCardSkeleton />
+            </View>
+          ) : (
             <View style={s.emptyState}>
               <CalendarDays size={48} color={colors.mutedForeground} strokeWidth={1.3} />
               <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('events.noUpcomingEvents')}</Text>

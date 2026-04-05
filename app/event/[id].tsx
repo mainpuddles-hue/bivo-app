@@ -13,6 +13,7 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { EventDetailSkeleton } from '@/components/SkeletonLoaders'
 import { useSupabase } from '@/hooks/useSupabase'
 import { shareContent } from '@/lib/share'
 import { Avatar } from '@/components/Avatar'
@@ -239,9 +240,7 @@ function EventDetailScreenInner() {
         <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
           <BackButton />
         </View>
-        <View style={s.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <EventDetailSkeleton />
       </View>
     )
   }

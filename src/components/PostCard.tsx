@@ -113,13 +113,18 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
 
-  // Fix 4: Smooth card entrance animation
-  const fadeAnim = useRef(new Animated.Value(0)).current
+  // Smooth card entrance animation — fade + slide up
+  const entranceAnim = useRef(new Animated.Value(0)).current
   useEffect(() => {
     try {
-      Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start()
+      Animated.timing(entranceAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start()
     } catch {} // Intentional: animation failure is non-critical
-  }, [fadeAnim])
+  }, [entranceAnim])
+  const entranceOpacity = entranceAnim
+  const entranceTranslateY = entranceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [12, 0],
+  })
 
   const distanceText = useMemo(() => {
     if (!userLocation || !post.latitude || !post.longitude) return null
@@ -129,7 +134,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   }, [userLocation, post.latitude, post.longitude, t])
 
   return (
-    <Animated.View style={{ opacity: fadeAnim }}>
+    <Animated.View style={{ opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
     <Pressable
       accessibilityLabel={post.title}
       accessibilityRole="button"
