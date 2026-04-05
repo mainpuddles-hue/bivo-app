@@ -46,8 +46,8 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
       style={({ pressed }) => [
         s.card,
         { backgroundColor: bgColor, borderColor: `${catColor}30` },
-        expired && { opacity: 0.5 },
-        pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+        expired && !pressed && { opacity: 0.5 },
+        pressed && { opacity: expired ? 0.4 : 0.85, transform: [{ scale: 0.97 }] },
       ]}
       accessibilityRole="button"
       accessibilityLabel={event.title}

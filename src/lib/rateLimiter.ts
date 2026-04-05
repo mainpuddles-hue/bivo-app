@@ -16,6 +16,7 @@ const LIMITS: Record<string, RateLimitConfig> = {
   forum_post: { maxActions: 5, windowMs: 3600000 },         // 5 forum posts per hour
   group_post: { maxActions: 10, windowMs: 3600000 },        // 10 group posts per hour
   search: { maxActions: 30, windowMs: 60000 },              // 30 searches per minute
+  'event-chat-send': { maxActions: 50, windowMs: 3600000 }, // 50 event chat messages per hour
 }
 
 export async function checkRateLimit(action: string): Promise<boolean> {

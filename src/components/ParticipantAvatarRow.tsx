@@ -30,9 +30,9 @@ export const ParticipantAvatarRow = memo(function ParticipantAvatarRow({
   if (count === 0) return null
 
   return (
-    <View style={s.row}>
+    <View style={s.row} accessibilityLabel={`${count} participants`}>
       {shown.map((p, i) => (
-        <View key={`avatar-${i}`} style={[s.avatarWrap, { marginLeft: i > 0 ? -(size * 0.3) : 0, zIndex: max - i, borderColor: colors.background }]}>
+        <View key={p.avatar_url ?? p.name ?? `avatar-${i}`} style={[s.avatarWrap, { marginLeft: i > 0 ? -(size * 0.3) : 0, zIndex: max - i, borderColor: colors.background }]}>
           <Avatar url={p.avatar_url ?? null} name={p.name ?? '?'} size={size} />
         </View>
       ))}

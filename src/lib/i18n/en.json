@@ -336,7 +336,7 @@
     "cancelEventConfirm": "Are you sure you want to cancel this event?",
     "eventCancelled": "Event cancelled",
     "cancelFailed": "Failed to cancel",
-    "joinFailed": "Failed to join",
+    "joinFailed": "Failed to join event",
     "leaveFailed": "Failed to leave",
     "eventNotFound": "Event not found",
     "eventEnded": "This event has ended",
@@ -821,7 +821,8 @@
     "city": "City",
     "changeCity": "Change city",
     "cityChanged": "City changed",
-    "pickNewNeighborhood": "Select a new neighborhood in your new city"
+    "pickNewNeighborhood": "Select a new neighborhood in your new city",
+    "deletedUser": "[Deleted]"
   },
   "postCard": {
     "viewListing": "View listing",

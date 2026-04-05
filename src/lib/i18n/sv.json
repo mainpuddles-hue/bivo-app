@@ -323,7 +323,8 @@
     "trending": "Trendande",
     "groupChat": "Gruppchatt",
     "openChat": "Öppna chatt",
-    "chatMembers": "{count} medlemmar"
+    "chatMembers": "{count} medlemmar",
+    "joinFailed": "Det gick inte att gå med i evenemanget"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -801,7 +802,8 @@
     "city": "Stad",
     "changeCity": "Byt stad",
     "cityChanged": "Stad ändrad",
-    "pickNewNeighborhood": "Välj ett nytt grannskap i din nya stad"
+    "pickNewNeighborhood": "Välj ett nytt grannskap i din nya stad",
+    "deletedUser": "[Raderad]"
   },
   "postCard": {
     "viewListing": "Visa annons",

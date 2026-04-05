@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
@@ -31,10 +31,10 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
   const categoryColor = EVENT_CATEGORY_COLORS[event.category] ?? '#6B7280'
   const isTable = isTableEvent(event)
 
-  const formattedDate = new Date(event.event_date).toLocaleDateString(
+  const formattedDate = useMemo(() => new Date(event.event_date).toLocaleDateString(
     locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US',
     { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
-  )
+  ), [event.event_date, locale])
 
   const participantCount = event.participant_count ?? 0
   const spotsText = event.max_participants
@@ -67,7 +67,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
           <View style={[s.categoryBadge, { backgroundColor: `${categoryColor}18` }]}>
             <View style={[s.categoryDot, { backgroundColor: categoryColor }]} />
             <Text style={[s.categoryText, { color: categoryColor, fontFamily: fonts.bodySemi }]}>
-              {isTable ? t('tables.title') : t(`events.cat${event.category.charAt(0).toUpperCase() + event.category.slice(1)}`)}
+              {t(`events.cat${event.category.charAt(0).toUpperCase() + event.category.slice(1)}`)}
             </Text>
           </View>
           {isTable && (

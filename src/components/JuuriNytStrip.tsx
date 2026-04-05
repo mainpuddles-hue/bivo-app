@@ -38,7 +38,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
   // Tick every 10s to keep countdowns fresh
   const [tick, setTick] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), 10000)
+    const id = setInterval(() => setTick(prev => prev + 1), 10000)
     return () => clearInterval(id)
   }, [])
 

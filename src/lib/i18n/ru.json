@@ -335,7 +335,7 @@
     "cancelEventConfirm": "Вы уверены, что хотите отменить это событие?",
     "eventCancelled": "Событие отменено",
     "cancelFailed": "Не удалось отменить",
-    "joinFailed": "Не удалось присоединиться",
+    "joinFailed": "Не удалось присоединиться к мероприятию",
     "leaveFailed": "Не удалось покинуть",
     "eventNotFound": "Событие не найдено",
     "eventEnded": "Это событие завершилось",
@@ -813,7 +813,8 @@
     "city": "Город",
     "changeCity": "Сменить город",
     "cityChanged": "Город изменён",
-    "pickNewNeighborhood": "Выберите район в новом городе"
+    "pickNewNeighborhood": "Выберите район в новом городе",
+    "deletedUser": "[Удалён]"
   },
   "postCard": {
     "viewListing": "Смотреть объявление",

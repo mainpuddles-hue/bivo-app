@@ -71,6 +71,8 @@ function ConversationScreenInner() {
   const [showQuickReplies, setShowQuickReplies] = useState(true)
   const [linkedPost, setLinkedPost] = useState<{ id: string; title: string; type: string; image_url: string | null } | null>(null)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const userIdRef = useRef<string | null>(null)
+  userIdRef.current = userId
 
   // Reaction & deletion state
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
@@ -196,8 +198,8 @@ function ConversationScreenInner() {
           const next = [...prev, newMsg]
           return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next
         })
-        // Auto-mark as read if from other user
-        if (newMsg.sender_id !== userId) {
+        // Auto-mark as read if from other user (use ref to avoid stale closure)
+        if (userIdRef.current && newMsg.sender_id !== userIdRef.current) {
           ;(async () => { try { await (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id) } catch {} })()
         }
       })
@@ -209,7 +211,7 @@ function ConversationScreenInner() {
         setMessages(prev => prev.map(m => m.id === updated.id ? updated : m))
       })
       .on('broadcast', { event: 'typing' }, (payload) => {
-        if ((payload as any).payload?.userId !== userId) {
+        if ((payload as any).payload?.userId !== userIdRef.current) {
           setOtherTyping(true)
           if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
           typingTimerRef.current = setTimeout(() => setOtherTyping(false), 3000)

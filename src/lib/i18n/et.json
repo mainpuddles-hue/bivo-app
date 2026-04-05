@@ -335,7 +335,7 @@
     "cancelEventConfirm": "Kas soovid kindlasti selle sündmuse tühistada?",
     "eventCancelled": "Sündmus tühistatud",
     "cancelFailed": "Tühistamine ebaõnnestus",
-    "joinFailed": "Liitumine ebaõnnestus",
+    "joinFailed": "Üritusega liitumine ebaõnnestus",
     "leaveFailed": "Lahkumine ebaõnnestus",
     "eventNotFound": "Sündmust ei leitud",
     "eventEnded": "See sündmus on lõppenud",
@@ -813,7 +813,8 @@
     "city": "Linn",
     "changeCity": "Vaheta linn",
     "cityChanged": "Linn vahetatud",
-    "pickNewNeighborhood": "Vali uues linnas uus naabruskond"
+    "pickNewNeighborhood": "Vali uues linnas uus naabruskond",
+    "deletedUser": "[Kustutatud]"
   },
   "postCard": {
     "viewListing": "Vaata kuulutust",

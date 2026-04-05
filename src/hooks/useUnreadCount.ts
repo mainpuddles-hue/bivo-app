@@ -76,7 +76,10 @@ export function useUnreadCount(userId: string | null) {
     return () => {
       mounted = false
       supabase.removeChannel(channel)
-      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
     }
   }, [userId, supabase])
 

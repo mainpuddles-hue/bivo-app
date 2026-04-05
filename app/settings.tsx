@@ -434,7 +434,7 @@ export default function SettingsScreen() {
             (supabase.from('activity_members') as any).delete().eq('user_id', uid),
             (supabase.from('community_event_participants') as any).delete().eq('user_id', uid),
             (supabase.from('profiles') as any).update({
-              name: '[Poistettu]',
+              name: t('settings.deletedUser'),
               bio: null,
               avatar_url: null,
               push_token: null,

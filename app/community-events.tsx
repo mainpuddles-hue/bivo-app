@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo } from 'react'
 import {
-  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, ActivityIndicator,
+  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, ActivityIndicator, Alert,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -109,7 +109,11 @@ function CommunityEventsScreenInner() {
   const handleQuickJoin = useCallback(async (eventId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        router.replace('/(auth)/login')
+        return
+      }
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       await (supabase.from('community_event_participants') as any)
         .upsert(
           { event_id: eventId, user_id: user.id, status: 'joined' },
@@ -119,8 +123,9 @@ function CommunityEventsScreenInner() {
       fetchEvents()
     } catch (err) {
       if (__DEV__) console.log('[community-events] quick join error:', err)
+      Alert.alert(t('common.error'), t('events.joinFailed'))
     }
-  }, [supabase, fetchEvents])
+  }, [supabase, fetchEvents, router, t])
 
   const renderEventCard = useCallback(({ item }: { item: CommunityEvent }) => (
     <EventCard event={item} />
@@ -239,7 +244,8 @@ function CommunityEventsScreenInner() {
         </Text>
       )}
     </View>
-  ), [tableEvents, trendingEvents, filteredEvents.length, colors, t, isDark, handleQuickJoin])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [tableEvents, trendingEvents, filteredEvents.length, colors, t, isDark, handleQuickJoin, loading, router])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>

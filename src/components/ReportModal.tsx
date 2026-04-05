@@ -28,6 +28,11 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
   const mountedRef = useRef(true)
   useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
 
+  // Reset state when modal opens
+  useEffect(() => {
+    if (visible) { setReason(null); setDescription(''); setSuccess(false) }
+  }, [visible])
+
   const reasonLabels: Record<ReportReason, string> = {
     spam: t('report.spam'),
     inappropriate: t('report.inappropriate'),

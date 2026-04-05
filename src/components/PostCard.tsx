@@ -96,7 +96,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     }
 
     return () => { mounted = false }
-  }, [userId, post.id, post.is_liked, post.is_saved])
+  }, [userId, post.id, post.is_liked, post.is_saved, supabase])
 
   const category = CATEGORIES[post.type as PostType]
   const isPro = post.is_pro_listing

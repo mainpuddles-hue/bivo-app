@@ -336,7 +336,7 @@
     "cancelEventConfirm": "Haluatko varmasti perua tämän tapahtuman?",
     "eventCancelled": "Tapahtuma peruttu",
     "cancelFailed": "Peruutus epäonnistui",
-    "joinFailed": "Liittyminen epäonnistui",
+    "joinFailed": "Tapahtumaan liittyminen epäonnistui",
     "leaveFailed": "Poistuminen epäonnistui",
     "eventNotFound": "Tapahtumaa ei löytynyt",
     "eventEnded": "Tämä tapahtuma on päättynyt",
@@ -821,7 +821,8 @@
     "city": "Kaupunki",
     "changeCity": "Vaihda kaupunki",
     "cityChanged": "Kaupunki vaihdettu",
-    "pickNewNeighborhood": "Valitse uusi naapurusto uudessa kaupungissa"
+    "pickNewNeighborhood": "Valitse uusi naapurusto uudessa kaupungissa",
+    "deletedUser": "[Poistettu]"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",

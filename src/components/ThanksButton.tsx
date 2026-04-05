@@ -148,6 +148,9 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
         hasThanked && [styles.containerThanked, { backgroundColor: `${colors.destructive}10` }],
       ]}
       hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={hasThanked ? t('thanks.alreadyThanked') : t('thanks.button')}
+      accessibilityState={{ disabled: hasThanked || sending }}
     >
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <Heart
