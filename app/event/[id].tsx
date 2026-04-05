@@ -76,25 +76,25 @@ function EventDetailScreenInner() {
       const cachedId = await getCachedUserId()
       if (cachedId) setUserId(cachedId)
 
-      const { data, error } = await (supabase
-        .from('community_events')
-        .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)') as any)
-        .eq('id', id)
-        .single()
+      // Fetch event + participants in parallel to avoid waterfall
+      const [eventResult, partsResult] = await Promise.all([
+        (supabase
+          .from('community_events')
+          .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)') as any)
+          .eq('id', id)
+          .single(),
+        (supabase
+          .from('community_event_participants')
+          .select('*, user:profiles(id, name, avatar_url)') as any)
+          .eq('event_id', id),
+      ])
 
-      if (error || !data) {
-        if (__DEV__) console.log('[event-detail] fetch error:', error?.message)
-        setLoading(false)
+      if (eventResult.error || !eventResult.data) {
+        if (__DEV__) console.log('[event-detail] fetch error:', eventResult.error?.message)
         return
       }
-      setEvent(data as CommunityEvent)
-
-      const { data: parts } = await (supabase
-        .from('community_event_participants')
-        .select('*, user:profiles(id, name, avatar_url)') as any)
-        .eq('event_id', id)
-
-      setParticipants((parts ?? []) as EventParticipant[])
+      setEvent(eventResult.data as CommunityEvent)
+      setParticipants((partsResult.data ?? []) as EventParticipant[])
     } catch (err) {
       if (__DEV__) console.log('[event-detail] error:', err)
     } finally {

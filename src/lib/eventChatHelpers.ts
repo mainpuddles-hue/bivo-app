@@ -30,15 +30,24 @@ export async function createEventChat(
     }
 
     // Add creator as first member
-    await supabase
+    const { error: memberError } = await supabase
       .from('conversation_members')
       .insert({ conversation_id: conv.id, user_id: creatorId })
 
+    if (memberError) {
+      if (__DEV__) console.warn('[eventChat] Failed to add creator as member:', memberError.message)
+      return null
+    }
+
     // Link conversation to community event
-    await supabase
+    const { error: linkError } = await supabase
       .from('community_events')
       .update({ conversation_id: conv.id })
       .eq('id', eventId)
+
+    if (linkError) {
+      if (__DEV__) console.warn('[eventChat] Failed to link conversation to event:', linkError.message)
+    }
 
     return conv.id
   } catch (err) {

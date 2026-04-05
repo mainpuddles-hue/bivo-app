@@ -119,6 +119,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
   // Subscribe to realtime
   useEffect(() => {
     if (!conversationId) return
+    let mounted = true
 
     fetchMessages()
 
@@ -141,6 +142,8 @@ export function useEventChat(conversationId: string | null, userId: string | nul
             .eq('id', newMsg.sender_id)
             .single()
 
+          if (!mounted) return
+
           const fullMsg: EventChatMessage = {
             ...newMsg,
             sender: sender ?? undefined,
@@ -157,6 +160,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
     channelRef.current = channel
 
     return () => {
+      mounted = false
       supabase.removeChannel(channel)
       channelRef.current = null
     }

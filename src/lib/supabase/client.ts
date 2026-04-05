@@ -1,9 +1,15 @@
+declare const __DEV__: boolean
+
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { Platform } from 'react-native'
 import { secureStorage } from './secureStorage'
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
+
+if (__DEV__ && (!supabaseUrl || !supabaseAnonKey)) {
+  console.error('[Supabase] Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY env vars')
+}
 
 let _client: ReturnType<typeof createSupabaseClient> | null = null
 

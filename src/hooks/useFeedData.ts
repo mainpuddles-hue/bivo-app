@@ -107,14 +107,16 @@ export function useFeedData() {
 
   // ── Fetch followed user IDs + user neighborhood + city ──
   useEffect(() => {
+    let mounted = true
     async function fetchFollowsAndProfile() {
       const userId = await getCachedUserId()
-      if (!userId) return
+      if (!userId || !mounted) return
       const user = { id: userId }
       const [{ data: followsData }, { data: profileData }] = await Promise.all([
         supabase.from('user_follows').select('followed_id').eq('follower_id', user.id),
         (supabase.from('profiles') as any).select('naapurusto, city_id').eq('id', user.id).single(),
       ])
+      if (!mounted) return
       if (followsData) setFollowedIds(followsData.map((f: any) => f.followed_id))
       if ((profileData as any)?.naapurusto) setUserNeighborhood((profileData as any).naapurusto)
       const cityId = (profileData as any)?.city_id ?? 'helsinki'
@@ -125,6 +127,7 @@ export function useFeedData() {
           supabase.from('cities').select('name, linkedevents_url').eq('id', cityId).single(),
           supabase.from('city_neighborhoods').select('name').eq('city_id', cityId).order('name'),
         ])
+        if (!mounted) return
         if (cityData) {
           setUserCityName((cityData as any).name ?? null)
           setLinkedEventsBaseUrl((cityData as any).linkedevents_url ?? null)
@@ -137,6 +140,7 @@ export function useFeedData() {
       }
     }
     fetchFollowsAndProfile()
+    return () => { mounted = false }
   }, [supabase])
 
   // Follows are refreshed on pull-to-refresh (no realtime channel needed)

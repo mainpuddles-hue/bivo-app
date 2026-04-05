@@ -48,7 +48,7 @@ export function useEventChatUnread(userId: string | null) {
     function debouncedFetchUnread() {
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
-        fetchUnread()
+        if (mounted) fetchUnread()
       }, 500)
     }
 
@@ -77,8 +77,11 @@ export function useEventChatUnread(userId: string | null) {
 
     return () => {
       mounted = false
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
       supabase.removeChannel(channel)
-      if (debounceRef.current) clearTimeout(debounceRef.current)
     }
   }, [userId, supabase])
 

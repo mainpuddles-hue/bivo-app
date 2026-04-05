@@ -46,9 +46,11 @@ function EventChatScreenInner() {
 
   // Get user
   useEffect(() => {
+    let mounted = true
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
+      if (user && mounted) setUserId(user.id)
     })
+    return () => { mounted = false }
   }, [supabase])
 
   // Get event info from conversation_id
@@ -58,23 +60,23 @@ function EventChatScreenInner() {
 
     async function loadEventInfo() {
       try {
-        // Find event linked to this conversation
-        const { data: event } = await supabase
-          .from('community_events')
-          .select('id, title, event_date, category, conversation_id')
-          .eq('conversation_id', conversationId)
-          .single()
+        // Fetch event info and member count in parallel
+        const convId = conversationId as string
+        const [eventResult, countResult] = await Promise.all([
+          (supabase
+            .from('community_events')
+            .select('id, title, event_date, category, conversation_id') as any)
+            .eq('conversation_id', convId)
+            .single(),
+          supabase
+            .from('conversation_members')
+            .select('id', { count: 'exact', head: true })
+            .eq('conversation_id', convId),
+        ])
 
         if (cancelled) return
-        if (event) setEventInfo(event as EventInfo)
-
-        // Count members
-        const { count } = await supabase
-          .from('conversation_members')
-          .select('id', { count: 'exact', head: true })
-          .eq('conversation_id', conversationId)
-
-        if (!cancelled) setMemberCount(count ?? 0)
+        if (eventResult.data) setEventInfo(eventResult.data as EventInfo)
+        setMemberCount((countResult as any).count ?? 0)
       } catch (err) {
         if (__DEV__) console.warn('[event-chat] loadEventInfo error:', err)
       }
