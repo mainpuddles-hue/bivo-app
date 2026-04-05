@@ -171,7 +171,6 @@ function CreateEventScreenInner() {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/
     if (!dateRegex.test(eventDate.trim())) {
       Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
-      setSubmitting(false)
       return
     }
 
@@ -263,8 +262,12 @@ function CreateEventScreenInner() {
         error = res.error
         resultId = res.data?.id
 
-        // Auto-create group chat for the event (soft fail)
+        // Auto-join creator as participant + create group chat (soft fail)
         if (!error && resultId && currentUserId) {
+          ;(supabase.from('community_event_participants') as any)
+            .insert({ event_id: resultId, user_id: currentUserId, status: 'joined' })
+            .then(() => {})
+            .catch(() => {})
           createEventChat(supabase, resultId, title.trim(), currentUserId).catch(() => {})
         }
       }

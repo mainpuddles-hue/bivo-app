@@ -32,7 +32,7 @@ export const ParticipantAvatarRow = memo(function ParticipantAvatarRow({
   return (
     <View style={s.row}>
       {shown.map((p, i) => (
-        <View key={`avatar-${i}`} style={[s.avatarWrap, { marginLeft: i > 0 ? -(size * 0.3) : 0, zIndex: max - i }]}>
+        <View key={`avatar-${i}`} style={[s.avatarWrap, { marginLeft: i > 0 ? -(size * 0.3) : 0, zIndex: max - i, borderColor: colors.background }]}>
           <Avatar url={p.avatar_url ?? null} name={p.name ?? '?'} size={size} />
         </View>
       ))}
@@ -58,7 +58,7 @@ export const ParticipantAvatarRow = memo(function ParticipantAvatarRow({
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
-  avatarWrap: { borderWidth: 2, borderColor: '#fff', borderRadius: 999 },
+  avatarWrap: { borderWidth: 2, borderRadius: 999 },
   overflowBadge: { alignItems: 'center', justifyContent: 'center' },
   overflowText: { fontWeight: '600' },
 })

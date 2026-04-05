@@ -2707,6 +2707,7 @@
     "catHangout": "Hangout",
     "expiresIn": "Starts in {time}",
     "expired": "Ended",
+    "inProgress": "In progress",
     "quickJoin": "Join",
     "spotsOpen": "{count} spots left",
     "spotsFull": "Full",

@@ -25,14 +25,13 @@ import { getCachedUserId } from '@/lib/authCache'
 import { addMemberToChat, removeMemberFromChat } from '@/lib/eventChatHelpers'
 import type { CommunityEvent, EventParticipant } from '@/lib/types'
 
-// TODO: These are external event category colors (not post type colors from CATEGORIES constant).
-// They don't map to the theme or CATEGORIES — keep hardcoded until a shared event-category palette exists.
+// Unified event category colors — must match EventCard.tsx and create-event.tsx
 const CATEGORY_COLORS: Record<string, string> = {
-  social: '#8B5CF6',
-  sports: '#EF4444',
-  culture: '#F59E0B',
-  nature: '#10B981',
-  kids: '#EC4899',
+  social: '#7C5CBF',
+  sports: '#2B8A62',
+  culture: '#3B7DD8',
+  nature: '#4CAF6A',
+  kids: '#E8A050',
   other: '#6B7280',
 }
 

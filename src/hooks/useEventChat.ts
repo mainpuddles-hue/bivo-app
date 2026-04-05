@@ -27,6 +27,8 @@ export function useEventChat(conversationId: string | null, userId: string | nul
   const [sending, setSending] = useState(false)
   const [hasOlder, setHasOlder] = useState(true)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const messagesRef = useRef<EventChatMessage[]>([])
+  messagesRef.current = messages
 
   // Fetch initial messages
   const fetchMessages = useCallback(async () => {
@@ -53,10 +55,10 @@ export function useEventChat(conversationId: string | null, userId: string | nul
     }
   }, [conversationId, supabase])
 
-  // Load older messages
+  // Load older messages — use messagesRef to avoid re-creating callback on every message change
   const loadOlder = useCallback(async () => {
-    if (!conversationId || !hasOlder || messages.length === 0) return
-    const oldest = messages[messages.length - 1]
+    if (!conversationId || !hasOlder || messagesRef.current.length === 0) return
+    const oldest = messagesRef.current[messagesRef.current.length - 1]
     try {
       const { data } = await supabase
         .from('messages')
@@ -72,7 +74,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
     } catch (err) {
       if (__DEV__) console.warn('[useEventChat] loadOlder error:', err)
     }
-  }, [conversationId, hasOlder, messages, supabase])
+  }, [conversationId, hasOlder, supabase])
 
   // Send message
   const sendMessage = useCallback(async (content: string, imageUrl?: string) => {
@@ -143,7 +145,11 @@ export function useEventChat(conversationId: string | null, userId: string | nul
             ...newMsg,
             sender: sender ?? undefined,
           }
-          setMessages(prev => [fullMsg, ...prev])
+          // Deduplicate — the same message may already exist from a recent fetch
+          setMessages(prev => {
+            if (prev.some(m => m.id === fullMsg.id)) return prev
+            return [fullMsg, ...prev]
+          })
         },
       )
       .subscribe()

@@ -15,7 +15,7 @@ import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { createEventChat, addMemberToChat } from '@/lib/eventChatHelpers'
+import { createEventChat } from '@/lib/eventChatHelpers'
 import { TABLE_CATEGORIES } from '@/lib/constants'
 import type { TableCategory } from '@/lib/types'
 

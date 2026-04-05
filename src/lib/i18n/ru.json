@@ -2625,6 +2625,7 @@
     "catHangout": "Встреча",
     "expiresIn": "Начало через {time}",
     "expired": "Завершено",
+    "inProgress": "В процессе",
     "quickJoin": "Присоединиться",
     "spotsOpen": "Осталось {count} мест",
     "spotsFull": "Мест нет",

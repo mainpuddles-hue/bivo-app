@@ -1,5 +1,6 @@
 import { memo } from 'react'
-import { View, Text, Pressable, StyleSheet, Image } from 'react-native'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { CalendarDays, MapPin, Users } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -53,7 +54,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
     >
       {/* Image or Emoji Header */}
       {event.image_url && !isTable ? (
-        <Image source={{ uri: event.image_url }} style={s.image} />
+        <Image source={{ uri: event.image_url }} style={s.image} contentFit="cover" />
       ) : isTable ? (
         <View style={[s.emojiBox, { backgroundColor: `${categoryColor}15` }]}>
           <Text style={s.emoji}>{getTableCategoryEmoji(event.category)}</Text>

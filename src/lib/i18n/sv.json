@@ -2687,6 +2687,7 @@
     "catHangout": "Häng",
     "expiresIn": "Börjar om {time}",
     "expired": "Avslutat",
+    "inProgress": "Pågår",
     "quickJoin": "Gå med",
     "spotsOpen": "{count} platser kvar",
     "spotsFull": "Fullt",

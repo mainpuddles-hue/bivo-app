@@ -232,6 +232,9 @@ function LoginScreenInner() {
         if (error) Alert.alert(t('common.error'), t('auth.googleFailed'))
       } else {
         // Native: use WebBrowser to open OAuth flow and capture redirect
+        // Use the app scheme directly — WebBrowser.openAuthSessionAsync intercepts
+        // the redirect before the OS handles the deep link, so this works in Expo Go too.
+        // The URL must match Supabase's allowed redirect URLs (tackbird://**)
         const redirectTo = 'tackbird://auth/callback'
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',

@@ -29,7 +29,7 @@ export function getTableCategoryColor(category: string): string {
 }
 
 /**
- * Get human-readable time remaining until event starts.
+ * Get human-readable time remaining until event starts, or "in progress" / "expired".
  * Returns e.g. "45 min", "2 h", "Tomorrow 15:00"
  */
 export function getTableTimeRemaining(event: CommunityEvent, t: (key: string, params?: Record<string, any>) => string): string {
@@ -37,7 +37,16 @@ export function getTableTimeRemaining(event: CommunityEvent, t: (key: string, pa
   const start = new Date(event.event_date)
   const diffMs = start.getTime() - now.getTime()
 
-  if (diffMs <= 0) return t('tables.expired')
+  if (diffMs <= 0) {
+    // Event has started — check if still in progress via event_end_date
+    if (event.event_end_date) {
+      const end = new Date(event.event_end_date)
+      if (end.getTime() > now.getTime()) {
+        return t('tables.inProgress') ?? t('tables.expiresIn')
+      }
+    }
+    return t('tables.expired')
+  }
 
   const diffMin = Math.floor(diffMs / 60000)
   if (diffMin < 60) return `${diffMin} min`

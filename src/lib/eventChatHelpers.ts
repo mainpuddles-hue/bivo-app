@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -100,5 +102,3 @@ export async function removeMemberFromChat(
     if (__DEV__) console.warn('[eventChat] removeMemberFromChat error:', err)
   }
 }
-
-declare const __DEV__: boolean

@@ -2625,6 +2625,7 @@
     "catHangout": "Koosolemine",
     "expiresIn": "Algab {time} pärast",
     "expired": "Lõppenud",
+    "inProgress": "Käimas",
     "quickJoin": "Liitu",
     "spotsOpen": "{count} kohta vaba",
     "spotsFull": "Täis",

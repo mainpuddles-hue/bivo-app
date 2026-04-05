@@ -2707,6 +2707,7 @@
     "catHangout": "Hengailu",
     "expiresIn": "Alkaa {time} päästä",
     "expired": "Päättynyt",
+    "inProgress": "Käynnissä",
     "quickJoin": "Liity",
     "spotsOpen": "{count} paikkaa jäljellä",
     "spotsFull": "Täynnä",

@@ -251,43 +251,62 @@ export default function MessagesScreen() {
 
       if (!events || !mountedRef.current) return
 
-      // Get unread counts + last messages for each conversation
-      const items: EventChatItem[] = []
-      for (const ev of events as any[]) {
-        if (!ev.conversation_id) continue
+      // Batch: get unread counts, last messages, and member counts in parallel per event
+      const eventsWithConvId = (events as any[]).filter((ev: any) => ev.conversation_id)
+      const eventConvIds = eventsWithConvId.map((ev: any) => ev.conversation_id)
 
-        // Count unread
-        const { count: unread } = await (supabase.from('messages') as any)
-          .select('id', { count: 'exact', head: true })
-          .eq('conversation_id', ev.conversation_id)
+      // Batch queries in parallel instead of sequential N+1
+      const [unreadRes, lastMsgRes, memberRes] = await Promise.all([
+        // All unread messages across event conversations
+        (supabase.from('messages') as any)
+          .select('conversation_id', { count: 'exact' })
+          .in('conversation_id', eventConvIds)
           .neq('sender_id', userId)
-          .eq('is_read', false)
-
-        // Last message
-        const { data: lastMsg } = await (supabase.from('messages') as any)
-          .select('content, created_at')
-          .eq('conversation_id', ev.conversation_id)
+          .eq('is_read', false),
+        // Last message per conversation (fetch recent messages, group client-side)
+        (supabase.from('messages') as any)
+          .select('conversation_id, content, created_at')
+          .in('conversation_id', eventConvIds)
           .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
+          .limit(eventConvIds.length * 2),
+        // All members across event conversations
+        (supabase.from('conversation_members') as any)
+          .select('conversation_id')
+          .in('conversation_id', eventConvIds),
+      ])
 
-        // Member count
-        const { count: members } = await (supabase.from('conversation_members') as any)
-          .select('id', { count: 'exact', head: true })
-          .eq('conversation_id', ev.conversation_id)
+      // Build lookup maps
+      const unreadByConv = new Map<string, number>()
+      for (const row of (unreadRes.data ?? []) as any[]) {
+        unreadByConv.set(row.conversation_id, (unreadByConv.get(row.conversation_id) ?? 0) + 1)
+      }
 
-        items.push({
+      const lastMsgByConv = new Map<string, { content: string | null; created_at: string }>()
+      for (const row of (lastMsgRes.data ?? []) as any[]) {
+        if (!lastMsgByConv.has(row.conversation_id)) {
+          lastMsgByConv.set(row.conversation_id, { content: row.content, created_at: row.created_at })
+        }
+      }
+
+      const membersByConv = new Map<string, number>()
+      for (const row of (memberRes.data ?? []) as any[]) {
+        membersByConv.set(row.conversation_id, (membersByConv.get(row.conversation_id) ?? 0) + 1)
+      }
+
+      const items: EventChatItem[] = eventsWithConvId.map((ev: any) => {
+        const lastMsg = lastMsgByConv.get(ev.conversation_id)
+        return {
           conversation_id: ev.conversation_id,
           event_id: ev.id,
           event_title: ev.title,
           event_category: ev.category ?? '',
           event_date: ev.event_date,
-          member_count: members ?? 0,
-          unread_count: unread ?? 0,
+          member_count: membersByConv.get(ev.conversation_id) ?? 0,
+          unread_count: unreadByConv.get(ev.conversation_id) ?? 0,
           last_message_content: lastMsg?.content ?? null,
           last_message_at: lastMsg?.created_at ?? null,
-        })
-      }
+        }
+      })
 
       if (mountedRef.current) setEventChats(items)
     } catch (err) {
