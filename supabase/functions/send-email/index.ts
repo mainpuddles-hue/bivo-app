@@ -15,7 +15,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// In-memory rate limit store: userId -> { count, windowStart }
+// Rate limiting constants
+const RATE_LIMIT_MAX = 5
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+// Fallback in-memory store (lost on container restart — DB check is primary)
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>()
 
 /** Escape HTML special characters to prevent XSS in email templates */
@@ -90,12 +93,25 @@ serve(async (req) => {
       })
     }
 
-    // ── Rate limiting: max 5 emails per hour per user ──────────
+    // ── Rate limiting: max 5 emails per hour per user (DB-backed) ──────────
     const now = Date.now()
-    const ONE_HOUR = 60 * 60 * 1000
+    const oneHourAgo = new Date(now - RATE_LIMIT_WINDOW_MS).toISOString()
+    // Primary: DB-backed count (survives container restarts)
+    const { count: recentCount } = await supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('type', 'email_sent')
+      .gte('created_at', oneHourAgo)
+    if ((recentCount ?? 0) >= RATE_LIMIT_MAX) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Max 5 emails per hour.' }), {
+        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    // Fallback: in-memory guard for burst protection within same container
     const entry = rateLimitMap.get(user.id)
-    if (entry && (now - entry.windowStart) < ONE_HOUR) {
-      if (entry.count >= 5) {
+    if (entry && (now - entry.windowStart) < RATE_LIMIT_WINDOW_MS) {
+      if (entry.count >= RATE_LIMIT_MAX) {
         return new Response(JSON.stringify({ error: 'Rate limit exceeded. Max 5 emails per hour.' }), {
           status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -138,6 +154,15 @@ serve(async (req) => {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
+    // Record email send for DB-backed rate limiting
+    await supabase.from('notifications').insert({
+      user_id: user.id,
+      type: 'email_sent',
+      title: `Email: ${template}`,
+      body: to,
+      is_read: true,
+    }).catch(() => {}) // Non-critical
 
     return new Response(
       JSON.stringify({ sent: true, template }),

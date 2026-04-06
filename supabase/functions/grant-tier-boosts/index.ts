@@ -190,7 +190,7 @@ async function grantCreditsIfNeeded(
     .from('user_boosts')
     .select('balance, last_grant_at')
     .eq('user_id', userId)
-    .single()
+    .maybeSingle()
 
   // Idempotency: check if already granted this month
   if (existing?.last_grant_at) {
@@ -202,20 +202,31 @@ async function grantCreditsIfNeeded(
   }
 
   const newBalance = (existing?.balance ?? 0) + credits
+  const nowIso = now.toISOString()
 
-  // Upsert: insert if no row exists, update if it does
-  const { error } = await supabase
-    .from('user_boosts')
-    .upsert({
-      user_id: userId,
-      balance: newBalance,
-      last_grant_at: now.toISOString(),
-      updated_at: now.toISOString(),
-    }, { onConflict: 'user_id' })
-
-  if (error) {
-    console.error(`[grant-tier-boosts] Failed to grant to ${userId}:`, error.message)
-    return false
+  if (existing) {
+    // Conditional update: only if last_grant_at hasn't changed (prevents double-grant race)
+    const { data: updated, error } = await supabase
+      .from('user_boosts')
+      .update({ balance: newBalance, last_grant_at: nowIso, updated_at: nowIso })
+      .eq('user_id', userId)
+      .lt('last_grant_at', `${currentMonth}-01T00:00:00Z`)
+      .select('user_id')
+    if (error) {
+      console.error(`[grant-tier-boosts] Failed to grant to ${userId}:`, error.message)
+      return false
+    }
+    if (!updated?.length) return false // Another cron already granted this month
+  } else {
+    // Insert new row
+    const { error } = await supabase
+      .from('user_boosts')
+      .insert({ user_id: userId, balance: newBalance, last_grant_at: nowIso, updated_at: nowIso })
+    if (error) {
+      if (error.code === '23505') return false // Race: another cron inserted first
+      console.error(`[grant-tier-boosts] Failed to grant to ${userId}:`, error.message)
+      return false
+    }
   }
 
   return true
