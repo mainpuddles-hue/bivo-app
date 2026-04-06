@@ -32,12 +32,36 @@ export function trackEvent(event: AnalyticsEvent, props?: EventProps) {
   if (!_userId) return
 
   const supabase = createClient()
-  ;(supabase.from('analytics_events') as any).insert({
+  const payload = {
     user_id: _userId,
     event,
     properties: props ?? {},
     created_at: new Date().toISOString(),
-  }).then(() => {}).catch(() => {}) // Never fail
+  }
+  ;(supabase.from('analytics_events') as any).insert(payload)
+    .then(() => {})
+    .catch(() => {
+      // Queue locally for retry on next app launch
+      AsyncStorage.getItem('analytics_queue').then(raw => {
+        const queue = raw ? JSON.parse(raw) : []
+        queue.push(payload)
+        // Keep max 100 events to avoid unbounded storage
+        AsyncStorage.setItem('analytics_queue', JSON.stringify(queue.slice(-100))).catch(() => {})
+      }).catch(() => {})
+    })
+}
+
+/** Flush queued analytics events (call on app start after auth) */
+export async function flushAnalyticsQueue() {
+  try {
+    const raw = await AsyncStorage.getItem('analytics_queue')
+    if (!raw) return
+    const queue = JSON.parse(raw)
+    if (!queue.length) return
+    const supabase = createClient()
+    await (supabase.from('analytics_events') as any).insert(queue)
+    await AsyncStorage.removeItem('analytics_queue')
+  } catch {} // Best effort
 }
 
 const RETENTION_TRACKED_KEY = 'tackbird_retention_last_tracked'

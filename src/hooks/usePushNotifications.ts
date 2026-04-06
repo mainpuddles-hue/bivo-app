@@ -74,6 +74,9 @@ export function usePushNotifications(userId: string | null) {
         if (!mounted) return
         setToken(pushToken)
         setIsSubscribed(true)
+        // Save token to backend (may not be saved yet on first install)
+        if (userId) await saveTokenToBackend(userId, pushToken)
+        await AsyncStorage.setItem('push_token', pushToken)
       } catch {
         // Try local fallback
         const local = await AsyncStorage.getItem('push_token')

@@ -399,8 +399,8 @@ export default function CreateScreen() {
     let failedCount = 0
     for (let i = 0; i < images.length; i++) {
       const uri = images[i]
-      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
-      if (!ALLOWED_EXTS.includes(ext)) { failedCount++; continue } // skip invalid types
+      const rawExt = (uri.split('.').pop() ?? '').split('?')[0].toLowerCase()
+      const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : 'jpg'
       const path = `${userId}/${postId}/${i}.${ext}`
 
       const response = await fetch(uri)
