@@ -39,7 +39,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
     return (
       <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
         <Pressable style={styles.overlay} onPress={onClose}>
-          <Pressable style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
+          <Pressable accessibilityViewIsModal={true} style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
             <View style={[styles.successCircle, { backgroundColor: `${colors.success}18` }]}>
               <CheckCircle size={48} color={colors.success} />
             </View>
@@ -57,7 +57,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
+        <Pressable accessibilityViewIsModal={true} style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
           <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]} hitSlop={12}>
             <X size={20} color={colors.mutedForeground} />
           </Pressable>

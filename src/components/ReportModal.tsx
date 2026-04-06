@@ -97,7 +97,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <Pressable style={s.backdrop} onPress={handleClose}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
-        <Pressable style={[s.card, { backgroundColor: colors.card }]} onPress={() => {}}>
+        <Pressable accessibilityViewIsModal={true} style={[s.card, { backgroundColor: colors.card }]} onPress={() => {}}>
           {/* Header */}
           <View style={s.header}>
             <View style={s.headerLeft}>

@@ -54,6 +54,7 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
 
       {/* Bottom sheet */}
       <Animated.View
+        accessibilityViewIsModal={true}
         style={[
           styles.sheet,
           {
@@ -91,6 +92,9 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
               <Pressable
                 key={nh}
                 onPress={() => onSelect(nh)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: isSelected }}
+                accessibilityLabel={nh}
                 style={[
                   styles.item,
                   {

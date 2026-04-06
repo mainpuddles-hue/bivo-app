@@ -1,6 +1,7 @@
 import { Pressable } from 'react-native'
 import { X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
 
 interface ModalCloseButtonProps {
   onClose: () => void
@@ -23,13 +24,14 @@ interface ModalCloseButtonProps {
  */
 export function ModalCloseButton({ onClose, size = 22 }: ModalCloseButtonProps) {
   const { colors } = useTheme()
+  const { t } = useI18n()
 
   return (
     <Pressable
       onPress={onClose}
       hitSlop={12}
       accessibilityRole="button"
-      accessibilityLabel="Close"
+      accessibilityLabel={t('common.close')}
       style={({ pressed }) => [
         {
           minWidth: 44,
