@@ -208,10 +208,10 @@ serve(async (req) => {
       .insert({
         post_id,
         user_id: user.id,
-        tier,
+        boost_type: tier,
         boost_start: boostStart.toISOString(),
         boost_end: boostEnd.toISOString(),
-        duration_hours: durationHours,
+        is_active: true,
         created_at: boostStart.toISOString(),
       })
 

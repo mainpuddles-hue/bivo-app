@@ -193,16 +193,18 @@ serve(async (req) => {
 
       // If flagged or blocked, insert into content_flags
       if (result.action !== 'allow' && post_id) {
-        await supabase.from('content_flags').insert({
+        const { error: flagError } = await supabase.from('content_flags').insert({
           post_id,
           flag_type: result.flags[0] ?? 'unknown',
           details: JSON.stringify(result.details),
           auto_hidden: result.action === 'block',
-        }).catch(() => {})
+        })
+        if (flagError) console.error('[moderate] Failed to insert content flag:', flagError.message)
 
         // Auto-hide if blocked
         if (result.action === 'block') {
-          await supabase.from('posts').update({ is_active: false }).eq('id', post_id).catch(() => {})
+          const { error: hideError } = await supabase.from('posts').update({ is_active: false }).eq('id', post_id)
+          if (hideError) console.error('[moderate] CRITICAL: Failed to hide blocked post:', post_id, hideError.message)
         }
       }
     }

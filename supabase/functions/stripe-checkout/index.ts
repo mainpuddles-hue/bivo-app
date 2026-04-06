@@ -296,7 +296,8 @@ serve(async (req) => {
     }
 
     // If provider has Connect account, use destination charges with validated commission
-    if (sellerProfile?.stripe_connect_account_id) {
+    // Ad campaigns are platform revenue — no seller payout, 100% to Puddles Oy
+    if (type !== 'ad_campaign' && sellerProfile?.stripe_connect_account_id) {
       sessionParams.payment_intent_data = {
         application_fee_amount: validatedFee,
         transfer_data: {

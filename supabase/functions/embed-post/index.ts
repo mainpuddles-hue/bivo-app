@@ -114,16 +114,22 @@ serve(async (req) => {
       })
     }
 
-    // Fetch post content
+    // Fetch post content — verify ownership
     const { data: post, error: postError } = await supabase
       .from('posts')
-      .select('title, description, type, tags, location')
+      .select('title, description, type, tags, location, user_id')
       .eq('id', post_id)
       .single()
 
     if (postError || !post) {
       return new Response(JSON.stringify({ error: 'Post not found' }), {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if ((post as any).user_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Not your post' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
@@ -135,7 +141,13 @@ serve(async (req) => {
       ...(post.tags ?? []),
       post.location,
     ].filter(Boolean)
-    const text = parts.join(' ').slice(0, 512) // Limit to 512 chars for model
+    const text = parts.join(' ').slice(0, 512)
+
+    if (!text.trim()) {
+      return new Response(JSON.stringify({ success: false, error: 'No text to embed' }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // Generate embedding
     const embedding = await generateEmbedding(text)
