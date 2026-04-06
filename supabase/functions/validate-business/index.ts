@@ -43,9 +43,13 @@ async function fetchCompanyFromPRH(ytunnus: string): Promise<PRHCompany | null> 
       return null
     }
 
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
     const res = await fetch(`${PRH_API_URL}/${cleanId}`, {
       headers: { 'Accept': 'application/json' },
+      signal: controller.signal,
     })
+    clearTimeout(timeout)
 
     if (!res.ok) return null
 
