@@ -168,7 +168,7 @@ serve(async (req) => {
 
     if (upsertError) {
       console.error('[embed-post] Upsert error:', upsertError.message)
-      return new Response(JSON.stringify({ error: upsertError.message }), {
+      return new Response(JSON.stringify({ error: 'Failed to save embedding' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }

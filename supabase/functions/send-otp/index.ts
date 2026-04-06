@@ -141,7 +141,7 @@ serve(async (req) => {
     if (!resendRes.ok) {
       const resendErr = await resendRes.json().catch(() => ({}))
       console.error('[send-otp] Resend error:', JSON.stringify(resendErr))
-      return new Response(JSON.stringify({ error: 'Failed to send email', details: resendErr.message }), {
+      return new Response(JSON.stringify({ error: 'Failed to send verification code' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }

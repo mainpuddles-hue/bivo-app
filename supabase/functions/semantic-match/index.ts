@@ -120,7 +120,7 @@ serve(async (req) => {
 
     if (matchError) {
       console.error('[semantic-match] RPC error:', matchError.message)
-      return new Response(JSON.stringify({ error: matchError.message }), {
+      return new Response(JSON.stringify({ error: 'Matching failed' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
