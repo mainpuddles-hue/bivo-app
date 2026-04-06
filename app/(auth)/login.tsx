@@ -397,8 +397,8 @@ function LoginScreenInner() {
               </PressableOpacity>
             )}
 
-            {/* Apple Sign-In (native only, supported devices) */}
-            {mode !== 'forgot' && Platform.OS !== 'web' && appleAvailable && (
+            {/* Apple Sign-In — hidden until Apple Developer Program is configured */}
+            {false && mode !== 'forgot' && Platform.OS !== 'web' && appleAvailable && (
               <PressableOpacity
                 onPress={handleAppleSignIn}
                 style={[styles.appleBtn, { backgroundColor: colors.foreground, borderWidth: 1, borderColor: isDark ? colors.border : colors.foreground }]}
