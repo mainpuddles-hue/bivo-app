@@ -146,13 +146,11 @@ async function fetchSemanticMatches(
     return cached.matches
   }
 
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 8000)
   try {
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session?.access_token) return []
-
-    // Add timeout to avoid hanging if the Edge Function is slow
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 8000) // 8s timeout
+    if (!session?.access_token) { clearTimeout(timeout); return [] }
 
     const res = await fetch(`${FUNCTIONS_URL}/semantic-match`, {
       method: 'POST',
@@ -191,6 +189,7 @@ async function fetchSemanticMatches(
 
     return result
   } catch {
+    clearTimeout(timeout) // Prevent timer leak on error
     return []
   }
 }

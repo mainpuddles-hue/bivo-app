@@ -57,11 +57,13 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   // Personalization: from collaborative filtering
   const personalScore = ctx.personalScores?.get(post.id) ?? 0
 
-  // Boost bonus: boosted posts get a flat 0.5 score bonus
-  const boostBonus = ctx.boostedPostIds?.has(post.id) ? 0.5 : 0
+  // Boost: multiplicative 1.4x instead of additive 0.5 — keeps score proportional
+  // A low-quality boosted post won't dominate a high-quality organic one
+  const boostMultiplier = ctx.boostedPostIds?.has(post.id) ? 1.4 : 1.0
 
-  // Weighted sum
-  return recency * 0.25 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15 + boostBonus
+  // Weighted sum (base 0.0–1.0, boosted up to 1.4)
+  const baseScore = recency * 0.25 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15
+  return baseScore * boostMultiplier
 }
 
 /**
