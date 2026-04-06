@@ -145,7 +145,7 @@ export default function ForumScreen() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       setCurrentUserId(user.id)
-      const { data: profile } = await (supabase.from('profiles') as any).select('naapurusto').eq('id', user.id).single()
+      const { data: profile } = await (supabase.from('profiles') as any).select('naapurusto').eq('id', user.id).maybeSingle()
       if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto)
     }
     fetchUser()

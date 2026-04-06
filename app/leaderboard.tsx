@@ -131,7 +131,7 @@ export default function LeaderboardScreen() {
             .from('profiles')
             .select('total_points')
             .eq('id', currentUserId)
-            .single()
+            .maybeSingle()
 
           const myPoints = (myProfile as any)?.total_points ?? 0
           setCurrentUserPoints(myPoints)
@@ -171,7 +171,7 @@ export default function LeaderboardScreen() {
           .from('profiles')
           .select('naapurusto, is_pro')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
         if ((profile as any)?.naapurusto) {
           setUserNeighborhood((profile as any).naapurusto)
         }

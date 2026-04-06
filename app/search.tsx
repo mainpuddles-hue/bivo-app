@@ -304,7 +304,7 @@ function SearchScreenInner() {
       ;(supabase.from('profiles') as any)
         .select('naapurusto')
         .eq('id', id)
-        .single()
+        .maybeSingle()
         .then(({ data }: any) => {
           if (data?.naapurusto) setUserNeighborhood(data.naapurusto)
         })

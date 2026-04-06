@@ -126,7 +126,7 @@ export default function SettingsScreen() {
         const providerName = identities[0]?.provider ?? null
         setOauthProvider(providerName)
       }
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       if (data) {
         // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
         await clearExpiredPro(supabase, user.id, data as any)

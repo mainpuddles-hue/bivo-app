@@ -97,7 +97,7 @@ function ConversationScreenInner() {
       if (!user) { setLoading(false); setNotFound(true); return }
       setUserId(user.id)
 
-      const { data: conv } = await supabase.from('conversations').select('*').eq('id', id).single()
+      const { data: conv } = await supabase.from('conversations').select('*').eq('id', id).maybeSingle()
       if (cancelled) return
       if (!conv) {
         setNotFound(true)
@@ -113,7 +113,7 @@ function ConversationScreenInner() {
       }
 
       const otherId = (conv as any).user1_id === user.id ? (conv as any).user2_id : (conv as any).user1_id
-      const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).single()
+      const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).maybeSingle()
       if (cancelled) return
       if (profile) {
         setOtherUser(profile as unknown as Profile)
@@ -128,7 +128,7 @@ function ConversationScreenInner() {
           .from('posts')
           .select('id, title, type, image_url')
           .eq('id', (conv as any).post_id)
-          .single()
+          .maybeSingle()
         if (cancelled) return
         if (postData) setLinkedPost(postData as any)
       }

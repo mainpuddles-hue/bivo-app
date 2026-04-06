@@ -67,7 +67,7 @@ function CreateTableScreenInner() {
         .from('profiles')
         .select('naapurusto')
         .eq('id', id)
-        .single()
+        .maybeSingle()
       if (mounted && (data as any)?.naapurusto) {
         setUserNaapurusto((data as any).naapurusto as string)
       }
