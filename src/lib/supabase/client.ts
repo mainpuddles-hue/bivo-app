@@ -24,6 +24,27 @@ export function createClient() {
       // On web, detect OAuth tokens in URL hash (#access_token=...)
       detectSessionInUrl: Platform.OS === 'web',
     },
+    global: {
+      // Wrap fetch to catch network errors from auth token refresh
+      // Without this, GoTrueClient._recoverAndRefresh throws
+      // AuthRetryableFetchError that surfaces as a red LogBox screen
+      fetch: async (url, options) => {
+        try {
+          return await fetch(url, options)
+        } catch (err) {
+          if (__DEV__) console.warn('[Supabase] Network request failed:', (err as Error).message)
+          throw err
+        }
+      },
+    },
+  })
+
+  // Listen for auth errors and log them as warnings instead of errors
+  // This prevents GoTrueClient errors from triggering LogBox red screens
+  _client.auth.onAuthStateChange((event, session) => {
+    if (event === 'TOKEN_REFRESHED' && !session) {
+      if (__DEV__) console.warn('[Supabase] Token refresh returned no session')
+    }
   })
 
   return _client

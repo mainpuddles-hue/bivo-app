@@ -25,6 +25,16 @@ import { useGlobalErrorRecovery } from '@/hooks/useGlobalErrorRecovery'
 import { useOTAUpdate } from '@/hooks/useOTAUpdate'
 import { useMemoryWarning } from '@/hooks/useMemoryWarning'
 
+import { LogBox } from 'react-native'
+
+// Suppress auth network errors from showing red LogBox screen
+// These occur when session refresh fails due to connectivity and are
+// retried automatically by GoTrueClient — not actionable by users
+LogBox.ignoreLogs([
+  'AuthRetryableFetchError',
+  'TypeError: Network request failed',
+])
+
 // Initialize Sentry error reporting (no-op in __DEV__)
 initSentry()
 
