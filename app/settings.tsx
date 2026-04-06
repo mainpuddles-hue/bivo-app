@@ -417,22 +417,37 @@ export default function SettingsScreen() {
         const uid = profile?.id
         if (uid) {
           await Promise.allSettled([
+            // Posts & related
             (supabase.from('posts') as any).update({ is_active: false }).eq('user_id', uid),
-            (supabase.from('notifications') as any).delete().eq('user_id', uid),
-            (supabase.from('user_follows') as any).delete().eq('follower_id', uid),
-            (supabase.from('user_follows') as any).delete().eq('followed_id', uid),
-            (supabase.from('saved_posts') as any).delete().eq('user_id', uid),
-            (supabase.from('saved_events') as any).delete().eq('user_id', uid),
-            (supabase.from('user_points') as any).delete().eq('user_id', uid),
             (supabase.from('post_likes') as any).delete().eq('user_id', uid),
             (supabase.from('post_comments') as any).delete().eq('user_id', uid),
+            (supabase.from('post_boosts') as any).delete().eq('user_id', uid),
+            // Social
+            (supabase.from('user_follows') as any).delete().eq('follower_id', uid),
+            (supabase.from('user_follows') as any).delete().eq('followed_id', uid),
             (supabase.from('thanks') as any).delete().eq('from_user_id', uid),
             (supabase.from('reviews') as any).delete().eq('reviewer_id', uid),
-            (supabase.from('forum_votes') as any).delete().eq('user_id', uid),
+            // Saved
+            (supabase.from('saved_posts') as any).delete().eq('user_id', uid),
+            (supabase.from('saved_events') as any).delete().eq('user_id', uid),
+            // Messages — anonymize sent messages, remove from conversations
+            (supabase.from('messages') as any).update({ content: null, image_url: null }).eq('sender_id', uid),
+            (supabase.from('conversation_members') as any).delete().eq('user_id', uid),
+            // Groups & activities
             (supabase.from('group_members') as any).delete().eq('user_id', uid),
             (supabase.from('group_post_likes') as any).delete().eq('user_id', uid),
             (supabase.from('activity_members') as any).delete().eq('user_id', uid),
             (supabase.from('community_event_participants') as any).delete().eq('user_id', uid),
+            (supabase.from('event_attendees') as any).delete().eq('user_id', uid),
+            // Forum
+            (supabase.from('forum_votes') as any).delete().eq('user_id', uid),
+            // Notifications & points
+            (supabase.from('notifications') as any).delete().eq('user_id', uid),
+            (supabase.from('notification_preferences') as any).delete().eq('user_id', uid),
+            (supabase.from('user_points') as any).delete().eq('user_id', uid),
+            (supabase.from('user_boosts') as any).delete().eq('user_id', uid),
+            (supabase.from('boost_purchases') as any).delete().eq('user_id', uid),
+            // Profile — anonymize all PII
             (supabase.from('profiles') as any).update({
               name: t('settings.deletedUser'),
               bio: null,
@@ -443,6 +458,9 @@ export default function SettingsScreen() {
               business_name: null,
               business_phone: null,
               business_website: null,
+              invite_code: null,
+              stripe_customer_id: null,
+              stripe_subscription_id: null,
             }).eq('id', uid),
           ])
         }

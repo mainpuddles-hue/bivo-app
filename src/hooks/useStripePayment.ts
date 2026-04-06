@@ -44,6 +44,10 @@ export function useStripePayment() {
       // Single Edge Function handles all payment types
       const endpoint = `${FUNCTIONS_URL}/stripe-checkout`
 
+      // 15s timeout to prevent hanging fetch from allowing duplicate payments
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -62,7 +66,9 @@ export function useStripePayment() {
           success_url: 'tackbird://payment/success',
           cancel_url: 'tackbird://payment/cancel',
         }),
+        signal: controller.signal,
       })
+      clearTimeout(timeout)
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))

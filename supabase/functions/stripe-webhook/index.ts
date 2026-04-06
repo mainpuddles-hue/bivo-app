@@ -184,14 +184,16 @@ serve(async (req) => {
           } else {
             // Fallback: try matching on payment_intent_id column if it exists,
             // or log a warning so it can be handled manually.
-            const { data: paymentByPI } = await supabase
+            const { data: paymentByPI, error: piError } = await supabase
               .from('payments')
               .update({ status: 'refunded' })
               .eq('stripe_payment_intent_id', paymentIntentId)
               .select('id')
 
-            if (!paymentByPI?.length) {
-              console.warn(`[webhook] No payment record found for refund pi=${paymentIntentId}`)
+            if (piError) {
+              console.error(`[webhook] Refund update failed for pi=${paymentIntentId}:`, piError.message)
+            } else if (!paymentByPI?.length) {
+              console.error(`[webhook] CRITICAL: No payment record found for refund pi=${paymentIntentId} — refund processed in Stripe but not recorded in DB`)
             }
 
             for (const table of ['rental_bookings', 'service_bookings']) {
