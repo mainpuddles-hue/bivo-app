@@ -192,7 +192,7 @@ function LoginScreenInner() {
 
         // Check if user is banned before allowing access
         if (signInData?.user) {
-          const { data: profile } = await supabase.from('profiles').select('is_banned').eq('id', signInData.user.id).single()
+          const { data: profile } = await supabase.from('profiles').select('is_banned').eq('id', signInData.user.id).maybeSingle()
           if ((profile as any)?.is_banned) {
             await supabase.auth.signOut()
             Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
@@ -259,7 +259,7 @@ function LoginScreenInner() {
             if (accessToken && refreshToken) {
               const { data: { user } } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
               if (user) {
-                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).single()
+                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
                 if ((oauthProfile as any)?.is_banned) {
                   await supabase.auth.signOut()
                   Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
@@ -271,7 +271,7 @@ function LoginScreenInner() {
             } else if (code) {
               const { data: { user } } = await supabase.auth.exchangeCodeForSession(code)
               if (user) {
-                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).single()
+                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
                 if ((oauthProfile as any)?.is_banned) {
                   await supabase.auth.signOut()
                   Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
@@ -316,7 +316,7 @@ function LoginScreenInner() {
       if (error) throw error
 
       if (appleData?.user) {
-        const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', appleData.user.id).single()
+        const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', appleData.user.id).maybeSingle()
         if ((oauthProfile as any)?.is_banned) {
           await supabase.auth.signOut()
           Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
