@@ -480,9 +480,13 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
       return
     }
-    // Prevent negative service/item prices (error prevention)
+    // Prevent negative or zero service/item prices
     if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && parseFloat(servicePrice) < 0) {
       Alert.alert(t('common.error'), t('create.priceCannotBeNegative'))
+      return
+    }
+    if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && parseFloat(servicePrice) === 0) {
+      Alert.alert(t('common.error'), t('create.priceCannotBeZero') ?? 'Hinta ei voi olla 0 €')
       return
     }
     // Trust tier: block Tier 1 from submitting paid services

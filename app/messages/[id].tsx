@@ -105,6 +105,13 @@ function ConversationScreenInner() {
         return
       }
 
+      // Verify current user is a participant in this conversation
+      if ((conv as any).user1_id !== user.id && (conv as any).user2_id !== user.id) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
+
       const otherId = (conv as any).user1_id === user.id ? (conv as any).user2_id : (conv as any).user1_id
       const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).single()
       if (cancelled) return

@@ -84,6 +84,10 @@ export default function PublicProfileScreen() {
     // Fetch profile
     const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).single()
     if (!p) { setLoading(false); setRefreshing(false); return }
+    // Don't show deleted/anonymized profiles
+    if ((p as any).name === '[Poistettu]' || (p as any).name === '[Deleted]') {
+      setLoading(false); setRefreshing(false); return
+    }
     const prof = p as unknown as Profile
 
     // Check profile visibility before rendering
