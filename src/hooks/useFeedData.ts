@@ -83,7 +83,9 @@ export function useFeedData() {
 
   // ── Fetch current user ID for like functionality ──
   useEffect(() => {
-    getCachedUserId().then(id => { if (id) setCurrentUserId(id) }).catch(() => {})
+    let mounted = true
+    getCachedUserId().then(id => { if (mounted && id) setCurrentUserId(id) }).catch(() => {})
+    return () => { mounted = false }
   }, [supabase])
 
   // ── Request location permission once, cache result ──

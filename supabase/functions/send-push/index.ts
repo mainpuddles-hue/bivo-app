@@ -252,8 +252,14 @@ serve(async (req) => {
                 }
               })
             }
-          } catch {
-            // Batch failed — continue with next batch
+          } catch (batchErr: any) {
+            console.error('[send-push] Urgent broadcast batch failed:', {
+              batch_index: i / BATCH_SIZE,
+              batch_size: batch.length,
+              total_neighbors: validNeighbors.length,
+              post_id,
+              error: batchErr?.message ?? String(batchErr),
+            })
           }
         }
 

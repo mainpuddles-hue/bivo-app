@@ -109,6 +109,26 @@ serve(async (req) => {
     // Step 2: Generate embedding for semantic search
     const embedding = await generateEmbedding(expandedQuery.slice(0, 512))
 
+    // Step 2.5: Validate embedding vector before passing to SQL
+    if (!Array.isArray(embedding)) {
+      console.error('[semantic-search] Embedding is not an array:', typeof embedding)
+      return new Response(JSON.stringify({ error: 'Embedding generation failed: invalid format' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (embedding.length !== 384) {
+      console.error('[semantic-search] Embedding has wrong dimensions:', embedding.length, '(expected 384)')
+      return new Response(JSON.stringify({ error: 'Embedding generation failed: wrong dimensions' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (!embedding.every((v) => typeof v === 'number' && Number.isFinite(v))) {
+      console.error('[semantic-search] Embedding contains non-finite values')
+      return new Response(JSON.stringify({ error: 'Embedding generation failed: non-finite values' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Step 3: Semantic search via pgvector
     const { data: semanticResults } = await supabase.rpc('match_posts', {
       query_embedding: `[${embedding.join(',')}]`,

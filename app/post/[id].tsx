@@ -67,6 +67,7 @@ function PostDetailScreenInner() {
   const [editLocation, setEditLocation] = useState('')
   const [saving, setSaving] = useState(false)
   const [relatedPosts, setRelatedPosts] = useState<{ id: string; type: string; title: string; image_url: string | null; location: string | null; created_at: string }[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
   const likingRef = useRef(false)
   const savingRef = useRef(false)
   const messagingRef = useRef(false)
@@ -111,57 +112,64 @@ function PostDetailScreenInner() {
   const loadPost = useCallback(async () => {
     if (!id || !isValidUUID(id)) { setLoading(false); setRefreshing(false); return }
 
-    const cachedId = await getCachedUserId()
-    if (cachedId) setUserId(cachedId)
+    try {
+      setLoadError(null)
 
-    const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).single()
-    if (data) {
-      const p = data as unknown as Post
-      // Apply location_accuracy privacy for other users' posts
-      const accuracy = (p.user as any)?.location_accuracy
-      if (accuracy && accuracy !== 'exact' && cachedId !== p.user_id) {
-        const result = applyLocationAccuracy(accuracy, (p as any).latitude, (p as any).longitude, p.location)
-        ;(p as any).latitude = result.latitude
-        ;(p as any).longitude = result.longitude
-        p.location = result.location
+      const cachedId = await getCachedUserId()
+      if (cachedId) setUserId(cachedId)
+
+      const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).single()
+      if (data) {
+        const p = data as unknown as Post
+        // Apply location_accuracy privacy for other users' posts
+        const accuracy = (p.user as any)?.location_accuracy
+        if (accuracy && accuracy !== 'exact' && cachedId !== p.user_id) {
+          const result = applyLocationAccuracy(accuracy, (p as any).latitude, (p as any).longitude, p.location)
+          ;(p as any).latitude = result.latitude
+          ;(p as any).longitude = result.longitude
+          p.location = result.location
+        }
+        setPost(p)
+        setLikeCount(p.like_count ?? 0)
+        trackEvent('post_viewed', { post_id: id as string, type: p.type })
       }
-      setPost(p)
-      setLikeCount(p.like_count ?? 0)
-      trackEvent('post_viewed', { post_id: id as string, type: p.type })
+
+      if (cachedId) {
+        const [likeRes, saveRes] = await Promise.all([
+          supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
+          supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
+        ])
+        setIsLiked(!!likeRes.data)
+        setIsSaved(!!saveRes.data)
+      }
+
+      // Fetch comments (including parent_id for threading)
+      const { data: cmts } = await supabase
+        .from('post_comments')
+        .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
+        .eq('post_id', id)
+        .order('created_at', { ascending: true })
+      setComments((cmts ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
+
+      if (data) {
+        const { data: related } = await supabase
+          .from('posts')
+          .select('id, type, title, image_url, location, created_at')
+          .eq('type', (data as any).type)
+          .eq('is_active', true)
+          .neq('id', id)
+          .order('created_at', { ascending: false })
+          .limit(4)
+        setRelatedPosts((related ?? []) as any[])
+      }
+    } catch (err: any) {
+      if (__DEV__) console.error('[PostDetail] loadPost error:', err)
+      setLoadError(t('common.error'))
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-
-    if (cachedId) {
-      const [likeRes, saveRes] = await Promise.all([
-        supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
-        supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
-      ])
-      setIsLiked(!!likeRes.data)
-      setIsSaved(!!saveRes.data)
-    }
-
-    // Fetch comments (including parent_id for threading)
-    const { data: cmts } = await supabase
-      .from('post_comments')
-      .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
-      .eq('post_id', id)
-      .order('created_at', { ascending: true })
-    setComments((cmts ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
-
-    if (data) {
-      const { data: related } = await supabase
-        .from('posts')
-        .select('id, type, title, image_url, location, created_at')
-        .eq('type', (data as any).type)
-        .eq('is_active', true)
-        .neq('id', id)
-        .order('created_at', { ascending: false })
-        .limit(4)
-      setRelatedPosts((related ?? []) as any[])
-    }
-
-    setLoading(false)
-    setRefreshing(false)
-  }, [id, supabase])
+  }, [id, supabase, t])
 
   useEffect(() => {
     let cancelled = false
@@ -764,6 +772,22 @@ function PostDetailScreenInner() {
         <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}>
           <PostDetailSkeleton />
         </ScrollView>
+      </View>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
+        </View>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+          <Text style={[styles.notFound, { color: colors.mutedForeground, marginBottom: 16 }]}>{loadError}</Text>
+          <PressableOpacity onPress={() => loadPost()} style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.primary, borderRadius: 8 }} accessibilityRole="button" accessibilityLabel={t('common.retry')}>
+            <Text style={{ color: '#fff', fontFamily: fonts.bodyMedium, fontSize: 15 }}>{t('common.retry')}</Text>
+          </PressableOpacity>
+        </View>
       </View>
     )
   }

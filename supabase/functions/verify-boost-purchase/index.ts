@@ -130,22 +130,50 @@ serve(async (req) => {
       // Apple receipt validation
       receipt_valid = await validateAppleReceipt(receipt_data, validation_details)
     } else if (platform === 'android') {
-      // Google Play: accept and log for manual verification (MVP)
-      // Full Google validation requires OAuth2 service account setup
-      receipt_valid = true
+      // Google Play: do NOT auto-grant credits — flag for manual review.
+      // Full Google validation requires OAuth2 service account setup.
+      receipt_valid = false
       validation_details = {
-        mode: 'android_deferred',
-        note: 'Receipt logged for manual verification',
+        mode: 'android_pending_review',
+        note: 'Receipt requires manual verification before credits are granted',
         receipt_data_length: receipt_data?.length ?? 0,
+        receipt_data_preview: typeof receipt_data === 'string' ? receipt_data.slice(0, 200) : null,
       }
-      console.log('[verify-boost-purchase] Android receipt logged for manual verification:', {
+      console.log('[verify-boost-purchase] Android receipt pending manual review:', {
         user_id: user.id,
         product_id,
         transaction_id,
+        receipt_data_length: receipt_data?.length ?? 0,
       })
     }
 
     if (!receipt_valid) {
+      // For Android pending review, store the purchase record and return pending status
+      if (platform === 'android') {
+        await supabase
+          .from('boost_purchases')
+          .insert({
+            user_id: user.id,
+            platform,
+            product_id,
+            transaction_id,
+            receipt_data: receipt_data ?? null,
+            credits_granted: 0,
+            validation_details,
+            created_at: new Date().toISOString(),
+          })
+
+        return new Response(JSON.stringify({
+          success: false,
+          verification_status: 'pending_review',
+          credits_granted: 0,
+          message: 'Android purchase is pending manual verification. Credits will be granted after review.',
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       return new Response(JSON.stringify({ error: 'Receipt validation failed' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

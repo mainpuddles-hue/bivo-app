@@ -27,11 +27,13 @@ export const secureStorage = {
   },
   async setItem(key: string, value: string): Promise<void> {
     if (SecureStore && isSecureKey(key)) {
-      // SecureStore has a ~2048 byte limit; fall through to AsyncStorage for large values
+      // SecureStore has a ~2048 byte limit; go directly to AsyncStorage for large values
       if (value.length > 2000) {
         if (__DEV__) {
           console.warn(`[secureStorage] Value for "${key}" exceeds 2000 bytes (${value.length}), falling back to AsyncStorage`)
         }
+        await AsyncStorage.setItem(key, value)
+        return
       } else {
         try {
           await SecureStore.setItemAsync(key.replace(/[^a-zA-Z0-9._-]/g, '_'), value)

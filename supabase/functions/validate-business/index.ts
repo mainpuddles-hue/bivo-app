@@ -137,7 +137,7 @@ serve(async (req) => {
     }
 
     // Step 2: Check if company is active via PRH status
-    const isActive = prhData.status === 'active' || prhData.status === 'ACTIVE'
+    const isActive = prhData.status === 'ACTIVE'
     if (!isActive) {
       return new Response(JSON.stringify({
         valid: false,
