@@ -216,14 +216,18 @@ export default function MessagesScreen() {
   // Fetch conversations on mount and re-fetch when screen gains focus (e.g. after reading messages)
   useFocusEffect(useCallback(() => { fetchConversations() }, [fetchConversations]))
 
-  // Realtime for new messages — always refetch on any INSERT
-  // Uses ref to avoid tearing down channel when conversations array changes
+  // Realtime for new messages — filter to only messages NOT sent by current user
+  // (we only care about incoming messages for badge/list updates)
   useEffect(() => {
     if (!userId) return
     const channel = supabase
       .channel(`messages-list-${userId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        // Always refetch — covers both existing and new conversations
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=neq.${userId}`,
+      }, () => {
         fetchConversations()
       })
       .subscribe()

@@ -447,11 +447,16 @@ export function useFeedData() {
     return () => { abortRef.current?.abort() }
   }, [activeFilter, sortBy, showFollowing]) // Only re-fetch when user explicitly changes filters
 
-  // ── Realtime with 5s debounce — INSERT only (UPDATE/DELETE refresh on pull-to-refresh) ──
+  // ── Realtime with 5s debounce — INSERT only, filtered to active posts ──
   useEffect(() => {
     const channel = supabase
       .channel('feed-new-posts')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, () => {
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'posts',
+        filter: 'is_active=eq.true',
+      }, () => {
         if (debounceRef.current) clearTimeout(debounceRef.current)
         debounceRef.current = setTimeout(() => setHasNewPosts(true), 5000)
       })
