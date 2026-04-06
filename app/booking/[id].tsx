@@ -218,8 +218,12 @@ function BookingDetailScreenInner() {
   // Actions
   const updatingRef = useRef(false)
   const updateBookingStatus = useCallback(async (newStatus: BookingStatus) => {
-    if (!booking) return
+    if (!booking || !userId) return
     if (updatingRef.current) return
+    // Authorization: only the correct role can perform each action
+    if (newStatus === 'confirmed' && booking.my_role !== 'lender' && booking.my_role !== 'provider') return
+    if (newStatus === 'completed' && booking.my_role !== 'lender' && booking.my_role !== 'provider') return
+    if (newStatus === 'cancelled' && booking.my_role !== 'borrower' && booking.my_role !== 'buyer' && booking.my_role !== 'lender' && booking.my_role !== 'provider') return
     updatingRef.current = true
     setActionLoading(true)
     try {

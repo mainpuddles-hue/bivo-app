@@ -263,6 +263,19 @@ export default function BookingsScreen() {
               Alert.alert(t('common.error'), t('rental.cancelFailed'))
             } else {
               setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'cancelled' as BookingStatus } : b))
+              // Trigger refund if booking was paid via Stripe
+              if ((booking as any).stripe_payment_intent_id && (booking.status === 'paid' || booking.status === 'confirmed')) {
+                try {
+                  const { data: { session } } = await supabase.auth.getSession()
+                  if (session?.access_token) {
+                    await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                      body: JSON.stringify({ action: 'refund', payment_intent_id: (booking as any).stripe_payment_intent_id, booking_id: booking.id }),
+                    }).catch(() => {})
+                  }
+                } catch {} // Refund is best-effort — webhook handles the rest
+              }
             }
             setActionLoading(null)
           },
