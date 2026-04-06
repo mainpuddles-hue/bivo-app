@@ -28,6 +28,8 @@ export function useEventChat(conversationId: string | null, userId: string | nul
   const [hasOlder, setHasOlder] = useState(true)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
   const messagesRef = useRef<EventChatMessage[]>([])
+  const mountedRef = useRef(true)
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
   messagesRef.current = messages
 
   // Fetch initial messages
@@ -68,6 +70,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
         .order('created_at', { ascending: false })
         .limit(EVENT_CHAT_PAGE_SIZE)
 
+      if (!mountedRef.current) return
       const older = (data ?? []) as EventChatMessage[]
       if (older.length < EVENT_CHAT_PAGE_SIZE) setHasOlder(false)
       setMessages(prev => [...prev, ...older])
@@ -98,7 +101,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
       if (__DEV__) console.warn('[useEventChat] send error:', err)
       return false
     } finally {
-      setSending(false)
+      if (mountedRef.current) setSending(false)
     }
   }, [conversationId, userId, supabase])
 

@@ -27,6 +27,9 @@ export function useBoosts(userId: string | null) {
   const [purchasing, setPurchasing] = useState(false)
   const [activeBoosts, setActiveBoosts] = useState<ActiveBoost[]>([])
 
+  const mountedRef = useRef(true)
+  const purchasingRef = useRef(false)
+
   // Fetch balance
   const fetchBalance = useCallback(async () => {
     if (!userId) { setLoading(false); return }
@@ -58,8 +61,6 @@ export function useBoosts(userId: string | null) {
     }
   }, [userId, supabase])
 
-  const mountedRef = useRef(true)
-
   useEffect(() => {
     mountedRef.current = true
     fetchBalance()
@@ -68,7 +69,8 @@ export function useBoosts(userId: string | null) {
 
   // Purchase boosts (sandbox or real IAP)
   const purchaseBoost = useCallback(async (productId: string) => {
-    if (purchasing) return
+    if (purchasingRef.current) return
+    purchasingRef.current = true
     setPurchasing(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -115,6 +117,7 @@ export function useBoosts(userId: string | null) {
     } catch (err: any) {
       Alert.alert(t('common.error'), err.message ?? t('boost.purchaseFailed'))
     } finally {
+      purchasingRef.current = false
       setPurchasing(false)
     }
   }, [purchasing, supabase, t, balance, fetchBalance])
