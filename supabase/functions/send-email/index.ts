@@ -160,7 +160,7 @@ serve(async (req) => {
       user_id: user.id,
       type: 'email_sent',
       title: `Email: ${template}`,
-      body: to,
+      body: to_email,
       is_read: true,
     }).catch(() => {}) // Non-critical
 
