@@ -45,7 +45,7 @@ export async function exportUserData(userId: string): Promise<boolean> {
     pointsRes,
     userRes,
   ] = await Promise.allSettled([
-    supabase.from('profiles').select('*').eq('id', userId).single(),
+    supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
     supabase.from('posts').select('id, title, description, type, location, created_at, is_active').eq('user_id', userId),
     (supabase.from('post_comments') as any).select('id, content, created_at, post_id').eq('user_id', userId),
     supabase.from('messages').select('id, content, created_at, conversation_id').eq('sender_id', userId),

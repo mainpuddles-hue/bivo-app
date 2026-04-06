@@ -147,7 +147,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
           .from('profiles') as any)
           .select('naapurusto, city_id')
           .eq('id', user.id)
-          .single() as { data: { naapurusto?: string; city_id?: string } | null }
+          .maybeSingle() as { data: { naapurusto?: string; city_id?: string } | null }
 
         // Load city bounds and neighborhoods for the user's city
         const cityId = data?.city_id ?? 'helsinki'

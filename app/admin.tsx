@@ -88,7 +88,7 @@ function AdminScreenInner() {
         .from('profiles')
         .select('is_admin')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
       setIsAdmin(!!(data as any)?.is_admin)
       setLoading(false)
     }

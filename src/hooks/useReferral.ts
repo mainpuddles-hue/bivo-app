@@ -165,7 +165,7 @@ export function useReferral(userId: string | null) {
           .from('profiles')
           .select('total_points')
           .eq('id', (inviter as any).id)
-          .single()
+          .maybeSingle()
         const currentTotal = ((inviterProfile as any)?.total_points ?? 0)
         await (supabase.from('profiles') as any).update({
           total_points: currentTotal + tierPoints,

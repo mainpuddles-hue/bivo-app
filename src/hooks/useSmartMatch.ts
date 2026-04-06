@@ -400,7 +400,7 @@ export function useSmartMatch(userId: string | null) {
         .from('profiles')
         .select('naapurusto')
         .eq('id', userId)
-        .single() as any)
+        .maybeSingle() as any)
       if (profileData?.naapurusto) neighborhood = profileData.naapurusto
 
       await evaluateMatches(userNeeds, offerPosts, dismissedRef.current, neighborhood, userId)
