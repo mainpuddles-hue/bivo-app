@@ -27,7 +27,7 @@ export function applyLocationAccuracy(
       return {
         latitude: null,
         longitude: null,
-        location: location ? location.split(',').pop()?.trim() ?? location : null,
+        location: location ? (location.split(',').pop()?.trim() || location) : null,
       }
     case 'exact':
     default:

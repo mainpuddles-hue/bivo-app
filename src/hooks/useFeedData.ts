@@ -74,11 +74,13 @@ export function useFeedData() {
 
   // ── Load cached feed data on mount for instant display ──
   useEffect(() => {
+    let mounted = true
     AsyncStorage.getItem(FEED_CACHE_KEY).then(cached => {
-      if (cached && posts.length === 0) {
+      if (mounted && cached && posts.length === 0) {
         try { setPosts(JSON.parse(cached)) } catch {} // Intentional: corrupted cache
       }
     }).catch(() => {})
+    return () => { mounted = false }
   }, [])
 
   // ── Fetch current user ID for like functionality ──

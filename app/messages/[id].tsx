@@ -318,6 +318,7 @@ function ConversationScreenInner() {
       Alert.alert(t('common.error'), t('messages.sendFailed'))
     } finally {
       setSending(false)
+      if (typingDebounceRef.current) { clearTimeout(typingDebounceRef.current); typingDebounceRef.current = null }
     }
   }, [userId, id, supabase, sending, t])
 
@@ -342,6 +343,7 @@ function ConversationScreenInner() {
       if (__DEV__) console.error('[conversation] message send failed:', err)
     } finally {
       setSending(false)
+      if (typingDebounceRef.current) { clearTimeout(typingDebounceRef.current); typingDebounceRef.current = null }
     }
   }, [input, userId, id, supabase, sending, t])
 
@@ -380,7 +382,10 @@ function ConversationScreenInner() {
     } catch (err) {
       Alert.alert(t('common.error'), t('messages.imageSendFailed'))
       if (__DEV__) console.error('[conversation] image send failed:', err)
-    } finally { setSending(false) }
+    } finally {
+      setSending(false)
+      if (typingDebounceRef.current) { clearTimeout(typingDebounceRef.current); typingDebounceRef.current = null }
+    }
   }, [userId, id, supabase, t])
 
   const handleLongPress = useCallback((messageId: string) => {

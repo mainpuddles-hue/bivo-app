@@ -11,7 +11,7 @@ interface StreakData {
   multiplier: number  // 1x, 2x (7+ days), 3x (30+ days)
 }
 
-const STREAK_CACHE_KEY = 'tackbird_streak_date'
+const STREAK_CACHE_PREFIX = 'tackbird_streak_'
 
 export function useStreak(userId: string | null) {
   const supabase = useSupabase()
@@ -62,7 +62,8 @@ export function useStreak(userId: string | null) {
       const today = new Date().toLocaleDateString('sv-SE')
 
       // Check AsyncStorage first — avoid unnecessary DB write if already recorded today
-      const cachedDate = await AsyncStorage.getItem(STREAK_CACHE_KEY)
+      const cacheKey = `${STREAK_CACHE_PREFIX}${userId}`
+      const cachedDate = await AsyncStorage.getItem(cacheKey)
       if (cachedDate === today) {
         recordingRef.current = false
         return
@@ -74,7 +75,7 @@ export function useStreak(userId: string | null) {
       // Also check in-memory state
       if (currentStreak.lastActiveDate === today) {
         // Update cache to match state
-        await AsyncStorage.setItem(STREAK_CACHE_KEY, today).catch(() => {})
+        await AsyncStorage.setItem(cacheKey, today).catch(() => {})
         recordingRef.current = false
         return
       }
@@ -107,7 +108,7 @@ export function useStreak(userId: string | null) {
       }
 
       // Cache today's date to prevent redundant DB writes on subsequent feed loads
-      await AsyncStorage.setItem(STREAK_CACHE_KEY, today).catch(() => {})
+      await AsyncStorage.setItem(cacheKey, today).catch(() => {})
 
       setStreak({
         currentStreak: newStreak,

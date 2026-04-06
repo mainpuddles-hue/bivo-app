@@ -236,7 +236,7 @@ function PostDetailScreenInner() {
       } else {
         // Sync count from source of truth
         const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
-        if (realCount != null) {
+        if (realCount !== null) {
           setLikeCount(realCount)
           ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', id).then(() => {}).catch(() => {})
         }
@@ -426,7 +426,7 @@ function PostDetailScreenInner() {
     return null
   }, [post?.expires_at, t])
 
-  const isAuthor = userId != null && post?.user_id === userId
+  const isAuthor = userId !== null && post?.user_id === userId
   const boosts = useBoosts(userId)
   const [boosting, setBoosting] = useState(false)
 
@@ -920,15 +920,15 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {post.daily_fee != null && (
+          {post.daily_fee !== null && (
             <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>
           )}
 
-          {post.service_price != null && post.service_price > 0 && (
+          {post.service_price !== null && post.service_price > 0 && (
             <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.service_price, locale)}</Text>
           )}
 
-          {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price == null || post.service_price === 0) && (
+          {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price === null || post.service_price === 0) && (
             <Text style={[styles.price, { color: colors.info }]}>{t('create.freeItem')}</Text>
           )}
 
@@ -947,20 +947,20 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {priceContext && (post.daily_fee != null || post.service_price != null) && (
+          {priceContext && (post.daily_fee !== null || post.service_price !== null) && (
             <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 15, fontFamily: fonts.body }}>
               {t('post.priceContext', { min: priceContext.min, max: priceContext.max })}
             </Text>
           )}
 
-          {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee != null && !isAuthor && (
+          {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee !== null && !isAuthor && (
             <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={({ pressed }) => [styles.bookingBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
             </Pressable>
           )}
 
-          {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price != null && post.service_price > 0 && !post.tags?.includes('tarjoan_item') && !isAuthor && (
+          {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price !== null && post.service_price > 0 && !post.tags?.includes('tarjoan_item') && !isAuthor && (
             <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={({ pressed }) => [styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
               <ShoppingBag size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>
@@ -1164,7 +1164,7 @@ function PostDetailScreenInner() {
                 <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: bookingDays > 0 ? colors.primary : colors.muted }} />
               </View>
               <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
-              {post?.daily_fee != null && (<Text style={[styles.bookingFee, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
+              {post?.daily_fee !== null && (<Text style={[styles.bookingFee, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
               <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{bookingDays > 0 ? t('rental.pricingBreakdown') : t('rental.selectDates')}</Text>
               <DateRangePicker startDate={bookingStartDate} endDate={bookingEndDate} onSelect={(start, end) => { setBookingStartDate(start); setBookingEndDate(end) }} blockedDates={blockedDates} />
               {bookingStartDate && (
@@ -1173,7 +1173,7 @@ function PostDetailScreenInner() {
                   {bookingEndDate && (<View style={styles.datesSummaryItem}><Text style={[styles.datesSummaryLabel, { color: colors.mutedForeground }]}>{t('rental.endDate')}</Text><Text style={[styles.datesSummaryValue, { color: colors.foreground }]}>{bookingEndDate}</Text></View>)}
                 </View>
               )}
-              {bookingDays > 0 && post?.daily_fee != null && (
+              {bookingDays > 0 && post?.daily_fee !== null && (
                 <View style={[styles.pricingBreakdown, { borderColor: colors.border }]}>
                   <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('rental.pricingBreakdown')}</Text>
                   <View style={styles.pricingRow}><Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{formatPrice(post.daily_fee, locale)} x {bookingDays} {t('rental.daysAbbr')}</Text><Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(rentalFee, locale)}</Text></View>
@@ -1233,7 +1233,7 @@ function PostDetailScreenInner() {
             )}
 
             {/* Pricing breakdown */}
-            {post?.service_price != null && (
+            {post?.service_price !== null && (
               <View style={[styles.pricingBreakdown, { borderColor: colors.border }]}>
                 <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('service.pricingBreakdown')}</Text>
                 <View style={styles.pricingRow}>
