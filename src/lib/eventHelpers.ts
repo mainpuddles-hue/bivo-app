@@ -12,10 +12,16 @@ export function isTableEvent(event: CommunityEvent): boolean {
   return event.event_type === 'table'
 }
 
-/** Check if event/table has already ended */
+/** Check if event/table has already ended (timezone-safe — compares at end of day local time) */
 export function isExpiredEvent(event: CommunityEvent): boolean {
-  const endDate = event.event_end_date ?? event.event_date
-  return new Date(endDate) < new Date()
+  const endDate = new Date(event.event_end_date ?? event.event_date)
+  // If date has no time component (T00:00:00Z), consider expired at end of that day in local timezone
+  const endStr = event.event_end_date ?? event.event_date
+  if (endStr && !endStr.includes('T')) {
+    // Date-only string: set to end of day local time
+    endDate.setHours(23, 59, 59, 999)
+  }
+  return endDate < new Date()
 }
 
 /** Get table category emoji */

@@ -110,7 +110,7 @@ function PostDetailScreenInner() {
   const [sendingService, setSendingService] = useState(false)
 
   const loadPost = useCallback(async () => {
-    if (!id || !isValidUUID(id)) { setLoading(false); setRefreshing(false); return }
+    if (!id || !isValidUUID(id)) { setLoading(false); setRefreshing(false); setLoadError(t('post.notFound') ?? 'Post not found'); return }
 
     try {
       setLoadError(null)
