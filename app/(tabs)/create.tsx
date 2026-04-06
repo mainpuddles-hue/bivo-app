@@ -583,7 +583,7 @@ export default function CreateScreen() {
         is_urgent: isUrgent || false,
         urgency_hours: isUrgent ? urgencyHours : null,
         is_anonymous: isAnonymous || false,
-        is_active: true,
+        is_active: images.length > 0 ? false : true, // Activate after images uploaded
         tags: finalTags,
         is_pro_listing: !!(creatorProfile as any)?.is_pro,
       }).select('id').single()
@@ -623,6 +623,10 @@ export default function CreateScreen() {
             return
           }
           // userChoice === 'publish' — continue without images
+        }
+        // Activate the post now that images are handled
+        if (post?.id) {
+          await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id)
         }
       }
 

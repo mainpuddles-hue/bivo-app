@@ -65,7 +65,15 @@ export default function SettingsScreen() {
   const [currentPw, setCurrentPw] = useState('')
   const [newPw, setNewPw] = useState('')
   const [changingPw, setChangingPw] = useState(false)
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(recovery === 'true')
+  // Password recovery mode: only trust if Supabase auth confirms it (not just URL param)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
+  useEffect(() => {
+    if (recovery !== 'true') return
+    // Verify via auth state — only enable if there's actually a recovery session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.recovery_sent_at) setIsPasswordRecovery(true)
+    }).catch(() => {})
+  }, [recovery, supabase])
 
   // Delete account
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)

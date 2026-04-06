@@ -109,6 +109,20 @@ function EventDetailScreenInner() {
   const handleJoin = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
     if (joiningRef.current || !event) return
+    // Prevent joining past events
+    if (new Date(event.event_date) < new Date()) {
+      Alert.alert(t('common.error'), t('events.eventPassed') ?? 'Tapahtuma on jo päättynyt')
+      return
+    }
+    // Prevent overbooking — re-check capacity from DB
+    if (event.max_participants) {
+      const { count } = await supabase.from('community_event_participants').select('*', { count: 'exact', head: true }).eq('event_id', event.id).in('status', ['joined', 'approved'])
+      if ((count ?? 0) >= event.max_participants) {
+        Alert.alert(t('common.error'), t('events.eventFull') ?? 'Tapahtuma on täynnä')
+        await fetchEvent()
+        return
+      }
+    }
     joiningRef.current = true
     try {
       const status = event.approval_required ? 'pending' : 'joined'
