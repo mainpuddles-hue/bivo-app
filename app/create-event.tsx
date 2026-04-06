@@ -218,12 +218,15 @@ function CreateEventScreenInner() {
           .from('event-images')
           .upload(filePath, arrayBuffer, { contentType: `image/${fileExt}`, upsert: false })
 
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage
-            .from('event-images')
-            .getPublicUrl(filePath)
-          uploadedImageUrl = urlData?.publicUrl ?? null
+        if (uploadError) {
+          Alert.alert(t('common.error'), t('events.imageUploadFailed') ?? 'Kuvan lataus epäonnistui')
+          setSubmitting(false)
+          return
         }
+        const { data: urlData } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(filePath)
+        uploadedImageUrl = urlData?.publicUrl ?? null
       }
 
       // Insert or Update event

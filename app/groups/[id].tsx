@@ -271,7 +271,8 @@ export default function GroupDetailScreen() {
         if (blob.size > MAX_FILE_SIZE) { Alert.alert(t('common.error'), t('create.imageTooLarge')); setSending(false); return }
         const arrayBuffer = await blob.arrayBuffer()
         const { error: uploadError } = await supabase.storage.from('group-images').upload(fileName, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
-        if (!uploadError) { const { data: urlData } = supabase.storage.from('group-images').getPublicUrl(fileName); imageUrl = urlData.publicUrl }
+        if (uploadError) { Alert.alert(t('common.error'), t('create.imageUploadFailed') ?? 'Kuvan lataus epäonnistui'); setSending(false); return }
+        const { data: urlData } = supabase.storage.from('group-images').getPublicUrl(fileName); imageUrl = urlData.publicUrl
       }
       await (supabase.from('group_posts') as any).insert({ group_id: id, user_id: currentUserId, content: postText.trim(), image_url: imageUrl, like_count: 0, comment_count: 0 })
       setPostText(''); setPostImage(null); fetchPosts()
