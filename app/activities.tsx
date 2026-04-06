@@ -309,12 +309,16 @@ function ActivitiesScreenInner() {
           user_id: userId,
         })
         if (error) {
-          if (error.code === '23505') { /* already a member */ }
-          else throw error
+          if (error.code === '23505') {
+            setActivities(prev => prev.map(a => a.id === activityId ? { ...a, is_member: true } : a))
+            return
+          }
+          throw error
         }
+        const { count } = await supabase.from('activity_members').select('*', { count: 'exact', head: true }).eq('activity_id', activityId)
         setActivities(prev => prev.map(a =>
           a.id === activityId
-            ? { ...a, is_member: true, member_count: (a.member_count ?? 0) + 1 }
+            ? { ...a, is_member: true, member_count: count ?? (a.member_count ?? 0) + 1 }
             : a
         ))
       }

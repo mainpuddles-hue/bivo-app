@@ -202,7 +202,8 @@ function SavedScreenInner() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
-      await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', user.id)
+      const { error } = await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', user.id)
+      if (error) throw error
     } catch {
       setEvents(prev)
       Alert.alert(t('common.error'))
@@ -215,7 +216,8 @@ function SavedScreenInner() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
-      await (supabase.from('saved_places') as any).delete().eq('place_id', placeId).eq('user_id', user.id)
+      const { error } = await (supabase.from('saved_places') as any).delete().eq('place_id', placeId).eq('user_id', user.id)
+      if (error) throw error
     } catch {
       setPlaces(prev)
       Alert.alert(t('common.error'))
