@@ -670,7 +670,7 @@ export default function GroupDetailScreen() {
         <View style={[ps.postInputBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
           {postImage && (
             <View style={ps.imagePreviewRow}>
-              <Image source={{ uri: postImage }} style={ps.imagePreview} contentFit="cover" />
+              <Image source={{ uri: postImage }} style={ps.imagePreview} contentFit="cover" cachePolicy="memory-disk" />
               <PressableOpacity onPress={() => setPostImage(null)} style={ps.removeImageBtn}><X size={14} color="#FFF" strokeWidth={2} /></PressableOpacity>
             </View>
           )}

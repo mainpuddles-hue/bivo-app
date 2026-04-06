@@ -321,6 +321,9 @@ export default function LeaderboardScreen() {
           keyExtractor={item => item.id}
           renderItem={renderItem}
           contentContainerStyle={s.list}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
           }

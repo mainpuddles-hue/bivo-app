@@ -273,7 +273,7 @@ export default function CreateAdScreen() {
         <Text style={[styles.label, { color: colors.foreground }]}>{t('create.addPhotos')}</Text>
         {imageUri ? (
           <View style={styles.imagePreview}>
-            <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" />
+            <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" cachePolicy="memory-disk" />
             <PressableOpacity onPress={() => setImageUri(null)} style={[styles.removeImage, { backgroundColor: colors.destructive }]} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
               <X size={14} color={colors.primaryForeground} />
             </PressableOpacity>

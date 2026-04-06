@@ -582,7 +582,7 @@ function ExploreScreenInner() {
                       >
                         {evt.image_url ? (
                           <View style={s.ceImageWrap}>
-                            <Image source={{ uri: evt.image_url }} style={s.ceImage} contentFit="cover" />
+                            <Image source={{ uri: evt.image_url }} style={s.ceImage} contentFit="cover" cachePolicy="memory-disk" />
                           </View>
                         ) : (
                           <View style={[s.ceImagePlaceholder, { backgroundColor: `${catColor}18` }]}>

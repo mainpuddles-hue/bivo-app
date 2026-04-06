@@ -333,7 +333,7 @@ export default function OrganizationScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageScroll}>
             {businessImages.map((uri, i) => (
               <View key={`${uri}-${i}`} style={styles.imageThumbWrap}>
-                <Image source={{ uri }} style={styles.imageThumb} contentFit="cover" />
+                <Image source={{ uri }} style={styles.imageThumb} contentFit="cover" cachePolicy="memory-disk" />
                 <PressableOpacity
                   style={[styles.imageDeleteBtn, { backgroundColor: colors.destructive }]}
                   onPress={() => removeImage(i)}

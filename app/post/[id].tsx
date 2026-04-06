@@ -830,7 +830,7 @@ function PostDetailScreenInner() {
         {allImages.length > 0 && (
           allImages.length === 1 ? (
             <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
-              <Image source={{ uri: allImages[0] }} style={styles.heroImage} contentFit="cover" transition={300} />
+              <Image source={{ uri: allImages[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" />
             </PressableOpacity>
           ) : (
             <FlatList
@@ -838,7 +838,7 @@ function PostDetailScreenInner() {
               keyExtractor={(item, i) => `${item}-${i}`}
               renderItem={({ item, index }) => (
                 <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
-                  <Image source={{ uri: item }} style={styles.heroImage} contentFit="cover" />
+                  <Image source={{ uri: item }} style={styles.heroImage} contentFit="cover" cachePolicy="memory-disk" />
                 </PressableOpacity>
               )}
               showsHorizontalScrollIndicator={false}
@@ -1043,7 +1043,7 @@ function PostDetailScreenInner() {
                   const rpCat = CATEGORIES[rp.type as PostType]
                   return (
                     <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card }]}>
-                      {rp.image_url ? (<Image source={{ uri: rp.image_url }} style={styles.relatedImage} contentFit="cover" />) : (
+                      {rp.image_url ? (<Image source={{ uri: rp.image_url }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />) : (
                         <View style={[styles.relatedImage, { backgroundColor: rpCat ? (isDark ? rpCat.bgDark : rpCat.bgLight) : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
                           {rpCat && CATEGORY_ICON_MAP[rpCat.icon] && (() => { const I = CATEGORY_ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
                         </View>
