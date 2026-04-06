@@ -8,7 +8,7 @@ import {
 import { Image } from 'expo-image'
 import { SectionSkeleton } from '@/components/SkeletonLoaders'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import {
   Map, CalendarDays, MapPin, ChevronRight, Navigation, Globe,
   Store, Coffee, BookOpen, Dumbbell, Heart, UtensilsCrossed,
@@ -209,10 +209,10 @@ function ExploreScreenInner() {
     }
   }, [supabase, fetchLocation])
 
-  // ── Initial load ──
-  useEffect(() => {
+  // ── Load on focus (refresh when navigating back) ──
+  useFocusEffect(useCallback(() => {
     fetchData()
-  }, [fetchData])
+  }, [fetchData]))
 
   // ── Pull to refresh ──
   const handleRefresh = useCallback(async () => {
