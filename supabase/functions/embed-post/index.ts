@@ -12,8 +12,8 @@ function getEnvOrThrow(key: string): string {
   return val
 }
 
-const EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
-const HF_API_URL = `https://router.huggingface.co/pipeline/feature-extraction/${EMBEDDING_MODEL}`
+const EMBEDDING_MODEL = 'BAAI/bge-small-en-v1.5'
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${EMBEDDING_MODEL}`
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://tackbird.fi',
