@@ -13,7 +13,7 @@ function getEnvOrThrow(key: string): string {
 }
 
 const EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
-const HF_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${EMBEDDING_MODEL}`
+const HF_API_URL = `https://router.huggingface.co/pipeline/feature-extraction/${EMBEDDING_MODEL}`
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://tackbird.fi',
