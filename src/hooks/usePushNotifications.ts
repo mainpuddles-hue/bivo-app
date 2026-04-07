@@ -58,7 +58,10 @@ export function usePushNotifications(userId: string | null) {
 
     const supported = !isExpoGo()
     setIsSupported(supported)
-    if (!userId || !supported) return
+    if (!userId || !supported) {
+      if (__DEV__ && isExpoGo()) console.warn('[push] Push notifications not available in Expo Go — build with EAS to test')
+      return
+    }
 
     let mounted = true
 

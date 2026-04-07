@@ -29,11 +29,16 @@ export function createClient() {
       // Without this, GoTrueClient._recoverAndRefresh throws
       // AuthRetryableFetchError that surfaces as a red LogBox screen
       fetch: async (url, options) => {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 15000)
         try {
-          return await fetch(url, options)
+          const mergedOptions = { ...options, signal: options?.signal ?? controller.signal }
+          return await fetch(url, mergedOptions)
         } catch (err) {
           if (__DEV__) console.warn('[Supabase] Network request failed:', (err as Error).message)
           throw err
+        } finally {
+          clearTimeout(timeout)
         }
       },
     },
