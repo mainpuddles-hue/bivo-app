@@ -13,7 +13,7 @@ const EMBEDDING_MODEL = 'BAAI/bge-small-en-v1.5'
 const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${EMBEDDING_MODEL}`
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.fi',
+  'Access-Control-Allow-Origin': 'https://tackbird.com',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

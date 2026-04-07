@@ -2,12 +2,9 @@ declare const __DEV__: boolean
 
 import type { CityEvent } from './types'
 
-// TODO: Proxy Ticketmaster requests through a Supabase Edge Function
-// (supabase/functions/ticketmaster-proxy) to avoid exposing the API key
-// in the client bundle. The Edge Function should accept search params,
-// add the API key server-side, and return results.
-const API_KEY = process.env.EXPO_PUBLIC_TICKETMASTER_API_KEY ?? ''
-const BASE_URL = 'https://app.ticketmaster.com/discovery/v2'
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
+const PROXY_URL = `${SUPABASE_URL}/functions/v1/ticketmaster-proxy`
 
 interface TMEvent {
   id: string
@@ -105,8 +102,21 @@ export async function fetchTicketmasterEvents(): Promise<CityEvent[]> {
 
     // Fetch up to 3 pages (max 200 per page, usually ~100 total for Helsinki)
     for (let page = 0; page < 3; page++) {
-      const url = `${BASE_URL}/events.json?city=Helsinki&countryCode=FI&startDateTime=${today}T00:00:00Z&size=200&page=${page}&sort=date,asc&apikey=${API_KEY}`
-      const res = await fetch(url)
+      const params = new URLSearchParams({
+        city: 'Helsinki',
+        countryCode: 'FI',
+        startDateTime: `${today}T00:00:00Z`,
+        size: '200',
+        page: String(page),
+        sort: 'date,asc',
+      })
+
+      const res = await fetch(`${PROXY_URL}?${params.toString()}`, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      })
       if (!res.ok) {
         if (__DEV__) console.log(`[ticketmaster] pagination failed: ${res.status} ${res.statusText}, page ${page}`)
         break

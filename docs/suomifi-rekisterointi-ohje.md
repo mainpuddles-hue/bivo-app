@@ -19,7 +19,7 @@ Käytä näitä tietoja:
 ### Palvelun tiedot
 - **Palvelun nimi:** TackBird — Naapuruston ilmoitustaulu
 - **Palvelun kuvaus:** (käytä `suomifi-palvelukuvaus.md` sisältöä)
-- **Palvelun osoite:** https://tackbird.fi
+- **Palvelun osoite:** https://tackbird.com
 - **Mobiilisovellus:** Kyllä (iOS + Android)
 
 ### Tunnistuksen tiedot
@@ -30,7 +30,7 @@ Käytä näitä tietoja:
 ### Tekniset tiedot
 - **Protokolla:** OpenID Connect
 - **Redirect URI (testi):** `https://tackbird-v2-staging.vercel.app/api/auth/suomifi-callback`
-- **Redirect URI (tuotanto):** `https://tackbird.fi/api/auth/suomifi-callback`
+- **Redirect URI (tuotanto):** `https://tackbird.com/api/auth/suomifi-callback`
 - **Scopet:** `openid`
 - **Client type:** Confidential
 

@@ -1035,7 +1035,7 @@ export default function SettingsScreen() {
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </Pressable>
-          <Pressable onPress={() => Linking.openURL('mailto:tuki@tackbird.fi?subject=TackBird%20palaute').catch(() => {})} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}>
+          <Pressable onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}>
             <Bug size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />

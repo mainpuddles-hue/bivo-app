@@ -1423,7 +1423,7 @@ export default function CreateScreen() {
                   }
                   if (successPostId) {
                     try {
-                      await Share.share({ message: `${t('create.published')} https://tackbird.fi/post/${successPostId}` })
+                      await Share.share({ message: `${t('create.published')} https://tackbird.com/post/${successPostId}` })
                     } catch (_) {
                       // User cancelled or share failed — navigate anyway
                     }

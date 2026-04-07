@@ -1,5 +1,5 @@
 // Sends transactional emails via Supabase's built-in email service
-// Types: booking_confirmation, payment_receipt, booking_reminder, welcome
+// Types: booking_confirmation, payment_receipt, booking_reminder, welcome, password_reset, refund_confirmation
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -11,7 +11,7 @@ function getEnvOrThrow(key: string): string {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.fi',
+  'Access-Control-Allow-Origin': 'https://tackbird.com',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -63,6 +63,40 @@ const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }
       <h2>Tervetuloa ${escapeHtml(data.name)}!</h2>
       <p>Naapurustosi odottaa sinua.</p>
       <p>Aloita luomalla ensimmäinen postaus tai selaamalla naapuruston ilmoituksia.</p>
+      <br>
+      <p>— TackBird</p>
+    `,
+  }),
+  password_reset: (data) => ({
+    subject: 'Vaihda salasanasi — TackBird',
+    html: `
+      <h2>Salasanan vaihto</h2>
+      <p>Klikkaa alla olevaa linkkiä vaihtaaksesi salasanasi:</p>
+      <p><a href="${escapeHtml(data.reset_url)}" style="display:inline-block;padding:12px 24px;background:#2D6B5E;color:#fff;text-decoration:none;border-radius:8px;">Vaihda salasana</a></p>
+      <p>Jos et pyytänyt tätä, voit ohittaa tämän viestin.</p>
+      <br>
+      <p>— TackBird</p>
+    `,
+  }),
+  refund_confirmation: (data) => ({
+    subject: `Hyvitys käsitelty: ${escapeHtml(data.amount)}€`,
+    html: `
+      <h2>Hyvityksesi on käsitelty</h2>
+      <p><strong>${escapeHtml(data.description)}</strong></p>
+      <p>Summa: ${escapeHtml(data.amount)}€</p>
+      <p>Hyvitys näkyy tililläsi 5–10 arkipäivän kuluessa.</p>
+      <br>
+      <p>— TackBird</p>
+    `,
+  }),
+  booking_reminder: (data) => ({
+    subject: `Muistutus: ${escapeHtml(data.post_title)} huomenna`,
+    html: `
+      <h2>Varauksesi on huomenna!</h2>
+      <p><strong>${escapeHtml(data.post_title)}</strong></p>
+      <p>Päivämäärä: ${escapeHtml(data.date)}</p>
+      <p>Muista palauttaa tavara sovittuna aikana.</p>
+      <p><a href="https://tackbird.com" style="display:inline-block;padding:12px 24px;background:#2D6B5E;color:#fff;text-decoration:none;border-radius:8px;">Avaa TackBird</a></p>
       <br>
       <p>— TackBird</p>
     `,

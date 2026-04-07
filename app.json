@@ -28,7 +28,7 @@
         "NSLocationWhenInUseUsageDescription": "TackBird shows nearby posts and places on the map."
       },
       "associatedDomains": [
-        "applinks:tackbird.fi"
+        "applinks:tackbird.com"
       ]
     },
     "android": {
@@ -59,42 +59,42 @@
           "data": [
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/post"
             },
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/events"
             },
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/messages"
             },
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/profile"
             },
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/search"
             },
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/settings"
             },
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/bookings"
             },
             {
               "scheme": "https",
-              "host": "tackbird.fi",
+              "host": "tackbird.com",
               "pathPrefix": "/invite"
             }
           ],
@@ -145,9 +145,9 @@
       "eas": {
         "projectId": "504a9107-9e8e-4e5d-90fe-ea7564166e33"
       },
-      "privacyPolicyUrl": "https://tackbird.fi/privacy",
-      "termsOfServiceUrl": "https://tackbird.fi/terms",
-      "supportEmail": "tuki@tackbird.fi",
+      "privacyPolicyUrl": "https://tackbird.com/privacy",
+      "termsOfServiceUrl": "https://tackbird.com/terms",
+      "supportEmail": "tuki@tackbird.com",
       "router": {}
     },
     "runtimeVersion": {

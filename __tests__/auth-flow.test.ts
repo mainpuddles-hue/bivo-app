@@ -35,7 +35,7 @@ describe('Email Format Validation', () => {
 
   test('Standard email addresses are valid', () => {
     expect(isValidEmail('user@example.com')).toBe(true)
-    expect(isValidEmail('jesse@tackbird.fi')).toBe(true)
+    expect(isValidEmail('jesse@tackbird.com')).toBe(true)
     expect(isValidEmail('test.user@domain.co')).toBe(true)
     expect(isValidEmail('user+tag@gmail.com')).toBe(true)
   })
@@ -396,17 +396,17 @@ describe('Profile Creation Fallback', () => {
   })
 
   test('Profile insert has correct fields', () => {
-    const insert = buildProfileInsert('user-123', 'jesse@tackbird.fi', 'Jesse')
+    const insert = buildProfileInsert('user-123', 'jesse@tackbird.com', 'Jesse')
     expect(insert).toEqual({
       id: 'user-123',
-      email: 'jesse@tackbird.fi',
+      email: 'jesse@tackbird.com',
       name: 'Jesse',
     })
   })
 
   test('Profile insert trims email and name', () => {
-    const insert = buildProfileInsert('user-123', '  jesse@tackbird.fi  ', '  Jesse Parkkonen  ')
-    expect(insert.email).toBe('jesse@tackbird.fi')
+    const insert = buildProfileInsert('user-123', '  jesse@tackbird.com  ', '  Jesse Parkkonen  ')
+    expect(insert.email).toBe('jesse@tackbird.com')
     expect(insert.name).toBe('Jesse Parkkonen')
   })
 

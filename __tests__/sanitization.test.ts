@@ -405,7 +405,7 @@ describe('Email validation and disposable domain blocking', () => {
   })
 
   test('Legitimate domains are NOT blocked', () => {
-    const legitimateDomains = ['gmail.com', 'outlook.com', 'tackbird.fi', 'helsinki.fi']
+    const legitimateDomains = ['gmail.com', 'outlook.com', 'tackbird.com', 'helsinki.fi']
     for (const domain of legitimateDomains) {
       expect(isDisposableDomain(domain, KNOWN_DISPOSABLE_DOMAINS)).toBe(false)
     }
@@ -415,7 +415,7 @@ describe('Email validation and disposable domain blocking', () => {
     // From send-otp: const cleanEmail = email.trim().toLowerCase()
     const rawEmail = '  Jesse@TackBird.fi  '
     const cleaned = rawEmail.trim().toLowerCase()
-    expect(cleaned).toBe('jesse@tackbird.fi')
+    expect(cleaned).toBe('jesse@tackbird.com')
   })
 })
 

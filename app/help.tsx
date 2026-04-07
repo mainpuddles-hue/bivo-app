@@ -123,13 +123,13 @@ function HelpScreenInner() {
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
           <PressableOpacity
-            onPress={() => Linking.openURL('mailto:tuki@tackbird.fi').catch(() => Alert.alert(t('common.error'), t('common.error')))}
+            onPress={() => Linking.openURL('mailto:tuki@tackbird.com').catch(() => Alert.alert(t('common.error'), t('common.error')))}
             style={[s.contactBtn, { backgroundColor: colors.primary }]}
-            accessibilityLabel="tuki@tackbird.fi"
+            accessibilityLabel="tuki@tackbird.com"
             accessibilityRole="link"
           >
             <Mail size={16} color={colors.primaryForeground} />
-            <Text style={[s.contactBtnText, { color: colors.primaryForeground }]}>tuki@tackbird.fi</Text>
+            <Text style={[s.contactBtnText, { color: colors.primaryForeground }]}>tuki@tackbird.com</Text>
           </PressableOpacity>
         </View>
 

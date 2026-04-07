@@ -64,13 +64,13 @@ function AboutScreenInner() {
         {/* Website */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <PressableOpacity
-            onPress={() => Linking.openURL('https://tackbird.fi').catch(() => {})}
+            onPress={() => Linking.openURL('https://tackbird.com').catch(() => {})}
             style={s.linkRow}
-            accessibilityLabel="tackbird.fi"
+            accessibilityLabel="tackbird.com"
             accessibilityRole="link"
           >
             <ExternalLink size={18} color={colors.primary} />
-            <Text style={[s.linkText, { color: colors.primary }]}>tackbird.fi</Text>
+            <Text style={[s.linkText, { color: colors.primary }]}>tackbird.com</Text>
           </PressableOpacity>
         </View>
 

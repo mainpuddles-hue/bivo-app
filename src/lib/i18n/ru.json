@@ -745,7 +745,7 @@
     "dataDownloaded": "Данные загружены",
     "dataExportFailed": "Не удалось экспортировать данные",
     "accountDeleted": "Аккаунт удалён",
-    "accountDeletePartial": "Ваши данные были удалены. Для полного удаления аккаунта свяжитесь с tuki@tackbird.fi.",
+    "accountDeletePartial": "Ваши данные были удалены. Для полного удаления аккаунта свяжитесь с tuki@tackbird.com.",
     "accountDeleteFailed": "Не удалось удалить аккаунт",
     "businessAccount": "Бизнес-аккаунт",
     "businessName": "Название компании",

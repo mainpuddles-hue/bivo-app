@@ -149,7 +149,7 @@ function LoginScreenInner() {
           options: {
             data: { name: name.trim() },
             emailRedirectTo: Platform.OS === 'web'
-              ? (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.fi') + '/auth/callback'
+              ? (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.com') + '/auth/callback'
               : Linking.createURL('auth/callback'),
           },
         })
@@ -224,7 +224,7 @@ function LoginScreenInner() {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.fi') + '/auth/callback',
+            redirectTo: (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.com') + '/auth/callback',
             queryParams: { prompt: 'select_account' },
             skipBrowserRedirect: false,
           },

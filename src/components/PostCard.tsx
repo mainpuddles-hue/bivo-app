@@ -24,7 +24,7 @@ import { isHumanAction } from '@/lib/abuseDetection'
 import { FEATURES } from '@/lib/featureFlags'
 import type { Post, PostType } from '@/lib/types'
 
-const APP_URL = 'https://tackbird.fi'
+const APP_URL = 'https://tackbird.com'
 
 function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: Record<string, string | number>) => string): { label: string; severity: 'urgent' | 'warning' } | null {
   if (!expiresAt) return null
