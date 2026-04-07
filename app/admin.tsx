@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useEffect, useCallback } from 'react'
 import {
   View, Text, ScrollView, Pressable, TextInput, StyleSheet,
-  ActivityIndicator, Alert, RefreshControl,
+  ActivityIndicator, Alert, RefreshControl, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -267,171 +267,177 @@ function AdminScreenInner() {
         ))}
       </View>
 
-      <ScrollView
-        style={s.content}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
       >
-        {/* FLAGS TAB */}
-        {activeTab === 'flags' && (
-          <>
-            {flags.length === 0 ? (
-              <View style={s.emptyContainer}>
-                <Check size={40} color={colors.accent} />
-                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('admin.noFlags')}</Text>
-              </View>
-            ) : (
-              flags.map(flag => (
-                <View key={flag.id} style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={s.flagHeader}>
-                    <View style={[s.flagBadge, { backgroundColor: flagColor(flag.flag_type, colors) }]}>
-                      <AlertTriangle size={12} color={colors.primaryForeground} />
-                      <Text style={[s.flagBadgeText, { color: colors.primaryForeground }]}>
-                        {t(`admin.${flag.flag_type}` as any) || flag.flag_type}
-                      </Text>
-                    </View>
-                    {flag.reviewed && (
-                      <View style={[s.reviewedBadge, { backgroundColor: colors.accent + '20' }]}>
-                        <Check size={12} color={colors.accent} />
-                        <Text style={[s.reviewedText, { color: colors.accent }]}>{t('admin.reviewed')}</Text>
-                      </View>
-                    )}
-                    {flag.auto_hidden && (
-                      <View style={[s.reviewedBadge, { backgroundColor: colors.destructive + '20' }]}>
-                        <EyeOff size={12} color={colors.destructive} />
-                        <Text style={[s.reviewedText, { color: colors.destructive }]}>{t('admin.autoHidden')}</Text>
-                      </View>
-                    )}
-                  </View>
-
-                  <Text style={[s.flagTitle, { color: colors.foreground }]}>
-                    {flag.post?.title ?? `Post ${(flag.post_id ?? '').slice(0, 8)}`}
-                  </Text>
-
-                  {flag.details && (
-                    <Text style={[s.flagDetails, { color: colors.mutedForeground }]} numberOfLines={3}>
-                      {flag.details}
-                    </Text>
-                  )}
-
-                  <Text style={[s.flagDate, { color: colors.mutedForeground }]}>
-                    {formatTimeAgo(flag.created_at, t, locale)}
-                  </Text>
-
-                  {!flag.reviewed && (
-                    <View style={s.actions}>
-                      {flag.post_id && (
-                        <PressableOpacity
-                          onPress={() => hidePost(flag.post_id!, flag.id)}
-                          style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
-                          accessibilityLabel={t('admin.hidePost')}
-                          accessibilityRole="button"
-                        >
-                          <EyeOff size={14} color={colors.destructive} />
-                          <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.hidePost')}</Text>
-                        </PressableOpacity>
-                      )}
-                      <PressableOpacity
-                        onPress={() => allowPost(flag.id)}
-                        style={[s.actionBtn, { backgroundColor: colors.accent + '15' }]}
-                        accessibilityLabel={t('admin.allowPost')}
-                        accessibilityRole="button"
-                      >
-                        <Check size={14} color={colors.accent} />
-                        <Text style={[s.actionText, { color: colors.accent }]}>{t('admin.allowPost')}</Text>
-                      </PressableOpacity>
-                      {flag.post?.user_id && (
-                        <PressableOpacity
-                          onPress={() => toggleBan(flag.post!.user_id, false)}
-                          style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
-                          accessibilityLabel={t('admin.banUser')}
-                          accessibilityRole="button"
-                        >
-                          <Ban size={14} color={colors.destructive} />
-                          <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.banUser')}</Text>
-                        </PressableOpacity>
-                      )}
-                    </View>
-                  )}
+        <ScrollView
+          style={s.content}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        >
+          {/* FLAGS TAB */}
+          {activeTab === 'flags' && (
+            <>
+              {flags.length === 0 ? (
+                <View style={s.emptyContainer}>
+                  <Check size={40} color={colors.accent} />
+                  <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('admin.noFlags')}</Text>
                 </View>
-              ))
-            )}
-          </>
-        )}
-
-        {/* USERS TAB */}
-        {activeTab === 'users' && (
-          <>
-            <View style={[s.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Search size={16} color={colors.mutedForeground} />
-              <TextInput
-                value={userSearch}
-                onChangeText={setUserSearch}
-                placeholder={t('admin.searchUsers')}
-                placeholderTextColor={colors.mutedForeground}
-                style={[s.searchInput, { color: colors.foreground }]}
-                onSubmitEditing={searchUsers}
-                returnKeyType="search"
-              />
-              {searchingUsers && <ActivityIndicator size="small" color={colors.primary} />}
-            </View>
-
-            {users.map(user => (
-              <View key={user.id} style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={s.userRow}>
-                  <Avatar url={user.avatar_url} name={user.name} size={40} />
-                  <View style={s.userInfo}>
-                    <View style={s.userNameRow}>
-                      <Text style={[s.userName, { color: colors.foreground }]}>{user.name}</Text>
-                      {user.is_banned && (
-                        <View style={[s.bannedBadge, { backgroundColor: colors.destructive + '20' }]}>
-                          <Text style={[s.bannedText, { color: colors.destructive }]}>{t('admin.banned')}</Text>
+              ) : (
+                flags.map(flag => (
+                  <View key={flag.id} style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={s.flagHeader}>
+                      <View style={[s.flagBadge, { backgroundColor: flagColor(flag.flag_type, colors) }]}>
+                        <AlertTriangle size={12} color={colors.primaryForeground} />
+                        <Text style={[s.flagBadgeText, { color: colors.primaryForeground }]}>
+                          {t(`admin.${flag.flag_type}` as any) || flag.flag_type}
+                        </Text>
+                      </View>
+                      {flag.reviewed && (
+                        <View style={[s.reviewedBadge, { backgroundColor: colors.accent + '20' }]}>
+                          <Check size={12} color={colors.accent} />
+                          <Text style={[s.reviewedText, { color: colors.accent }]}>{t('admin.reviewed')}</Text>
+                        </View>
+                      )}
+                      {flag.auto_hidden && (
+                        <View style={[s.reviewedBadge, { backgroundColor: colors.destructive + '20' }]}>
+                          <EyeOff size={12} color={colors.destructive} />
+                          <Text style={[s.reviewedText, { color: colors.destructive }]}>{t('admin.autoHidden')}</Text>
                         </View>
                       )}
                     </View>
-                    <Text style={[s.userMeta, { color: colors.mutedForeground }]}>
-                      {user.naapurusto} {'\u2022'} {t('admin.trustScore')}: {user.total_points ?? 0}
-                    </Text>
-                  </View>
-                  <PressableOpacity
-                    onPress={() => toggleBan(user.id, !!user.is_banned)}
-                    style={[
-                      s.banBtn,
-                      { backgroundColor: user.is_banned ? colors.accent + '15' : colors.destructive + '15' },
-                    ]}
-                    accessibilityLabel={user.is_banned ? t('admin.unbanUser') : t('admin.banUser')}
-                    accessibilityRole="button"
-                  >
-                    {user.is_banned ? (
-                      <Check size={16} color={colors.accent} />
-                    ) : (
-                      <Ban size={16} color={colors.destructive} />
-                    )}
-                  </PressableOpacity>
-                </View>
-              </View>
-            ))}
-          </>
-        )}
 
-        {/* STATS TAB */}
-        {activeTab === 'stats' && (
-          <View style={s.statsGrid}>
-            {([
-              { label: t('admin.totalUsers'), value: stats.totalUsers, color: colors.primary },
-              { label: t('admin.activeToday'), value: stats.activeToday, color: colors.accent },
-              { label: t('admin.postsThisWeek'), value: stats.postsThisWeek, color: colors.info },
-              { label: t('admin.bookingsThisWeek'), value: stats.bookingsThisWeek, color: colors.pro },
-              { label: t('admin.unreviewedFlags'), value: stats.unreviewedFlags, color: colors.destructive },
-            ] as const).map((stat, i) => (
-              <View key={i} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Text style={[s.statValue, { color: stat.color }]}>{stat.value}</Text>
-                <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{stat.label}</Text>
+                    <Text style={[s.flagTitle, { color: colors.foreground }]}>
+                      {flag.post?.title ?? `Post ${(flag.post_id ?? '').slice(0, 8)}`}
+                    </Text>
+
+                    {flag.details && (
+                      <Text style={[s.flagDetails, { color: colors.mutedForeground }]} numberOfLines={3}>
+                        {flag.details}
+                      </Text>
+                    )}
+
+                    <Text style={[s.flagDate, { color: colors.mutedForeground }]}>
+                      {formatTimeAgo(flag.created_at, t, locale)}
+                    </Text>
+
+                    {!flag.reviewed && (
+                      <View style={s.actions}>
+                        {flag.post_id && (
+                          <PressableOpacity
+                            onPress={() => hidePost(flag.post_id!, flag.id)}
+                            style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
+                            accessibilityLabel={t('admin.hidePost')}
+                            accessibilityRole="button"
+                          >
+                            <EyeOff size={14} color={colors.destructive} />
+                            <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.hidePost')}</Text>
+                          </PressableOpacity>
+                        )}
+                        <PressableOpacity
+                          onPress={() => allowPost(flag.id)}
+                          style={[s.actionBtn, { backgroundColor: colors.accent + '15' }]}
+                          accessibilityLabel={t('admin.allowPost')}
+                          accessibilityRole="button"
+                        >
+                          <Check size={14} color={colors.accent} />
+                          <Text style={[s.actionText, { color: colors.accent }]}>{t('admin.allowPost')}</Text>
+                        </PressableOpacity>
+                        {flag.post?.user_id && (
+                          <PressableOpacity
+                            onPress={() => toggleBan(flag.post!.user_id, false)}
+                            style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
+                            accessibilityLabel={t('admin.banUser')}
+                            accessibilityRole="button"
+                          >
+                            <Ban size={14} color={colors.destructive} />
+                            <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.banUser')}</Text>
+                          </PressableOpacity>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                ))
+              )}
+            </>
+          )}
+
+          {/* USERS TAB */}
+          {activeTab === 'users' && (
+            <>
+              <View style={[s.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Search size={16} color={colors.mutedForeground} />
+                <TextInput
+                  value={userSearch}
+                  onChangeText={setUserSearch}
+                  placeholder={t('admin.searchUsers')}
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[s.searchInput, { color: colors.foreground }]}
+                  onSubmitEditing={searchUsers}
+                  returnKeyType="search"
+                />
+                {searchingUsers && <ActivityIndicator size="small" color={colors.primary} />}
               </View>
-            ))}
-          </View>
-        )}
-      </ScrollView>
+
+              {users.map(user => (
+                <View key={user.id} style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={s.userRow}>
+                    <Avatar url={user.avatar_url} name={user.name} size={40} />
+                    <View style={s.userInfo}>
+                      <View style={s.userNameRow}>
+                        <Text style={[s.userName, { color: colors.foreground }]}>{user.name}</Text>
+                        {user.is_banned && (
+                          <View style={[s.bannedBadge, { backgroundColor: colors.destructive + '20' }]}>
+                            <Text style={[s.bannedText, { color: colors.destructive }]}>{t('admin.banned')}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[s.userMeta, { color: colors.mutedForeground }]}>
+                        {user.naapurusto} {'\u2022'} {t('admin.trustScore')}: {user.total_points ?? 0}
+                      </Text>
+                    </View>
+                    <PressableOpacity
+                      onPress={() => toggleBan(user.id, !!user.is_banned)}
+                      style={[
+                        s.banBtn,
+                        { backgroundColor: user.is_banned ? colors.accent + '15' : colors.destructive + '15' },
+                      ]}
+                      accessibilityLabel={user.is_banned ? t('admin.unbanUser') : t('admin.banUser')}
+                      accessibilityRole="button"
+                    >
+                      {user.is_banned ? (
+                        <Check size={16} color={colors.accent} />
+                      ) : (
+                        <Ban size={16} color={colors.destructive} />
+                      )}
+                    </PressableOpacity>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
+
+          {/* STATS TAB */}
+          {activeTab === 'stats' && (
+            <View style={s.statsGrid}>
+              {([
+                { label: t('admin.totalUsers'), value: stats.totalUsers, color: colors.primary },
+                { label: t('admin.activeToday'), value: stats.activeToday, color: colors.accent },
+                { label: t('admin.postsThisWeek'), value: stats.postsThisWeek, color: colors.info },
+                { label: t('admin.bookingsThisWeek'), value: stats.bookingsThisWeek, color: colors.pro },
+                { label: t('admin.unreviewedFlags'), value: stats.unreviewedFlags, color: colors.destructive },
+              ] as const).map((stat, i) => (
+                <View key={i} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Text style={[s.statValue, { color: stat.color }]}>{stat.value}</Text>
+                  <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{stat.label}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   )
 }

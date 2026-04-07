@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
   Pressable, ActivityIndicator, TextInput, Modal, Switch,
-  Platform, Alert, Animated, Dimensions,
+  Platform, Alert, Animated, Dimensions, KeyboardAvoidingView,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -421,54 +421,60 @@ export default function GroupsScreen() {
       )}
 
       {/* Content */}
-      {loading ? (
-        <ScrollView style={s.scrollContent} contentContainerStyle={s.scrollContainer}>
-          <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('groups.myGroups')}</Text>
-          {[1, 2, 3].map((i) => <GroupSkeleton key={i} colors={colors} />)}
-          <Text style={[s.sectionTitle, { color: colors.foreground, marginTop: 24 }]}>{t('groups.suggested')}</Text>
-          {[4, 5].map((i) => <GroupSkeleton key={i} colors={colors} />)}
-        </ScrollView>
-      ) : (
-        <ScrollView
-          style={s.scrollContent}
-          contentContainerStyle={[s.scrollContainer, { paddingBottom: insets.bottom + 80 }]}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
-          }
-        >
-          {/* My groups */}
-          <Text style={[s.sectionTitle, { color: colors.foreground }]}>
-            {t('groups.myGroups')}
-          </Text>
-          {filteredMyGroups.length === 0 ? (
-            <View style={[s.emptySection, { backgroundColor: colors.card }]}>
-              <Users size={28} color={colors.mutedForeground} strokeWidth={1.4} />
-              <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
-                {t('groups.noGroups')}
-              </Text>
-              <Text style={[s.emptySectionSub, { color: colors.mutedForeground }]}>
-                {t('groups.joinFirst')}
-              </Text>
-            </View>
-          ) : (
-            filteredMyGroups.map((g) => renderGroupCard(g, true))
-          )}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        {loading ? (
+          <ScrollView style={s.scrollContent} contentContainerStyle={s.scrollContainer} keyboardShouldPersistTaps="handled">
+            <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('groups.myGroups')}</Text>
+            {[1, 2, 3].map((i) => <GroupSkeleton key={i} colors={colors} />)}
+            <Text style={[s.sectionTitle, { color: colors.foreground, marginTop: 24 }]}>{t('groups.suggested')}</Text>
+            {[4, 5].map((i) => <GroupSkeleton key={i} colors={colors} />)}
+          </ScrollView>
+        ) : (
+          <ScrollView
+            style={s.scrollContent}
+            contentContainerStyle={[s.scrollContainer, { paddingBottom: insets.bottom + 80 }]}
+            keyboardShouldPersistTaps="handled"
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+            }
+          >
+            {/* My groups */}
+            <Text style={[s.sectionTitle, { color: colors.foreground }]}>
+              {t('groups.myGroups')}
+            </Text>
+            {filteredMyGroups.length === 0 ? (
+              <View style={[s.emptySection, { backgroundColor: colors.card }]}>
+                <Users size={28} color={colors.mutedForeground} strokeWidth={1.4} />
+                <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
+                  {t('groups.noGroups')}
+                </Text>
+                <Text style={[s.emptySectionSub, { color: colors.mutedForeground }]}>
+                  {t('groups.joinFirst')}
+                </Text>
+              </View>
+            ) : (
+              filteredMyGroups.map((g) => renderGroupCard(g, true))
+            )}
 
-          {/* Suggested */}
-          <Text style={[s.sectionTitle, { color: colors.foreground, marginTop: 24 }]}>
-            {t('groups.suggested')}
-          </Text>
-          {filteredSuggested.length === 0 ? (
-            <View style={[s.emptySection, { backgroundColor: colors.card }]}>
-              <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
-                {t('groups.noSuggested')}
-              </Text>
-            </View>
-          ) : (
-            filteredSuggested.map((g) => renderGroupCard(g, false))
-          )}
-        </ScrollView>
-      )}
+            {/* Suggested */}
+            <Text style={[s.sectionTitle, { color: colors.foreground, marginTop: 24 }]}>
+              {t('groups.suggested')}
+            </Text>
+            {filteredSuggested.length === 0 ? (
+              <View style={[s.emptySection, { backgroundColor: colors.card }]}>
+                <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
+                  {t('groups.noSuggested')}
+                </Text>
+              </View>
+            ) : (
+              filteredSuggested.map((g) => renderGroupCard(g, false))
+            )}
+          </ScrollView>
+        )}
+      </KeyboardAvoidingView>
 
       {/* FAB */}
       <PressableOpacity
@@ -497,7 +503,7 @@ export default function GroupsScreen() {
               </PressableOpacity>
             </View>
 
-            <ScrollView style={s.modalScroll} showsVerticalScrollIndicator={false}>
+            <ScrollView style={s.modalScroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {/* Name */}
               <Text style={[s.inputLabel, { color: colors.foreground }]}>
                 {t('groups.name')}

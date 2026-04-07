@@ -404,6 +404,7 @@ export default function MessagesScreen() {
         data={filtered}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
+        keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchConversations(); fetchEventChats() }} tintColor={colors.primary} />}
         ListHeaderComponent={eventChats.length > 0 && !showArchived ? (
           <View style={styles.eventChatsSection}>
