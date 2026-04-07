@@ -279,12 +279,36 @@ serve(async (req) => {
         console.log(`[webhook] Unhandled event: ${event.type}`)
     }
 
+    // Log successful webhook processing
+    await supabase.from('webhook_events').insert({
+      event_type: event.type,
+      payload: { id: event.id, type: event.type },
+      status: 'completed',
+      attempts: 1,
+    }).catch(() => {}) // Non-critical
+
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
     console.error('[webhook]', err.message)
+
+    // Log failed webhook for retry
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      if (supabaseUrl && supabaseKey) {
+        const sb = createClient(supabaseUrl, supabaseKey)
+        await sb.from('webhook_events').insert({
+          event_type: 'unknown',
+          payload: { error: err.message },
+          status: 'failed',
+          last_error: err.message,
+        }).catch(() => {})
+      }
+    } catch {} // Best effort
+
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
