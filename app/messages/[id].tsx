@@ -65,7 +65,7 @@ function ConversationScreenInner() {
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [hasOlder, setHasOlder] = useState(true)
+  const [hasOlder, setHasOlder] = useState(false)
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [otherTyping, setOtherTyping] = useState(false)
@@ -797,6 +797,7 @@ function ConversationScreenInner() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0, maxHeight: 48 }}
           contentContainerStyle={s.quickRepliesRow}
           keyboardShouldPersistTaps="handled"
         >

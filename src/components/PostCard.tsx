@@ -217,7 +217,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 )}
               </View>
             ) : (
-              <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo} accessibilityRole="button" accessibilityLabel={user?.name ?? t('postCard.anonymousUser')}>
+              <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo} accessibilityLabel={user?.name ?? t('postCard.anonymousUser')}>
                 <View style={styles.avatarContainer}>
                   {user?.avatar_url ? (
                     <Image source={{ uri: getImageUrl(user.avatar_url, 'thumbnail')! }} style={[
@@ -386,7 +386,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {/* Like button — always show */}
           <Pressable
             hitSlop={8}
-            accessibilityRole="button"
             accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
             accessibilityState={{ selected: liked }}
             onPress={async (e) => {
@@ -469,7 +468,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {/* Save */}
           <Pressable
             hitSlop={8}
-            accessibilityRole="button"
             accessibilityLabel={saved ? t('post.unsave') : t('post.save')}
             accessibilityState={{ selected: saved }}
             onPress={async (e) => {
@@ -510,7 +508,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {showMore && (
             <Pressable
               hitSlop={8}
-              accessibilityRole="button"
               accessibilityLabel={t('common.share')}
               onPress={async (e) => {
                 e.stopPropagation?.()
@@ -527,7 +524,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {showMore && (
             <Pressable
               hitSlop={8}
-              accessibilityRole="button"
               accessibilityLabel={t('post.report')}
               onPress={(e) => {
                 e.stopPropagation?.()
@@ -544,7 +540,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {showMore && userId && (
             <Pressable
               hitSlop={8}
-              accessibilityRole="button"
               accessibilityLabel={t('postCard.hide')}
               onPress={(e) => {
                 e.stopPropagation?.()
@@ -561,7 +556,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {/* More toggle */}
           <Pressable
             hitSlop={8}
-            accessibilityRole="button"
             accessibilityLabel={t('postCard.moreOptions')}
             accessibilityState={{ expanded: showMore }}
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
