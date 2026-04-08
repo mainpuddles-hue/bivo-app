@@ -489,7 +489,7 @@ export default function GroupDetailScreen() {
           <View style={ps.headerBtn} />
         </View>
         <View style={ps.emptyContainer}>
-          <Users size={48} color={colors.mutedForeground} strokeWidth={1.2} />
+          <Users size={48} color={colors.mutedForeground} strokeWidth={1.3} />
           <Text style={[ps.emptyText, { color: colors.mutedForeground }]}>{t('groups.comingSoon')}</Text>
         </View>
       </View>
@@ -510,7 +510,7 @@ export default function GroupDetailScreen() {
           <View style={ps.headerBtn} />
         </View>
         <View style={ps.emptyContainer}>
-          <Users size={48} color={colors.mutedForeground} strokeWidth={1.2} />
+          <Users size={48} color={colors.mutedForeground} strokeWidth={1.3} />
           <Text style={[ps.emptyText, { color: colors.mutedForeground }]}>{t('groups.notFound') ?? t('common.notFound')}</Text>
         </View>
       </View>
@@ -656,7 +656,7 @@ export default function GroupDetailScreen() {
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={
             <View style={ps.emptySection}>
-              <MessageCircle size={32} color={colors.mutedForeground} strokeWidth={1.2} />
+              <MessageCircle size={32} color={colors.mutedForeground} strokeWidth={1.6} />
               <Text style={[ps.emptySectionText, { color: colors.mutedForeground }]}>{t('groups.noPosts')}</Text>
               <Text style={[ps.emptySectionSub, { color: colors.mutedForeground }]}>{t('groups.startConversation')}</Text>
             </View>
@@ -671,7 +671,7 @@ export default function GroupDetailScreen() {
           {postImage && (
             <View style={ps.imagePreviewRow}>
               <Image source={{ uri: postImage }} style={ps.imagePreview} contentFit="cover" cachePolicy="memory-disk" />
-              <PressableOpacity onPress={() => setPostImage(null)} style={ps.removeImageBtn}><X size={14} color="#FFF" strokeWidth={2} /></PressableOpacity>
+              <PressableOpacity onPress={() => setPostImage(null)} style={ps.removeImageBtn}><X size={14} color="#FFF" strokeWidth={1.8} /></PressableOpacity>
             </View>
           )}
           <View style={ps.postInputRow}>

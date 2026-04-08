@@ -586,7 +586,7 @@ function ExploreScreenInner() {
                           </View>
                         ) : (
                           <View style={[s.ceImagePlaceholder, { backgroundColor: `${catColor}18` }]}>
-                            <CalendarDays size={24} color={catColor} strokeWidth={1.4} />
+                            <CalendarDays size={24} color={catColor} strokeWidth={1.6} />
                           </View>
                         )}
                         <View style={s.ceCardBody}>
@@ -793,7 +793,7 @@ function ExploreScreenInner() {
               <SectionSkeleton count={5} />
             ) : allEvents.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <CalendarDays size={40} color={colors.mutedForeground} strokeWidth={1.4} />
+                <CalendarDays size={40} color={colors.mutedForeground} strokeWidth={1.3} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noEvents')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noEventsHint')}</Text>
                 <Pressable
@@ -912,7 +912,7 @@ function ExploreScreenInner() {
               <SectionSkeleton count={5} />
             ) : sortedPlaces.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <MapPin size={40} color={colors.mutedForeground} strokeWidth={1.4} />
+                <MapPin size={40} color={colors.mutedForeground} strokeWidth={1.3} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noPlaces')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noPlacesHint')}</Text>
                 <Pressable

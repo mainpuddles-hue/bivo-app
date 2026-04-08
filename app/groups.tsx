@@ -373,7 +373,7 @@ export default function GroupsScreen() {
           <View style={s.headerRight} />
         </View>
         <View style={s.emptyContainer}>
-          <Users size={48} color={colors.mutedForeground} strokeWidth={1.2} />
+          <Users size={48} color={colors.mutedForeground} strokeWidth={1.3} />
           <Text style={[s.emptyText, { color: colors.mutedForeground }]}>
             {t('groups.comingSoon')}
           </Text>
@@ -447,7 +447,7 @@ export default function GroupsScreen() {
             </Text>
             {filteredMyGroups.length === 0 ? (
               <View style={[s.emptySection, { backgroundColor: colors.card }]}>
-                <Users size={28} color={colors.mutedForeground} strokeWidth={1.4} />
+                <Users size={28} color={colors.mutedForeground} strokeWidth={1.6} />
                 <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
                   {t('groups.noGroups')}
                 </Text>

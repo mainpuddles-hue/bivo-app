@@ -353,7 +353,7 @@ function EventDetailScreenInner() {
             />
           ) : (
             <View style={[s.heroPlaceholder, { backgroundColor: `${catColor}30` }]}>
-              <CalendarDays size={64} color={catColor} strokeWidth={1.4} />
+              <CalendarDays size={64} color={catColor} strokeWidth={1.3} />
             </View>
           )}
           {/* Category badge */}
@@ -375,20 +375,20 @@ function EventDetailScreenInner() {
 
         {/* Date + time */}
         <View style={s.infoRow}>
-          <CalendarDays size={18} color={colors.primary} strokeWidth={1.6} />
+          <CalendarDays size={18} color={colors.primary} strokeWidth={1.8} />
           <Text style={[s.infoText, { color: colors.foreground }]}>
             {formatEventDate(event.event_date, locale)}
           </Text>
         </View>
         <View style={s.infoRow}>
-          <Clock size={18} color={colors.primary} strokeWidth={1.6} />
+          <Clock size={18} color={colors.primary} strokeWidth={1.8} />
           <Text style={[s.infoText, { color: colors.foreground }]}>{timeStr}</Text>
         </View>
 
         {/* Location */}
         {event.location_name && (
           <View style={s.infoRow}>
-            <MapPin size={18} color={colors.primary} strokeWidth={1.6} />
+            <MapPin size={18} color={colors.primary} strokeWidth={1.8} />
             <Text style={[s.infoText, { color: colors.foreground }]} numberOfLines={2}>{event.location_name}</Text>
           </View>
         )}
@@ -404,7 +404,7 @@ function EventDetailScreenInner() {
         {/* Participants section */}
         <View style={s.participantsSection}>
           <View style={s.participantsHeader}>
-            <Users size={18} color={colors.primary} strokeWidth={1.6} />
+            <Users size={18} color={colors.primary} strokeWidth={1.8} />
             <Text style={[s.participantsText, { color: colors.foreground }]}>{participantsText}</Text>
           </View>
 

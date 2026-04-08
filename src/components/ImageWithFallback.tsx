@@ -33,7 +33,7 @@ export function ImageWithFallback({ uri, fallbackIcon, style, imageSize = 'mediu
   if (!optimizedUri || error) {
     return (
       <View style={[styles.fallback, { backgroundColor: colors.muted }, style]}>
-        {fallbackIcon ?? <ImageOff size={24} color={colors.mutedForeground} strokeWidth={1.5} />}
+        {fallbackIcon ?? <ImageOff size={24} color={colors.mutedForeground} strokeWidth={1.6} />}
       </View>
     )
   }

@@ -113,7 +113,7 @@ export function UnsupportedAreaScreen({
             { backgroundColor: isDark ? `${colors.primary}20` : `${colors.primary}15` },
           ]}
         >
-          <Globe size={48} color={colors.primary} strokeWidth={1.5} />
+          <Globe size={48} color={colors.primary} strokeWidth={1.3} />
         </View>
 
         {/* Title */}
