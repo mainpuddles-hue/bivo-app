@@ -15,6 +15,8 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { useSmartMatch } from '@/hooks/useSmartMatch'
 import { useStreak } from '@/hooks/useStreak'
 import { useInteractionTracker } from '@/hooks/useInteractionTracker'
+import { usePresence } from '@/hooks/usePresence'
+import { useSessionManager } from '@/hooks/useSessionManager'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
 import { AlertBanner } from '@/components/AlertBanner'
@@ -125,6 +127,8 @@ function FeedScreenInner() {
   const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
   const { recordActivity, currentStreak } = useStreak(feed.currentUserId)
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
+  const { onlineCount } = usePresence(feed.currentUserId, feed.userNeighborhood)
+  useSessionManager(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
 
   // Open neighborhood picker when navigated from settings with param
@@ -392,6 +396,16 @@ function FeedScreenInner() {
         </Text>
       </View>
 
+      {/* Online presence indicator */}
+      {onlineCount > 1 && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingBottom: 4 }}>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success }} />
+          <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
+            {onlineCount} {t('feed.online') ?? 'online'}
+          </Text>
+        </View>
+      )}
+
       {/* Streak milestone */}
       {[3, 7, 30].includes(currentStreak) && (
         <View style={[styles.streakMilestone, { backgroundColor: `${colors.pro}12` }]}>
@@ -486,7 +500,7 @@ function FeedScreenInner() {
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
     placesSectionTitle, matches, dismissMatch, showMissedBanner, missedCount,
-    currentStreak, digestData, digestDismissed])
+    currentStreak, digestData, digestDismissed, onlineCount])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {

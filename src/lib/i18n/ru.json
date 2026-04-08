@@ -106,7 +106,8 @@
     "sortNewest": "Новейшие",
     "sortPopular": "Популярные",
     "sortNearest": "Ближайшие",
-    "sortCheapest": "Дешевле"
+    "sortCheapest": "Дешевле",
+    "online": "в вашем районе"
   },
   "streak": {
     "milestone3": "3 дня подряд! Вы активный сосед.",

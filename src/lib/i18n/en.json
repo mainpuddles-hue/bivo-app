@@ -107,7 +107,8 @@
     "sortNewest": "Newest",
     "sortPopular": "Most popular",
     "sortNearest": "Nearest",
-    "sortCheapest": "Cheapest"
+    "sortCheapest": "Cheapest",
+    "online": "in your neighborhood"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",

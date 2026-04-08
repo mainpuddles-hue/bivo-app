@@ -107,7 +107,8 @@
     "sortNewest": "Nyaste",
     "sortPopular": "Mest populär",
     "sortNearest": "Närmaste",
-    "sortCheapest": "Billigaste"
+    "sortCheapest": "Billigaste",
+    "online": "i ditt grannskap"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",

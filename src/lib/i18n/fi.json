@@ -107,7 +107,8 @@
     "sortNewest": "Uusin",
     "sortPopular": "Suosituin",
     "sortNearest": "Lähin",
-    "sortCheapest": "Halvin"
+    "sortCheapest": "Halvin",
+    "online": "naapurustossasi"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",

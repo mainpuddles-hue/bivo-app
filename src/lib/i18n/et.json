@@ -106,7 +106,8 @@
     "sortNewest": "Uusim",
     "sortPopular": "Populaarseim",
     "sortNearest": "Lähim",
-    "sortCheapest": "Odavaim"
+    "sortCheapest": "Odavaim",
+    "online": "sinu naabruskonnas"
   },
   "streak": {
     "milestone3": "3 päeva järjest! Oled aktiivne naaber.",
