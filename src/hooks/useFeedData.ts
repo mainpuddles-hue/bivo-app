@@ -243,7 +243,7 @@ export function useFeedData() {
         .from('posts')
         .select(POST_SELECT)
         .eq('is_active', true)
-        .or('expires_at.is.null,expires_at.gt.now()')
+        .or('expires_at.is.null,expires_at.gte.now()')
         .order('is_pro_listing', { ascending: false })
 
       // Apply sort order based on sortBy state
@@ -276,6 +276,7 @@ export function useFeedData() {
       if (fetchError) { setError(t('feed.loadError')); return }
 
       let newPosts = (data ?? []) as unknown as Post[]
+      const dbRowCount = newPosts.length // Track DB count before client-side filtering
 
       // Filter out posts from blocked users
       if (currentUserId) {
@@ -409,16 +410,16 @@ export function useFeedData() {
           // Cache the first 20 posts for offline/instant display on next launch
           AsyncStorage.setItem(FEED_CACHE_KEY, JSON.stringify(ranked.slice(0, 20))).catch(() => {})
         }
-        offsetRef.current = newPosts.length
+        offsetRef.current = dbRowCount // Use DB count, not filtered count
       } else {
         setPosts(prev => {
           const ids = new Set(prev.map(p => p.id))
           const unique = ranked.filter(p => !ids.has(p.id))
           return [...prev, ...unique]
         })
-        offsetRef.current = offset + newPosts.length
+        offsetRef.current = offset + dbRowCount // Use DB count, not filtered count
       }
-      setHasMore(newPosts.length >= PAGE_SIZE)
+      setHasMore(dbRowCount >= PAGE_SIZE)
     } catch (err: any) {
       if (!controller.signal.aborted) {
         const isOffline = err?.message?.includes('Network') || err?.message?.includes('fetch') || err?.code === 'NETWORK_ERROR'
