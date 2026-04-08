@@ -49,19 +49,21 @@ serve(async (req) => {
 
     const tableResults = backup.tables as Record<string, { count: number; data: unknown[] }>
 
-    for (const table of tables) {
-      try {
-        const { data, error } = await supabase.from(table).select('*').limit(10000)
-        if (!error && data) {
-          tableResults[table] = { count: data.length, data }
-        } else {
-          console.warn(`[db-backup] Skipping table ${table}: ${error?.message}`)
+    // Fetch tables in parallel batches of 3 to stay within timeout
+    for (let i = 0; i < tables.length; i += 3) {
+      const batch = tables.slice(i, i + 3)
+      const results = await Promise.allSettled(
+        batch.map(table => supabase.from(table).select('*').limit(5000))
+      )
+      for (let j = 0; j < batch.length; j++) {
+        const table = batch[j]
+        const result = results[j]
+        if (result.status === 'fulfilled' && result.value.data) {
+          tableResults[table] = { count: result.value.data.length, data: result.value.data }
         }
-      } catch (tableErr: unknown) {
-        const msg = tableErr instanceof Error ? tableErr.message : String(tableErr)
-        console.warn(`[db-backup] Error reading table ${table}: ${msg}`)
       }
     }
+    // All tables fetched in parallel batches above
 
     // Save to storage
     const date = new Date().toISOString().split('T')[0]

@@ -363,7 +363,9 @@ serve(async (req) => {
         const result = await sendExpoPush(
           profile.push_token,
           title,
-          `${count} uutta ilmoitusta`,
+          profile.language === 'en' ? `${count} new notifications`
+            : profile.language === 'sv' ? `${count} nya aviseringar`
+            : `${count} uutta ilmoitusta`,
           data,
         )
         // Clean up invalid token if detected
