@@ -790,7 +790,7 @@ function PostDetailScreenInner() {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
           <Text style={[styles.notFound, { color: colors.mutedForeground, marginBottom: 16 }]}>{loadError}</Text>
           <PressableOpacity onPress={() => loadPost()} style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.primary, borderRadius: 8 }} accessibilityRole="button" accessibilityLabel={t('common.retry')}>
-            <Text style={{ color: '#fff', fontFamily: fonts.bodyMedium, fontSize: 15 }}>{t('common.retry')}</Text>
+            <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodyMedium, fontSize: 15 }}>{t('common.retry')}</Text>
           </PressableOpacity>
         </View>
       </View>

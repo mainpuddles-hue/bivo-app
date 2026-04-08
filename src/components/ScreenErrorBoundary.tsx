@@ -150,7 +150,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  retryTextDark: {
-    color: '#1A1A1A',
-  },
 })
