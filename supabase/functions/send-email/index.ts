@@ -175,11 +175,24 @@ serve(async (req) => {
 
     // Send via Resend API
     const resendApiKey = getEnvOrThrow('RESEND_API_KEY')
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: 'TackBird <onboarding@resend.dev>', to: to_email, subject, html }),
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
+    let resendRes: Response
+    try {
+      resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'TackBird <onboarding@resend.dev>', to: to_email, subject, html }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+    } catch (fetchErr: any) {
+      clearTimeout(timeout)
+      console.error('[send-email] Resend fetch failed:', fetchErr.message)
+      return new Response(JSON.stringify({ error: 'Failed to send email' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     if (!resendRes.ok) {
       const resendErr = await resendRes.json().catch(() => ({}))

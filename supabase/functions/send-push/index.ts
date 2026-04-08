@@ -81,6 +81,8 @@ async function sendExpoPush(token: string, title: string, body: string, data?: R
     badge: 1,
   }
 
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
   try {
     const res = await fetch(EXPO_PUSH_URL, {
       method: 'POST',
@@ -89,7 +91,9 @@ async function sendExpoPush(token: string, title: string, body: string, data?: R
         'Accept': 'application/json',
       },
       body: JSON.stringify(message),
+      signal: controller.signal,
     })
+    clearTimeout(timeout)
 
     if (!res.ok) return { success: false, tokenInvalid: false }
 
@@ -108,6 +112,7 @@ async function sendExpoPush(token: string, title: string, body: string, data?: R
 
     return { success: true, tokenInvalid: false }
   } catch {
+    clearTimeout(timeout)
     return { success: false, tokenInvalid: false }
   }
 }
@@ -225,6 +230,8 @@ serve(async (req) => {
             badge: 1,
           }))
 
+          const batchController = new AbortController()
+          const batchTimeout = setTimeout(() => batchController.abort(), 15000)
           try {
             const res = await fetch(EXPO_PUSH_URL, {
               method: 'POST',
@@ -233,7 +240,9 @@ serve(async (req) => {
                 'Accept': 'application/json',
               },
               body: JSON.stringify(messages),
+              signal: batchController.signal,
             })
+            clearTimeout(batchTimeout)
 
             if (res.ok) {
               const results = await res.json()
@@ -253,6 +262,7 @@ serve(async (req) => {
               })
             }
           } catch (batchErr: any) {
+            clearTimeout(batchTimeout)
             console.error('[send-push] Urgent broadcast batch failed:', {
               batch_index: i / BATCH_SIZE,
               batch_size: batch.length,

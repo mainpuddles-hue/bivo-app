@@ -193,16 +193,21 @@ serve(async (req) => {
 
       // Image moderation — check if post has image
       if (post_id && result.action === 'allow') {
+        let imgTimeout: ReturnType<typeof setTimeout> | undefined
         try {
           const { data: post } = await supabase.from('posts').select('image_url').eq('id', post_id).maybeSingle()
           if (post?.image_url) {
             const hfToken = Deno.env.get('HF_API_TOKEN')
             if (hfToken) {
+              const controller = new AbortController()
+              imgTimeout = setTimeout(() => controller.abort(), 15000)
               const imgRes = await fetch('https://router.huggingface.co/hf-inference/models/Falconsai/nsfw_image_detection', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${hfToken}` },
                 body: JSON.stringify({ inputs: post.image_url }),
+                signal: controller.signal,
               })
+              clearTimeout(imgTimeout)
               if (imgRes.ok) {
                 const imgResult = await imgRes.json()
                 // Model returns [{label: "nsfw", score: 0.9}, {label: "normal", score: 0.1}]
@@ -222,6 +227,7 @@ serve(async (req) => {
             }
           }
         } catch (err: any) {
+          if (imgTimeout) clearTimeout(imgTimeout)
           console.warn('[moderate] Image check failed:', err.message)
         }
       }

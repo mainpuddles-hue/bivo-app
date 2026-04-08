@@ -302,20 +302,43 @@ async function validateAppleReceipt(
   }
 
   // Try production first
-  let res = await fetch('https://buy.itunes.apple.com/verifyReceipt', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
+  let res: Response
+  try {
+    res = await fetch('https://buy.itunes.apple.com/verifyReceipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+  } catch (err: any) {
+    clearTimeout(timeout)
+    console.error('[verify-boost-purchase] Apple production validation fetch failed:', err.message)
+    details.error = 'Apple production validation timed out or failed'
+    return false
+  }
   let result = await res.json()
 
   // Status 21007 means receipt is from sandbox — retry against sandbox endpoint
   if (result.status === 21007) {
-    res = await fetch('https://sandbox.itunes.apple.com/verifyReceipt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+    const sandboxController = new AbortController()
+    const sandboxTimeout = setTimeout(() => sandboxController.abort(), 15000)
+    try {
+      res = await fetch('https://sandbox.itunes.apple.com/verifyReceipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: sandboxController.signal,
+      })
+      clearTimeout(sandboxTimeout)
+    } catch (err: any) {
+      clearTimeout(sandboxTimeout)
+      console.error('[verify-boost-purchase] Apple sandbox validation fetch failed:', err.message)
+      details.error = 'Apple sandbox validation timed out or failed'
+      return false
+    }
     result = await res.json()
     details.environment = 'sandbox'
   } else {

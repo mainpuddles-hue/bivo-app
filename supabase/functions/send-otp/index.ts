@@ -124,19 +124,32 @@ serve(async (req) => {
 <p style="margin:0">Jos et pyytanyt tata koodia, voit jattaa taman viestin huomiotta.</p>
 </td></tr></table></td></tr></table></body></html>`
 
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'TackBird <onboarding@resend.dev>',
-        to: cleanEmail,
-        subject: type === 'recovery' ? 'TackBird — Nollaa salasanasi' : 'TackBird — Vahvistuskoodi',
-        html: emailHtml,
-      }),
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
+    let resendRes: Response
+    try {
+      resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'TackBird <onboarding@resend.dev>',
+          to: cleanEmail,
+          subject: type === 'recovery' ? 'TackBird — Nollaa salasanasi' : 'TackBird — Vahvistuskoodi',
+          html: emailHtml,
+        }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+    } catch (fetchErr: any) {
+      clearTimeout(timeout)
+      console.error('[send-otp] Resend fetch failed:', fetchErr.message)
+      return new Response(JSON.stringify({ error: 'Failed to send verification code' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     if (!resendRes.ok) {
       const resendErr = await resendRes.json().catch(() => ({}))

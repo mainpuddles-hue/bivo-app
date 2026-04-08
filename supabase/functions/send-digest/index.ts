@@ -98,6 +98,8 @@ serve(async (req) => {
         <p style="font-size:12px;color:#999;">— TackBird</p>
       `
 
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
       try {
         await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -111,9 +113,12 @@ serve(async (req) => {
             subject,
             html,
           }),
+          signal: controller.signal,
         })
+        clearTimeout(timeout)
         sentCount++
       } catch (err) {
+        clearTimeout(timeout)
         console.error(`[send-digest] Failed to send to ${user.id}:`, err)
       }
 
