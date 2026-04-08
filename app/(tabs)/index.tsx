@@ -409,21 +409,11 @@ function FeedScreenInner() {
       )}
 
       {/* Neighborhood activity stats */}
-      {!neighborhoodStats.loading && feed.userNeighborhood && (
+      {!neighborhoodStats.loading && feed.userNeighborhood && neighborhoodStats.eventsThisWeek > 0 && (
         <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingBottom: 8 }}>
           <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
-            {'\u{1F4DD}'} {neighborhoodStats.postsThisWeek} {t('feed.postsThisWeek') ?? 'tällä viikolla'}
+            {'\u{1F4C5}'} {neighborhoodStats.eventsThisWeek} {t('feed.eventsThisWeek') ?? 'tapahtumaa'}
           </Text>
-          {neighborhoodStats.eventsThisWeek > 0 && (
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
-              {'\u{1F4C5}'} {neighborhoodStats.eventsThisWeek} {t('feed.eventsThisWeek') ?? 'tapahtumaa'}
-            </Text>
-          )}
-          {neighborhoodStats.activeUsers > 0 && (
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
-              {'\u{1F465}'} {neighborhoodStats.activeUsers} {t('feed.activeThisWeek') ?? 'aktiivista'}
-            </Text>
-          )}
         </View>
       )}
 
