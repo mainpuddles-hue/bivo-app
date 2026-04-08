@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import {
-  Settings, LogOut, MapPin, Star, Users, Pencil, Camera, X,
+  Settings, LogOut, LogIn, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package, ChevronRight,
   Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2, TrendingUp,
 } from 'lucide-react-native'
@@ -358,9 +358,16 @@ export default function ProfileScreen() {
         <View style={[s.header, { paddingTop: 12 }]}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
-        <PressableOpacity onPress={() => router.push('/(auth)/login')} style={[s.loginBtn, { backgroundColor: colors.primary }]}>
-          <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('auth.login')}</Text>
-        </PressableOpacity>
+        <View style={s.emptyLogin}>
+          <View style={[s.emptyIconCircle, { backgroundColor: colors.primary + '14' }]}>
+            <LogIn size={36} color={colors.primary} strokeWidth={1.6} />
+          </View>
+          <Text style={[s.emptyLoginTitle, { color: colors.foreground }]}>{t('profile.loginRequired')}</Text>
+          <Text style={[s.emptyLoginHint, { color: colors.mutedForeground }]}>{t('profile.loginHint')}</Text>
+          <PressableOpacity onPress={() => router.push('/(auth)/login')} style={[s.loginBtn, { backgroundColor: colors.primary }]}>
+            <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('auth.login')}</Text>
+          </PressableOpacity>
+        </View>
       </View>
     )
   }
@@ -972,7 +979,11 @@ const s = StyleSheet.create({
   activityMetaBadge: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
   menuText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  loginBtn: { marginHorizontal: 16, marginTop: 64, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
+  emptyLogin: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 12 },
+  emptyIconCircle: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  emptyLoginTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading, textAlign: 'center' },
+  emptyLoginHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlign: 'center' },
+  loginBtn: { marginTop: 8, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center' },
   loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },

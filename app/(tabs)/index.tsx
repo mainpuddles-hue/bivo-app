@@ -468,7 +468,7 @@ function FeedScreenInner() {
       <JuuriNytStrip posts={feed.posts} />
 
       {displayEvents.length > 0 ? (
-        <View style={{ gap: 10 }}>
+        <View style={{ gap: 12 }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
             <View style={[styles.sectionBar, { backgroundColor: colors.success }]} />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{eventSectionTitle}</Text>

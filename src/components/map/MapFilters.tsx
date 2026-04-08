@@ -48,7 +48,7 @@ export function MapFilters({
                 backgroundColor: activeFilter === 'posts' ? LAYER_COLORS.post : activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place,
                 borderColor: 'transparent',
               }]}
-              hitSlop={10}
+              hitSlop={8}
               onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
             >
               <ArrowLeft size={14} color={colors.primaryForeground} />
@@ -66,7 +66,7 @@ export function MapFilters({
                   { borderColor: timeFilter === tf.key ? LAYER_COLORS.event : colors.border },
                   timeFilter === tf.key && { backgroundColor: LAYER_COLORS.event },
                 ]}
-                hitSlop={10}
+                hitSlop={8}
                 onPress={() => { try { Haptics.selectionAsync() } catch {} onTimeFilterChange(timeFilter === tf.key ? 'all' : tf.key) }}
               >
                 <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? colors.primaryForeground : colors.foreground }]}>
@@ -88,7 +88,7 @@ export function MapFilters({
                       { borderColor: isActive ? sc.color : colors.border },
                       isActive && { backgroundColor: sc.color },
                     ]}
-                    hitSlop={10}
+                    hitSlop={8}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
@@ -111,7 +111,7 @@ export function MapFilters({
                       { borderColor: isActive ? layerColor : colors.border },
                       isActive && { backgroundColor: layerColor },
                     ]}
-                    hitSlop={10}
+                    hitSlop={8}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
@@ -139,7 +139,7 @@ export function MapFilters({
                   { borderColor: isActive ? f.color : colors.border },
                   isActive && { backgroundColor: f.color },
                 ]}
-                hitSlop={10}
+                hitSlop={8}
                 onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange(f.key); onSubCategoryChange(null); onTimeFilterChange('all') }}
               >
                 <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>

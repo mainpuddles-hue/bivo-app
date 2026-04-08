@@ -254,7 +254,7 @@ const s = StyleSheet.create({
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   statusBadgeText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
   providerRow: { padding: 16, gap: 12 },
-  providerHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  providerHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   providerTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 23, flex: 1 },
   providerDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   connectedBadge: {

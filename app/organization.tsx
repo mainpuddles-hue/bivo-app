@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
   emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 
   // Profile editor styles
-  editorCard: { borderRadius: 12, padding: 16, gap: 10 },
+  editorCard: { borderRadius: 12, padding: 16, gap: 12 },
   imageScroll: { gap: 12, paddingVertical: 4 },
   imageThumbWrap: { position: 'relative' },
   imageThumb: { width: 90, height: 90, borderRadius: 12 },
@@ -638,7 +638,7 @@ const styles = StyleSheet.create({
   },
   geocodeBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   coordsText: { fontSize: 12, fontFamily: fonts.body },
-  contactRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  contactRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   contactInput: {
     flex: 1, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body,

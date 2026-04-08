@@ -538,6 +538,8 @@
   },
   "profile": {
     "title": "Profil",
+    "loginRequired": "Logga in för att se din profil",
+    "loginHint": "Logga in för att se din profil, inlägg och hantera ditt konto.",
     "editBio": "Redigera presentation",
     "editBioDesc": "Redigera din presentationstext",
     "editAvatar": "Byt profilbild",

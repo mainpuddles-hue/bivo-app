@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     height: 48, paddingHorizontal: 16,
   },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoCircle: {
     width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   wordmark: { fontSize: 12, fontFamily: fonts.heading, letterSpacing: 1.7, lineHeight: 16 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconButton: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
   },
   badge: {

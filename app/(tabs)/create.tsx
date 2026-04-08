@@ -1793,7 +1793,7 @@ const styles = StyleSheet.create({
   boostInfoText: { fontSize: 12, fontFamily: fonts.bodySemi },
   boostUpsell: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 8, borderRadius: 8 },
   boostUpsellText: { fontSize: 12, fontFamily: fonts.bodySemi },
-  urgencyOptions: { flexDirection: 'row', gap: 10 },
+  urgencyOptions: { flexDirection: 'row', gap: 12 },
   urgencyOption: {
     flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,
   },
@@ -1920,7 +1920,7 @@ const styles = StyleSheet.create({
   // Tarjoan sub-type selector
   tarjoanTypeChip: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16, minHeight: 40,
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, minHeight: 40,
     flex: 1, justifyContent: 'center',
   },
   tarjoanTypeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },

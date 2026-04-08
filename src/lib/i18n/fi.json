@@ -557,6 +557,8 @@
   },
   "profile": {
     "title": "Profiili",
+    "loginRequired": "Kirjaudu sisään nähdäksesi profiilisi",
+    "loginHint": "Kirjaudu sisään nähdäksesi profiilisi, ilmoituksesi ja hallitaksesi tiliäsi.",
     "editBio": "Muokkaa esittelyä",
     "editBioDesc": "Muokkaa esittelytekstiäsi",
     "editAvatar": "Vaihda profiilikuva",

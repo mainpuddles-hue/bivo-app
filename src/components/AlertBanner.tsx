@@ -62,7 +62,7 @@ export function AlertBanner() {
               </Text>
               <View style={styles.alertActions}>
                 {alert.description && (
-                  <Pressable onPress={(e) => { e.stopPropagation?.(); setExpandedId(prev => prev === alert.id ? null : alert.id) }} hitSlop={16} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Toggle details">
+                  <Pressable onPress={(e) => { e.stopPropagation?.(); setExpandedId(prev => prev === alert.id ? null : alert.id) }} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Toggle details">
                     {isExpanded ? (
                       <ChevronUp size={14} color={iconColor} />
                     ) : (
@@ -70,7 +70,7 @@ export function AlertBanner() {
                     )}
                   </Pressable>
                 )}
-                <Pressable onPress={(e) => { e.stopPropagation?.(); handleDismiss(alert.id) }} hitSlop={16} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Dismiss">
+                <Pressable onPress={(e) => { e.stopPropagation?.(); handleDismiss(alert.id) }} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Dismiss">
                   <X size={14} color={colors.mutedForeground} />
                 </Pressable>
               </View>

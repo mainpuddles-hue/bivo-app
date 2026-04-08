@@ -52,7 +52,7 @@ export const DiscoverySection = memo(function DiscoverySection({
   // Loading state — show skeleton circles for places
   if (extraLoading && nearbyPlaces.length === 0) {
     return (
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 12 }}>
         <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
           <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
@@ -68,7 +68,7 @@ export const DiscoverySection = memo(function DiscoverySection({
   }
 
   return (
-    <View style={{ gap: 10 }}>
+    <View style={{ gap: 12 }}>
       {/* Section header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 4 }}>
         <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />

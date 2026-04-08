@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   heroSubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
   heroPrice: { fontSize: 22, fontWeight: '800', marginTop: 8, fontFamily: fonts.heading },
   benefitsCard: { borderRadius: 12, padding: 16, gap: 12 },
-  benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitText: { fontSize: 14, flex: 1, fontFamily: fonts.body },
   label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
   input: {

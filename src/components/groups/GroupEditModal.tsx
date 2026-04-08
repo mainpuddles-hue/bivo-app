@@ -101,7 +101,7 @@ function GroupEditModalInner({
             />
 
             {/* Public/Private toggle */}
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               <Pressable
                 onPress={() => setEditIsPublic(true)}
                 style={[styles.toggleChip, { backgroundColor: editIsPublic ? colors.primary : colors.muted }]}

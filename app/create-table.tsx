@@ -375,7 +375,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
   chipRow: {
-    gap: 10,
+    gap: 12,
     paddingVertical: 4,
   },
   categoryChip: {
@@ -396,7 +396,7 @@ const s = StyleSheet.create({
   },
   segmentRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   segmentBtn: {
     flex: 1,

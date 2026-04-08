@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
     fontSize: 14, fontWeight: '700', lineHeight: 20,
     fontFamily: fonts.bodySemi, paddingHorizontal: 16, marginBottom: 8,
   },
-  eventChatsScroll: { paddingHorizontal: 12, gap: 10 },
+  eventChatsScroll: { paddingHorizontal: 12, gap: 12 },
   eventChatCard: {
     width: 140, borderRadius: 14, borderWidth: 1,
     padding: 12, gap: 4,

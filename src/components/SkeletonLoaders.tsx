@@ -100,7 +100,7 @@ export function SectionSkeleton({ count = 3 }: { count?: number }) {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={{ gap: 10 }}>
+    <View style={{ gap: 12 }}>
       {Array.from({ length: count }).map((_, i) => (
         <View key={i} style={[sectionSkel.card, { backgroundColor: colors.card }]}>
           <View style={sectionSkel.cardRow}>
@@ -137,7 +137,7 @@ const skel = StyleSheet.create({
 const postSkel = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden' },
   image: { width: '100%', aspectRatio: 16 / 9, borderRadius: 0 },
-  body: { padding: 16, gap: 10 },
+  body: { padding: 16, gap: 12 },
   lineShort: { width: '40%' },
   lineLong: { width: '90%' },
   lineMed: { width: '65%' },
@@ -280,7 +280,7 @@ export function EventDetailSkeleton() {
         {/* Join button */}
         <Animated.View style={[skel.line, { width: '100%', height: 48, borderRadius: 14, backgroundColor: colors.muted, opacity, marginTop: 8 }]} />
         {/* Participants section */}
-        <View style={{ gap: 10, marginTop: 8 }}>
+        <View style={{ gap: 12, marginTop: 8 }}>
           <Animated.View style={[skel.line, { width: '30%', height: 16, backgroundColor: colors.muted, opacity }]} />
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {[0, 1, 2, 3].map(i => (

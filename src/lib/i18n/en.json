@@ -557,6 +557,8 @@
   },
   "profile": {
     "title": "Profile",
+    "loginRequired": "Log in to see your profile",
+    "loginHint": "Log in to see your profile, posts, and manage your account.",
     "editBio": "Edit bio",
     "editBioDesc": "Edit your bio text",
     "editAvatar": "Change profile picture",

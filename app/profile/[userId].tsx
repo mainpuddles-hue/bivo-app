@@ -1151,7 +1151,7 @@ const s = StyleSheet.create({
   ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20, fontFamily: fonts.body, lineHeight: 16 },
   // Verification card
   verificationCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
-  verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   // Activity summary
   activitySummaryCard: { borderRadius: 12, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },

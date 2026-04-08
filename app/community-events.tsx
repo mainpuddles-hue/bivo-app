@@ -450,7 +450,7 @@ const s = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 12,
   },
   createTableIcon: {
     width: 48,

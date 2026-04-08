@@ -648,7 +648,7 @@ const s = StyleSheet.create({
   card: { borderRadius: 12, overflow: 'hidden', flexDirection: 'row', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   categoryBar: { width: 4 },
   cardBody: { flex: 1, padding: 16, gap: 8 },
-  cardUserRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  cardUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   skelAvatar: { width: 32, height: 32, borderRadius: 16 },
   skelLine: { height: 10, borderRadius: 5 },
   fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 },

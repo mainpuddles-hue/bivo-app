@@ -1349,7 +1349,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 4,
   },
   suggestionRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingVertical: 10,
   },
   suggestionText: { flex: 1, fontSize: 14, lineHeight: 20 },

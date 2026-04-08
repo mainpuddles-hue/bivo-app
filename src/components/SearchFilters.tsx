@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   sectionTitle: { fontSize: 14, fontWeight: '600', lineHeight: 20, fontFamily: fonts.headingSemi },
   sectionBody: { paddingHorizontal: 16, paddingVertical: 16, gap: 12 },
   priceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },

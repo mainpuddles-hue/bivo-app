@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   neighborhoodText: { fontSize: 14, fontFamily: fonts.body },
-  durationRow: { flexDirection: 'row', gap: 10 },
+  durationRow: { flexDirection: 'row', gap: 12 },
   durationCard: {
     flex: 1, borderRadius: 12, borderWidth: 1.5,
     padding: 16, alignItems: 'center', gap: 2,
