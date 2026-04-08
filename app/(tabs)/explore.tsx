@@ -799,10 +799,10 @@ function ExploreScreenInner() {
                 <Pressable
                   onPress={handleRefresh}
                   accessibilityRole="button"
-                  accessibilityLabel={t('common.refresh')}
+                  accessibilityLabel={t('common.retry')}
                   style={[s.emptyCta, { backgroundColor: colors.primary }]}
                 >
-                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.refresh')}</Text>
+                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.retry')}</Text>
                 </Pressable>
               </View>
             ) : (
@@ -918,10 +918,10 @@ function ExploreScreenInner() {
                 <Pressable
                   onPress={handleRefresh}
                   accessibilityRole="button"
-                  accessibilityLabel={t('common.refresh')}
+                  accessibilityLabel={t('common.retry')}
                   style={[s.emptyCta, { backgroundColor: colors.primary }]}
                 >
-                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.refresh')}</Text>
+                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.retry')}</Text>
                 </Pressable>
               </View>
             ) : (

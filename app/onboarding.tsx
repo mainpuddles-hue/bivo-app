@@ -47,11 +47,6 @@ const TOTAL_PAGES = 4
 // City display names
 const CITY_NAMES: Record<string, string> = {
   helsinki: 'Helsinki',
-  espoo: 'Espoo',
-  vantaa: 'Vantaa',
-  tampere: 'Tampere',
-  turku: 'Turku',
-  oulu: 'Oulu',
 }
 
 function OnboardingScreenInner() {
@@ -93,23 +88,10 @@ function OnboardingScreenInner() {
     return dynamicNeighborhoods.filter(nh => nh.toLowerCase().includes(q))
   }, [dynamicNeighborhoods, neighborhoodSearch])
 
-  // Fetch available cities from DB
+  // Use static city list (only Helsinki for MVP launch)
   useEffect(() => {
-    async function fetchCities() {
-      try {
-        const { data } = await supabase.from('cities').select('id, name').order('name')
-        if (data && data.length > 0) {
-          setCities(data as any[])
-        } else {
-          // Fallback: use static city list
-          setCities(Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name })))
-        }
-      } catch {
-        setCities(Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name })))
-      }
-    }
-    fetchCities()
-  }, [supabase])
+    setCities(Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name })))
+  }, [])
 
   // Fetch neighborhoods when city changes
   useEffect(() => {
@@ -457,7 +439,7 @@ function OnboardingScreenInner() {
           <TextInput
             value={neighborhoodSearch}
             onChangeText={setNeighborhoodSearch}
-            placeholder={t('search.searchPlaceholder')}
+            placeholder={t('search.placeholder')}
             placeholderTextColor={colors.mutedForeground}
             style={[s.neighborhoodSearchInput, {
               backgroundColor: colors.card,

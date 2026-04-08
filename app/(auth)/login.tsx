@@ -70,6 +70,7 @@ function LoginScreenInner() {
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState(0)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const translateError = (msg: string) => {
     const key = AUTH_ERROR_KEYS[msg]
@@ -77,17 +78,18 @@ function LoginScreenInner() {
   }
 
   const handleSubmit = async () => {
+    setErrorMsg('')
     // Client-side rate limiting
     if (Date.now() < lockedUntil) {
-      Alert.alert(t('common.error'), t('auth.tooManyAttempts'))
+      setErrorMsg(t('auth.tooManyAttempts'))
       return
     }
 
-    if (!email.trim()) { Alert.alert(t('common.error'), t('auth.emailRequired')); return }
+    if (!email.trim()) { setErrorMsg(t('auth.emailRequired')); return }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email.trim())) {
-      Alert.alert(t('common.error'), t('auth.invalidEmail') ?? 'Invalid email format')
+      setErrorMsg(t('auth.invalidEmail') ?? 'Invalid email format')
       return
     }
 
@@ -99,7 +101,7 @@ function LoginScreenInner() {
         // Navigate to OTP verification screen for password recovery
         router.push({ pathname: '/verify-otp', params: { email: email.trim(), mode: 'recovery' } })
       } catch (err: any) {
-        Alert.alert(t('common.error'), translateError(err.message))
+        setErrorMsg(translateError(err.message))
       } finally { setLoading(false) }
       return
     }
@@ -188,7 +190,7 @@ function LoginScreenInner() {
           setLoginAttempts(0)
         }
       }
-      Alert.alert(t('common.error'), translateError(err.message))
+      setErrorMsg(translateError(err.message))
     } finally { setLoading(false) }
   }
 
@@ -438,6 +440,13 @@ function LoginScreenInner() {
                 </View>
               )}
 
+              {/* Error message */}
+              {errorMsg ? (
+                <View style={[styles.errorBanner, { backgroundColor: colors.destructive + '14' }]}>
+                  <Text style={[styles.errorText, { color: colors.destructive }]}>{errorMsg}</Text>
+                </View>
+              ) : null}
+
               {/* Submit */}
               <PressableOpacity
                 onPress={handleSubmit}
@@ -504,6 +513,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
   submitText: { fontSize: 16, lineHeight: 22, fontWeight: '600', fontFamily: fonts.bodySemi },
+  errorBanner: { borderRadius: 8, padding: 12, marginBottom: 4 },
+  errorText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlign: 'center' },
   linkText: { fontSize: 14, lineHeight: 20, fontWeight: '500', fontFamily: fonts.bodySemi },
   successBox: {
     borderRadius: 12, padding: 24, alignItems: 'center', gap: 12,

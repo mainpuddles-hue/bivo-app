@@ -143,11 +143,8 @@ export default function SettingsScreen() {
           if (cityData) setUserCityName((cityData as any).name)
         } catch {} // Intentional: cities table may not exist
       }
-      // Fetch available cities
-      try {
-        const { data: citiesData } = await supabase.from('cities').select('id, name').order('name')
-        if (citiesData && citiesData.length > 0) setAvailableCities(citiesData as any[])
-      } catch {} // Intentional: cities table may not exist
+      // Only Helsinki for MVP launch — multi-city later
+      setAvailableCities([{ id: 'helsinki', name: 'Helsinki' }])
       // Theme is handled by ThemeProvider
       } catch (err) {
         if (__DEV__) console.warn('[settings] load failed:', err)
