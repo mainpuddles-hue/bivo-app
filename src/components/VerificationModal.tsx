@@ -105,7 +105,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
           </View>
 
           {/* Privacy note */}
-          <View style={[styles.privacyNote, { backgroundColor: isDark ? '#1A1A2E' : '#F0F4FF' }]}>
+          <View style={[styles.privacyNote, { backgroundColor: colors.muted }]}>
             <Lock size={14} color={brandColor} />
             <Text style={[styles.privacyText, { color: colors.mutedForeground }]}>{brandDesc}</Text>
           </View>

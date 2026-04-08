@@ -191,10 +191,8 @@ export function UnsupportedAreaScreen({
               style={({ pressed }) => [
                 styles.waitlistBtn,
                 {
-                  backgroundColor: pressed
-                    ? isDark ? '#4A9970' : '#245A4E'
-                    : colors.primary,
-                  opacity: submitting ? 0.7 : 1,
+                  backgroundColor: colors.primary,
+                  opacity: pressed ? 0.8 : submitting ? 0.7 : 1,
                 },
               ]}
             >
@@ -219,8 +217,8 @@ export function UnsupportedAreaScreen({
             styles.continueBtn,
             {
               backgroundColor: pressed
-                ? (isDark ? '#2A2A2A' : '#E8E8E8')
-                : (isDark ? '#1E1E1E' : '#F0F0F0'),
+                ? colors.muted
+                : colors.card,
               borderColor: colors.border,
             },
           ]}
