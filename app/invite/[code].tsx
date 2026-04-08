@@ -8,8 +8,9 @@ import { useReferral, type ApplyResult } from '@/hooks/useReferral'
 import { getCachedUserId } from '@/lib/authCache'
 import { fonts } from '@/lib/fonts'
 import { PressableOpacity } from '@/components/ui'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
-export default function InviteScreen() {
+function InviteScreenInner() {
   const { code } = useLocalSearchParams<{ code: string }>()
   const { colors } = useTheme()
   const { t } = useI18n()
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 360,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 32,
     alignItems: 'center',
     gap: 16,
@@ -135,3 +136,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
 })
+
+export default function InviteScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Invite">
+      <InviteScreenInner />
+    </ScreenErrorBoundary>
+  )
+}
