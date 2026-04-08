@@ -33,6 +33,8 @@ import { LogBox } from 'react-native'
 LogBox.ignoreLogs([
   'AuthRetryableFetchError',
   'TypeError: Network request failed',
+  'AbortError: Aborted',
+  'AbortError',
 ])
 
 // Initialize Sentry error reporting (no-op in __DEV__)

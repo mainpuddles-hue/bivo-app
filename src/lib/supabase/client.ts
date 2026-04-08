@@ -30,7 +30,7 @@ export function createClient() {
       // AuthRetryableFetchError that surfaces as a red LogBox screen
       fetch: async (url, options) => {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 15000)
+        const timeout = setTimeout(() => controller.abort(), 30000)
         try {
           const mergedOptions = { ...options, signal: options?.signal ?? controller.signal }
           return await fetch(url, mergedOptions)

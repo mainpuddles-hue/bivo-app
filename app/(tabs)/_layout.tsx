@@ -171,22 +171,6 @@ export default function TabLayout() {
 
           <Pressable
             style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
-            accessibilityLabel={t('create.quickEvent')}
-            accessibilityRole="button"
-            onPress={() => { setShowCreateMenu(false); router.push('/create-table') }}
-          >
-            <View style={[s.sheetIcon, { backgroundColor: '#8B5E3C15' }]}>
-              <Coffee size={20} color="#8B5E3C" />
-            </View>
-            <View style={s.sheetText}>
-              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.quickEvent')}</Text>
-              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.quickEventHint')}</Text>
-            </View>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
             accessibilityLabel={t('create.discussion')}
             accessibilityRole="button"
             onPress={() => { setShowCreateMenu(false); router.push('/forum') }}
