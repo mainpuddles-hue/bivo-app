@@ -31,6 +31,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
 import { trackEvent } from '@/lib/analytics'
+import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
@@ -827,6 +828,9 @@ export default function CreateScreen() {
       setSuccessPostId(createdPostId)
       setSuccessNeighborhood(userNeighborhood)
       setShowSuccess(true)
+      // Prompt for app store review after successful post (non-blocking)
+      maybeRequestReview('post_created').catch(() => {})
+
       successTimeoutRef.current = setTimeout(() => {
         successTimeoutRef.current = null
         setShowSuccess(false)
