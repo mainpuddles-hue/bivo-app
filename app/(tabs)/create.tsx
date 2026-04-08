@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
@@ -37,6 +37,8 @@ import { useBoosts } from '@/hooks/useBoosts'
 import { suggestTags } from '@/lib/autoCategory'
 import { checkForDuplicates } from '@/lib/duplicateDetection'
 import type { PostType, TrustLevel } from '@/lib/types'
+import { suggestExpirationDays } from '@/lib/expirePrediction'
+import { scoreContentQuality } from '@/lib/contentQuality'
 
 const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
   { id: 'kodinhoito', label: 'tags.kodinhoito' },
@@ -299,6 +301,20 @@ export default function CreateScreen() {
       setShowDetails(true)
     }
   }, [selectedType])
+
+  // Auto-expire prediction: suggest expiration based on type + tags
+  useEffect(() => {
+    if (selectedType && !expirationDays) {
+      const suggested = suggestExpirationDays(selectedType, selectedTags)
+      setExpirationDays(suggested)
+    }
+  }, [selectedType, selectedTags])
+
+  // Content quality scoring
+  const quality = useMemo(() => scoreContentQuality({
+    title, description, imageCount: images.length, tags: selectedTags,
+    location, price: parseFloat(servicePrice || dailyFee || '0'),
+  }), [title, description, images.length, selectedTags, location, servicePrice, dailyFee])
 
   // Discard confirmation when going back with unsaved content (error prevention)
   const hasUnsavedContent = title.trim().length > 0 || description.trim().length > 0 || images.length > 0
@@ -1438,6 +1454,26 @@ export default function CreateScreen() {
                   <Text style={[styles.boostUpsellText, { color: colors.accent }]}>{t('boost.buyBoosts')}</Text>
                   <ChevronRight size={14} color={colors.accent} />
                 </PressableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* Content quality indicator */}
+          {step === 'form' && title.length > 0 && (
+            <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.border }}>
+                  <View style={{ width: `${quality.score}%`, height: '100%', borderRadius: 2,
+                    backgroundColor: quality.score >= 70 ? colors.success : quality.score >= 40 ? colors.pro : colors.destructive }} />
+                </View>
+                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
+                  {quality.score}%
+                </Text>
+              </View>
+              {quality.tips.length > 0 && quality.score < 70 && (
+                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, paddingTop: 4 }}>
+                  {quality.tips[0]}
+                </Text>
               )}
             </View>
           )}
