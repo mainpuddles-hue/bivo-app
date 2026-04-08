@@ -553,7 +553,7 @@ export default function SettingsScreen() {
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.displayName') ?? 'Nimi'}</Text>
             <View style={[s.card, { backgroundColor: colors.card }]}>
               {editingName ? (
-                <View style={{ padding: 16, gap: 10 }}>
+                <View style={{ padding: 16, gap: 12 }}>
                   <TextInput
                     style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
                     value={nameText}
@@ -828,7 +828,7 @@ export default function SettingsScreen() {
         {/* Security */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.security')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <View style={{ padding: 16, gap: 10 }}>
+          <View style={{ padding: 16, gap: 12 }}>
             <Text style={[s.rowText, { color: colors.foreground, fontWeight: '600' }]}>{t('settings.changePassword')}</Text>
             {isOAuthUser ? (
               <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 18 }}>
