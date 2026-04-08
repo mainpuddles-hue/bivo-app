@@ -108,7 +108,10 @@
     "sortPopular": "Most popular",
     "sortNearest": "Nearest",
     "sortCheapest": "Cheapest",
-    "online": "in your neighborhood"
+    "online": "in your neighborhood",
+    "postsThisWeek": "this week",
+    "eventsThisWeek": "events",
+    "activeThisWeek": "active"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",
@@ -1409,7 +1412,8 @@
     "freeItem": "Free",
     "invalidDateFormat": "Use YYYY-MM-DD format",
     "quickEvent": "Quick Event",
-    "quickEventHint": "Coffee, walk, or hangout — right now"
+    "quickEventHint": "Coffee, walk, or hangout — right now",
+    "suggestedTags": "Suggested:"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",

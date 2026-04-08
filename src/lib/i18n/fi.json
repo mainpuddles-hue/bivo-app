@@ -108,7 +108,10 @@
     "sortPopular": "Suosituin",
     "sortNearest": "Lähin",
     "sortCheapest": "Halvin",
-    "online": "naapurustossasi"
+    "online": "naapurustossasi",
+    "postsThisWeek": "tällä viikolla",
+    "eventsThisWeek": "tapahtumaa",
+    "activeThisWeek": "aktiivista"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
@@ -1409,7 +1412,8 @@
     "freeItem": "Ilmainen",
     "invalidDateFormat": "Käytä muotoa VVVV-KK-PP",
     "quickEvent": "Pikatapahtuma",
-    "quickEventHint": "Kahville, kävelylle tai hengailemaan — heti"
+    "quickEventHint": "Kahville, kävelylle tai hengailemaan — heti",
+    "suggestedTags": "Ehdotetut:"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",

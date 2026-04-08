@@ -31,6 +31,7 @@ import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
+import { suggestTags } from '@/lib/autoCategory'
 import type { PostType, TrustLevel } from '@/lib/types'
 
 const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
@@ -193,6 +194,14 @@ export default function CreateScreen() {
   const [successPostId, setSuccessPostId] = useState<string | null>(null)
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [boostPost, setBoostPost] = useState(false)
+  const [autoTags, setAutoTags] = useState<string[]>([])
+
+  // Auto-suggest tags based on title + description
+  useEffect(() => {
+    if (title.length < 5) { setAutoTags([]); return }
+    const { suggestedTags: suggested } = suggestTags(title, description)
+    setAutoTags(suggested)
+  }, [title, description])
 
   // Handle pre-selected type from query params (e.g., from events screen)
   useEffect(() => {
@@ -1224,6 +1233,22 @@ export default function CreateScreen() {
                       )
                     })}
                   </View>
+                  {autoTags.length > 0 && selectedTags.length === 0 && (
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingTop: 4 }}>
+                      <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, width: '100%' }}>
+                        {t('create.suggestedTags') ?? 'Ehdotetut:'}
+                      </Text>
+                      {autoTags.map(tag => (
+                        <PressableOpacity
+                          key={tag}
+                          onPress={() => setSelectedTags(prev => prev.includes(tag) ? prev : [...prev, tag])}
+                          style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: `${colors.primary}15` }}
+                        >
+                          <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.body }}>+ {t(`tags.${tag}`) ?? tag}</Text>
+                        </PressableOpacity>
+                      ))}
+                    </View>
+                  )}
                 </View>
               )}
 

@@ -31,6 +31,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { AdCard } from '@/components/AdCard'
 import type { Ad } from '@/components/AdCard'
 import type { Post } from '@/lib/types'
+import { useNeighborhoodStats } from '@/hooks/useNeighborhoodStats'
 import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
 
 // ── Stable separator components (avoid re-render) ──
@@ -128,6 +129,7 @@ function FeedScreenInner() {
   const { recordActivity, currentStreak } = useStreak(feed.currentUserId)
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   const { onlineCount } = usePresence(feed.currentUserId, feed.userNeighborhood)
+  const neighborhoodStats = useNeighborhoodStats(feed.userNeighborhood)
   useSessionManager(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
 
@@ -406,6 +408,25 @@ function FeedScreenInner() {
         </View>
       )}
 
+      {/* Neighborhood activity stats */}
+      {!neighborhoodStats.loading && feed.userNeighborhood && (
+        <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingBottom: 8 }}>
+          <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
+            {'\u{1F4DD}'} {neighborhoodStats.postsThisWeek} {t('feed.postsThisWeek') ?? 'tällä viikolla'}
+          </Text>
+          {neighborhoodStats.eventsThisWeek > 0 && (
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
+              {'\u{1F4C5}'} {neighborhoodStats.eventsThisWeek} {t('feed.eventsThisWeek') ?? 'tapahtumaa'}
+            </Text>
+          )}
+          {neighborhoodStats.activeUsers > 0 && (
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
+              {'\u{1F465}'} {neighborhoodStats.activeUsers} {t('feed.activeThisWeek') ?? 'aktiivista'}
+            </Text>
+          )}
+        </View>
+      )}
+
       {/* Streak milestone */}
       {[3, 7, 30].includes(currentStreak) && (
         <View style={[styles.streakMilestone, { backgroundColor: `${colors.pro}12` }]}>
@@ -500,7 +521,7 @@ function FeedScreenInner() {
   ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
     feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
     placesSectionTitle, matches, dismissMatch, showMissedBanner, missedCount,
-    currentStreak, digestData, digestDismissed, onlineCount])
+    currentStreak, digestData, digestDismissed, onlineCount, neighborhoodStats])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {

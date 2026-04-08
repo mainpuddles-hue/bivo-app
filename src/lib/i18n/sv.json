@@ -108,7 +108,10 @@
     "sortPopular": "Mest populär",
     "sortNearest": "Närmaste",
     "sortCheapest": "Billigaste",
-    "online": "i ditt grannskap"
+    "online": "i ditt grannskap",
+    "postsThisWeek": "denna vecka",
+    "eventsThisWeek": "evenemang",
+    "activeThisWeek": "aktiva"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",
@@ -1390,7 +1393,8 @@
     "freeItem": "Gratis",
     "invalidDateFormat": "Använd formatet ÅÅÅÅ-MM-DD",
     "quickEvent": "Snabbevent",
-    "quickEventHint": "Kaffe, promenad eller häng — just nu"
+    "quickEventHint": "Kaffe, promenad eller häng — just nu",
+    "suggestedTags": "Föreslagna:"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
