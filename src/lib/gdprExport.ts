@@ -26,7 +26,7 @@ interface ExportedData {
   points: Record<string, unknown>[]
   scheduledNotifications: Record<string, unknown>[]
   auditLog: Record<string, unknown>[]
-  webhookEvents: Record<string, unknown>[]
+  webhookEvents?: Record<string, unknown>[]
   conversationMemberships: Record<string, unknown>[]
   boostPurchases: Record<string, unknown>[]
 }
@@ -50,7 +50,6 @@ export async function exportUserData(userId: string): Promise<boolean> {
     pointsRes,
     scheduledNotificationsRes,
     auditLogRes,
-    webhookEventsRes,
     conversationMembersRes,
     boostPurchasesRes,
     userRes,
@@ -68,9 +67,9 @@ export async function exportUserData(userId: string): Promise<boolean> {
     supabase.from('notifications').select('id, type, title, body, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(500),
     (supabase.from('user_points') as any).select('action, points, created_at').eq('user_id', userId),
     (supabase.from('scheduled_notifications') as any).select('id, type, title, body, send_at, created_at').eq('user_id', userId),
-    (supabase.from('audit_log') as any).select('id, action, entity_type, entity_id, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(500),
-    (supabase.from('webhook_events') as any).select('id, event_type, payload, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(200),
-    (supabase.from('conversation_members') as any).select('conversation_id, role, joined_at').eq('user_id', userId),
+    (supabase.from('audit_log') as any).select('id, action, table_name, record_id, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(500),
+    // webhook_events is system-level (no user_id), excluded from GDPR export
+    (supabase.from('conversation_members') as any).select('conversation_id, joined_at').eq('user_id', userId),
     (supabase.from('boost_purchases') as any).select('id, post_id, boost_type, amount, currency, created_at, expires_at').eq('user_id', userId),
     supabase.auth.getUser(),
   ])
@@ -102,7 +101,7 @@ export async function exportUserData(userId: string): Promise<boolean> {
     points: getData(pointsRes),
     scheduledNotifications: getData(scheduledNotificationsRes),
     auditLog: getData(auditLogRes),
-    webhookEvents: getData(webhookEventsRes),
+    // webhookEvents excluded (system-level, no user_id)
     conversationMemberships: getData(conversationMembersRes),
     boostPurchases: getData(boostPurchasesRes),
   }
