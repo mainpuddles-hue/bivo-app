@@ -1373,7 +1373,10 @@
     "discussionHint": "Начните обсуждение на форуме",
     "invalidDateFormat": "Используйте формат ГГГГ-ММ-ДД",
     "quickEvent": "Быстрая встреча",
-    "quickEventHint": "На кофе, прогулку или встречу — прямо сейчас"
+    "quickEventHint": "На кофе, прогулку или встречу — прямо сейчас",
+    "priceRange": "Рыночная цена",
+    "median": "медиана",
+    "demandInsightsLabel": "Больше всего ищут в вашем районе"
   },
   "locationPicker": {
     "useCurrentLocation": "Использовать текущее местоположение",
@@ -1627,7 +1630,8 @@
     "semanticMatch": "Похожее совпадение",
     "thisMonth": "В этом месяце",
     "tabEvents": "События",
-    "tabGroups": "Группы"
+    "tabGroups": "Группы",
+    "demandInsightsTitle": "Больше всего ищут рядом"
   },
   "saved": {
     "title": "Сохранённые",

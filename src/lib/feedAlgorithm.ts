@@ -13,12 +13,13 @@ interface FeedContext {
  * Score a post for feed ranking. Higher = more relevant.
  *
  * Factors (weights sum to 1.0):
- * - Recency decay (0.25): 1/(1 + hours/24) — half-life 24h
+ * - Recency decay (0.20): 1/(1 + hours/24) — half-life 24h
  * - Engagement (0.20): normalized likes + comments
  * - Urgency (0.20): is_urgent or nappaa expiring soon
  * - Proximity (0.10): same neighborhood bonus
  * - Trust + social (0.10): trust level + following bonus
  * - Personalization (0.15): from collaborative filtering / interaction history
+ * - Time-of-day relevance (0.05): boost category types by time of day
  */
 export function scorePost(post: Post, ctx: FeedContext): number {
   const now = ctx.now ?? Date.now()
@@ -57,12 +58,26 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   // Personalization: from collaborative filtering
   const personalScore = ctx.personalScores?.get(post.id) ?? 0
 
+  // Time-of-day relevance
+  const hour = new Date().getHours()
+  let timeRelevance = 0.5 // neutral
+  if (hour >= 6 && hour < 10) {
+    // Morning: boost needs
+    timeRelevance = post.type === 'tarvitsen' ? 0.8 : 0.5
+  } else if (hour >= 10 && hour < 17) {
+    // Daytime: boost services
+    timeRelevance = post.type === 'tarjoan' ? 0.8 : 0.5
+  } else if (hour >= 17 && hour < 22) {
+    // Evening: boost free/grab items
+    timeRelevance = (post.type === 'nappaa' || post.type === 'ilmaista') ? 0.8 : 0.5
+  }
+
   // Boost: multiplicative 1.4x instead of additive 0.5 — keeps score proportional
   // A low-quality boosted post won't dominate a high-quality organic one
   const boostMultiplier = ctx.boostedPostIds?.has(post.id) ? 1.4 : 1.0
 
   // Weighted sum (base 0.0–1.0, boosted up to 1.4)
-  const baseScore = recency * 0.25 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15
+  const baseScore = recency * 0.20 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15 + timeRelevance * 0.05
   return baseScore * boostMultiplier
 }
 

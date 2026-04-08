@@ -1413,7 +1413,10 @@
     "invalidDateFormat": "Use YYYY-MM-DD format",
     "quickEvent": "Quick Event",
     "quickEventHint": "Coffee, walk, or hangout — right now",
-    "suggestedTags": "Suggested:"
+    "suggestedTags": "Suggested:",
+    "priceRange": "Market price",
+    "median": "median",
+    "demandInsightsLabel": "Most wanted in your neighborhood"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1670,7 +1673,8 @@
     "semanticMatch": "Similar match",
     "thisMonth": "This month",
     "tabEvents": "Events",
-    "tabGroups": "Groups"
+    "tabGroups": "Groups",
+    "demandInsightsTitle": "Most wanted nearby"
   },
   "saved": {
     "title": "Saved",

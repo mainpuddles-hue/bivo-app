@@ -17,6 +17,9 @@ import { FEATURES } from '@/lib/featureFlags'
 import { fonts } from '@/lib/fonts'
 import { usePoints } from '@/hooks/usePoints'
 import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
+import { getPriceInsight } from '@/lib/priceIntelligence'
+import type { PriceInsight } from '@/lib/priceIntelligence'
+import { useDemandInsights } from '@/hooks/useDemandInsights'
 import { triggerPush } from '@/lib/pushTrigger'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { useIdentityVerification } from '@/hooks/useIdentityVerification'
@@ -32,6 +35,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
 import { suggestTags } from '@/lib/autoCategory'
+import { checkForDuplicates } from '@/lib/duplicateDetection'
 import type { PostType, TrustLevel } from '@/lib/types'
 
 const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
@@ -195,6 +199,7 @@ export default function CreateScreen() {
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [boostPost, setBoostPost] = useState(false)
   const [autoTags, setAutoTags] = useState<string[]>([])
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null)
 
   // Auto-suggest tags based on title + description
   useEffect(() => {
@@ -202,6 +207,22 @@ export default function CreateScreen() {
     const { suggestedTags: suggested } = suggestTags(title, description)
     setAutoTags(suggested)
   }, [title, description])
+
+  // Debounced duplicate detection
+  useEffect(() => {
+    if (!title || title.length < 8 || !selectedType) { setDuplicateWarning(null); return }
+    const timer = setTimeout(async () => {
+      const cachedId = await getCachedUserId()
+      if (!cachedId) return
+      const result = await checkForDuplicates(title, selectedType, cachedId)
+      if (result.isDuplicate) {
+        setDuplicateWarning(`Samankaltainen ilmoitus löytyy: "${result.similarPosts[0]?.title}"`)
+      } else {
+        setDuplicateWarning(null)
+      }
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [title, selectedType])
 
   // Handle pre-selected type from query params (e.g., from events screen)
   useEffect(() => {
@@ -244,6 +265,21 @@ export default function CreateScreen() {
   const identity = useIdentityVerification(currentUserId)
   const { suggestion: priceSuggestion } = usePriceSuggestion(selectedType, selectedTags, userNeighborhood)
   const boosts = useBoosts(currentUserId)
+  const { demands: demandInsights } = useDemandInsights()
+
+  // Client-side price intelligence (supplements Edge Function price suggestion)
+  const [priceInsight, setPriceInsight] = useState<PriceInsight | null>(null)
+  useEffect(() => {
+    if (!selectedType || (selectedType !== 'lainaa' && selectedType !== 'tarjoan')) {
+      setPriceInsight(null)
+      return
+    }
+    const timer = setTimeout(async () => {
+      const insight = await getPriceInsight(selectedType as 'lainaa' | 'tarjoan', selectedTags, userNeighborhood)
+      if (insight) setPriceInsight(insight)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [selectedType, selectedTags, userNeighborhood])
 
   // Refresh boost balance when screen gains focus (e.g. returning from boosts purchase screen)
   useFocusEffect(useCallback(() => {
@@ -835,6 +871,15 @@ export default function CreateScreen() {
           })}
         </ScrollView>
 
+        {/* Demand insights — show what neighbors need most */}
+        {demandInsights.length > 0 && (
+          <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
+            <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
+              {t('create.demandInsightsLabel')}: {demandInsights.map(d => `${d.tag} (${d.count})`).join(', ')}
+            </Text>
+          </View>
+        )}
+
         <TrustGateModal
           visible={showTrustGate}
           onClose={() => setShowTrustGate(false)}
@@ -978,6 +1023,11 @@ export default function CreateScreen() {
               accessibilityLabel={t('post.titleLabel')}
             />
             <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
+            {duplicateWarning && (
+              <Text style={{ fontSize: 12, color: colors.pro, fontFamily: fonts.body, paddingTop: 4 }}>
+                {'\u26A0\uFE0F'} {duplicateWarning}
+              </Text>
+            )}
           </View>
 
           {/* Description */}
@@ -1065,6 +1115,11 @@ export default function CreateScreen() {
                       </Text>
                     </View>
                   )}
+                  {priceInsight && !priceSuggestion && selectedType === 'lainaa' && (
+                    <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, paddingTop: 4 }}>
+                      {t('create.priceRange')}: {priceInsight.min}–{priceInsight.max}€ ({t('create.median')} {priceInsight.median}€)
+                    </Text>
+                  )}
                 </View>
               )}
 
@@ -1097,6 +1152,11 @@ export default function CreateScreen() {
                         })}
                       </Text>
                     </View>
+                  )}
+                  {priceInsight && !priceSuggestion && (
+                    <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, paddingTop: 4 }}>
+                      {t('create.priceRange')}: {priceInsight.min}–{priceInsight.max}€ ({t('create.median')} {priceInsight.median}€)
+                    </Text>
                   )}
                 </View>
               )}

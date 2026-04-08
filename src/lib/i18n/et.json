@@ -1373,7 +1373,10 @@
     "discussionHint": "Alusta arutelu foorumil",
     "invalidDateFormat": "Kasuta formaati AAAA-KK-PP",
     "quickEvent": "Kiirüritus",
-    "quickEventHint": "Kohvile, jalutama või koosistuma — kohe"
+    "quickEventHint": "Kohvile, jalutama või koosistuma — kohe",
+    "priceRange": "Turuhind",
+    "median": "mediaan",
+    "demandInsightsLabel": "Sinu naabruskonnas otsitakse enim"
   },
   "locationPicker": {
     "useCurrentLocation": "Kasuta praegust asukohta",
@@ -1627,7 +1630,8 @@
     "semanticMatch": "Sarnane vaste",
     "thisMonth": "Sel kuul",
     "tabEvents": "Sündmused",
-    "tabGroups": "Grupid"
+    "tabGroups": "Grupid",
+    "demandInsightsTitle": "Piirkonnas kõige otsitum"
   },
   "saved": {
     "title": "Salvestatud",

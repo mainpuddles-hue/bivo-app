@@ -26,6 +26,8 @@ import { rankSearchResults } from '@/lib/searchAlgorithm'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { haversineKm } from '@/lib/geo'
+import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions'
+import { useDemandInsights } from '@/hooks/useDemandInsights'
 import type { Post, PostType } from '@/lib/types'
 
 const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''}/functions/v1`
@@ -73,6 +75,7 @@ interface DiscoveryViewProps {
   loadSavedSearch: (saved: SavedSearch) => void
   removeSavedSearch: (id: string) => Promise<void>
   trendingPosts: { id: string; title: string; type: string; like_count: number }[]
+  demandInsights: { tag: string; count: number }[]
   router: ReturnType<typeof useRouter>
   colors: ReturnType<typeof useTheme>['colors']
   isDark: boolean
@@ -84,6 +87,7 @@ function DiscoveryView({
   query, setQuery,
   executeSearch, history, handleHistoryChipTap, removeFromHistory,
   savedSearches, loadSavedSearch, removeSavedSearch, trendingPosts,
+  demandInsights,
   router, colors, isDark, t, setActiveFilter,
 }: DiscoveryViewProps) {
   return (
@@ -191,6 +195,31 @@ function DiscoveryView({
         )}
       </View>
 
+      {/* Demand insights — what neighbors need most */}
+      {demandInsights.length > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <TrendingUp size={16} color={colors.primary} />
+            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.demandInsightsTitle')}</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
+            {demandInsights.map((d) => (
+              <PressableOpacity
+                key={d.tag}
+                onPress={() => {
+                  setQuery(d.tag)
+                  executeSearch(d.tag)
+                }}
+                style={[s.demandChip, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
+              >
+                <Text style={[s.recentChipText, { color: colors.foreground, fontFamily: fonts.bodyMedium }]}>{d.tag}</Text>
+                <Text style={[s.demandChipCount, { color: colors.mutedForeground, fontFamily: fonts.body }]}>({d.count})</Text>
+              </PressableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* Category cards */}
       <View style={s.section}>
         <View style={s.sectionHeader}>
@@ -277,6 +306,17 @@ function SearchScreenInner() {
   const [filters, setFilters] = useState<SearchFilterValues>({ ...EMPTY_FILTERS })
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  // Search suggestions (trending + personal history)
+  const searchSuggestions = useSearchSuggestions()
+  const suggestions = useMemo(
+    () => searchSuggestions.getSuggestions(query),
+    [searchSuggestions.getSuggestions, query],
+  )
+
+  // Demand insights for discovery view
+  const { demands: demandInsights } = useDemandInsights()
 
   // Debounce + abort refs
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -831,10 +871,11 @@ function SearchScreenInner() {
           <TextInput
             style={[s.searchInput, { color: colors.foreground, fontFamily: fonts.body }]}
             value={query}
-            onChangeText={debouncedSearch}
+            onChangeText={(text) => { debouncedSearch(text); setShowSuggestions(true) }}
             placeholder={t('feed.searchPlaceholder')}
             placeholderTextColor={colors.mutedForeground}
-            onSubmitEditing={() => executeSearch()}
+            onSubmitEditing={() => { setShowSuggestions(false); searchSuggestions.addToHistory(query); executeSearch() }}
+            onFocus={() => setShowSuggestions(true)}
             returnKeyType="search"
             autoFocus
             accessibilityLabel={t('feed.searchPlaceholder')}
@@ -856,6 +897,36 @@ function SearchScreenInner() {
           )}
         </PressableOpacity>
       </View>
+
+      {/* Search suggestions dropdown */}
+      {showSuggestions && !searched && suggestions.length > 0 && (
+        <View style={[s.suggestionsContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {suggestions.map((suggestion, idx) => (
+            <PressableOpacity
+              key={`${suggestion.type}-${suggestion.text}-${idx}`}
+              onPress={() => {
+                setQuery(suggestion.text)
+                setShowSuggestions(false)
+                searchSuggestions.addToHistory(suggestion.text)
+                executeSearch(suggestion.text)
+              }}
+              style={s.suggestionRow}
+            >
+              {suggestion.type === 'history' ? (
+                <Clock size={14} color={colors.mutedForeground} />
+              ) : (
+                <TrendingUp size={14} color={colors.primary} />
+              )}
+              <Text style={[s.suggestionText, { color: colors.foreground, fontFamily: fonts.body }]} numberOfLines={1}>
+                {suggestion.text}
+              </Text>
+              <Text style={[s.suggestionBadge, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                {suggestion.type === 'history' ? t('search.recent') : t('search.trending')}
+              </Text>
+            </PressableOpacity>
+          ))}
+        </View>
+      )}
 
       {/* Save search + active filter indicator */}
       {searched && filterCount > 0 && (
@@ -1014,6 +1085,7 @@ function SearchScreenInner() {
           loadSavedSearch={loadSavedSearch}
           removeSavedSearch={removeSavedSearch}
           trendingPosts={trendingPosts}
+          demandInsights={demandInsights}
           router={router}
           colors={colors}
           isDark={isDark}
@@ -1272,4 +1344,20 @@ const s = StyleSheet.create({
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   trendingLikeCount: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   semanticLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, paddingLeft: 2, fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  suggestionsContainer: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingVertical: 4,
+  },
+  suggestionRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 10,
+  },
+  suggestionText: { flex: 1, fontSize: 14, lineHeight: 20 },
+  suggestionBadge: { fontSize: 11, lineHeight: 16 },
+  demandChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    borderWidth: 1,
+  },
+  demandChipCount: { fontSize: 11, lineHeight: 16 },
 })

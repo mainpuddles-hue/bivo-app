@@ -1394,7 +1394,10 @@
     "invalidDateFormat": "Använd formatet ÅÅÅÅ-MM-DD",
     "quickEvent": "Snabbevent",
     "quickEventHint": "Kaffe, promenad eller häng — just nu",
-    "suggestedTags": "Föreslagna:"
+    "suggestedTags": "Föreslagna:",
+    "priceRange": "Marknadspris",
+    "median": "median",
+    "demandInsightsLabel": "Mest eftersökt i ditt grannskap"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1651,7 +1654,8 @@
     "semanticMatch": "Liknande träff",
     "thisMonth": "Denna månad",
     "tabEvents": "Evenemang",
-    "tabGroups": "Grupper"
+    "tabGroups": "Grupper",
+    "demandInsightsTitle": "Mest eftersökt i området"
   },
   "saved": {
     "title": "Sparade",
