@@ -662,7 +662,10 @@ export default function ProfileScreen() {
             {/* Reviews */}
             <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('profile.reviewsCount', { count: reviews.length })}</Text>
             {reviews.length === 0 ? (
-              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
+              <View style={s.emptyActivity}>
+                <Star size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
+                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
+              </View>
             ) : (
               reviews.map((rev) => (
                 <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
@@ -717,7 +720,8 @@ export default function ProfileScreen() {
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
               </View>
             ) : filteredPosts.length === 0 ? (
-              <View style={{ alignItems: 'center', paddingVertical: 24, gap: 12 }}>
+              <View style={s.emptyActivity}>
+                <FileText size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
                 <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 4 }]}>
                   <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('nav.create')}</Text>
@@ -793,6 +797,7 @@ export default function ProfileScreen() {
           <View style={s.tabContent}>
             {activity.length === 0 ? (
               <View style={s.emptyActivity}>
+                <Zap size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noActivity')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('profile.noActivityHint')}</Text>
               </View>
@@ -867,7 +872,8 @@ export default function ProfileScreen() {
               <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
             </View>
           ) : pointHistory.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+            <View style={s.emptyActivity}>
+              <Trophy size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
               <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPointHistory')}</Text>
             </View>
           ) : (
