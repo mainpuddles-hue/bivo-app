@@ -191,6 +191,41 @@ serve(async (req) => {
         }
       }
 
+      // Image moderation — check if post has image
+      if (post_id && result.action === 'allow') {
+        try {
+          const { data: post } = await supabase.from('posts').select('image_url').eq('id', post_id).maybeSingle()
+          if (post?.image_url) {
+            const hfToken = Deno.env.get('HF_API_TOKEN')
+            if (hfToken) {
+              const imgRes = await fetch('https://router.huggingface.co/hf-inference/models/Falconsai/nsfw_image_detection', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${hfToken}` },
+                body: JSON.stringify({ inputs: post.image_url }),
+              })
+              if (imgRes.ok) {
+                const imgResult = await imgRes.json()
+                // Model returns [{label: "nsfw", score: 0.9}, {label: "normal", score: 0.1}]
+                const nsfwScore = Array.isArray(imgResult)
+                  ? (imgResult.flat().find((r: any) => r.label === 'nsfw')?.score ?? 0)
+                  : 0
+                if (nsfwScore > 0.8) {
+                  result.action = 'block'
+                  result.flags.push('nsfw_image')
+                  result.details.push(`NSFW image detected (score: ${nsfwScore.toFixed(2)})`)
+                } else if (nsfwScore > 0.5) {
+                  result.action = 'flag'
+                  result.flags.push('suspicious_image')
+                  result.details.push(`Suspicious image (score: ${nsfwScore.toFixed(2)})`)
+                }
+              }
+            }
+          }
+        } catch (err: any) {
+          console.warn('[moderate] Image check failed:', err.message)
+        }
+      }
+
       // If flagged or blocked, insert into content_flags
       if (result.action !== 'allow' && post_id) {
         const { error: flagError } = await supabase.from('content_flags').insert({

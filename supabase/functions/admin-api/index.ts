@@ -154,6 +154,17 @@ serve(async (req) => {
         return jsonResponse(data ?? [])
       }
 
+      case 'revenue_stats': {
+        const [monthly, growth] = await Promise.all([
+          supabase.from('mv_revenue_monthly').select('*').limit(12),
+          supabase.from('mv_user_growth').select('*').limit(12),
+        ])
+        return jsonResponse({
+          revenue: monthly.data ?? [],
+          growth: growth.data ?? [],
+        })
+      }
+
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400)
     }
