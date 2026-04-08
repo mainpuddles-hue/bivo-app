@@ -153,7 +153,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
         const cityId = data?.city_id ?? 'helsinki'
         try {
           const [{ data: cityData }, { data: nhList }] = await Promise.all([
-            supabase.from('cities').select('center_lat, center_lng, bounds_south, bounds_north, bounds_west, bounds_east').eq('id', cityId).single(),
+            supabase.from('cities').select('center_lat, center_lng, bounds_south, bounds_north, bounds_west, bounds_east').eq('id', cityId).maybeSingle(),
             supabase.from('city_neighborhoods').select('name, center_lat, center_lng').eq('city_id', cityId).order('name'),
           ])
           if (!cancelled && cityData) {

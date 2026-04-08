@@ -143,7 +143,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
             .from('profiles')
             .select('id, name, avatar_url')
             .eq('id', newMsg.sender_id)
-            .single()
+            .maybeSingle()
 
           if (!mounted) return
 

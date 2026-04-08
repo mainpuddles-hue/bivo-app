@@ -83,7 +83,7 @@ function EventDetailScreenInner() {
           .from('community_events')
           .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)') as any)
           .eq('id', id)
-          .single(),
+          .maybeSingle(),
         (supabase
           .from('community_event_participants')
           .select('*, user:profiles(id, name, avatar_url)') as any)
@@ -235,7 +235,7 @@ function EventDetailScreenInner() {
         router.push(`/messages/${(existing as any).id}`)
       } else {
         const { data: newConv, error } = await (supabase.from('conversations') as any)
-          .insert({ user1_id: userId, user2_id: event.creator.id }).select('id').single()
+          .insert({ user1_id: userId, user2_id: event.creator.id }).select('id').maybeSingle()
         if (error || !newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
         router.push(`/messages/${newConv.id}`)
       }

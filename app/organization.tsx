@@ -67,7 +67,7 @@ export default function OrganizationScreen() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { router.replace('/(auth)/login'); setLoading(false); return }
 
-        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
         if (!profileData) { setLoading(false); return }
         const p = profileData as unknown as Profile
         setProfile(p)

@@ -20,7 +20,7 @@ export function usePaymentMethods(userId: string | null) {
         const { data } = await supabase.from('profiles')
           .select('stripe_customer_id, stripe_connect_account_id, stripe_connect_onboarded')
           .eq('id', userId)
-          .single()
+          .maybeSingle()
         if (!mounted) return
         if (data) {
           setIsConnectOnboarded((data as any).stripe_connect_onboarded ?? false)
@@ -69,7 +69,7 @@ export function usePaymentMethods(userId: string | null) {
       const { data } = await supabase.from('profiles')
         .select('stripe_connect_account_id, stripe_connect_onboarded')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
       if (data) {
         setIsConnectOnboarded((data as any).stripe_connect_onboarded ?? false)
         setConnectAccountId((data as any).stripe_connect_account_id ?? null)

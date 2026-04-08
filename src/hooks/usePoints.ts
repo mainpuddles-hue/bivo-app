@@ -69,7 +69,7 @@ export function usePoints() {
         //     WHERE id = user_id_param;
         //   $$ LANGUAGE sql SECURITY DEFINER;
         try {
-          const { data } = await supabase.from('profiles').select('total_points').eq('id', userId).single()
+          const { data } = await supabase.from('profiles').select('total_points').eq('id', userId).maybeSingle()
           const current = (data as any)?.total_points ?? 0
           await (supabase.from('profiles') as any)
             .update({ total_points: current + points })

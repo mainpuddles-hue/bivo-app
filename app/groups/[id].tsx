@@ -151,7 +151,7 @@ export default function GroupDetailScreen() {
   const fetchGroup = useCallback(async () => {
     if (!id || !isValidUUID(id as string)) return
     try {
-      const { data, error } = await supabase.from('groups').select('*').eq('id', id).single()
+      const { data, error } = await supabase.from('groups').select('*').eq('id', id).maybeSingle()
       if (error) {
         if (error.code === '42P01' || error.message?.includes('relation') || error.message?.includes('does not exist')) setTableExists(false)
         return

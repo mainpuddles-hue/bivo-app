@@ -41,7 +41,7 @@ export function useReferral(userId: string | null) {
           .from('profiles')
           .select('invite_code, invite_count, invited_by')
           .eq('id', userId!)
-          .single()
+          .maybeSingle()
         if (profile) {
           setInviteCode((profile as any).invite_code)
           setInviteCount((profile as any).invite_count ?? 0)
@@ -112,7 +112,7 @@ export function useReferral(userId: string | null) {
         .from('profiles')
         .select('id, invite_count')
         .eq('invite_code', code.toUpperCase().trim())
-        .single()
+        .maybeSingle()
       if (!inviter) return 'invalid'
       if ((inviter as any).id === userId) return 'self'
 
@@ -121,7 +121,7 @@ export function useReferral(userId: string | null) {
         .from('profiles')
         .select('invited_by')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
       if ((currentProfile as any)?.invited_by) {
         setInvitedBy((currentProfile as any).invited_by)
         return 'already_referred'
@@ -189,7 +189,7 @@ export function useReferral(userId: string | null) {
         .from('profiles')
         .select('name')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
       const invitedName = (invitedProfile as any)?.name ?? 'Joku'
       await (supabase.from('notifications') as any)
         .insert({

@@ -50,7 +50,7 @@ export default function ProScreen() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
         if (data) setProfile(data as unknown as Profile)
       } catch {} // Intentional: network error — keep loading state
     }

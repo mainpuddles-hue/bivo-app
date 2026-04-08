@@ -353,7 +353,7 @@ function ActivitiesScreenInner() {
         .from('profiles')
         .select('naapurusto')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       const maxMembersNum = createMaxMembers.trim() ? parseInt(createMaxMembers, 10) : null
 

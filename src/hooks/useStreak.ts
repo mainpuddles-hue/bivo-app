@@ -31,7 +31,7 @@ export function useStreak(userId: string | null) {
         const { data } = await supabase.from('profiles')
           .select('current_streak, longest_streak, last_active_date')
           .eq('id', userId!)
-          .single()
+          .maybeSingle()
 
         if (data && mounted) {
           const cs = (data as any).current_streak ?? 0

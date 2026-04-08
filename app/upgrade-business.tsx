@@ -59,7 +59,7 @@ export default function UpgradeBusinessScreen() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       if (data) {
         const p = data as unknown as Profile
         setProfile(p)
@@ -75,7 +75,7 @@ export default function UpgradeBusinessScreen() {
           const { data: countryConfig } = await (supabase.from('country_configs') as any)
             .select('business_validation')
             .eq('country_id', (data as any).country_id ?? 'FI')
-            .single()
+            .maybeSingle()
           if (countryConfig?.business_validation) {
             setBusinessValidationType(countryConfig.business_validation)
           }

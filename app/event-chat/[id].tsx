@@ -67,7 +67,7 @@ function EventChatScreenInner() {
             .from('community_events')
             .select('id, title, event_date, category, conversation_id') as any)
             .eq('conversation_id', convId)
-            .single(),
+            .maybeSingle(),
           supabase
             .from('conversation_members')
             .select('id', { count: 'exact', head: true })

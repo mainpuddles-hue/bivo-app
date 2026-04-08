@@ -81,7 +81,7 @@ export async function trackRetention(userId: string) {
       .from('profiles')
       .select('created_at')
       .eq('id', userId)
-      .single()
+      .maybeSingle()
 
     if (!(profile as any)?.created_at) return
 

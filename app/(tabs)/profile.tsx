@@ -103,7 +103,7 @@ export default function ProfileScreen() {
     const user = { id: cachedId }
 
     // Profile
-    const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+    const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
     if (p) {
       // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
       await clearExpiredPro(supabase, user.id, p as any)

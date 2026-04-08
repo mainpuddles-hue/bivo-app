@@ -94,7 +94,7 @@ function useOnboardingGuard() {
           .from('profiles')
           .select('naapurusto')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if ((profile as any)?.naapurusto) {
           // Already onboarded — set flag and skip
@@ -324,7 +324,7 @@ function useAuthStateListener() {
               .from('profiles')
               .select('is_banned, naapurusto')
               .eq('id', session.user.id)
-              .single()
+              .maybeSingle()
 
             if (!mounted) return
 

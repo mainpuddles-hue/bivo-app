@@ -118,7 +118,7 @@ export function useFeedData() {
       const user = { id: userId }
       const [{ data: followsData }, { data: profileData }] = await Promise.all([
         supabase.from('user_follows').select('followed_id').eq('follower_id', user.id),
-        (supabase.from('profiles') as any).select('naapurusto, city_id').eq('id', user.id).single(),
+        (supabase.from('profiles') as any).select('naapurusto, city_id').eq('id', user.id).maybeSingle(),
       ])
       if (!mounted) return
       if (followsData) setFollowedIds(followsData.map((f: any) => f.followed_id))
@@ -128,7 +128,7 @@ export function useFeedData() {
       // Fetch city details (name + linkedevents URL) and neighborhoods
       try {
         const [{ data: cityData }, { data: nhData }] = await Promise.all([
-          supabase.from('cities').select('name, linkedevents_url').eq('id', cityId).single(),
+          supabase.from('cities').select('name, linkedevents_url').eq('id', cityId).maybeSingle(),
           supabase.from('city_neighborhoods').select('name').eq('city_id', cityId).order('name'),
         ])
         if (!mounted) return

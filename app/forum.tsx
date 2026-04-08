@@ -306,7 +306,7 @@ export default function ForumScreen() {
         try {
           const { data } = await supabase.from('forum_posts')
             .select('*, user:profiles!forum_posts_user_id_fkey(id, name, avatar_url, naapurusto)')
-            .eq('id', thread).single()
+            .eq('id', thread).maybeSingle()
           if (data) openPostDetail(data as unknown as ForumPost)
         } catch {} // Intentional: thread may have been deleted
       })()

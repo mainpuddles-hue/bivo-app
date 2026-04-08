@@ -127,7 +127,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
     async function fetchSignals() {
       try {
         const [profileRes, badgesRes, reviewsRes, reportsRes] = await Promise.all([
-          supabase.from('profiles').select('response_rate, created_at').eq('id', userId!).single(),
+          supabase.from('profiles').select('response_rate, created_at').eq('id', userId!).maybeSingle(),
           supabase.from('user_badges').select('badge_type').eq('user_id', userId!),
           supabase.from('reviews').select('rating').eq('reviewed_id', userId!),
           supabase.from('reports').select('id').eq('reported_id', userId!).eq('status', 'open')

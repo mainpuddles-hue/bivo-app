@@ -36,7 +36,7 @@ export function useCityConfig(cityId: string | null) {
       try {
         const cid = cityId!
         const [{ data: city }, { data: neighborhoods }] = await Promise.all([
-          supabase.from('cities').select('*').eq('id', cid).single(),
+          supabase.from('cities').select('*').eq('id', cid).maybeSingle(),
           supabase.from('city_neighborhoods').select('name, center_lat, center_lng, is_dense').eq('city_id', cid).order('name'),
         ])
 

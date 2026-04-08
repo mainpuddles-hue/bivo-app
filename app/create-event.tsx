@@ -88,7 +88,7 @@ function CreateEventScreenInner() {
           .from('community_events')
           .select('*')
           .eq('id', editId)
-          .single()
+          .maybeSingle()
         if (!mounted || !data) return
         const e = data as any
         setTitle(e.title ?? '')
@@ -124,7 +124,7 @@ function CreateEventScreenInner() {
         .from('profiles')
         .select('naapurusto')
         .eq('id', id)
-        .single()
+        .maybeSingle()
       if (mounted && (data as any)?.naapurusto) {
         setUserNaapurusto((data as any).naapurusto as string)
       }
@@ -254,7 +254,7 @@ function CreateEventScreenInner() {
           .update(eventPayload)
           .eq('id', edit)
           .select('id')
-          .single()
+          .maybeSingle()
         error = res.error
         resultId = res.data?.id ?? edit
       } else {

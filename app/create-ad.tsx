@@ -78,7 +78,7 @@ export default function CreateAdScreen() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       if (data) {
         const p = data as unknown as Profile
         if (!p.is_business && !p.is_pro) {

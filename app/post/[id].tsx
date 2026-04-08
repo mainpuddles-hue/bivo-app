@@ -119,7 +119,7 @@ function PostDetailScreenInner() {
       const cachedId = await getCachedUserId()
       if (cachedId) setUserId(cachedId)
 
-      const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).single()
+      const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).maybeSingle()
       if (data) {
         const p = data as unknown as Post
         // Apply location_accuracy privacy for other users' posts
@@ -192,7 +192,7 @@ function PostDetailScreenInner() {
               .from('profiles')
               .select('id, name, avatar_url')
               .eq('id', raw.user_id)
-              .single()
+              .maybeSingle()
             if (userProfile) {
               (newComment as any).user = userProfile
             }

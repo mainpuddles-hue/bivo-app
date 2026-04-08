@@ -82,7 +82,7 @@ export default function PublicProfileScreen() {
     }
 
     // Fetch profile
-    const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).single()
+    const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
     if (!p) { setLoading(false); setRefreshing(false); return }
     // Don't show deleted/anonymized profiles
     if ((p as any).name === '[Poistettu]' || (p as any).name === '[Deleted]') {
@@ -96,7 +96,7 @@ export default function PublicProfileScreen() {
       const { data: viewerProfile } = await (supabase.from('profiles') as any)
         .select('naapurusto')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
       viewerNeighborhood = viewerProfile?.naapurusto ?? null
     }
     if (!isProfileVisible(

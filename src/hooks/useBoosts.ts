@@ -38,7 +38,7 @@ export function useBoosts(userId: string | null) {
         .from('user_boosts')
         .select('balance, tier, monthly_grants_remaining')
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
       if (!mountedRef.current) return
       if (data) {
         setBalance((data as any).balance ?? 0)

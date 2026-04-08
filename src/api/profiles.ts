@@ -15,7 +15,7 @@ export async function fetchCurrentProfile(): Promise<Profile | null> {
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (error) return null
   return data as unknown as Profile
@@ -27,7 +27,7 @@ export async function fetchPublicProfile(userId: string): Promise<Profile | null
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
 
   if (error) return null
   return data as unknown as Profile

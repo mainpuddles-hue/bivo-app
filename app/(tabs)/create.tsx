@@ -256,7 +256,7 @@ export default function CreateScreen() {
       setCurrentUserId(id)
       if (!id) { router.replace('/(auth)/login'); return }
       // Fetch user neighborhood for price suggestions
-      supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).single()
+      supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).maybeSingle()
         .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) })
         .then(() => {}, () => {})
     })
@@ -623,7 +623,7 @@ export default function CreateScreen() {
       // Create post
       setUploadStatus(t('create.publishing'))
       // Fetch profile to check Pro status for priority listing
-      const { data: creatorProfile } = await supabase.from('profiles').select('is_pro').eq('id', user.id).single()
+      const { data: creatorProfile } = await supabase.from('profiles').select('is_pro').eq('id', user.id).maybeSingle()
       // Build tags array — include tarjoan sub-type and condition metadata
       const finalTags = [...selectedTags]
       if (selectedType === 'tarjoan') {

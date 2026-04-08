@@ -139,7 +139,7 @@ export default function SettingsScreen() {
         const cid = (data as any).city_id ?? 'helsinki'
         setUserCityId(cid)
         try {
-          const { data: cityData } = await supabase.from('cities').select('name').eq('id', cid).single()
+          const { data: cityData } = await supabase.from('cities').select('name').eq('id', cid).maybeSingle()
           if (cityData) setUserCityName((cityData as any).name)
         } catch {} // Intentional: cities table may not exist
       }

@@ -70,7 +70,7 @@ export async function addMemberToChat(
       .from('community_events')
       .select('conversation_id')
       .eq('id', eventId)
-      .single()
+      .maybeSingle()
 
     if (!event?.conversation_id) return
 
@@ -98,7 +98,7 @@ export async function removeMemberFromChat(
       .from('community_events')
       .select('conversation_id')
       .eq('id', eventId)
-      .single()
+      .maybeSingle()
 
     if (!event?.conversation_id) return
 

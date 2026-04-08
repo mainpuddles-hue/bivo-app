@@ -55,7 +55,7 @@ export async function fetchPost(id: string): Promise<Post | null> {
     .from('posts')
     .select(POST_SELECT)
     .eq('id', id)
-    .single()
+    .maybeSingle()
 
   if (error) return null
   return data as unknown as Post

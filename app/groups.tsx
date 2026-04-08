@@ -121,7 +121,7 @@ export default function GroupsScreen() {
         const { data: profile } = await (supabase.from('profiles') as any)
           .select('naapurusto')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
         if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto as string)
       } catch {} // Intentional: profile table columns may be missing
     }
