@@ -420,7 +420,7 @@ export default function MessagesScreen() {
                     onPress={() => router.push(`/event-chat/${ec.conversation_id}` as any)}
                     style={({ pressed }) => [
                       styles.eventChatCard,
-                      { backgroundColor: isDark ? colors.card : '#F9FAFB', borderColor: colors.border },
+                      { backgroundColor: colors.card, borderColor: colors.border },
                       pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
                     ]}
                     accessibilityRole="button"

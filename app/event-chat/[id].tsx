@@ -229,7 +229,7 @@ function EventChatScreenInner() {
       {/* Event info bar */}
       {eventInfo && (
         <Pressable
-          style={[s.eventBar, { backgroundColor: isDark ? colors.card : '#F9FAFB', borderBottomColor: colors.border }]}
+          style={[s.eventBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
           onPress={() => router.push(`/event/${eventInfo.id}` as any)}
         >
           <CalendarDays size={14} color={colors.primary} />
