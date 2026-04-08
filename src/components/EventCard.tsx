@@ -134,7 +134,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },

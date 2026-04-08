@@ -124,9 +124,9 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
 const s = StyleSheet.create({
   card: {
     width: 180,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    padding: 14,
+    padding: 16,
     gap: 6,
   },
   emoji: { fontSize: 28 },
