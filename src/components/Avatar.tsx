@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { useTheme } from '@/hooks/useTheme'
 import { fonts } from '@/lib/fonts'
+import { getImageUrl } from '@/lib/imageUtils'
 
 interface AvatarProps {
   url: string | null | undefined
@@ -27,7 +28,7 @@ export const Avatar = React.memo(function Avatar({ url, name, size = 36, borderC
   if (url) {
     return (
       <Image
-        source={{ uri: url }}
+        source={{ uri: getImageUrl(url, 'thumbnail')! }}
         style={[sizeStyles.container, sizeStyles.border]}
         contentFit="cover"
         cachePolicy="memory-disk"

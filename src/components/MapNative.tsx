@@ -20,6 +20,7 @@ import { NEIGHBORHOODS } from '@/lib/constants'
 import { FEATURES } from '@/lib/featureFlags'
 
 import { useSupabase } from '@/hooks/useSupabase'
+import { getImageUrl } from '@/lib/imageUtils'
 import { isInCityBounds } from '@/lib/geo'
 import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
 import { clusterMarkers, isCluster, type Cluster } from '@/lib/mapClustering'
@@ -506,12 +507,14 @@ export default function MapScreen() {
           <View style={styles.businessCardRow}>
             <Image
               source={{
-                uri:
+                uri: getImageUrl(
                   (Array.isArray(selectedBusiness.business_images) && selectedBusiness.business_images.length > 0
                     ? selectedBusiness.business_images[0]
                     : null) ??
                   selectedBusiness.avatar_url ??
-                  undefined,
+                  null,
+                  'thumbnail',
+                ) ?? undefined,
               }}
               style={[styles.businessCardImage, { backgroundColor: colors.muted }]}
               contentFit="cover"

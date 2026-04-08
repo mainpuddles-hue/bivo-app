@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
+import { getImageUrl } from '@/lib/imageUtils'
 
 export interface Ad {
   id: string
@@ -90,7 +91,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
       {/* Image */}
       {ad.image_url && (
         <Image
-          source={{ uri: ad.image_url }}
+          source={{ uri: getImageUrl(ad.image_url, 'medium')! }}
           style={styles.image}
           contentFit="cover"
           transition={200}

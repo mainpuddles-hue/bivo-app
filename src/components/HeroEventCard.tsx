@@ -6,6 +6,7 @@ import { MapPin, ChevronRight, Globe } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { getImageUrl } from '@/lib/imageUtils'
 import type { CityEvent } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
 
@@ -35,7 +36,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
       accessibilityLabel={getCityEventName(event, locale)}
     >
       {event.image_url && !imageError ? (
-        <Image source={{ uri: event.image_url }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" onError={() => setImageError(true)} />
+        <Image source={{ uri: getImageUrl(event.image_url, 'thumbnail')! }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" onError={() => setImageError(true)} />
       ) : (
         <View style={[styles.todayEventImageFallback, { backgroundColor: `${catColor}20` }]}>
           <Globe size={20} color={catColor} />

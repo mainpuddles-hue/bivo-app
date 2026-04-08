@@ -3,10 +3,13 @@ import { View, StyleSheet } from 'react-native'
 import { Image, type ImageProps } from 'expo-image'
 import { ImageOff } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { getImageUrl, type ImageSize } from '@/lib/imageUtils'
 
 interface ImageWithFallbackProps extends Omit<ImageProps, 'source'> {
   uri: string | null | undefined
   fallbackIcon?: React.ReactNode
+  /** Image optimization size preset. Defaults to 'medium'. */
+  imageSize?: ImageSize
 }
 
 /**
@@ -21,11 +24,13 @@ interface ImageWithFallbackProps extends Omit<ImageProps, 'source'> {
  * Usage:
  *   <ImageWithFallback uri={post.image_url} style={styles.image} contentFit="cover" />
  */
-export function ImageWithFallback({ uri, fallbackIcon, style, ...props }: ImageWithFallbackProps) {
+export function ImageWithFallback({ uri, fallbackIcon, style, imageSize = 'medium', ...props }: ImageWithFallbackProps) {
   const { colors } = useTheme()
   const [error, setError] = useState(false)
 
-  if (!uri || error) {
+  const optimizedUri = getImageUrl(uri, imageSize)
+
+  if (!optimizedUri || error) {
     return (
       <View style={[styles.fallback, { backgroundColor: colors.muted }, style]}>
         {fallbackIcon ?? <ImageOff size={24} color={colors.mutedForeground} strokeWidth={1.5} />}
@@ -35,7 +40,7 @@ export function ImageWithFallback({ uri, fallbackIcon, style, ...props }: ImageW
 
   return (
     <Image
-      source={{ uri }}
+      source={{ uri: optimizedUri }}
       style={style}
       onError={() => setError(true)}
       transition={200}

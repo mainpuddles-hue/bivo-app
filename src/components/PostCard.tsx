@@ -22,6 +22,7 @@ import { BoostBadge } from '@/components/BoostBadge'
 import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import { isHumanAction } from '@/lib/abuseDetection'
 import { FEATURES } from '@/lib/featureFlags'
+import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType } from '@/lib/types'
 
 const APP_URL = 'https://tackbird.com'
@@ -219,7 +220,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo} accessibilityRole="button" accessibilityLabel={user?.name ?? t('postCard.anonymousUser')}>
                 <View style={styles.avatarContainer}>
                   {user?.avatar_url ? (
-                    <Image source={{ uri: user.avatar_url }} style={[
+                    <Image source={{ uri: getImageUrl(user.avatar_url, 'thumbnail')! }} style={[
                       styles.avatar,
                       { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
                     ]} contentFit="cover" cachePolicy="memory-disk" recyclingKey={user.avatar_url} />
@@ -276,7 +277,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         {hasImage && (
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: post.image_url! }}
+              source={{ uri: getImageUrl(post.image_url, 'medium')! }}
               style={styles.image}
               contentFit="cover"
               transition={300}

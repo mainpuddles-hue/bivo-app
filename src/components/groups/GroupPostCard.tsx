@@ -10,6 +10,7 @@ import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
+import { getImageUrl } from '@/lib/imageUtils'
 
 // ── Types ──
 export interface GroupPostUser {
@@ -185,7 +186,7 @@ function GroupPostCardInner({
         {/* Image */}
         {post.image_url && (
           <Image
-            source={{ uri: post.image_url }}
+            source={{ uri: getImageUrl(post.image_url, 'medium')! }}
             style={styles.postImage}
             contentFit="cover"
           />

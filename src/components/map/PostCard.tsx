@@ -4,6 +4,7 @@ import { MapPin } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
 import { formatTimeAgo } from '@/lib/format'
+import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
 import { formatDistance } from './constants'
@@ -36,7 +37,7 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
       <View style={styles.postBody}>
         {/* Image or placeholder */}
         {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.cardImage} contentFit="cover" />
+          <Image source={{ uri: getImageUrl(imageUrl, 'thumbnail')! }} style={styles.cardImage} contentFit="cover" />
         ) : (
           <View style={[styles.cardImagePlaceholder, { backgroundColor: `${item.color}15` }]}>
             <MapPin size={18} color={item.color} />
@@ -48,7 +49,7 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
           {/* Title row with avatar */}
           <View style={styles.postTitleRow}>
             {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.postAvatar} contentFit="cover" />
+              <Image source={{ uri: getImageUrl(avatarUrl, 'thumbnail')! }} style={styles.postAvatar} contentFit="cover" />
             ) : (
               <View style={[styles.postAvatarPlaceholder, { backgroundColor: `${item.color}20` }]}>
                 <Text style={[styles.postAvatarInitial, { color: item.color }]}>

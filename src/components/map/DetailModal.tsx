@@ -3,6 +3,7 @@ import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
 import { MapPin, Navigation, X, ExternalLink } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
+import { getImageUrl } from '@/lib/imageUtils'
 import type { Router } from 'expo-router'
 import type { Post, Event, CityEvent, LocalPlace } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
@@ -94,7 +95,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
 
         {/* Image */}
         {imgUrl ? (
-          <Image source={{ uri: imgUrl }} style={styles.detailImage} contentFit="cover" />
+          <Image source={{ uri: getImageUrl(imgUrl, 'medium')! }} style={styles.detailImage} contentFit="cover" />
         ) : null}
 
         {/* Content */}

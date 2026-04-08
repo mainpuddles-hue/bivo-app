@@ -6,6 +6,7 @@ import { CalendarDays, MapPin, Users } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { getImageUrl } from '@/lib/imageUtils'
 import { ParticipantAvatarRow } from './ParticipantAvatarRow'
 import { isTableEvent, getTableCategoryEmoji } from '@/lib/eventHelpers'
 import type { CommunityEvent } from '@/lib/types'
@@ -54,7 +55,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
     >
       {/* Image or Emoji Header */}
       {event.image_url && !isTable ? (
-        <Image source={{ uri: event.image_url }} style={s.image} contentFit="cover" />
+        <Image source={{ uri: getImageUrl(event.image_url, 'medium')! }} style={s.image} contentFit="cover" />
       ) : isTable ? (
         <View style={[s.emojiBox, { backgroundColor: `${categoryColor}15` }]}>
           <Text style={s.emoji}>{getTableCategoryEmoji(event.category)}</Text>

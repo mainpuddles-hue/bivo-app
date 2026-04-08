@@ -41,6 +41,7 @@ import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
 import { BoostBadge } from '@/components/BoostBadge'
 import { ModalCloseButton, PressableOpacity } from '@/components/ui'
+import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
 function PostDetailScreenInner() {
@@ -806,7 +807,10 @@ function PostDetailScreenInner() {
   const category = CATEGORIES[post.type as PostType]
   const user = post.user
   const userTrustLevel = computeTrustLevelFromBadges(user?.user_badges)
-  const allImages = [post.image_url, ...(post.images ?? []).map(i => i.image_url)].filter(Boolean) as string[]
+  const allImagesRaw = [post.image_url, ...(post.images ?? []).map(i => i.image_url)].filter(Boolean) as string[]
+  const allImages = allImagesRaw
+  const allImagesMedium = allImagesRaw.map(url => getImageUrl(url, 'medium')!)
+  const allImagesFull = allImagesRaw.map(url => getImageUrl(url, 'full')!)
 
   // expirationInfo moved before early returns (React hooks rules)
 
@@ -830,7 +834,7 @@ function PostDetailScreenInner() {
         {allImages.length > 0 && (
           allImages.length === 1 ? (
             <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
-              <Image source={{ uri: allImages[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" />
+              <Image source={{ uri: allImagesMedium[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" />
             </PressableOpacity>
           ) : (
             <FlatList
@@ -838,7 +842,7 @@ function PostDetailScreenInner() {
               keyExtractor={(item, i) => `${item}-${i}`}
               renderItem={({ item, index }) => (
                 <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
-                  <Image source={{ uri: item }} style={styles.heroImage} contentFit="cover" cachePolicy="memory-disk" />
+                  <Image source={{ uri: getImageUrl(item, 'medium')! }} style={styles.heroImage} contentFit="cover" cachePolicy="memory-disk" />
                 </PressableOpacity>
               )}
               showsHorizontalScrollIndicator={false}
@@ -1043,7 +1047,7 @@ function PostDetailScreenInner() {
                   const rpCat = CATEGORIES[rp.type as PostType]
                   return (
                     <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card }]}>
-                      {rp.image_url ? (<Image source={{ uri: rp.image_url }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />) : (
+                      {rp.image_url ? (<Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />) : (
                         <View style={[styles.relatedImage, { backgroundColor: rpCat ? (isDark ? rpCat.bgDark : rpCat.bgLight) : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
                           {rpCat && CATEGORY_ICON_MAP[rpCat.icon] && (() => { const I = CATEGORY_ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
                         </View>
@@ -1123,7 +1127,7 @@ function PostDetailScreenInner() {
 
       {/* Fullscreen Image Gallery */}
       {allImages.length > 0 && (
-        <ImageGallery images={allImages} initialIndex={galleryInitialIndex} visible={galleryVisible} onClose={() => setGalleryVisible(false)} />
+        <ImageGallery images={allImagesFull} initialIndex={galleryInitialIndex} visible={galleryVisible} onClose={() => setGalleryVisible(false)} />
       )}
 
       {/* Edit Modal */}

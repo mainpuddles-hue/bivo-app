@@ -20,6 +20,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { ReportModal } from '@/components/ReportModal'
 import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
+import { getImageUrl } from '@/lib/imageUtils'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
@@ -535,7 +536,7 @@ function ConversationScreenInner() {
               ) : (
                 <>
                   {item.image_url ? (
-                    <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" />
+                    <Image source={{ uri: getImageUrl(item.image_url, 'medium')! }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" />
                   ) : null}
                   {item.content ? (
                     <Text selectable style={[s.msgText, { color: isMine ? colors.primaryForeground : colors.foreground }]}>{item.content}</Text>
@@ -719,7 +720,7 @@ function ConversationScreenInner() {
                 style={[contextStyles.card, { backgroundColor: isDark ? colors.card : colors.muted }]}
               >
                 {linkedPost.image_url && (
-                  <Image source={{ uri: linkedPost.image_url }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" />
+                  <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" />
                 )}
                 <View style={contextStyles.info}>
                   <Text style={[contextStyles.label, { color: colors.mutedForeground }]}>{t('messages.aboutPost')}</Text>
