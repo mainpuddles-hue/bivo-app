@@ -6,7 +6,7 @@ import { View, Text, StyleSheet, Modal, Pressable } from 'react-native'
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Newspaper, Plus, MessageCircle, User, Compass, FileText, CalendarDays, ChevronRight, Coffee } from 'lucide-react-native'
+import { Newspaper, Plus, MessageCircle, User, Compass, FileText, CalendarDays, ChevronRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'

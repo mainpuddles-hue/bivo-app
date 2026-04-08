@@ -3,7 +3,6 @@ import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert, Activi
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Eye, EyeOff, Check, X } from 'lucide-react-native'
-import Svg, { Path } from 'react-native-svg'
 import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
 import { GoogleLogo } from '@/components/GoogleLogo'
@@ -15,14 +14,6 @@ import { fonts } from '@/lib/fonts'
 import { trackEvent } from '@/lib/analytics'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
-
-function AppleLogo({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <Path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-    </Svg>
-  )
-}
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Invalid login credentials': 'auth.invalidCredentials',
@@ -76,25 +67,9 @@ function LoginScreenInner() {
   const [name, setName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [appleAvailable, setAppleAvailable] = useState(false)
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState(0)
   const [termsAccepted, setTermsAccepted] = useState(false)
-
-  // Check Apple Sign-In availability (native only)
-  useEffect(() => {
-    if (Platform.OS === 'web') return
-    async function checkApple() {
-      try {
-        const AppleAuth = require('expo-apple-authentication')
-        const available = await AppleAuth.isAvailableAsync()
-        setAppleAvailable(available)
-      } catch {
-        setAppleAvailable(false)
-      }
-    }
-    checkApple()
-  }, [])
 
   const translateError = (msg: string) => {
     const key = AUTH_ERROR_KEYS[msg]
@@ -291,51 +266,6 @@ function LoginScreenInner() {
     }
   }
 
-  const handleAppleSignIn = async () => {
-    if (Platform.OS === 'web') return
-    setLoading(true)
-    try {
-      const AppleAuth = require('expo-apple-authentication')
-      const credential = await AppleAuth.signInAsync({
-        requestedScopes: [
-          AppleAuth.AppleAuthenticationScope.FULL_NAME,
-          AppleAuth.AppleAuthenticationScope.EMAIL,
-        ],
-      })
-
-      if (!credential.identityToken) {
-        Alert.alert(t('common.error'), t('auth.appleFailed'))
-        return
-      }
-
-      const { data: appleData, error } = await supabase.auth.signInWithIdToken({
-        provider: 'apple',
-        token: credential.identityToken,
-      })
-
-      if (error) throw error
-
-      if (appleData?.user) {
-        const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', appleData.user.id).maybeSingle()
-        if ((oauthProfile as any)?.is_banned) {
-          await supabase.auth.signOut()
-          Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
-          return
-        }
-      }
-
-      router.replace('/')
-    } catch (err: any) {
-      // User cancelled — Apple throws ERR_REQUEST_CANCELED
-      if (err?.code === 'ERR_REQUEST_CANCELED' || err?.code === 'ERR_CANCELED') {
-        return
-      }
-      Alert.alert(t('common.error'), t('auth.appleFailed'))
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
@@ -393,21 +323,6 @@ function LoginScreenInner() {
                 <GoogleLogo size={20} />
                 <Text style={[styles.googleBtnText, { color: colors.foreground }]}>
                   {t('auth.signInWithGoogle')}
-                </Text>
-              </PressableOpacity>
-            )}
-
-            {/* Apple Sign-In — hidden until Apple Developer Program is configured */}
-            {false && mode !== 'forgot' && Platform.OS !== 'web' && appleAvailable && (
-              <PressableOpacity
-                onPress={handleAppleSignIn}
-                style={[styles.appleBtn, { backgroundColor: colors.foreground, borderWidth: 1, borderColor: isDark ? colors.border : colors.foreground }]}
-                accessibilityRole="button"
-                accessibilityLabel={t('auth.signInWithApple')}
-              >
-                <AppleLogo size={20} color={colors.primaryForeground} />
-                <Text style={[styles.appleBtnText, { color: colors.primaryForeground }]}>
-                  {t('auth.signInWithApple')}
                 </Text>
               </PressableOpacity>
             )}
@@ -572,11 +487,6 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 8,
   },
   googleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
-  appleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 16,
-  },
-  appleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dividerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
