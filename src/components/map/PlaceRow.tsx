@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { PressableOpacity } from '@/components/ui'
 import { ChevronDown } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import type { LocalPlace } from '@/lib/types'
@@ -18,13 +19,13 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
   // "Show all" button
   if (item.id === '__show_all_places__') {
     return (
-      <Pressable
-        style={({ pressed }) => [styles.showAllPlacesBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+      <PressableOpacity
+        style={[styles.showAllPlacesBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         onPress={() => onShowAllPlaces?.()}
       >
         <Text style={[styles.showAllPlacesText, { color: colors.primary }]}>{item.title}</Text>
         <ChevronDown size={16} color={colors.primary} />
-      </Pressable>
+      </PressableOpacity>
     )
   }
 
@@ -40,8 +41,8 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
     : LAYER_COLORS.place
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.placeRow, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+    <PressableOpacity
+      style={[styles.placeRow, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
     >
       <View style={[styles.placeColorBar, { backgroundColor: placeCatColor }]} />
@@ -63,7 +64,7 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
       >
         <Text style={[styles.placeDirectionsText, { color: colors.accent }]}>{t('map.directions')}</Text>
       </Pressable>
-    </Pressable>
+    </PressableOpacity>
   )
 }
 

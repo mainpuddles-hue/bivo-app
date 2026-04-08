@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Bell, Search, Map } from 'lucide-react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -55,13 +56,13 @@ export function Header() {
         </Pressable>
 
         <View style={styles.actions}>
-          <Pressable accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.7 }]} hitSlop={8}>
+          <PressableOpacity accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
             <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
-          </Pressable>
-          <Pressable accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.7 }]} hitSlop={8}>
+          </PressableOpacity>
+          <PressableOpacity accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
             <Map size={20} color={colors.mutedForeground} strokeWidth={1.8} />
-          </Pressable>
-          <Pressable accessibilityLabel={t('nav.notifications')} onPress={() => router.push('/notifications')} style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.7 }]} hitSlop={8}>
+          </PressableOpacity>
+          <PressableOpacity accessibilityLabel={t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={20}
               color={unreadCount > 0 ? colors.primary : colors.mutedForeground}
@@ -74,7 +75,7 @@ export function Header() {
                 </Text>
               </View>
             )}
-          </Pressable>
+          </PressableOpacity>
         </View>
       </View>
     </View>

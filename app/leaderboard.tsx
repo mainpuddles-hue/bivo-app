@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
+import { View, Text, FlatList, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
@@ -200,7 +200,7 @@ export default function LeaderboardScreen() {
     const medalColor = isTop3 ? MEDAL_COLORS[rank - 1] : undefined
 
     return (
-      <Pressable
+      <PressableOpacity
         onPress={() => {
           if (item.id === currentUserId) {
             router.push('/(tabs)/profile')
@@ -210,11 +210,10 @@ export default function LeaderboardScreen() {
         }}
         accessibilityRole="button"
         accessibilityLabel={`#${rank} ${item.name ?? t('common.user')}, ${item.total_points} ${t('profile.points')}`}
-        style={({ pressed }) => [
+        style={[
           s.row,
           { backgroundColor: isCurrentUser ? `${colors.primary}10` : colors.card },
           isTop3 && { borderLeftWidth: 3, borderLeftColor: medalColor },
-          pressed && { opacity: 0.7 },
         ]}
       >
         {/* Rank */}
@@ -245,7 +244,7 @@ export default function LeaderboardScreen() {
           <Zap size={14} color={colors.pro} fill={colors.pro} />
           <Text style={[s.points, { color: colors.pro }]}>{item.total_points}</Text>
         </View>
-      </Pressable>
+      </PressableOpacity>
     )
   }, [currentUserId, colors, t, router])
 

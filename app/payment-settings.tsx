@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Platform, Linking } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Platform, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
@@ -107,12 +107,12 @@ function PaymentSettingsScreenInner() {
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.methods')}</Text>
           <View style={[s.card, { backgroundColor: colors.card }]}>
             {/* Card */}
-            <Pressable style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityLabel={t('payment.card')} accessibilityRole="button">
+            <PressableOpacity style={s.row} accessibilityLabel={t('payment.card')} accessibilityRole="button">
               <CreditCard size={20} color={colors.primary} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.card')}</Text>
               <Text style={[s.statusText, { color: colors.primary }]}>{t('payment.available')}</Text>
               <ChevronRight size={16} color={colors.mutedForeground} />
-            </Pressable>
+            </PressableOpacity>
 
             {/* Apple Pay */}
             <View style={s.row}>

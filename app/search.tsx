@@ -931,16 +931,16 @@ function SearchScreenInner() {
       {/* Save search + active filter indicator */}
       {searched && filterCount > 0 && (
         <View style={[s.activeFilterBar, { backgroundColor: `${colors.primary}10`, borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => setFiltersVisible(true)} style={({ pressed }) => [s.activeFilterInfo, pressed && { opacity: 0.7 }]}>
+          <PressableOpacity onPress={() => setFiltersVisible(true)} style={s.activeFilterInfo}>
             <SlidersHorizontal size={14} color={colors.primary} />
             <Text style={[s.activeFilterText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
               {t('search.activeFilters', { count: filterCount })}
             </Text>
-          </Pressable>
-          <Pressable onPress={saveCurrentSearch} hitSlop={8} style={({ pressed }) => [s.saveSearchBtn, pressed && { opacity: 0.7 }]}>
+          </PressableOpacity>
+          <PressableOpacity onPress={saveCurrentSearch} hitSlop={8} style={s.saveSearchBtn}>
             <Star size={14} color={colors.primary} />
             <Text style={[s.saveSearchText, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('search.saveThisSearch')}</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
       )}
 

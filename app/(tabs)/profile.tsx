@@ -443,9 +443,9 @@ export default function ProfileScreen() {
               </Text>
               <View style={s.bioActions}>
                 <PressableOpacity onPress={() => { setEditingBio(false); setBioText(profile?.bio ?? '') }}><X size={20} color={colors.mutedForeground} /></PressableOpacity>
-                <Pressable onPress={handleSaveBio} style={({ pressed }) => [s.bioSaveBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}>
+                <PressableOpacity onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.primary }]}>
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>{t('common.save')}</Text>
-                </Pressable>
+                </PressableOpacity>
               </View>
             </View>
           ) : (
@@ -500,14 +500,14 @@ export default function ProfileScreen() {
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
           </Pressable>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <Pressable style={({ pressed }) => [s.stat, pressed && { opacity: 0.7 }]} onPress={() => postCount === 0 ? router.push('/(tabs)/create') : setActiveTab('posts')} accessibilityLabel={`${postCount} ${t('profile.posts')}`} accessibilityRole="button">
+          <PressableOpacity style={s.stat} onPress={() => postCount === 0 ? router.push('/(tabs)/create') : setActiveTab('posts')} accessibilityLabel={`${postCount} ${t('profile.posts')}`} accessibilityRole="button">
             <Text style={[s.statNum, { color: postCount === 0 ? colors.primary : colors.foreground }]}>
               {postCount === 0 ? '\u2013' : postCount}
             </Text>
             <Text numberOfLines={1} style={[s.statLabel, { color: postCount === 0 ? colors.primary : colors.mutedForeground }]}>
               {postCount === 0 ? t('profile.createFirst') : t('profile.posts')}
             </Text>
-          </Pressable>
+          </PressableOpacity>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat} accessibilityLabel={`${avgRating ?? 0} ${t('profile.avgRating')}`} accessibilityRole="text">
             {avgRating != null ? (
@@ -521,13 +521,13 @@ export default function ProfileScreen() {
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
           </View>
           <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <Pressable style={({ pressed }) => [s.stat, pressed && { opacity: 0.7 }]} onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityLabel={`${profile?.total_points ?? 0} ${t('profile.points')}`} accessibilityRole="button">
+          <PressableOpacity style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityLabel={`${profile?.total_points ?? 0} ${t('profile.points')}`} accessibilityRole="button">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[s.statNum, { color: colors.foreground }]}>{profile?.total_points ?? 0}</Text>
               <Zap size={12} color={colors.pro} fill={colors.pro} />
             </View>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.points')}</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Following count — shown as text link, not a stat box */}
@@ -822,10 +822,10 @@ export default function ProfileScreen() {
 
         {/* Actions */}
         <View style={{ gap: 8, marginTop: 8 }}>
-          <Pressable onPress={handleLogout} style={({ pressed }) => [s.menuItem, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
+          <PressableOpacity onPress={handleLogout} style={[s.menuItem, { backgroundColor: colors.card }]}>
             <LogOut size={20} color={colors.destructive} />
             <Text style={[s.menuText, { color: colors.destructive }]}>{t('profile.logout')}</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
       </ScrollView>
 
@@ -844,10 +844,10 @@ export default function ProfileScreen() {
             data={followList}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-              <Pressable style={({ pressed }) => [s.followItem, pressed && { opacity: 0.7 }]} onPress={() => { setFollowModal(null); router.push(`/profile/${item.id}` as any) }}>
+              <PressableOpacity style={s.followItem} onPress={() => { setFollowModal(null); router.push(`/profile/${item.id}` as any) }}>
                 <Avatar url={item.avatar_url} name={item.name} size={40} />
                 <Text style={[s.followName, { color: colors.foreground }]}>{item.name}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
             ListEmptyComponent={
               <Text style={[s.emptyText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 40 }]}>

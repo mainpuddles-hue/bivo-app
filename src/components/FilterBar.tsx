@@ -1,6 +1,7 @@
 import { memo } from 'react'
-import { Text, Pressable, StyleSheet } from 'react-native'
+import { Text, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -28,13 +29,13 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
         const isActive = activeFilter === type
 
         return (
-          <Pressable
+          <PressableOpacity
             key={type}
             accessibilityLabel={t(cat.label)}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
             onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
-            style={({ pressed }) => [
+            style={[
               styles.chip,
               isActive
                 ? { backgroundColor: cat.color }
@@ -43,7 +44,6 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
                     borderWidth: 1,
                     borderColor: cat.color + '30',
                   },
-              pressed && { opacity: 0.7 },
             ]}
           >
             <Text style={[
@@ -52,7 +52,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
             ]}>
               {t(cat.label)}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         )
       })}
     </>

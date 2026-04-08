@@ -12,6 +12,7 @@ import {
   ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X, Building2,
 } from 'lucide-react-native'
 import { Image } from 'expo-image'
+import { PressableOpacity } from '@/components/ui'
 import { PinIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -472,11 +473,11 @@ export default function MapScreen() {
                 {loadingMore ? (
                   <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
-                  <Pressable onPress={handleLoadMore} style={({ pressed }) => [styles.loadMoreBtn, { borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
+                  <PressableOpacity onPress={handleLoadMore} style={[styles.loadMoreBtn, { borderColor: colors.border }]}>
                     <Text style={[styles.loadMoreText, { color: colors.primary }]}>
                       {t('map.loadMoreEvents')} ({totalEvents} {t('map.totalEvents')})
                     </Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )}
               </View>
             ) : null

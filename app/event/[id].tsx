@@ -19,7 +19,7 @@ import { shareContent } from '@/lib/share'
 import { Avatar } from '@/components/Avatar'
 import { ReportModal } from '@/components/ReportModal'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { BackButton, PressableOpacity } from '@/components/ui'
 import { formatEventDate } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { getCachedUserId } from '@/lib/authCache'
@@ -325,16 +325,16 @@ function EventDetailScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header bar */}
       <View style={[s.headerBar, { borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.7 }} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
         <View style={s.headerActions}>
-          <Pressable onPress={handleShare} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.7 }} accessibilityRole="button" accessibilityLabel={t('common.share')}>
+          <PressableOpacity onPress={handleShare} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.share')}>
             <Share2 size={20} color={colors.foreground} />
-          </Pressable>
-          <Pressable onPress={() => setReportModalVisible(true)} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.7 }} accessibilityRole="button" accessibilityLabel="Report">
+          </PressableOpacity>
+          <PressableOpacity onPress={() => setReportModalVisible(true)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Report">
             <Flag size={20} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
       </View>
 
@@ -453,11 +453,11 @@ function EventDetailScreenInner() {
 
         {/* Creator card */}
         {event.creator && (
-          <Pressable
+          <PressableOpacity
             onPress={() => router.push(`/profile/${event.creator!.id}` as any)}
             accessibilityRole="button"
             accessibilityLabel={`${event.creator.name}, ${t('events.organizer')}`}
-            style={({ pressed }) => [s.creatorCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
+            style={[s.creatorCard, { backgroundColor: colors.card }]}
           >
             <Avatar url={event.creator.avatar_url} name={event.creator.name} size={44} />
             <View style={s.creatorInfo}>
@@ -466,62 +466,61 @@ function EventDetailScreenInner() {
                 <Text style={[s.organizerBadgeText, { color: colors.primary }]}>{t('events.organizer')}</Text>
               </View>
             </View>
-          </Pressable>
+          </PressableOpacity>
         )}
 
         {/* Group Chat button — show for participants and creator */}
         {event.conversation_id && (myStatus === 'joined' || myStatus === 'approved' || isCreator) && (
-          <Pressable
+          <PressableOpacity
             onPress={() => router.push(`/event-chat/${event.conversation_id}` as any)}
             accessibilityRole="button"
             accessibilityLabel={t('events.groupChat')}
-            style={({ pressed }) => [
+            style={[
               s.groupChatBtn,
               { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}30` },
-              pressed && { opacity: 0.7 },
             ]}
           >
             <MessageCircle size={18} color={colors.primary} strokeWidth={1.8} />
             <Text style={[s.groupChatText, { color: colors.primary }]}>
               {t('events.openChat')}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         )}
 
         {/* Message organizer */}
         {event.creator && !isCreator && (
-          <Pressable
+          <PressableOpacity
             onPress={handleMessageCreator}
             accessibilityRole="button"
             accessibilityLabel={t('events.messageOrganizer')}
-            style={({ pressed }) => [s.messageCreatorBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}
+            style={[s.messageCreatorBtn, { backgroundColor: colors.primary }]}
           >
             <MessageCircle size={18} color={colors.primaryForeground} strokeWidth={1.8} />
             <Text style={[s.messageCreatorText, { color: colors.primaryForeground }]}>
               {t('events.messageOrganizer')}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         )}
 
         {/* Creator actions — hide for past events */}
         {isCreator && !isPast && (
           <View style={s.creatorActions}>
-            <Pressable
+            <PressableOpacity
               onPress={() => router.push(`/create-event?edit=${event.id}` as any)}
               accessibilityRole="button"
               accessibilityLabel={t('events.editEventAction')}
-              style={({ pressed }) => [s.creatorActionBtn, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+              style={[s.creatorActionBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
               <Text style={[s.creatorActionText, { color: colors.primary }]}>{t('events.editEventAction')}</Text>
-            </Pressable>
-            <Pressable
+            </PressableOpacity>
+            <PressableOpacity
               onPress={handleCancelEvent}
               accessibilityRole="button"
               accessibilityLabel={t('events.cancelEvent')}
-              style={({ pressed }) => [s.creatorActionBtn, { backgroundColor: `${colors.destructive}10`, borderColor: colors.destructive }, pressed && { opacity: 0.7 }]}
+              style={[s.creatorActionBtn, { backgroundColor: `${colors.destructive}10`, borderColor: colors.destructive }]}
             >
               <Text style={[s.creatorActionText, { color: colors.destructive }]}>{t('events.cancelEvent')}</Text>
-            </Pressable>
+            </PressableOpacity>
           </View>
         )}
       </ScrollView>

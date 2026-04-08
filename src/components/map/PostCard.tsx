@@ -1,5 +1,6 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
+import { PressableOpacity } from '@/components/ui'
 import { MapPin } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
@@ -27,8 +28,8 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
   const catColor = cat ? cat.color : item.color
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+    <PressableOpacity
+      style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
     >
       {/* Category color bar on left edge */}
@@ -92,7 +93,7 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
           </View>
         </View>
       </View>
-    </Pressable>
+    </PressableOpacity>
   )
 }
 

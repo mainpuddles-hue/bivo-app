@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Zap, TrendingUp, Clock, CheckCircle } from 'lucide-react-native'
@@ -165,7 +165,7 @@ function BoostsScreenInner() {
           <View style={styles.activeSection}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('boost.activeBoosts')}</Text>
             {activeBoosts.map(boost => (
-              <Pressable key={boost.id} onPress={() => router.push(`/post/${boost.post_id}` as any)} style={({ pressed }) => [styles.activeBoostCard, { backgroundColor: colors.card, borderColor: `${colors.accent}40` }, pressed && { opacity: 0.7 }]}>
+              <PressableOpacity key={boost.id} onPress={() => router.push(`/post/${boost.post_id}` as any)} style={[styles.activeBoostCard, { backgroundColor: colors.card, borderColor: `${colors.accent}40` }]}>
                 <TrendingUp size={16} color={colors.accent} />
                 <View style={styles.activeBoostInfo}>
                   <Text style={[styles.activeBoostTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -178,7 +178,7 @@ function BoostsScreenInner() {
                     </Text>
                   </View>
                 </View>
-              </Pressable>
+              </PressableOpacity>
             ))}
           </View>
         )}

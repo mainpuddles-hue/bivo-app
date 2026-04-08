@@ -730,11 +730,11 @@ function ConversationScreenInner() {
               </PressableOpacity>
             )}
             {hasOlder ? (
-              <Pressable onPress={loadOlder} style={({ pressed }) => [s.loadOlderBtn, { borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
+              <PressableOpacity onPress={loadOlder} style={[s.loadOlderBtn, { borderColor: colors.border }]}>
                 <Text style={[s.loadOlderText, { color: colors.primary }]}>
                   {loadingOlder ? t('common.loading') : t('conversation.loadOlder')}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             ) : null}
           </View>
         }
@@ -745,12 +745,12 @@ function ConversationScreenInner() {
 
       {/* Scroll to bottom button */}
       {showScrollBtn && (
-        <Pressable
+        <PressableOpacity
           onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          style={({ pressed }) => [s.scrollBtn, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }, pressed && { opacity: 0.7 }]}
+          style={[s.scrollBtn, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }]}
         >
           <ChevronDown size={20} color={colors.foreground} />
-        </Pressable>
+        </PressableOpacity>
       )}
 
       {/* Reaction / Delete Picker Modal */}
@@ -767,26 +767,26 @@ function ConversationScreenInner() {
           <View style={[s.reactionPickerContainer, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 }]}>
             <View style={s.reactionPickerRow}>
               {QUICK_REACTIONS.map((emoji) => (
-                <Pressable
+                <PressableOpacity
                   key={emoji}
                   onPress={() => handleReaction(emoji)}
-                  style={({ pressed }) => [s.reactionPickerItem, pressed && { opacity: 0.7 }]}
+                  style={s.reactionPickerItem}
                 >
                   <Text style={s.reactionPickerEmoji}>{emoji}</Text>
-                </Pressable>
+                </PressableOpacity>
               ))}
             </View>
             {canCopy && (
-              <Pressable onPress={handleCopyMessage} style={({ pressed }) => [s.deleteRow, { borderTopColor: colors.border }, pressed && { opacity: 0.7 }]}>
+              <PressableOpacity onPress={handleCopyMessage} style={[s.deleteRow, { borderTopColor: colors.border }]}>
                 <Copy size={16} color={colors.foreground} />
                 <Text style={[s.deleteText, { color: colors.foreground }]}>{t('conversation.copyMessage') ?? 'Kopioi'}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
             {canDelete && (
-              <Pressable onPress={handleDeleteMessage} style={({ pressed }) => [s.deleteRow, { borderTopColor: colors.border }, pressed && { opacity: 0.7 }]}>
+              <PressableOpacity onPress={handleDeleteMessage} style={[s.deleteRow, { borderTopColor: colors.border }]}>
                 <Trash2 size={16} color={colors.destructive} />
                 <Text style={[s.deleteText, { color: colors.destructive }]}>{t('conversation.deleteMessage')}</Text>
-              </Pressable>
+              </PressableOpacity>
             )}
           </View>
         </Pressable>

@@ -22,6 +22,7 @@ import {
   RotateCcw,
 } from 'lucide-react-native'
 import * as Location from 'expo-location'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { NEIGHBORHOODS } from '@/lib/constants'
@@ -165,9 +166,9 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
   const renderSectionHeader = (key: string, icon: React.ReactNode, title: string) => {
     const expanded = expandedSections[key]
     return (
-      <Pressable
+      <PressableOpacity
         onPress={() => toggleSection(key)}
-        style={({ pressed }) => [styles.sectionHeader, { borderBottomColor: colors.border }, pressed && { opacity: 0.7 }]}
+        style={[styles.sectionHeader, { borderBottomColor: colors.border }]}
       >
         <View style={styles.sectionHeaderLeft}>
           {icon}
@@ -178,7 +179,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
         ) : (
           <ChevronDown size={18} color={colors.mutedForeground} />
         )}
-      </Pressable>
+      </PressableOpacity>
     )
   }
 
@@ -381,10 +382,10 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                   </Text>
                   <View style={styles.distanceSteps}>
                     {DISTANCE_STEPS.map((step, idx) => (
-                      <Pressable
+                      <PressableOpacity
                         key={step}
                         onPress={() => setLocal(prev => ({ ...prev, distanceKm: step }))}
-                        style={({ pressed }) => [
+                        style={[
                           styles.distanceStep,
                           {
                             backgroundColor:
@@ -394,7 +395,6 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                                   ? colors.card
                                   : colors.muted,
                           },
-                          pressed && { opacity: 0.7 },
                         ]}
                       >
                         <Text
@@ -410,7 +410,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                         >
                           {step}
                         </Text>
-                      </Pressable>
+                      </PressableOpacity>
                     ))}
                   </View>
                 </>
@@ -430,10 +430,10 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                 {NEIGHBORHOODS.map(nh => {
                   const selected = local.neighborhoods.includes(nh)
                   return (
-                    <Pressable
+                    <PressableOpacity
                       key={nh}
                       onPress={() => toggleNeighborhood(nh)}
-                      style={({ pressed }) => [
+                      style={[
                         styles.nhChip,
                         selected
                           ? { backgroundColor: colors.primary }
@@ -442,7 +442,6 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                               borderColor: colors.border,
                               borderWidth: 1,
                             },
-                        pressed && { opacity: 0.7 },
                       ]}
                     >
                       {selected && <Check size={12} color={colors.primaryForeground} />}
@@ -456,7 +455,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                       >
                         {nh}
                       </Text>
-                    </Pressable>
+                    </PressableOpacity>
                   )
                 })}
               </View>
@@ -474,10 +473,10 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
               {SORT_OPTIONS.map(opt => {
                 const selected = local.sortBy === opt.key
                 return (
-                  <Pressable
+                  <PressableOpacity
                     key={opt.key}
                     onPress={() => setLocal(prev => ({ ...prev, sortBy: opt.key }))}
-                    style={({ pressed }) => [
+                    style={[
                       styles.sortOption,
                       {
                         backgroundColor: selected
@@ -485,7 +484,6 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                           : 'transparent',
                         borderColor: selected ? colors.primary : colors.border,
                       },
-                      pressed && { opacity: 0.7 },
                     ]}
                   >
                     <View
@@ -507,7 +505,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                     >
                       {t(opt.labelKey)}
                     </Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )
               })}
             </View>
@@ -525,23 +523,23 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
             },
           ]}
         >
-          <Pressable
+          <PressableOpacity
             onPress={handleClear}
-            style={({ pressed }) => [styles.footerBtn, styles.footerBtnSecondary, { borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+            style={[styles.footerBtn, styles.footerBtnSecondary, { borderColor: colors.border }]}
           >
             <Text style={[styles.footerBtnText, { color: colors.foreground }]}>
               {t('search.clearAll')}
             </Text>
-          </Pressable>
-          <Pressable
+          </PressableOpacity>
+          <PressableOpacity
             onPress={handleApply}
-            style={({ pressed }) => [styles.footerBtn, styles.footerBtnPrimary, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}
+            style={[styles.footerBtn, styles.footerBtnPrimary, { backgroundColor: colors.primary }]}
           >
             <Text style={[styles.footerBtnText, { color: colors.primaryForeground }]}>
               {t('search.apply')}
               {activeCount > 0 ? ` (${activeCount})` : ''}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
       </View>
     </Modal>

@@ -467,10 +467,10 @@ export default function MessagesScreen() {
           const isPinned = pinnedIds.includes(item.id)
 
           return (
-            <Pressable
+            <PressableOpacity
               onPress={() => router.push(`/messages/${item.id}`)}
               onLongPress={() => handleTogglePin(item.id)}
-              style={({ pressed }) => [styles.convRow, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }, pressed && { opacity: 0.7 }]}
+              style={[styles.convRow, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }]}
               accessibilityRole="button"
               accessibilityLabel={`${other?.name ?? t('messages.unknownUser')}${unread > 0 ? `, ${unread} ${t('messages.unread') ?? 'unread'}` : ''}${isPinned ? `, ${t('messages.pinned') ?? 'pinned'}` : ''}`}
               accessibilityHint={t('messages.longPressToPinHint') ?? 'Long press to pin or unpin'}
@@ -514,7 +514,7 @@ export default function MessagesScreen() {
                   </View>
                 )}
               </View>
-            </Pressable>
+            </PressableOpacity>
           )
         }}
         ItemSeparatorComponent={MessageItemSeparator}

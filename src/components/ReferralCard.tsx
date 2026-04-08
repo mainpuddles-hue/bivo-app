@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { View, Text, Pressable, StyleSheet, Share, Alert } from 'react-native'
+import { View, Text, StyleSheet, Share, Alert } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
+import { PressableOpacity } from '@/components/ui'
 import {
   Gift, Copy, Share2, Check, ChevronRight, Crown, UserPlus, Users, Award, Star,
 } from 'lucide-react-native'
@@ -111,22 +112,22 @@ export function ReferralCard({ userId }: ReferralCardProps) {
           </Text>
         </View>
         <View style={s.codeActions}>
-          <Pressable
+          <PressableOpacity
             onPress={handleCopy}
-            style={({ pressed }) => [s.codeBtn, { backgroundColor: copied ? `${colors.success}20` : `${colors.primary}15` }, pressed && { opacity: 0.7 }]}
+            style={[s.codeBtn, { backgroundColor: copied ? `${colors.success}20` : `${colors.primary}15` }]}
           >
             {copied ? (
               <Check size={16} color={colors.success} />
             ) : (
               <Copy size={16} color={colors.primary} />
             )}
-          </Pressable>
-          <Pressable
+          </PressableOpacity>
+          <PressableOpacity
             onPress={handleShare}
-            style={({ pressed }) => [s.codeBtn, { backgroundColor: colors.primary + '15' }, pressed && { opacity: 0.7 }]}
+            style={[s.codeBtn, { backgroundColor: colors.primary + '15' }]}
           >
             <Share2 size={16} color={colors.primary} />
-          </Pressable>
+          </PressableOpacity>
         </View>
       </View>
 

@@ -1,5 +1,6 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
+import { PressableOpacity } from '@/components/ui'
 import { LinearGradient } from 'expo-linear-gradient'
 import { MapPin } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
@@ -34,8 +35,8 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
     : null
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}
+    <PressableOpacity
+      style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
       accessibilityRole="button"
       accessibilityLabel={item.title}
@@ -104,7 +105,7 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
           </Text>
         </View>
       </View>
-    </Pressable>
+    </PressableOpacity>
   )
 }
 

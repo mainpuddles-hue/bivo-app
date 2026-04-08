@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { PressableOpacity } from '@/components/ui'
 import { Shield, ShieldCheck, ShieldPlus } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -131,10 +132,10 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
 
       {level === 1 && onVerifyPress && (
         <>
-          <Pressable onPress={onVerifyPress} style={({ pressed }) => [styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }, pressed && { opacity: 0.7 }]}>
+          <PressableOpacity onPress={onVerifyPress} style={[styles.verifyBtn, { backgroundColor: TRUST_TIERS[2].color }]}>
             <ShieldCheck size={16} color={colors.primaryForeground} />
             <Text style={[styles.verifyBtnText, { color: colors.primaryForeground }]}>{t('trust.verifyNow')}</Text>
-          </Pressable>
+          </PressableOpacity>
         </>
       )}
     </View>

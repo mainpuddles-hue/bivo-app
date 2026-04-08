@@ -822,14 +822,14 @@ function PostDetailScreenInner() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={toggleSave} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></Pressable>
-        <Pressable onPress={handleShare} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.share')}><Share2 size={22} color={colors.mutedForeground} /></Pressable>
+        <PressableOpacity onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></PressableOpacity>
+        <PressableOpacity onPress={handleShare} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.share')}><Share2 size={22} color={colors.mutedForeground} /></PressableOpacity>
         {isAuthor ? (
-          <Pressable onPress={handleMorePress} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}><MoreHorizontal size={22} color={colors.mutedForeground} /></Pressable>
+          <PressableOpacity onPress={handleMorePress} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}><MoreHorizontal size={22} color={colors.mutedForeground} /></PressableOpacity>
         ) : userId ? (
-          <Pressable onPress={handleReport} hitSlop={8} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.report')}><Flag size={22} color={colors.mutedForeground} /></Pressable>
+          <PressableOpacity onPress={handleReport} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('post.report')}><Flag size={22} color={colors.mutedForeground} /></PressableOpacity>
         ) : null}
       </View>
 
@@ -883,40 +883,40 @@ function PostDetailScreenInner() {
           {/* Author action buttons */}
           {isAuthor && (
             <View style={styles.authorActionsRow}>
-              <Pressable onPress={openEditModal} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
+              <PressableOpacity onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
                 <Pencil size={14} color={colors.primary} />
                 <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.edit')}</Text>
-              </Pressable>
+              </PressableOpacity>
               {post.is_active ? (
-                <Pressable onPress={handleMarkClosed} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
+                <PressableOpacity onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
                   <XCircle size={14} color={colors.mutedForeground} />
                   <Text style={[styles.authorActionText, { color: colors.mutedForeground }]}>{t('post.markClosed')}</Text>
-                </Pressable>
+                </PressableOpacity>
               ) : (
-                <Pressable onPress={handleReopen} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
+                <PressableOpacity onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
                   <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.reopen')}</Text>
-                </Pressable>
+                </PressableOpacity>
               )}
-              <Pressable onPress={handleDelete} style={({ pressed }) => [styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
+              <PressableOpacity onPress={handleDelete} style={[styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
                 <Trash2 size={14} color={colors.destructive} />
                 <Text style={[styles.authorActionText, { color: colors.destructive }]}>{t('post.delete')}</Text>
-              </Pressable>
+              </PressableOpacity>
             </View>
           )}
 
           {/* Boost badge / button — gated behind FEATURES.BOOSTS */}
           {FEATURES.BOOSTS && isAuthor && !isPostBoosted && post.is_active && (
-            <Pressable
+            <PressableOpacity
               onPress={handleBoostPost}
               disabled={boosting}
-              style={({ pressed }) => [styles.boostBtn, { backgroundColor: `${colors.accent}15`, borderColor: `${colors.accent}40` }, pressed && { opacity: 0.7 }]}
+              style={[styles.boostBtn, { backgroundColor: `${colors.accent}15`, borderColor: `${colors.accent}40` }]}
               accessibilityRole="button"
               accessibilityLabel={t('boost.boostThis')}
             >
               <TrendingUp size={14} color={colors.accent} />
               <Text style={[styles.boostBtnText, { color: colors.accent }]}>{t('boost.boostThis')}</Text>
               {boosting && <ActivityIndicator size="small" color={colors.accent} style={{ marginLeft: 4 }} />}
-            </Pressable>
+            </PressableOpacity>
           )}
           {FEATURES.BOOSTS && isPostBoosted && (
             <BoostBadge subtitle={boostRemainingText ? t('boost.boostEndsIn', { time: boostRemainingText }) : undefined} />
@@ -962,17 +962,17 @@ function PostDetailScreenInner() {
           )}
 
           {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee !== null && !isAuthor && (
-            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={({ pressed }) => [styles.bookingBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
+            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
-            </Pressable>
+            </PressableOpacity>
           )}
 
           {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price !== null && post.service_price > 0 && !post.tags?.includes('tarjoan_item') && !isAuthor && (
-            <Pressable onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={({ pressed }) => [styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
+            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
               <ShoppingBag size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>
-            </Pressable>
+            </PressableOpacity>
           )}
 
           {post.event_date && (<Text style={[styles.eventDate, { color: colors.primary }]}>{formatEventDate(post.event_date, locale)}</Text>)}
@@ -982,15 +982,15 @@ function PostDetailScreenInner() {
           ) : null}
 
           {post.type === 'tapahtuma' && (
-            <Pressable
+            <PressableOpacity
               onPress={() => router.push('/community-events' as any)}
-              style={({ pressed }) => [styles.communityEventsLink, pressed && { opacity: 0.7 }]}
+              style={styles.communityEventsLink}
               accessibilityRole="link"
               accessibilityLabel={t('post.browseCommunityEvents')}
             >
               <Calendar size={14} color={colors.primary} />
               <Text style={[styles.communityEventsLinkText, { color: colors.primary }]}>{t('post.browseCommunityEvents')}</Text>
-            </Pressable>
+            </PressableOpacity>
           )}
 
           {post.location && (
@@ -1002,14 +1002,14 @@ function PostDetailScreenInner() {
 
           {/* Action row — like + count, comment + count (bookmark/share/flag in header) */}
           <View style={styles.actionRow}>
-            <Pressable onPress={toggleLike} style={({ pressed }) => [styles.actionItem, pressed && { opacity: 0.7 }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
+            <PressableOpacity onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
               <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
               {likeCount > 0 && (
                 <PressableOpacity onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
                   <Text style={[styles.actionText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>
                 </PressableOpacity>
               )}
-            </Pressable>
+            </PressableOpacity>
             <View style={styles.actionItem}>
               <MessageCircle size={16} color={colors.mutedForeground} />
               {comments.length > 0 && (
@@ -1080,12 +1080,12 @@ function PostDetailScreenInner() {
                 <View key={c.id}>
                   {renderCommentItem(c, false)}
                   {replies.length > 0 && (
-                    <Pressable onPress={() => toggleReplies(c.id)} style={({ pressed }) => [styles.showRepliesBtn, pressed && { opacity: 0.7 }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}>
+                    <PressableOpacity onPress={() => toggleReplies(c.id)} style={styles.showRepliesBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}>
                       {isExpanded ? <ChevronUp size={14} color={colors.primary} /> : <ChevronDown size={14} color={colors.primary} />}
                       <Text style={[styles.showRepliesText, { color: colors.primary }]}>
                         {isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}
                       </Text>
-                    </Pressable>
+                    </PressableOpacity>
                   )}
                   {isExpanded && replies.map(reply => renderCommentItem(reply, true))}
                 </View>
@@ -1150,9 +1150,9 @@ function PostDetailScreenInner() {
             <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} />
-            <Pressable onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={({ pressed }) => [styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }, pressed && { opacity: 0.7 }]}>
+            <PressableOpacity onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }]}>
               {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.saveChanges')}</Text>}
-            </Pressable>
+            </PressableOpacity>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -1192,10 +1192,10 @@ function PostDetailScreenInner() {
               {bookingDays > 0 && (<Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>{t('rental.confirmationNote')}</Text>)}
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
               <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
-              <Pressable onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
-                style={({ pressed }) => [styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }, pressed && { opacity: 0.7 }]}>
+              <PressableOpacity onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
+                style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }]}>
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
-              </Pressable>
+              </PressableOpacity>
             </ScrollView>
           </Pressable>
         </Pressable>
@@ -1265,10 +1265,10 @@ function PostDetailScreenInner() {
 
             <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
 
-            <Pressable
+            <PressableOpacity
               onPress={handlePayForService}
               disabled={sendingService || paymentLoading}
-              style={({ pressed }) => [styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : (category?.color ?? colors.primary), marginTop: 16, marginBottom: 8 }, pressed && { opacity: 0.7 }]}
+              style={[styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : (category?.color ?? colors.primary), marginTop: 16, marginBottom: 8 }]}
             >
               {sendingService || paymentLoading ? (
                 <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -1278,7 +1278,7 @@ function PostDetailScreenInner() {
                   <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('service.payAndBook')}</Text>
                 </>
               )}
-            </Pressable>
+            </PressableOpacity>
           </Pressable>
         </Pressable>
       </Modal>
@@ -1290,16 +1290,16 @@ function PostDetailScreenInner() {
           borderTopColor: colors.border,
           paddingBottom: insets.bottom + 8,
         }]}>
-          <Pressable
+          <PressableOpacity
             onPress={handleMessage}
-            style={({ pressed }) => [ctaStyles.messageBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]}
+            style={[ctaStyles.messageBtn, { backgroundColor: colors.primary }]}
             accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
           >
             <MessageCircle size={18} color={colors.primaryForeground} />
             <Text style={[ctaStyles.messageBtnText, { color: colors.primaryForeground }]}>
               {t('post.message')}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
       )}
 

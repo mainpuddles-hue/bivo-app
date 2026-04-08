@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator } from 'react-native'
 import { ShieldCheck, X, Building2, Smartphone, Lock, CheckCircle, Globe, Mail } from 'lucide-react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -45,9 +46,9 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             </View>
             <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.successTitle')}</Text>
             <Text style={[styles.description, { color: colors.mutedForeground }]}>{t('verification.successMessage')}</Text>
-            <Pressable onPress={onClose} style={({ pressed }) => [styles.primaryBtn, { backgroundColor: colors.success }, pressed && { opacity: 0.7 }]}>
+            <PressableOpacity onPress={onClose} style={[styles.primaryBtn, { backgroundColor: colors.success }]}>
               <Text style={styles.primaryBtnText}>{t('verification.backToApp')}</Text>
-            </Pressable>
+            </PressableOpacity>
           </Pressable>
         </Pressable>
       </Modal>
@@ -58,9 +59,9 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable accessibilityViewIsModal={true} style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
-          <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]} hitSlop={12}>
+          <PressableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={12}>
             <X size={20} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
 
           {/* Provider header — adapts to identity adapter branding */}
           <View style={[styles.suomifiHeader, { backgroundColor: brandColor }]}>
@@ -116,10 +117,10 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             </Text>
           )}
 
-          <Pressable
+          <PressableOpacity
             onPress={onConfirm}
             disabled={loading}
-            style={({ pressed }) => [styles.primaryBtn, { backgroundColor: loading ? colors.muted : brandColor }, pressed && { opacity: 0.7 }]}
+            style={[styles.primaryBtn, { backgroundColor: loading ? colors.muted : brandColor }]}
           >
             {loading ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
@@ -129,11 +130,11 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
                 <Text style={styles.primaryBtnText}>{t('verification.startButton')}</Text>
               </>
             )}
-          </Pressable>
+          </PressableOpacity>
 
-          <Pressable onPress={onClose} style={({ pressed }) => [styles.cancelBtn, { backgroundColor: colors.muted }, pressed && { opacity: 0.7 }]}>
+          <PressableOpacity onPress={onClose} style={[styles.cancelBtn, { backgroundColor: colors.muted }]}>
             <Text style={[styles.cancelBtnText, { color: colors.foreground }]}>{t('common.cancel')}</Text>
-          </Pressable>
+          </PressableOpacity>
         </Pressable>
       </Pressable>
     </Modal>

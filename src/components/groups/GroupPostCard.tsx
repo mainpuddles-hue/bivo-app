@@ -4,6 +4,7 @@ import {
 } from 'react-native'
 import { Image } from 'expo-image'
 import { Heart, MessageCircle, Pencil, Trash2, Flag } from 'lucide-react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -194,7 +195,7 @@ function GroupPostCardInner({
 
         {/* Actions */}
         <View style={styles.postActions}>
-          <Pressable style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]} onPress={() => onLike(post.id)}>
+          <PressableOpacity style={styles.actionBtn} onPress={() => onLike(post.id)}>
             <Heart
               size={18}
               color={isLiked ? colors.destructive : colors.mutedForeground}
@@ -204,8 +205,8 @@ function GroupPostCardInner({
             <Text style={[styles.actionText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>
               {post.like_count || 0}
             </Text>
-          </Pressable>
-          <Pressable style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]} onPress={() => onToggleComments(post.id)}>
+          </PressableOpacity>
+          <PressableOpacity style={styles.actionBtn} onPress={() => onToggleComments(post.id)}>
             <MessageCircle
               size={18}
               color={isExpanded ? colors.primary : colors.mutedForeground}
@@ -214,7 +215,7 @@ function GroupPostCardInner({
             <Text style={[styles.actionText, { color: isExpanded ? colors.primary : colors.mutedForeground }]}>
               {post.comment_count || 0}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Comments section (passed as children) */}

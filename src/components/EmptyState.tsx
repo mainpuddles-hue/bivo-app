@@ -1,4 +1,5 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { fonts } from '@/lib/fonts'
 
@@ -22,9 +23,9 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
         <Text style={[styles.description, { color: colors.mutedForeground }]}>{description}</Text>
       )}
       {actionLabel && onAction && (
-        <Pressable onPress={onAction} style={({ pressed }) => [styles.actionBtn, { backgroundColor: colors.primary }, pressed && { opacity: 0.7 }]} accessibilityRole="button">
+        <PressableOpacity onPress={onAction} style={[styles.actionBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
           <Text style={[styles.actionText, { color: colors.primaryForeground }]}>{actionLabel}</Text>
-        </Pressable>
+        </PressableOpacity>
       )}
     </View>
   )

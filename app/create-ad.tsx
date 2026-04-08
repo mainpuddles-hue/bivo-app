@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useCallback, useEffect } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
+import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Camera, X, Megaphone, ExternalLink } from 'lucide-react-native'
@@ -279,10 +279,10 @@ export default function CreateAdScreen() {
             </PressableOpacity>
           </View>
         ) : (
-          <Pressable onPress={handlePickImage} style={({ pressed }) => [styles.imagePicker, { backgroundColor: colors.card, borderColor: colors.border }, pressed && { opacity: 0.7 }]}>
+          <PressableOpacity onPress={handlePickImage} style={[styles.imagePicker, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Camera size={24} color={colors.mutedForeground} />
             <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>{t('create.addPhotos')}</Text>
-          </Pressable>
+          </PressableOpacity>
         )}
 
         {/* Link URL */}

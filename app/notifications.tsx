@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, SectionList, RefreshControl, Pressable, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
+import { View, Text, SectionList, RefreshControl, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
@@ -272,28 +272,27 @@ function NotificationsScreenInner() {
         <View style={{ flex: 1 }} />
         {/* 1b: Mark all as read button with label */}
         {unreadCount > 0 && (
-          <Pressable onPress={markAllRead} hitSlop={8} style={({ pressed }) => [styles.markAllReadBtn, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('notifications.markAllRead')}>
+          <PressableOpacity onPress={markAllRead} hitSlop={8} style={styles.markAllReadBtn} accessibilityRole="button" accessibilityLabel={t('notifications.markAllRead')}>
             <CheckCheck size={18} color={colors.primary} />
             <Text style={[styles.markAllReadText, { color: colors.primary }]}>{t('notifications.markAllRead')}</Text>
-          </Pressable>
+          </PressableOpacity>
         )}
       </View>
 
       {/* Filter tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} contentContainerStyle={styles.filterRow}>
         {FILTERS.map((f) => (
-          <Pressable
+          <PressableOpacity
             key={f.key}
             onPress={() => setActiveFilter(f.key)}
             accessibilityRole="button"
             accessibilityLabel={t(f.label)}
             accessibilityState={{ selected: activeFilter === f.key }}
-            style={({ pressed }) => [
+            style={[
               styles.filterChip,
               activeFilter === f.key
                 ? { backgroundColor: colors.primary }
                 : { backgroundColor: isDark ? colors.card : colors.muted },
-              pressed && { opacity: 0.7 },
             ]}
           >
             <Text style={[
@@ -302,7 +301,7 @@ function NotificationsScreenInner() {
             ]}>
               {t(f.label)}
             </Text>
-          </Pressable>
+          </PressableOpacity>
         ))}
       </ScrollView>
 
@@ -333,7 +332,7 @@ function NotificationsScreenInner() {
 
           return (
             <View>
-              <Pressable
+              <PressableOpacity
                 onPress={() => handleTap(item)}
                 onLongPress={() => handleLongPress(item)}
                 delayLongPress={500}
@@ -341,7 +340,7 @@ function NotificationsScreenInner() {
                 accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
                 accessibilityState={{ selected: !item.is_read }}
                 accessibilityHint={t('notifications.deleteNotification')}
-                style={({ pressed }) => [styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }, pressed && { opacity: 0.7 }]}
+                style={[styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }]}
               >
                 {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
                 <View style={styles.notifAvatar}>
@@ -380,7 +379,7 @@ function NotificationsScreenInner() {
                   </View>
                 </View>
                 {!item.is_read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
-              </Pressable>
+              </PressableOpacity>
 
               {/* 1a: Expanded group — show individual notification names */}
               {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (

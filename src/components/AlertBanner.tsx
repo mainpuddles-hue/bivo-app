@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, Pressable, StyleSheet, Linking } from 'react-native'
 import { AlertTriangle, Bus, X, ChevronDown, ChevronUp } from 'lucide-react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
@@ -40,7 +41,7 @@ export function AlertBanner() {
         const isExpanded = expandedId === alert.id
 
         return (
-          <Pressable
+          <PressableOpacity
             key={alert.id}
             onPress={() => {
               if (alert.type === 'transit' && alert.url) {
@@ -49,7 +50,7 @@ export function AlertBanner() {
                 setExpandedId(prev => prev === alert.id ? null : alert.id)
               }
             }}
-            style={({ pressed }) => [styles.alertCard, { backgroundColor: bgColor, borderColor }, pressed && { opacity: 0.7 }]}
+            style={[styles.alertCard, { backgroundColor: bgColor, borderColor }]}
           >
             <View style={styles.alertHeader}>
               {isWeather ? (
@@ -80,7 +81,7 @@ export function AlertBanner() {
                 {alert.description}
               </Text>
             )}
-          </Pressable>
+          </PressableOpacity>
         )
       })}
       {moreCount > 0 && (

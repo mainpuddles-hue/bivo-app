@@ -1,8 +1,9 @@
 import { memo, useState } from 'react'
-import { View, Text, StyleSheet, Pressable, Linking } from 'react-native'
+import { View, Text, StyleSheet, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import { MapPin, ChevronRight, Globe } from 'lucide-react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -29,9 +30,9 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
   const [imageError, setImageError] = useState(false)
 
   return (
-    <Pressable
+    <PressableOpacity
       onPress={() => event.info_url ? Linking.openURL(event.info_url).catch(() => {}) : router.push('/community-events' as any)}
-      style={({ pressed }) => [styles.todayEventCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
+      style={[styles.todayEventCard, { backgroundColor: colors.card }]}
       accessibilityRole="button"
       accessibilityLabel={getCityEventName(event, locale)}
     >
@@ -56,7 +57,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
         )}
       </View>
       <ChevronRight size={16} color={colors.mutedForeground} />
-    </Pressable>
+    </PressableOpacity>
   )
 })
 

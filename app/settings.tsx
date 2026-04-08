@@ -987,7 +987,7 @@ export default function SettingsScreen() {
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={handleExport} disabled={exporting} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.export')}>
+          <PressableOpacity onPress={handleExport} disabled={exporting} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.export')}>
             {exporting ? <ActivityIndicator size="small" color={colors.primary} /> : <Download size={18} color={colors.mutedForeground} />}
             <View style={{ flex: 1 }}>
               <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
@@ -996,47 +996,47 @@ export default function SettingsScreen() {
               ) : null}
             </View>
             {!exporting && <ChevronRight size={16} color={colors.mutedForeground} />}
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Blocked users */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.blockedUsers')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/blocked')} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.blockedUsers')}>
+          <PressableOpacity onPress={() => router.push('/blocked')} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.blockedUsers')}>
             <ShieldBan size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.blockedUsers')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* About & info links */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.about')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={() => router.push('/about' as any)} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('about.title')}>
+          <PressableOpacity onPress={() => router.push('/about' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('about.title')}>
             <Info size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('about.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-          <Pressable onPress={() => router.push('/help' as any)} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('help.title')}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => router.push('/help' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('help.title')}>
             <HelpCircle size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('help.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-          <Pressable onPress={() => router.push('/privacy')} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.privacy')}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => router.push('/privacy')} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.privacy')}>
             <Lock size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-          <Pressable onPress={() => router.push('/terms')} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.terms')}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => router.push('/terms')} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.terms')}>
             <FileText size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-          <Pressable onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}>
             <Bug size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Admin panel — only visible for admins */}
@@ -1044,11 +1044,11 @@ export default function SettingsScreen() {
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('admin.title')}</Text>
             <View style={[s.card, { backgroundColor: colors.card }]}>
-              <Pressable onPress={() => router.push('/admin' as any)} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('admin.title')}>
+              <PressableOpacity onPress={() => router.push('/admin' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('admin.title')}>
                 <Shield size={18} color={colors.destructive} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t('admin.title')}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} />
-              </Pressable>
+              </PressableOpacity>
             </View>
           </>
         )}
@@ -1056,17 +1056,17 @@ export default function SettingsScreen() {
         {/* Danger zone */}
         <Text style={[s.section, { color: colors.destructive }]}>{t('settings.deleteAccount')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Pressable onPress={handleDeleteAccount} style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.deleteAccount')}>
+          <PressableOpacity onPress={handleDeleteAccount} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.deleteAccount')}>
             <Trash2 size={18} color={colors.destructive} />
             <Text style={[s.rowText, { color: colors.destructive }]}>{t('settings.deletePermanently')}</Text>
-          </Pressable>
+          </PressableOpacity>
         </View>
 
         {/* Logout */}
-        <Pressable onPress={handleLogout} style={({ pressed }) => [s.logoutBtn, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('settings.logout')}>
+        <PressableOpacity onPress={handleLogout} style={[s.logoutBtn, { backgroundColor: colors.card }]} accessibilityRole="button" accessibilityLabel={t('settings.logout')}>
           <LogOut size={18} color={colors.destructive} />
           <Text style={{ fontSize: 14, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('settings.logout')}</Text>
-        </Pressable>
+        </PressableOpacity>
 
         {/* App version */}
         <Text style={[s.versionText, { color: colors.mutedForeground }]}>
