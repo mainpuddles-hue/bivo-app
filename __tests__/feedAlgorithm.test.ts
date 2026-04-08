@@ -3,7 +3,7 @@
  *
  * Tests scorePost(), rankFeed(), and enforceBoostedCap() logic:
  * - Recency decay, engagement, urgency, proximity, trust, personalization
- * - Boost bonus (+0.5)
+ * - Boost multiplier (1.4x)
  * - Pro listings sorted above non-Pro
  * - Boosted cap: max 2 boosted posts in top 10
  * - Edge cases: null values, empty arrays, missing fields
@@ -229,7 +229,7 @@ describe('scorePost: Proximity', () => {
 // ══════════════════════════════════════════════════════
 
 describe('scorePost: Boost bonus', () => {
-  test('Boosted post gets +0.5 flat score bonus', () => {
+  test('Boosted post gets 1.4x score multiplier', () => {
     const boostedCtx = {
       ...baseCtx,
       boostedPostIds: new Set(['post-1']),
@@ -240,8 +240,9 @@ describe('scorePost: Boost bonus', () => {
     }
 
     const post = makePost({ id: 'post-1' })
-    const diff = scorePost(post, boostedCtx) - scorePost(post, unboostedCtx)
-    expect(diff).toBeCloseTo(0.5, 5)
+    const boostedScore = scorePost(post, boostedCtx)
+    const unboostedScore = scorePost(post, unboostedCtx)
+    expect(boostedScore).toBeCloseTo(unboostedScore * 1.4, 5)
   })
 
   test('Non-boosted post gets 0 boost bonus', () => {
@@ -255,11 +256,15 @@ describe('scorePost: Boost bonus', () => {
     expect(scorePost(post, ctx)).toBeCloseTo(scorePost(post, ctxNoBoosted), 5)
   })
 
-  test('Boosted post can exceed 1.0 total score', () => {
+  test('Boosted post score is 1.4x base score (multiplicative)', () => {
     const ctx = {
       ...baseCtx,
       userNeighborhood: 'Kallio',
       boostedPostIds: new Set(['post-1']),
+    }
+    const ctxNoBoosted = {
+      ...baseCtx,
+      userNeighborhood: 'Kallio',
     }
     const post = makePost({
       id: 'post-1',
@@ -269,8 +274,10 @@ describe('scorePost: Boost bonus', () => {
       location: 'Kallio',
     })
 
-    // With boost, score can exceed 1.0
-    expect(scorePost(post, ctx)).toBeGreaterThan(1.0)
+    const boostedScore = scorePost(post, ctx)
+    const baseScore = scorePost(post, ctxNoBoosted)
+    // With 1.4x multiplier, boosted score should be 1.4 * base
+    expect(boostedScore).toBeCloseTo(baseScore * 1.4, 5)
   })
 })
 
@@ -422,7 +429,7 @@ describe('rankFeed: Sorting', () => {
 
 describe('rankFeed: enforceBoostedCap', () => {
   test('Max 2 boosted posts in top 10 positions', () => {
-    // Create 15 posts: 5 are boosted, all boosted get +0.5 so they naturally rise
+    // Create 15 posts: 5 are boosted, all boosted get 1.4x so they naturally rise
     const posts: Post[] = []
     for (let i = 0; i < 15; i++) {
       posts.push(makePost({

@@ -92,46 +92,30 @@ describe('Feature flag types', () => {
 
 describe('Feature flag immutability', () => {
   test('FEATURES object cannot be mutated at runtime', () => {
-    // `as const` in TypeScript creates a readonly type, but at runtime
-    // we verify that attempting to write throws or has no effect.
-    // Object.isFrozen may or may not be true depending on transpilation,
-    // but we can verify that the value cannot actually change.
+    // FEATURES is a Proxy with a set trap that throws.
+    // Verify that attempting to write throws an error.
     const originalValue = FEATURES.LENDING
 
-    try {
-      // Attempt to mutate — should throw in strict mode or have no effect
+    expect(() => {
       ;(FEATURES as any).LENDING = true
-    } catch {
-      // TypeError in strict mode — expected
-    }
+    }).toThrow('Use fetchRemoteFlags() to update flags')
 
-    // Whether it threw or silently failed, the value should still be the original
-    // Note: `as const` alone doesn't freeze at runtime, but this documents the intent.
-    // If the object IS frozen (e.g. via Object.freeze), this will pass.
-    // If it's only `as const`, this test verifies the compile-time contract.
+    // Value should still be the original
+    expect(FEATURES.LENDING).toBe(originalValue)
     expect(typeof FEATURES.LENDING).toBe('boolean')
-
-    // Restore original value in case mutation succeeded (shouldn't in frozen objects)
-    ;(FEATURES as any).LENDING = originalValue
   })
 
   test('No new keys can be added to FEATURES', () => {
     const originalKeys = Object.keys(FEATURES)
-    try {
+
+    // Proxy set trap throws for any assignment including new keys
+    expect(() => {
       ;(FEATURES as any).NEW_FLAG = true
-    } catch {
-      // Expected in strict mode
-    }
+    }).toThrow('Use fetchRemoteFlags() to update flags')
 
-    // Clean up
-    try {
-      delete (FEATURES as any).NEW_FLAG
-    } catch {
-      // May throw if frozen
-    }
-
-    // Verify the known keys are present
+    // Verify the known keys are still present and unchanged
     expect(originalKeys.length).toBeGreaterThanOrEqual(9)
+    expect(Object.keys(FEATURES)).toEqual(originalKeys)
   })
 })
 

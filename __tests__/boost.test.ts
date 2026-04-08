@@ -269,7 +269,7 @@ describe('Price Formatting', () => {
 // ══════════════════════════════════════════════════════
 
 describe('Feed Algorithm: Boost Scoring', () => {
-  test('boosted post gets +0.5 score bonus', () => {
+  test('boosted post gets 1.4x score multiplier', () => {
     const post = makePost({ id: 'boosted-1' })
     const regularScore = scorePost(post, baseFeedContext)
 
@@ -279,7 +279,7 @@ describe('Feed Algorithm: Boost Scoring', () => {
     }
     const boostedScore = scorePost(post, boostedCtx)
 
-    expect(boostedScore - regularScore).toBeCloseTo(0.5, 5)
+    expect(boostedScore).toBeCloseTo(regularScore * 1.4, 5)
   })
 
   test('non-boosted post is unaffected when boostedPostIds is present', () => {
@@ -295,8 +295,8 @@ describe('Feed Algorithm: Boost Scoring', () => {
     expect(scoreWith).toBe(scoreWithout)
   })
 
-  test('boost bonus is flat 0.5 regardless of other factors', () => {
-    // A post with high engagement should still get the same +0.5 boost bonus
+  test('boost multiplier is 1.4x regardless of other factors', () => {
+    // A post with high engagement should still get the same 1.4x boost multiplier
     const engagedPost = makePost({ id: 'engaged-1', like_count: 20, comment_count: 10 })
     const regularScore = scorePost(engagedPost, baseFeedContext)
 
@@ -306,7 +306,7 @@ describe('Feed Algorithm: Boost Scoring', () => {
     }
     const boostedScore = scorePost(engagedPost, boostedCtx)
 
-    expect(boostedScore - regularScore).toBeCloseTo(0.5, 5)
+    expect(boostedScore).toBeCloseTo(regularScore * 1.4, 5)
   })
 
   test('boosted post ranks higher in feed than identical non-boosted post', () => {

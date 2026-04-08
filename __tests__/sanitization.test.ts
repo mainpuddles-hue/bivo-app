@@ -413,7 +413,7 @@ describe('Email validation and disposable domain blocking', () => {
 
   test('Email normalization: trimmed and lowercased', () => {
     // From send-otp: const cleanEmail = email.trim().toLowerCase()
-    const rawEmail = '  Jesse@TackBird.fi  '
+    const rawEmail = '  Jesse@TackBird.com  '
     const cleaned = rawEmail.trim().toLowerCase()
     expect(cleaned).toBe('jesse@tackbird.com')
   })
