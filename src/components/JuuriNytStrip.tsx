@@ -62,7 +62,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={[styles.pulseCircle, { backgroundColor: isDark ? '#EF444440' : '#EF444420' }]}>
+        <View style={[styles.pulseCircle, { backgroundColor: `${colors.destructive}${isDark ? '40' : '20'}` }]}>
           <Zap size={14} color={colors.destructive} fill={colors.destructive} />
         </View>
         <Text style={[styles.headerText, { color: colors.destructive }]}>

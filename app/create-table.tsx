@@ -180,7 +180,7 @@ function CreateTableScreenInner() {
                 style={[
                   s.categoryChip,
                   {
-                    backgroundColor: selected ? cat.color : isDark ? colors.card : '#F3F4F6',
+                    backgroundColor: selected ? cat.color : colors.muted,
                     borderColor: selected ? cat.color : colors.border,
                   },
                 ]}

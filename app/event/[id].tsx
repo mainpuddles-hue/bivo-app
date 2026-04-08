@@ -477,7 +477,7 @@ function EventDetailScreenInner() {
             accessibilityLabel={t('events.groupChat')}
             style={({ pressed }) => [
               s.groupChatBtn,
-              { backgroundColor: isDark ? colors.card : '#F0F9FF', borderColor: `${colors.primary}30` },
+              { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}30` },
               pressed && { opacity: 0.7 },
             ]}
           >

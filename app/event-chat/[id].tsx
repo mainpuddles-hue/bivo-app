@@ -159,7 +159,7 @@ function EventChatScreenInner() {
           s.bubble,
           isOwn
             ? { backgroundColor: colors.primary, borderBottomRightRadius: 4 }
-            : { backgroundColor: isDark ? colors.card : '#F3F4F6', borderBottomLeftRadius: 4 },
+            : { backgroundColor: colors.muted, borderBottomLeftRadius: 4 },
         ]}>
           {!isOwn && (
             <Text style={[s.senderName, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
@@ -281,7 +281,7 @@ function EventChatScreenInner() {
 
         <TextInput
           style={[s.input, {
-            backgroundColor: isDark ? colors.card : '#F3F4F6',
+            backgroundColor: colors.muted,
             color: colors.foreground,
             fontFamily: fonts.body,
           }]}

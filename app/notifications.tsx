@@ -346,7 +346,7 @@ function NotificationsScreenInner() {
                 {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
                 <View style={styles.notifAvatar}>
                   {item.from_user?.avatar_url ? (
-                    <Image source={{ uri: item.from_user.avatar_url }} style={styles.avatar} />
+                    <Image source={{ uri: item.from_user.avatar_url }} style={styles.avatar} contentFit="cover" cachePolicy="memory-disk" />
                   ) : (
                     <View style={[styles.avatar, styles.avatarFb, { backgroundColor: `${typeColor}20` }]}>
                       <TypeIcon size={18} color={typeColor} />
