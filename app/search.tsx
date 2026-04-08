@@ -575,11 +575,18 @@ function SearchScreenInner() {
       const semanticResults = await fetchSemanticResults(q)
       if (controller.signal.aborted) return
 
-      // Merge semantic-only results
+      // Build similarity lookup from semantic results
+      const semanticScoreMap = new Map<string, number>()
+      for (const sr of semanticResults) {
+        semanticScoreMap.set(sr.post_id, sr.similarity)
+      }
+
+      // Fetch semantic-only posts (not already in text results)
       const semanticOnlyIds = semanticResults
         .filter(s => !textResultIds.has(s.post_id))
         .map(s => s.post_id)
 
+      let semanticOnlyPosts: Post[] = []
       if (semanticOnlyIds.length > 0) {
         const { data: extraPosts } = await supabase
           .from('posts')
@@ -587,15 +594,41 @@ function SearchScreenInner() {
           .in('id', semanticOnlyIds)
           .eq('is_active', true)
         if (!controller.signal.aborted && extraPosts) {
-          const semanticPosts = (extraPosts as unknown as Post[]).map(p => ({
+          semanticOnlyPosts = (extraPosts as unknown as Post[]).map(p => ({
             ...p,
             _semanticMatch: true,
           }))
-          postResults = [...postResults, ...semanticPosts]
         }
       }
+      if (controller.signal.aborted) return
 
-      setResults(postResults)
+      // Unified scoring: combine text and semantic results
+      // Text matches get score 1.0; semantic matches get their similarity (0.0-1.0)
+      // Posts in both results get max(text, semantic) + 0.2 bonus
+      const allPosts = [...postResults, ...semanticOnlyPosts]
+      const seenIds = new Set<string>()
+      const uniquePosts: (Post & { _hybridScore?: number; _semanticMatch?: boolean })[] = []
+
+      for (const p of allPosts) {
+        if (seenIds.has(p.id)) continue
+        seenIds.add(p.id)
+
+        const isTextMatch = textResultIds.has(p.id)
+        const semanticSimilarity = semanticScoreMap.get(p.id) ?? 0
+        const textScore = isTextMatch ? 1.0 : 0
+        const inBoth = isTextMatch && semanticSimilarity > 0
+
+        const hybridScore = inBoth
+          ? Math.max(textScore, semanticSimilarity) + 0.2
+          : Math.max(textScore, semanticSimilarity)
+
+        uniquePosts.push({ ...p, _hybridScore: hybridScore })
+      }
+
+      // Sort by hybrid score descending
+      uniquePosts.sort((a, b) => (b._hybridScore ?? 0) - (a._hybridScore ?? 0))
+
+      setResults(uniquePosts)
       setDbResultCount((posts ?? []).length)
       setHasMore((posts ?? []).length >= 20)
 
