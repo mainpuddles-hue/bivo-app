@@ -120,6 +120,10 @@ function PostDetailScreenInner() {
       if (cachedId) setUserId(cachedId)
 
       const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).maybeSingle()
+      if (!data) {
+        setLoadError(t('post.notFound') ?? 'Post not found')
+        return
+      }
       if (data) {
         const p = data as unknown as Post
         // Apply location_accuracy privacy for other users' posts

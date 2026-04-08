@@ -25,8 +25,9 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   const now = ctx.now ?? Date.now()
 
   // Recency: exponential decay, half-life 24 hours
-  const createdMs = new Date(post.created_at).getTime()
-  const hoursOld = Math.max(0, isNaN(createdMs) ? 0 : (now - createdMs) / 3600000)
+  const createdMs = post.created_at ? new Date(post.created_at).getTime() : NaN
+  if (isNaN(createdMs)) return 0 // Skip corrupted posts with invalid dates
+  const hoursOld = Math.max(0, (now - createdMs) / 3600000)
   const recency = 1 / (1 + hoursOld / 24)
 
   // Engagement: normalize to 0-1 (cap at 20 interactions)

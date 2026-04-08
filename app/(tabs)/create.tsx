@@ -533,6 +533,21 @@ export default function CreateScreen() {
       Alert.alert(t('common.error'), contentWarning)
       return
     }
+
+    // Event validation — before post insert to prevent orphans
+    if (selectedType === 'tapahtuma') {
+      if (eventMaxCapacity) {
+        const maxAtt = parseInt(eventMaxCapacity, 10)
+        if (isNaN(maxAtt) || maxAtt < 1) {
+          Alert.alert(t('common.error'), t('create.invalidMaxCapacity') ?? 'Osallistujamäärän pitää olla vähintään 1')
+          return
+        }
+      }
+      if (eventEndTime && eventStartTime && eventEndTime < eventStartTime) {
+        Alert.alert(t('common.error'), t('create.endTimeBeforeStart') ?? 'Päättymisaika ei voi olla ennen alkamisaikaa')
+        return
+      }
+    }
     if (selectedType === 'lainaa' && (!dailyFee || isNaN(parseFloat(dailyFee)) || parseFloat(dailyFee) <= 0)) {
       Alert.alert(t('common.error'), t('create.dailyFeeRequired'))
       return
