@@ -207,6 +207,7 @@ export default function ProfileScreen() {
       const { error: uploadError } = await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
       if (uploadError) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
+      if (!urlData?.publicUrl) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       // Append cache-busting param so the new avatar is fetched (same URL path after upsert)
       const avatarUrlWithCacheBust = `${urlData.publicUrl}?t=${Date.now()}`
       await (supabase.from('profiles') as any).update({ avatar_url: avatarUrlWithCacheBust }).eq('id', profile.id)
