@@ -97,7 +97,7 @@ function ExploreScreenInner() {
   // Event personalization
   const { interests: eventInterests } = useEventInterests()
   const [clickHistory, setClickHistory] = useState<{ category: string; timestamp: number }[]>([])
-  useEffect(() => { getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp })))) }, [])
+  useEffect(() => { getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp })))).catch(() => {}) }, [])
 
   // Sort/filter state for Events sub-tab
   const [eventSort, setEventSort] = useState<'recommended' | 'today' | 'week' | 'all'>('recommended')
@@ -187,7 +187,7 @@ function ExploreScreenInner() {
       // Fetch community previews in parallel (graceful if tables don't exist)
       const [groupsRes, forumRes, communityEvtsRes] = await Promise.all([
         (supabase.from('groups').select('id, name, category, member_count') as any)
-          .order('member_count', { ascending: false }).limit(3)
+          .order('updated_at', { ascending: false }).limit(3)
           .then((r: any) => r).catch(() => ({ data: null, error: true })),
         (supabase.from('forum_posts').select('id, title, category, comment_count, created_at') as any)
           .order('created_at', { ascending: false }).limit(3)

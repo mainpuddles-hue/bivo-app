@@ -223,7 +223,7 @@ function FeedScreenInner() {
     AsyncStorage.getItem('digest_dismissed').then(val => {
       if (val === new Date().toISOString().slice(0, 10)) setDigestDismissed(true)
       else fetchDigest()
-    })
+    }).catch(() => {})
   }, [supabase])
 
   // ── Hidden post IDs (persisted to AsyncStorage) ──
@@ -233,7 +233,7 @@ function FeedScreenInner() {
       if (val) {
         try { setHiddenIds(new Set(JSON.parse(val))) } catch {} // Intentional: corrupted cache
       }
-    })
+    }).catch(() => {})
   }, [])
   const handleHidePost = useCallback((postId: string) => {
     setHiddenIds(prev => {
@@ -253,7 +253,7 @@ function FeedScreenInner() {
       if (val) setLastFeedVisit(val)
     }).catch(() => {})
     return () => {
-      AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString())
+      AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString()).catch(() => {})
     }
   }, [])
 

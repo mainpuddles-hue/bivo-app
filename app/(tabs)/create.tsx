@@ -258,9 +258,8 @@ export default function CreateScreen() {
       if (!id) { router.replace('/(auth)/login'); return }
       // Fetch user neighborhood for price suggestions
       supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).maybeSingle()
-        .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) })
-        .then(() => {}, () => {})
-    })
+        .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) }, () => {})
+    }).catch(() => {})
   }, [supabase, router])
 
   const { awardPoints } = usePoints()
@@ -761,14 +760,14 @@ export default function CreateScreen() {
 
       // Award points for creating a post
       if (post?.id && user.id) {
-        awardPoints(user.id, 'post_created', post.id).catch(() => {})
+        awardPoints(user.id, 'post_created', post.id).catch((err) => { if (__DEV__) console.warn('[create] awardPoints failed:', err) })
         // Check if this is the user's first post — award bonus
         Promise.resolve(
           supabase.from('posts').select('id', { count: 'exact', head: true })
             .eq('user_id', user.id).eq('is_active', true)
         ).then(({ count }) => {
           if (count === 1) {
-            awardPoints(user.id, 'first_post_bonus', post.id).catch(() => {})
+            awardPoints(user.id, 'first_post_bonus', post.id).catch((err) => { if (__DEV__) console.warn('[create] first_post_bonus failed:', err) })
           }
         }).catch(() => {})
       }
@@ -784,7 +783,7 @@ export default function CreateScreen() {
           method: 'POST',
           headers: authHeaders,
           body: JSON.stringify({ post_id: post.id }),
-        }).catch(() => {}) // Non-blocking
+        }).catch((err) => { if (__DEV__) console.warn('[create] embed-post failed:', err) }) // Non-blocking
 
       }
 
