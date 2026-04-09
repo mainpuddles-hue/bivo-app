@@ -11,6 +11,7 @@ import {
   type NativeScrollEvent,
 } from 'react-native'
 import { Image } from 'expo-image'
+import { StatusBar } from 'expo-status-bar'
 import { X } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
@@ -154,6 +155,8 @@ export default function ImageGallery({ images, initialIndex = 0, visible, onClos
 
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>
+      {/* Force light status bar for dark image viewer background */}
+      <StatusBar style="light" />
       <GestureHandlerRootView style={styles.root}>
         <View style={styles.container}>
           {/* Image list */}
