@@ -39,7 +39,7 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
       style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
       accessibilityRole="button"
-      accessibilityLabel={item.title}
+      accessibilityLabel={[item.title, dateStr].filter(Boolean).join(', ')}
     >
       {/* Full-width image with date overlay */}
       {imageUrl ? (

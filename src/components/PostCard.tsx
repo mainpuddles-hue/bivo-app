@@ -116,6 +116,21 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
 
+  // Composite accessibility label — reads full card as one VoiceOver unit
+  const a11yLabel = useMemo(() => {
+    const parts: string[] = []
+    if (category) parts.push(t(`categories.${post.type}`) ?? post.type)
+    parts.push(post.title)
+    if (post.description) parts.push(post.description.slice(0, 140))
+    const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : user?.name
+    if (authorName) parts.push(`${t('common.by') ?? ''} ${authorName}`.trim())
+    if (post.location) parts.push(post.location)
+    if (post.created_at) parts.push(formatTimeAgo(post.created_at, t, locale))
+    if (likeCount > 0) parts.push(`${likeCount} ${t('engagement.likes') ?? 'likes'}`)
+    if (post.comment_count && post.comment_count > 0) parts.push(`${post.comment_count} ${t('post.comments') ?? 'comments'}`)
+    return parts.filter(Boolean).join(', ')
+  }, [category, post.type, post.title, post.description, post.location, post.created_at, post.comment_count, isAnonymous, user?.name, likeCount, t, locale])
+
   // Smooth card entrance animation — fade + slide up (respects Reduce Motion)
   const entranceAnim = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -139,7 +154,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   return (
     <Animated.View style={{ opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
     <Pressable
-      accessibilityLabel={post.title}
+      accessibilityLabel={a11yLabel}
       accessibilityRole="button"
       accessibilityHint={t('postCard.tapToOpen')}
       onPress={() => {

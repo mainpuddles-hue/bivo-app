@@ -50,7 +50,7 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
         pressed && { opacity: expired ? 0.4 : 0.85, transform: [{ scale: 0.97 }] },
       ]}
       accessibilityRole="button"
-      accessibilityLabel={event.title}
+      accessibilityLabel={[event.title, timeText, event.location_name, spotsLeft !== null && spotsLeft > 0 && !expired ? t('tables.spotsOpen', { count: spotsLeft }) : null].filter(Boolean).join(', ')}
     >
       {/* Emoji */}
       <Text style={s.emoji}>{emoji}</Text>

@@ -34,6 +34,18 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
     ? `${participantCount}/${event.max_participants}`
     : `${participantCount}`
 
+  // Composite accessibility label — reads full card as one VoiceOver unit
+  const categoryLabel = t(`events.cat${event.category.charAt(0).toUpperCase() + event.category.slice(1)}`)
+  const a11yLabel = useMemo(() => {
+    const parts: string[] = []
+    if (categoryLabel) parts.push(categoryLabel)
+    parts.push(event.title)
+    parts.push(formattedDate)
+    if (event.location_name) parts.push(event.location_name)
+    parts.push(`${spotsText} ${t('events.participants') ?? 'participants'}`)
+    return parts.filter(Boolean).join(', ')
+  }, [categoryLabel, event.title, event.location_name, formattedDate, spotsText, t])
+
   return (
     <Pressable
       onPress={() => router.push(`/event/${event.id}` as any)}
@@ -43,7 +55,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
         pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] },
       ]}
       accessibilityRole="button"
-      accessibilityLabel={event.title}
+      accessibilityLabel={a11yLabel}
     >
       {/* Image or Emoji Header */}
       {event.image_url && !isTable ? (

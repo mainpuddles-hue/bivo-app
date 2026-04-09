@@ -88,6 +88,8 @@ function ForumPostCardInner({
     <Pressable
       onPress={() => onSelect(post)}
       style={[styles.card, { backgroundColor: colors.card }, isDark ? cardShadowDark : cardShadow]}
+      accessibilityRole="button"
+      accessibilityLabel={[getCategoryLabel(post.category), post.title, post.content?.slice(0, 120), `${post.comment_count} ${t('forum.replies')}`].filter(Boolean).join(', ')}
     >
       <View style={[styles.categoryBar, { backgroundColor: catColor }]} />
       <View style={styles.cardBody}>

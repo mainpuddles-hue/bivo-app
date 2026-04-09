@@ -80,7 +80,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
         isDark ? cardShadowDark : cardShadow,
       ]}
       accessibilityRole="button"
-      accessibilityLabel={ad.title}
+      accessibilityLabel={[t('ads.sponsored'), ad.title, ad.description].filter(Boolean).join(', ')}
     >
       {/* Sponsored label */}
       <View style={[styles.sponsoredBadge, { backgroundColor: `${colors.pro}18` }]}>

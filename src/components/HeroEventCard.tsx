@@ -34,7 +34,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
       onPress={() => event.info_url ? Linking.openURL(event.info_url).catch(() => {}) : router.push('/community-events' as any)}
       style={[styles.todayEventCard, { backgroundColor: colors.card }]}
       accessibilityRole="button"
-      accessibilityLabel={getCityEventName(event, locale)}
+      accessibilityLabel={[getCityEventName(event, locale), event.location_name].filter(Boolean).join(', ')}
     >
       {event.image_url && !imageError ? (
         <Image source={{ uri: getImageUrl(event.image_url, 'thumbnail')! }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" onError={() => setImageError(true)} />
