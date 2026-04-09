@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { enableFreeze } from 'react-native-screens'
 import { Tabs, useRouter, usePathname } from 'expo-router'
-import { View, Text, StyleSheet, Modal, Pressable, Platform } from 'react-native'
+import { View, Text, StyleSheet, Modal, Pressable, Platform, Animated } from 'react-native'
 import { BlurView } from 'expo-blur'
+import { useReduceMotion } from '@/hooks/useReduceMotion'
 
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
@@ -24,6 +25,23 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
   colors: ReturnType<typeof useTheme>['colors']
   badge?: number
 }) {
+  const reduceMotion = useReduceMotion()
+  const scale = useRef(new Animated.Value(focused ? 1.1 : 1)).current
+
+  // Apple HIG: spring pulse on selection change
+  useEffect(() => {
+    if (reduceMotion) {
+      scale.setValue(focused ? 1.1 : 1)
+      return
+    }
+    Animated.spring(scale, {
+      toValue: focused ? 1.1 : 1,
+      friction: 4,
+      tension: 180,
+      useNativeDriver: true,
+    }).start()
+  }, [focused, reduceMotion, scale])
+
   if (isCreate) {
     return (
       <View style={s.createTabItem}>
@@ -36,7 +54,7 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
 
   return (
     <View style={s.tabItem}>
-      <View style={[s.iconWrap, focused && { backgroundColor: `${colors.primary}18` }]}>
+      <Animated.View style={[s.iconWrap, focused && { backgroundColor: `${colors.primary}18` }, { transform: [{ scale }] }]}>
         <Icon
           size={24}
           color={focused ? colors.primary : colors.mutedForeground}
@@ -47,7 +65,7 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
             <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
           </View>
         )}
-      </View>
+      </Animated.View>
       <Text numberOfLines={1} style={[
         s.tabLabel,
         { color: focused ? colors.primary : colors.mutedForeground },

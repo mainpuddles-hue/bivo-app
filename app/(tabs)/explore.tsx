@@ -6,6 +6,7 @@ import {
   Pressable, Linking,
 } from 'react-native'
 import { Image } from 'expo-image'
+import * as Haptics from 'expo-haptics'
 import { SectionSkeleton } from '@/components/SkeletonLoaders'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -216,6 +217,7 @@ function ExploreScreenInner() {
 
   // ── Pull to refresh ──
   const handleRefresh = useCallback(async () => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
     setRefreshing(true)
     await fetchData()
     setRefreshing(false)

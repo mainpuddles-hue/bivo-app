@@ -2,6 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView } from 'react-native'
+import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users } from 'lucide-react-native'
@@ -405,7 +406,7 @@ export default function MessagesScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchConversations(); fetchEventChats() }} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}; setRefreshing(true); fetchConversations(); fetchEventChats() }} tintColor={colors.primary} />}
         ListHeaderComponent={eventChats.length > 0 && !showArchived ? (
           <View style={styles.eventChatsSection}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>

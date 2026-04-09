@@ -1,8 +1,9 @@
-import { memo } from 'react'
-import { Text, StyleSheet } from 'react-native'
+import { memo, useEffect, useRef } from 'react'
+import { Text, StyleSheet, Animated, type ColorValue } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
+import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
@@ -14,45 +15,74 @@ interface FilterBarProps {
   onFilterChange: (type: PostType | null) => void
 }
 
+// Inner chip — isolates animated scale per chip with spring physics (Apple HIG)
+interface FilterChipProps {
+  label: string
+  color: string
+  isActive: boolean
+  foregroundColor: string
+  onPress: () => void
+}
+const FilterChip = memo(function FilterChip({ label, color, isActive, foregroundColor, onPress }: FilterChipProps) {
+  const reduceMotion = useReduceMotion()
+  const scale = useRef(new Animated.Value(1)).current
+
+  // Pulse spring when selection state flips
+  useEffect(() => {
+    if (reduceMotion) return
+    Animated.sequence([
+      Animated.spring(scale, { toValue: 0.92, friction: 6, tension: 180, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, friction: 4, tension: 140, useNativeDriver: true }),
+    ]).start()
+  }, [isActive, reduceMotion, scale])
+
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <PressableOpacity
+        accessibilityLabel={label}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: isActive }}
+        onPress={onPress}
+        style={[
+          styles.chip,
+          isActive
+            ? { backgroundColor: color }
+            : {
+                backgroundColor: color + '12',
+                borderWidth: 1,
+                borderColor: color + '30',
+              },
+        ]}
+      >
+        <Text style={[styles.chipText, { color: isActive ? foregroundColor : color }]}>
+          {label}
+        </Text>
+      </PressableOpacity>
+    </Animated.View>
+  )
+})
+
 export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange }: FilterBarProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
 
   return (
     <>
-      {/* Category chips — tapping active chip deselects (shows all) */}
       {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
         if (type === 'lainaa' && !FEATURES.LENDING) return false
         if (type === 'nappaa' && !FEATURES.GRAB) return false
         return true
       }).map(([type, cat]) => {
         const isActive = activeFilter === type
-
         return (
-          <PressableOpacity
+          <FilterChip
             key={type}
-            accessibilityLabel={t(cat.label)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: isActive }}
+            label={t(cat.label)}
+            color={cat.color}
+            isActive={isActive}
+            foregroundColor={colors.primaryForeground}
             onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
-            style={[
-              styles.chip,
-              isActive
-                ? { backgroundColor: cat.color }
-                : {
-                    backgroundColor: cat.color + '12',
-                    borderWidth: 1,
-                    borderColor: cat.color + '30',
-                  },
-            ]}
-          >
-            <Text style={[
-              styles.chipText,
-              { color: isActive ? colors.primaryForeground : cat.color }
-            ]}>
-              {t(cat.label)}
-            </Text>
-          </PressableOpacity>
+          />
         )
       })}
     </>
