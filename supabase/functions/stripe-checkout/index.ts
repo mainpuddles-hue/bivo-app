@@ -290,7 +290,11 @@ serve(async (req) => {
       },
       success_url: 'tackbird://payment/success?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'tackbird://payment/cancel',
-      // Apple Pay + Google Pay enabled automatically in Stripe Checkout
+      // Apple Pay + Google Pay are automatically offered by Stripe Checkout
+      // when payment_method_types includes 'card' and the device/browser supports
+      // them. Apple Pay appears as a prominent button at the top of the checkout
+      // page on iOS Safari (which WebBrowser.openAuthSession opens). Enable in
+      // Stripe Dashboard → Settings → Payment methods.
       payment_method_types: ['card'],
     }
 

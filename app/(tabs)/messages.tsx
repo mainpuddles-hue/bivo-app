@@ -1,8 +1,9 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users } from 'lucide-react-native'
@@ -467,11 +468,38 @@ export default function MessagesScreen() {
           const isImageMsg = lastMsg?.image_url && !lastMsg?.content
           const isPinned = pinnedIds.includes(item.id)
 
+          // Apple Mail-style swipe actions: trailing → archive, action button reveals on drag
+          const renderRightActions = (_: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
+            const scale = dragX.interpolate({
+              inputRange: [-80, 0],
+              outputRange: [1, 0.5],
+              extrapolate: 'clamp',
+            })
+            return (
+              <PressableOpacity
+                onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}; handleArchive(item.id) }}
+                style={[styles.swipeActionRight, { backgroundColor: showArchived ? colors.primary : colors.mutedForeground }]}
+                accessibilityRole="button"
+                accessibilityLabel={showArchived ? t('messages.unarchive') ?? 'Unarchive' : t('messages.archive') ?? 'Archive'}
+              >
+                <Animated.View style={{ transform: [{ scale }] }}>
+                  <Archive size={22} color="#FFFFFF" strokeWidth={2} />
+                </Animated.View>
+              </PressableOpacity>
+            )
+          }
+
           return (
+            <Swipeable
+              renderRightActions={renderRightActions}
+              rightThreshold={40}
+              friction={2}
+              overshootRight={false}
+            >
             <PressableOpacity
               onPress={() => router.push(`/messages/${item.id}`)}
               onLongPress={() => handleTogglePin(item.id)}
-              style={[styles.convRow, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }]}
+              style={[styles.convRow, { backgroundColor: colors.background }, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }]}
               accessibilityRole="button"
               accessibilityLabel={`${other?.name ?? t('messages.unknownUser')}${unread > 0 ? `, ${unread} ${t('messages.unread') ?? 'unread'}` : ''}${isPinned ? `, ${t('messages.pinned') ?? 'pinned'}` : ''}`}
               accessibilityHint={t('messages.longPressToPinHint') ?? 'Long press to pin or unpin'}
@@ -516,6 +544,7 @@ export default function MessagesScreen() {
                 )}
               </View>
             </PressableOpacity>
+            </Swipeable>
           )
         }}
         ItemSeparatorComponent={MessageItemSeparator}
@@ -577,6 +606,11 @@ const styles = StyleSheet.create({
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingVertical: 12,
+  },
+  swipeActionRight: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
   },
   avatarWrap: { position: 'relative' },
   avatar: { width: 48, height: 48, borderRadius: 24 },
