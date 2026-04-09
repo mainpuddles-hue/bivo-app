@@ -370,6 +370,7 @@ function LoginScreenInner() {
                   placeholderTextColor={colors.mutedForeground}
                   autoCapitalize="words"
                   textContentType="name"
+                  returnKeyType="next"
                   accessibilityLabel={t('auth.name')}
                 />
               )}
@@ -383,6 +384,7 @@ function LoginScreenInner() {
                 autoCapitalize="none"
                 autoComplete="email"
                 textContentType="emailAddress"
+                returnKeyType={mode === 'forgot' ? 'send' : 'next'}
                 accessibilityLabel={t('auth.email')}
               />
               {mode !== 'forgot' && (
@@ -396,6 +398,8 @@ function LoginScreenInner() {
                     secureTextEntry={!showPassword}
                     autoComplete="password"
                     textContentType={mode === 'register' ? 'newPassword' : 'password'}
+                    returnKeyType={mode === 'register' ? 'next' : 'go'}
+                    onSubmitEditing={mode === 'login' ? handleSubmit : undefined}
                     accessibilityLabel={t('auth.password')}
                   />
                   <PressableOpacity

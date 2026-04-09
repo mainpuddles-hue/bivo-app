@@ -855,6 +855,7 @@ export default function SettingsScreen() {
                     placeholderTextColor={colors.mutedForeground}
                     secureTextEntry
                     textContentType="password"
+                    returnKeyType="next"
                     accessibilityLabel={t('auth.password')}
                   />
                 )}
@@ -866,6 +867,7 @@ export default function SettingsScreen() {
                   placeholderTextColor={colors.mutedForeground}
                   secureTextEntry
                   textContentType="newPassword"
+                  returnKeyType="done"
                   accessibilityLabel={t('auth.newPassword')}
                 />
                 {/* Inline password strength feedback (error prevention) */}

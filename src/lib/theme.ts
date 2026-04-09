@@ -8,6 +8,8 @@ export const colors = {
     border: '#E5E5E5',
     muted: '#F0F0F0',
     mutedForeground: '#6B7280',
+    // iOS tertiary label — 3rd hierarchy level (tiny captions, placeholders, disabled states)
+    tertiaryForeground: '#9CA3AF',
     destructive: '#D94F4F',
     pro: '#F59E0B',
     success: '#2B8A62',
@@ -26,6 +28,8 @@ export const colors = {
     border: '#333333',
     muted: '#1A1A1A',
     mutedForeground: '#9CA3AF',
+    // iOS tertiary label — 3rd hierarchy level (tiny captions, placeholders, disabled states)
+    tertiaryForeground: '#6B7280',
     destructive: '#EF4444',
     pro: '#FBBF24',
     success: '#34D399',
@@ -46,6 +50,7 @@ export type ThemeColors = {
   border: string
   muted: string
   mutedForeground: string
+  tertiaryForeground: string
   destructive: string
   pro: string
   success: string
