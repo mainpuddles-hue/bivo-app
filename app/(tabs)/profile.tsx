@@ -408,7 +408,7 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={s.content}
+        contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 96 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -944,7 +944,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
-  content: { padding: 16, gap: 16, paddingBottom: 96 },
+  content: { padding: 16, gap: 16 },
   hero: { alignItems: 'center', gap: 12, paddingBottom: 16 },
   coverBanner: {
     height: 100,

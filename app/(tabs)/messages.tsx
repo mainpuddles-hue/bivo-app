@@ -2,6 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
@@ -45,6 +46,7 @@ export default function MessagesScreen() {
   const { t, locale } = useI18n()
   const router = useRouter()
   const supabase = useSupabase()
+  const insets = useSafeAreaInsets()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -405,7 +407,7 @@ export default function MessagesScreen() {
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 96 }]}
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={withHapticRefresh(() => { setRefreshing(true); fetchConversations(); fetchEventChats() })} tintColor={colors.primary} />}
         ListHeaderComponent={eventChats.length > 0 && !showArchived ? (
@@ -602,7 +604,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 16, height: 48,
   },
   searchInput: { flex: 1, fontSize: 14, lineHeight: 20, fontFamily: fonts.body, paddingVertical: 0 },
-  list: { paddingBottom: 96 },
+  list: {},
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingVertical: 12,

@@ -365,6 +365,9 @@ function useAuthStateListener() {
           try {
             clearAuthCache()
             await AsyncStorage.removeItem('onboarding_complete')
+            // Reset app icon badge to 0 on logout — otherwise the previous
+            // user's unread count persists on the home screen icon.
+            Notifications.setBadgeCountAsync(0).catch(() => {})
           } catch {
             // Non-critical — ignore
           }

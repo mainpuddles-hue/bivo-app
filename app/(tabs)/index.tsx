@@ -618,7 +618,7 @@ function FeedScreenInner() {
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isCommunity' in item ? `community-${(item as any)._isCommunity}-${item.id}` : '_isAd' in item ? `ad-${item.id}` : item.id)}
-        contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_CONTENT_HEIGHT }]}
+        contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96 }]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
   neighborhoodText: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   dateGroupLabel: { alignItems: 'center', paddingVertical: 4 },
   dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3, lineHeight: 14 },
-  list: { paddingHorizontal: 16, paddingBottom: 96 },
+  list: { paddingHorizontal: 16 },
   filterRow: { paddingBottom: 0 },
   followingBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

@@ -155,36 +155,9 @@ export function useFeedData() {
     const lat = userLocation?.latitude ?? 60.1699
     const lng = userLocation?.longitude ?? 24.9384
 
-    // Skip if location hasn't moved significantly (>500m)
-    if (lastFetchLocationRef.current) {
-      const dlat = lat - lastFetchLocationRef.current.latitude
-      const dlng = lng - lastFetchLocationRef.current.longitude
-      const dist = Math.sqrt(dlat * dlat + dlng * dlng) * 111000 // rough meters
-      if (dist < 500) return
-    }
-
-    setExtraLoading(true)
-    try {
-      const [helsinkiEvents, placesData] = await Promise.all([
-        fetchHelsinkiEvents().catch(() => []),
-        fetchHelsinkiPlaces(lat, lng, 2000).catch(() => []),
-      ])
-      setCityEvents(helsinkiEvents.slice(0, 20))
-      setNearbyPlaces(placesData.slice(0, 20))
-      lastFetchLocationRef.current = { latitude: lat, longitude: lng }
-    } catch {
-      // Silently fail — discovery section won't show
-    } finally {
-      setExtraLoading(false)
-    }
-
     // ── Community cards (independent of location — fetch every time) ──
-    let event: any = null
-    let group: any = null
-    let thread: any = null
-
-    // Fetch all three community cards in parallel. Independent tables — no
-    // reason to await sequentially. Saves 100-300ms on cold feed load.
+    // Runs BEFORE the location-skip guard so refreshes always get fresh
+    // community content even when the user hasn't moved.
     const [eventRes, groupRes, threadRes] = await Promise.allSettled([
       supabase
         .from('community_events')
@@ -208,12 +181,34 @@ export function useFeedData() {
         .limit(1)
         .maybeSingle(),
     ])
+    setCommunityCards({
+      event: eventRes.status === 'fulfilled' ? eventRes.value.data : null,
+      group: groupRes.status === 'fulfilled' ? groupRes.value.data : null,
+      thread: threadRes.status === 'fulfilled' ? threadRes.value.data : null,
+    })
 
-    if (eventRes.status === 'fulfilled') event = eventRes.value.data
-    if (groupRes.status === 'fulfilled') group = groupRes.value.data
-    if (threadRes.status === 'fulfilled') thread = threadRes.value.data
+    // Skip location-dependent fetches if location hasn't moved significantly (>500m)
+    if (lastFetchLocationRef.current) {
+      const dlat = lat - lastFetchLocationRef.current.latitude
+      const dlng = lng - lastFetchLocationRef.current.longitude
+      const dist = Math.sqrt(dlat * dlat + dlng * dlng) * 111000 // rough meters
+      if (dist < 500) return
+    }
 
-    setCommunityCards({ event, group, thread })
+    setExtraLoading(true)
+    try {
+      const [helsinkiEvents, placesData] = await Promise.all([
+        fetchHelsinkiEvents().catch(() => []),
+        fetchHelsinkiPlaces(lat, lng, 2000).catch(() => []),
+      ])
+      setCityEvents(helsinkiEvents.slice(0, 20))
+      setNearbyPlaces(placesData.slice(0, 20))
+      lastFetchLocationRef.current = { latitude: lat, longitude: lng }
+    } catch {
+      // Silently fail — discovery section won't show
+    } finally {
+      setExtraLoading(false)
+    }
   }, [userLocation, supabase])
 
   useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])

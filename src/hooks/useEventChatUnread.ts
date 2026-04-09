@@ -14,7 +14,10 @@ export function useEventChatUnread(userId: string | null) {
   const convIdsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    if (!userId) return
+    if (!userId) {
+      setCount(0)
+      return
+    }
     let mounted = true
 
     async function fetchUnread() {

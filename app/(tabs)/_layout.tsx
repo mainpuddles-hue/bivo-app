@@ -113,7 +113,17 @@ export default function TabLayout() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (mounted && user) setUserId(user.id)
     }).catch(() => {})
-    return () => { mounted = false }
+
+    // Keep userId in sync with auth changes so unread hooks track the right user
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      setUserId(session?.user?.id ?? null)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [supabase])
 
   return (
