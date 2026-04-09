@@ -49,9 +49,10 @@ const HSL_ALERTS_QUERY = `{
 
 export async function fetchHSLAlerts(): Promise<TransitAlert[]> {
   try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     const apiKey = process.env.EXPO_PUBLIC_DIGITRANSIT_API_KEY
-    if (apiKey) headers['digitransit-subscription-key'] = apiKey
+    // HSL Digitransit API now requires a subscription key — skip if missing
+    if (!apiKey) return []
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'digitransit-subscription-key': apiKey }
     const res = await fetch(HSL_GRAPHQL_URL, {
       method: 'POST',
       headers,
