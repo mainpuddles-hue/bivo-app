@@ -5,6 +5,7 @@ import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, Activity
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
+import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
   Send, Flag, Clock, TrendingUp,
@@ -219,6 +220,7 @@ function PostDetailScreenInner() {
     if (post?.user_id === userId) return
     if (likingRef.current) return
     likingRef.current = true
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     try {
       const wasLiked = isLiked
       const prevCount = likeCount
@@ -261,6 +263,7 @@ function PostDetailScreenInner() {
     if (!userId) { router.push('/(auth)/login'); return }
     if (savingRef.current) return
     savingRef.current = true
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     try {
       const wasSaved = isSaved
       if (wasSaved) {
@@ -337,6 +340,7 @@ function PostDetailScreenInner() {
       Alert.alert(t('common.error'), getRateLimitMessage('comment'))
       return
     }
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     setSendingComment(true)
     const content = commentText.trim()
     const parentId = replyToComment?.id ?? null
@@ -488,8 +492,14 @@ function PostDetailScreenInner() {
               (supabase.from('notifications') as any).delete().eq('link_id', post.id).eq('link_type', 'post'),
             ])
             const { error } = await (supabase.from('posts') as any).delete().eq('id', post.id)
-            if (error) { Alert.alert(t('common.error'), t('post.deleteFailed')) }
-            else { Alert.alert(t('post.deleted')); router.back() }
+            if (error) {
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
+              Alert.alert(t('common.error'), t('post.deleteFailed'))
+            } else {
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+              Alert.alert(t('post.deleted'))
+              router.back()
+            }
           } catch {
             Alert.alert(t('common.error'), t('post.deleteFailed'))
           }

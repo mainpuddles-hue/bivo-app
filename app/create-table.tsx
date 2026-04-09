@@ -175,7 +175,7 @@ function CreateTableScreenInner() {
                 key={cat.key}
                 onPress={() => {
                   setCategory(cat.key)
-                  Haptics.selectionAsync()
+                  try { Haptics.selectionAsync() } catch {}
                 }}
                 style={[
                   s.categoryChip,
@@ -243,7 +243,7 @@ function CreateTableScreenInner() {
                 key={opt.minutes}
                 onPress={() => {
                   setDurationMinutes(opt.minutes)
-                  Haptics.selectionAsync()
+                  try { Haptics.selectionAsync() } catch {}
                 }}
                 style={[
                   s.segmentBtn,
@@ -276,7 +276,7 @@ function CreateTableScreenInner() {
                 key={n}
                 onPress={() => {
                   setMaxParticipants(n)
-                  Haptics.selectionAsync()
+                  try { Haptics.selectionAsync() } catch {}
                 }}
                 style={[
                   s.segmentBtn,
