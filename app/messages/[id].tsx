@@ -461,24 +461,37 @@ function ConversationScreenInner() {
     const msg = messagesRef.current.find(m => m.id === selectedMessageId)
     if (!msg || msg.sender_id !== userId) return
 
-    // Optimistic update
-    setMessages(prev => prev.map(m =>
-      m.id === selectedMessageId ? { ...m, is_deleted: true } as any : m
-    ))
-
-    try {
-      const { error } = await (supabase.from('messages') as any)
-        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
-        .eq('id', selectedMessageId)
-      if (error) throw error
-    } catch {
-      // Revert on failure
-      setMessages(prev => prev.map(m =>
-        m.id === selectedMessageId ? { ...m, is_deleted: false } as any : m
-      ))
-      Alert.alert(t('common.error'), t('conversation.deleteFailed'))
-    }
+    const targetId = selectedMessageId
     setSelectedMessageId(null)
+
+    Alert.alert(
+      t('conversation.deleteMessage'),
+      t('conversation.deleteMessageConfirm') ?? t('conversation.deleteMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('conversation.deleteMessage'),
+          style: 'destructive',
+          onPress: async () => {
+            // Optimistic update
+            setMessages(prev => prev.map(m =>
+              m.id === targetId ? { ...m, is_deleted: true } as any : m
+            ))
+            try {
+              const { error } = await (supabase.from('messages') as any)
+                .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+                .eq('id', targetId)
+              if (error) throw error
+            } catch {
+              setMessages(prev => prev.map(m =>
+                m.id === targetId ? { ...m, is_deleted: false } as any : m
+              ))
+              Alert.alert(t('common.error'), t('conversation.deleteFailed'))
+            }
+          },
+        },
+      ],
+    )
   }, [selectedMessageId, userId, supabase, t])
 
   const renderMessage = useCallback(({ item, index }: { item: Message; index: number }) => {

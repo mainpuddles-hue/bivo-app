@@ -149,26 +149,40 @@ function EventDetailScreenInner() {
     }
   }, [userId, event, supabase, fetchEvent, t, router])
 
-  const handleLeave = useCallback(async () => {
+  const handleLeave = useCallback(() => {
     if (!userId || joiningRef.current || !event) return
-    joiningRef.current = true
-    try {
-      const { error } = await (supabase.from('community_event_participants') as any)
-        .delete()
-        .eq('event_id', event.id)
-        .eq('user_id', userId)
-      if (error) {
-        Alert.alert(t('common.error'), t('events.leaveFailed'))
-      } else {
-        // Remove user from event group chat (soft fail)
-        removeMemberFromChat(supabase, event.id, userId).catch(() => {})
-        await fetchEvent()
-      }
-    } catch {
-      Alert.alert(t('common.error'), t('events.leaveFailed'))
-    } finally {
-      joiningRef.current = false
-    }
+    Alert.alert(
+      t('events.leaveEvent'),
+      t('events.leaveConfirm') ?? t('events.leaveEvent'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('events.leaveEvent'),
+          style: 'destructive',
+          onPress: async () => {
+            if (!event) return
+            joiningRef.current = true
+            try {
+              const { error } = await (supabase.from('community_event_participants') as any)
+                .delete()
+                .eq('event_id', event.id)
+                .eq('user_id', userId)
+              if (error) {
+                Alert.alert(t('common.error'), t('events.leaveFailed'))
+              } else {
+                // Remove user from event group chat (soft fail)
+                removeMemberFromChat(supabase, event.id, userId).catch(() => {})
+                await fetchEvent()
+              }
+            } catch {
+              Alert.alert(t('common.error'), t('events.leaveFailed'))
+            } finally {
+              joiningRef.current = false
+            }
+          },
+        },
+      ],
+    )
   }, [userId, event, supabase, fetchEvent, t])
 
   const handleCancelEvent = useCallback(() => {

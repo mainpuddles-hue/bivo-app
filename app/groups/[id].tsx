@@ -343,18 +343,31 @@ export default function GroupDetailScreen() {
     finally { setSendingComment(false) }
   }, [currentUserId, commentText, supabase, posts, fetchComments, t])
 
-  const handleDeleteComment = useCallback(async (comment: GroupComment) => {
-    try {
-      await (supabase.from('group_post_comments') as any).delete().eq('id', comment.id)
-      const parentPost = posts.find(p => p.id === comment.post_id)
-      if (parentPost) {
-        const newCount = Math.max(0, parentPost.comment_count - 1)
-        await (supabase.from('group_posts') as any).update({ comment_count: newCount }).eq('id', comment.post_id)
-        setPosts(prev => prev.map(p => p.id === comment.post_id ? { ...p, comment_count: newCount } : p))
-      }
-      setComments(prev => prev.filter(c => c.id !== comment.id))
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-    } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
+  const handleDeleteComment = useCallback((comment: GroupComment) => {
+    Alert.alert(
+      t('groups.deleteComment') ?? t('common.delete'),
+      t('groups.deleteCommentConfirm') ?? t('post.deleteCommentConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await (supabase.from('group_post_comments') as any).delete().eq('id', comment.id)
+              const parentPost = posts.find(p => p.id === comment.post_id)
+              if (parentPost) {
+                const newCount = Math.max(0, parentPost.comment_count - 1)
+                await (supabase.from('group_posts') as any).update({ comment_count: newCount }).eq('id', comment.post_id)
+                setPosts(prev => prev.map(p => p.id === comment.post_id ? { ...p, comment_count: newCount } : p))
+              }
+              setComments(prev => prev.filter(c => c.id !== comment.id))
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+            } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
+          },
+        },
+      ],
+    )
   }, [supabase, posts, t])
 
   // ── Edit / Delete post ──

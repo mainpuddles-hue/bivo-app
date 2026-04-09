@@ -336,10 +336,23 @@ export default function ProfileScreen() {
     finally { setPointHistoryLoading(false) }
   }, [profile, supabase])
 
-  const handleLogout = async () => {
-    clearAuthCache()
-    await supabase.auth.signOut()
-    router.replace('/(auth)/login')
+  const handleLogout = () => {
+    Alert.alert(
+      t('settings.logout'),
+      t('settings.logoutConfirm') ?? t('settings.logout'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('settings.logout'),
+          style: 'destructive',
+          onPress: async () => {
+            clearAuthCache()
+            await supabase.auth.signOut()
+            router.replace('/(auth)/login')
+          },
+        },
+      ],
+    )
   }
 
   if (profileLoading) {

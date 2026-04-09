@@ -486,16 +486,29 @@ export default function SettingsScreen() {
     }
   }, [deleteConfirmText, deletingAccount, supabase, router, t, profile])
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut()
-    } catch {
-      // Sign out may fail on network — proceed anyway
-    }
-    clearAuthCache()
-    // Note: onboarding_complete is intentionally kept — the onboarding guard
-    // checks the profile's naapurusto field, AsyncStorage is just a cache.
-    router.replace('/(auth)/login')
+  const handleLogout = () => {
+    Alert.alert(
+      t('settings.logout'),
+      t('settings.logoutConfirm') ?? t('settings.logout'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('settings.logout'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await supabase.auth.signOut()
+            } catch {
+              // Sign out may fail on network — proceed anyway
+            }
+            clearAuthCache()
+            // Note: onboarding_complete is intentionally kept — the onboarding guard
+            // checks the profile's naapurusto field, AsyncStorage is just a cache.
+            router.replace('/(auth)/login')
+          },
+        },
+      ],
+    )
   }
 
   const markDirty = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setDirty(true) }

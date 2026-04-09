@@ -372,19 +372,32 @@ export default function ForumScreen() {
   }, [supabase, t, selectedPost])
 
   // ── Delete reply ──
-  const handleDeleteReply = useCallback(async (reply: ForumReply) => {
-    try {
-      await (supabase.from('forum_votes') as any).delete().eq('reply_id', reply.id).catch(() => {})
-      await (supabase.from('forum_replies') as any).delete().eq('id', reply.id)
-      if (selectedPost) {
-        const newCount = Math.max(0, selectedPost.comment_count - 1)
-        await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
-        setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
-        setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
-      }
-      setReplies(prev => prev.filter(r => r.id !== reply.id))
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-    } catch { Alert.alert(t('common.error'), t('forum.deleteReply')) }
+  const handleDeleteReply = useCallback((reply: ForumReply) => {
+    Alert.alert(
+      t('forum.deleteReply'),
+      t('forum.deleteReplyConfirm') ?? t('forum.deleteReply'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await (supabase.from('forum_votes') as any).delete().eq('reply_id', reply.id).catch(() => {})
+              await (supabase.from('forum_replies') as any).delete().eq('id', reply.id)
+              if (selectedPost) {
+                const newCount = Math.max(0, selectedPost.comment_count - 1)
+                await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
+                setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
+                setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
+              }
+              setReplies(prev => prev.filter(r => r.id !== reply.id))
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+            } catch { Alert.alert(t('common.error'), t('forum.deleteReply')) }
+          },
+        },
+      ],
+    )
   }, [supabase, selectedPost, t])
 
   // ── Edit post ──
