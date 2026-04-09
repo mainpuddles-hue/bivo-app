@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import * as Notifications from 'expo-notifications'
 import { useSupabase } from './useSupabase'
 
 export function useUnreadCount(userId: string | null) {
@@ -9,7 +10,12 @@ export function useUnreadCount(userId: string | null) {
   const convIdsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    if (!userId) return
+    if (!userId) {
+      // Logged out — clear badge
+      setCount(0)
+      Notifications.setBadgeCountAsync(0).catch(() => {})
+      return
+    }
     let mounted = true
 
     async function fetchUnread() {
@@ -31,7 +37,12 @@ export function useUnreadCount(userId: string | null) {
         .neq('sender_id', userId)
         .eq('is_read', false)
 
-      if (mounted) setCount(unread ?? 0)
+      if (mounted) {
+        const unreadNum = unread ?? 0
+        setCount(unreadNum)
+        // Sync app icon badge (iOS) — Apple HIG: badge reflects pending user actions
+        Notifications.setBadgeCountAsync(unreadNum).catch(() => {})
+      }
     }
 
     fetchUnread()

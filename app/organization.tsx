@@ -438,6 +438,8 @@ export default function OrganizationScreen() {
               placeholder={t('business.phonePlaceholder')}
               placeholderTextColor={colors.mutedForeground}
               keyboardType="phone-pad"
+              textContentType="telephoneNumber"
+              autoComplete="tel"
               maxLength={30}
             />
           </View>
@@ -451,6 +453,8 @@ export default function OrganizationScreen() {
               placeholderTextColor={colors.mutedForeground}
               keyboardType="url"
               autoCapitalize="none"
+              textContentType="URL"
+              autoComplete="url"
               maxLength={200}
             />
           </View>

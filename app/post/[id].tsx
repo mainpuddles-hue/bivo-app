@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -556,14 +556,42 @@ function PostDetailScreenInner() {
 
   const handleMorePress = useCallback(() => {
     if (!post || !isAuthor) return
-    const options: { text: string; onPress?: () => void; style?: 'destructive' | 'cancel' }[] = [
-      { text: t('post.edit'), onPress: openEditModal },
-    ]
-    if (post.is_active) { options.push({ text: t('post.markClosed'), onPress: handleMarkClosed }) }
-    else { options.push({ text: t('post.reopen'), onPress: handleReopen }) }
-    options.push({ text: t('post.delete'), style: 'destructive', onPress: handleDelete })
-    options.push({ text: t('common.cancel'), style: 'cancel' })
-    Alert.alert('', '', options)
+    // Build option labels and corresponding actions in same order
+    const labels: string[] = [t('post.edit')]
+    const actions: (() => void)[] = [openEditModal]
+    if (post.is_active) {
+      labels.push(t('post.markClosed'))
+      actions.push(handleMarkClosed)
+    } else {
+      labels.push(t('post.reopen'))
+      actions.push(handleReopen)
+    }
+    labels.push(t('post.delete'))
+    actions.push(handleDelete)
+    labels.push(t('common.cancel'))
+    actions.push(() => {})
+
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: labels,
+          destructiveButtonIndex: labels.length - 2, // Delete is second-to-last
+          cancelButtonIndex: labels.length - 1,       // Cancel is last
+        },
+        (buttonIndex) => {
+          if (buttonIndex >= 0 && buttonIndex < actions.length) {
+            actions[buttonIndex]()
+          }
+        },
+      )
+    } else {
+      // Android fallback: Alert.alert with buttons
+      Alert.alert('', '', labels.map((text, i) => ({
+        text,
+        style: i === labels.length - 2 ? 'destructive' : i === labels.length - 1 ? 'cancel' : undefined,
+        onPress: actions[i],
+      })))
+    }
   }, [post, isAuthor, t, openEditModal, handleDelete, handleMarkClosed, handleReopen])
 
   const handleReport = useCallback(() => {

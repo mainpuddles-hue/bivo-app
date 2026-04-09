@@ -66,19 +66,24 @@ interface ExpoPushResult {
   tokenInvalid: boolean
 }
 
-async function sendExpoPush(token: string, title: string, body: string, data?: Record<string, string>): Promise<ExpoPushResult> {
+async function sendExpoPush(token: string, title: string, body: string, data?: Record<string, string>, threadId?: string): Promise<ExpoPushResult> {
   // Validate token format before sending
   if (!token || (!token.startsWith('ExponentPushToken[') && !token.startsWith('ExpoPushToken['))) {
     return { success: false, tokenInvalid: true }
   }
 
-  const message = {
+  const message: Record<string, any> = {
     to: token,
     sound: 'default',
     title,
     body,
     data: data ?? {},
     badge: 1,
+  }
+  // iOS notification grouping — Apple HIG: group related notifications
+  // threadId collapses pushes of the same thread in Notification Center
+  if (threadId) {
+    message.threadId = threadId
   }
 
   const controller = new AbortController()
@@ -379,8 +384,18 @@ serve(async (req) => {
       }
     }
 
+    // Derive thread ID for iOS notification grouping (Apple HIG).
+    // - Messages: group per conversation (or global fallback)
+    // - Likes/comments: group per post
+    // - Follows/reviews/badges: group per type
+    const threadId = type === 'new_message' && data?.conversationId
+      ? `conv_${data.conversationId}`
+      : (type === 'post_like' || type === 'post_comment') && data?.postId
+      ? `post_${data.postId}`
+      : type
+
     // Send individual push
-    const result = await sendExpoPush(profile.push_token, title, pushBody, data)
+    const result = await sendExpoPush(profile.push_token, title, pushBody, data, threadId)
 
     // Clean up expired/invalid push tokens so we don't keep trying to send to them
     if (result.tokenInvalid) {

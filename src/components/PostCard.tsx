@@ -1,5 +1,5 @@
 import { memo, useState, useMemo, useRef, useEffect } from 'react'
-import { View, Text, Pressable, StyleSheet, Animated, Share } from 'react-native'
+import { View, Text, Pressable, StyleSheet, Animated, Share, ActionSheetIOS, Alert, Platform } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
@@ -166,25 +166,74 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
       }}
       onLongPress={async () => {
         if (!isHumanAction()) return
-        if (!userId) { router.push('/(auth)/login'); return }
         if (post.is_seed) return
-        if (savingRef.current) return
-        savingRef.current = true
-        try {
-          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy) } catch {}
+        // Apple HIG: long-press reveals a context menu with options
+        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
 
-          if (saved) {
-            setSaved(false)
-            const { error } = await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
-            if (error) setSaved(true)
-          } else {
-            setSaved(true)
-            const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
-            if (error) {
-              if (error.code !== '23505') setSaved(false) // 23505 = already saved
+        const toggleSave = async () => {
+          if (!userId) { router.push('/(auth)/login'); return }
+          if (savingRef.current) return
+          savingRef.current = true
+          try {
+            if (saved) {
+              setSaved(false)
+              const { error } = await (supabase.from('saved_posts') as any).delete().eq('post_id', post.id).eq('user_id', userId)
+              if (error) setSaved(true)
+            } else {
+              setSaved(true)
+              const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: post.id, user_id: userId })
+              if (error && error.code !== '23505') setSaved(false)
             }
-          }
-        } finally { savingRef.current = false }
+          } finally { savingRef.current = false }
+        }
+        const sharePost = async () => {
+          try { await Share.share({ message: post.title + '\n' + APP_URL + '/post/' + post.id }) } catch {}
+        }
+        const reportPost = () => {
+          if (!userId) { router.push('/(auth)/login'); return }
+          router.push(`/post/${post.id}`)
+        }
+        const hidePost = () => {
+          if (!userId) { router.push('/(auth)/login'); return }
+          onInteraction?.(post.id, 'hide')
+          onHide?.(post.id)
+        }
+
+        const labels = [
+          saved ? t('post.unsave') : t('post.save'),
+          t('common.share'),
+          t('post.report'),
+          userId ? t('postCard.hide') : null,
+          t('common.cancel'),
+        ].filter(Boolean) as string[]
+        const actions: (() => void | Promise<void>)[] = [
+          toggleSave,
+          sharePost,
+          reportPost,
+          ...(userId ? [hidePost] : []),
+          () => {},
+        ]
+
+        if (Platform.OS === 'ios') {
+          ActionSheetIOS.showActionSheetWithOptions(
+            {
+              options: labels,
+              cancelButtonIndex: labels.length - 1,
+              // Report is destructive-ish → not technically destructive index
+              title: post.title,
+            },
+            (buttonIndex) => {
+              if (buttonIndex >= 0 && buttonIndex < actions.length) actions[buttonIndex]()
+            },
+          )
+        } else {
+          // Android fallback: Alert.alert with buttons
+          Alert.alert(post.title, '', labels.map((text, i) => ({
+            text,
+            style: i === labels.length - 1 ? ('cancel' as const) : undefined,
+            onPress: actions[i],
+          })))
+        }
       }}
       delayLongPress={400}
       style={({ pressed }) => [
