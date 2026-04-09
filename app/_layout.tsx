@@ -13,6 +13,7 @@ import { I18nProvider, useI18n, type Locale } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useLocationDetection } from '@/hooks/useLocationDetection'
+import { isValidUUID } from '@/lib/validation'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -140,22 +141,22 @@ function useNotificationNavigation() {
 
         switch (data.type) {
           case 'message':
-            if (data.conversationId) {
+            if (data.conversationId && isValidUUID(data.conversationId)) {
               router.push(`/messages/${data.conversationId}`)
             }
             break
 
           case 'review':
           case 'follow':
-            if (data.userId) {
+            if (data.userId && isValidUUID(data.userId)) {
               router.push(`/profile/${data.userId}`)
             }
             break
 
           case 'booking':
-            if (data.bookingId) {
+            if (data.bookingId && isValidUUID(data.bookingId)) {
               router.push(`/booking/${data.bookingId}` as any)
-            } else if (data.postId) {
+            } else if (data.postId && isValidUUID(data.postId)) {
               router.push(`/post/${data.postId}`)
             } else {
               router.push('/notifications')
@@ -163,7 +164,7 @@ function useNotificationNavigation() {
             break
 
           case 'event':
-            if (data.eventId) {
+            if (data.eventId && isValidUUID(data.eventId)) {
               router.push(`/event/${data.eventId}` as any)
             } else {
               router.push('/notifications')
@@ -172,7 +173,7 @@ function useNotificationNavigation() {
 
           case 'like':
           case 'comment':
-            if (data.postId) {
+            if (data.postId && isValidUUID(data.postId)) {
               router.push(`/post/${data.postId}`)
             }
             break

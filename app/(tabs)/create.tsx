@@ -460,18 +460,20 @@ export default function CreateScreen() {
     let failedCount = 0
     for (let i = 0; i < images.length; i++) {
       const uri = images[i]
-      const rawExt = (uri.split('.').pop() ?? '').split('?')[0].toLowerCase()
-      const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : 'jpg'
-      const path = `${userId}/${postId}/${i}.${ext}`
-
       const response = await fetch(uri)
       const blob = await response.blob()
       if (blob.size > MAX_FILE_SIZE) { failedCount++; continue } // skip too-large files
+
+      // Use blob MIME type (reliable) instead of URI extension
+      const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      const mimeType = ALLOWED_MIMES.includes(blob.type) ? blob.type : 'image/jpeg'
+      const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : mimeType.split('/')[1]
+      const path = `${userId}/${postId}/${i}.${ext}`
       const arrayBuffer = await blob.arrayBuffer()
 
       const { error } = await supabase.storage
         .from('post-images')
-        .upload(path, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
+        .upload(path, arrayBuffer, { contentType: mimeType, upsert: true })
 
       if (!error) {
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)

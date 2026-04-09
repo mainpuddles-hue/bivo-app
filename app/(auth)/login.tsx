@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Eye, EyeOff, Check, X } from 'lucide-react-native'
@@ -69,6 +70,16 @@ function LoginScreenInner() {
   const [loading, setLoading] = useState(false)
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState(0)
+
+  // Persist lockout across app restarts
+  useEffect(() => {
+    AsyncStorage.getItem('tackbird_login_lockout').then(val => {
+      if (val) {
+        const ts = parseInt(val, 10)
+        if (ts > Date.now()) setLockedUntil(ts)
+      }
+    }).catch(() => {})
+  }, [])
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -186,8 +197,10 @@ function LoginScreenInner() {
         const attempts = loginAttempts + 1
         setLoginAttempts(attempts)
         if (attempts >= 5) {
-          setLockedUntil(Date.now() + 15 * 60 * 1000) // 15 min lockout
+          const lockTs = Date.now() + 15 * 60 * 1000
+          setLockedUntil(lockTs)
           setLoginAttempts(0)
+          AsyncStorage.setItem('tackbird_login_lockout', String(lockTs)).catch(() => {})
         }
       }
       setErrorMsg(translateError(err.message))

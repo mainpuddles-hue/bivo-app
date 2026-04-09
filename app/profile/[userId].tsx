@@ -82,7 +82,7 @@ export default function PublicProfileScreen() {
     }
 
     // Fetch profile
-    const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+    const { data: p } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto, bio, is_pro, is_business, trust_level, total_points, business_name, business_phone, business_website, business_lat, business_lng, created_at, profile_visibility, business_hours').eq('id', userId).maybeSingle()
     if (!p) { setLoading(false); setRefreshing(false); return }
     // Don't show deleted/anonymized profiles
     if ((p as any).name === '[Poistettu]' || (p as any).name === '[Deleted]') {
@@ -588,8 +588,9 @@ export default function PublicProfileScreen() {
                 <PressableOpacity
                   style={bs.contactRow}
                   onPress={() => {
-                    const url = profile.business_website!.startsWith('http') ? profile.business_website! : `https://${profile.business_website}`
-                    Linking.openURL(url).catch(() => {})
+                    const raw = profile.business_website!
+                    const url = raw.startsWith('https://') || raw.startsWith('http://') ? raw : `https://${raw}`
+                    try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch(() => {}) } catch {}
                   }}
                 >
                   <View style={[bs.contactIconWrap, { backgroundColor: `${colors.primary}12` }]}>

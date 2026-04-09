@@ -561,7 +561,7 @@ function ConversationScreenInner() {
               if (!url) return null
               return (
                 <PressableOpacity
-                  onPress={() => Linking.openURL(url).catch(() => {})}
+                  onPress={() => { try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch(() => {}) } catch {} }}
                   style={[s.linkPreview, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
                 >
                   <ExternalLink size={14} color={colors.primary} />
