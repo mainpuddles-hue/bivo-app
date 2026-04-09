@@ -1,6 +1,7 @@
 import { memo, useState, useMemo, useRef, useEffect } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated, Share, ActionSheetIOS, Alert, Platform } from 'react-native'
 import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
@@ -339,7 +340,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           </View>
         </View>
 
-        {/* Image — full width, below user row */}
+        {/* Image — full width, below user row (Apple News hero style with gradient) */}
         {hasImage && (
           <View style={styles.imageContainer}>
             <Image
@@ -351,6 +352,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               accessibilityLabel={post.title}
               cachePolicy="memory-disk"
               recyclingKey={post.image_url!}
+            />
+            {/* Subtle bottom gradient for Apple News-style depth — darkens the
+                lower third so the image blends into the card below */}
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.35)']}
+              style={styles.imageGradient}
+              pointerEvents="none"
             />
             {/* Multi-image badge */}
             {post.images && post.images.length > 1 && (
@@ -696,6 +704,13 @@ const styles = StyleSheet.create({
   // Image — full width, inline
   imageContainer: { borderRadius: 8, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
   image: { width: '100%', height: 200 },
+  imageGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '45%',
+  },
   multiImageBadge: {
     position: 'absolute', bottom: 8, right: 8,
     flexDirection: 'row', alignItems: 'center', gap: 4,

@@ -3,6 +3,7 @@ import { initSentry, setSentryUser, addSentryBreadcrumb } from '@/lib/sentry'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Alert, Platform, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
@@ -622,14 +623,16 @@ export default function RootLayout() {
   if (!fontsLoaded) return null
 
   return (
-    <ErrorBoundary>
-      <I18nProvider>
-        <ThemeProvider>
-          <SafeAreaProvider>
-            <RootLayoutInner />
-          </SafeAreaProvider>
-        </ThemeProvider>
-      </I18nProvider>
-    </ErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <I18nProvider>
+          <ThemeProvider>
+            <SafeAreaProvider>
+              <RootLayoutInner />
+            </SafeAreaProvider>
+          </ThemeProvider>
+        </I18nProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   )
 }
