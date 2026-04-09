@@ -154,6 +154,28 @@ export const FORUM_CATEGORY_COLORS: Record<string, string> = {
   uutiset: '#8E44AD',
 } as const
 
+// Centralized event category colors — used by EventCard, event/[id], community-events, create-event
+export const EVENT_CATEGORY_COLORS: Record<string, string> = {
+  social: '#7C5CBF',
+  sports: '#2B8A62',
+  culture: '#3B7DD8',
+  nature: '#4CAF6A',
+  kids: '#E8A050',
+  other: '#6B7280',
+} as const
+
+// Centralized group category colors — used by groups list and group detail
+export const GROUP_CATEGORY_COLORS: Record<string, string> = {
+  general: '#2D6B5E',
+  sports: '#27AE60',
+  kids: '#FF9800',
+  pets: '#E8A050',
+  garden: '#4CAF6A',
+  food: '#E74C3C',
+  culture: '#8E44AD',
+  other: '#607D8B',
+} as const
+
 // Quick event ("Pöytä") categories
 export const TABLE_CATEGORIES = {
   coffee: { emoji: '☕', color: '#8B5E3C', bgLight: '#FDF5F0', bgDark: '#2A1E15', label: 'tables.catCoffee' },

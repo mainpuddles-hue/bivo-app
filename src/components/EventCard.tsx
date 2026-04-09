@@ -9,16 +9,8 @@ import { fonts } from '@/lib/fonts'
 import { getImageUrl } from '@/lib/imageUtils'
 import { ParticipantAvatarRow } from './ParticipantAvatarRow'
 import { isTableEvent, getTableCategoryEmoji } from '@/lib/eventHelpers'
+import { EVENT_CATEGORY_COLORS } from '@/lib/constants'
 import type { CommunityEvent } from '@/lib/types'
-
-const EVENT_CATEGORY_COLORS: Record<string, string> = {
-  social: '#7C5CBF',
-  sports: '#2B8A62',
-  culture: '#3B7DD8',
-  nature: '#4CAF6A',
-  kids: '#E8A050',
-  other: '#6B7280',
-}
 
 interface EventCardProps {
   event: CommunityEvent

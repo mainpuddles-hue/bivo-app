@@ -25,16 +25,7 @@ import { isValidUUID } from '@/lib/validation'
 import { getCachedUserId } from '@/lib/authCache'
 import { addMemberToChat, removeMemberFromChat } from '@/lib/eventChatHelpers'
 import type { CommunityEvent, EventParticipant } from '@/lib/types'
-
-// Unified event category colors — must match EventCard.tsx and create-event.tsx
-const CATEGORY_COLORS: Record<string, string> = {
-  social: '#7C5CBF',
-  sports: '#2B8A62',
-  culture: '#3B7DD8',
-  nature: '#4CAF6A',
-  kids: '#E8A050',
-  other: '#6B7280',
-}
+import { EVENT_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 
 const CATEGORY_LABEL_KEYS: Record<string, string> = {
   social: 'events.catSocial',

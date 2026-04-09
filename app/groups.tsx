@@ -20,7 +20,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { useSupabase } from '@/hooks/useSupabase'
-import { NEIGHBORHOODS } from '@/lib/constants'
+import { NEIGHBORHOODS, GROUP_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 
 // ── Group categories ──
 type GroupCategory = 'general' | 'sports' | 'kids' | 'pets' | 'garden' | 'food' | 'culture' | 'other'
@@ -41,17 +41,6 @@ const GROUP_CATEGORIES: GroupCategoryDef[] = [
   { key: 'culture', labelKey: 'groups.culture', color: '#8E44AD' },
   { key: 'other', labelKey: 'groups.other', color: '#607D8B' },
 ]
-
-const CATEGORY_COLORS: Record<string, string> = {
-  general: '#2D6B5E',
-  sports: '#27AE60',
-  kids: '#FF9800',
-  pets: '#E8A050',
-  garden: '#4CAF6A',
-  food: '#E74C3C',
-  culture: '#8E44AD',
-  other: '#607D8B',
-}
 
 // ── Types ──
 interface Group {

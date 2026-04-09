@@ -30,14 +30,9 @@ import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { isValidUUID } from '@/lib/validation'
+import { GROUP_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
 import type { GroupMember } from '@/components/groups/GroupMembersModal'
-
-// ── Category colors ──
-const CATEGORY_COLORS: Record<string, string> = {
-  general: '#2D6B5E', sports: '#27AE60', kids: '#FF9800', pets: '#E8A050',
-  garden: '#4CAF6A', food: '#E74C3C', culture: '#8E44AD', other: '#607D8B',
-}
 
 interface GroupInfo {
   id: string; name: string; description: string | null; category: string

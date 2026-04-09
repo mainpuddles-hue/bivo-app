@@ -44,8 +44,7 @@ export interface ForumReply {
 }
 
 // Centralized — import from constants to avoid duplication
-import { FORUM_CATEGORY_COLORS } from '@/lib/constants'
-export const CATEGORY_COLORS = FORUM_CATEGORY_COLORS
+import { FORUM_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 
 interface ForumPostCardProps {
   post: ForumPost

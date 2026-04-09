@@ -12,7 +12,7 @@ import { fonts } from '@/lib/fonts'
 import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 import type { ForumPost, ForumReply } from './ForumPostCard'
-import { CATEGORY_COLORS } from './ForumPostCard'
+import { FORUM_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 
 interface ForumThreadViewProps {
   post: ForumPost
