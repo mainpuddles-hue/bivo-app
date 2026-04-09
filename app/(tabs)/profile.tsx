@@ -421,11 +421,16 @@ export default function ProfileScreen() {
           />
         }
       >
+        {/* Cover banner — iOS Music/Twitter style: gradient banner + avatar overlap */}
+        <View style={[s.coverBanner, { backgroundColor: colors.primary + '22' }]}>
+          <View style={[s.coverGradient, { backgroundColor: colors.primary + '44' }]} />
+        </View>
+
         {/* Hero */}
         <View style={s.hero}>
-          <PressableOpacity onPress={handleAvatarUpload} accessibilityLabel={`${profile.name} — ${t('profile.avatarUpdated')}`} accessibilityRole="button">
+          <PressableOpacity onPress={handleAvatarUpload} style={s.avatarOverlap} accessibilityLabel={`${profile.name} — ${t('profile.avatarUpdated')}`} accessibilityRole="button">
             <View>
-              <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />
+              <Avatar url={profile.avatar_url} name={profile.name} size={96} borderColor={profile.is_pro ? colors.pro : colors.background} borderWidth={4} />
               <View style={[s.cameraBtn, { backgroundColor: colors.primary }]} accessibilityElementsHidden>
                 <Camera size={12} color={colors.primaryForeground} />
               </View>
@@ -939,7 +944,24 @@ const s = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   content: { padding: 16, gap: 16, paddingBottom: 96 },
-  hero: { alignItems: 'center', gap: 12, paddingVertical: 16 },
+  hero: { alignItems: 'center', gap: 12, paddingBottom: 16 },
+  coverBanner: {
+    height: 100,
+    marginHorizontal: -16,
+    marginTop: -16,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  coverGradient: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  avatarOverlap: {
+    marginTop: -52, // Avatar 96 / 2 + border 4 = 52 overlap
+  },
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
   bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },
   bigAvatarInit: { fontSize: 32, fontWeight: '700', fontFamily: fonts.heading },
