@@ -883,6 +883,7 @@
     "sending": "Lähetetään...",
     "signInWithGoogle": "Kirjaudu Googlella",
     "signInWithApple": "Kirjaudu Applella",
+    "signInWithApple": "Kirjaudu Applella",
     "appleFailed": "Apple-kirjautuminen epäonnistui",
     "name": "Nimi",
     "namePlaceholder": "Nimesi",

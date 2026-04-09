@@ -18,6 +18,7 @@
       "bundleIdentifier": "com.tackbird.mobile",
       "buildNumber": "1",
       "usesNonExemptEncryption": false,
+      "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -113,6 +114,7 @@
       "expo-router",
       "expo-font",
       "expo-secure-store",
+      "expo-apple-authentication",
       [
         "expo-location",
         {

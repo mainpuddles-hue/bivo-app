@@ -137,7 +137,18 @@ export function usePushNotifications(userId: string | null) {
       let finalStatus = existing
 
       if (existing !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync()
+        // Apple HIG: provisional notifications let users see notifications
+        // delivered quietly to Notification Center without an upfront prompt.
+        // The user can promote them to active or disable in Settings.
+        // Falls back to standard alert+sound+badge prompt on Android.
+        const { status } = await Notifications.requestPermissionsAsync({
+          ios: {
+            allowAlert: true,
+            allowSound: true,
+            allowBadge: true,
+            allowProvisional: true,
+          },
+        })
         finalStatus = status
       }
 
