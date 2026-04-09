@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Animated, Alert } from 'react-native
 import { Heart } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
+import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -18,6 +19,7 @@ interface ThanksButtonProps {
 
 export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }: ThanksButtonProps) {
   const { colors } = useTheme()
+  const reduceMotion = useReduceMotion()
   const { t } = useI18n()
   const { awardPoints } = usePoints()
   const supabase = useSupabase()
@@ -70,21 +72,23 @@ export function ThanksButton({ toUserId, postId, fromUserId, size = 'default' }:
     setHasThanked(true)
     setThanksCount(c => c + 1)
 
-    // Animate: bounce + fill
-    Animated.sequence([
-      Animated.spring(scaleAnim, {
-        toValue: 1.4,
-        friction: 3,
-        tension: 200,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 4,
-        tension: 100,
-        useNativeDriver: true,
-      }),
-    ]).start()
+    // Animate: bounce + fill (respects Reduce Motion)
+    if (!reduceMotion) {
+      Animated.sequence([
+        Animated.spring(scaleAnim, {
+          toValue: 1.4,
+          friction: 3,
+          tension: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 4,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+      ]).start()
+    }
 
     try {
       // 1. Insert thanks record

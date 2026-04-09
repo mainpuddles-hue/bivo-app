@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ShieldCheck, Home, BookOpen } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { TRUST_TIERS } from '@/lib/constants'
@@ -11,19 +12,25 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 function VerificationSuccessScreenInner() {
   const { colors } = useTheme()
+  const reduceMotion = useReduceMotion()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
 
-  const scaleAnim = useRef(new Animated.Value(0)).current
-  const fadeAnim = useRef(new Animated.Value(0)).current
+  const scaleAnim = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current
+  const fadeAnim = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current
 
   useEffect(() => {
+    if (reduceMotion) {
+      scaleAnim.setValue(1)
+      fadeAnim.setValue(1)
+      return
+    }
     Animated.sequence([
       Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 60, useNativeDriver: true }),
       Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
     ]).start()
-  }, [scaleAnim, fadeAnim])
+  }, [scaleAnim, fadeAnim, reduceMotion])
 
   const tier2Color = TRUST_TIERS[2].color
 

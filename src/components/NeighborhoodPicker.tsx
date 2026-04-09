@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, Modal, Animated, useWindowDimensions, TouchableWithoutFeedback } from 'react-native'
 import { MapPin, Check, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { NEIGHBORHOODS } from '@/lib/constants'
@@ -17,6 +18,7 @@ export interface NeighborhoodPickerProps {
 
 export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onSelect, neighborhoods }: NeighborhoodPickerProps) {
   const { colors } = useTheme()
+  const reduceMotion = useReduceMotion()
   const { t } = useI18n()
   const { height: screenHeight } = useWindowDimensions()
   const slideAnim = useRef(new Animated.Value(screenHeight)).current
@@ -25,19 +27,21 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
   const touchStartY = useRef(0)
 
   useEffect(() => {
+    const openDur = reduceMotion ? 0 : 300
+    const closeDur = reduceMotion ? 0 : 250
     if (visible) {
       setShowModal(true)
       Animated.parallel([
-        Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-        Animated.timing(backdropAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: 0, duration: openDur, useNativeDriver: true }),
+        Animated.timing(backdropAnim, { toValue: 1, duration: openDur, useNativeDriver: true }),
       ]).start()
     } else {
       Animated.parallel([
-        Animated.timing(slideAnim, { toValue: screenHeight, duration: 250, useNativeDriver: true }),
-        Animated.timing(backdropAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: screenHeight, duration: closeDur, useNativeDriver: true }),
+        Animated.timing(backdropAnim, { toValue: 0, duration: closeDur, useNativeDriver: true }),
       ]).start(() => setShowModal(false))
     }
-  }, [visible])
+  }, [visible, reduceMotion])
 
   const handleClose = useCallback(() => {
     onClose()

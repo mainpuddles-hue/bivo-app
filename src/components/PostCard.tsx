@@ -9,6 +9,7 @@ import {
   Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User, Flag, EyeOff,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
@@ -53,6 +54,7 @@ interface PostCardProps {
 
 export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction, onHide, isNew }: PostCardProps) {
   const { colors, isDark } = useTheme()
+  const reduceMotion = useReduceMotion()
   const { t, locale } = useI18n()
   const router = useRouter()
   const supabase = useSupabase()
@@ -114,13 +116,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
 
-  // Smooth card entrance animation — fade + slide up
+  // Smooth card entrance animation — fade + slide up (respects Reduce Motion)
   const entranceAnim = useRef(new Animated.Value(0)).current
   useEffect(() => {
     try {
-      Animated.timing(entranceAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start()
+      Animated.timing(entranceAnim, { toValue: 1, duration: reduceMotion ? 0 : 300, useNativeDriver: true }).start()
     } catch {} // Intentional: animation failure is non-critical
-  }, [entranceAnim])
+  }, [entranceAnim, reduceMotion])
   const entranceOpacity = entranceAnim
   const entranceTranslateY = entranceAnim.interpolate({
     inputRange: [0, 1],
@@ -405,7 +407,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 setLiked(!wasLiked)
                 setLikeCount(wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1)
 
-                if (!wasLiked) {
+                if (!wasLiked && !reduceMotion) {
                   Animated.sequence([
                     Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
                     Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),

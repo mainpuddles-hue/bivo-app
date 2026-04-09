@@ -1,10 +1,17 @@
 import { useRef, useEffect } from 'react'
 import { View, Animated, StyleSheet } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { useReduceMotion } from '@/hooks/useReduceMotion'
 
 export function useShimmer() {
   const shimmer = useRef(new Animated.Value(0)).current
+  const reduceMotion = useReduceMotion()
   useEffect(() => {
+    // Respect Reduce Motion — static skeleton instead of looping shimmer
+    if (reduceMotion) {
+      shimmer.setValue(0.5)
+      return
+    }
     const anim = Animated.loop(
       Animated.sequence([
         Animated.timing(shimmer, { toValue: 1, duration: 1000, useNativeDriver: true }),
@@ -13,7 +20,7 @@ export function useShimmer() {
     )
     anim.start()
     return () => anim.stop()
-  }, [shimmer])
+  }, [shimmer, reduceMotion])
   return shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
 }
 
