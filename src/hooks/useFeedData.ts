@@ -201,7 +201,7 @@ export function useFeedData() {
       const { data } = await supabase
         .from('groups')
         .select('id, name, member_count, category')
-        .order('updated_at', { ascending: false })
+        .order('member_count', { ascending: false })
         .limit(1)
         .maybeSingle()
       group = data

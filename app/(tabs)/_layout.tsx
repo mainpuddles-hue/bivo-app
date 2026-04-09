@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { enableFreeze } from 'react-native-screens'
 import { Tabs, useRouter, usePathname } from 'expo-router'
-import { View, Text, StyleSheet, Modal, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Modal, Pressable, Platform } from 'react-native'
+import { BlurView } from 'expo-blur'
 
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
@@ -63,7 +64,12 @@ export default function TabLayout() {
   const router = useRouter()
   const pathname = usePathname()
   const insets = useSafeAreaInsets()
-  const tabBarBg = isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)'
+  // Liquid Glass tab bar (iOS 26): translucent BlurView background
+  // Falls back to semi-transparent solid color on Android (no native blur)
+  const useGlass = Platform.OS === 'ios'
+  const tabBarBg = useGlass
+    ? 'transparent'
+    : (isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)')
   const supabase = useSupabase()
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)
@@ -92,6 +98,8 @@ export default function TabLayout() {
           height: 72 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 8,
+          // Position absolute on iOS so content scrolls under the glass
+          ...(useGlass ? { position: 'absolute' } : {}),
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.06,
@@ -99,6 +107,15 @@ export default function TabLayout() {
           elevation: 8,
         },
         tabBarShowLabel: false,
+        ...(useGlass ? {
+          tabBarBackground: () => (
+            <BlurView
+              tint={isDark ? 'dark' : 'light'}
+              intensity={80}
+              style={StyleSheet.absoluteFill}
+            />
+          ),
+        } : {}),
       }}
     >
       <Tabs.Screen name="index" options={{
