@@ -6,6 +6,7 @@ import { Send, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { KEYBOARD_DONE_ID } from '@/components/ui'
 import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 import type { GroupComment } from './GroupPostCard'
@@ -79,6 +80,7 @@ function GroupCommentListInner({
           value={commentText}
           onChangeText={onCommentTextChange}
           multiline
+          inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
         <Pressable
           style={[styles.commentSendBtn, { opacity: commentText.trim() ? 1 : 0.4 }]}

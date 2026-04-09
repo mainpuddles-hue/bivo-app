@@ -15,7 +15,7 @@ import { fonts } from '@/lib/fonts'
 import { formatPrice as formatPriceUtil } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { BackButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -267,6 +267,7 @@ export default function CreateAdScreen() {
           placeholderTextColor={colors.mutedForeground}
           multiline
           maxLength={500}
+          inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
 
         {/* Image */}
@@ -433,6 +434,7 @@ export default function CreateAdScreen() {
           )}
         </PressableOpacity>
       </ScrollView>
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
     </ScreenErrorBoundary>
   )

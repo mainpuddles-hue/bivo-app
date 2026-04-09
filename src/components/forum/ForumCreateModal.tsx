@@ -7,6 +7,7 @@ import { X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { FORUM_CATEGORY_COLORS } from '@/lib/constants'
 import type { ForumCategory } from './ForumPostCard'
 
@@ -152,8 +153,10 @@ function ForumCreateModalInner({
             multiline
             textAlignVertical="top"
             maxLength={5000}
+            inputAccessoryViewID={KEYBOARD_DONE_ID}
           />
         </View>
+        <KeyboardDoneAccessory />
       </KeyboardAvoidingView>
     </Modal>
   )

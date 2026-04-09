@@ -9,7 +9,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
-import { ModalCloseButton } from '@/components/ui'
+import { ModalCloseButton, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -596,8 +596,9 @@ export default function ForumScreen() {
             <TextInput style={[s.titleInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
           </View>
           <View style={[s.modalSection, { flex: 1 }]}>
-            <TextInput style={[s.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} />
+            <TextInput style={[s.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
           </View>
+          <KeyboardDoneAccessory />
         </KeyboardAvoidingView>
       </Modal>
 

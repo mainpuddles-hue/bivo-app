@@ -13,7 +13,7 @@ import {
   ArrowLeft, Plus, ChevronRight, Search, X, Users, Lock, Globe,
 } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -519,6 +519,7 @@ export default function GroupsScreen() {
                 multiline
                 numberOfLines={3}
                 maxLength={500}
+                inputAccessoryViewID={KEYBOARD_DONE_ID}
               />
 
               {/* Category chips */}
@@ -598,6 +599,7 @@ export default function GroupsScreen() {
             </ScrollView>
           </Pressable>
         </Pressable>
+        <KeyboardDoneAccessory />
       </Modal>
 
       {/* Neighborhood picker modal */}

@@ -12,3 +12,4 @@
 export { PressableOpacity } from './PressableOpacity'
 export { BackButton } from './BackButton'
 export { ModalCloseButton } from './ModalCloseButton'
+export { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from './KeyboardDoneAccessory'

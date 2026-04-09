@@ -28,7 +28,7 @@ import { GroupEditModal } from '@/components/groups/GroupEditModal'
 import { ReportModal } from '@/components/ReportModal'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { isValidUUID } from '@/lib/validation'
 import { GROUP_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
@@ -684,7 +684,7 @@ export default function GroupDetailScreen() {
           )}
           <View style={ps.postInputRow}>
             <PressableOpacity onPress={handlePickImage} style={ps.imageBtn} hitSlop={8}><ImagePlus size={20} color={colors.mutedForeground} strokeWidth={1.8} /></PressableOpacity>
-            <TextInput style={[ps.postInput, { color: colors.foreground, backgroundColor: colors.muted }]} placeholder={t('groups.writePost')} placeholderTextColor={colors.mutedForeground} value={postText} onChangeText={setPostText} multiline maxLength={2000} textAlignVertical="top" />
+            <TextInput style={[ps.postInput, { color: colors.foreground, backgroundColor: colors.muted }]} placeholder={t('groups.writePost')} placeholderTextColor={colors.mutedForeground} value={postText} onChangeText={setPostText} multiline maxLength={2000} textAlignVertical="top" inputAccessoryViewID={KEYBOARD_DONE_ID} />
             <PressableOpacity style={[ps.sendBtn, { backgroundColor: (postText.trim() || postImage) ? colors.accent : colors.muted }]} onPress={handleSendPost} disabled={sending || (!postText.trim() && !postImage)}>
               {sending ? <ActivityIndicator size="small" color={colors.accentForeground} /> : <Send size={18} color={(postText.trim() || postImage) ? colors.accentForeground : colors.mutedForeground} strokeWidth={1.8} />}
             </PressableOpacity>
@@ -723,6 +723,7 @@ export default function GroupDetailScreen() {
         type="post"
         targetId={reportTargetId}
       />
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
     </ScreenErrorBoundary>
   )

@@ -5,7 +5,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ArrowLeft, ChevronUp, MessageCircle, MapPin, Send, X } from 'lucide-react-native'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -247,6 +247,7 @@ function ForumThreadViewInner({
           onChangeText={onReplyTextChange}
           multiline
           maxLength={2000}
+          inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
         <Pressable
           onPress={() => onAddReply(replyText)}
@@ -266,6 +267,7 @@ function ForumThreadViewInner({
           )}
         </Pressable>
       </View>
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
   )
 }

@@ -4,7 +4,7 @@ import {
 } from 'react-native'
 import { Image } from 'expo-image'
 import { Heart, MessageCircle, Pencil, Trash2, Flag } from 'lucide-react-native'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -153,6 +153,7 @@ function GroupPostCardInner({
               textAlignVertical="top"
               maxLength={2000}
               autoFocus
+              inputAccessoryViewID={KEYBOARD_DONE_ID}
             />
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable

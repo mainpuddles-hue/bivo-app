@@ -29,7 +29,7 @@ import { TrustBadge } from '@/components/TrustBadge'
 import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { LocationAutocomplete } from '@/components/LocationAutocomplete'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { trackEvent } from '@/lib/analytics'
 import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
@@ -1080,6 +1080,7 @@ export default function CreateScreen() {
               textAlignVertical="top"
               accessibilityLabel={t('post.descriptionLabel')}
               maxLength={2000}
+              inputAccessoryViewID={KEYBOARD_DONE_ID}
             />
             <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.pro : colors.mutedForeground }]}>{description.length}/2000</Text>
           </View>
@@ -1668,6 +1669,7 @@ export default function CreateScreen() {
           </View>
         </Modal>
       </View>
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
     </ScreenErrorBoundary>
   )

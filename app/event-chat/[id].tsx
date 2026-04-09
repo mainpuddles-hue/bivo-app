@@ -13,6 +13,7 @@ import { ArrowLeft, Send, ImageIcon, Users, CalendarDays } from 'lucide-react-na
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useEventChat } from '@/hooks/useEventChat'
 import { Avatar } from '@/components/Avatar'
@@ -291,6 +292,7 @@ function EventChatScreenInner() {
           onChangeText={setInput}
           multiline
           maxLength={2000}
+          inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
 
         <Pressable
@@ -302,6 +304,7 @@ function EventChatScreenInner() {
           <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
         </Pressable>
       </View>
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
   )
 }

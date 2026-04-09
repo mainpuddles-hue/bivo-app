@@ -15,7 +15,7 @@ import {
   Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2,
   RefreshCw, Check,
 } from 'lucide-react-native'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -661,6 +661,7 @@ function ActivitiesScreenInner() {
                   numberOfLines={3}
                   maxLength={500}
                   textAlignVertical="top"
+                  inputAccessoryViewID={KEYBOARD_DONE_ID}
                 />
               </View>
 
@@ -805,6 +806,7 @@ function ActivitiesScreenInner() {
               </PressableOpacity>
             </ScrollView>
           </View>
+          <KeyboardDoneAccessory />
         </KeyboardAvoidingView>
       </Modal>
     </View>

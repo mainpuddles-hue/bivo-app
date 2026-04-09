@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
+import { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 
 const REPORT_REASONS = ['spam', 'inappropriate', 'harassment', 'scam', 'fake', 'other'] as const
 type ReportReason = typeof REPORT_REASONS[number]
@@ -157,6 +158,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
+                inputAccessoryViewID={KEYBOARD_DONE_ID}
               />
               <Text style={[s.charCount, { color: colors.mutedForeground }]}>{description.length}/500</Text>
 
@@ -177,6 +179,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
         </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
+      <KeyboardDoneAccessory />
     </Modal>
   )
 }

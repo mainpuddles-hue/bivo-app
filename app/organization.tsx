@@ -12,7 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { BackButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
@@ -383,6 +383,7 @@ export default function OrganizationScreen() {
             multiline
             maxLength={500}
             textAlignVertical="top"
+            inputAccessoryViewID={KEYBOARD_DONE_ID}
           />
           <Text style={[styles.charCount, { color: colors.mutedForeground }]}>
             {businessDescription.length}/500
@@ -559,6 +560,7 @@ export default function OrganizationScreen() {
           </View>
         )}
       </ScrollView>
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
     </ScreenErrorBoundary>
   )

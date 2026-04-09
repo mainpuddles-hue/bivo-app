@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
 import { useSupabase } from '@/hooks/useSupabase'
 import { StarRating } from '@/components/StarRating'
+import { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 
 interface ReviewModalProps {
   visible: boolean
@@ -153,6 +154,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
+                inputAccessoryViewID={KEYBOARD_DONE_ID}
               />
               <Text style={[s.charCount, { color: colors.mutedForeground }]}>{comment.length}/500</Text>
 
@@ -172,6 +174,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
           )}
         </Pressable>
       </Pressable>
+      <KeyboardDoneAccessory />
     </Modal>
   )
 }

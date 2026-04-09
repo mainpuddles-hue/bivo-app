@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert, Linking } from 'react-native'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -849,6 +849,7 @@ function ConversationScreenInner() {
           multiline
           maxLength={2000}
           blurOnSubmit={false}
+          inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
         <PressableOpacity
           onPress={handleSend}
@@ -871,6 +872,7 @@ function ConversationScreenInner() {
           targetId={otherUser.id}
         />
       )}
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
   )
 }

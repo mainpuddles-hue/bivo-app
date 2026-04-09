@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
@@ -451,6 +451,7 @@ export default function ProfileScreen() {
                 maxLength={200}
                 placeholder={t('profile.bioPlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
+                inputAccessoryViewID={KEYBOARD_DONE_ID}
               />
               <Text style={{ fontSize: 11, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
                 {bioText.length}/200
@@ -922,6 +923,7 @@ export default function ProfileScreen() {
           isSuccess={identity.status === 'success'}
         />
       )}
+      <KeyboardDoneAccessory />
     </View>
     </ScreenErrorBoundary>
   )

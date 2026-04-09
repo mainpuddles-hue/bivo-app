@@ -41,7 +41,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { useBoosts } from '@/hooks/useBoosts'
 import { BoostBadge } from '@/components/BoostBadge'
-import { ModalCloseButton, PressableOpacity } from '@/components/ui'
+import { ModalCloseButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType, PostComment } from '@/lib/types'
 
@@ -1156,7 +1156,7 @@ function PostDetailScreenInner() {
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} />
             <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editTitle.length}/100</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.descriptionLabel')}</Text>
-            <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} />
+            <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
             <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} />
@@ -1243,6 +1243,7 @@ function PostDetailScreenInner() {
               placeholderTextColor={colors.mutedForeground}
               multiline
               maxLength={500}
+              inputAccessoryViewID={KEYBOARD_DONE_ID}
             />
             {serviceNotes.length > 0 && (
               <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>
@@ -1349,6 +1350,7 @@ function PostDetailScreenInner() {
           targetId={post.id}
         />
       )}
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
   )
 }

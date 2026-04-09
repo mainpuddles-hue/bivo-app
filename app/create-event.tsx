@@ -27,7 +27,7 @@ import { fonts } from '@/lib/fonts'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { LocationAutocomplete } from '@/components/LocationAutocomplete'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { createEventChat } from '@/lib/eventChatHelpers'
 import type { CommunityEvent } from '@/lib/types'
 
@@ -434,6 +434,7 @@ function CreateEventScreenInner() {
           maxLength={500}
           textAlignVertical="top"
           accessibilityLabel={t('events.eventDescription')}
+          inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
         <Text style={[styles.charCount, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
           {description.length}/500
@@ -603,6 +604,7 @@ function CreateEventScreenInner() {
         </PressableOpacity>
       </ScrollView>
       )}
+      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
   )
 }

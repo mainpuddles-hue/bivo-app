@@ -8,6 +8,7 @@ import { X, Trash2 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 
 interface GroupEditModalProps {
   visible: boolean
@@ -90,6 +91,7 @@ function GroupEditModalInner({
               multiline
               textAlignVertical="top"
               maxLength={500}
+              inputAccessoryViewID={KEYBOARD_DONE_ID}
             />
             <TextInput
               style={[styles.editInput, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border }]}
@@ -147,6 +149,7 @@ function GroupEditModalInner({
           </View>
         </KeyboardAvoidingView>
       </View>
+      <KeyboardDoneAccessory />
     </Modal>
   )
 }
