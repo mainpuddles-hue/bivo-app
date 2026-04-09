@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   postImage: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: 8,
   },
   postActions: {
@@ -293,14 +293,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: fonts.body,
     lineHeight: 20,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   saveBtn: {
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 4,
   },

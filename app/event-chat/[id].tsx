@@ -402,7 +402,7 @@ const s = StyleSheet.create({
     marginBottom: 4,
   },
   msgTime: {
-    fontSize: 10,
+    fontSize: 11,
     lineHeight: 14,
     marginTop: 4,
     alignSelf: 'flex-end',

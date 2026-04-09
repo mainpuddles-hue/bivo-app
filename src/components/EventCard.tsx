@@ -170,7 +170,7 @@ const s = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 12,
   },
-  tableText: { fontSize: 10, fontWeight: '600', lineHeight: 14 },
+  tableText: { fontSize: 11, fontWeight: '600', lineHeight: 14 },
   title: { fontSize: 16, fontWeight: '700', lineHeight: 22 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   infoText: { fontSize: 13, lineHeight: 18 },

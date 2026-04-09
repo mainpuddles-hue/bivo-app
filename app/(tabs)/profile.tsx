@@ -565,35 +565,33 @@ export default function ProfileScreen() {
           </PressableOpacity>
         )}
 
-        {/* Quick action cards */}
-        {FEATURES.PAYMENTS && (
-        <PressableOpacity onPress={() => router.push('/bookings')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('bookings.title')} accessibilityRole="button">
-          <Package size={18} color={colors.pro} />
-          <Text style={[s.overviewText, { color: colors.foreground }]}>{t('bookings.title')}</Text>
-        </PressableOpacity>
-        )}
-
-        <PressableOpacity onPress={() => router.push('/saved')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('saved.title')} accessibilityRole="button">
-          <Heart size={18} color={colors.primary} />
-          <Text style={[s.overviewText, { color: colors.foreground }]}>{t('saved.title')}</Text>
-        </PressableOpacity>
-
-        {/* Leaderboard button */}
-        <PressableOpacity onPress={() => router.push('/leaderboard')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('leaderboard.title')} accessibilityRole="button">
-          <Trophy size={18} color={colors.pro} />
-          <Text style={[s.overviewText, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
-        </PressableOpacity>
-
-        {/* Boosts — gated behind FEATURES.BOOSTS */}
-        {FEATURES.BOOSTS && (
-          <PressableOpacity onPress={() => router.push('/boosts')} style={[s.overviewCard, { backgroundColor: colors.card }]} accessibilityLabel={t('boost.title')} accessibilityRole="button">
-            <TrendingUp size={18} color={colors.accent} />
-            <Text style={[s.overviewText, { color: colors.foreground }]}>{t('boost.title')}</Text>
-            <View style={{ marginLeft: 'auto' }}>
-              <ChevronRight size={16} color={colors.mutedForeground} />
-            </View>
+        {/* Quick actions — grouped list (iOS Settings pattern) */}
+        <View style={[s.groupedList, { backgroundColor: colors.card }]}>
+          {FEATURES.PAYMENTS && (
+            <PressableOpacity onPress={() => router.push('/bookings')} style={[s.groupedRow, { borderBottomColor: colors.border }]} accessibilityLabel={t('bookings.title')} accessibilityRole="button">
+              <Package size={18} color={colors.pro} />
+              <Text style={[s.groupedRowText, { color: colors.foreground }]}>{t('bookings.title')}</Text>
+              <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.8} />
+            </PressableOpacity>
+          )}
+          <PressableOpacity onPress={() => router.push('/saved')} style={[s.groupedRow, { borderBottomColor: colors.border }]} accessibilityLabel={t('saved.title')} accessibilityRole="button">
+            <Heart size={18} color={colors.primary} />
+            <Text style={[s.groupedRowText, { color: colors.foreground }]}>{t('saved.title')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.8} />
           </PressableOpacity>
-        )}
+          <PressableOpacity onPress={() => router.push('/leaderboard')} style={[s.groupedRow, { borderBottomColor: colors.border }, !FEATURES.BOOSTS && s.groupedRowLast]} accessibilityLabel={t('leaderboard.title')} accessibilityRole="button">
+            <Trophy size={18} color={colors.pro} />
+            <Text style={[s.groupedRowText, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
+            <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.8} />
+          </PressableOpacity>
+          {FEATURES.BOOSTS && (
+            <PressableOpacity onPress={() => router.push('/boosts')} style={[s.groupedRow, s.groupedRowLast]} accessibilityLabel={t('boost.title')} accessibilityRole="button">
+              <TrendingUp size={18} color={colors.accent} />
+              <Text style={[s.groupedRowText, { color: colors.foreground }]}>{t('boost.title')}</Text>
+              <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.8} />
+            </PressableOpacity>
+          )}
+        </View>
 
         {/* Trust Level Progress */}
         {!trust.loading && (
@@ -973,6 +971,11 @@ const s = StyleSheet.create({
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   tabContent: { gap: 12, paddingTop: 4 },
   overviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
+  // Grouped list (iOS Settings pattern) — multiple rows inside single rounded card
+  groupedList: { borderRadius: 12, overflow: 'hidden' },
+  groupedRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, minHeight: 44, borderBottomWidth: StyleSheet.hairlineWidth },
+  groupedRowLast: { borderBottomWidth: 0 },
+  groupedRowText: { flex: 1, fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   proUpgradeCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderRadius: 12, borderWidth: 1,
@@ -1016,10 +1019,10 @@ const s = StyleSheet.create({
   // My Posts tab
   myPostItem: { gap: 8, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
-  myPostTypeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  myPostTypeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
   myPostTypeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostDate: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-  myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
   myPostStatusText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostActions: { flexDirection: 'row', gap: 8, paddingTop: 4 },
   myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, minHeight: 44 },

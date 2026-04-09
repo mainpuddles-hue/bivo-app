@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
   },
 
   // Image — full width, inline
-  imageContainer: { borderRadius: 12, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
+  imageContainer: { borderRadius: 8, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
   image: { width: '100%', height: 200 },
   multiImageBadge: {
     position: 'absolute', bottom: 8, right: 8,

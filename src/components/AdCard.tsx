@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 8,
     marginTop: 6,
   },
   ctaText: {
