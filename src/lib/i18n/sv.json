@@ -213,6 +213,8 @@
     "attendEvent": "Delta i evenemang",
     "attending": "Deltar",
     "cancelAttendance": "Avboka deltagande",
+    "leaveEvent": "Lämna",
+    "leaveConfirm": "Är du säker på att du vill avboka din anmälan till detta evenemang?",
     "edit": "Redigera",
     "delete": "Ta bort",
     "deleteConfirm": "Är du säker på att du vill ta bort det här evenemanget?",

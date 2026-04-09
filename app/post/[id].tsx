@@ -1164,6 +1164,7 @@ function PostDetailScreenInner() {
               {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.saveChanges')}</Text>}
             </PressableOpacity>
           </View>
+          <KeyboardDoneAccessory />
         </KeyboardAvoidingView>
       </Modal>
 
@@ -1292,6 +1293,7 @@ function PostDetailScreenInner() {
             </PressableOpacity>
           </Pressable>
         </Pressable>
+        <KeyboardDoneAccessory />
       </Modal>
 
       {/* Fixed bottom CTA — message only (bookmark/share/flag in header) */}
@@ -1350,7 +1352,6 @@ function PostDetailScreenInner() {
           targetId={post.id}
         />
       )}
-      <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
   )
 }

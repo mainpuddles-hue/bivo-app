@@ -47,8 +47,12 @@ export const ParticipantAvatarRow = memo(function ParticipantAvatarRow({
             backgroundColor: colors.muted,
           },
         ]}>
-          <Text style={[s.overflowText, { color: colors.mutedForeground, fontSize: Math.max(11, Math.round(size * 0.38)), fontFamily: fonts.bodySemi }]}>
-            +{overflow}
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={[s.overflowText, { color: colors.mutedForeground, fontSize: Math.max(11, Math.round(size * 0.38)), fontFamily: fonts.bodySemi, paddingHorizontal: 2 }]}
+          >
+            +{overflow > 99 ? '99' : overflow}
           </Text>
         </View>
       )}
