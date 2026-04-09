@@ -26,6 +26,15 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    // Verify apikey header to prevent unauthenticated access from arbitrary clients
+    const apiKey = req.headers.get('apikey')
+    const expectedKey = Deno.env.get('SUPABASE_ANON_KEY')
+    if (!apiKey || apiKey !== expectedKey) {
+      return new Response(JSON.stringify({ error: 'Invalid API key' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
     const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
     const resendApiKey = getEnvOrThrow('RESEND_API_KEY')

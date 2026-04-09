@@ -77,7 +77,7 @@ export default function VerifyOtpScreen() {
       const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
       const verifyRes = await fetch(`${FUNCTIONS_URL}/verify-otp-code`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '' },
         body: JSON.stringify({ email: email ?? '', code: code.trim(), type: otpMode }),
       })
       const verifyData = await verifyRes.json()
@@ -143,7 +143,7 @@ export default function VerifyOtpScreen() {
       const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
       const res = await fetch(`${FUNCTIONS_URL}/send-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '' },
         body: JSON.stringify({ email: email ?? '', type: otpMode }),
       })
       if (!res.ok) {

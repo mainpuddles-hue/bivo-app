@@ -159,7 +159,9 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
-    const { title, description, post_id, user_id } = body
+    const { title, description, post_id } = body
+    // Use authenticated user ID from JWT, not from body (security)
+    const user_id = user.id
 
     if (!title && !description) {
       return new Response(JSON.stringify({ error: 'title or description required' }), {

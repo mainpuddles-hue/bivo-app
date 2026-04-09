@@ -162,7 +162,7 @@ function LoginScreenInner() {
         try {
           await fetch(`${FUNCTIONS_URL}/send-otp`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '' },
             body: JSON.stringify({ email: email.trim(), type: 'signup' }),
           })
         } catch {

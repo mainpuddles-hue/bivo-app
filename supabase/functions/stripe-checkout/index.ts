@@ -61,8 +61,7 @@ serve(async (req) => {
       seller_id,
       metadata = {},
       application_fee_amount, // ignored — recalculated server-side
-      success_url,
-      cancel_url,
+      // success_url and cancel_url removed — always use hardcoded tackbird:// scheme (security: prevent open redirect)
     } = body
 
     if (!amount || !type || !seller_id) {
@@ -289,8 +288,8 @@ serve(async (req) => {
         post_id: post_id ?? '',
         type,
       },
-      success_url: success_url || 'tackbird://payment/success?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: cancel_url || 'tackbird://payment/cancel',
+      success_url: 'tackbird://payment/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'tackbird://payment/cancel',
       // Apple Pay + Google Pay enabled automatically in Stripe Checkout
       payment_method_types: ['card'],
     }
