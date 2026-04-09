@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
-import * as Haptics from 'expo-haptics'
+import { withHapticRefresh } from '@/lib/haptics'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
+import { LinearGradient } from 'expo-linear-gradient'
 import {
   Settings, LogOut, LogIn, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package, ChevronRight,
@@ -412,19 +413,19 @@ export default function ProfileScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => {
-              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+            onRefresh={withHapticRefresh(() => {
               setRefreshing(true)
               loadProfile().finally(() => setRefreshing(false))
-            }}
+            })}
             tintColor={colors.primary}
           />
         }
       >
         {/* Cover banner — iOS Music/Twitter style: gradient banner + avatar overlap */}
-        <View style={[s.coverBanner, { backgroundColor: colors.primary + '22' }]}>
-          <View style={[s.coverGradient, { backgroundColor: colors.primary + '44' }]} />
-        </View>
+        <LinearGradient
+          colors={[colors.primary + '22', colors.primary + '44']}
+          style={s.coverBanner}
+        />
 
         {/* Hero */}
         <View style={s.hero}>
@@ -949,19 +950,9 @@ const s = StyleSheet.create({
     height: 100,
     marginHorizontal: -16,
     marginTop: -16,
-    position: 'relative',
-    overflow: 'hidden',
   },
-  coverGradient: {
-    position: 'absolute',
-    top: '50%',
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  avatarOverlap: {
-    marginTop: -52, // Avatar 96 / 2 + border 4 = 52 overlap
-  },
+  // Avatar (96 + 4px border = 104 total) overlaps cover by half its painted diameter
+  avatarOverlap: { marginTop: -(96 / 2 + 4) },
   bigAvatar: { width: 80, height: 80, borderRadius: 40 },
   bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },
   bigAvatarInit: { fontSize: 32, fontWeight: '700', fontFamily: fonts.heading },

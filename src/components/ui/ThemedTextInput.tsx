@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react'
-import { TextInput, StyleSheet, type TextInputProps, type StyleProp, type ViewStyle, type TextStyle } from 'react-native'
+import { TextInput, StyleSheet, type TextInputProps, type StyleProp, type TextStyle } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { fonts } from '@/lib/fonts'
 

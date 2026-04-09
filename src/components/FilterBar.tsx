@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef } from 'react'
-import { Text, StyleSheet, Animated, type ColorValue } from 'react-native'
+import { Text, StyleSheet, Animated } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
@@ -26,9 +26,11 @@ interface FilterChipProps {
 const FilterChip = memo(function FilterChip({ label, color, isActive, foregroundColor, onPress }: FilterChipProps) {
   const reduceMotion = useReduceMotion()
   const scale = useRef(new Animated.Value(1)).current
+  const isFirstRun = useRef(true)
 
-  // Pulse spring when selection state flips
+  // Pulse spring when selection state flips — skip initial mount run
   useEffect(() => {
+    if (isFirstRun.current) { isFirstRun.current = false; return }
     if (reduceMotion) return
     Animated.sequence([
       Animated.spring(scale, { toValue: 0.92, friction: 6, tension: 180, useNativeDriver: true }),

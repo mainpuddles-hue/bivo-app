@@ -39,7 +39,8 @@
     "and": "and",
     "ok": "OK",
     "dismiss": "Dismiss",
-    "done": "Done"
+    "done": "Done",
+    "yesterday": "Yesterday"
   },
   "nav": {
     "feed": "Home",
@@ -882,7 +883,6 @@
     "emailPlaceholder": "name@example.com",
     "sending": "Sending...",
     "signInWithGoogle": "Sign in with Google",
-    "signInWithApple": "Sign in with Apple",
     "signInWithApple": "Sign in with Apple",
     "appleFailed": "Apple sign-in failed",
     "name": "Name",

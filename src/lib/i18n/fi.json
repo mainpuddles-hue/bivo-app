@@ -39,7 +39,8 @@
     "and": "ja",
     "ok": "OK",
     "dismiss": "Sulje",
-    "done": "Valmis"
+    "done": "Valmis",
+    "yesterday": "Eilen"
   },
   "nav": {
     "feed": "Koti",
@@ -882,7 +883,6 @@
     "emailPlaceholder": "nimi@esimerkki.fi",
     "sending": "Lähetetään...",
     "signInWithGoogle": "Kirjaudu Googlella",
-    "signInWithApple": "Kirjaudu Applella",
     "signInWithApple": "Kirjaudu Applella",
     "appleFailed": "Apple-kirjautuminen epäonnistui",
     "name": "Nimi",

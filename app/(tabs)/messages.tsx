@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated } from 'react-native'
-import * as Haptics from 'expo-haptics'
+import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -407,7 +407,7 @@ export default function MessagesScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}; setRefreshing(true); fetchConversations(); fetchEventChats() }} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={withHapticRefresh(() => { setRefreshing(true); fetchConversations(); fetchEventChats() })} tintColor={colors.primary} />}
         ListHeaderComponent={eventChats.length > 0 && !showArchived ? (
           <View style={styles.eventChatsSection}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
@@ -477,7 +477,7 @@ export default function MessagesScreen() {
             })
             return (
               <PressableOpacity
-                onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}; handleArchive(item.id) }}
+                onPress={() => { hapticMedium(); handleArchive(item.id) }}
                 style={[styles.swipeActionRight, { backgroundColor: showArchived ? colors.primary : colors.mutedForeground }]}
                 accessibilityRole="button"
                 accessibilityLabel={showArchived ? t('messages.unarchive') ?? 'Unarchive' : t('messages.archive') ?? 'Archive'}

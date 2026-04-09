@@ -1,3 +1,5 @@
+import { isToday, isYesterday } from './dateHelpers'
+
 export type TFunction = (key: string, params?: Record<string, string | number>) => string
 
 const LOCALE_MAP: Record<string, string> = {
@@ -10,15 +12,32 @@ export function resolveLocale(locale: string): string {
   return LOCALE_MAP[locale] || locale
 }
 
+// Cache Intl.DateTimeFormat per (locale + options signature) — creating a
+// new formatter on every call is surprisingly expensive on Android (~0.5-2ms
+// per instance). Cached here for formatTimeAgo's weekday/numeric paths.
+const dtFormatCache = new Map<string, Intl.DateTimeFormat>()
+function getDTFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`
+  let fmt = dtFormatCache.get(key)
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(locale, options)
+    dtFormatCache.set(key, fmt)
+  }
+  return fmt
+}
+
 /**
  * Apple HIG-style relative time formatting:
  * - < 1 min: "juuri nyt"
  * - < 60 min: "5 min sitten"
- * - Same calendar day (today): "5 t sitten" (iOS uses relative within today)
+ * - Same calendar day (today): "5 t sitten"
  * - Yesterday: "Eilen"
- * - Within last 7 days: weekday name (lokalisoitu, esim. "ma")
+ * - Within last 7 days: short weekday (locale-aware, e.g. "ma")
  * - Same year: "12.3."
  * - Older: "12.3.2025"
+ *
+ * Uses isToday/isYesterday from dateHelpers.ts and cached Intl.DateTimeFormat
+ * for performance in feed lists (50+ items).
  */
 export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): string {
   if (!dateStr) return ''
@@ -31,41 +50,31 @@ export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): st
   const diffMin = Math.floor(diffSec / 60)
   const diffHour = Math.floor(diffMin / 60)
 
-  // Calendar day comparison (not just 24h delta)
-  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
-  const today = startOfDay(now)
-  const dateDay = startOfDay(date)
-  const diffDay = Math.round((today.getTime() - dateDay.getTime()) / (1000 * 60 * 60 * 24))
-
-  // Recent (today): relative
   if (diffSec < 60) return t('time.justNow')
   if (diffMin < 60) return t('time.minutesAgo', { count: diffMin })
-  if (diffDay === 0) {
+
+  // Today: relative hour count
+  if (isToday(dateStr)) {
     return diffHour === 1 ? t('time.oneHourAgo') : t('time.hoursAgo', { count: diffHour })
   }
 
   // Yesterday
-  if (diffDay === 1) return t('common.yesterday') ?? 'Eilen'
+  if (isYesterday(dateStr)) return t('common.yesterday')
 
   // Within last 7 days: short weekday (ma, ti, ke...)
+  const resolvedLocale = resolveLocale(locale)
+  const diffDay = Math.floor(diffMs / 86400000)
   if (diffDay < 7) {
-    return date.toLocaleDateString(resolveLocale(locale), { weekday: 'short' })
+    return getDTFormat(resolvedLocale, { weekday: 'short' }).format(date)
   }
 
-  // Same year: 12.3. (Finnish-style short date)
+  // Same year: 12.3.
   if (date.getFullYear() === now.getFullYear()) {
-    return date.toLocaleDateString(resolveLocale(locale), {
-      day: 'numeric',
-      month: 'numeric',
-    })
+    return getDTFormat(resolvedLocale, { day: 'numeric', month: 'numeric' }).format(date)
   }
 
   // Older: include year
-  return date.toLocaleDateString(resolveLocale(locale), {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-  })
+  return getDTFormat(resolvedLocale, { day: 'numeric', month: 'numeric', year: 'numeric' }).format(date)
 }
 
 export function formatPrice(amount: number | null | undefined, locale = 'fi'): string {

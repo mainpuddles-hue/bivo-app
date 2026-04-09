@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { enableFreeze } from 'react-native-screens'
 import { Tabs, useRouter, usePathname } from 'expo-router'
 import { View, Text, StyleSheet, Modal, Pressable, Platform, Animated } from 'react-native'
 import { BlurView } from 'expo-blur'
+import * as Notifications from 'expo-notifications'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 
 // Freeze inactive screens to save memory and CPU
@@ -27,9 +28,11 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
 }) {
   const reduceMotion = useReduceMotion()
   const scale = useRef(new Animated.Value(focused ? 1.1 : 1)).current
+  const isFirstRun = useRef(true)
 
-  // Apple HIG: spring pulse on selection change
+  // Apple HIG: spring pulse on focus change — skip initial mount (already at target)
   useEffect(() => {
+    if (isFirstRun.current) { isFirstRun.current = false; return }
     if (reduceMotion) {
       scale.setValue(focused ? 1.1 : 1)
       return
@@ -94,6 +97,16 @@ export default function TabLayout() {
   const eventChatUnread = useEventChatUnread(userId)
   const totalUnread = unreadCount + eventChatUnread
   const [showCreateMenu, setShowCreateMenu] = useState(false)
+
+  // Sync app icon badge with combined unread count. Centralized here so
+  // useUnreadCount and useEventChatUnread can't fight each other. Change
+  // detection prevents no-op bridge calls.
+  const lastBadgeRef = useRef<number>(-1)
+  useEffect(() => {
+    if (lastBadgeRef.current === totalUnread) return
+    lastBadgeRef.current = totalUnread
+    Notifications.setBadgeCountAsync(totalUnread).catch(() => {})
+  }, [totalUnread])
 
   useEffect(() => {
     let mounted = true

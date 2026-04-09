@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, StyleSheet, RefreshControl, ActivityIndicator, Animated } from 'react-native'
-import * as Haptics from 'expo-haptics'
+import { hapticMedium } from '@/lib/haptics'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
@@ -190,7 +190,7 @@ export default function LeaderboardScreen() {
   }, [filter, userNeighborhood, fetchLeaderboard]))
 
   const handleRefresh = useCallback(() => {
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
+    hapticMedium()
     setRefreshing(true)
     fetchLeaderboard(filter === 'neighborhood' ? userNeighborhood : null)
   }, [filter, userNeighborhood, fetchLeaderboard])

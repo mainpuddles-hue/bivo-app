@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router'
 import { Eye, EyeOff, Check, X } from 'lucide-react-native'
 import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
+import * as AppleAuthentication from 'expo-apple-authentication'
 import { GoogleLogo } from '@/components/GoogleLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -15,6 +16,7 @@ import { fonts } from '@/lib/fonts'
 import { trackEvent } from '@/lib/analytics'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
+import { isBannedAndSignedOut } from '@/lib/auth/bannedCheck'
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Invalid login credentials': 'auth.invalidCredentials',
@@ -282,60 +284,46 @@ function LoginScreenInner() {
   }
 
   const handleAppleSignIn = async () => {
-    if (Platform.OS !== 'ios') return
     setErrorMsg('')
     setLoading(true)
     try {
-      // Use dynamic import so non-iOS bundles don't try to resolve native module
-      const AppleAuth = await import('expo-apple-authentication')
-      const credential = await AppleAuth.signInAsync({
+      const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
-          AppleAuth.AppleAuthenticationScope.FULL_NAME,
-          AppleAuth.AppleAuthenticationScope.EMAIL,
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       })
-      if (!credential.identityToken) {
-        throw new Error('No identity token from Apple')
-      }
-      // Sign in to Supabase using the Apple ID token
+      if (!credential.identityToken) throw new Error('No identity token from Apple')
+
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'apple',
         token: credential.identityToken,
       })
       if (error) throw error
+      if (!data?.user) throw new Error('No user returned from Supabase')
 
-      // Banned check (same as Google flow)
-      if (data?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_banned')
-          .eq('id', data.user.id)
-          .maybeSingle()
-        if ((profile as any)?.is_banned) {
-          await supabase.auth.signOut()
-          setErrorMsg(t('auth.accountBannedDesc') ?? t('auth.accountBanned'))
-          return
-        }
+      if (await isBannedAndSignedOut(supabase, data.user.id)) {
+        setErrorMsg(t('auth.accountBannedDesc') ?? t('auth.accountBanned'))
+        return
+      }
 
-        // First-login: persist Apple-provided full name (only sent on first sign in)
-        if (credential.fullName?.givenName || credential.fullName?.familyName) {
-          const fullName = [credential.fullName.givenName, credential.fullName.familyName]
-            .filter(Boolean)
-            .join(' ')
-          if (fullName) {
-            await (supabase.from('profiles') as any)
-              .update({ name: fullName })
-              .eq('id', data.user.id)
-              .is('name', null)
-              .catch(() => {})
-          }
+      // First-login: persist Apple-provided full name (only sent on first sign in)
+      if (credential.fullName?.givenName || credential.fullName?.familyName) {
+        const fullName = [credential.fullName.givenName, credential.fullName.familyName]
+          .filter(Boolean)
+          .join(' ')
+        if (fullName) {
+          await (supabase.from('profiles') as any)
+            .update({ name: fullName })
+            .eq('id', data.user.id)
+            .is('name', null)
+            .catch(() => {})
         }
       }
 
       trackEvent('auth_login_success' as any)
       router.replace('/')
     } catch (err: any) {
-      // User canceled (ERR_CANCELED) is not an error worth showing
       if (err?.code === 'ERR_CANCELED' || err?.code === 'ERR_REQUEST_CANCELED') return
       setErrorMsg(translateError(err.message ?? 'Apple sign in failed'))
     } finally {
@@ -389,19 +377,20 @@ function LoginScreenInner() {
               </View>
             )}
 
-            {/* Apple Sign In — iOS only, App Store Review Guideline 4.8 requires it */}
+            {/* Apple Sign In — iOS only. App Store Review Guideline 4.8 requires
+                the NATIVE AppleAuthenticationButton component (not a custom one). */}
             {mode !== 'forgot' && Platform.OS === 'ios' && (
-              <PressableOpacity
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                buttonStyle={
+                  isDark
+                    ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                    : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+                }
+                cornerRadius={12}
+                style={styles.appleBtn}
                 onPress={handleAppleSignIn}
-                style={[styles.appleBtn, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}
-                accessibilityRole="button"
-                accessibilityLabel={t('auth.signInWithApple') ?? 'Sign in with Apple'}
-              >
-                <Text style={[styles.appleBtnLogo, { color: isDark ? '#000000' : '#FFFFFF' }]}></Text>
-                <Text style={[styles.appleBtnText, { color: isDark ? '#000000' : '#FFFFFF' }]}>
-                  {t('auth.signInWithApple') ?? 'Sign in with Apple'}
-                </Text>
-              </PressableOpacity>
+              />
             )}
 
             {/* Google OAuth */}
@@ -585,12 +574,9 @@ const styles = StyleSheet.create({
   },
   modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', minHeight: 44 },
   modeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
-  appleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 8,
-  },
-  appleBtnLogo: { fontSize: 18, lineHeight: 20, marginTop: -2 },
-  appleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
+  // AppleAuthenticationButton manages its own backgroundColor and borderRadius;
+  // we only set dimensions and margin.
+  appleBtn: { width: '100%', minHeight: 48, marginBottom: 8 },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderWidth: 1, borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 8,

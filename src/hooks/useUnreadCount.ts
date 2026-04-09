@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import * as Notifications from 'expo-notifications'
 import { useSupabase } from './useSupabase'
 
+// Note: app-icon badge count is managed centrally in app/(tabs)/_layout.tsx
+// using totalUnread = useUnreadCount + useEventChatUnread to avoid the two
+// hooks overwriting each other's badge value.
 export function useUnreadCount(userId: string | null) {
   const supabase = useSupabase()
   const [count, setCount] = useState(0)
@@ -11,9 +13,7 @@ export function useUnreadCount(userId: string | null) {
 
   useEffect(() => {
     if (!userId) {
-      // Logged out — clear badge
       setCount(0)
-      Notifications.setBadgeCountAsync(0).catch(() => {})
       return
     }
     let mounted = true
@@ -37,12 +37,7 @@ export function useUnreadCount(userId: string | null) {
         .neq('sender_id', userId)
         .eq('is_read', false)
 
-      if (mounted) {
-        const unreadNum = unread ?? 0
-        setCount(unreadNum)
-        // Sync app icon badge (iOS) — Apple HIG: badge reflects pending user actions
-        Notifications.setBadgeCountAsync(unreadNum).catch(() => {})
-      }
+      if (mounted) setCount(unread ?? 0)
     }
 
     fetchUnread()

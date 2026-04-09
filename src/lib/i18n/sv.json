@@ -39,7 +39,8 @@
     "and": "och",
     "ok": "OK",
     "dismiss": "Stäng",
-    "done": "Klar"
+    "done": "Klar",
+    "yesterday": "Igår"
   },
   "nav": {
     "feed": "Hem",
@@ -864,7 +865,6 @@
     "emailPlaceholder": "namn@exempel.se",
     "sending": "Skickar...",
     "signInWithGoogle": "Logga in med Google",
-    "signInWithApple": "Logga in med Apple",
     "signInWithApple": "Logga in med Apple",
     "appleFailed": "Apple-inloggningen misslyckades",
     "name": "Namn",
