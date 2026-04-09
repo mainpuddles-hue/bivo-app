@@ -10,6 +10,16 @@ export function resolveLocale(locale: string): string {
   return LOCALE_MAP[locale] || locale
 }
 
+/**
+ * Apple HIG-style relative time formatting:
+ * - < 1 min: "juuri nyt"
+ * - < 60 min: "5 min sitten"
+ * - Same calendar day (today): "5 t sitten" (iOS uses relative within today)
+ * - Yesterday: "Eilen"
+ * - Within last 7 days: weekday name (lokalisoitu, esim. "ma")
+ * - Same year: "12.3."
+ * - Older: "12.3.2025"
+ */
 export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): string {
   if (!dateStr) return ''
   const now = new Date()
@@ -20,25 +30,41 @@ export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): st
   const diffSec = Math.floor(diffMs / 1000)
   const diffMin = Math.floor(diffSec / 60)
   const diffHour = Math.floor(diffMin / 60)
-  const diffDay = Math.floor(diffHour / 24)
-  const diffWeek = Math.floor(diffDay / 7)
 
+  // Calendar day comparison (not just 24h delta)
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const today = startOfDay(now)
+  const dateDay = startOfDay(date)
+  const diffDay = Math.round((today.getTime() - dateDay.getTime()) / (1000 * 60 * 60 * 24))
+
+  // Recent (today): relative
   if (diffSec < 60) return t('time.justNow')
   if (diffMin < 60) return t('time.minutesAgo', { count: diffMin })
-  if (diffHour < 24) {
+  if (diffDay === 0) {
     return diffHour === 1 ? t('time.oneHourAgo') : t('time.hoursAgo', { count: diffHour })
   }
+
+  // Yesterday
+  if (diffDay === 1) return t('common.yesterday') ?? 'Eilen'
+
+  // Within last 7 days: short weekday (ma, ti, ke...)
   if (diffDay < 7) {
-    return diffDay === 1 ? t('time.oneDayAgo') : t('time.daysAgo', { count: diffDay })
-  }
-  if (diffWeek < 5) {
-    return diffWeek === 1 ? t('time.oneWeekAgo') : t('time.weeksAgo', { count: diffWeek })
+    return date.toLocaleDateString(resolveLocale(locale), { weekday: 'short' })
   }
 
+  // Same year: 12.3. (Finnish-style short date)
+  if (date.getFullYear() === now.getFullYear()) {
+    return date.toLocaleDateString(resolveLocale(locale), {
+      day: 'numeric',
+      month: 'numeric',
+    })
+  }
+
+  // Older: include year
   return date.toLocaleDateString(resolveLocale(locale), {
     day: 'numeric',
-    month: 'short',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+    month: 'numeric',
+    year: 'numeric',
   })
 }
 

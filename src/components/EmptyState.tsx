@@ -32,33 +32,36 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
 }
 
 const styles = StyleSheet.create({
+  // Apple HIG: empty states feel calm and breathing — generous spacing,
+  // friendly icon size, clear hierarchy
   container: {
     alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 40,
-    paddingHorizontal: 32,
-    gap: 12,
+    paddingTop: 80,
+    paddingBottom: 48,
+    paddingHorizontal: 40,
+    gap: 14,
   },
   iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: fonts.headingSemi,
-    lineHeight: 23,
+    lineHeight: 26,
     textAlign: 'center',
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: fonts.body,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
+    maxWidth: 280,
   },
   actionBtn: {
     marginTop: 8,
