@@ -18,7 +18,7 @@ import { isValidUUID } from '@/lib/validation'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
 import { OfflineBanner } from '@/components/OfflineBanner'
-import { setAnalyticsUser, trackEvent, trackRetention } from '@/lib/analytics'
+import { setAnalyticsUser, trackEvent, trackRetention, flushAnalyticsQueue } from '@/lib/analytics'
 import { clearAuthCache } from '@/lib/authCache'
 import { fetchRemoteFlags } from '@/lib/featureFlags'
 import { useAppStateManager } from '@/hooks/useAppState'
@@ -208,6 +208,11 @@ function useAnalyticsSetup() {
           setSentryUser(user.id)
           trackEvent('app_opened')
           trackRetention(user.id)
+          // Flush any events queued locally while the user was offline.
+          // Previously flushAnalyticsQueue was implemented but never called,
+          // so queued events accumulated in AsyncStorage up to the 100-event
+          // cap and were eventually dropped.
+          flushAnalyticsQueue().catch(() => {})
         } else {
           setAnalyticsUser(null)
           setSentryUser(null)
