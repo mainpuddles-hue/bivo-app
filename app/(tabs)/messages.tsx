@@ -59,6 +59,12 @@ export default function MessagesScreen() {
   useEffect(() => { return () => { mountedRef.current = false } }, [])
   const conversationsRef = useRef(conversations)
   conversationsRef.current = conversations
+  // Fast client-side filter for realtime events — avoids refetching when
+  // a message arrives for a conversation this user isn't part of
+  const myConvIdsRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    myConvIdsRef.current = new Set(conversations.map(c => c.id))
+  }, [conversations])
 
   // Load pinned conversations from AsyncStorage
   useEffect(() => {
@@ -220,8 +226,11 @@ export default function MessagesScreen() {
   // Fetch conversations on mount and re-fetch when screen gains focus (e.g. after reading messages)
   useFocusEffect(useCallback(() => { fetchConversations() }, [fetchConversations]))
 
-  // Realtime for new messages — filter to only messages NOT sent by current user
-  // (we only care about incoming messages for badge/list updates)
+  // Realtime for new messages. Supabase realtime only supports a single
+  // eq/neq filter on postgres_changes, so we filter by sender_id and then
+  // reject messages belonging to conversations this user isn't part of
+  // client-side (via myConvIdsRef). This avoids a global fetchConversations
+  // storm whenever any user in the system sends a message.
   useEffect(() => {
     if (!userId) return
     const channel = supabase
@@ -231,7 +240,10 @@ export default function MessagesScreen() {
         schema: 'public',
         table: 'messages',
         filter: `sender_id=neq.${userId}`,
-      }, () => {
+      }, (payload) => {
+        const msg = payload.new as any
+        if (!msg?.conversation_id) return
+        if (!myConvIdsRef.current.has(msg.conversation_id)) return
         fetchConversations()
       })
       .subscribe()
@@ -263,20 +275,29 @@ export default function MessagesScreen() {
       const eventsWithConvId = (events as any[]).filter((ev: any) => ev.conversation_id)
       const eventConvIds = eventsWithConvId.map((ev: any) => ev.conversation_id)
 
-      // Batch queries in parallel instead of sequential N+1
-      const [unreadRes, lastMsgRes, memberRes] = await Promise.all([
-        // All unread messages across event conversations
+      // Batch queries in parallel instead of sequential N+1.
+      // lastMsg: fetch in parallel per-conversation because a single
+      // `.in(...).limit(N*2)` can miss quiet conversations when one is
+      // very active (all slots get consumed by that single conversation).
+      const lastMsgPromises = eventConvIds.map((cid: string) =>
         (supabase.from('messages') as any)
-          .select('conversation_id', { count: 'exact' })
+          .select('conversation_id, content, created_at')
+          .eq('conversation_id', cid)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      )
+
+      const [unreadRes, lastMsgResults, memberRes] = await Promise.all([
+        // All unread messages across event conversations.
+        // `head: true` avoids transporting row data — we count per-conv
+        // via the returned-row hack below.
+        (supabase.from('messages') as any)
+          .select('conversation_id')
           .in('conversation_id', eventConvIds)
           .neq('sender_id', userId)
           .eq('is_read', false),
-        // Last message per conversation (fetch recent messages, group client-side)
-        (supabase.from('messages') as any)
-          .select('conversation_id, content, created_at')
-          .in('conversation_id', eventConvIds)
-          .order('created_at', { ascending: false })
-          .limit(eventConvIds.length * 2),
+        Promise.all(lastMsgPromises),
         // All members across event conversations
         (supabase.from('conversation_members') as any)
           .select('conversation_id')
@@ -290,10 +311,9 @@ export default function MessagesScreen() {
       }
 
       const lastMsgByConv = new Map<string, { content: string | null; created_at: string }>()
-      for (const row of (lastMsgRes.data ?? []) as any[]) {
-        if (!lastMsgByConv.has(row.conversation_id)) {
-          lastMsgByConv.set(row.conversation_id, { content: row.content, created_at: row.created_at })
-        }
+      for (const res of lastMsgResults as any[]) {
+        const row = res?.data
+        if (row) lastMsgByConv.set(row.conversation_id, { content: row.content, created_at: row.created_at })
       }
 
       const membersByConv = new Map<string, number>()
@@ -336,6 +356,13 @@ export default function MessagesScreen() {
     await (supabase.from('conversations') as any).update({ [field]: newVal }).eq('id', convId)
     await fetchConversations()
   }, [conversations, userId, supabase, fetchConversations])
+
+  // Stable onRefresh — withHapticRefresh returns a new function on every
+  // call, which would cause RefreshControl to rebind on every render.
+  const onRefreshHandler = useMemo(
+    () => withHapticRefresh(() => { setRefreshing(true); fetchConversations(); fetchEventChats() }),
+    [fetchConversations, fetchEventChats],
+  )
 
   const filtered = useMemo(() => {
     let list = conversations.filter(c => showArchived ? c.is_archived : !c.is_archived)
@@ -409,7 +436,7 @@ export default function MessagesScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 96 }]}
         keyboardShouldPersistTaps="handled"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={withHapticRefresh(() => { setRefreshing(true); fetchConversations(); fetchEventChats() })} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefreshHandler} tintColor={colors.primary} />}
         ListHeaderComponent={eventChats.length > 0 && !showArchived ? (
           <View style={styles.eventChatsSection}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>

@@ -42,6 +42,9 @@ interface ActivityItem {
   meta?: string
 }
 
+const ALLOWED_AVATAR_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
+
 // TODO: UX — CONTENT MANAGEMENT (friction for returning users after 2+ weeks):
 //
 // 1. "MY POSTS" TAB: Add a third tab ('overview' | 'activity' | 'posts') that
@@ -190,9 +193,6 @@ export default function ProfileScreen() {
     return () => { cancelled = true }
   }, [loadProfile]))
 
-  const ALLOWED_AVATAR_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
-  const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
-
   const handleAvatarUpload = useCallback(async () => {
     if (!profile) return
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 })
@@ -212,7 +212,8 @@ export default function ProfileScreen() {
       if (!urlData?.publicUrl) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       // Append cache-busting param so the new avatar is fetched (same URL path after upsert)
       const avatarUrlWithCacheBust = `${urlData.publicUrl}?t=${Date.now()}`
-      await (supabase.from('profiles') as any).update({ avatar_url: avatarUrlWithCacheBust }).eq('id', profile.id)
+      const { error: updateError } = await (supabase.from('profiles') as any).update({ avatar_url: avatarUrlWithCacheBust }).eq('id', profile.id)
+      if (updateError) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       setProfile(prev => prev ? { ...prev, avatar_url: avatarUrlWithCacheBust } : null)
       Alert.alert(t('common.success'), t('profile.avatarUpdated'))
     } catch { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')) }
@@ -221,14 +222,14 @@ export default function ProfileScreen() {
   const handleSaveBio = useCallback(async () => {
     if (!profile) return
     const previousBio = profile.bio ?? ''
-    try {
-      await (supabase.from('profiles') as any).update({ bio: bioText.trim() }).eq('id', profile.id)
-      setProfile(prev => prev ? { ...prev, bio: bioText.trim() } : null)
-      setEditingBio(false)
-    } catch {
+    const { error } = await (supabase.from('profiles') as any).update({ bio: bioText.trim() }).eq('id', profile.id)
+    if (error) {
       setBioText(previousBio)
       Alert.alert(t('common.error'), t('profile.bioUpdateFailed'))
+      return
     }
+    setProfile(prev => prev ? { ...prev, bio: bioText.trim() } : null)
+    setEditingBio(false)
   }, [profile, bioText, supabase, t])
 
   const openFollowList = useCallback(async (type: 'followers' | 'following') => {
@@ -279,24 +280,18 @@ export default function ProfileScreen() {
 
   // Post actions
   const handleReactivatePost = useCallback(async (postId: string) => {
-    try {
-      const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      await (supabase.from('posts') as any).update({ is_active: true, expires_at: newExpiry }).eq('id', postId)
-      setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: true, expires_at: newExpiry } : p))
-      Alert.alert(t('common.success'), t('profile.postReactivated'))
-    } catch {
-      Alert.alert(t('common.error'), t('profile.postActionFailed'))
-    }
+    const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    const { error } = await (supabase.from('posts') as any).update({ is_active: true, expires_at: newExpiry }).eq('id', postId)
+    if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
+    setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: true, expires_at: newExpiry } : p))
+    Alert.alert(t('common.success'), t('profile.postReactivated'))
   }, [supabase, t])
 
   const handleClosePost = useCallback(async (postId: string) => {
-    try {
-      await (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId)
-      setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: false } : p))
-      Alert.alert(t('common.success'), t('profile.postClosedSuccess'))
-    } catch {
-      Alert.alert(t('common.error'), t('profile.postActionFailed'))
-    }
+    const { error } = await (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId)
+    if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
+    setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: false } : p))
+    Alert.alert(t('common.success'), t('profile.postClosedSuccess'))
   }, [supabase, t])
 
   const handleDeletePost = useCallback(async (postId: string) => {
@@ -309,13 +304,10 @@ export default function ProfileScreen() {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            try {
-              await (supabase.from('posts') as any).delete().eq('id', postId)
-              setAllPosts(prev => prev.filter(p => p.id !== postId))
-              Alert.alert(t('common.success'), t('profile.postDeleted'))
-            } catch {
-              Alert.alert(t('common.error'), t('profile.postActionFailed'))
-            }
+            const { error } = await (supabase.from('posts') as any).delete().eq('id', postId)
+            if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
+            setAllPosts(prev => prev.filter(p => p.id !== postId))
+            Alert.alert(t('common.success'), t('profile.postDeleted'))
           },
         },
       ]

@@ -61,10 +61,14 @@ export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): st
   // Yesterday
   if (isYesterday(dateStr)) return t('common.yesterday')
 
-  // Within last 7 days: short weekday (ma, ti, ke...)
+  // Within last 6 days: short weekday (ma, ti, ke...).
+  // Note: 7-day window is avoided because if now=Mon 02:00 and the date is
+  // last Mon 23:00, diffDay=6 and they share the same weekday — showing "ma"
+  // would look like "today" to the user. The 6-day cutoff guarantees a
+  // different weekday label than the current day.
   const resolvedLocale = resolveLocale(locale)
   const diffDay = Math.floor(diffMs / 86400000)
-  if (diffDay < 7) {
+  if (diffDay < 6) {
     return getDTFormat(resolvedLocale, { weekday: 'short' }).format(date)
   }
 

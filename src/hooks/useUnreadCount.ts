@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useRef } from 'react'
 import { useSupabase } from './useSupabase'
 
@@ -20,23 +22,28 @@ export function useUnreadCount(userId: string | null) {
 
     async function fetchUnread() {
       // Get user's conversation IDs
-      const { data: convs } = await supabase
+      const { data: convs, error: convsError } = await supabase
         .from('conversations')
         .select('id')
         .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
 
+      if (convsError) {
+        if (__DEV__) console.warn('[useUnreadCount] conversations fetch failed:', convsError.message)
+        return
+      }
       if (!convs || !mounted) return
       const convIds = convs.map((c: any) => c.id)
       convIdsRef.current = new Set(convIds)
       if (convIds.length === 0) { setCount(0); return }
 
-      const { count: unread } = await supabase
+      const { count: unread, error: msgError } = await supabase
         .from('messages')
         .select('id', { count: 'exact', head: true })
         .in('conversation_id', convIds)
         .neq('sender_id', userId)
         .eq('is_read', false)
 
+      if (msgError && __DEV__) console.warn('[useUnreadCount] messages count failed:', msgError.message)
       if (mounted) setCount(unread ?? 0)
     }
 

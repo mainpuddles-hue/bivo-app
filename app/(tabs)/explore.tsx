@@ -434,6 +434,19 @@ function ExploreScreenInner() {
     Linking.openURL(url).catch(() => {})
   }, [])
 
+  // ── Safe URL opener — validates protocol to prevent javascript: / file: schemes
+  // from external data (e.g. Helsinki linkedevents API) ──
+  const openExternalUrl = useCallback((url: string | null | undefined) => {
+    if (!url) return
+    try {
+      const u = new URL(url)
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return
+      Linking.openURL(url).catch(() => {})
+    } catch {
+      // Invalid URL — ignore
+    }
+  }, [])
+
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Sub-header */}
@@ -820,7 +833,7 @@ function ExploreScreenInner() {
                         getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))))
                       )
                       if (event.infoUrl) {
-                        Linking.openURL(event.infoUrl).catch(() => {})
+                        openExternalUrl(event.infoUrl)
                       } else {
                         router.push('/community-events' as any)
                       }

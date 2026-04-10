@@ -31,6 +31,8 @@ export function useEventChat(conversationId: string | null, userId: string | nul
   const mountedRef = useRef(true)
   useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
   messagesRef.current = messages
+  // Cache sender profiles to avoid N+1 SELECTs on every incoming realtime message
+  const senderCacheRef = useRef<Map<string, { id: string; name: string; avatar_url: string | null }>>(new Map())
 
   // Fetch initial messages
   const fetchMessages = useCallback(async () => {
@@ -48,6 +50,11 @@ export function useEventChat(conversationId: string | null, userId: string | nul
         if (__DEV__) console.warn('[useEventChat] fetch error:', error.message)
       }
       const msgs = (data ?? []) as EventChatMessage[]
+      // Prime sender cache from the initial fetch so realtime handlers can
+      // reuse these profiles instead of issuing individual SELECTs.
+      for (const m of msgs) {
+        if (m.sender) senderCacheRef.current.set(m.sender.id, m.sender)
+      }
       setMessages(msgs)
       setHasOlder(msgs.length >= EVENT_CHAT_PAGE_SIZE)
     } catch (err) {
@@ -119,12 +126,17 @@ export function useEventChat(conversationId: string | null, userId: string | nul
     }
   }, [conversationId, userId, supabase])
 
+  // Keep a stable ref to fetchMessages so the realtime effect doesn't need
+  // it in its deps — avoids tearing down the channel on every re-render.
+  const fetchMessagesRef = useRef(fetchMessages)
+  fetchMessagesRef.current = fetchMessages
+
   // Subscribe to realtime
   useEffect(() => {
     if (!conversationId) return
     let mounted = true
 
-    fetchMessages()
+    fetchMessagesRef.current()
 
     const channel = supabase
       .channel(`event-chat-${conversationId}`)
@@ -138,12 +150,20 @@ export function useEventChat(conversationId: string | null, userId: string | nul
         },
         async (payload) => {
           const newMsg = payload.new as any
-          // Fetch sender profile
-          const { data: sender } = await supabase
-            .from('profiles')
-            .select('id, name, avatar_url')
-            .eq('id', newMsg.sender_id)
-            .maybeSingle()
+          // Look up sender in cache first — avoids N+1 profile SELECTs on
+          // every incoming realtime message
+          let sender = senderCacheRef.current.get(newMsg.sender_id)
+          if (!sender) {
+            const { data: senderRow } = await supabase
+              .from('profiles')
+              .select('id, name, avatar_url')
+              .eq('id', newMsg.sender_id)
+              .maybeSingle()
+            if (senderRow) {
+              sender = senderRow as { id: string; name: string; avatar_url: string | null }
+              senderCacheRef.current.set(sender.id, sender)
+            }
+          }
 
           if (!mounted) return
 
@@ -167,7 +187,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
       supabase.removeChannel(channel)
       channelRef.current = null
     }
-  }, [conversationId, supabase, fetchMessages])
+  }, [conversationId, supabase])
 
   return {
     messages,

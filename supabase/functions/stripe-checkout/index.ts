@@ -163,7 +163,7 @@ serve(async (req) => {
       }
       validatedAmount = Math.round(postData.service_price * 100) // cents
     } else if (type === 'rental') {
-      const bookingDays = metadata?.booking_days ? parseInt(metadata.booking_days) : 0
+      const bookingDays = metadata?.booking_days ? parseInt(metadata.booking_days, 10) : 0
       if (isNaN(bookingDays) || !postData?.daily_fee || bookingDays <= 0 || bookingDays > 365) {
         return new Response(JSON.stringify({ error: 'Invalid rental params' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -205,7 +205,7 @@ serve(async (req) => {
     // Validate ad campaign pricing server-side
     if (type === 'ad_campaign') {
       const expectedDaily = buyerProProfile?.is_pro ? 239 : 299
-      const duration = parseInt(metadata?.duration ?? '7')
+      const duration = parseInt(metadata?.duration ?? '7', 10)
       if (isNaN(duration) || duration <= 0 || duration > 365) {
         return new Response(JSON.stringify({ error: 'Invalid ad campaign duration' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },

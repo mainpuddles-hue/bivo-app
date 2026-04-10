@@ -191,9 +191,21 @@ export default function CreateAdScreen() {
 
       if (adError) throw adError
 
+      // Rollback helper — deletes the orphaned ad row if Stripe session
+      // creation fails. Without this, the ads table fills with zombie
+      // pending_payment rows that never get reconciled.
+      const rollbackAd = async () => {
+        if (ad?.id) {
+          await (supabase.from('advertisements') as any).delete().eq('id', ad.id).catch(() => {})
+        }
+      }
+
       // Create Stripe payment for the ad
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error('Not authenticated')
+      if (!session?.access_token) {
+        await rollbackAd()
+        throw new Error('Not authenticated')
+      }
 
       const res = await fetch(`${FUNCTIONS_URL}/stripe-checkout`, {
         method: 'POST',
@@ -217,6 +229,7 @@ export default function CreateAdScreen() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
+        await rollbackAd()
         throw new Error(body.error ?? 'Payment failed')
       }
 
@@ -226,6 +239,8 @@ export default function CreateAdScreen() {
         // Don't navigate away — user will return via deep link after payment
         return
       }
+      // No URL in response — treat as failure and roll back
+      await rollbackAd()
     } catch (err: any) {
       Alert.alert(t('common.error'), err.message ?? t('ads.createError'))
     } finally {

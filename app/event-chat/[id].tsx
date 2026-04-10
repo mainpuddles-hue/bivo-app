@@ -120,19 +120,24 @@ function EventChatScreenInner() {
       if (result.canceled || !result.assets?.[0]) return
 
       const asset = result.assets[0]
-      // Upload
-      const ext = asset.uri.split('.').pop() ?? 'jpg'
+      // Strip query-string and normalize extension (e.g. "jpg?t=123" → "jpg")
+      const rawExt = (asset.uri.split('.').pop() ?? 'jpg').split(/[?#]/)[0].toLowerCase()
+      const ext = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(rawExt) ? rawExt : 'jpg'
       const fileName = `event-chat/${conversationId}/${Date.now()}.${ext}`
-      const formData = new FormData()
-      formData.append('file', {
-        uri: asset.uri,
-        name: fileName,
-        type: `image/${ext}`,
-      } as any)
 
-      const { data, error } = await supabase.storage
+      // Use arrayBuffer pattern (matches profile.tsx avatar upload — FormData is
+      // broken on newer @supabase/supabase-js + React Native)
+      const response = await fetch(asset.uri)
+      const blob = await response.blob()
+      if (blob.size > 10 * 1024 * 1024) {
+        if (__DEV__) console.warn('[event-chat] image too large')
+        return
+      }
+      const arrayBuffer = await blob.arrayBuffer()
+
+      const { error } = await supabase.storage
         .from('chat-images')
-        .upload(fileName, formData, { contentType: `image/${ext}` })
+        .upload(fileName, arrayBuffer, { contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}` })
 
       if (error) {
         if (__DEV__) console.warn('[event-chat] image upload error:', error.message)
@@ -140,7 +145,7 @@ function EventChatScreenInner() {
       }
 
       const { data: urlData } = supabase.storage.from('chat-images').getPublicUrl(fileName)
-      await sendMessage('', urlData.publicUrl)
+      if (urlData?.publicUrl) await sendMessage('', urlData.publicUrl)
     } catch (err) {
       if (__DEV__) console.warn('[event-chat] pickImage error:', err)
     }

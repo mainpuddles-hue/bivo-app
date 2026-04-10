@@ -714,22 +714,28 @@ export default function CreateScreen() {
 
       // Create event record if tapahtuma
       if (selectedType === 'tapahtuma' && post?.id) {
-        // Build event date with optional start time
+        // Build event date with optional start time.
+        // Regex allows "25:70" etc. — clamp to 0–23 / 0–59 to prevent setHours
+        // from overflowing into the next day silently.
         let eventDateISO = new Date(eventDate).toISOString()
         if (eventStartTime && /^\d{1,2}:\d{2}$/.test(eventStartTime)) {
           const [h, m] = eventStartTime.split(':').map(Number)
-          const d = new Date(eventDate)
-          d.setHours(h, m, 0, 0)
-          eventDateISO = d.toISOString()
+          if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+            const d = new Date(eventDate)
+            d.setHours(h, m, 0, 0)
+            eventDateISO = d.toISOString()
+          }
         }
 
         // Build event end date with optional end time
         let eventEndISO: string | null = null
         if (eventEndTime && /^\d{1,2}:\d{2}$/.test(eventEndTime)) {
           const [h, m] = eventEndTime.split(':').map(Number)
-          const d = new Date(eventDate)
-          d.setHours(h, m, 0, 0)
-          eventEndISO = d.toISOString()
+          if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+            const d = new Date(eventDate)
+            d.setHours(h, m, 0, 0)
+            eventEndISO = d.toISOString()
+          }
         }
 
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
@@ -794,7 +800,7 @@ export default function CreateScreen() {
         const URGENT_COOLDOWN_KEY = 'tackbird_last_urgent'
         const URGENT_COOLDOWN_MS = 30 * 60 * 1000 // 30 minutes
         const lastUrgent = await AsyncStorage.getItem(URGENT_COOLDOWN_KEY)
-        if (lastUrgent && Date.now() - parseInt(lastUrgent) < URGENT_COOLDOWN_MS) {
+        if (lastUrgent && Date.now() - parseInt(lastUrgent, 10) < URGENT_COOLDOWN_MS) {
           // Skip push broadcast — too soon after last urgent post
         } else {
           triggerPush({

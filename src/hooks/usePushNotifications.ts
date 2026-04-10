@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Platform, Alert } from 'react-native'
+import { Platform, Alert, AppState } from 'react-native'
 import * as Notifications from 'expo-notifications'
 import Constants, { ExecutionEnvironment } from 'expo-constants'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -92,10 +92,16 @@ export function usePushNotifications(userId: string | null) {
 
     checkExistingToken()
 
-    // Re-sync token periodically (tokens can rotate)
-    // Uses tokenRef to avoid stale closure and prevent effect re-runs
-    const tokenSyncInterval = setInterval(async () => {
-      if (!mounted || !userId) return
+    // Re-sync token when the app returns to the foreground.
+    // The previous 24h setInterval almost never fired in practice because
+    // mobile apps are rarely kept open for 24 hours — token rotation went
+    // undetected. Listening on AppState is both cheaper and more correct.
+    const lastSyncRef = { current: Date.now() }
+    const MIN_SYNC_INTERVAL = 12 * 60 * 60 * 1000 // 12h
+    const appStateSub = AppState.addEventListener('change', async (state) => {
+      if (state !== 'active' || !mounted || !userId) return
+      if (Date.now() - lastSyncRef.current < MIN_SYNC_INTERVAL) return
+      lastSyncRef.current = Date.now()
       try {
         const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? PROJECT_ID
         const freshToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data
@@ -104,7 +110,7 @@ export function usePushNotifications(userId: string | null) {
           setToken(freshToken)
         }
       } catch {} // Non-critical
-    }, 24 * 60 * 60 * 1000) // Once per day
+    })
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
@@ -114,7 +120,7 @@ export function usePushNotifications(userId: string | null) {
     return () => {
       mounted = false
       notificationListener.current?.remove()
-      clearInterval(tokenSyncInterval)
+      appStateSub.remove()
     }
   }, [userId]) // Removed `token` — use tokenRef to avoid re-render loop
 

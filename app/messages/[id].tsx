@@ -171,10 +171,11 @@ function ConversationScreenInner() {
 
       // Mark as read
       if (!cancelled) {
-        await (supabase.from('messages') as any).update({ is_read: true })
+        const { error: markReadError } = await (supabase.from('messages') as any).update({ is_read: true })
           .eq('conversation_id', id)
           .neq('sender_id', user.id)
           .eq('is_read', false)
+        if (markReadError && __DEV__) console.warn('[conversation] mark-as-read failed:', markReadError.message)
       }
 
       if (!cancelled) setLoading(false)

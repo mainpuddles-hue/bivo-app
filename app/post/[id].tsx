@@ -694,11 +694,13 @@ function PostDetailScreenInner() {
       return
     }
     setSendingBooking(true)
+    let createdBookingId: string | null = null
     try {
       const { data: booking, error: bookingError } = await (supabase.from('rental_bookings') as any)
         .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee, service_fee: serviceFee, total_amount: bookingTotal, status: 'pending' })
         .select('id').single()
       if (bookingError || !booking) { Alert.alert(t('common.error'), t('rental.bookingFailed')); setSendingBooking(false); return }
+      createdBookingId = booking.id
       const amountCents = Math.round(bookingTotal * 100)
       const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
       if (sessionId) {
@@ -715,7 +717,14 @@ function PostDetailScreenInner() {
       } else {
         Alert.alert(t('common.success'), t('rental.bookingCreatedPaymentPending'))
       }
-    } catch { Alert.alert(t('common.error'), t('rental.bookingFailed')) }
+    } catch {
+      // Roll back the booking row if Stripe session creation threw — otherwise
+      // zombie pending bookings accumulate and block future reservations
+      if (createdBookingId) {
+        await (supabase.from('rental_bookings') as any).delete().eq('id', createdBookingId).catch(() => {})
+      }
+      Alert.alert(t('common.error'), t('rental.bookingFailed'))
+    }
     finally { setSendingBooking(false) }
   }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, createPayment, trust])
 
@@ -736,6 +745,7 @@ function PostDetailScreenInner() {
       return
     }
     setSendingService(true)
+    let createdBookingId: string | null = null
     try {
       // 1. Create service_bookings record
       const { data: booking, error: bookingError } = await (supabase.from('service_bookings') as any)
@@ -751,6 +761,7 @@ function PostDetailScreenInner() {
         })
         .select('id').single()
       if (bookingError || !booking) { Alert.alert(t('common.error'), t('service.bookingFailed')); setSendingService(false); return }
+      createdBookingId = booking.id
 
       // 2. Stripe Checkout
       const amountCents = Math.round(svcTotal * 100)
@@ -780,6 +791,10 @@ function PostDetailScreenInner() {
         Alert.alert(t('common.success'), t('service.bookingCreatedPaymentPending'))
       }
     } catch {
+      // Roll back the service booking if Stripe session creation threw
+      if (createdBookingId) {
+        await (supabase.from('service_bookings') as any).delete().eq('id', createdBookingId).catch(() => {})
+      }
       Alert.alert(t('common.error'), t('service.bookingFailed'))
     } finally {
       setSendingService(false)

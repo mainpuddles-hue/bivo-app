@@ -235,13 +235,17 @@ function FeedScreenInner() {
       }
     }).catch(() => {})
   }, [])
+  const hiddenIdsRef = useRef<Set<string>>(hiddenIds)
+  hiddenIdsRef.current = hiddenIds
   const handleHidePost = useCallback((postId: string) => {
-    setHiddenIds(prev => {
-      const next = new Set(prev)
-      next.add(postId)
-      AsyncStorage.setItem('tackbird_hidden_posts', JSON.stringify([...next]))
-      return next
-    })
+    if (hiddenIdsRef.current.has(postId)) return
+    const next = new Set(hiddenIdsRef.current)
+    next.add(postId)
+    // Keep setState as a pure updater (no side effects inside) and persist
+    // exactly once outside React's render loop. Prevents StrictMode from
+    // firing AsyncStorage.setItem twice under React 19.
+    setHiddenIds(next)
+    AsyncStorage.setItem('tackbird_hidden_posts', JSON.stringify([...next])).catch(() => {})
   }, [])
 
   // ── TODO 6: "Seen" / new indicator ──

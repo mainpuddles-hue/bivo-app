@@ -324,7 +324,13 @@ export default function ForumScreen() {
       if (error) throw error
       if (data) {
         setReplies(prev => [...prev, data as unknown as ForumReply])
-        const newCount = selectedPost.comment_count + 1
+        // Re-query actual count from DB to avoid race conditions when
+        // multiple users reply simultaneously (naive +1 would lose replies)
+        const { count: realCount } = await supabase
+          .from('forum_replies')
+          .select('id', { count: 'exact', head: true })
+          .eq('post_id', selectedPost.id)
+        const newCount = realCount ?? (selectedPost.comment_count + 1)
         setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
         setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
         await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
@@ -386,7 +392,12 @@ export default function ForumScreen() {
               await (supabase.from('forum_votes') as any).delete().eq('reply_id', reply.id).catch(() => {})
               await (supabase.from('forum_replies') as any).delete().eq('id', reply.id)
               if (selectedPost) {
-                const newCount = Math.max(0, selectedPost.comment_count - 1)
+                // Re-query actual count after delete to avoid race conditions
+                const { count: realCount } = await supabase
+                  .from('forum_replies')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('post_id', selectedPost.id)
+                const newCount = realCount ?? Math.max(0, selectedPost.comment_count - 1)
                 await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
                 setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
                 setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))

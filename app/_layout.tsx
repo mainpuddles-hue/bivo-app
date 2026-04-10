@@ -333,8 +333,13 @@ function useAuthStateListener() {
             if (!mounted) return
 
             if ((banProfile as any)?.is_banned) {
-              await supabase.auth.signOut()
-              Alert.alert(tRef.current('auth.accountBanned'), tRef.current('auth.accountBannedDesc'))
+              // Defer signOut to break the async chain — calling signOut()
+              // inside onAuthStateChange (even via setTimeout wrapper) can
+              // cause re-entrant auth state events that stack up.
+              setTimeout(() => {
+                supabase.auth.signOut().catch(() => {})
+                Alert.alert(tRef.current('auth.accountBanned'), tRef.current('auth.accountBannedDesc'))
+              }, 0)
               return
             }
 
@@ -452,13 +457,16 @@ function useSessionGuard() {
   tRef.current = t
   const routerRef = useRef(router)
   routerRef.current = router
+  // Guard against stacking multiple "session expired" alerts when the
+  // interval fires repeatedly before the user has dismissed the first one.
+  const alertShownRef = useRef(false)
 
   useEffect(() => {
     const PROTECTED_CHECK_INTERVAL = 60000 // 60 seconds
     let mounted = true
 
     const interval = setInterval(async () => {
-      if (!mounted) return
+      if (!mounted || alertShownRef.current) return
 
       const currentSegment = segmentsRef.current[0]
       // Only check on protected routes (not auth or onboarding screens)
@@ -466,14 +474,18 @@ function useSessionGuard() {
 
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        if (!mounted) return
+        if (!mounted || alertShownRef.current) return
 
         if (!session) {
           clearAuthCache()
+          alertShownRef.current = true
           Alert.alert(
             tRef.current('common.error'),
             tRef.current('auth.sessionExpired'),
-            [{ text: 'OK', onPress: () => { if (mounted) routerRef.current.replace('/(auth)/login') } }]
+            [{ text: 'OK', onPress: () => {
+              alertShownRef.current = false
+              if (mounted) routerRef.current.replace('/(auth)/login')
+            } }]
           )
         }
       } catch {
