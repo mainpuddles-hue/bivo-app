@@ -101,27 +101,27 @@ export function useNotificationPreferences() {
     // Capture original value BEFORE optimistic update for correct rollback
     const originalValue = preferences[type]
 
-    // Optimistic update
-    setPreferences((prev) => {
-      const next = { ...prev, [type]: enabled }
-      AsyncStorage.setItem(CACHE_KEY, JSON.stringify(next)).catch(() => {})
-      return next
-    })
+    // Optimistic update — keep updater pure and persist outside it so that
+    // React 19 StrictMode's double-invoke doesn't write to storage twice.
+    const nextOptimistic = { ...preferences, [type]: enabled }
+    setPreferences(nextOptimistic)
+    AsyncStorage.setItem(CACHE_KEY, JSON.stringify(nextOptimistic)).catch(() => {})
 
     if (!userId) return
 
-    try {
-      await (supabase.from('notification_preferences') as any).upsert(
-        { user_id: userId, type, enabled },
-        { onConflict: 'user_id,type' }
-      )
-    } catch {
-      // Revert on failure — use captured original value (safe for rapid toggles)
-      setPreferences((prev) => {
-        const reverted = { ...prev, [type]: originalValue }
-        AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reverted)).catch(() => {})
-        return reverted
-      })
+    // upsert() returns { error } instead of throwing for RLS/schema errors —
+    // the previous try/catch only caught network errors, so silent RLS
+    // denies left the UI stuck in the wrong state.
+    const { error: upsertError } = await (supabase.from('notification_preferences') as any).upsert(
+      { user_id: userId, type, enabled },
+      { onConflict: 'user_id,type' }
+    )
+
+    if (upsertError) {
+      // Revert to the captured original value
+      const reverted = { ...preferences, [type]: originalValue }
+      setPreferences(reverted)
+      AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reverted)).catch(() => {})
       Alert.alert('Error', 'Notification preference update failed. Please try again.')
     }
   }, [userId, supabase, preferences])

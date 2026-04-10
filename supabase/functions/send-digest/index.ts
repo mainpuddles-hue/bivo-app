@@ -45,7 +45,11 @@ serve(async (req) => {
       })
     }
 
-    // Get activity counts per neighborhood
+    // Get activity counts per neighborhood. Posts and community_events don't
+    // have a direct neighborhood column — they're filtered via the creator's
+    // profile.naapurusto. Previously the inner-join filter was missing, so
+    // every user in every neighborhood saw the same system-wide count in their
+    // digest (misleading "X new posts in your neighborhood" stat).
     const neighborhoods = [...new Set(users.map((u: any) => u.naapurusto).filter(Boolean))]
     const activityByNeighborhood: Record<string, { posts: number; events: number }> = {}
 
@@ -53,14 +57,16 @@ serve(async (req) => {
       const [postsRes, eventsRes] = await Promise.all([
         supabase
           .from('posts')
-          .select('id', { count: 'exact', head: true })
+          .select('id, creator:profiles!posts_user_id_fkey!inner(naapurusto)', { count: 'exact', head: true })
           .eq('is_active', true)
-          .gte('created_at', weekAgo),
+          .gte('created_at', weekAgo)
+          .eq('creator.naapurusto', nh),
         supabase
           .from('community_events')
-          .select('id', { count: 'exact', head: true })
+          .select('id, creator:profiles!community_events_creator_id_fkey!inner(naapurusto)', { count: 'exact', head: true })
           .eq('is_active', true)
-          .gte('created_at', weekAgo),
+          .gte('created_at', weekAgo)
+          .eq('creator.naapurusto', nh),
       ])
       activityByNeighborhood[nh] = {
         posts: postsRes.count ?? 0,

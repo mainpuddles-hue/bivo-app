@@ -99,7 +99,19 @@ serve(async (req) => {
         metadata: { supabase_user_id: user.id },
       })
       customerId = customer.id
-      await supabase.from('profiles').update({ stripe_customer_id: customer.id }).eq('id', user.id)
+      // If the profile update fails, the Stripe customer becomes orphaned —
+      // next subscribe attempt will create yet another customer. Log loudly
+      // so operators can reconcile manually in Stripe Dashboard.
+      const { error: linkError } = await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customer.id })
+        .eq('id', user.id)
+      if (linkError) {
+        console.error(
+          `[pro-subscribe] CRITICAL: failed to link Stripe customer ${customer.id} to user ${user.id}:`,
+          linkError.message,
+        )
+      }
     }
 
     // Create Checkout session for subscription

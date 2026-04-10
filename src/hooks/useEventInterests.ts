@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { EVENT_CATEGORIES, type EventCategory } from '@/lib/eventAlgorithm'
 
@@ -18,6 +18,8 @@ const STORAGE_KEY = 'event_interests'
 export function useEventInterests() {
   const [interests, setInterests] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const interestsRef = useRef<string[]>(interests)
+  interestsRef.current = interests
 
   // Load from AsyncStorage on mount
   useEffect(() => {
@@ -43,15 +45,15 @@ export function useEventInterests() {
   }, [])
 
   const toggleInterest = useCallback(async (category: string) => {
-    setInterests((prev) => {
-      const next = prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-
-      // Persist asynchronously — fire and forget
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {})
-      return next
-    })
+    // Read current state via ref so the updater stays pure (StrictMode
+    // double-invoke would write to AsyncStorage twice if setItem lived
+    // inside the updater).
+    const current = interestsRef.current
+    const next = current.includes(category)
+      ? current.filter((c) => c !== category)
+      : [...current, category]
+    setInterests(next)
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {})
   }, [])
 
   const hasInterest = useCallback(

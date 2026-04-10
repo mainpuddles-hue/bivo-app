@@ -55,16 +55,26 @@ export function useLocationDetection(userId: string | null) {
         })
         const { latitude, longitude } = pos.coords
 
-        // Reverse geocode via Nominatim (free, no API key)
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
-          {
-            headers: {
-              'User-Agent': 'TackBirdMobile/1.0',
-              'Accept-Language': 'en',
+        // Reverse geocode via Nominatim (free, no API key). Uses a 10s
+        // timeout so a hung Nominatim server doesn't block the app at
+        // startup (the entire location detection blocks on this call).
+        const geoController = new AbortController()
+        const geoTimeout = setTimeout(() => geoController.abort(), 10000)
+        let res: Response
+        try {
+          res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
+            {
+              headers: {
+                'User-Agent': 'TackBirdMobile/1.0',
+                'Accept-Language': 'en',
+              },
+              signal: geoController.signal,
             },
-          }
-        )
+          )
+        } finally {
+          clearTimeout(geoTimeout)
+        }
         if (!res.ok) throw new Error(`Nominatim ${res.status}`)
         const data = await res.json()
         const countryCode =

@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from './useSupabase'
 
@@ -16,18 +16,22 @@ export function useSearchSuggestions() {
   const supabase = useSupabase()
   const [history, setHistory] = useState<string[]>([])
   const [trending, setTrending] = useState<string[]>([])
+  const historyRef = useRef<string[]>(history)
+  historyRef.current = history
 
   // Load search history
   useEffect(() => {
+    let mounted = true
     AsyncStorage.getItem(HISTORY_KEY).then(raw => {
-      if (raw) {
-        try { setHistory(JSON.parse(raw)) } catch {}
-      }
+      if (!mounted || !raw) return
+      try { setHistory(JSON.parse(raw)) } catch {}
     })
+    return () => { mounted = false }
   }, [])
 
   // Load trending searches (most common post titles this week)
   useEffect(() => {
+    let mounted = true
     async function fetchTrending() {
       try {
         const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
@@ -38,6 +42,7 @@ export function useSearchSuggestions() {
           .gte('created_at', weekAgo)
           .order('like_count', { ascending: false })
           .limit(10)
+        if (!mounted) return
         if (data) {
           // Extract unique meaningful words (>3 chars)
           const words = new Map<string, number>()
@@ -53,15 +58,16 @@ export function useSearchSuggestions() {
       } catch {}
     }
     fetchTrending()
+    return () => { mounted = false }
   }, [supabase])
 
   const addToHistory = useCallback(async (query: string) => {
     if (!query.trim() || query.length < 2) return
-    setHistory(prev => {
-      const updated = [query, ...prev.filter(h => h !== query)].slice(0, MAX_HISTORY)
-      AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated)).catch(() => {})
-      return updated
-    })
+    // Read via ref so the updater stays pure (no setItem inside setState)
+    const current = historyRef.current
+    const updated = [query, ...current.filter(h => h !== query)].slice(0, MAX_HISTORY)
+    setHistory(updated)
+    AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated)).catch(() => {})
   }, [])
 
   const clearHistory = useCallback(async () => {

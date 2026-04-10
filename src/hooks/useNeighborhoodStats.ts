@@ -28,15 +28,31 @@ export function useNeighborhoodStats(neighborhood: string | null): NeighborhoodS
     async function fetchStats() {
       try {
         const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+        const lastActiveCutoff = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
 
+        // Posts and community_events don't have a direct neighborhood column —
+        // they're filtered via the creator's profile.naapurusto. Use PostgREST's
+        // inner-join filter to scope the count to this neighborhood only.
+        // Previously this query counted ALL posts/events system-wide, which
+        // inflated the neighborhood stats bar.
         const [postsRes, eventsRes, usersRes] = await Promise.all([
-          supabase.from('posts').select('id', { count: 'exact', head: true })
-            .eq('is_active', true).gte('created_at', weekAgo),
-          supabase.from('community_events').select('id', { count: 'exact', head: true })
-            .eq('is_active', true).gte('created_at', weekAgo),
-          supabase.from('profiles').select('id', { count: 'exact', head: true })
+          supabase
+            .from('posts')
+            .select('id, creator:profiles!posts_user_id_fkey!inner(naapurusto)', { count: 'exact', head: true })
+            .eq('is_active', true)
+            .gte('created_at', weekAgo)
+            .eq('creator.naapurusto', currentNeighborhood!),
+          supabase
+            .from('community_events')
+            .select('id, creator:profiles!community_events_creator_id_fkey!inner(naapurusto)', { count: 'exact', head: true })
+            .eq('is_active', true)
+            .gte('created_at', weekAgo)
+            .eq('creator.naapurusto', currentNeighborhood!),
+          supabase
+            .from('profiles')
+            .select('id', { count: 'exact', head: true })
             .eq('naapurusto', currentNeighborhood!)
-            .gte('last_active_date', new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]),
+            .gte('last_active_date', lastActiveCutoff),
         ])
 
         if (mounted) {
