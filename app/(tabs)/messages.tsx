@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated } from 'react-native'
+import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
@@ -361,9 +361,13 @@ export default function MessagesScreen() {
     const field = conv.user1_id === userId ? 'user1_archived' : 'user2_archived'
     const isCurrentlyArchived = conv.user1_id === userId ? conv.user1_archived : conv.user2_archived
     const newVal = !isCurrentlyArchived
-    await (supabase.from('conversations') as any).update({ [field]: newVal }).eq('id', convId)
+    const { error } = await (supabase.from('conversations') as any).update({ [field]: newVal }).eq('id', convId)
+    if (error) {
+      Alert.alert(t('common.error'), t('messages.archiveError') ?? t('common.error'))
+      return
+    }
     await fetchConversations()
-  }, [conversations, userId, supabase, fetchConversations])
+  }, [conversations, userId, supabase, fetchConversations, t])
 
   // Stable onRefresh — withHapticRefresh returns a new function on every
   // call, which would cause RefreshControl to rebind on every render.

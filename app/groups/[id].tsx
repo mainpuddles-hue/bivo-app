@@ -334,13 +334,29 @@ export default function GroupDetailScreen() {
     if (!currentUserId || !commentText.trim()) return
     setSendingComment(true)
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
-    try {
-      await (supabase.from('group_post_comments') as any).insert({ post_id: postId, user_id: currentUserId, content: commentText.trim() })
-      await (supabase.from('group_posts') as any).update({ comment_count: (posts.find(p => p.id === postId)?.comment_count ?? 0) + 1 }).eq('id', postId)
-      setPosts(prev => prev.map(p => p.id === postId ? { ...p, comment_count: p.comment_count + 1 } : p))
-      setCommentText(''); fetchComments(postId)
-    } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
-    finally { setSendingComment(false) }
+    const { error: insertErr } = await (supabase.from('group_post_comments') as any)
+      .insert({ post_id: postId, user_id: currentUserId, content: commentText.trim() })
+    if (insertErr) {
+      Alert.alert(t('common.error'), t('groups.sendError'))
+      setSendingComment(false)
+      return
+    }
+    // Re-query actual count from DB to avoid races with concurrent commenters
+    // (the previous `post.comment_count + 1` pattern lost comments when two
+    // users commented simultaneously)
+    const { count: realCount } = await supabase
+      .from('group_post_comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', postId)
+    const newCount = realCount ?? ((posts.find(p => p.id === postId)?.comment_count ?? 0) + 1)
+    const { error: updateErr } = await (supabase.from('group_posts') as any)
+      .update({ comment_count: newCount })
+      .eq('id', postId)
+    if (updateErr && __DEV__) console.warn('[group] comment_count sync failed:', updateErr.message)
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comment_count: newCount } : p))
+    setCommentText('')
+    fetchComments(postId)
+    setSendingComment(false)
   }, [currentUserId, commentText, supabase, posts, fetchComments, t])
 
   const handleDeleteComment = useCallback((comment: GroupComment) => {
@@ -353,17 +369,27 @@ export default function GroupDetailScreen() {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            try {
-              await (supabase.from('group_post_comments') as any).delete().eq('id', comment.id)
-              const parentPost = posts.find(p => p.id === comment.post_id)
-              if (parentPost) {
-                const newCount = Math.max(0, parentPost.comment_count - 1)
-                await (supabase.from('group_posts') as any).update({ comment_count: newCount }).eq('id', comment.post_id)
-                setPosts(prev => prev.map(p => p.id === comment.post_id ? { ...p, comment_count: newCount } : p))
-              }
-              setComments(prev => prev.filter(c => c.id !== comment.id))
-              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-            } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
+            const { error: delErr } = await (supabase.from('group_post_comments') as any)
+              .delete()
+              .eq('id', comment.id)
+            if (delErr) { Alert.alert(t('common.error'), t('groups.sendError')); return }
+            // Re-query actual count to stay race-safe when two users delete
+            // comments concurrently
+            const { count: realCount } = await supabase
+              .from('group_post_comments')
+              .select('id', { count: 'exact', head: true })
+              .eq('post_id', comment.post_id)
+            const parentPost = posts.find(p => p.id === comment.post_id)
+            const newCount = realCount ?? (parentPost ? Math.max(0, parentPost.comment_count - 1) : 0)
+            if (parentPost) {
+              const { error: updErr } = await (supabase.from('group_posts') as any)
+                .update({ comment_count: newCount })
+                .eq('id', comment.post_id)
+              if (updErr && __DEV__) console.warn('[group] comment_count sync failed:', updErr.message)
+              setPosts(prev => prev.map(p => p.id === comment.post_id ? { ...p, comment_count: newCount } : p))
+            }
+            setComments(prev => prev.filter(c => c.id !== comment.id))
+            try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
           },
         },
       ],
@@ -378,13 +404,18 @@ export default function GroupDetailScreen() {
   const handleSaveGroupPostEdit = useCallback(async () => {
     if (!editingPostId || !editPostContent.trim()) return
     setSavingPostEdit(true)
-    try {
-      await (supabase.from('group_posts') as any).update({ content: editPostContent.trim() }).eq('id', editingPostId)
-      setPosts(prev => prev.map(p => p.id === editingPostId ? { ...p, content: editPostContent.trim() } : p))
-      setEditingPostId(null); setEditPostContent('')
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-    } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
-    finally { setSavingPostEdit(false) }
+    const { error } = await (supabase.from('group_posts') as any)
+      .update({ content: editPostContent.trim() })
+      .eq('id', editingPostId)
+    if (error) {
+      Alert.alert(t('common.error'), t('groups.sendError'))
+      setSavingPostEdit(false)
+      return
+    }
+    setPosts(prev => prev.map(p => p.id === editingPostId ? { ...p, content: editPostContent.trim() } : p))
+    setEditingPostId(null); setEditPostContent('')
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
+    setSavingPostEdit(false)
   }, [editingPostId, editPostContent, supabase, t])
 
   const handleCancelEditPost = useCallback(() => { setEditingPostId(null); setEditPostContent('') }, [])
@@ -393,16 +424,16 @@ export default function GroupDetailScreen() {
     Alert.alert(t('groups.deletePost'), t('groups.deletePostConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
-        try {
-          await Promise.allSettled([
-            (supabase.from('group_post_comments') as any).delete().eq('post_id', postId),
-            (supabase.from('group_post_likes') as any).delete().eq('post_id', postId),
-          ])
-          await (supabase.from('group_posts') as any).delete().eq('id', postId)
-          setPosts(prev => prev.filter(p => p.id !== postId))
-          if (expandedPostId === postId) { setExpandedPostId(null); setComments([]) }
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-        } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
+        // Best-effort cleanup of comments + likes, then delete the post
+        await Promise.allSettled([
+          (supabase.from('group_post_comments') as any).delete().eq('post_id', postId),
+          (supabase.from('group_post_likes') as any).delete().eq('post_id', postId),
+        ])
+        const { error } = await (supabase.from('group_posts') as any).delete().eq('id', postId)
+        if (error) { Alert.alert(t('common.error'), t('groups.sendError')); return }
+        setPosts(prev => prev.filter(p => p.id !== postId))
+        if (expandedPostId === postId) { setExpandedPostId(null); setComments([]) }
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
       }},
     ])
   }, [supabase, t, expandedPostId])
@@ -425,13 +456,24 @@ export default function GroupDetailScreen() {
     Alert.alert(t('common.confirm'), t('groups.removeConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.remove'), style: 'destructive', onPress: async () => {
-        try {
-          await (supabase.from('group_members') as any).delete().eq('group_id', id).eq('user_id', member.user_id)
-          await (supabase.from('groups') as any).update({ member_count: Math.max(0, group.member_count - 1) }).eq('id', id)
-          setGroup(prev => prev ? { ...prev, member_count: Math.max(0, prev.member_count - 1) } : prev)
-          setMembers(prev => prev.filter(m => m.user_id !== member.user_id))
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-        } catch { Alert.alert(t('common.error'), t('groups.removeError')) }
+        const { error: delErr } = await (supabase.from('group_members') as any)
+          .delete()
+          .eq('group_id', id)
+          .eq('user_id', member.user_id)
+        if (delErr) { Alert.alert(t('common.error'), t('groups.removeError')); return }
+        // Re-query actual count from DB instead of decrementing local state
+        const { count: realCount } = await supabase
+          .from('group_members')
+          .select('id', { count: 'exact', head: true })
+          .eq('group_id', id)
+        const newCount = realCount ?? Math.max(0, group.member_count - 1)
+        const { error: updErr } = await (supabase.from('groups') as any)
+          .update({ member_count: newCount })
+          .eq('id', id)
+        if (updErr && __DEV__) console.warn('[group] member_count sync failed:', updErr.message)
+        setGroup(prev => prev ? { ...prev, member_count: newCount } : prev)
+        setMembers(prev => prev.filter(m => m.user_id !== member.user_id))
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
       }},
     ])
   }, [isAdmin, id, group, supabase, t])
@@ -440,17 +482,20 @@ export default function GroupDetailScreen() {
   const handleSaveGroupEdit = useCallback(async (data: { name: string; description: string; neighborhood: string | null; is_public: boolean }) => {
     if (!id) return
     setSavingEdit(true)
-    try {
-      await (supabase.from('groups') as any).update({
-        name: data.name, description: data.description || null,
-        neighborhood: data.neighborhood, naapurusto: data.neighborhood,
-        is_public: data.is_public, is_private: !data.is_public,
-      }).eq('id', id)
-      setGroup(prev => prev ? { ...prev, name: data.name, description: data.description || null, neighborhood: data.neighborhood, is_public: data.is_public } : prev)
-      setShowEditModal(false)
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-    } catch { Alert.alert(t('common.error'), t('groups.createError')) }
-    finally { setSavingEdit(false) }
+    const { error } = await (supabase.from('groups') as any).update({
+      name: data.name, description: data.description || null,
+      neighborhood: data.neighborhood, naapurusto: data.neighborhood,
+      is_public: data.is_public, is_private: !data.is_public,
+    }).eq('id', id)
+    if (error) {
+      Alert.alert(t('common.error'), t('groups.createError'))
+      setSavingEdit(false)
+      return
+    }
+    setGroup(prev => prev ? { ...prev, name: data.name, description: data.description || null, neighborhood: data.neighborhood, is_public: data.is_public } : prev)
+    setShowEditModal(false)
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
+    setSavingEdit(false)
   }, [id, supabase, t])
 
   const handleDeleteGroup = useCallback(async () => {
