@@ -18,6 +18,8 @@ import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { usePoints } from '@/hooks/usePoints'
+import { mutateWithErrorAlert } from '@/lib/supabaseMutation'
+import { syncCounter } from '@/lib/syncCounter'
 import { fonts } from '@/lib/fonts'
 import { triggerPush } from '@/lib/pushTrigger'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -328,22 +330,30 @@ export default function ForumScreen() {
     if (!currentUserId || !selectedPost || !replyText.trim()) return
     setSendingReply(true)
     try {
-      const { data, error } = await (supabase.from('forum_replies') as any)
-        .insert({ post_id: selectedPost.id, user_id: currentUserId, content: replyText.trim(), upvote_count: 0 })
-        .select('*, user:profiles!forum_replies_user_id_fkey(id, name, avatar_url, naapurusto)').single()
-      if (error) throw error
+      const data = await mutateWithErrorAlert<any>(
+        (supabase.from('forum_replies') as any)
+          .insert({ post_id: selectedPost.id, user_id: currentUserId, content: replyText.trim(), upvote_count: 0 })
+          .select('*, user:profiles!forum_replies_user_id_fkey(id, name, avatar_url, naapurusto)')
+          .single(),
+        t,
+        'forum.replyError',
+        { devTag: 'forum' },
+      )
+      if (!data) { setSendingReply(false); return }
+      setReplies(prev => [...prev, data as unknown as ForumReply])
+      // Race-safe counter sync via helper
+      const newCount = await syncCounter(supabase, {
+        sourceTable: 'forum_replies',
+        sourceFilter: ['post_id', selectedPost.id],
+        parentTable: 'forum_posts',
+        parentRowId: selectedPost.id,
+        counterColumn: 'comment_count',
+        devTag: 'forum',
+      }) ?? (selectedPost.comment_count + 1)
+      setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
+      setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
+      // (count is already synced inside syncCounter; no second update needed)
       if (data) {
-        setReplies(prev => [...prev, data as unknown as ForumReply])
-        // Re-query actual count from DB to avoid race conditions when
-        // multiple users reply simultaneously (naive +1 would lose replies)
-        const { count: realCount } = await supabase
-          .from('forum_replies')
-          .select('id', { count: 'exact', head: true })
-          .eq('post_id', selectedPost.id)
-        const newCount = realCount ?? (selectedPost.comment_count + 1)
-        setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
-        setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
-        await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
         if (currentUserId && data) awardPoints(currentUserId, 'reply_created', (data as any).id).catch(() => {})
         if (selectedPost.user_id !== currentUserId) {
           await (supabase.from('notifications') as any).insert({

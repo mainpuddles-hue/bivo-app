@@ -29,6 +29,8 @@ import { ReportModal } from '@/components/ReportModal'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { mutateOk } from '@/lib/supabaseMutation'
+import { syncCounter } from '@/lib/syncCounter'
 import { isValidUUID } from '@/lib/validation'
 import { GROUP_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
@@ -334,25 +336,23 @@ export default function GroupDetailScreen() {
     if (!currentUserId || !commentText.trim()) return
     setSendingComment(true)
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
-    const { error: insertErr } = await (supabase.from('group_post_comments') as any)
-      .insert({ post_id: postId, user_id: currentUserId, content: commentText.trim() })
-    if (insertErr) {
-      Alert.alert(t('common.error'), t('groups.sendError'))
-      setSendingComment(false)
-      return
-    }
-    // Re-query actual count from DB to avoid races with concurrent commenters
-    // (the previous `post.comment_count + 1` pattern lost comments when two
-    // users commented simultaneously)
-    const { count: realCount } = await supabase
-      .from('group_post_comments')
-      .select('id', { count: 'exact', head: true })
-      .eq('post_id', postId)
-    const newCount = realCount ?? ((posts.find(p => p.id === postId)?.comment_count ?? 0) + 1)
-    const { error: updateErr } = await (supabase.from('group_posts') as any)
-      .update({ comment_count: newCount })
-      .eq('id', postId)
-    if (updateErr && __DEV__) console.warn('[group] comment_count sync failed:', updateErr.message)
+    const ok = await mutateOk(
+      (supabase.from('group_post_comments') as any)
+        .insert({ post_id: postId, user_id: currentUserId, content: commentText.trim() }),
+      t,
+      'groups.sendError',
+      { devTag: 'group' },
+    )
+    if (!ok) { setSendingComment(false); return }
+    // Race-safe counter sync via helper
+    const newCount = await syncCounter(supabase, {
+      sourceTable: 'group_post_comments',
+      sourceFilter: ['post_id', postId],
+      parentTable: 'group_posts',
+      parentRowId: postId,
+      counterColumn: 'comment_count',
+      devTag: 'group',
+    }) ?? ((posts.find(p => p.id === postId)?.comment_count ?? 0) + 1)
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, comment_count: newCount } : p))
     setCommentText('')
     fetchComments(postId)
@@ -369,23 +369,23 @@ export default function GroupDetailScreen() {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error: delErr } = await (supabase.from('group_post_comments') as any)
-              .delete()
-              .eq('id', comment.id)
-            if (delErr) { Alert.alert(t('common.error'), t('groups.sendError')); return }
-            // Re-query actual count to stay race-safe when two users delete
-            // comments concurrently
-            const { count: realCount } = await supabase
-              .from('group_post_comments')
-              .select('id', { count: 'exact', head: true })
-              .eq('post_id', comment.post_id)
+            const ok = await mutateOk(
+              (supabase.from('group_post_comments') as any).delete().eq('id', comment.id),
+              t,
+              'groups.sendError',
+              { devTag: 'group' },
+            )
+            if (!ok) return
             const parentPost = posts.find(p => p.id === comment.post_id)
-            const newCount = realCount ?? (parentPost ? Math.max(0, parentPost.comment_count - 1) : 0)
+            const newCount = await syncCounter(supabase, {
+              sourceTable: 'group_post_comments',
+              sourceFilter: ['post_id', comment.post_id],
+              parentTable: 'group_posts',
+              parentRowId: comment.post_id,
+              counterColumn: 'comment_count',
+              devTag: 'group',
+            }) ?? (parentPost ? Math.max(0, parentPost.comment_count - 1) : 0)
             if (parentPost) {
-              const { error: updErr } = await (supabase.from('group_posts') as any)
-                .update({ comment_count: newCount })
-                .eq('id', comment.post_id)
-              if (updErr && __DEV__) console.warn('[group] comment_count sync failed:', updErr.message)
               setPosts(prev => prev.map(p => p.id === comment.post_id ? { ...p, comment_count: newCount } : p))
             }
             setComments(prev => prev.filter(c => c.id !== comment.id))
@@ -404,14 +404,15 @@ export default function GroupDetailScreen() {
   const handleSaveGroupPostEdit = useCallback(async () => {
     if (!editingPostId || !editPostContent.trim()) return
     setSavingPostEdit(true)
-    const { error } = await (supabase.from('group_posts') as any)
-      .update({ content: editPostContent.trim() })
-      .eq('id', editingPostId)
-    if (error) {
-      Alert.alert(t('common.error'), t('groups.sendError'))
-      setSavingPostEdit(false)
-      return
-    }
+    const ok = await mutateOk(
+      (supabase.from('group_posts') as any)
+        .update({ content: editPostContent.trim() })
+        .eq('id', editingPostId),
+      t,
+      'groups.sendError',
+      { devTag: 'group' },
+    )
+    if (!ok) { setSavingPostEdit(false); return }
     setPosts(prev => prev.map(p => p.id === editingPostId ? { ...p, content: editPostContent.trim() } : p))
     setEditingPostId(null); setEditPostContent('')
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
@@ -456,21 +457,24 @@ export default function GroupDetailScreen() {
     Alert.alert(t('common.confirm'), t('groups.removeConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.remove'), style: 'destructive', onPress: async () => {
-        const { error: delErr } = await (supabase.from('group_members') as any)
-          .delete()
-          .eq('group_id', id)
-          .eq('user_id', member.user_id)
-        if (delErr) { Alert.alert(t('common.error'), t('groups.removeError')); return }
-        // Re-query actual count from DB instead of decrementing local state
-        const { count: realCount } = await supabase
-          .from('group_members')
-          .select('id', { count: 'exact', head: true })
-          .eq('group_id', id)
-        const newCount = realCount ?? Math.max(0, group.member_count - 1)
-        const { error: updErr } = await (supabase.from('groups') as any)
-          .update({ member_count: newCount })
-          .eq('id', id)
-        if (updErr && __DEV__) console.warn('[group] member_count sync failed:', updErr.message)
+        const ok = await mutateOk(
+          (supabase.from('group_members') as any)
+            .delete()
+            .eq('group_id', id)
+            .eq('user_id', member.user_id),
+          t,
+          'groups.removeError',
+          { devTag: 'group' },
+        )
+        if (!ok) return
+        const newCount = await syncCounter(supabase, {
+          sourceTable: 'group_members',
+          sourceFilter: ['group_id', id],
+          parentTable: 'groups',
+          parentRowId: id,
+          counterColumn: 'member_count',
+          devTag: 'group',
+        }) ?? Math.max(0, group.member_count - 1)
         setGroup(prev => prev ? { ...prev, member_count: newCount } : prev)
         setMembers(prev => prev.filter(m => m.user_id !== member.user_id))
         try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms

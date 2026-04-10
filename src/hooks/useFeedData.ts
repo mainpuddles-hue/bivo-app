@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useFocusEffect } from 'expo-router'
-import * as Location from 'expo-location'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from '@/hooks/useSupabase'
+import { useFeedLocation } from '@/hooks/feed/useFeedLocation'
 import { POST_SELECT } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents, setLinkedEventsBaseUrl } from '@/lib/linkedevents'
@@ -39,7 +39,7 @@ export function useFeedData() {
   const [cityEvents, setCityEvents] = useState<CityEvent[]>([])
   const [nearbyPlaces, setNearbyPlaces] = useState<LocalPlace[]>([])
   const [extraLoading, setExtraLoading] = useState(true)
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
+  const userLocation = useFeedLocation()
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [userCityId, setUserCityId] = useState<string | null>(null)
   const [userCityName, setUserCityName] = useState<string | null>(null)
@@ -89,24 +89,7 @@ export function useFeedData() {
     return () => { mounted = false }
   }, [supabase])
 
-  // ── Request location permission once, cache result ──
-  useEffect(() => {
-    let cancelled = false
-    async function getLocation() {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync()
-        if (status !== 'granted' || cancelled) return
-        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-        if (!cancelled) {
-          setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
-        }
-      } catch {
-        // Silently fail — distance won't be shown
-      }
-    }
-    getLocation()
-    return () => { cancelled = true }
-  }, [])
+  // Location is handled by useFeedLocation() hook above
 
   // ── Fetch followed user IDs + user neighborhood + city ──
   useEffect(() => {
