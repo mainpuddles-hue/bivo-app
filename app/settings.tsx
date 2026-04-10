@@ -411,63 +411,91 @@ export default function SettingsScreen() {
     if (deleteConfirmText.toUpperCase() !== (t('settings.deleteConfirmWord') ?? '').toUpperCase() || deletingAccount) return
     setDeletingAccount(true)
     try {
-      // Try RPC first for server-side cascade deletion
-      const { error: rpcError } = await (supabase.rpc as any)('delete_user_account')
-      if (!rpcError) {
+      // Full deletion via Edge Function (service_role). This removes the
+      // auth.users row along with all user data — the previous RPC-only
+      // path left the auth record intact, so the email stayed bound to a
+      // valid login after "deletion" (GDPR non-compliance).
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        Alert.alert(t('common.error'), t('auth.loginRequired'))
+        setDeletingAccount(false)
+        return
+      }
+
+      const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+      const res = await fetch(`${FUNCTIONS_URL}/delete-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+        },
+        body: JSON.stringify({ deletedUserLabel: t('settings.deletedUser') }),
+      })
+
+      if (res.ok) {
         Alert.alert(t('common.success'), t('settings.accountDeleted'))
-      } else if (rpcError) {
-        // RPC failed — attempt manual cleanup of user data before signout
-        // Note: fallback cannot delete the Supabase auth record (requires service role).
-        // User may need to contact support for full account removal.
-        const uid = profile?.id
-        if (uid) {
-          await Promise.allSettled([
-            // Posts & related
-            (supabase.from('posts') as any).update({ is_active: false }).eq('user_id', uid),
-            (supabase.from('post_likes') as any).delete().eq('user_id', uid),
-            (supabase.from('post_comments') as any).delete().eq('user_id', uid),
-            (supabase.from('post_boosts') as any).delete().eq('user_id', uid),
-            // Social
-            (supabase.from('user_follows') as any).delete().eq('follower_id', uid),
-            (supabase.from('user_follows') as any).delete().eq('followed_id', uid),
-            (supabase.from('thanks') as any).delete().eq('from_user_id', uid),
-            (supabase.from('reviews') as any).delete().eq('reviewer_id', uid),
-            // Saved
-            (supabase.from('saved_posts') as any).delete().eq('user_id', uid),
-            (supabase.from('saved_events') as any).delete().eq('user_id', uid),
-            // Messages — anonymize sent messages, remove from conversations
-            (supabase.from('messages') as any).update({ content: null, image_url: null }).eq('sender_id', uid),
-            (supabase.from('conversation_members') as any).delete().eq('user_id', uid),
-            // Groups & activities
-            (supabase.from('group_members') as any).delete().eq('user_id', uid),
-            (supabase.from('group_post_likes') as any).delete().eq('user_id', uid),
-            (supabase.from('activity_members') as any).delete().eq('user_id', uid),
-            (supabase.from('community_event_participants') as any).delete().eq('user_id', uid),
-            (supabase.from('event_attendees') as any).delete().eq('user_id', uid),
-            // Forum
-            (supabase.from('forum_votes') as any).delete().eq('user_id', uid),
-            // Notifications & points
-            (supabase.from('notifications') as any).delete().eq('user_id', uid),
-            (supabase.from('notification_preferences') as any).delete().eq('user_id', uid),
-            (supabase.from('user_points') as any).delete().eq('user_id', uid),
-            (supabase.from('user_boosts') as any).delete().eq('user_id', uid),
-            (supabase.from('boost_purchases') as any).delete().eq('user_id', uid),
-            // Profile — anonymize all PII
-            (supabase.from('profiles') as any).update({
-              name: t('settings.deletedUser'),
-              bio: null,
-              avatar_url: null,
-              push_token: null,
-              naapurusto: null,
-              email: null,
-              business_name: null,
-              business_phone: null,
-              business_website: null,
-              invite_code: null,
-              stripe_customer_id: null,
-              stripe_subscription_id: null,
-            }).eq('id', uid),
-          ])
+      } else {
+        // Edge Function missing / network down / auth deletion failed.
+        // Fall back to legacy RPC + client-side cleanup so the user still
+        // gets PII removed even if the full auth-record deletion couldn't
+        // run. They may need to contact support to finish the job.
+        if (__DEV__) {
+          const body = await res.json().catch(() => ({}))
+          console.warn('[settings] delete-account edge function failed:', res.status, body)
+        }
+        const { error: rpcError } = await (supabase.rpc as any)('delete_user_account')
+        if (rpcError) {
+          const uid = profile?.id
+          if (uid) {
+            await Promise.allSettled([
+              // Posts & related
+              (supabase.from('posts') as any).update({ is_active: false }).eq('user_id', uid),
+              (supabase.from('post_likes') as any).delete().eq('user_id', uid),
+              (supabase.from('post_comments') as any).delete().eq('user_id', uid),
+              (supabase.from('post_boosts') as any).delete().eq('user_id', uid),
+              // Social
+              (supabase.from('user_follows') as any).delete().eq('follower_id', uid),
+              (supabase.from('user_follows') as any).delete().eq('followed_id', uid),
+              (supabase.from('thanks') as any).delete().eq('from_user_id', uid),
+              (supabase.from('reviews') as any).delete().eq('reviewer_id', uid),
+              // Saved
+              (supabase.from('saved_posts') as any).delete().eq('user_id', uid),
+              (supabase.from('saved_events') as any).delete().eq('user_id', uid),
+              // Messages — anonymize sent messages, remove from conversations
+              (supabase.from('messages') as any).update({ content: null, image_url: null }).eq('sender_id', uid),
+              (supabase.from('conversation_members') as any).delete().eq('user_id', uid),
+              // Groups & activities
+              (supabase.from('group_members') as any).delete().eq('user_id', uid),
+              (supabase.from('group_post_likes') as any).delete().eq('user_id', uid),
+              (supabase.from('activity_members') as any).delete().eq('user_id', uid),
+              (supabase.from('community_event_participants') as any).delete().eq('user_id', uid),
+              (supabase.from('event_attendees') as any).delete().eq('user_id', uid),
+              // Forum
+              (supabase.from('forum_votes') as any).delete().eq('user_id', uid),
+              // Notifications & points
+              (supabase.from('notifications') as any).delete().eq('user_id', uid),
+              (supabase.from('notification_preferences') as any).delete().eq('user_id', uid),
+              (supabase.from('user_points') as any).delete().eq('user_id', uid),
+              (supabase.from('user_boosts') as any).delete().eq('user_id', uid),
+              (supabase.from('boost_purchases') as any).delete().eq('user_id', uid),
+              // Profile — anonymize all PII
+              (supabase.from('profiles') as any).update({
+                name: t('settings.deletedUser'),
+                bio: null,
+                avatar_url: null,
+                push_token: null,
+                naapurusto: null,
+                email: null,
+                business_name: null,
+                business_phone: null,
+                business_website: null,
+                invite_code: null,
+                stripe_customer_id: null,
+                stripe_subscription_id: null,
+              }).eq('id', uid),
+            ])
+          }
         }
         // Inform user that full deletion requires support contact
         Alert.alert(
