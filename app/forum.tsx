@@ -225,8 +225,11 @@ export default function ForumScreen() {
     votingPostRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     const alreadyVoted = votedPosts.has(post.id)
-    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: p.upvote_count + (alreadyVoted ? -1 : 1) } : p))
-    if (selectedPost?.id === post.id) setSelectedPost(prev => prev ? { ...prev, upvote_count: prev.upvote_count + (alreadyVoted ? -1 : 1) } : prev)
+    const delta = alreadyVoted ? -1 : 1
+    // Use functional updaters so the rollback delta stays consistent even
+    // if another optimistic update mutated the count in between.
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: p.upvote_count + delta } : p))
+    if (selectedPost?.id === post.id) setSelectedPost(prev => prev ? { ...prev, upvote_count: prev.upvote_count + delta } : prev)
     setVotedPosts(prev => { const next = new Set(prev); if (alreadyVoted) next.delete(post.id); else next.add(post.id); return next })
     try {
       if (alreadyVoted) {
@@ -244,7 +247,11 @@ export default function ForumScreen() {
         ;(supabase.from('forum_posts') as any).update({ upvote_count: count }).eq('id', post.id).then(() => {}).catch(() => {})
       }
     } catch {
-      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: post.upvote_count } : p))
+      // Roll back the same delta we applied optimistically — do NOT snap
+      // back to post.upvote_count from the closure (that value is stale
+      // if another vote landed during the request).
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: p.upvote_count - delta } : p))
+      if (selectedPost?.id === post.id) setSelectedPost(prev => prev ? { ...prev, upvote_count: prev.upvote_count - delta } : prev)
       setVotedPosts(prev => { const next = new Set(prev); if (alreadyVoted) next.add(post.id); else next.delete(post.id); return next })
       Alert.alert(t('common.error'), t('forum.voteError'))
     } finally { votingPostRef.current = false }
@@ -257,7 +264,8 @@ export default function ForumScreen() {
     votingReplyRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     const alreadyVoted = votedReplies.has(reply.id)
-    setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: r.upvote_count + (alreadyVoted ? -1 : 1) } : r))
+    const delta = alreadyVoted ? -1 : 1
+    setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: r.upvote_count + delta } : r))
     setVotedReplies(prev => { const next = new Set(prev); if (alreadyVoted) next.delete(reply.id); else next.add(reply.id); return next })
     try {
       if (alreadyVoted) {
@@ -274,7 +282,9 @@ export default function ForumScreen() {
         ;(supabase.from('forum_replies') as any).update({ upvote_count: count }).eq('id', reply.id).then(() => {}).catch(() => {})
       }
     } catch {
-      setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: reply.upvote_count } : r))
+      // Roll back the same delta we applied optimistically instead of
+      // snapping back to reply.upvote_count (stale closure value).
+      setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: r.upvote_count - delta } : r))
       setVotedReplies(prev => { const next = new Set(prev); if (alreadyVoted) next.add(reply.id); else next.delete(reply.id); return next })
       Alert.alert(t('common.error'), t('forum.voteError'))
     } finally { votingReplyRef.current = false }

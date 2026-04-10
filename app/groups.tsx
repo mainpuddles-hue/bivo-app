@@ -210,10 +210,17 @@ export default function GroupsScreen() {
         }
         throw insertError
       }
-      // Fire-and-forget member count sync
-      ;(supabase.from('groups') as any)
-        .update({ member_count: group.member_count + 1 })
-        .eq('id', group.id).then(() => {}).catch(() => {})
+      // Sync count from source of truth — avoids races when multiple users
+      // join simultaneously (naive +1 would lose joins)
+      const { count: realCount } = await supabase
+        .from('group_members')
+        .select('id', { count: 'exact', head: true })
+        .eq('group_id', group.id)
+      if (realCount != null) {
+        ;(supabase.from('groups') as any)
+          .update({ member_count: realCount })
+          .eq('id', group.id).then(() => {}).catch(() => {})
+      }
     } catch {
       // Revert
       setJoinedIds((prev) => { const n = new Set(prev); n.delete(group.id); return n })
@@ -254,12 +261,18 @@ export default function GroupsScreen() {
 
       if (error) throw error
 
-      // Add creator as admin member
-      await (supabase.from('group_members') as any).insert({
+      // Add creator as admin member. If this fails the group is left
+      // without a creator membership row and becomes unmanageable —
+      // roll back the group row to keep the DB consistent.
+      const { error: memberError } = await (supabase.from('group_members') as any).insert({
         group_id: data.id,
         user_id: currentUserId,
         role: 'admin',
       })
+      if (memberError) {
+        await (supabase.from('groups') as any).delete().eq('id', data.id).catch(() => {})
+        throw memberError
+      }
 
       // Reset form
       setNewName('')

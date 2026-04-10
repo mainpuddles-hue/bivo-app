@@ -177,8 +177,24 @@ function CreateEventScreenInner() {
     setSubmitting(true)
 
     try {
-      // Build event_date ISO string
-      const timePart = eventTime.trim() || '12:00'
+      // Build event_date ISO string. Validate HH:MM format to reject
+      // malformed inputs like "9:0" or "25:70" which would create invalid
+      // dates (or silently roll over into the next day).
+      const rawTime = eventTime.trim() || '12:00'
+      const timeMatch = rawTime.match(/^(\d{1,2}):(\d{2})$/)
+      if (!timeMatch) {
+        Alert.alert(t('common.error'), t('create.invalidTimeFormat') ?? 'Invalid time format (HH:MM)')
+        setSubmitting(false)
+        return
+      }
+      const timeH = parseInt(timeMatch[1], 10)
+      const timeM = parseInt(timeMatch[2], 10)
+      if (timeH < 0 || timeH > 23 || timeM < 0 || timeM > 59) {
+        Alert.alert(t('common.error'), t('create.invalidTimeFormat') ?? 'Invalid time format (HH:MM)')
+        setSubmitting(false)
+        return
+      }
+      const timePart = `${String(timeH).padStart(2, '0')}:${String(timeM).padStart(2, '0')}`
       const isoDate = `${eventDate.trim()}T${timePart}:00`
 
       // Parse max participants
@@ -196,7 +212,10 @@ function CreateEventScreenInner() {
 
       let uploadedImageUrl: string | null = null
       if (imageUri) {
-        const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
+        // Strip query-string/fragment so URIs like "file://.../photo.jpg?t=123"
+        // don't produce a garbled "jpg?t=123" extension
+        const rawExt = (imageUri.split('.').pop() ?? 'jpg').split(/[?#]/)[0].toLowerCase()
+        const fileExt = ALLOWED_EXTS.includes(rawExt) ? rawExt : 'jpg'
         if (!ALLOWED_EXTS.includes(fileExt)) {
           Alert.alert(t('common.error'), t('create.imageTooLarge'))
           setSubmitting(false)

@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
 import { withHapticRefresh } from '@/lib/haptics'
@@ -115,13 +117,25 @@ export default function ProfileScreen() {
       setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '')
     }
 
-    // Counts
+    // Counts. Rejected promises fall back to { count: 0 } which would
+    // silently show "0 everywhere" on RLS/network failures — surface the
+    // reason in dev logs so regressions are noticed instead of masked.
     const [postsSettled, followersSettled, followingSettled, savedSettled] = await Promise.allSettled([
       supabase.from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('followed_id', user.id),
       supabase.from('user_follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
       supabase.from('saved_posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
     ])
+    if (__DEV__) {
+      const labels = ['posts', 'followers', 'following', 'saved'] as const
+      for (const [i, settled] of [postsSettled, followersSettled, followingSettled, savedSettled].entries()) {
+        if (settled.status === 'rejected') {
+          console.warn(`[profile] count fetch rejected (${labels[i]}):`, settled.reason)
+        } else if ((settled.value as any)?.error) {
+          console.warn(`[profile] count fetch error (${labels[i]}):`, (settled.value as any).error.message)
+        }
+      }
+    }
     const postsRes = postsSettled.status === 'fulfilled' ? postsSettled.value : { count: 0 }
     const followersRes = followersSettled.status === 'fulfilled' ? followersSettled.value : { count: 0 }
     const followingRes = followingSettled.status === 'fulfilled' ? followingSettled.value : { count: 0 }

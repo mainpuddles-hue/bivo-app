@@ -181,9 +181,17 @@ function OnboardingScreenInner() {
         city_id: selectedCity,
         onboarding_completed: true,
       }
-      await (supabase.from('profiles') as any)
+      const { error: updateError } = await (supabase.from('profiles') as any)
         .update(updateData)
         .eq('id', user.id)
+      if (updateError) {
+        // Don't mark onboarding complete locally if the DB write failed —
+        // otherwise the user will never revisit this screen but their
+        // profile remains unconfigured
+        Alert.alert(t('common.error'), t('onboarding.saveFailed'))
+        setSaving(false)
+        return
+      }
 
       // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
