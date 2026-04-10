@@ -22,7 +22,7 @@ const TAG_KEYWORDS: Record<string, string[]> = {
   elektroniikka: ['tv', 'televisio', 'kaiutin', 'kuulokkeet', 'pelikonsol', 'kamera'],
 }
 
-export interface AutoCategoryResult {
+interface AutoCategoryResult {
   suggestedTags: string[]
   confidence: number // 0-1
 }
@@ -46,19 +46,3 @@ export function suggestTags(title: string, description?: string): AutoCategoryRe
   return { suggestedTags, confidence }
 }
 
-/**
- * Auto-detect if a post is likely a service offer vs item offer
- */
-export function detectOfferType(title: string, description?: string): 'service' | 'item' | null {
-  const text = `${title} ${description ?? ''}`.toLowerCase()
-
-  const serviceKeywords = ['palvelu', 'hoita', 'auttaa', 'opet', 'korja', 'siivo', 'kuljett', 'valmennus', 'konsultointi']
-  const itemKeywords = ['myydään', 'annetaan', 'lainaa', 'tuoli', 'sohva', 'vaate', 'kirja', 'polkupyörä', 'auto']
-
-  const serviceScore = serviceKeywords.filter(kw => text.includes(kw)).length
-  const itemScore = itemKeywords.filter(kw => text.includes(kw)).length
-
-  if (serviceScore > itemScore) return 'service'
-  if (itemScore > serviceScore) return 'item'
-  return null
-}

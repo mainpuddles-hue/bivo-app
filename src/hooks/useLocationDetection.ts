@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import * as Location from 'expo-location'
 import { useSupabase } from './useSupabase'
 
-export interface DetectedLocation {
+interface DetectedLocation {
   country: string | null      // ISO: 'FI', 'SE', 'EE'
   countryName: string | null  // 'Suomi', 'Sverige'
   city: string | null         // 'Helsinki', 'Stockholm'

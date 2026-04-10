@@ -45,7 +45,7 @@ export interface PrioritizedNotification extends Notification {
  * Unread notifications get a 50-point boost.
  * Recent notifications (< 1h) get a 20-point boost.
  */
-export function scoreNotification(notif: Notification): number {
+function scoreNotification(notif: Notification): number {
   const basePriority = TYPE_PRIORITY[notif.type] ?? 30
   const unreadBoost = notif.is_read ? 0 : 50
   const hoursAgo = (Date.now() - new Date(notif.created_at).getTime()) / 3600000

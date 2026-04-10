@@ -8,7 +8,7 @@ export const BOOST_PRODUCTS = [
   { id: 'com.tackbird.boost_5', credits: 5, priceCents: 799, label: 'boost.boost5' },
 ] as const
 
-export type BoostProductId = (typeof BOOST_PRODUCTS)[number]['id']
+type BoostProductId = (typeof BOOST_PRODUCTS)[number]['id']
 
 // Tier discount
 export function getDiscountedPrice(baseCents: number, tier: BoostTier): number {
@@ -25,7 +25,7 @@ export function getBoostDurationHours(tier: BoostTier): number {
 }
 
 // Check if IAP is available (not in Expo Go)
-export function isIAPAvailable(): boolean {
+function isIAPAvailable(): boolean {
   // react-native-iap requires native modules
   // In Expo Go (__DEV__ + no native modules), use sandbox mode
   try {

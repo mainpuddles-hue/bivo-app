@@ -67,13 +67,13 @@ export const DENSE_NEIGHBORHOODS = new Set([
   'Ruoholahti', 'Jätkäsaari', 'Merihaka', 'Hermanni', 'Alppiharju',
 ])
 
-export function getRadiusKm(neighborhood: string): number {
+function getRadiusKm(neighborhood: string): number {
   if (neighborhood === '__gps__') return 1.0
   if (DENSE_NEIGHBORHOODS.has(neighborhood)) return 0.8
   return 1.5
 }
 
-export const MAX_MAP_MARKERS = 20
+const MAX_MAP_MARKERS = 20
 export const MAP_HEIGHT = 250
 
 export const DARK_MAP_STYLE = [

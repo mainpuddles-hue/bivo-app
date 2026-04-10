@@ -48,7 +48,7 @@ const NEIGHBORHOOD_CENTERS: Record<string, { lat: number; lng: number }> = {
   Tapulikaupunki: { lat: 60.2625, lng: 25.0297 },
 }
 
-export type VerificationStatus = 'idle' | 'checking' | 'verified' | 'unverified' | 'error'
+type VerificationStatus = 'idle' | 'checking' | 'verified' | 'unverified' | 'error'
 
 export function useLocationVerification() {
   const [status, setStatus] = useState<VerificationStatus>('idle')

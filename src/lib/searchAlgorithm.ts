@@ -16,7 +16,7 @@ interface SearchContext {
   userNeighborhood: string | null
 }
 
-export function scoreSearchResult(item: SearchResult, ctx: SearchContext): number {
+function scoreSearchResult(item: SearchResult, ctx: SearchContext): number {
   const q = ctx.query.toLowerCase()
   const title = (item.title || '').toLowerCase()
   const desc = (item.description || '').toLowerCase()

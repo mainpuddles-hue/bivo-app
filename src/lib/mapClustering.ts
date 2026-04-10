@@ -55,4 +55,4 @@ export function isCluster(item: any): item is Cluster {
   return 'count' in item && 'items' in item
 }
 
-export type { MapItem, Cluster }
+export type { Cluster }

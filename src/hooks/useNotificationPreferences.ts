@@ -5,7 +5,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 
 export type NotificationType = 'messages' | 'reviews' | 'rentals' | 'system' | 'marketing' | 'nearby_posts' | 'events' | 'likes' | 'comments' | 'follows' | 'nappaa'
 
-export interface NotificationPreferences {
+interface NotificationPreferences {
   messages: boolean
   reviews: boolean
   rentals: boolean

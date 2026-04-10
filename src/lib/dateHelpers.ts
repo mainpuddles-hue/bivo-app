@@ -18,7 +18,7 @@ export function isYesterday(dateStr: string): boolean {
   return d.getFullYear() === y.getFullYear() && d.getMonth() === y.getMonth() && d.getDate() === y.getDate()
 }
 
-export function isWithinPastDays(dateStr: string, days: number): boolean {
+function isWithinPastDays(dateStr: string, days: number): boolean {
   const d = new Date(dateStr).getTime(); const now = Date.now()
   return d <= now && d >= now - days * 86400000
 }

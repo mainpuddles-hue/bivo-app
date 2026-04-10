@@ -12,13 +12,13 @@ import { FORUM_CATEGORY_COLORS } from '@/lib/constants'
 import type { ForumCategory } from './ForumPostCard'
 
 // ── Category definitions — colors from centralized constants ──
-export interface ForumCategoryDef {
+interface ForumCategoryDef {
   key: ForumCategory
   labelKey: string
   color: string
 }
 
-export const FORUM_CATEGORY_DEFS: ForumCategoryDef[] = [
+const FORUM_CATEGORY_DEFS: ForumCategoryDef[] = [
   { key: 'vinkit', labelKey: 'forum.tips', color: FORUM_CATEGORY_COLORS.vinkit },
   { key: 'kysymykset', labelKey: 'forum.questions', color: FORUM_CATEGORY_COLORS.kysymykset },
   { key: 'tapahtumat', labelKey: 'forum.events', color: FORUM_CATEGORY_COLORS.tapahtumat },

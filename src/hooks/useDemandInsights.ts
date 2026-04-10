@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useEffect } from 'react'
 import { useSupabase } from './useSupabase'
 
-export interface DemandItem {
+interface DemandItem {
   tag: string
   count: number
 }

@@ -47,23 +47,6 @@ export async function getClickHistory(): Promise<EventInteraction[]> {
 }
 
 /**
- * Analyze click history to find preferred categories, ordered by frequency (most clicked first).
- * Returns category names with their click counts.
- */
-export async function getPreferredCategories(): Promise<{ category: string; count: number }[]> {
-  const history = await getClickHistory()
-  const counts = new Map<string, number>()
-
-  for (const entry of history) {
-    counts.set(entry.category, (counts.get(entry.category) ?? 0) + 1)
-  }
-
-  return Array.from(counts.entries())
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count)
-}
-
-/**
  * Get the set of categories the user has interacted with in the last N days.
  * Used by the diversity bonus to identify "stale" categories.
  */

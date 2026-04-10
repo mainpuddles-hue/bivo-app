@@ -7,7 +7,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { NEIGHBORHOODS } from '@/lib/constants'
 
-export interface NeighborhoodPickerProps {
+interface NeighborhoodPickerProps {
   visible: boolean
   onClose: () => void
   selectedNeighborhood: string | null

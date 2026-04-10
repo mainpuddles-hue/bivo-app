@@ -17,7 +17,7 @@ const CITY_EVENT_COLORS: Record<string, string> = {
   exhibition: '#795548', festival: '#FF5722', market: '#FF9800', other: '#607D8B',
 }
 
-export interface HeroEventCardProps {
+interface HeroEventCardProps {
   event: CityEvent
 }
 

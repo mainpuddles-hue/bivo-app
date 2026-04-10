@@ -25,40 +25,15 @@ let _rolloutPercentages: Record<string, number> = {}
 let _lastFetchedAt = 0
 
 /**
- * Check if user is in rollout group based on their userId.
- * Uses a simple hash to deterministically assign users to groups.
- */
-export function isInRollout(userId: string, percentage: number): boolean {
-  if (percentage >= 100) return true
-  if (percentage <= 0) return false
-  // Simple hash: sum char codes mod 100
-  const hash = userId.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0) % 100
-  return hash < percentage
-}
-
-/**
- * Check if a feature flag is enabled for a specific user,
- * taking into account rollout percentage.
- */
-export function isFeatureEnabled(key: FeatureKey, userId?: string | null): boolean {
-  const enabled = _flags[key] ?? false
-  if (!enabled) return false
-
-  const percentage = _rolloutPercentages[key] ?? 100
-  if (percentage >= 100) return true
-  if (!userId) return false
-
-  return isInRollout(userId, percentage)
-}
-
-/**
  * Current feature flags.
  * Starts with static defaults, updated by fetchRemoteFlags().
  *
  * Usage: import { FEATURES } from '@/lib/featureFlags'
  * if (FEATURES.PAYMENTS) { ... }
  *
- * For percentage-based rollout, use isFeatureEnabled(key, userId) instead.
+ * Note: percentage-based rollout helpers (isFeatureEnabled / isInRollout)
+ * used to live here but were never called from the app. Add them back
+ * when a screen actually needs per-user gating.
  */
 export const FEATURES: Readonly<Record<FeatureKey, boolean>> = new Proxy(_flags, {
   get: (target, prop: string) => target[prop as FeatureKey] ?? false,

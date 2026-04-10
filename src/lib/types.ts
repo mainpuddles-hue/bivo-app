@@ -2,28 +2,6 @@
 
 export type BoostTier = 'free' | 'pro' | 'business'
 
-export interface UserBoostBalance {
-  balance: number
-  tier: BoostTier
-  monthly_grants_remaining: number
-}
-
-export interface BoostProduct {
-  id: string
-  credits: number
-  priceLabel: string
-  priceCents: number
-}
-
-export interface PostBoost {
-  id: string
-  post_id: string
-  boost_start: string
-  boost_end: string
-  boost_type: 'standard' | 'extended'
-  is_active: boolean
-}
-
 export type PostType =
   | 'tarvitsen'
   | 'tarjoan'
@@ -38,14 +16,6 @@ export type BadgeType = 'verified' | 'pro' | 'trusted' | 'active' | 'first_post'
 
 // Three-tier trust system
 export type TrustLevel = 1 | 2 | 3
-
-export interface TrustTierInfo {
-  level: TrustLevel
-  name: string
-  color: string
-  icon: 'Shield' | 'ShieldCheck' | 'ShieldPlus'
-  permissions: TrustPermissions
-}
 
 export interface TrustPermissions {
   canLainaa: boolean
@@ -286,26 +256,6 @@ export interface Review {
   reviewer?: Profile
 }
 
-export type ServiceBookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
-
-export interface ServiceBooking {
-  id: string
-  post_id: string
-  buyer_id: string
-  provider_id: string
-  service_price: number
-  service_fee: number
-  total_amount: number
-  notes: string | null
-  status: ServiceBookingStatus
-  stripe_session_id: string | null
-  completed_at: string | null
-  created_at: string
-  post?: { id: string; title: string; image_url: string | null }
-  buyer?: { id: string; name: string; avatar_url: string | null }
-  provider?: { id: string; name: string; avatar_url: string | null }
-}
-
 export interface CityEvent {
   id: string
   source: 'linkedevents' | 'ticketmaster'
@@ -332,36 +282,6 @@ export interface CityEvent {
   tags: string[]
   synced_at: string
   created_at: string
-}
-
-export interface Activity {
-  id: string
-  creator_id: string
-  title: string
-  description: string | null
-  category: string
-  naapurusto: string
-  location_name: string | null
-  location_lat: number | null
-  location_lng: number | null
-  schedule_type: string
-  schedule_day: number | null
-  schedule_time: string | null
-  max_members: number | null
-  icon: string | null
-  is_active: boolean
-  created_at: string
-  updated_at: string
-  member_count?: number
-  is_member?: boolean
-  creator?: { id: string; name: string; avatar_url: string | null }
-}
-
-export interface ActivityMember {
-  id: string
-  activity_id: string
-  user_id: string
-  joined_at: string
 }
 
 export interface LocalPlace {

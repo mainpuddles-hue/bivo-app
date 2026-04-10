@@ -1,0 +1,49 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "compress": false,
+    "removeComments": false,
+    "removeEmptyLines": true,
+    "topFilesLength": 10,
+    "showLineNumbers": true,
+    "includeEmptyDirectories": false
+  },
+  "include": [
+    "app/**/*.{ts,tsx}",
+    "src/**/*.{ts,tsx}",
+    "supabase/functions/**/*.ts",
+    "supabase/migrations/**/*.sql",
+    "scripts/**/*.{js,mjs,ts}",
+    "docs/**/*.md",
+    "*.{ts,tsx,js,mjs,json}",
+    "CLAUDE.md",
+    "README.md"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "skills/**",
+      "ux-audit/**",
+      "ios/**",
+      "android/**",
+      ".expo/**",
+      ".gitnexus/**",
+      "**/*.csv",
+      "**/*.svg",
+      "**/*.png",
+      "**/*.jpg",
+      "**/*.webp",
+      "repomix-output.*",
+      "package-lock.json",
+      "src/lib/i18n/et.json",
+      "src/lib/i18n/ru.json",
+      "__tests__/**"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}

@@ -49,18 +49,3 @@ export function getImageUrl(
   return `${renderUrl}?width=${config.width}&quality=${config.quality}&resize=contain`
 }
 
-/**
- * Get all size variants for an image.
- * Useful when you need to preload multiple sizes or pass them around.
- */
-export function getImageSrcSet(originalUrl: string | null | undefined): {
-  thumbnail: string | null
-  medium: string | null
-  full: string | null
-} {
-  return {
-    thumbnail: getImageUrl(originalUrl, 'thumbnail'),
-    medium: getImageUrl(originalUrl, 'medium'),
-    full: getImageUrl(originalUrl, 'full'),
-  }
-}

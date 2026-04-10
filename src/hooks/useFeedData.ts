@@ -16,7 +16,6 @@ import { FEATURES } from '@/lib/featureFlags'
 import { haversineKm } from '@/lib/geo'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
-export type { PostType }
 export type FeedSortBy = 'recommended' | 'newest' | 'popular' | 'nearest' | 'cheapest'
 
 const PAGE_SIZE = 20

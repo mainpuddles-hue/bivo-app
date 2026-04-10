@@ -230,8 +230,3 @@ export function useTrustLevel(userId?: string | null): TrustResult {
 
   return { level, signals, permissions, tier, loading, nextTierHints, score, factors }
 }
-
-/** Invalidate the trust cache for a specific user (e.g., after verification) */
-export function invalidateTrustCache(userId: string) {
-  trustCache.delete(userId)
-}

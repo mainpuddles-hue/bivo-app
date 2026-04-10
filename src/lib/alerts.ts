@@ -47,7 +47,7 @@ const HSL_ALERTS_QUERY = `{
   }
 }`
 
-export async function fetchHSLAlerts(): Promise<TransitAlert[]> {
+async function fetchHSLAlerts(): Promise<TransitAlert[]> {
   try {
     const apiKey = process.env.EXPO_PUBLIC_DIGITRANSIT_API_KEY
     // HSL Digitransit API now requires a subscription key — skip if missing
@@ -98,7 +98,7 @@ export async function fetchHSLAlerts(): Promise<TransitAlert[]> {
 // Ilmatieteen laitos Open Data — simple XML warnings for Helsinki
 const FMI_WARNINGS_URL = 'https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::weather::symbols::point::simple&place=helsinki&parameters=weathersymbol3'
 
-export async function fetchWeatherAlerts(): Promise<WeatherAlert[]> {
+async function fetchWeatherAlerts(): Promise<WeatherAlert[]> {
   try {
     // FMI warnings API — fetch active weather warnings for Uusimaa region
     const res = await fetch(

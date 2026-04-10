@@ -12,13 +12,6 @@ export const POST_SELECT = `
 
 export const SERVICE_FEE_RATE = 0.10 // 10% platform fee
 
-// "Juuri nyt" urgency engine
-export const URGENCY_OPTIONS = [
-  { hours: 2, label: 'urgency.2hours', color: '#EF4444' },
-  { hours: 4, label: 'urgency.4hours', color: '#F59E0B' },
-  { hours: 8, label: 'urgency.8hours', color: '#E8A050' },
-] as const
-
 // TODO: ENHANCEMENT — implement speed badge awarding logic: measure response time
 // in conversation, compare against thresholds, insert into user_badges table,
 // and display on profile. Translations exist: urgency.speedBadgeSalamanopea / speedBadgeNopea
@@ -187,16 +180,7 @@ export const TABLE_CATEGORIES = {
 
 export const EVENT_CHAT_PAGE_SIZE = 30
 
-// Event source badge colors — used by map EventCard and DetailModal
-export const EVENT_SOURCE_COLORS = {
-  helsinki: '#8E44AD',
-  ticketmaster: '#E91E63',
-  community: '#2B8A62',
-  free: '#2B8A62',
-  paid: '#E8A050',
-} as const
-
-// DEPRECATED: Use useCityConfig hook instead. Kept as offline fallback for Helsinki.
+// DEPRECATED: Use dynamic city_neighborhoods query instead. Kept as offline fallback for Helsinki.
 export const NEIGHBORHOODS = [
   'Kallio', 'Sörnäinen', 'Vallila', 'Hermanni', 'Alppiharju',
   'Pasila', 'Käpylä', 'Kumpula', 'Toukola', 'Arabia',

@@ -54,15 +54,3 @@ export function createClient() {
 
   return _client
 }
-
-/**
- * Reset the Supabase client singleton.
- * Call this on logout to ensure no stale session or realtime channels
- * leak across user sessions.
- */
-export function resetClient() {
-  if (_client) {
-    _client.removeAllChannels()
-    _client = null
-  }
-}

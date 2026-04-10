@@ -34,7 +34,7 @@ function HorizontalSkeleton({ colors, width, height }: { colors: ReturnType<type
   )
 }
 
-export interface DiscoverySectionProps {
+interface DiscoverySectionProps {
   nearbyPlaces: LocalPlace[]
   extraLoading: boolean
   placesSectionTitle: string

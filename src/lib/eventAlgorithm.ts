@@ -12,7 +12,7 @@ export const EVENT_CATEGORIES = [
 
 export type EventCategory = (typeof EVENT_CATEGORIES)[number]
 
-export interface RankedEvent {
+interface RankedEvent {
   id: string
   title: string
   date: string

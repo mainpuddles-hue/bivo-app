@@ -146,9 +146,6 @@ export async function fetchHelsinkiEvents(apiUrl?: string): Promise<CityEvent[]>
   return pendingFetch
 }
 
-/** Alias for fetchHelsinkiEvents — fetches events for the currently configured city. */
-export const fetchCityEvents = fetchHelsinkiEvents
-
 async function loadMorePages(startUrl: string, maxPages: number) {
   let url: string | null = startUrl
   const more: CityEvent[] = []
@@ -294,6 +291,3 @@ export function prefetchHelsinkiEvents(apiUrl?: string) {
   if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) return
   fetchHelsinkiEvents(apiUrl).catch(() => {})
 }
-
-/** Alias for prefetchHelsinkiEvents */
-export const prefetchCityEvents = prefetchHelsinkiEvents

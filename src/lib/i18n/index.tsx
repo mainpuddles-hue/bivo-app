@@ -13,8 +13,8 @@ import fi from './fi.json'
 
 export type Locale = 'fi' | 'en' | 'sv' | 'et' | 'ru'
 // MVP launch: only fi, en, sv visible. et/ru available but hidden from UI.
-export const VISIBLE_LOCALES: Locale[] = ['fi', 'en', 'sv']
-export type TFunction = (key: string, params?: Record<string, string | number>) => string
+// (VISIBLE_LOCALES const was exported previously but unused.)
+type TFunction = (key: string, params?: Record<string, string | number>) => string
 
 type TranslationMap = Record<string, string | Record<string, unknown>>
 
