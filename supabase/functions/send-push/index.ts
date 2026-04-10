@@ -342,12 +342,16 @@ serve(async (req) => {
     const isImmediate = IMMEDIATE_TYPES.has(type)
     const isBatch = BATCH_TYPES.has(type)
 
-    // Quiet hours check (except urgent)
+    // Quiet hours check (except urgent).
+    // The original notification row still exists in the notifications table,
+    // so the user will see it next time they open the app. We are NOT
+    // actually queueing the push for later delivery — a future cron job
+    // could do that via scheduled_notifications, but that isn't wired up
+    // yet. Reporting `queued: true` here misled callers into thinking a
+    // delayed push was scheduled.
     if (isQuietHours() && !IMMEDIATE_TYPES.has(type)) {
-      // Store for later delivery (cron job or next app open)
-      // For now, skip sending but don't lose the notification (it's already in notifications table)
       return new Response(
-        JSON.stringify({ sent: false, reason: 'quiet_hours', queued: true }),
+        JSON.stringify({ sent: false, reason: 'quiet_hours' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }

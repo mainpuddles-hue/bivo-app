@@ -60,9 +60,13 @@ serve(async (req) => {
           ? session.payment_intent
           : (session.payment_intent as any)?.id ?? null
 
-        // Update booking status to 'paid'
+        // Update booking status to 'paid'. Stripe expects webhooks to
+        // return 2xx even if the downstream DB write fails — otherwise
+        // Stripe would retry forever. We surface DB errors to the logs
+        // so operators can reconcile manually if RLS/schema issues ever
+        // prevent the update.
         if (bookingId) {
-          await supabase
+          const { error: updateErr } = await supabase
             .from(bookingTable)
             .update({
               status: 'paid',
@@ -70,15 +74,21 @@ serve(async (req) => {
               stripe_payment_intent_id: sessionPaymentIntent,
             })
             .eq('id', bookingId)
+          if (updateErr) {
+            console.error(`[webhook] CRITICAL: failed to mark ${bookingTable} ${bookingId} as paid:`, updateErr.message)
+          }
         } else if (session.id) {
           // Fallback: find by session ID
-          await supabase
+          const { error: updateErr } = await supabase
             .from(bookingTable)
             .update({
               status: 'paid',
               stripe_payment_intent_id: sessionPaymentIntent,
             })
             .eq('stripe_session_id', session.id)
+          if (updateErr) {
+            console.error(`[webhook] CRITICAL: failed to mark ${bookingTable} by session ${session.id} as paid:`, updateErr.message)
+          }
         }
 
         // Idempotency: don't insert duplicate payment records

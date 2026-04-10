@@ -27,13 +27,21 @@ function AuthCallbackScreenInner() {
   const [processing, setProcessing] = useState(true)
 
   useEffect(() => {
+    // Guard against setState-after-unmount when the user navigates away
+    // before the async callback flow finishes (it can await up to 2s on
+    // the Method 3 fallback).
+    let cancelled = false
+    const safeSetError = (msg: string) => { if (!cancelled) setError(msg) }
+    const safeSetProcessing = (v: boolean) => { if (!cancelled) setProcessing(v) }
+    const safeReplace = (path: any) => { if (!cancelled) router.replace(path) }
+
     async function handleCallback() {
       try {
         // Check for error from Supabase
         const errorParam = params.error as string | undefined
         if (errorParam) {
-          setError(params.error_description as string ?? errorParam)
-          setProcessing(false)
+          safeSetError(params.error_description as string ?? errorParam)
+          safeSetProcessing(false)
           return
         }
 
@@ -49,20 +57,22 @@ function AuthCallbackScreenInner() {
             headers: { 'apikey': anonKey, 'Content-Type': 'application/json' },
             body: JSON.stringify({ token_hash: tokenHash, type: authType }),
           })
+          if (cancelled) return
           if (verifyRes.ok) {
             const data = await verifyRes.json()
+            if (cancelled) return
             if (data.access_token && data.refresh_token) {
               await supabase.auth.setSession({
                 access_token: data.access_token,
                 refresh_token: data.refresh_token,
               })
             }
-            router.replace(authType === 'recovery' ? '/settings' as any : '/(tabs)')
+            safeReplace(authType === 'recovery' ? '/settings' as any : '/(tabs)')
             return
           } else {
             const err = await verifyRes.json().catch(() => ({}))
-            setError(err.msg || 'Link expired')
-            setProcessing(false)
+            safeSetError(err.msg || 'Link expired')
+            safeSetProcessing(false)
             return
           }
         }
@@ -71,20 +81,22 @@ function AuthCallbackScreenInner() {
         const code = params.code as string | undefined
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          if (cancelled) return
           if (exchangeError) {
-            setError(exchangeError.message)
-            setProcessing(false)
+            safeSetError(exchangeError.message)
+            safeSetProcessing(false)
             return
           }
           // Check if this is a password recovery flow
           const type = params.type as string | undefined
           if (type === 'recovery') {
-            router.replace('/settings')
+            safeReplace('/settings')
             return
           }
           const { data: { session } } = await supabase.auth.getSession()
+          if (cancelled) return
           if (session) {
-            router.replace('/(tabs)')
+            safeReplace('/(tabs)')
             return
           }
         }
@@ -98,17 +110,18 @@ function AuthCallbackScreenInner() {
             access_token: accessTokenParam,
             refresh_token: refreshTokenParam,
           })
+          if (cancelled) return
           if (setSessionError) {
-            setError(setSessionError.message)
-            setProcessing(false)
+            safeSetError(setSessionError.message)
+            safeSetProcessing(false)
             return
           }
           // Check if this is a password recovery flow
           const type = params.type as string | undefined
           if (type === 'recovery') {
-            router.replace('/settings')
+            safeReplace('/settings')
           } else {
-            router.replace('/(tabs)')
+            safeReplace('/(tabs)')
           }
           return
         }
@@ -121,12 +134,14 @@ function AuthCallbackScreenInner() {
             // Supabase JS client auto-detects hash tokens when getSession is called
             // But we need to give it a moment to process
             await new Promise(resolve => setTimeout(resolve, 500))
+            if (cancelled) return
 
             const { data: { session } } = await supabase.auth.getSession()
+            if (cancelled) return
             if (session) {
               // Clear the hash to prevent re-processing
               window.location.hash = ''
-              router.replace('/(tabs)')
+              safeReplace('/(tabs)')
               return
             }
 
@@ -140,13 +155,14 @@ function AuthCallbackScreenInner() {
                 access_token: accessToken,
                 refresh_token: refreshToken,
               })
+              if (cancelled) return
               if (!setSessionError) {
                 window.location.hash = ''
-                router.replace('/(tabs)')
+                safeReplace('/(tabs)')
                 return
               }
-              setError(setSessionError.message)
-              setProcessing(false)
+              safeSetError(setSessionError.message)
+              safeSetProcessing(false)
               return
             }
           }
@@ -154,21 +170,24 @@ function AuthCallbackScreenInner() {
 
         // Method 3: Wait and check — sometimes Supabase processes async
         await new Promise(resolve => setTimeout(resolve, 2000))
+        if (cancelled) return
         const { data: { session } } = await supabase.auth.getSession()
+        if (cancelled) return
         if (session) {
-          router.replace('/(tabs)')
+          safeReplace('/(tabs)')
           return
         }
 
-        setError(t('auth.loginFailed'))
-        setProcessing(false)
+        safeSetError(t('auth.loginFailed'))
+        safeSetProcessing(false)
       } catch (err: any) {
-        setError(err.message ?? t('auth.loginFailed'))
-        setProcessing(false)
+        safeSetError(err.message ?? t('auth.loginFailed'))
+        safeSetProcessing(false)
       }
     }
 
     handleCallback()
+    return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Run once on mount — params intentionally omitted
 

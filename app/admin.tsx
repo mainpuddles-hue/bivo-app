@@ -157,27 +157,26 @@ function AdminScreenInner() {
     setSearchingUsers(false)
   }, [userSearch, supabase])
 
-  // Actions
+  // Actions. Supabase mutations return { error } instead of throwing, so
+  // the previous try/catch-only pattern silently showed "success" on RLS
+  // failures.
   const hidePost = useCallback(async (postId: string, flagId: string) => {
-    try {
-      await Promise.all([
-        (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId),
-        (supabase.from('content_flags') as any).update({ reviewed: true }).eq('id', flagId),
-      ])
-      setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
-      Alert.alert(t('common.success'), t('admin.hidePost'))
-    } catch {
+    const [postRes, flagRes] = await Promise.all([
+      (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId),
+      (supabase.from('content_flags') as any).update({ reviewed: true }).eq('id', flagId),
+    ])
+    if ((postRes as any).error || (flagRes as any).error) {
       Alert.alert(t('common.error'))
+      return
     }
+    setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
+    Alert.alert(t('common.success'), t('admin.hidePost'))
   }, [supabase, t])
 
   const allowPost = useCallback(async (flagId: string) => {
-    try {
-      await (supabase.from('content_flags') as any).update({ reviewed: true }).eq('id', flagId)
-      setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
-    } catch {
-      Alert.alert(t('common.error'))
-    }
+    const { error } = await (supabase.from('content_flags') as any).update({ reviewed: true }).eq('id', flagId)
+    if (error) { Alert.alert(t('common.error')); return }
+    setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
   }, [supabase, t])
 
   const toggleBan = useCallback(async (userId: string, currentlyBanned: boolean) => {
@@ -188,12 +187,9 @@ function AdminScreenInner() {
         text: t('common.confirm'),
         style: 'destructive',
         onPress: async () => {
-          try {
-            await (supabase.from('profiles') as any).update({ is_banned: !currentlyBanned }).eq('id', userId)
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_banned: !currentlyBanned } : u))
-          } catch {
-            Alert.alert(t('common.error'))
-          }
+          const { error } = await (supabase.from('profiles') as any).update({ is_banned: !currentlyBanned }).eq('id', userId)
+          if (error) { Alert.alert(t('common.error')); return }
+          setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_banned: !currentlyBanned } : u))
         },
       },
     ])

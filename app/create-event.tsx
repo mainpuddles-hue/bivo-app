@@ -194,8 +194,26 @@ function CreateEventScreenInner() {
         setSubmitting(false)
         return
       }
-      const timePart = `${String(timeH).padStart(2, '0')}:${String(timeM).padStart(2, '0')}`
-      const isoDate = `${eventDate.trim()}T${timePart}:00`
+      // Build the date/time in the device's local timezone, then convert
+      // to UTC for storage. Previously we shipped a naive string
+      // ("2026-04-10T12:00:00" with no timezone), which Postgres
+      // interpreted as UTC for `timestamp with time zone` columns —
+      // resulting in events shifting by the user's tz offset on display.
+      // Using `new Date(y, m, d, h, min)` avoids the ambiguous string
+      // parsing that Safari/Hermes treat differently.
+      const [dateY, dateM, dateD] = eventDate.trim().split('-').map((s) => parseInt(s, 10))
+      if (!Number.isFinite(dateY) || !Number.isFinite(dateM) || !Number.isFinite(dateD)) {
+        Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+        setSubmitting(false)
+        return
+      }
+      const localDate = new Date(dateY, dateM - 1, dateD, timeH, timeM, 0, 0)
+      if (isNaN(localDate.getTime())) {
+        Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+        setSubmitting(false)
+        return
+      }
+      const isoDate = localDate.toISOString()
 
       // Parse max participants
       const maxP = maxParticipants.trim()

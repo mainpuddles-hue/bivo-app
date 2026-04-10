@@ -82,7 +82,15 @@ export default function MessagesScreen() {
 
   const savePinnedIds = useCallback(async (ids: string[]) => {
     setPinnedIds(ids)
-    await AsyncStorage.setItem(PINNED_KEY, JSON.stringify(ids))
+    // Swallow storage failures instead of propagating — the UI state is
+    // already updated and a failed write is non-critical (the pin just
+    // won't persist across app restarts). An uncaught rejection here
+    // would bubble up to the global error handler and spam Sentry.
+    try {
+      await AsyncStorage.setItem(PINNED_KEY, JSON.stringify(ids))
+    } catch (err) {
+      if (__DEV__) console.warn('[messages] failed to persist pinned ids:', err)
+    }
   }, [])
 
   const handleTogglePin = useCallback(async (convId: string) => {
