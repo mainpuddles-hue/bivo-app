@@ -5,7 +5,6 @@ import { Bell, Search, Map } from 'lucide-react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { fonts } from '@/lib/fonts'
 import { TackBirdLogo } from './TackBirdLogo'
 import { useState, useCallback } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -50,9 +49,8 @@ export function Header() {
       <View style={styles.headerContent}>
         <Pressable onPress={() => router.push('/')} style={styles.logoRow} accessibilityLabel={t('nav.feed')} accessibilityRole="button">
           <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
-            <TackBirdLogo size={16} color={colors.primaryForeground} />
+            <TackBirdLogo size={20} color={colors.primaryForeground} />
           </View>
-          <Text style={[styles.wordmark, { color: colors.primary }]}>TACKBIRD</Text>
         </Pressable>
 
         <View style={styles.actions}>
@@ -91,12 +89,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     height: 48, paddingHorizontal: 16,
   },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  logoRow: { flexDirection: 'row', alignItems: 'center' },
   logoCircle: {
-    width: 32, height: 32, borderRadius: 16,
+    width: 38, height: 38, borderRadius: 19,
     alignItems: 'center', justifyContent: 'center',
   },
-  wordmark: { fontSize: 12, fontFamily: fonts.heading, letterSpacing: 1.7, lineHeight: 16 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconButton: {
     width: 44, height: 44, borderRadius: 22,
