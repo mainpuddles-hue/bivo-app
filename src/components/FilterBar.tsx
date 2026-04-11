@@ -50,7 +50,7 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
           isActive
             ? { backgroundColor: color }
             : {
-                backgroundColor: color + '12',
+                backgroundColor: color + '22',
                 borderWidth: 1,
                 borderColor: color + '30',
               },

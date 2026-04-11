@@ -582,7 +582,7 @@ function FeedScreenInner() {
           {feed.followedIds.length > 0 && (
             <Pressable
               onPress={() => feed.setShowFollowing(p => !p)}
-              style={[styles.followingBtn, feed.showFollowing ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
+              style={[styles.followingBtn, feed.showFollowing ? { backgroundColor: colors.primary, borderColor: '#000000' } : { backgroundColor: isDark ? colors.card : colors.muted, borderColor: '#000000' }]}
             >
               <Users size={14} color={feed.showFollowing ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.8} />
               <Text style={[styles.followingText, { color: feed.showFollowing ? colors.primaryForeground : colors.mutedForeground }]}>
@@ -604,8 +604,8 @@ function FeedScreenInner() {
                 style={[
                   styles.sortChip,
                   isActive
-                    ? { backgroundColor: colors.primary }
-                    : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: `${colors.border}80` },
+                    ? { backgroundColor: colors.primary, borderWidth: 1, borderColor: '#000000' }
+                    : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: '#000000' },
                 ]}
               >
                 <Text style={[
@@ -669,6 +669,7 @@ const styles = StyleSheet.create({
   followingBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+    borderWidth: 1,
     alignSelf: 'flex-start', minHeight: 40,
   },
   followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
