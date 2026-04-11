@@ -21,9 +21,11 @@ interface FilterChipProps {
   color: string
   isActive: boolean
   foregroundColor: string
+  neutralBackground: string
+  neutralText: string
   onPress: () => void
 }
-const FilterChip = memo(function FilterChip({ label, color, isActive, foregroundColor, onPress }: FilterChipProps) {
+const FilterChip = memo(function FilterChip({ label, color, isActive, foregroundColor, neutralBackground, neutralText, onPress }: FilterChipProps) {
   const reduceMotion = useReduceMotion()
   const scale = useRef(new Animated.Value(1)).current
   const isFirstRun = useRef(true)
@@ -48,15 +50,19 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
         style={[
           styles.chip,
           isActive
-            ? { backgroundColor: color }
+            ? {
+                backgroundColor: color,
+                borderWidth: 1.5,
+                borderColor: '#000000',
+              }
             : {
-                backgroundColor: color + '22',
-                borderWidth: 1,
-                borderColor: color + '30',
+                backgroundColor: neutralBackground,
+                borderWidth: 1.5,
+                borderColor: '#000000',
               },
         ]}
       >
-        <Text style={[styles.chipText, { color: isActive ? foregroundColor : color }]}>
+        <Text style={[styles.chipText, { color: isActive ? foregroundColor : neutralText }]}>
           {label}
         </Text>
       </PressableOpacity>
@@ -83,6 +89,8 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
             color={cat.color}
             isActive={isActive}
             foregroundColor={colors.primaryForeground}
+            neutralBackground={`${cat.color}18`}
+            neutralText={cat.color}
             onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
           />
         )

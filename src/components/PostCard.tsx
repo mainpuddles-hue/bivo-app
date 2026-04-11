@@ -116,6 +116,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   const [showMore, setShowMore] = useState(false)
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
+  const actionColor = isDark ? colors.foreground : '#2F3440'
 
   // Composite accessibility label — reads full card as one VoiceOver unit
   const a11yLabel = useMemo(() => {
@@ -526,16 +527,16 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             style={styles.actionItem}
           >
             <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
-              <Heart size={16} color={liked ? colors.destructive : colors.mutedForeground} fill={liked ? colors.destructive : 'transparent'} />
+              <Heart size={16} color={liked ? colors.destructive : actionColor} fill={liked ? colors.destructive : 'transparent'} />
             </Animated.View>
-            {likeCount > 0 && <Text style={[styles.actionText, { color: liked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>}
+            {likeCount > 0 && <Text style={[styles.actionText, { color: liked ? colors.destructive : actionColor }]}>{likeCount}</Text>}
           </Pressable>
 
           {/* Comment count */}
           <View style={styles.actionItem}>
-            <MessageCircle size={16} color={colors.mutedForeground} />
+            <MessageCircle size={16} color={actionColor} />
             {(post.comment_count ?? 0) > 0 && (
-              <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
+              <Text style={[styles.actionText, { color: actionColor }]}>{post.comment_count}</Text>
             )}
           </View>
 
@@ -574,7 +575,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {saved ? (
               <BookmarkCheck size={16} color={colors.primary} fill={colors.primary} />
             ) : (
-              <Bookmark size={16} color={colors.mutedForeground} />
+              <Bookmark size={16} color={actionColor} />
             )}
           </Pressable>
 
@@ -592,7 +593,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               }}
               style={styles.actionItem}
             >
-              <Share2 size={16} color={colors.mutedForeground} />
+              <Share2 size={16} color={actionColor} />
             </Pressable>
           )}
           {showMore && (
@@ -608,7 +609,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               }}
               style={styles.actionItem}
             >
-              <Flag size={16} color={colors.mutedForeground} />
+              <Flag size={16} color={actionColor} />
             </Pressable>
           )}
           {showMore && userId && (
@@ -623,7 +624,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               }}
               style={styles.actionItem}
             >
-              <EyeOff size={16} color={colors.mutedForeground} />
+              <EyeOff size={16} color={actionColor} />
             </Pressable>
           )}
 
@@ -635,7 +636,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
             style={[styles.actionItem, !showMore && { opacity: 0.5 }]}
           >
-            <MoreHorizontal size={16} color={colors.mutedForeground} />
+            <MoreHorizontal size={16} color={actionColor} />
           </Pressable>
 
           {/* Popular badge */}

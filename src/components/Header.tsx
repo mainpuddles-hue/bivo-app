@@ -57,15 +57,15 @@ export function Header() {
 
         <View style={styles.actions}>
           <PressableOpacity accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
-            <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
+            <Search size={20} color={colors.foreground} strokeWidth={2} />
           </PressableOpacity>
           <PressableOpacity accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
-            <Map size={20} color={colors.mutedForeground} strokeWidth={1.8} />
+            <Map size={20} color={colors.foreground} strokeWidth={2} />
           </PressableOpacity>
           <PressableOpacity accessibilityLabel={t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={20}
-              color={unreadCount > 0 ? colors.primary : colors.mutedForeground}
+              color={unreadCount > 0 ? colors.primary : colors.foreground}
               strokeWidth={unreadCount > 0 ? 2 : 1.8}
             />
             {unreadCount > 0 && (
@@ -101,6 +101,9 @@ const styles = StyleSheet.create({
   iconButton: {
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#000000',
+    backgroundColor: '#FFFFFF',
   },
   badge: {
     position: 'absolute', right: 4, top: 4,
