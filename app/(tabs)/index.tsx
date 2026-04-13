@@ -568,11 +568,7 @@ function FeedScreenInner() {
       {/* Sticky filter bar */}
       <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: 8 }]}>
         <View style={styles.neighborhoodRow}>
-          <PressableOpacity
-            onPress={() => feed.setShowNeighborhoodPicker(true)}
-            style={[styles.neighborhoodBtn, { backgroundColor: isDark ? colors.card : colors.muted }]}
-            hitSlop={8}
-          >
+          <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
             <MapPin size={12} color={colors.mutedForeground} />
             <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
               {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
@@ -586,7 +582,7 @@ function FeedScreenInner() {
           {feed.followedIds.length > 0 && (
             <Pressable
               onPress={() => feed.setShowFollowing(p => !p)}
-              style={[styles.followingBtn, feed.showFollowing ? { backgroundColor: colors.primary, borderColor: '#000000' } : { backgroundColor: isDark ? colors.card : colors.muted, borderColor: '#000000' }]}
+              style={[styles.followingBtn, feed.showFollowing ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
             >
               <Users size={14} color={feed.showFollowing ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.8} />
               <Text style={[styles.followingText, { color: feed.showFollowing ? colors.primaryForeground : colors.mutedForeground }]}>
@@ -608,8 +604,8 @@ function FeedScreenInner() {
                 style={[
                   styles.sortChip,
                   isActive
-                    ? { backgroundColor: colors.primary, borderWidth: 1, borderColor: '#000000' }
-                    : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: '#000000' },
+                    ? { backgroundColor: colors.primary }
+                    : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: `${colors.border}80` },
                 ]}
               >
                 <Text style={[
@@ -664,18 +660,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06, shadowRadius: 2, elevation: 2,
   },
   neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
-  neighborhoodBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    alignSelf: 'flex-start',
-    minHeight: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: '#000000',
-  },
+  neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, alignSelf: 'flex-start', minHeight: 32 },
   neighborhoodText: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   dateGroupLabel: { alignItems: 'center', paddingVertical: 4 },
   dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3, lineHeight: 14 },
@@ -684,7 +669,6 @@ const styles = StyleSheet.create({
   followingBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5,
     alignSelf: 'flex-start', minHeight: 40,
   },
   followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
@@ -692,7 +676,6 @@ const styles = StyleSheet.create({
   sortChip: {
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center', minHeight: 30,
-    borderWidth: 1.5,
   },
   sortChipText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4 },

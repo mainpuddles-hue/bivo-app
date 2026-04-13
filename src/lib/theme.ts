@@ -20,8 +20,8 @@ export const colors = {
     accentForeground: '#FFFFFF',
   },
   dark: {
-    primary: '#79DEA1',
-    accent: '#79DEA1',
+    primary: '#6FCF97',
+    accent: '#6FCF97',
     background: '#121212',
     foreground: '#E8E6E0',
     card: '#242424',

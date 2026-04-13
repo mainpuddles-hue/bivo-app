@@ -50,21 +50,22 @@ export function Header() {
       <View style={styles.headerContent}>
         <Pressable onPress={() => router.push('/')} style={styles.logoRow} accessibilityLabel={t('nav.feed')} accessibilityRole="button">
           <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
-            <TackBirdLogo size={20} color={colors.primaryForeground} />
+            <TackBirdLogo size={16} color={colors.primaryForeground} />
           </View>
+          <Text style={[styles.wordmark, { color: colors.primary }]}>TACKBIRD</Text>
         </Pressable>
 
         <View style={styles.actions}>
           <PressableOpacity accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
-            <Search size={20} color={colors.foreground} strokeWidth={2} />
+            <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </PressableOpacity>
           <PressableOpacity accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
-            <Map size={20} color={colors.foreground} strokeWidth={2} />
+            <Map size={20} color={colors.mutedForeground} strokeWidth={1.8} />
           </PressableOpacity>
           <PressableOpacity accessibilityLabel={t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={20}
-              color={unreadCount > 0 ? colors.primary : colors.foreground}
+              color={unreadCount > 0 ? colors.primary : colors.mutedForeground}
               strokeWidth={unreadCount > 0 ? 2 : 1.8}
             />
             {unreadCount > 0 && (
@@ -90,18 +91,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     height: 48, paddingHorizontal: 16,
   },
-  logoRow: { flexDirection: 'row', alignItems: 'center' },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoCircle: {
-    width: 38, height: 38, borderRadius: 19,
+    width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
+  wordmark: { fontSize: 12, fontFamily: fonts.heading, letterSpacing: 1.7, lineHeight: 16 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconButton: {
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#000000',
-    backgroundColor: '#FFFFFF',
   },
   badge: {
     position: 'absolute', right: 4, top: 4,
