@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { enableFreeze } from 'react-native-screens'
 import { Tabs, useRouter, usePathname } from 'expo-router'
-import { View, Text, StyleSheet, Modal, Pressable, Platform, Animated } from 'react-native'
+import { View, Text, StyleSheet, Platform, Animated } from 'react-native'
 import { BlurView } from 'expo-blur'
 import * as Notifications from 'expo-notifications'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
@@ -9,7 +9,7 @@ import { useReduceMotion } from '@/hooks/useReduceMotion'
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Newspaper, Plus, MessageCircle, User, Compass, FileText, CalendarDays, ChevronRight } from 'lucide-react-native'
+import { Newspaper, Plus, MessageCircle, User, Compass } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -96,8 +96,6 @@ export default function TabLayout() {
   const unreadCount = useUnreadCount(userId)
   const eventChatUnread = useEventChatUnread(userId)
   const totalUnread = unreadCount + eventChatUnread
-  const [showCreateMenu, setShowCreateMenu] = useState(false)
-
   // Sync app icon badge with combined unread count. Centralized here so
   // useUnreadCount and useEventChatUnread can't fight each other. Change
   // detection prevents no-op bridge calls.
@@ -170,11 +168,6 @@ export default function TabLayout() {
       <Tabs.Screen name="create" options={{
         tabBarAccessibilityLabel: t('nav.create'),
         tabBarIcon: ({ focused }) => <TabIcon icon={Plus} label={t('nav.create')} focused={focused} isCreate colors={colors} />,
-      }} listeners={{
-        tabPress: (e) => {
-          e.preventDefault()
-          setShowCreateMenu(true)
-        },
       }} />
       <Tabs.Screen name="messages" options={{
         tabBarAccessibilityLabel: t('nav.messages'),
@@ -185,66 +178,7 @@ export default function TabLayout() {
         tabBarIcon: ({ focused }) => <TabIcon icon={User} label={t('nav.profile')} focused={focused} colors={colors} />,
       }} />
     </Tabs>
-    <Modal
-      visible={showCreateMenu}
-      transparent
-      animationType="fade"
-      onRequestClose={() => setShowCreateMenu(false)}
-    >
-      <Pressable style={s.backdrop} onPress={() => setShowCreateMenu(false)}>
-        <View style={[s.sheet, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
-          <View style={[s.handle, { backgroundColor: colors.border }]} />
-
-          <Pressable
-            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
-            accessibilityLabel={t('create.listing')}
-            accessibilityRole="button"
-            onPress={() => { setShowCreateMenu(false); router.push('/(tabs)/create') }}
-          >
-            <View style={[s.sheetIcon, { backgroundColor: `${colors.primary}15` }]}>
-              <FileText size={20} color={colors.primary} />
-            </View>
-            <View style={s.sheetText}>
-              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.listing')}</Text>
-              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.listingHint')}</Text>
-            </View>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
-            accessibilityLabel={t('create.event')}
-            accessibilityRole="button"
-            onPress={() => { setShowCreateMenu(false); router.push('/create-event') }}
-          >
-            <View style={[s.sheetIcon, { backgroundColor: `${colors.success}15` }]}>
-              <CalendarDays size={20} color={colors.success} />
-            </View>
-            <View style={s.sheetText}>
-              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.event')}</Text>
-              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.eventHint')}</Text>
-            </View>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [s.sheetRow, pressed && { opacity: 0.7 }]}
-            accessibilityLabel={t('create.discussion')}
-            accessibilityRole="button"
-            onPress={() => { setShowCreateMenu(false); router.push('/forum') }}
-          >
-            <View style={[s.sheetIcon, { backgroundColor: `${colors.info}15` }]}>
-              <MessageCircle size={20} color={colors.info} />
-            </View>
-            <View style={s.sheetText}>
-              <Text style={[s.sheetTitle, { color: colors.foreground }]}>{t('create.discussion')}</Text>
-              <Text style={[s.sheetHint, { color: colors.mutedForeground }]}>{t('create.discussionHint')}</Text>
-            </View>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </Pressable>
-        </View>
-      </Pressable>
-    </Modal>
+    {/* Create menu modal removed — tab navigates directly to create screen */}
     </View>
   )
 }
@@ -289,12 +223,4 @@ const s = StyleSheet.create({
     position: 'absolute', bottom: -6,
     width: 20, height: 3, borderRadius: 1.5,
   },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingTop: 8 },
-  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
-  sheetRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12, minHeight: 56 },
-  sheetIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  sheetText: { flex: 1 },
-  sheetTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
-  sheetHint: { fontSize: 13, fontFamily: fonts.body, marginTop: 2 },
 })
