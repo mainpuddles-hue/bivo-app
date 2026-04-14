@@ -319,7 +319,7 @@ function NotificationsScreenInner() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchNotifications() }} tintColor={colors.primary} />}
         renderSectionHeader={({ section }) => (
           <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{section.title}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{section.title}</Text>
           </View>
         )}
         renderItem={({ item }) => {

@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   eventChatTitle: {
     fontSize: 13, fontWeight: '600', lineHeight: 18, fontFamily: fonts.bodySemi,
   },
-  eventChatMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  eventChatMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   eventChatMetaText: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   eventChatPreview: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   sectionDivider: { height: StyleSheet.hairlineWidth, marginTop: 12, marginHorizontal: 16 },

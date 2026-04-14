@@ -478,7 +478,7 @@ export default function ProfileScreen() {
               </View>
             </View>
           ) : (
-            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'center', gap: 6 }, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
+            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'center', gap: 6 }, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
               <Text style={[s.bio, { color: profile.bio ? colors.mutedForeground : colors.primary, flex: 1 }]}>
                 {profile.bio || t('profile.clickToAddBio')}
               </Text>
@@ -1037,7 +1037,7 @@ const s = StyleSheet.create({
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
   followName: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 8 },
+  multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 12 },
   multiplierText: { fontSize: 11, fontWeight: '800', fontFamily: fonts.bodySemi },
   // My Posts tab
   myPostItem: { gap: 8, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
@@ -1048,7 +1048,7 @@ const s = StyleSheet.create({
   myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
   myPostStatusText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostActions: { flexDirection: 'row', gap: 8, paddingTop: 4 },
-  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, minHeight: 44 },
+  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 44 },
   myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   postFilterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },

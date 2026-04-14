@@ -1332,7 +1332,7 @@ export default function CreateScreen() {
                         <PressableOpacity
                           key={tag}
                           onPress={() => setSelectedTags(prev => prev.includes(tag) ? prev : [...prev, tag])}
-                          style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: `${colors.primary}15` }}
+                          style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, backgroundColor: `${colors.primary}15` }}
                         >
                           <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.body }}>+ {t(`tags.${tag}`) ?? tag}</Text>
                         </PressableOpacity>
@@ -1798,7 +1798,7 @@ const styles = StyleSheet.create({
   categoryName: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   categorySub: { fontSize: 12, fontFamily: fonts.body },
   form: { padding: 16, gap: 20, paddingBottom: 100 },
-  field: { gap: 6 },
+  field: { gap: 8 },
   label: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
   input: {
     borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
