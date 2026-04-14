@@ -86,9 +86,9 @@ export const TRUST_TIERS = {
     color: '#9CA3AF',
     icon: 'Shield' as const,
     permissions: {
-      canLainaa: false,
+      canLainaa: true,
       canOfferPaidServices: false,
-      maxDailyFee: 0,
+      maxDailyFee: 50,
       maxServicePrice: 0,
       priorityInFeed: false,
       trustedBadge: false,
