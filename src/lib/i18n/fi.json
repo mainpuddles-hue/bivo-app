@@ -835,7 +835,13 @@
     "changeCity": "Vaihda kaupunki",
     "cityChanged": "Kaupunki vaihdettu",
     "pickNewNeighborhood": "Valitse uusi naapurusto uudessa kaupungissa",
-    "deletedUser": "[Poistettu]"
+    "deletedUser": "[Poistettu]",
+    "sectionAccount": "Tili",
+    "sectionAppearance": "Ulkoasu",
+    "sectionPrivacy": "Yksityisyys",
+    "sectionNotifications": "Ilmoitukset",
+    "sectionAbout": "Tietoja",
+    "sectionDanger": "Vaara-alue"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -962,6 +968,7 @@
     "getStarted": "Aloitetaan",
     "neighborhoodTitle": "Missä asut?",
     "neighborhoodSubtitle": "Valitse naapurustosi nähdäksesi lähiilmoitukset",
+    "neighborhoodExplainer": "Näytämme sinulle juuri sinun naapurustosi ilmoitukset. Voit muuttaa tätä myöhemmin asetuksissa.",
     "profileTitle": "Profiilisi",
     "profileSubtitle": "Kerro naapureille kuka olet",
     "nameLabel": "Nimesi",

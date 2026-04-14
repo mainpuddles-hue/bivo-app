@@ -485,7 +485,7 @@ function LoginScreenInner() {
               )}
 
               {/* Password strength (register only) */}
-              {mode === 'register' && password.length > 0 && (
+              {mode === 'register' && (
                 <PasswordStrength password={password} colors={colors} />
               )}
 

@@ -835,7 +835,13 @@
     "changeCity": "Change city",
     "cityChanged": "City changed",
     "pickNewNeighborhood": "Select a new neighborhood in your new city",
-    "deletedUser": "[Deleted]"
+    "deletedUser": "[Deleted]",
+    "sectionAccount": "Account",
+    "sectionAppearance": "Appearance",
+    "sectionPrivacy": "Privacy",
+    "sectionNotifications": "Notifications",
+    "sectionAbout": "About",
+    "sectionDanger": "Danger zone"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -962,6 +968,7 @@
     "getStarted": "Get started",
     "neighborhoodTitle": "Where do you live?",
     "neighborhoodSubtitle": "Choose your neighborhood to see nearby posts",
+    "neighborhoodExplainer": "We'll show you posts from your neighborhood. You can change this later in settings.",
     "profileTitle": "Your profile",
     "profileSubtitle": "Tell your neighbors who you are",
     "nameLabel": "Your name",

@@ -817,7 +817,13 @@
     "changeCity": "Byt stad",
     "cityChanged": "Stad ändrad",
     "pickNewNeighborhood": "Välj ett nytt grannskap i din nya stad",
-    "deletedUser": "[Raderad]"
+    "deletedUser": "[Raderad]",
+    "sectionAccount": "Konto",
+    "sectionAppearance": "Utseende",
+    "sectionPrivacy": "Integritet",
+    "sectionNotifications": "Aviseringar",
+    "sectionAbout": "Om",
+    "sectionDanger": "Farozon"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -944,6 +950,7 @@
     "getStarted": "Kom igång",
     "neighborhoodTitle": "Var bor du?",
     "neighborhoodSubtitle": "Välj ditt grannskap för att se närliggande inlägg",
+    "neighborhoodExplainer": "Vi visar inlägg från ditt grannskap. Du kan ändra detta senare i inställningar.",
     "profileTitle": "Din profil",
     "profileSubtitle": "Berätta för grannarna vem du är",
     "nameLabel": "Ditt namn",

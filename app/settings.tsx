@@ -561,6 +561,11 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
+        {/* ── Section: Account ── */}
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {t('settings.sectionAccount')}
+        </Text>
+
         {/* Email verification status */}
         {userEmail && (
           <>
@@ -645,6 +650,11 @@ export default function SettingsScreen() {
             </View>
           </>
         )}
+
+        {/* ── Section: Appearance ── */}
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {t('settings.sectionAppearance')}
+        </Text>
 
         {/* Language */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
@@ -751,6 +761,11 @@ export default function SettingsScreen() {
           ))}
         </View>
 
+        {/* ── Section: Privacy ── */}
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {t('settings.sectionPrivacy')}
+        </Text>
+
         {/* Location Accuracy */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.locationAccuracy')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
@@ -765,6 +780,11 @@ export default function SettingsScreen() {
             </PressableOpacity>
           ))}
         </View>
+
+        {/* ── Section: Notifications ── */}
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {t('settings.sectionNotifications')}
+        </Text>
 
         {/* Notifications — granular preferences */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.notifSection')}</Text>
@@ -1027,6 +1047,11 @@ export default function SettingsScreen() {
           </>
         )}
 
+        {/* ── Section: Danger zone ── */}
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {t('settings.sectionDanger')}
+        </Text>
+
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
         <View style={[s.card, { backgroundColor: colors.card }]}>
@@ -1051,6 +1076,11 @@ export default function SettingsScreen() {
             <ChevronRight size={16} color={colors.mutedForeground} />
           </PressableOpacity>
         </View>
+
+        {/* ── Section: About ── */}
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {t('settings.sectionAbout')}
+        </Text>
 
         {/* About & info links */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.about')}</Text>

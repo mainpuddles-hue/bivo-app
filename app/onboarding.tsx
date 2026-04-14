@@ -441,6 +441,10 @@ function OnboardingScreenInner() {
         {t('onboarding.neighborhoodSubtitle')}
       </Text>
 
+      <Text style={{ fontSize: 14, fontFamily: fonts.body, color: colors.mutedForeground, textAlign: 'center', lineHeight: 20, paddingHorizontal: 32 }}>
+        {t('onboarding.neighborhoodExplainer')}
+      </Text>
+
       {/* Search input for neighborhoods — reduces cognitive load when many neighborhoods */}
       {dynamicNeighborhoods.length > 12 && (
         <View style={s.neighborhoodSearchRow}>
