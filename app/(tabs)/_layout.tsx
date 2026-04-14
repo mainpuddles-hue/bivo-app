@@ -188,7 +188,7 @@ export default function TabLayout() {
     <Modal
       visible={showCreateMenu}
       transparent
-      animationType="slide"
+      animationType="fade"
       onRequestClose={() => setShowCreateMenu(false)}
     >
       <Pressable style={s.backdrop} onPress={() => setShowCreateMenu(false)}>
