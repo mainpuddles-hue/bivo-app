@@ -52,10 +52,6 @@ describe('Feature flag expected values', () => {
     expect(FEATURES.IDENTITY_VERIFICATION).toBe(false)
   })
 
-  test('GRAB is true (Nappaa 24h urgent listings enabled)', () => {
-    expect(FEATURES.GRAB).toBe(true)
-  })
-
   test('EVENTS_TAPAHTUMA_TYPE is true (tapahtuma post type enabled)', () => {
     expect(FEATURES.EVENTS_TAPAHTUMA_TYPE).toBe(true)
   })
@@ -126,7 +122,6 @@ describe('Feature flag immutability', () => {
 describe('Feature flag inventory', () => {
   const EXPECTED_KEYS = [
     'LENDING',
-    'GRAB',
     'PAYMENTS',
     'PRO_SUBSCRIPTION',
     'BUSINESS_ACCOUNT',

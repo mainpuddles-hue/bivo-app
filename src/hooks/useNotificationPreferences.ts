@@ -3,7 +3,7 @@ import { Alert } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from '@/hooks/useSupabase'
 
-export type NotificationType = 'messages' | 'reviews' | 'rentals' | 'system' | 'marketing' | 'nearby_posts' | 'events' | 'likes' | 'comments' | 'follows' | 'nappaa'
+export type NotificationType = 'messages' | 'reviews' | 'rentals' | 'system' | 'marketing' | 'nearby_posts' | 'events' | 'likes' | 'comments' | 'follows'
 
 interface NotificationPreferences {
   messages: boolean
@@ -16,7 +16,6 @@ interface NotificationPreferences {
   likes: boolean
   comments: boolean
   follows: boolean
-  nappaa: boolean
 }
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
@@ -30,7 +29,6 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   likes: true,
   comments: true,
   follows: true,
-  nappaa: true,
 }
 
 const CACHE_KEY = 'tackbird-notification-prefs'

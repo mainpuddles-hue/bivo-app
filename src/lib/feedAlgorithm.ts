@@ -15,7 +15,7 @@ interface FeedContext {
  * Factors (weights sum to 1.0):
  * - Recency decay (0.20): 1/(1 + hours/24) — half-life 24h
  * - Engagement (0.20): normalized likes + comments
- * - Urgency (0.20): is_urgent or nappaa expiring soon
+ * - Urgency (0.20): is_urgent flag
  * - Proximity (0.10): same neighborhood bonus
  * - Trust + social (0.10): trust level + following bonus
  * - Personalization (0.15): from collaborative filtering / interaction history
@@ -34,13 +34,9 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   const interactions = (post.like_count ?? 0) + (post.comment_count ?? 0) * 2
   const engagement = Math.min(1, Math.max(0, interactions / 20))
 
-  // Urgency: urgent posts or nappaa expiring within 8h
+  // Urgency: urgent posts
   let urgency = 0
   if (post.is_urgent) urgency = 1.0
-  else if (post.type === 'nappaa' && post.expires_at) {
-    const timeLeft = new Date(post.expires_at).getTime() - now
-    if (timeLeft > 0 && timeLeft < 8 * 3600000) urgency = 0.8
-  }
 
   // Proximity: same neighborhood
   let proximity = 0
@@ -69,8 +65,8 @@ export function scorePost(post: Post, ctx: FeedContext): number {
     // Daytime: boost services
     timeRelevance = post.type === 'tarjoan' ? 0.8 : 0.5
   } else if (hour >= 17 && hour < 22) {
-    // Evening: boost free/grab items
-    timeRelevance = (post.type === 'nappaa' || post.type === 'ilmaista') ? 0.8 : 0.5
+    // Evening: boost free items
+    timeRelevance = post.type === 'ilmaista' ? 0.8 : 0.5
   }
 
   // Boost: multiplicative 1.4x instead of additive 0.5 — keeps score proportional

@@ -398,7 +398,7 @@ describe('Score Post: General Properties', () => {
     const combinations = [
       makePost({ is_pro_listing: true, like_count: 20, is_urgent: true }),
       makePost({ is_pro_listing: false, like_count: 0, comment_count: 0 }),
-      makePost({ type: 'nappaa', expires_at: new Date(Date.now() + 3600000).toISOString() }),
+      makePost({ type: 'ilmaista', expires_at: new Date(Date.now() + 3600000).toISOString() }),
     ]
 
     for (const post of combinations) {

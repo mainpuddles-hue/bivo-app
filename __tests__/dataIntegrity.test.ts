@@ -33,7 +33,7 @@ import type { PostType, BoostTier } from '../src/lib/types'
 // ══════════════════════════════════════════════════════
 
 describe('PostType and CATEGORIES alignment', () => {
-  const allPostTypes: PostType[] = ['tarvitsen', 'tarjoan', 'ilmaista', 'nappaa', 'lainaa', 'tapahtuma']
+  const allPostTypes: PostType[] = ['tarvitsen', 'tarjoan', 'ilmaista', 'lainaa', 'tapahtuma']
 
   test('every PostType value has a corresponding CATEGORIES entry', () => {
     for (const type of allPostTypes) {
@@ -195,9 +195,6 @@ describe('Feature flags are all booleans', () => {
     expect(FEATURES).toHaveProperty('LENDING')
   })
 
-  test('GRAB feature flag exists', () => {
-    expect(FEATURES).toHaveProperty('GRAB')
-  })
 })
 
 // ══════════════════════════════════════════════════════

@@ -4,7 +4,6 @@ import { AlertTriangle, Bus, X, ChevronDown, ChevronUp } from 'lucide-react-nati
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { fonts } from '@/lib/fonts'
-import { CATEGORIES } from '@/lib/constants'
 import { fetchAllAlerts, type AppAlert } from '@/lib/alerts'
 
 // Module-level — survives component remounts
@@ -35,9 +34,9 @@ export function AlertBanner() {
       {shownAlerts.map(alert => {
         const isWeather = alert.type === 'weather'
         const isSevere = alert.severity === 'severe' || alert.severity === 'warning'
-        const bgColor = isSevere ? `${colors.destructive}18` : `${CATEGORIES.nappaa.color}18`
-        const borderColor = isSevere ? `${colors.destructive}44` : `${CATEGORIES.nappaa.color}44`
-        const iconColor = isSevere ? colors.destructive : CATEGORIES.nappaa.color
+        const bgColor = isSevere ? `${colors.destructive}18` : `${'#E8A050'}18`
+        const borderColor = isSevere ? `${colors.destructive}44` : `${'#E8A050'}44`
+        const iconColor = isSevere ? colors.destructive : '#E8A050'
         const isExpanded = expandedId === alert.id
 
         return (

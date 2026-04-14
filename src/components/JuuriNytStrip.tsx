@@ -49,9 +49,8 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
         if (!p.expires_at) return false
         const expiresMs = new Date(p.expires_at).getTime()
         if (expiresMs <= now) return false
-        // Show if: is_urgent flag set, OR nappaa expiring within 24h
+        // Show if: is_urgent flag set
         if (p.is_urgent) return true
-        if (p.type === 'nappaa' && (expiresMs - now) <= 24 * 3600000) return true
         return false
       })
       .sort((a, b) => new Date(a.expires_at!).getTime() - new Date(b.expires_at!).getTime())

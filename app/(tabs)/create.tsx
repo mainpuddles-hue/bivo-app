@@ -119,17 +119,6 @@ const POST_TAGS: Record<string, { id: string; label: string }[]> = {
     { id: 'lastentarvikkeet', label: 'tags.lastentarvikkeet' },
     { id: 'muu', label: 'tags.muu' },
   ],
-  nappaa: [
-    { id: 'ruoka', label: 'tags.ruoka' },
-    { id: 'huonekalut', label: 'tags.huonekalut' },
-    { id: 'vaatteet', label: 'tags.vaatteet' },
-    { id: 'kirjat', label: 'tags.kirjat' },
-    { id: 'lelut', label: 'tags.lelut' },
-    { id: 'puutarha', label: 'tags.puutarha' },
-    { id: 'kodinkoneet', label: 'tags.kodinkoneet' },
-    { id: 'elektroniikka', label: 'tags.elektroniikka' },
-    { id: 'muu', label: 'tags.muu' },
-  ],
   lainaa: [
     { id: 'tyokalut', label: 'tags.tyokalut' },
     { id: 'elektroniikka', label: 'tags.elektroniikka' },
@@ -232,7 +221,6 @@ export default function CreateScreen() {
     if (params.type && Object.keys(CATEGORIES).includes(params.type)) {
       // Respect feature flags — don't allow disabled categories via deep link
       if (params.type === 'lainaa' && !FEATURES.LENDING) return
-      if (params.type === 'nappaa' && !FEATURES.GRAB) return
       setSelectedType(params.type as PostType)
       setStep('form')
     }
@@ -878,7 +866,6 @@ export default function CreateScreen() {
         <ScrollView contentContainerStyle={styles.categoryGrid}>
           {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
             if (type === 'lainaa' && !FEATURES.LENDING) return false
-            if (type === 'nappaa' && !FEATURES.GRAB) return false
             return true
           }).map(([type, cat]) => {
             const Icon = CATEGORY_ICON_MAP[cat.icon]

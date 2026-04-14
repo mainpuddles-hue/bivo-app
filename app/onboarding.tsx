@@ -546,7 +546,7 @@ function OnboardingScreenInner() {
       {selectedNeighborhood && verificationStatus !== 'idle' && (
         <View style={[s.verificationRow, {
           backgroundColor: verificationStatus === 'verified' ? `${colors.success}15` :
-            verificationStatus === 'unverified' ? `${CATEGORIES.nappaa.color}15` : colors.muted,
+            verificationStatus === 'unverified' ? `${colors.pro}15` : colors.muted,
         }]}>
           {verificationStatus === 'checking' && (
             <>
@@ -566,8 +566,8 @@ function OnboardingScreenInner() {
           )}
           {verificationStatus === 'unverified' && (
             <>
-              <AlertTriangle size={16} color={CATEGORIES.nappaa.color} />
-              <Text style={[s.verificationText, { color: CATEGORIES.nappaa.color }]}>
+              <AlertTriangle size={16} color={colors.pro} />
+              <Text style={[s.verificationText, { color: colors.pro }]}>
                 {t('onboarding.locationNotVerified', { distance: distanceKm ? distanceKm.toFixed(1) : '?' })}
               </Text>
             </>

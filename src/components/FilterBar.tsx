@@ -68,7 +68,6 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
     <>
       {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
         if (type === 'lainaa' && !FEATURES.LENDING) return false
-        if (type === 'nappaa' && !FEATURES.GRAB) return false
         return true
       }).map(([type, cat]) => {
         const isActive = activeFilter === type

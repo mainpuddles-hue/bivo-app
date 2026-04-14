@@ -32,28 +32,15 @@ describe('FilterBar: feature flags hide categories', () => {
   // Mirrors the filter logic from src/components/FilterBar.tsx:
   //   .filter(([type]) => {
   //     if (type === 'lainaa' && !FEATURES.LENDING) return false
-  //     if (type === 'nappaa' && !FEATURES.GRAB) return false
+  //     (nappaa removed)
   //     return true
   //   })
   function getVisibleCategories(): PostType[] {
     return (Object.keys(CATEGORIES) as PostType[]).filter(type => {
       if (type === 'lainaa' && !FEATURES.LENDING) return false
-      if (type === 'nappaa' && !FEATURES.GRAB) return false
       return true
     })
   }
-
-  test('Lainaa is hidden when FEATURES.LENDING is false', () => {
-    expect(FEATURES.LENDING).toBe(false)
-    const visible = getVisibleCategories()
-    expect(visible).not.toContain('lainaa')
-  })
-
-  test('Nappaa is visible when FEATURES.GRAB is true', () => {
-    expect(FEATURES.GRAB).toBe(true)
-    const visible = getVisibleCategories()
-    expect(visible).toContain('nappaa')
-  })
 
   test('Core categories (tarvitsen, tarjoan, ilmaista) are always visible', () => {
     const visible = getVisibleCategories()
@@ -95,38 +82,12 @@ describe('Search: feature flags hide categories from results', () => {
   // Mirrors the feed/search query logic from app/search.tsx and src/hooks/useFeedData.ts:
   //   const hiddenTypes: string[] = []
   //   if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
-  //   if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
+  //   (nappaa removed)
   function getHiddenTypes(): string[] {
     const hiddenTypes: string[] = []
     if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
-    if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
     return hiddenTypes
   }
-
-  test('Lainaa is in hidden types for search queries', () => {
-    const hidden = getHiddenTypes()
-    expect(hidden).toContain('lainaa')
-  })
-
-  test('Nappaa is NOT in hidden types (GRAB is enabled)', () => {
-    const hidden = getHiddenTypes()
-    expect(hidden).not.toContain('nappaa')
-  })
-
-  // Mirrors the category grid filter in search.tsx:
-  //   .filter(([type]) => {
-  //     if (type === 'lainaa' && !FEATURES.LENDING) return false
-  //     if (type === 'nappaa' && !FEATURES.GRAB) return false
-  //     return true
-  //   })
-  test('Lainaa is hidden from search category grid', () => {
-    const visibleInSearch = (Object.keys(CATEGORIES) as PostType[]).filter(type => {
-      if (type === 'lainaa' && !FEATURES.LENDING) return false
-      if (type === 'nappaa' && !FEATURES.GRAB) return false
-      return true
-    })
-    expect(visibleInSearch).not.toContain('lainaa')
-  })
 
   test('Search hidden types are applied when no category filter is active', () => {
     // When catFilter is null (no active filter), hidden types should be excluded
@@ -160,7 +121,7 @@ describe('MVP feature flags snapshot', () => {
   })
 
   test('Enabled features for MVP launch', () => {
-    expect(FEATURES.GRAB).toBe(true)
     expect(FEATURES.EVENTS_TAPAHTUMA_TYPE).toBe(true)
+    expect(FEATURES.LENDING).toBe(true)
   })
 })

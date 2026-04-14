@@ -6,7 +6,6 @@ export type PostType =
   | 'tarvitsen'
   | 'tarjoan'
   | 'ilmaista'
-  | 'nappaa'
   | 'lainaa'
   | 'tapahtuma'
 

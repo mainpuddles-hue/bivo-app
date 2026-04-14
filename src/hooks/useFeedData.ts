@@ -234,7 +234,6 @@ export function useFeedData() {
       // Hide disabled category types from feed
       const hiddenTypes: string[] = []
       if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
-      if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
       if (hiddenTypes.length > 0 && !activeFilter) {
         query = query.not('type', 'in', `(${hiddenTypes.join(',')})`)
       }

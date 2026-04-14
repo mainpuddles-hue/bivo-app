@@ -229,7 +229,6 @@ function DiscoveryView({
         <View style={s.categoryGrid}>
           {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
             if (type === 'lainaa' && !FEATURES.LENDING) return false
-            if (type === 'nappaa' && !FEATURES.GRAB) return false
             return true
           }).map(([type, cat]) => {
             const CatIcon = CATEGORY_ICON_MAP[cat.icon]
@@ -574,7 +573,6 @@ function SearchScreenInner() {
       // Hide disabled category types from search results (same as feed)
       const hiddenTypes: string[] = []
       if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
-      if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
       if (hiddenTypes.length > 0 && !catFilter) {
         postQuery = postQuery.not('type', 'in', `(${hiddenTypes.join(',')})`)
       }
@@ -773,7 +771,6 @@ function SearchScreenInner() {
       // Hide disabled category types from search results (same as feed)
       const hiddenTypes: string[] = []
       if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
-      if (!FEATURES.GRAB) hiddenTypes.push('nappaa')
       if (hiddenTypes.length > 0 && !activeFilter) {
         postQuery = postQuery.not('type', 'in', `(${hiddenTypes.join(',')})`)
       }
@@ -960,8 +957,7 @@ function SearchScreenInner() {
             </PressableOpacity>
             {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
               if (type === 'lainaa' && !FEATURES.LENDING) return false
-              if (type === 'nappaa' && !FEATURES.GRAB) return false
-              return true
+                return true
             }).map(([type, cat]) => (
               <PressableOpacity
                 key={type}

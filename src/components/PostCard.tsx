@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
-  MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
+  MapPin, Crown, ImageIcon, BadgeCheck, Heart,
   MessageCircle, Clock, Building2,
   Share2, Bookmark, BookmarkCheck, MoreHorizontal, User, Flag, EyeOff,
 } from 'lucide-react-native'
@@ -104,7 +104,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
   const category = CATEGORIES[post.type as PostType]
   const isPro = post.is_pro_listing
-  const isNappaa = post.type === 'nappaa'
   const user = post.user
   const hasImage = post.image_url && !imgError
   const CategoryIcon = category ? ICON_MAP[category.icon] : null
@@ -256,13 +255,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         </View>
       )}
 
-      {/* Fix 1: Nappaa urgency banner — expiring today */}
-      {isNappaa && expirationInfo && expirationInfo.severity === 'urgent' && (
-        <View style={[styles.urgencyBanner, { backgroundColor: colors.destructive }]}>
-          <Text style={[styles.urgencyText, { color: colors.primaryForeground }]}>{t('feed.expiringToday')}</Text>
-        </View>
-      )}
-
       {/* Content */}
       <View style={styles.content}>
         {/* TOP ROW: Avatar + Name + timeAgo on LEFT, Category badge on RIGHT */}
@@ -382,18 +374,12 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 <Crown size={14} color="#1A1A1A" />
               </View>
             )}
-            {/* Nappaa urgency */}
-            {isNappaa && !isPro && (
-              <View style={[styles.proBadgeOnImage, { backgroundColor: CATEGORIES.nappaa.color }]}>
-                <Zap size={14} color="#FFFFFF" fill="#FFFFFF" />
-              </View>
-            )}
           </View>
         )}
 
         {/* Expiration badge */}
         {expirationInfo && (() => {
-          const expirationColor = expirationInfo.severity === 'urgent' ? colors.destructive : CATEGORIES.nappaa.color
+          const expirationColor = expirationInfo.severity === 'urgent' ? colors.destructive : '#E8A050'
           return (
             <View style={[styles.expirationBadge, { backgroundColor: `${expirationColor}18` }]}>
               <Clock size={10} color={expirationColor} />

@@ -52,14 +52,6 @@ export const CATEGORIES: Record<PostType, {
     bgLight: '#EBF2FE',
     bgDark: '#101A2D',
   },
-  nappaa: {
-    label: 'categories.nappaa',
-    subtitle: 'categories.nappaaSub',
-    icon: 'Zap',
-    color: '#E8A050',
-    bgLight: '#FFF5E8',
-    bgDark: '#2D2010',
-  },
   lainaa: {
     label: 'categories.lainaa',
     subtitle: 'categories.lainaaSub',

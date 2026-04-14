@@ -141,37 +141,7 @@ describe('scorePost: Urgency', () => {
     expect(diff).toBeCloseTo(0.20, 2)
   })
 
-  test('Nappaa expiring within 8h gets urgency=0.8', () => {
-    const expiresIn4h = makePost({
-      type: 'nappaa',
-      expires_at: new Date(NOW + 4 * 3600000).toISOString(),
-    })
-    const noExpiry = makePost({ type: 'nappaa', expires_at: null })
-
-    const diff = scorePost(expiresIn4h, baseCtx) - scorePost(noExpiry, baseCtx)
-    // urgency weight = 0.20, urgency=0.8 vs 0 => diff = 0.16
-    expect(diff).toBeCloseTo(0.16, 2)
-  })
-
-  test('Nappaa expiring in more than 8h gets urgency=0', () => {
-    const expiresIn24h = makePost({
-      type: 'nappaa',
-      expires_at: new Date(NOW + 24 * 3600000).toISOString(),
-    })
-    const noExpiry = makePost({ type: 'nappaa', expires_at: null })
-
-    expect(scorePost(expiresIn24h, baseCtx)).toBeCloseTo(scorePost(noExpiry, baseCtx), 5)
-  })
-
-  test('Already expired nappaa gets urgency=0 (timeLeft < 0)', () => {
-    const expired = makePost({
-      type: 'nappaa',
-      expires_at: new Date(NOW - 3600000).toISOString(),
-    })
-    const noExpiry = makePost({ type: 'nappaa', expires_at: null })
-
-    expect(scorePost(expired, baseCtx)).toBeCloseTo(scorePost(noExpiry, baseCtx), 5)
-  })
+  // Nappaa urgency tests removed — nappaa post type removed
 })
 
 // ══════════════════════════════════════════════════════

@@ -67,7 +67,7 @@ export function getSeedPosts(neighborhood: string): Partial<Post>[] {
     },
     {
       id: `seed-4-${neighborhood}`,
-      type: 'nappaa',
+      type: 'ilmaista',
       title: 'Tuoreita korvapuusteja',
       description: 'Leivoin liikaa! 12 korvapuustia jakoon, nouda Fleminginkadulta.',
       location: neighborhood,
