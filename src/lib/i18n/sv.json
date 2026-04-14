@@ -129,6 +129,8 @@
     "daysAgo": "{count} dagar sedan",
     "oneWeekAgo": "1 vecka sedan",
     "weeksAgo": "{count} veckor sedan",
+    "oneMonthAgo": "1 månad sedan",
+    "monthsAgo": "{count} månader sedan",
     "monday": "måndag",
     "tuesday": "tisdag",
     "wednesday": "onsdag",

@@ -139,6 +139,29 @@ export const TIER_3_REQUIREMENTS = {
   noActiveReports: true,
 }
 
+// ── Lending deposit suggestions by item tag ──
+// Multiplier: deposit = daily_fee × multiplier (clamped to min/max)
+export const DEPOSIT_SUGGESTIONS: Record<string, { min: number; max: number; multiplier: number }> = {
+  tyokalut:      { min: 50,  max: 200, multiplier: 3 },
+  elektroniikka: { min: 100, max: 500, multiplier: 4 },
+  urheilu:       { min: 50,  max: 300, multiplier: 3 },
+  musiikki:      { min: 100, max: 400, multiplier: 4 },
+} as const
+
+/** Calculate suggested deposit from daily fee + item tags */
+export function suggestDeposit(dailyFee: number, tags: string[] = []): number {
+  // Find the best matching tag
+  const match = tags.find(t => t in DEPOSIT_SUGGESTIONS)
+  const config = match ? DEPOSIT_SUGGESTIONS[match] : { min: 50, max: 300, multiplier: 3 }
+  const suggested = Math.round(dailyFee * config.multiplier)
+  return Math.max(config.min, Math.min(config.max, suggested))
+}
+
+// ── Lending late return constants ──
+export const LENDING_GRACE_HOURS = 24
+export const LENDING_PENALTY_RATE = 1.5 // 1.5x daily fee after grace
+export const LENDING_FORFEIT_DAYS = 7 // Full deposit forfeited after 7 days
+
 // Centralized forum category colors — used by ForumPostCard and ForumCreateModal
 export const FORUM_CATEGORY_COLORS: Record<string, string> = {
   vinkit: '#4CAF6A',

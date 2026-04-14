@@ -49,11 +49,7 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
           styles.chip,
           isActive
             ? { backgroundColor: color }
-            : {
-                backgroundColor: color + '12',
-                borderWidth: 1,
-                borderColor: color + '30',
-              },
+            : { backgroundColor: color + '1A' },
         ]}
       >
         <Text style={[styles.chipText, { color: isActive ? foregroundColor : color }]}>

@@ -125,7 +125,6 @@ const s = StyleSheet.create({
   card: {
     width: 180,
     borderRadius: 12,
-    borderWidth: 1,
     padding: 16,
     gap: 6,
   },

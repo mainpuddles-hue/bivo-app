@@ -21,7 +21,7 @@ import { triggerPush } from '@/lib/pushTrigger'
 import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
 import { ReportModal } from '@/components/ReportModal'
 import { Avatar } from '@/components/Avatar'
-import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE } from '@/lib/constants'
+import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE, suggestDeposit } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { FEATURES } from '@/lib/featureFlags'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
@@ -654,6 +654,10 @@ function PostDetailScreenInner() {
 
   const serviceFee = useMemo(() => Math.round(rentalFee * SERVICE_FEE_RATE * 100) / 100, [rentalFee])
   const bookingTotal = useMemo(() => rentalFee + serviceFee, [rentalFee, serviceFee])
+  const depositAmount = useMemo(() => {
+    if (!post?.daily_fee) return 0
+    return suggestDeposit(post.daily_fee, post.tags ?? [])
+  }, [post?.daily_fee, post?.tags])
 
   useEffect(() => {
     if (!bookingModalVisible || !id) return
@@ -697,7 +701,7 @@ function PostDetailScreenInner() {
     let createdBookingId: string | null = null
     try {
       const { data: booking, error: bookingError } = await (supabase.from('rental_bookings') as any)
-        .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee, service_fee: serviceFee, total_amount: bookingTotal, status: 'pending' })
+        .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee, service_fee: serviceFee, total_amount: bookingTotal, deposit_amount: depositAmount, deposit_status: 'authorized', status: 'pending' })
         .select('id').single()
       if (bookingError || !booking) { Alert.alert(t('common.error'), t('rental.bookingFailed')); setSendingBooking(false); return }
       createdBookingId = booking.id

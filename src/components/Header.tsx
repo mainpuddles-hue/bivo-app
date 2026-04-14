@@ -1,12 +1,10 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Bell, Search, Map } from 'lucide-react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { fonts } from '@/lib/fonts'
-import { TackBirdLogo } from './TackBirdLogo'
 import { useState, useCallback } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
 
@@ -44,29 +42,24 @@ export function Header() {
       {
         paddingTop: insets.top,
         backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)',
-        borderBottomColor: colors.border,
       }
     ]}>
       <View style={styles.headerContent}>
-        <Pressable onPress={() => router.push('/')} style={styles.logoRow} accessibilityLabel={t('nav.feed')} accessibilityRole="button">
-          <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
-            <TackBirdLogo size={16} color={colors.primaryForeground} />
-          </View>
-          <Text style={[styles.wordmark, { color: colors.primary }]}>TACKBIRD</Text>
-        </Pressable>
+        {/* Left: Search */}
+        <PressableOpacity accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
+          <Search size={22} color={colors.foreground} strokeWidth={1.8} />
+        </PressableOpacity>
 
+        {/* Right: Map + Notifications */}
         <View style={styles.actions}>
-          <PressableOpacity accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
-            <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
-          </PressableOpacity>
           <PressableOpacity accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
-            <Map size={20} color={colors.mutedForeground} strokeWidth={1.8} />
+            <Map size={22} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
           <PressableOpacity accessibilityLabel={t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
-              size={20}
-              color={unreadCount > 0 ? colors.primary : colors.mutedForeground}
-              strokeWidth={unreadCount > 0 ? 2 : 1.8}
+              size={22}
+              color={unreadCount > 0 ? colors.primary : colors.foreground}
+              strokeWidth={unreadCount > 0 ? 2.2 : 1.8}
             />
             {unreadCount > 0 && (
               <View style={[styles.badge, { backgroundColor: colors.accent }]}>
@@ -85,19 +78,12 @@ export function Header() {
 const styles = StyleSheet.create({
   header: {
     zIndex: 40,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerContent: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    height: 48, paddingHorizontal: 16,
+    height: 44, paddingHorizontal: 8,
   },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logoCircle: {
-    width: 32, height: 32, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  wordmark: { fontSize: 12, fontFamily: fonts.heading, letterSpacing: 1.7, lineHeight: 16 },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 0 },
   iconButton: {
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
@@ -107,5 +93,5 @@ const styles = StyleSheet.create({
     minWidth: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
   },
-  badgeText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 12 },
+  badgeText: { fontSize: 11, fontWeight: '600', lineHeight: 12 },
 })

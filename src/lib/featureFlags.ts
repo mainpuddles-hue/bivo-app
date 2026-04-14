@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/client'
 
 // Static defaults — used until remote flags are fetched
 const DEFAULTS = {
-  LENDING: false,
+  LENDING: true,
   GRAB: true,
   PAYMENTS: false,
   PRO_SUBSCRIPTION: false,

@@ -72,9 +72,16 @@ export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): st
     return getDTFormat(resolvedLocale, { weekday: 'short' }).format(date)
   }
 
-  // Same year: 12.3.
-  if (date.getFullYear() === now.getFullYear()) {
-    return getDTFormat(resolvedLocale, { day: 'numeric', month: 'numeric' }).format(date)
+  // Weeks (up to ~8 weeks)
+  const diffWeek = Math.floor(diffDay / 7)
+  if (diffWeek <= 8) {
+    return diffWeek === 1 ? t('time.oneWeekAgo') : t('time.weeksAgo', { count: diffWeek })
+  }
+
+  // Months (up to 11)
+  const diffMonth = Math.round(diffDay / 30)
+  if (diffMonth <= 11) {
+    return diffMonth === 1 ? t('time.oneMonthAgo') : t('time.monthsAgo', { count: diffMonth })
   }
 
   // Older: include year

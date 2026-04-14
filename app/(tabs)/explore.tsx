@@ -449,11 +449,7 @@ function ExploreScreenInner() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Sub-header */}
-      <View style={[s.header, { borderBottomColor: colors.border, paddingTop: 12 }]}>
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('explore.title')}</Text>
-        <View style={{ minWidth: 44, minHeight: 44 }} />
-      </View>
+      {/* Tab bar already shows "Tutustu" — no redundant header needed */}
 
       {/* Tab chips */}
       <View style={s.chipRow}>
@@ -593,7 +589,7 @@ function ExploreScreenInner() {
                         onPress={() => router.push(`/event/${evt.id}` as any)}
                         accessibilityRole="button"
                         accessibilityLabel={`${evt.title}, ${formatEventDateShort(evt.event_date, locale)}`}
-                        style={[s.ceCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                        style={[s.ceCard, { backgroundColor: colors.card }]}
                       >
                         {evt.image_url ? (
                           <View style={s.ceImageWrap}>
@@ -997,7 +993,8 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   chip: {
     flexDirection: 'row',
@@ -1062,9 +1059,9 @@ const s = StyleSheet.create({
     gap: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   mapTeaserContent: {
     flex: 1,
@@ -1295,7 +1292,6 @@ const s = StyleSheet.create({
     width: 180,
     borderRadius: 12,
     overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
   },
   ceImageWrap: {
     width: 180,

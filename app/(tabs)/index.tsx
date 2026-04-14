@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken, ScrollView } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken, ScrollView, ActionSheetIOS, Alert, Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, Flame, Trophy, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -21,21 +21,21 @@ import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
 import { AlertBanner } from '@/components/AlertBanner'
 import { SmartMatchBanner } from '@/components/SmartMatchBanner'
-import { DiscoverySection } from '@/components/DiscoverySection'
+// DiscoverySection moved to Explore tab
 import { PostCardSkeleton } from '@/components/SkeletonLoaders'
-import { HeroEventCard } from '@/components/HeroEventCard'
+// HeroEventCard moved to Explore tab
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
-import { FeedContextHeader } from '@/components/FeedContextHeader'
+// FeedContextHeader removed
 import { JuuriNytStrip } from '@/components/JuuriNytStrip'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { AdCard } from '@/components/AdCard'
 import type { Ad } from '@/components/AdCard'
 import type { Post } from '@/lib/types'
-import { useNeighborhoodStats } from '@/hooks/useNeighborhoodStats'
-import { isToday, isTomorrow, isWithinDays, getDateGroup } from '@/lib/dateHelpers'
+// useNeighborhoodStats — stats moved to Explore tab
+import { getDateGroup } from '@/lib/dateHelpers'
 
 // ── Stable separator components (avoid re-render) ──
-const ItemSeparator12 = () => <View style={{ height: 12 }} />
+const ItemSeparator16 = () => <View style={{ height: 16 }} />
 
 // ══════════════════════════════════════════════
 // ── Feed Screen ──
@@ -61,7 +61,7 @@ const ItemSeparator12 = () => <View style={{ height: 12 }} />
 //    but there's no indication of what's new vs already seen.
 
 const HEADER_HEIGHT = 52 // Header.tsx headerContent height
-const FILTER_BAR_CONTENT_HEIGHT = 88
+const FILTER_BAR_CONTENT_HEIGHT = 80
 
 // ── Community card type ──
 type CommunityCardItem = { _isCommunity: 'event' | 'group' | 'thread'; [key: string]: any }
@@ -126,10 +126,9 @@ function FeedScreenInner() {
   const feed = useFeedData()
   const supabase = useSupabase()
   const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
-  const { recordActivity, currentStreak } = useStreak(feed.currentUserId)
+  const { recordActivity } = useStreak(feed.currentUserId)
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
-  const { onlineCount } = usePresence(feed.currentUserId, feed.userNeighborhood)
-  const neighborhoodStats = useNeighborhoodStats(feed.userNeighborhood)
+  usePresence(feed.currentUserId, feed.userNeighborhood)
   useSessionManager(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
 
@@ -140,9 +139,7 @@ function FeedScreenInner() {
     }
   }, [params.openNeighborhoodPicker])
 
-  // ── Evening digest state ──
-  const [digestData, setDigestData] = useState<{ posts: number; events: number; threads: number } | null>(null)
-  const [digestDismissed, setDigestDismissed] = useState(false)
+  // Evening digest removed — content-first: feed IS the digest
 
   // Wrap filter change with haptic feedback
   const handleFilterChangeWithHaptics = useCallback((type: import('@/lib/types').PostType | null) => {
@@ -192,39 +189,6 @@ function FeedScreenInner() {
     }
     fetchAds()
   }, [supabase, feed.userNeighborhood])
-
-  // ── Evening digest (19:00-06:00) ──
-  useEffect(() => {
-    const hour = new Date().getHours()
-    if (hour < 19 && hour >= 6) return // Only show 19:00-06:00
-
-    async function fetchDigest() {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const todayISO = today.toISOString()
-      const tomorrow = new Date(today.getTime() + 86400000)
-      const tomorrowEnd = new Date(tomorrow.getTime() + 86400000)
-
-      try {
-        const [postsRes, eventsRes, threadsRes] = await Promise.all([
-          supabase.from('posts').select('id', { count: 'exact', head: true }).gte('created_at', todayISO).eq('is_active', true),
-          (supabase.from('community_events') as any).select('id', { count: 'exact', head: true }).gte('event_date', tomorrow.toISOString()).lt('event_date', tomorrowEnd.toISOString()),
-          (supabase.from('forum_posts') as any).select('id', { count: 'exact', head: true }).gte('created_at', todayISO),
-        ])
-        setDigestData({
-          posts: postsRes.count ?? 0,
-          events: eventsRes.count ?? 0,
-          threads: threadsRes.count ?? 0,
-        })
-      } catch {} // Tables may not exist
-    }
-
-    // Check if already dismissed today
-    AsyncStorage.getItem('digest_dismissed').then(val => {
-      if (val === new Date().toISOString().slice(0, 10)) setDigestDismissed(true)
-      else fetchDigest()
-    }).catch(() => {})
-  }, [supabase])
 
   // ── Hidden post IDs (persisted to AsyncStorage) ──
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
@@ -292,16 +256,7 @@ function FeedScreenInner() {
         adIdx++
       }
     }
-    // Insert community cards at specific positions
-    if (feed.communityCards?.event && result.length > 3) {
-      result.splice(3, 0, { ...feed.communityCards.event, _isCommunity: 'event' as const })
-    }
-    if (feed.communityCards?.group && result.length > 9) {
-      result.splice(9, 0, { ...feed.communityCards.group, _isCommunity: 'group' as const })
-    }
-    if (feed.communityCards?.thread && result.length > 16) {
-      result.splice(16, 0, { ...feed.communityCards.thread, _isCommunity: 'thread' as const })
-    }
+    // Community cards removed from feed — belong in Explore tab (progressive disclosure)
     return result
   }, [filteredPosts, activeAds, feed.communityCards])
 
@@ -320,22 +275,7 @@ function FeedScreenInner() {
   }).current
 
   // ── Computed: hero events ──
-  const { displayEvents, eventSectionTitle } = useMemo(() => {
-    const todayEvts = feed.cityEvents.filter(e => isToday(e.start_time))
-    const tomorrowEvts = !todayEvts.length ? feed.cityEvents.filter(e => isTomorrow(e.start_time)) : []
-    const weekEvts = !todayEvts.length && !tomorrowEvts.length ? feed.cityEvents.filter(e => isWithinDays(e.start_time, 7)) : []
-    const display = todayEvts.length ? todayEvts : tomorrowEvts.length ? tomorrowEvts : weekEvts
-    const title = todayEvts.length ? t('events.filterToday') + ' (' + todayEvts.length + ')'
-      : tomorrowEvts.length ? t('feed.tomorrow') + ' (' + tomorrowEvts.length + ')'
-      : weekEvts.length ? t('feed.thisWeek') + ' (' + weekEvts.length + ')' : ''
-    return { displayEvents: display.slice(0, 1), eventSectionTitle: title }
-  }, [feed.cityEvents, t])
-
-  const placesSectionTitle = useMemo(() => {
-    if (feed.userLocation) return t('feed.placesNearYou')
-    if (feed.userNeighborhood) return t('feed.placesIn', { area: feed.userNeighborhood })
-    return t('feed.placesInHelsinki')
-  }, [feed.userLocation, feed.userNeighborhood, t])
+  // Hero events + discovery moved to Explore tab (content-first feed)
 
   // ── renderPost — uses postsRef to avoid full FlatList re-render ──
   const renderPost = useCallback(({ item, index }: { item: Post | Ad | CommunityCardItem; index: number }) => {
@@ -388,71 +328,10 @@ function FeedScreenInner() {
     )
   }, [feed.userLocation, feed.currentUserId, colors, t, trackInteraction, handleHidePost, lastFeedVisit, router])
 
-  // ── ListHeader ──
+  // ── ListHeader — content-first: only contextual banners, no filler ──
   const ListHeader = useMemo(() => (
-    <View style={{ gap: 12 }}>
-      {/* Greeting — compact single line */}
-      <View style={{ alignItems: 'flex-start', paddingTop: 12, marginBottom: 8 }}>
-        <Text style={{ fontSize: 14, color: colors.mutedForeground, fontFamily: fonts.body, letterSpacing: -0.2 }}>
-          {(() => {
-            const hour = new Date().getHours()
-            const greetingKey = hour < 12 ? 'greeting.morning' : hour < 17 ? 'greeting.afternoon' : hour < 21 ? 'greeting.evening' : 'greeting.night'
-            return `${t(greetingKey)}, ${feed.userNeighborhood ?? feed.userCityName ?? 'Helsinki'}!`
-          })()}
-        </Text>
-      </View>
-
-      {/* Online presence indicator */}
-      {onlineCount > 1 && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingBottom: 4 }}>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success }} />
-          <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
-            {onlineCount} {t('feed.online') ?? 'online'}
-          </Text>
-        </View>
-      )}
-
-      {/* Neighborhood activity stats */}
-      {!neighborhoodStats.loading && feed.userNeighborhood && neighborhoodStats.eventsThisWeek > 0 && (
-        <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingBottom: 8 }}>
-          <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
-            {'\u{1F4C5}'} {neighborhoodStats.eventsThisWeek} {t('feed.eventsThisWeek') ?? 'tapahtumaa'}
-          </Text>
-        </View>
-      )}
-
-      {/* Streak milestone */}
-      {[3, 7, 30].includes(currentStreak) && (
-        <View style={[styles.streakMilestone, { backgroundColor: `${colors.pro}12` }]}>
-          {currentStreak >= 30 ? <Trophy size={20} color={colors.pro} /> : <Flame size={20} color={colors.pro} />}
-          <Text style={[styles.streakMilestoneText, { color: colors.pro }]}>
-            {currentStreak === 3 ? t('streak.milestone3')
-             : currentStreak === 7 ? t('streak.milestone7')
-             : t('streak.milestone30')}
-          </Text>
-        </View>
-      )}
-
-      {/* Evening digest card */}
-      {digestData && !digestDismissed && (digestData.posts > 0 || digestData.events > 0 || digestData.threads > 0) && (
-        <View style={[styles.digestCard, { backgroundColor: colors.muted }]}>
-          <Text style={[styles.digestText, { color: colors.foreground }]}>
-            {t('feed.todayIn', { area: feed.userNeighborhood ?? 'Helsinki' })}
-          </Text>
-          <Text style={[styles.digestDetails, { color: colors.mutedForeground }]}>
-            {[
-              digestData.posts > 0 ? `${digestData.posts} ${t('feed.newListings')}` : null,
-              digestData.events > 0 ? `${digestData.events} ${t('feed.eventsTomorrow')}` : null,
-              digestData.threads > 0 ? `${digestData.threads} ${t('feed.newDiscussions')}` : null,
-            ].filter(Boolean).join(' \u00B7 ')}
-          </Text>
-          <PressableOpacity onPress={() => { setDigestDismissed(true); AsyncStorage.setItem('digest_dismissed', new Date().toISOString().slice(0, 10)) }} hitSlop={8} style={{ position: 'absolute', top: 4, right: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
-            <XIcon size={14} color={colors.mutedForeground} />
-          </PressableOpacity>
-        </View>
-      )}
-
-      {/* Missed posts banner */}
+    <View style={{ gap: 8 }}>
+      {/* Missed posts — only when returning after 24h+ */}
       {showMissedBanner && missedCount > 0 && (
         <View style={[styles.missedBanner, { backgroundColor: colors.primary }]}>
           <Text style={[styles.missedBannerText, { color: colors.primaryForeground }]}>
@@ -465,29 +344,10 @@ function FeedScreenInner() {
       )}
 
       <AlertBanner />
-
       <SmartMatchBanner matches={matches} onDismiss={dismissMatch} />
-
-      {/* Juuri nyt — urgent posts countdown strip */}
       <JuuriNytStrip posts={feed.posts} />
 
-      {displayEvents.length > 0 ? (
-        <View style={{ gap: 12 }}>
-          <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
-            <View style={[styles.sectionBar, { backgroundColor: colors.success }]} />
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{eventSectionTitle}</Text>
-          </View>
-          {displayEvents.map(event => (
-            <HeroEventCard key={event.id} event={event} />
-          ))}
-        </View>
-      ) : null}
-
-      {/* FeedContextHeader removed — feed IS the listings, no redundant header needed */}
-
-      {/* DiscoverySection removed from feed — belongs in Explore tab */}
-
-      {/* New posts banner */}
+      {/* New posts — pull-to-refresh alternative */}
       {feed.hasNewPosts && (
         <PressableOpacity
           onPress={feed.handleRefresh}
@@ -509,13 +369,9 @@ function FeedScreenInner() {
           <Text style={[styles.errorRowText, { color: colors.destructive }]} numberOfLines={1}>{feed.error}</Text>
         </PressableOpacity>
       )}
-
-      {/* "Uusimmat ilmoitukset" section header removed — feed IS the listings */}
     </View>
-  ), [displayEvents, eventSectionTitle, feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
-    feed.posts, feed.posts.length, feed.loading, feed.userNeighborhood, feed.cityEvents, feed.nearbyPlaces, feed.extraLoading,
-    placesSectionTitle, matches, dismissMatch, showMissedBanner, missedCount,
-    currentStreak, digestData, digestDismissed, onlineCount, neighborhoodStats])
+  ), [feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
+    feed.posts, matches, dismissMatch, showMissedBanner, missedCount])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {
@@ -566,16 +422,37 @@ function FeedScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Sticky filter bar */}
-      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: 8 }]}>
+      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: 4 }]}>
         <View style={styles.neighborhoodRow}>
           <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
-            <MapPin size={12} color={colors.mutedForeground} />
-            <Text style={[styles.neighborhoodText, { color: colors.mutedForeground }]}>
+            <MapPin size={13} color={colors.foreground} />
+            <Text style={[styles.neighborhoodText, { color: colors.foreground }]}>
               {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
             </Text>
-            <ChevronDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
+            <ChevronDown size={12} color={colors.foreground} style={{ opacity: 0.4 }} />
           </PressableOpacity>
-{/* Streak badge removed — cleaner header */}
+          {/* Sort — single button, opens ActionSheet */}
+          <PressableOpacity
+            onPress={() => {
+              const labels = SORT_OPTIONS.map(o => o.label).concat(t('common.cancel') ?? 'Cancel')
+              if (Platform.OS === 'ios') {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
+                  (idx) => { if (idx < SORT_OPTIONS.length) handleSortChangeWithHaptics(SORT_OPTIONS[idx].key) },
+                )
+              } else {
+                Alert.alert(t('feed.sort') ?? 'Sort', '', SORT_OPTIONS.map(o => ({
+                  text: o.label + (feed.sortBy === o.key ? ' ✓' : ''),
+                  onPress: () => handleSortChangeWithHaptics(o.key),
+                })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
+              }
+            }}
+            style={[styles.sortBtn, { backgroundColor: isDark ? colors.card : colors.muted }]}
+            hitSlop={8}
+            accessibilityLabel={t('feed.sort') ?? 'Sort'}
+          >
+            <ArrowUpDown size={14} color={colors.mutedForeground} />
+          </PressableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 8, alignItems: 'center', paddingHorizontal: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
@@ -590,31 +467,6 @@ function FeedScreenInner() {
               </Text>
             </Pressable>
           )}
-          {/* Sort divider + chips */}
-          <View style={[styles.sortDivider, { backgroundColor: colors.border }]} />
-          <ArrowUpDown size={12} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
-          {SORT_OPTIONS.map(opt => {
-            const isActive = feed.sortBy === opt.key
-            return (
-              <Pressable
-                key={opt.key}
-                onPress={() => handleSortChangeWithHaptics(opt.key)}
-                accessibilityLabel={`${t('feed.sort')}: ${opt.label}`}
-                accessibilityState={{ selected: isActive }}
-                style={[
-                  styles.sortChip,
-                  isActive
-                    ? { backgroundColor: colors.primary }
-                    : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: `${colors.border}80` },
-                ]}
-              >
-                <Text style={[
-                  styles.sortChipText,
-                  { color: isActive ? colors.primaryForeground : colors.mutedForeground },
-                ]}>{opt.label}</Text>
-              </Pressable>
-            )
-          })}
         </ScrollView>
       </View>
 
@@ -630,7 +482,7 @@ function FeedScreenInner() {
         onEndReached={feed.handleLoadMore}
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}
-        ItemSeparatorComponent={ItemSeparator12}
+        ItemSeparatorComponent={ItemSeparator16}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
@@ -661,7 +513,7 @@ const styles = StyleSheet.create({
   },
   neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
   neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, alignSelf: 'flex-start', minHeight: 32 },
-  neighborhoodText: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
+  neighborhoodText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   dateGroupLabel: { alignItems: 'center', paddingVertical: 4 },
   dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3, lineHeight: 14 },
   list: { paddingHorizontal: 16 },
@@ -672,12 +524,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start', minHeight: 40,
   },
   followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  sortDivider: { width: 1, height: 20, borderRadius: 0.5, marginHorizontal: 2, alignSelf: 'center' },
-  sortChip: {
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center', minHeight: 30,
+  sortBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
   },
-  sortChipText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4 },
   sectionBar: { width: 3, height: 16, borderRadius: 1.5 },
   sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, lineHeight: 22 },
@@ -705,11 +555,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
   },
   missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  streakMilestone: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12 },
-  streakMilestoneText: { flex: 1, fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20 },
-  digestCard: { padding: 12, borderRadius: 12, position: 'relative' as const },
-  digestText: { fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20 },
-  digestDetails: { fontSize: 13, fontFamily: fonts.body, marginTop: 4, lineHeight: 18 },
+  // streakMilestone, digestCard — removed (content-first: moved to Explore tab)
 })
 
 export default function FeedScreen() {

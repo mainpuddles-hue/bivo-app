@@ -51,7 +51,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
       onPress={() => router.push(`/event/${event.id}` as any)}
       style={({ pressed }) => [
         s.card,
-        { backgroundColor: colors.card, borderColor: colors.border },
+        { backgroundColor: colors.card },
         pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] },
       ]}
       accessibilityRole="button"
@@ -139,7 +139,6 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
 const s = StyleSheet.create({
   card: {
     borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
   image: {

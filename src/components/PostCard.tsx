@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics'
 import {
   MapPin, Crown, ImageIcon, BadgeCheck, Heart, Zap,
   MessageCircle, Clock, Building2,
-  Share2, Bookmark, BookmarkCheck, TrendingUp, MoreHorizontal, User, Flag, EyeOff,
+  Share2, Bookmark, BookmarkCheck, MoreHorizontal, User, Flag, EyeOff,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
@@ -241,11 +241,10 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         styles.card,
         { backgroundColor: colors.card },
         isDark ? cardShadowDark : cardShadow,
-        category && { borderTopWidth: 2, borderTopColor: category.color + '99' },
-        post.is_boosted && FEATURES.BOOSTS && { borderLeftWidth: 3, borderLeftColor: colors.accent },
-        isNappaa && !isPro && !isUrgentPost && { borderWidth: 2, borderColor: CATEGORIES.nappaa.color },
-        isUrgentPost && { borderWidth: 2, borderColor: colors.destructive },
-        isPro && { borderWidth: 1.5, borderColor: colors.pro },
+        // Accent bar only for truly special states — category badge handles type distinction
+        isUrgentPost && { borderLeftWidth: 3, borderLeftColor: colors.destructive },
+        !isUrgentPost && isPro && { borderLeftWidth: 3, borderLeftColor: colors.pro },
+        !isUrgentPost && !isPro && post.is_boosted && FEATURES.BOOSTS && { borderLeftWidth: 3, borderLeftColor: colors.accent },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
@@ -271,8 +270,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           <View style={styles.topRowLeft}>
             {isAnonymous ? (
               <View style={styles.topRowUserInfo}>
-                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
-                  <User size={16} color={colors.mutedForeground} />
+                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: `${colors.primary}14`, borderColor: `${colors.primary}20` }]}>
+                  <User size={16} color={colors.primary} style={{ opacity: 0.6 }} />
                 </View>
                 <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {t('postCard.anonymousNeighbor')}
@@ -280,6 +279,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 {post.created_at && (
                   <Text style={[styles.timeAgoDot, { color: colors.mutedForeground }]}>
                     {'· ' + formatTimeAgo(post.created_at, t, locale)}
+                  </Text>
+                )}
+                {post.location && (
+                  <Text style={[styles.timeAgoDot, { color: colors.mutedForeground }]} numberOfLines={1}>
+                    {'· ' + post.location}
                   </Text>
                 )}
               </View>
@@ -323,6 +327,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                     {'· ' + formatTimeAgo(post.created_at, t, locale)}
                   </Text>
                 )}
+                {post.location && (
+                  <Text style={[styles.timeAgoDot, { color: colors.mutedForeground }]} numberOfLines={1}>
+                    {'· ' + post.location}
+                  </Text>
+                )}
               </Pressable>
             )}
           </View>
@@ -330,7 +339,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           <View style={styles.topRowRight}>
             {post.is_boosted && FEATURES.BOOSTS && <BoostBadge />}
             {category && (
-              <View style={[styles.categoryBadge, { backgroundColor: `${category.color}20` }]}>
+              <View style={[styles.categoryBadge, { backgroundColor: `${category.color}30` }]}>
                 <Text style={[styles.categoryBadgeText, { color: category.color }]}>
                   {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
                 </Text>
@@ -401,15 +410,15 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
         )}
 
-        {/* Description — always show when available, 2 lines */}
+        {/* Description — single line preview for context */}
         {post.description ? (
-          <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={2}>
+          <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={1}>
             {post.description}
           </Text>
         ) : null}
 
-        {/* Location + price + condition */}
-        {(post.daily_fee != null || post.service_price != null || post.location || (post.type === 'tarjoan' && post.tags?.includes('tarjoan_item'))) && (
+        {/* Price + condition meta row (location moved to avatar row) */}
+        {(post.daily_fee != null || post.service_price != null || (post.type === 'tarjoan' && post.tags?.includes('tarjoan_item'))) && (
           <View style={styles.metaRow}>
             {post.daily_fee != null && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? CATEGORIES.lainaa.bgDark : CATEGORIES.lainaa.bgLight }]}>
@@ -444,19 +453,12 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 </Text>
               </View>
             )}
-            {post.location && (
-              <View style={styles.locationRow}>
-                <MapPin size={11} color={colors.mutedForeground} />
-                <Text style={[styles.locationText, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {post.location}
-                </Text>
-              </View>
-            )}
+            {/* Location moved to avatar row — inline with name + time */}
           </View>
         )}
 
-        {/* Action row: Like count · Comment count · Save · More ... Distance on RIGHT */}
-        <View style={[styles.actionRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border + '40' }]} accessibilityRole="toolbar" onStartShouldSetResponder={() => true}>
+        {/* Action row: Like · Comment · Save | More … Distance */}
+        <View style={[styles.actionRow, { borderTopColor: `${colors.border}33` }]} accessibilityRole="toolbar" onStartShouldSetResponder={() => true}>
           {/* Like button — always show */}
           <Pressable
             hitSlop={8}
@@ -574,7 +576,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {saved ? (
               <BookmarkCheck size={16} color={colors.primary} fill={colors.primary} />
             ) : (
-              <Bookmark size={16} color={colors.mutedForeground} />
+              <Bookmark size={16} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
             )}
           </Pressable>
 
@@ -638,20 +640,15 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             <MoreHorizontal size={16} color={colors.mutedForeground} />
           </Pressable>
 
-          {/* Popular badge */}
-          {likeCount >= 5 && (
-            <View style={[styles.popularBadge, { backgroundColor: `${colors.pro}20` }]}>
-              <TrendingUp size={11} color={colors.pro} />
-              <Text style={[styles.popularText, { color: colors.pro }]}>{t('feed.popular')}</Text>
-            </View>
-          )}
-
-          {/* Distance — right-aligned */}
+          {/* Distance — push to right edge */}
           {distanceText && (
-            <View style={styles.distanceRow}>
-              <MapPin size={11} color={colors.primary} />
-              <Text style={[styles.distanceText, { color: colors.primary }]}>{distanceText}</Text>
-            </View>
+            <>
+              <View style={{ flex: 1 }} />
+              <View style={styles.distanceRow}>
+                <MapPin size={12} color={colors.primary} />
+                <Text style={[styles.distanceText, { color: colors.primary }]}>{distanceText}</Text>
+              </View>
+            </>
           )}
         </View>
       </View>
@@ -668,7 +665,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
-  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, gap: 12 },
+  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 6 },
 
   // Top row: user + category badge
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
@@ -678,11 +675,11 @@ const styles = StyleSheet.create({
   userNameBlock: { flexShrink: 1, minWidth: 0 },
   userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   userName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
-  timeAgoDot: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, flexShrink: 0 },
+  timeAgoDot: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, flexShrink: 0 },
 
   // Avatar
   avatarContainer: { position: 'relative' },
-  avatar: { width: 32, height: 32, borderRadius: 16, borderWidth: 1 },
+  avatar: { width: 36, height: 36, borderRadius: 18, borderWidth: 1 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   statusDot: {
@@ -693,10 +690,10 @@ const styles = StyleSheet.create({
   // Category badge — top right pill
   categoryBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
     flexShrink: 0,
   },
-  categoryBadgeText: { fontSize: 11, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
+  categoryBadgeText: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.2, lineHeight: 16 },
   newDot: {
     width: 6, height: 6, borderRadius: 3, marginLeft: 2,
   },
@@ -733,7 +730,7 @@ const styles = StyleSheet.create({
   expirationText: { fontSize: 11, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
 
   // Title + description
-  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22, letterSpacing: -0.15 },
+  title: { fontSize: 17, fontFamily: fonts.heading, lineHeight: 22, letterSpacing: -0.3 },
   seedLabel: { fontSize: 11, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 14 },
   description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
@@ -744,16 +741,15 @@ const styles = StyleSheet.create({
   conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
   conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
-  locationText: { fontSize: 11, fontFamily: fonts.body, flex: 1, lineHeight: 14 },
+  locationText: { fontSize: 12, fontFamily: fonts.body, flex: 1, lineHeight: 16 },
 
-  // Action row
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8, paddingTop: 8 },
-  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },
-  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  popularBadge: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
-  popularText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14 },
+  // Action row — tight, touch targets met via hitSlop not minHeight
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
+  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 36, minWidth: 36, paddingHorizontal: 4, justifyContent: 'center' as const },
+  actionText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 16 },
+  // popularBadge removed — visual hierarchy: action row is for actions only
   distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 3 },
-  distanceText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
+  distanceText: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
 
   // Badges
   proMicroBadge: {

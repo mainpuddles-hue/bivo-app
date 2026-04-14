@@ -301,12 +301,12 @@ export function EventDetailSkeleton() {
 }
 
 const eventSkel = StyleSheet.create({
-  card: { borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   image: { width: '100%', height: 140 },
   content: { padding: 14, gap: 8 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 })
 
 const tableSkel = StyleSheet.create({
-  card: { width: 180, borderRadius: 16, borderWidth: 1, padding: 14, gap: 6 },
+  card: { width: 180, borderRadius: 16, padding: 14, gap: 6 },
 })
