@@ -58,6 +58,7 @@
   },
   "feed": {
     "title": "Koti",
+    "filterAll": "Kaikki",
     "newPosts": "Uusia ilmoituksia — päivitä",
     "refresh": "Päivitä",
     "allLoaded": "Kaikki ilmoitukset ladattu",
@@ -490,6 +491,7 @@
   "messages": {
     "title": "Viestit",
     "noConversations": "Ei vielä keskusteluja. Aloita juttelemalla naapurillesi!",
+    "newMessage": "Uusi viesti",
     "noArchivedConversations": "Ei arkistoituja keskusteluja.",
     "archive": "Arkistoi",
     "unarchive": "Palauta arkistosta",

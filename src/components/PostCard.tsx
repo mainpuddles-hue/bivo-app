@@ -469,8 +469,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
                 if (!wasLiked && !reduceMotion) {
                   Animated.sequence([
-                    Animated.timing(likeAnim, { toValue: 1.5, duration: 150, useNativeDriver: true }),
-                    Animated.timing(likeAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+                    Animated.spring(likeAnim, { toValue: 1.4, friction: 3, tension: 200, useNativeDriver: true }),
+                    Animated.spring(likeAnim, { toValue: 1, friction: 4, tension: 140, useNativeDriver: true }),
                   ]).start()
                 }
 

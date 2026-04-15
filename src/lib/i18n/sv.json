@@ -58,6 +58,7 @@
   },
   "feed": {
     "title": "Hem",
+    "filterAll": "Alla",
     "newPosts": "Nya inlägg — uppdatera",
     "refresh": "Uppdatera",
     "allLoaded": "Alla inlägg laddade",

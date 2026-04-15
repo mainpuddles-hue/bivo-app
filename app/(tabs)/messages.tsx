@@ -7,7 +7,7 @@ import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users } from 'lucide-react-native'
+import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { Avatar } from '@/components/Avatar'
@@ -634,6 +634,17 @@ export default function MessagesScreen() {
         maxToRenderPerBatch={10}
         windowSize={5}
       />
+      {/* New message FAB — navigates to search to find a user to message */}
+      {userId && (
+        <PressableOpacity
+          onPress={() => router.push('/search')}
+          style={[styles.newMessageFab, { backgroundColor: colors.primary, bottom: insets.bottom + 80 }]}
+          accessibilityLabel={t('messages.newMessage')}
+          accessibilityRole="button"
+        >
+          <PenSquare size={22} color={colors.primaryForeground} strokeWidth={2} />
+        </PressableOpacity>
+      )}
     </View>
     </ScreenErrorBoundary>
   )
@@ -720,4 +731,11 @@ const styles = StyleSheet.create({
   eventChatMetaText: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   eventChatPreview: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   sectionDivider: { height: StyleSheet.hairlineWidth, marginTop: 12, marginHorizontal: 16 },
+  newMessageFab: {
+    position: 'absolute', right: 16,
+    width: 56, height: 56, borderRadius: 28,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
+  },
 })

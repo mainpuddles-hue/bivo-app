@@ -66,6 +66,14 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
 
   return (
     <>
+      <FilterChip
+        key="all"
+        label={t('feed.filterAll')}
+        color={colors.foreground}
+        isActive={activeFilter === null}
+        foregroundColor={colors.primaryForeground}
+        onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(null) }}
+      />
       {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
         if (type === 'lainaa' && !FEATURES.LENDING) return false
         return true

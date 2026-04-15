@@ -58,6 +58,7 @@
   },
   "feed": {
     "title": "Home",
+    "filterAll": "All",
     "newPosts": "New posts — refresh",
     "refresh": "Refresh",
     "allLoaded": "All posts loaded",
@@ -490,6 +491,7 @@
   "messages": {
     "title": "Messages",
     "noConversations": "No conversations yet. Start chatting with a neighbor!",
+    "newMessage": "New message",
     "noArchivedConversations": "No archived conversations",
     "archive": "Archive",
     "unarchive": "Unarchive",

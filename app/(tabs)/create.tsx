@@ -834,6 +834,9 @@ export default function CreateScreen() {
         setBoostPost(false)
       }
 
+      // Haptic celebration on successful post creation
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
+
       // Show success celebration overlay before navigating
       setSuccessPostId(createdPostId)
       setSuccessNeighborhood(userNeighborhood)
