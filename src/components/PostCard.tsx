@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
   // Category badge — top right pill
   categoryBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12,
     flexShrink: 0,
   },
   categoryBadgeText: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.2, lineHeight: 16 },

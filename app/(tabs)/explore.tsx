@@ -1047,7 +1047,7 @@ const s = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 16,
   },
 
   // Map teaser
@@ -1251,7 +1251,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 12,
+    padding: 16,
     borderRadius: 12,
   },
   communityCardTitle: {
@@ -1289,20 +1289,20 @@ const s = StyleSheet.create({
     gap: 12,
   },
   ceCard: {
-    width: 180,
+    width: 200,
     borderRadius: 12,
     overflow: 'hidden',
   },
   ceImageWrap: {
-    width: 180,
+    width: 200,
     height: 100,
   },
   ceImage: {
-    width: 180,
+    width: 200,
     height: 100,
   },
   ceImagePlaceholder: {
-    width: 180,
+    width: 200,
     height: 100,
     alignItems: 'center',
     justifyContent: 'center',

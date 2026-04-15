@@ -378,7 +378,7 @@ function NotificationsScreenInner() {
                     )}
                   </View>
                 </View>
-                {!item.is_read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
+                {/* unread dot removed — left accent bar is sufficient */}
               </PressableOpacity>
 
               {/* 1a: Expanded group — show individual notification names */}

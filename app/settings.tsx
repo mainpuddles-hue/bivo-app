@@ -562,7 +562,7 @@ export default function SettingsScreen() {
 
       <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
         {/* ── Section: Account ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
           {t('settings.sectionAccount')}
         </Text>
 
@@ -652,7 +652,7 @@ export default function SettingsScreen() {
         )}
 
         {/* ── Section: Appearance ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
           {t('settings.sectionAppearance')}
         </Text>
 
@@ -762,7 +762,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Section: Privacy ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
           {t('settings.sectionPrivacy')}
         </Text>
 
@@ -782,7 +782,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Section: Notifications ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
           {t('settings.sectionNotifications')}
         </Text>
 
@@ -1048,7 +1048,7 @@ export default function SettingsScreen() {
         )}
 
         {/* ── Section: Danger zone ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
           {t('settings.sectionDanger')}
         </Text>
 
@@ -1078,7 +1078,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Section: About ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
           {t('settings.sectionAbout')}
         </Text>
 
@@ -1220,7 +1220,7 @@ const s = StyleSheet.create({
   },
   saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
-  section: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
+  section: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.3, marginTop: 16, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
   card: { borderRadius: 12, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },

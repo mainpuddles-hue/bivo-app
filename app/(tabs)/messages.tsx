@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   list: {},
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 16,
   },
   swipeActionRight: {
     justifyContent: 'center',

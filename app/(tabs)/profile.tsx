@@ -528,7 +528,6 @@ export default function ProfileScreen() {
             </Text>
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
           </Pressable>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <PressableOpacity style={s.stat} onPress={() => postCount === 0 ? router.push('/(tabs)/create') : setActiveTab('posts')} accessibilityLabel={`${postCount} ${t('profile.posts')}`} accessibilityRole="button">
             <Text style={[s.statNum, { color: postCount === 0 ? colors.primary : colors.foreground }]}>
               {postCount === 0 ? '\u2013' : postCount}
@@ -537,7 +536,6 @@ export default function ProfileScreen() {
               {postCount === 0 ? t('profile.createFirst') : t('profile.posts')}
             </Text>
           </PressableOpacity>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <View style={s.stat} accessibilityLabel={`${avgRating ?? 0} ${t('profile.avgRating')}`} accessibilityRole="text">
             {avgRating != null ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -549,7 +547,6 @@ export default function ProfileScreen() {
             )}
             <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
           </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
           <PressableOpacity style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityLabel={`${profile?.total_points ?? 0} ${t('profile.points')}`} accessibilityRole="button">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[s.statNum, { color: colors.foreground }]}>{profile?.total_points ?? 0}</Text>
@@ -987,9 +984,9 @@ const s = StyleSheet.create({
   stat: { flex: 1, alignItems: 'center', gap: 4, minHeight: 48 },
   statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
   statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 13, textTransform: 'uppercase', letterSpacing: 0.3 },
-  statDiv: { width: 1, alignSelf: 'stretch' as const },
+  statDiv: { width: 0, alignSelf: 'stretch' as const },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
-  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', minHeight: 44 },
+  tab: { flex: 1, paddingVertical: 16, alignItems: 'center', minHeight: 44 },
   tabActive: { borderBottomWidth: 2 },
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   tabContent: { gap: 12, paddingTop: 4 },
