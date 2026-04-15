@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', flexWrap: 'wrap', gap: 12,
     paddingHorizontal: 16, paddingVertical: 16,
   },
-  photoWrap: { width: 100, height: 100, borderRadius: 12, overflow: 'hidden', position: 'relative' },
+  photoWrap: { width: 100, height: 100, borderRadius: 16, overflow: 'hidden', position: 'relative' },
   photo: { width: 100, height: 100 },
   removeBtn: {
     position: 'absolute', top: 4, right: 4,
@@ -203,14 +203,14 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   addPhoto: {
-    width: 100, height: 100, borderRadius: 12, borderWidth: 2, borderStyle: 'dashed',
+    width: 100, height: 100, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   addPhotoText: { fontSize: 11, fontFamily: fonts.bodyMedium },
   footer: { paddingHorizontal: 16, paddingVertical: 16, marginTop: 'auto' },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    height: 52, borderRadius: 12,
+    height: 52, borderRadius: 16,
   },
   submitText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
 })

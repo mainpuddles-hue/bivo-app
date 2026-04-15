@@ -894,7 +894,7 @@ const s = StyleSheet.create({
     marginHorizontal: 24,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 8,
   },
   verificationText: {
@@ -912,7 +912,7 @@ const s = StyleSheet.create({
   },
   referralInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,
@@ -935,7 +935,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 16,
     minHeight: 48,
   },

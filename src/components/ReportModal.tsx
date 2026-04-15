@@ -232,7 +232,7 @@ const s = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
   reasonText: {
@@ -270,7 +270,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   submitBtn: {
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',

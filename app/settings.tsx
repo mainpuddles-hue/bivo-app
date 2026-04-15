@@ -1216,12 +1216,12 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 20, letterSpacing: -0.3, lineHeight: 28, fontFamily: fonts.headingSemi },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, minHeight: 44,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, minHeight: 44,
   },
   saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
   section: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.3, marginTop: 16, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   rowText: { fontSize: 14, lineHeight: 20, flex: 1, fontFamily: fonts.body },
@@ -1233,7 +1233,7 @@ const s = StyleSheet.create({
   changePwBtn: { borderRadius: 8, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, padding: 16, borderRadius: 12, marginTop: 16,
+    gap: 8, padding: 16, borderRadius: 16, marginTop: 16,
   },
   verifiedBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
@@ -1252,7 +1252,7 @@ const s = StyleSheet.create({
   deleteCard: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     gap: 12,
   },
@@ -1280,7 +1280,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   deleteInput: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -1295,7 +1295,7 @@ const s = StyleSheet.create({
   },
   deleteCancelBtn: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 12,
     alignItems: 'center',
   },
@@ -1307,7 +1307,7 @@ const s = StyleSheet.create({
   },
   deleteConfirmBtn: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 12,
     alignItems: 'center',
   },

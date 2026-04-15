@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 4,
   },
   retryBtnPressed: {

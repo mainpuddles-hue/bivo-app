@@ -36,7 +36,7 @@ export function DepositInfo({ depositAmount, locale = 'fi' }: DepositInfoProps) 
 }
 
 const styles = StyleSheet.create({
-  container: { borderRadius: 12, padding: 12, gap: 8 },
+  container: { borderRadius: 16, padding: 12, gap: 8 },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   label: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1, lineHeight: 18 },
   amount: { fontSize: 16, fontFamily: fonts.heading, lineHeight: 22 },

@@ -4,6 +4,7 @@ import { Tabs, useRouter, usePathname } from 'expo-router'
 import { View, Text, StyleSheet, Platform, Animated } from 'react-native'
 import { BlurView } from 'expo-blur'
 import * as Notifications from 'expo-notifications'
+import * as Haptics from 'expo-haptics'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 
 // Freeze inactive screens to save memory and CPU
@@ -85,10 +86,10 @@ export default function TabLayout() {
   const router = useRouter()
   const pathname = usePathname()
   const insets = useSafeAreaInsets()
-  // Liquid Glass tab bar (iOS 26): translucent BlurView background
+  // Liquid Glass tab bar: translucent BlurView background on iOS (always on)
   // Falls back to semi-transparent solid color on Android (no native blur)
-  const useGlass = Platform.OS === 'ios'
-  const tabBarBg = useGlass
+  const isIOS = Platform.OS === 'ios'
+  const tabBarBg = isIOS
     ? 'transparent'
     : (isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)')
   const supabase = useSupabase()
@@ -138,7 +139,7 @@ export default function TabLayout() {
           paddingBottom: insets.bottom,
           paddingTop: 8,
           // Position absolute on iOS so content scrolls under the glass
-          ...(useGlass ? { position: 'absolute' } : {}),
+          ...(isIOS ? { position: 'absolute' as const } : {}),
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.06,
@@ -146,7 +147,7 @@ export default function TabLayout() {
           elevation: 8,
         },
         tabBarShowLabel: false,
-        ...(useGlass ? {
+        ...(isIOS ? {
           tabBarBackground: () => (
             <BlurView
               tint={isDark ? 'dark' : 'light'}
@@ -160,22 +161,32 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{
         tabBarAccessibilityLabel: t('nav.feed'),
         tabBarIcon: ({ focused }) => <TabIcon icon={Newspaper} label={t('nav.feed')} focused={focused} colors={colors} />,
+      }} listeners={{
+        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
       <Tabs.Screen name="explore" options={{
         tabBarAccessibilityLabel: t('explore.title'),
         tabBarIcon: ({ focused }) => <TabIcon icon={Compass} label={t('explore.title')} focused={focused} colors={colors} />,
+      }} listeners={{
+        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
       <Tabs.Screen name="create" options={{
         tabBarAccessibilityLabel: t('nav.create'),
         tabBarIcon: ({ focused }) => <TabIcon icon={Plus} label={t('nav.create')} focused={focused} isCreate colors={colors} />,
+      }} listeners={{
+        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
       <Tabs.Screen name="messages" options={{
         tabBarAccessibilityLabel: t('nav.messages'),
         tabBarIcon: ({ focused }) => <TabIcon icon={MessageCircle} label={t('nav.messages')} focused={focused} colors={colors} badge={totalUnread} />,
+      }} listeners={{
+        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
       <Tabs.Screen name="profile" options={{
         tabBarAccessibilityLabel: t('nav.profile'),
         tabBarIcon: ({ focused }) => <TabIcon icon={User} label={t('nav.profile')} focused={focused} colors={colors} />,
+      }} listeners={{
+        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
     </Tabs>
     {/* Create menu modal removed — tab navigates directly to create screen */}

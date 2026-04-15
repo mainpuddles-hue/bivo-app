@@ -235,7 +235,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   submitBtn: {
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',

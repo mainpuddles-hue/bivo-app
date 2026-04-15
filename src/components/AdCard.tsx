@@ -132,7 +132,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   sponsoredBadge: {

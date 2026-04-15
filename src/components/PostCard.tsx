@@ -51,9 +51,10 @@ interface PostCardProps {
   onInteraction?: (postId: string, type: 'view' | 'click' | 'like' | 'save' | 'message' | 'skip' | 'hide') => void
   onHide?: (postId: string) => void
   isNew?: boolean
+  index?: number
 }
 
-export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction, onHide, isNew }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction, onHide, isNew, index = 0 }: PostCardProps) {
   const { colors, isDark } = useTheme()
   const reduceMotion = useReduceMotion()
   const { t, locale } = useI18n()
@@ -131,17 +132,22 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     return parts.filter(Boolean).join(', ')
   }, [category, post.type, post.title, post.description, post.location, post.created_at, post.comment_count, isAnonymous, user?.name, likeCount, t, locale])
 
-  // Smooth card entrance animation — fade + slide up (respects Reduce Motion)
+  // Staggered card entrance — spring physics + index-based delay (2026 trend)
   const entranceAnim = useRef(new Animated.Value(0)).current
   useEffect(() => {
-    try {
-      Animated.timing(entranceAnim, { toValue: 1, duration: reduceMotion ? 0 : 300, useNativeDriver: true }).start()
-    } catch {} // Intentional: animation failure is non-critical
-  }, [entranceAnim, reduceMotion])
+    if (reduceMotion) { entranceAnim.setValue(1); return }
+    const delay = Math.min(index * 40, 200) // Max 200ms stagger
+    const timer = setTimeout(() => {
+      try {
+        Animated.spring(entranceAnim, { toValue: 1, friction: 8, tension: 100, useNativeDriver: true }).start()
+      } catch {} // Intentional: animation failure is non-critical
+    }, delay)
+    return () => clearTimeout(timer)
+  }, [entranceAnim, reduceMotion, index])
   const entranceOpacity = entranceAnim
   const entranceTranslateY = entranceAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [12, 0],
+    outputRange: [16, 0],
   })
 
   const distanceText = useMemo(() => {
@@ -644,7 +650,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 })
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 12, overflow: 'hidden', position: 'relative' as const },
+  card: { borderRadius: 16, overflow: 'hidden', position: 'relative' as const },
   proBanner: {
     height: 22,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
@@ -676,7 +682,7 @@ const styles = StyleSheet.create({
   // Category badge — top right pill
   categoryBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12,
+    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16,
     flexShrink: 0,
   },
   categoryBadgeText: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.2, lineHeight: 16 },
@@ -697,7 +703,7 @@ const styles = StyleSheet.create({
   multiImageBadge: {
     position: 'absolute', bottom: 8, right: 8,
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 16,
     paddingHorizontal: 8, paddingVertical: 3,
   },
   multiImageText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
@@ -710,7 +716,7 @@ const styles = StyleSheet.create({
   // Expiration
   expirationBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12,
+    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 16,
     alignSelf: 'flex-start',
   },
   expirationText: { fontSize: 11, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
@@ -722,9 +728,9 @@ const styles = StyleSheet.create({
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
+  priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 16 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
-  conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
+  conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 16 },
   conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
   locationText: { fontSize: 12, fontFamily: fonts.body, flex: 1, lineHeight: 16 },

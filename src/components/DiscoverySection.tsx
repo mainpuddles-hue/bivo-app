@@ -28,7 +28,7 @@ function HorizontalSkeleton({ colors, width, height }: { colors: ReturnType<type
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 4 }}>
       {[0, 1, 2].map(i => (
-        <Animated.View key={i} style={{ width, height, borderRadius: 12, backgroundColor: colors.muted, opacity }} />
+        <Animated.View key={i} style={{ width, height, borderRadius: 16, backgroundColor: colors.muted, opacity }} />
       ))}
     </ScrollView>
   )

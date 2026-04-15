@@ -117,7 +117,7 @@ const s = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   content: { padding: 16, gap: 16, paddingBottom: 40 },
-  card: { borderRadius: 12, padding: 16, gap: 4 },
+  card: { borderRadius: 16, padding: 16, gap: 4 },
   updated: { fontSize: 12, fontFamily: fonts.body, marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 4 },
   paragraph: { fontSize: 14, fontFamily: fonts.body, lineHeight: 21 },

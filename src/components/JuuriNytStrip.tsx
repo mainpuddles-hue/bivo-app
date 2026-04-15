@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   scrollContent: { gap: 12, paddingRight: 8 },
   card: {
     width: 160,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 12,
     gap: 8,
     overflow: 'hidden',

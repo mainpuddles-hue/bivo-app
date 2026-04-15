@@ -1335,7 +1335,7 @@ export default function CreateScreen() {
                         <PressableOpacity
                           key={tag}
                           onPress={() => setSelectedTags(prev => prev.includes(tag) ? prev : [...prev, tag])}
-                          style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, backgroundColor: `${colors.primary}15` }}
+                          style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, backgroundColor: `${colors.primary}15` }}
                         >
                           <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.body }}>+ {t(`tags.${tag}`) ?? tag}</Text>
                         </PressableOpacity>
@@ -1774,10 +1774,10 @@ const styles = StyleSheet.create({
   categoryGrid: { padding: 16, gap: 12 },
   categoryCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 12,
+    padding: 16, borderRadius: 16,
   },
   categoryIcon: {
-    width: 48, height: 48, borderRadius: 12,
+    width: 48, height: 48, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
   lockOverlay: {
@@ -1794,7 +1794,7 @@ const styles = StyleSheet.create({
   boostUpsellText: { fontSize: 12, fontFamily: fonts.bodySemi },
   urgencyOptions: { flexDirection: 'row', gap: 12 },
   urgencyOption: {
-    flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,
+    flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 16, borderWidth: 1.5,
   },
   urgencyOptionText: { fontSize: 14, fontWeight: '700' },
   categoryTextWrap: { flex: 1, gap: 2 },
@@ -1810,7 +1810,7 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 120 },
   charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
   imageRow: { flexDirection: 'row', gap: 8 },
-  imageThumb: { width: 80, height: 80, borderRadius: 12, overflow: 'hidden', position: 'relative' },
+  imageThumb: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', position: 'relative' },
   imageThumbImg: { width: '100%', height: '100%' },
   imageRemoveBtn: {
     position: 'absolute', top: 4, right: 4,
@@ -1823,7 +1823,7 @@ const styles = StyleSheet.create({
   },
   mainImageBadgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   addImageBtn: {
-    width: 80, height: 80, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed',
+    width: 80, height: 80, borderRadius: 16, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   addImageText: { fontSize: 11, fontFamily: fonts.body },
@@ -1840,7 +1840,7 @@ const styles = StyleSheet.create({
   },
   detailsToggleText: { fontSize: 14, fontFamily: fonts.bodySemi },
   submitBtn: {
-    borderRadius: 12, paddingVertical: 16, alignItems: 'center',
+    borderRadius: 16, paddingVertical: 16, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
   submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -1857,7 +1857,7 @@ const styles = StyleSheet.create({
   // Pro banner
   proBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    padding: 12, borderRadius: 12,
+    padding: 12, borderRadius: 16,
   },
   proBannerText: { flex: 1, fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
 
@@ -1872,7 +1872,7 @@ const styles = StyleSheet.create({
   },
   successTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, textAlign: 'center' },
   successSubtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
-  shareBtn: { borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
+  shareBtn: { borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
   shareBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // Location picker
@@ -1880,7 +1880,7 @@ const styles = StyleSheet.create({
   locationInput: { flex: 1 },
   mapPickerBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 12, borderRadius: 12, minHeight: 48,
+    paddingHorizontal: 12, borderRadius: 16, minHeight: 48,
   },
   mapPickerBtnText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   coordsText: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
@@ -1895,14 +1895,14 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
   modalFooter: { paddingHorizontal: 16, paddingVertical: 12 },
   confirmBtn: {
-    borderRadius: 12, paddingVertical: 16, alignItems: 'center',
+    borderRadius: 16, paddingVertical: 16, alignItems: 'center',
     justifyContent: 'center', minHeight: 48,
   },
   confirmBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   coordsDisplay: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 16, paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   coordsDisplayText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.body },
   mapFallback: {

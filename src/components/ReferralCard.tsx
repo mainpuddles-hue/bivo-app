@@ -217,7 +217,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -243,7 +243,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
   },
   codeLeft: {
@@ -265,7 +265,7 @@ const s = StyleSheet.create({
   codeBtn: {
     width: 38,
     height: 38,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -309,7 +309,7 @@ const s = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
   tierIconCircle: {

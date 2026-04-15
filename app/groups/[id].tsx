@@ -697,7 +697,7 @@ export default function GroupDetailScreen() {
 
       {newPostsBanner && (
         <PressableOpacity onPress={() => { setNewPostsBanner(false); setLoading(true); fetchPosts() }}
-          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: colors.primary }}>
+          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary }}>
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.primaryForeground }}>{t('groups.newPostsBanner')}</Text>
         </PressableOpacity>
       )}
@@ -788,7 +788,7 @@ const ps = StyleSheet.create({
   headerSub: { fontSize: 11, fontFamily: fonts.body, marginTop: -1 },
   loadingContainer: { padding: 16 },
   listContent: { padding: 16 },
-  infoCard: { borderRadius: 12, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
+  infoCard: { borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
   groupName: { fontSize: 20, fontFamily: fonts.heading, marginBottom: 4 },
   groupDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 12 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
@@ -799,11 +799,11 @@ const ps = StyleSheet.create({
   membersBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
   joinLeaveBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   joinLeaveBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
-  postCard: { borderRadius: 12, marginBottom: 12, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2, flexDirection: 'row' },
+  postCard: { borderRadius: 16, marginBottom: 12, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2, flexDirection: 'row' },
   postUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   postInputBar: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, paddingHorizontal: 12 },
   imagePreviewRow: { marginBottom: 8 },
-  imagePreview: { width: 80, height: 80, borderRadius: 12 },
+  imagePreview: { width: 80, height: 80, borderRadius: 16 },
   removeImageBtn: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   postInputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   imageBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },

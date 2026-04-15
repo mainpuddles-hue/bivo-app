@@ -138,7 +138,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   image: {
@@ -160,14 +160,14 @@ const s = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
   categoryText: { fontSize: 11, fontWeight: '600', lineHeight: 14 },
   tableBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   tableText: { fontSize: 11, fontWeight: '600', lineHeight: 14 },
   title: { fontSize: 16, fontWeight: '700', lineHeight: 22 },

@@ -470,12 +470,12 @@ const styles = StyleSheet.create({
   },
   textArea: { minHeight: 100, textAlignVertical: 'top' },
   imagePicker: {
-    borderRadius: 12, borderWidth: 1, borderStyle: 'dashed',
+    borderRadius: 16, borderWidth: 1, borderStyle: 'dashed',
     height: 120, alignItems: 'center', justifyContent: 'center', gap: 8,
   },
   imagePickerText: { fontSize: 13, fontFamily: fonts.body },
-  imagePreview: { borderRadius: 12, overflow: 'hidden', position: 'relative' },
-  previewImage: { width: '100%', height: 160, borderRadius: 12 },
+  imagePreview: { borderRadius: 16, overflow: 'hidden', position: 'relative' },
+  previewImage: { width: '100%', height: 160, borderRadius: 16 },
   removeImage: {
     position: 'absolute', top: 8, right: 8,
     width: 28, height: 28, borderRadius: 14,
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   ctaChipText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   pickerBtn: { justifyContent: 'center' },
   neighborhoodList: {
-    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
     maxHeight: 200, overflow: 'hidden',
   },
   neighborhoodItem: {
@@ -498,14 +498,14 @@ const styles = StyleSheet.create({
   neighborhoodText: { fontSize: 14, fontFamily: fonts.body },
   durationRow: { flexDirection: 'row', gap: 12 },
   durationCard: {
-    flex: 1, borderRadius: 12, borderWidth: 1.5,
+    flex: 1, borderRadius: 16, borderWidth: 1.5,
     padding: 16, alignItems: 'center', gap: 2,
   },
   durationDays: { fontSize: 24, fontWeight: '800', fontFamily: fonts.heading },
   durationLabel: { fontSize: 12, fontFamily: fonts.body },
   durationPrice: { fontSize: 13, fontWeight: '600', marginTop: 4, fontFamily: fonts.bodySemi },
   priceCard: {
-    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
     padding: 16, gap: 4,
   },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   proDiscount: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 12, marginTop: 8, minHeight: 48,
+    gap: 8, paddingVertical: 16, borderRadius: 16, marginTop: 8, minHeight: 48,
   },
   submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8, fontFamily: fonts.body },

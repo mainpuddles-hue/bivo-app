@@ -46,9 +46,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
   actions: { width: '100%', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12 },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
-  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, borderWidth: 1 },
+  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16, borderWidth: 1 },
   secondaryBtnText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })
 

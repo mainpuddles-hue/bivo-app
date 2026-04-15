@@ -544,10 +544,10 @@ const styles = StyleSheet.create({
 
   // Post card
   postCard: {
-    flexDirection: 'row', padding: 12, gap: 12, borderRadius: 12,
+    flexDirection: 'row', padding: 12, gap: 12, borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
   },
-  postImage: { width: 72, height: 72, borderRadius: 12 },
+  postImage: { width: 72, height: 72, borderRadius: 16 },
   postImageFb: { alignItems: 'center', justifyContent: 'center' },
   postInfo: { flex: 1, gap: 4, justifyContent: 'center' },
   postTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.bodySemi },
@@ -555,13 +555,13 @@ const styles = StyleSheet.create({
   // User card
   userCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
-    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
   },
   userName: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
 
   // Section card
   section: {
-    padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: 12,
+    padding: 16, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, gap: 12,
   },
   sectionTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
 
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   actionsContainer: { gap: 8, marginTop: 8 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48,
+    gap: 8, paddingVertical: 16, borderRadius: 16, minHeight: 48,
   },
   actionBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })

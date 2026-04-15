@@ -390,7 +390,7 @@ const s = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   tabBar: {
-    flexDirection: 'row', marginHorizontal: 16, marginTop: 12, borderRadius: 12,
+    flexDirection: 'row', marginHorizontal: 16, marginTop: 12, borderRadius: 16,
     padding: 4, gap: 4,
   },
   tabItem: {
@@ -405,7 +405,7 @@ const s = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 12 },
   emptyTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi },
   emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 32, lineHeight: 20, fontFamily: fonts.body },
-  browseBtn: { marginTop: 8, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
+  browseBtn: { marginTop: 8, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 },
   browseBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   savedItem: { position: 'relative' },
   unsaveBtn: {
@@ -415,10 +415,10 @@ const s = StyleSheet.create({
   },
   eventCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 12,
+    padding: 16, borderRadius: 16,
   },
   eventIcon: {
-    width: 48, height: 48, borderRadius: 12,
+    width: 48, height: 48, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
   eventInfo: { flex: 1, gap: 2 },

@@ -160,7 +160,7 @@ const s = StyleSheet.create({
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 8 },
   categoryTitle: { fontSize: 14, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 8, paddingHorizontal: 4 },
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   divider: { height: StyleSheet.hairlineWidth },
   faqRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -173,7 +173,7 @@ const s = StyleSheet.create({
   contactDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   contactBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 12, minHeight: 48,
+    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 16, minHeight: 48,
   },
   contactBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   linkRow: {

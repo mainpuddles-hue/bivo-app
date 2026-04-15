@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     marginTop: 4,
   },
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     marginTop: 4,
   },

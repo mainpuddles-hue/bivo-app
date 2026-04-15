@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     width: '100%',
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     padding: 16,
     gap: 12,
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   primaryBtnText: {
     fontSize: 16,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
   secondaryBtnText: {

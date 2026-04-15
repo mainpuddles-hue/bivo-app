@@ -1054,7 +1054,7 @@ const s = StyleSheet.create({
   mapTeaser: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     gap: 16,
     shadowColor: '#000',
@@ -1088,7 +1088,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -1105,7 +1105,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   cardRow: {
@@ -1143,7 +1143,7 @@ const s = StyleSheet.create({
   eventIconBox: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1152,7 +1152,7 @@ const s = StyleSheet.create({
   placeIconBox: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1177,7 +1177,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
-    borderRadius: 12,
+    borderRadius: 16,
     gap: 8,
   },
   emptyTitle: {
@@ -1197,7 +1197,7 @@ const s = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     minHeight: 44,
   },
   emptyCtaText: {
@@ -1252,7 +1252,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   communityCardTitle: {
     fontSize: 14,
@@ -1268,7 +1268,7 @@ const s = StyleSheet.create({
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 8,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginTop: 16,
@@ -1290,7 +1290,7 @@ const s = StyleSheet.create({
   },
   ceCard: {
     width: 200,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   ceImageWrap: {

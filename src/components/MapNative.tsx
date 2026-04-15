@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
   neighborhoodText: {
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   sectionCountBadge: {
     minWidth: 24,
     height: 22,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
   emptyActionBtn: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     marginTop: 4,
   },
@@ -732,7 +732,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -779,7 +779,7 @@ const styles = StyleSheet.create({
   emptyCard: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -876,7 +876,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -889,7 +889,7 @@ const styles = StyleSheet.create({
   businessCardImage: {
     width: 60,
     height: 60,
-    borderRadius: 12,
+    borderRadius: 16,
     // backgroundColor set inline via colors.muted for dark mode support
   },
   businessCardInfo: {
@@ -921,7 +921,7 @@ const styles = StyleSheet.create({
   businessCardButton: {
     alignItems: 'center',
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   businessCardButtonText: {
     color: '#FFF',

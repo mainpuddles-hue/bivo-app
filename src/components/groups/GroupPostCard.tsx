@@ -230,7 +230,7 @@ export const GroupPostCard = memo(GroupPostCardInner)
 
 const styles = StyleSheet.create({
   postCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 12,
     overflow: 'hidden',
     flexDirection: 'row',

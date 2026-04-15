@@ -1094,22 +1094,22 @@ const s = StyleSheet.create({
   nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
   badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
-  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
   badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
-  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16 },
   proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
   actions: { flexDirection: 'row', gap: 12, marginTop: 8, width: '100%', paddingHorizontal: 16 },
   followBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 12,
+    gap: 8, paddingVertical: 12, borderRadius: 16,
   },
   followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1,
+    gap: 8, paddingVertical: 12, borderRadius: 16, borderWidth: 1,
   },
   messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
-  statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
+  statsRow: { flexDirection: 'row', borderRadius: 16, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
   statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
   statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textTransform: 'uppercase', letterSpacing: 0.3 },
@@ -1120,7 +1120,7 @@ const s = StyleSheet.create({
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   tabContent: { gap: 12 },
   emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24, fontFamily: fonts.body, lineHeight: 20 },
-  reviewCard: { borderRadius: 12, padding: 16, gap: 8 },
+  reviewCard: { borderRadius: 16, padding: 16, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
@@ -1129,17 +1129,17 @@ const s = StyleSheet.create({
   dangerActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
   dangerBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, padding: 16, borderRadius: 12,
+    gap: 8, padding: 16, borderRadius: 16,
   },
   dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   reviewBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1, width: '100%', paddingHorizontal: 16,
+    gap: 8, paddingVertical: 12, borderRadius: 16, borderWidth: 1, width: '100%', paddingHorizontal: 16,
   },
   reviewBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body, lineHeight: 22 },
   // Rating summary card
-  ratingCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
+  ratingCard: { borderRadius: 16, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
   ratingCardTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
   ratingOverview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingStarsCol: { alignItems: 'center', gap: 4 },
@@ -1151,11 +1151,11 @@ const s = StyleSheet.create({
   ratingBarFill: { height: 8, borderRadius: 4 },
   ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20, fontFamily: fonts.body, lineHeight: 16 },
   // Verification card
-  verificationCard: { borderRadius: 12, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
+  verificationCard: { borderRadius: 16, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
   verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   // Activity summary
-  activitySummaryCard: { borderRadius: 12, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },
+  activitySummaryCard: { borderRadius: 16, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },
   activitySummaryTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
   activitySummaryText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   recentPostsRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
@@ -1179,11 +1179,11 @@ const bs = StyleSheet.create({
   },
   heroImage: {
     height: HERO_IMAGE_HEIGHT,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   heroPlaceholder: {
     height: HERO_IMAGE_HEIGHT,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -1204,7 +1204,7 @@ const bs = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   imageCountText: {
     fontSize: 12,
@@ -1215,7 +1215,7 @@ const bs = StyleSheet.create({
 
   // Info card
   infoCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -1257,7 +1257,7 @@ const bs = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   prhBadgeText: {
     fontSize: 13,
@@ -1313,7 +1313,7 @@ const bs = StyleSheet.create({
 
   // Location card
   locationCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -1341,7 +1341,7 @@ const bs = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 4,
   },
   mapButtonText: {
@@ -1353,7 +1353,7 @@ const bs = StyleSheet.create({
 
   // Contact card
   contactCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -1372,7 +1372,7 @@ const bs = StyleSheet.create({
   contactIconWrap: {
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },

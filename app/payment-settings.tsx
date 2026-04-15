@@ -247,7 +247,7 @@ const s = StyleSheet.create({
     fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.5,
     textTransform: 'uppercase', marginTop: 12, paddingHorizontal: 4, lineHeight: 17,
   },
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   rowText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, flex: 1 },
   statusText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
@@ -264,7 +264,7 @@ const s = StyleSheet.create({
   connectedBadgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 17 },
   connectBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12,
+    gap: 8, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 16,
     marginTop: 8,
   },
   connectBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },

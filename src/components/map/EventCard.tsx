@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   eventCard: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   badgeText: {
     fontSize: 11,

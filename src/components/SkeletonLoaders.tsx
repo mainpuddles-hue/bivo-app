@@ -58,7 +58,7 @@ export function ProfileSkeleton() {
           <Animated.View key={i} style={[skel.profileStatBox, { backgroundColor: colors.muted, opacity }]} />
         ))}
       </View>
-      <Animated.View style={[skel.line, { width: '100%', height: 100, borderRadius: 12, backgroundColor: colors.muted, opacity }]} />
+      <Animated.View style={[skel.line, { width: '100%', height: 100, borderRadius: 16, backgroundColor: colors.muted, opacity }]} />
     </View>
   )
 }
@@ -134,15 +134,15 @@ const skel = StyleSheet.create({
   profileWrap: { alignItems: 'stretch', gap: 16, padding: 24 },
   profileAvatar: { width: 80, height: 80, borderRadius: 40, alignSelf: 'center' },
   profileStats: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
-  profileStatBox: { width: 80, height: 60, borderRadius: 12 },
+  profileStatBox: { width: 80, height: 60, borderRadius: 16 },
   // Search
-  searchRow: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 12 },
+  searchRow: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 16 },
   searchImage: { width: 60, height: 60, borderRadius: 8 },
   searchInfo: { flex: 1, gap: 8, justifyContent: 'center' },
 })
 
 const postSkel = StyleSheet.create({
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   image: { width: '100%', aspectRatio: 16 / 9, borderRadius: 0 },
   body: { padding: 16, gap: 12 },
   lineShort: { width: '40%' },
@@ -191,7 +191,7 @@ export function PostDetailSkeleton() {
 }
 
 const sectionSkel = StyleSheet.create({
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   cardRow: { flexDirection: 'row', padding: 16, gap: 12, alignItems: 'center' },
   circle: { width: 40, height: 40, borderRadius: 20 },
   content: { flex: 1, gap: 3 },
@@ -208,7 +208,7 @@ export function EventCardSkeleton() {
       {/* Content */}
       <View style={eventSkel.content}>
         {/* Category badge */}
-        <Animated.View style={[skel.line, { width: 80, height: 22, borderRadius: 12, backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skel.line, { width: 80, height: 22, borderRadius: 16, backgroundColor: colors.muted, opacity }]} />
         {/* Title */}
         <Animated.View style={[skel.line, { width: '85%', height: 18, backgroundColor: colors.muted, opacity }]} />
         {/* Date row */}
@@ -267,7 +267,7 @@ export function EventDetailSkeleton() {
       <Animated.View style={{ width: '100%', height: 220, backgroundColor: colors.muted, opacity }} />
       <View style={{ paddingHorizontal: 16, gap: 14 }}>
         {/* Category badge */}
-        <Animated.View style={[skel.line, { width: 90, height: 24, borderRadius: 12, backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skel.line, { width: 90, height: 24, borderRadius: 16, backgroundColor: colors.muted, opacity }]} />
         {/* Title */}
         <Animated.View style={[skel.line, { width: '80%', height: 22, backgroundColor: colors.muted, opacity }]} />
         {/* Date */}

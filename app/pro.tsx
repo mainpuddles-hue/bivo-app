@@ -322,7 +322,7 @@ const s = StyleSheet.create({
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
     fontFamily: fonts.bodySemi,
   },
-  comparisonCard: { borderRadius: 12, overflow: 'hidden' },
+  comparisonCard: { borderRadius: 16, overflow: 'hidden' },
   comparisonHeader: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
@@ -338,7 +338,7 @@ const s = StyleSheet.create({
   comparisonText: { fontSize: 13, lineHeight: 18, flex: 1, fontFamily: fonts.body },
   pricingRow: { flexDirection: 'row', gap: 12 },
   pricingCard: {
-    flex: 1, borderRadius: 12, borderWidth: 2,
+    flex: 1, borderRadius: 16, borderWidth: 2,
     padding: 16, alignItems: 'center', gap: 4, position: 'relative', overflow: 'hidden',
   },
   pricingLabel: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -353,11 +353,11 @@ const s = StyleSheet.create({
   saveBadgeText: { fontSize: 11, lineHeight: 14, fontWeight: '800', fontFamily: fonts.bodySemi },
   subscribeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 12, paddingVertical: 16, borderRadius: 12, marginTop: 4, minHeight: 48,
+    gap: 12, paddingVertical: 16, borderRadius: 16, marginTop: 4, minHeight: 48,
   },
   subscribeBtnText: { fontSize: 16, lineHeight: 22, fontWeight: '700', fontFamily: fonts.bodySemi },
   manageBtn: {
-    alignItems: 'center', paddingVertical: 16, borderRadius: 12,
+    alignItems: 'center', paddingVertical: 16, borderRadius: 16,
     borderWidth: 1, minHeight: 48,
   },
   manageBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -365,12 +365,12 @@ const s = StyleSheet.create({
   termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 12, borderWidth: 1, marginTop: 8,
+    padding: 16, borderRadius: 16, borderWidth: 1, marginTop: 8,
   },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
   autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   restoreBtn: {
-    alignItems: 'center', paddingVertical: 12, borderRadius: 12,
+    alignItems: 'center', paddingVertical: 12, borderRadius: 16,
     borderWidth: 1, minHeight: 48,
   },
   restoreBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '500', fontFamily: fonts.bodyMedium },

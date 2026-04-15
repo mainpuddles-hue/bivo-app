@@ -333,7 +333,7 @@ const s = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: 16,
   },
   headerTitle: {
     flex: 1,
@@ -364,7 +364,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 12,
     gap: 8,
   },
@@ -402,7 +402,7 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
   segmentText: {

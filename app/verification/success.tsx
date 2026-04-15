@@ -87,15 +87,15 @@ const styles = StyleSheet.create({
   iconCircle: { width: 104, height: 104, borderRadius: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
-  unlockedCard: { width: '100%', borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 16, marginBottom: 32 },
+  unlockedCard: { width: '100%', borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 16, marginBottom: 32 },
   unlockedTitle: { fontSize: 16, fontFamily: fonts.heading, marginBottom: 4 },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  featureIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  featureIcon: { width: 40, height: 40, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   featureText: { flex: 1, gap: 2 },
   featureName: { fontSize: 14, fontFamily: fonts.bodySemi },
   featureDesc: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   actions: { width: '100%', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12 },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
 })
 

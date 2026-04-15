@@ -431,7 +431,7 @@ export default function ProfileScreen() {
         }
       >
         {fetchError && !profileLoading && (
-          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
             <RefreshCw size={14} color={colors.destructive} />
             <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
           </PressableOpacity>
@@ -488,7 +488,7 @@ export default function ProfileScreen() {
               </View>
             </View>
           ) : (
-            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'center', gap: 6 }, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
+            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'center', gap: 6 }, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
               <Text style={[s.bio, { color: profile.bio ? colors.mutedForeground : colors.primary, flex: 1 }]}>
                 {profile.bio || t('profile.clickToAddBio')}
               </Text>
@@ -757,7 +757,7 @@ export default function ProfileScreen() {
               <View style={s.emptyActivity}>
                 <FileText size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
-                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 4 }]}>
+                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, marginTop: 4 }]}>
                   <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('nav.create')}</Text>
                 </PressableOpacity>
               </View>
@@ -982,15 +982,15 @@ const s = StyleSheet.create({
   bioEditWrap: { width: '100%', gap: 8, paddingHorizontal: 8 },
   bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, minHeight: 64, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
-  bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
+  bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16 },
   badgesSection: { alignItems: 'center', gap: 8, width: '100%' },
   badgesSectionTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
-  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
   badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
-  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16 },
   proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
-  statsRow: { flexDirection: 'row', borderRadius: 12, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
+  statsRow: { flexDirection: 'row', borderRadius: 16, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   stat: { flex: 1, alignItems: 'center', gap: 4, minHeight: 48 },
   statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
   statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 13, textTransform: 'uppercase', letterSpacing: 0.3 },
@@ -1000,21 +1000,21 @@ const s = StyleSheet.create({
   tabActive: { borderBottomWidth: 2 },
   tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   tabContent: { gap: 12, paddingTop: 4 },
-  overviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
+  overviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16 },
   // Grouped list (iOS Settings pattern) — multiple rows inside single rounded card
-  groupedList: { borderRadius: 12, overflow: 'hidden' },
+  groupedList: { borderRadius: 16, overflow: 'hidden' },
   groupedRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, minHeight: 44, borderBottomWidth: StyleSheet.hairlineWidth },
   groupedRowLast: { borderBottomWidth: 0 },
   groupedRowText: { flex: 1, fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   proUpgradeCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 12, borderWidth: 1,
+    padding: 16, borderRadius: 16, borderWidth: 1,
   },
   proUpgradeTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
   proUpgradeSubtitle: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   overviewText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 8, fontFamily: fonts.headingSemi, lineHeight: 22 },
-  reviewCard: { borderRadius: 12, padding: 16, gap: 8 },
+  reviewCard: { borderRadius: 16, padding: 16, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 18 },
@@ -1030,13 +1030,13 @@ const s = StyleSheet.create({
   activityMeta: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   activityTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   activityMetaBadge: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12 },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16 },
   menuText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   emptyLogin: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 12 },
   emptyIconCircle: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyLoginTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading, textAlign: 'center' },
   emptyLoginHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlign: 'center' },
-  loginBtn: { marginTop: 8, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center' },
+  loginBtn: { marginTop: 8, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center' },
   loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },
@@ -1044,10 +1044,10 @@ const s = StyleSheet.create({
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   followAvatar: { width: 40, height: 40, borderRadius: 20 },
   followName: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 12 },
+  multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 16 },
   multiplierText: { fontSize: 11, fontWeight: '800', fontFamily: fonts.bodySemi },
   // My Posts tab
-  myPostItem: { gap: 8, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
+  myPostItem: { gap: 8, padding: 16, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth },
   myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   myPostTypeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
   myPostTypeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
@@ -1055,19 +1055,19 @@ const s = StyleSheet.create({
   myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
   myPostStatusText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostActions: { flexDirection: 'row', gap: 8, paddingTop: 4 },
-  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 44 },
+  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 44 },
   myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   postFilterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   // Point history modal
-  pointHistoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
+  pointHistoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth },
   pointHistoryPoints: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, minWidth: 32 },
   pointHistoryAction: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   pointHistoryTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
 })
 
 const impactStyles = StyleSheet.create({
-  card: { borderRadius: 12, padding: 16, gap: 12 },
+  card: { borderRadius: 16, padding: 16, gap: 12 },
   title: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 22 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around' },
   statItem: { alignItems: 'center', gap: 4 },

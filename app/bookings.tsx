@@ -28,7 +28,7 @@ function BookingCardSkeleton() {
   return (
     <View style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.cardTop}>
-        <Animated.View style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: colors.muted, opacity }} />
         <View style={styles.cardInfo}>
           <Animated.View style={{ width: '70%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
           <Animated.View style={{ width: '50%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
@@ -612,7 +612,7 @@ export default function BookingsScreen() {
       </View>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchBookings() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchBookings() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
         </PressableOpacity>
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   listContent: { padding: 16, gap: 12, paddingBottom: 100 },
   bookingCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
   itemImage: {
     width: 64,
     height: 64,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   itemImageFb: {
     alignItems: 'center',

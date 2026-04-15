@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 17, marginBottom: 8,
   },
   publishBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16,
     minWidth: 80, alignItems: 'center',
   },
   publishBtnText: {

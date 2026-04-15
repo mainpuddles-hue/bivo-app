@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   balanceCard: {
     alignItems: 'center',
     padding: 24,
-    borderRadius: 12,
+    borderRadius: 16,
     gap: 8,
   },
   balanceCircle: {
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   tierCard: {
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     gap: 12,
   },
   tierRow: {
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
   activeBoostInfo: {

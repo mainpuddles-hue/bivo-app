@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   verifyBtn: {
     width: '100%',
     maxWidth: 280,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   errorBox: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 24,
     maxWidth: '100%',
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     minHeight: 50,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,

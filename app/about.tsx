@@ -105,7 +105,7 @@ const s = StyleSheet.create({
   appName: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.5 },
   versionText: { fontSize: 14, fontFamily: fonts.body },
   tagline: { fontSize: 14, fontFamily: fonts.body, marginTop: 4 },
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22, padding: 16 },
   linkRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,

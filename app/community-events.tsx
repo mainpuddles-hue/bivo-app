@@ -496,7 +496,7 @@ const s = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   emptyCtaText: {
     fontSize: 14,

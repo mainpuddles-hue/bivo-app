@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   placeRow: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   showAllPlacesBtn: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   placeCatBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   placeCatText: {
     fontSize: 11,

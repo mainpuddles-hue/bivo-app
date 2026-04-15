@@ -160,7 +160,7 @@ function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hook
       {Array.from({ length: 4 }).map((_, i) => (
         <View key={i} style={[st.card, { backgroundColor: colors.card }]}>
           <View style={st.cardTop}>
-            <Animated.View style={[{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.muted }, { opacity }]} />
+            <Animated.View style={[{ width: 44, height: 44, borderRadius: 16, backgroundColor: colors.muted }, { opacity }]} />
             <View style={st.cardContent}>
               <Animated.View style={[{ width: '70%', height: 14, borderRadius: 4, backgroundColor: colors.muted }, { opacity }]} />
               <Animated.View style={[{ width: '50%', height: 10, borderRadius: 4, backgroundColor: colors.muted, marginTop: 6 }, { opacity }]} />
@@ -875,7 +875,7 @@ const st = StyleSheet.create({
 
   // Card
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   cardTop: {
@@ -887,7 +887,7 @@ const st = StyleSheet.create({
   iconBox: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -950,7 +950,7 @@ const st = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 16,
     minWidth: 90,
     justifyContent: 'center',
   },
@@ -985,7 +985,7 @@ const st = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 8,
   },
   emptyBtnText: {
@@ -1051,7 +1051,7 @@ const st = StyleSheet.create({
   },
   textArea: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,
@@ -1070,7 +1070,7 @@ const st = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   catChipText: {
     fontSize: 13,
@@ -1080,7 +1080,7 @@ const st = StyleSheet.create({
   schedChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   schedChipText: {
     fontSize: 13,
@@ -1095,7 +1095,7 @@ const st = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   dayChipText: {
     fontSize: 12,
@@ -1108,7 +1108,7 @@ const st = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 8,
     minHeight: 48,
   },

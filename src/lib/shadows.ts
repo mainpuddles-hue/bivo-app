@@ -1,19 +1,15 @@
 import { Platform } from 'react-native'
 
 /**
- * Medium shadow — cards, modals.
- *
- * Previously this module also exported small/large variants (smallShadow,
- * smallShadowDark, largeShadow, largeShadowDark) but none of them were
- * imported anywhere in the app per a knip audit. Add them back when a
- * component actually needs something other than the card shadow.
+ * Card shadow — tinted with primary color for modern depth.
+ * 2026 trend: colored shadows instead of pure black.
  */
 export const cardShadow = Platform.select({
   ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
+    shadowColor: '#2D6B5E',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
   },
   android: {
     elevation: 3,
@@ -24,9 +20,9 @@ export const cardShadow = Platform.select({
 export const cardShadowDark = Platform.select({
   ios: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.30,
+    shadowRadius: 10,
   },
   android: {
     elevation: 4,

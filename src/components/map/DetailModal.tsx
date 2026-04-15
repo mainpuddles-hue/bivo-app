@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   detailColorBar: {
     width: 4,
     height: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     marginRight: 10,
   },
   detailHeaderTitle: {
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   detailDesc: {
     fontSize: 14,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,

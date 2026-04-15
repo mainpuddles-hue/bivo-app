@@ -406,7 +406,7 @@ const s = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   proBannerText: {
     flex: 1,
@@ -424,7 +424,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   rankCircle: {
     width: 32,
@@ -475,7 +475,7 @@ const s = StyleSheet.create({
   yourRankCard: {
     marginTop: 16,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     gap: 8,
   },

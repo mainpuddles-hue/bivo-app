@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   actionText: {
     fontSize: 14,

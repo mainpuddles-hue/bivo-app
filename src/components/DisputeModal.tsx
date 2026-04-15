@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   reasonSection: { gap: 8 },
   reasonBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 12,
+    padding: 16, borderRadius: 16,
   },
   reasonText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   input: {
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   footer: { paddingHorizontal: 16, paddingVertical: 16 },
   submitBtn: {
-    height: 52, borderRadius: 12,
+    height: 52, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
   submitText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },

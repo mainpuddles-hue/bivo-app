@@ -104,7 +104,7 @@ function CommunityCard({ item, type, colors, t, onPress }: {
 
 const communityCardStyles = StyleSheet.create({
   row: {
-    flexDirection: 'row', alignItems: 'center', height: 56, borderRadius: 12,
+    flexDirection: 'row', alignItems: 'center', height: 56, borderRadius: 16,
     paddingHorizontal: 12, gap: 12,
   },
   iconWrap: {
@@ -323,7 +323,7 @@ function FeedScreenInner() {
             <Text style={[styles.dateGroupText, { color: colors.mutedForeground }]}>{t(`feed.${currentGroup}`)}</Text>
           </View>
         ) : null}
-        <PostCard post={post} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} />
+        <PostCard post={post} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} index={index} />
       </View>
     )
   }, [feed.userLocation, feed.currentUserId, colors, t, trackInteraction, handleHidePost, lastFeedVisit, router])
@@ -533,18 +533,18 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, lineHeight: 22 },
   newBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, borderRadius: 12, paddingVertical: 12, minHeight: 44,
+    gap: 8, borderRadius: 16, paddingVertical: 12, minHeight: 44,
   },
   newBannerText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   errorRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
+    borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12,
   },
   errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1, lineHeight: 18 },
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
   coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.heading, lineHeight: 24 },
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginTop: 8, minHeight: 48 },
+  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 16, marginTop: 8, minHeight: 48 },
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },
   allLoadedLine: { height: 1, width: '100%' },
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   allLoadedText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   missedBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16,
   },
   missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
   // streakMilestone, digestCard — removed (content-first: moved to Explore tab)

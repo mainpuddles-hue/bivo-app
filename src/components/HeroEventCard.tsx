@@ -63,7 +63,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
 
 const styles = StyleSheet.create({
   todayEventCard: {
-    flexDirection: 'row', alignItems: 'center', borderRadius: 12,
+    flexDirection: 'row', alignItems: 'center', borderRadius: 16,
     overflow: 'hidden', gap: 12, paddingRight: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,

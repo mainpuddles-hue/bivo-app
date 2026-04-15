@@ -446,7 +446,7 @@ export default function MessagesScreen() {
       </View>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchConversations() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchConversations() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
         </PressableOpacity>
@@ -740,7 +740,7 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.headingSemi },
   emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
-  loginBtn: { marginTop: 8, borderRadius: 12, paddingVertical: 16, paddingHorizontal: 32, alignItems: 'center' },
+  loginBtn: { marginTop: 8, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 32, alignItems: 'center' },
   loginBtnText: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.bodySemi },
   // Event chats section
   eventChatsSection: { paddingTop: 8 },

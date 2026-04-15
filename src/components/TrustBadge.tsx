@@ -149,19 +149,19 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   badgeLarge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   label: {
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
   progress: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 4,
   },
   verifyBtnText: {

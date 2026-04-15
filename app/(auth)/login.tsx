@@ -570,16 +570,16 @@ const styles = StyleSheet.create({
   appName: { fontSize: 18, lineHeight: 24, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
   tagline: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
   modeToggle: {
-    flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 16,
+    flexDirection: 'row', borderRadius: 16, padding: 4, marginBottom: 16,
   },
-  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', minHeight: 44 },
+  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 16, alignItems: 'center', minHeight: 44 },
   modeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   // AppleAuthenticationButton manages its own backgroundColor and borderRadius;
   // we only set dimensions and margin.
   appleBtn: { width: '100%', minHeight: 48, marginBottom: 8 },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderWidth: 1, borderRadius: 12, paddingVertical: 16, minHeight: 48, marginBottom: 8,
+    borderWidth: 1, borderRadius: 16, paddingVertical: 16, minHeight: 48, marginBottom: 8,
   },
   googleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   eyeBtn: { position: 'absolute', right: 4, top: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   forgotLink: { fontSize: 13, lineHeight: 18, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
   submitBtn: {
-    borderRadius: 12, paddingVertical: 16, alignItems: 'center',
+    borderRadius: 16, paddingVertical: 16, alignItems: 'center',
     justifyContent: 'center', minHeight: 48, marginTop: 8,
   },
   submitText: { fontSize: 16, lineHeight: 22, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlign: 'center' },
   linkText: { fontSize: 14, lineHeight: 20, fontWeight: '500', fontFamily: fonts.bodySemi },
   successBox: {
-    borderRadius: 12, padding: 24, alignItems: 'center', gap: 12,
+    borderRadius: 16, padding: 24, alignItems: 'center', gap: 12,
   },
   successText: { fontSize: 14, lineHeight: 20, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 4 },

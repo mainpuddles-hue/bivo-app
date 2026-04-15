@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   roleText: {
     fontSize: 11,

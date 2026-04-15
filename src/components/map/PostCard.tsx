@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   postCard: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
     flexDirection: 'row',
@@ -123,12 +123,12 @@ const styles = StyleSheet.create({
   cardImage: {
     width: 64,
     height: 64,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   cardImagePlaceholder: {
     width: 64,
     height: 64,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   badgeText: {
     fontSize: 11,

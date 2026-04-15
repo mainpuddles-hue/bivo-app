@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   headerBadge: {
     minWidth: 20,
     height: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   priceInput: {
     height: 44,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 14,
     lineHeight: 20,
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   dateInput: {
     height: 44,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 14,
     lineHeight: 20,
@@ -638,13 +638,13 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
   sortRadio: {
     width: 20,
     height: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
   footerBtn: {
     flex: 1,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },

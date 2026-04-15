@@ -999,7 +999,7 @@ function PostDetailScreenInner() {
 
           {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
-              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: colors.purpleMuted }}>
+              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 16, backgroundColor: colors.purpleMuted }}>
                 <Text style={{ fontSize: 12, fontWeight: '600', color: colors.purple, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                   {(() => {
                     const condTag = post.tags?.find((tag: string) => tag.startsWith('condition_'))
@@ -1410,19 +1410,19 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
   body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 14 },
-  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
+  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16 },
   closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
-  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minHeight: 36 },
+  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 36 },
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
+  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16, alignSelf: 'flex-start' },
   categoryText: { fontSize: 11, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
   expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
-  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, borderWidth: 1, alignSelf: 'flex-start' },
+  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, borderWidth: 1, alignSelf: 'flex-start' },
   boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
@@ -1438,7 +1438,7 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
 
   // Author card — compact single row
-  authorCard: { paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
+  authorCard: { paddingHorizontal: 12, paddingVertical: 12, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
   authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   authorCardInfo: { flex: 1, gap: 1 },
   authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'nowrap' },
@@ -1464,7 +1464,7 @@ const styles = StyleSheet.create({
   replyAvatar: { width: 24, height: 24, borderRadius: 12 },
   showRepliesBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 42, marginTop: 4 },
   showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
+  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, borderWidth: 1 },
   replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
   commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36, lineHeight: 20 },
@@ -1476,26 +1476,26 @@ const styles = StyleSheet.create({
   modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8, lineHeight: 18 },
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body, minHeight: 44, marginTop: 4, lineHeight: 20 },
   modalTextArea: { minHeight: 120 },
-  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 12, marginTop: 16, minHeight: 48 },
+  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 16, marginTop: 16, minHeight: 48 },
   saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
   relatedTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
   relatedScroll: { gap: 8 },
-  relatedCard: { width: 160, borderRadius: 12, overflow: 'hidden' },
+  relatedCard: { width: 160, borderRadius: 16, overflow: 'hidden' },
   relatedImage: { width: 160, height: 100, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
   relatedCardBody: { padding: 8, gap: 4 },
   relatedCardTitle: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 17 },
   relatedCardLocation: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },
-  bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, alignSelf: 'flex-start' },
+  bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 16, alignSelf: 'flex-start' },
   bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
   bookingFee: { fontSize: 14, fontFamily: fonts.heading, lineHeight: 20 },
   bookingTotalPrice: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
-  datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 12, marginTop: 12 },
+  datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 16, marginTop: 12 },
   datesSummaryItem: { flex: 1, gap: 2 },
   datesSummaryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3 },
   datesSummaryValue: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 16, marginTop: 12, gap: 8 },
+  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 16, padding: 16, marginTop: 12, gap: 8 },
   pricingTitle: { fontSize: 14, fontFamily: fonts.headingSemi, marginBottom: 4, lineHeight: 20 },
   pricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   pricingLabel: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
@@ -1504,7 +1504,7 @@ const styles = StyleSheet.create({
   pricingTotalLabel: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 17 },
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
-  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48 },
+  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16, minHeight: 48 },
 })
 
 const ctaStyles = StyleSheet.create({
@@ -1516,7 +1516,7 @@ const ctaStyles = StyleSheet.create({
   },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 12,
+    gap: 8, paddingVertical: 16, borderRadius: 16,
   },
   messageBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })

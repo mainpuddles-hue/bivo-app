@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   listContent: { padding: 16, gap: 8, paddingBottom: 40 },
   paymentRow: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   viewPostBtn: {
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     marginTop: 8,
   },

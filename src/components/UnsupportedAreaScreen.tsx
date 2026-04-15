@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     gap: 8,
   },
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   emailInput: {
     width: '100%',
     height: 48,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     paddingHorizontal: 16,
     fontSize: 14,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   waitlistBtn: {
     width: '100%',
     height: 50,
-    borderRadius: 12,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   continueBtn: {
     width: '100%',
     height: 48,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   successText: {
     flex: 1,

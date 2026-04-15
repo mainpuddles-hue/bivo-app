@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.3, fontFamily: fonts.heading },
   heroSubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
   heroPrice: { fontSize: 22, fontWeight: '800', marginTop: 8, fontFamily: fonts.heading },
-  benefitsCard: { borderRadius: 12, padding: 16, gap: 12 },
+  benefitsCard: { borderRadius: 16, padding: 16, gap: 12 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitText: { fontSize: 14, flex: 1, fontFamily: fonts.body },
   label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
@@ -397,13 +397,13 @@ const styles = StyleSheet.create({
   categoryText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 12, marginTop: 12, minHeight: 48,
+    gap: 8, paddingVertical: 16, borderRadius: 16, marginTop: 12, minHeight: 48,
   },
   submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   terms: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 12, borderWidth: 1, marginTop: 12,
+    padding: 16, borderRadius: 16, borderWidth: 1, marginTop: 12,
   },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
 })

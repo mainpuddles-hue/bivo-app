@@ -496,7 +496,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 16,
     marginBottom: 8,
@@ -513,7 +513,7 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   flagBadgeText: {
     fontSize: 11,
@@ -526,7 +526,7 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   reviewedText: {
     fontSize: 11,
@@ -562,7 +562,7 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     minHeight: 44,
   },
   actionText: {
@@ -576,7 +576,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     marginBottom: 12,
   },
@@ -631,7 +631,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   statCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 16,
     alignItems: 'center',

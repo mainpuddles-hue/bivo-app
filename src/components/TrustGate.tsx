@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     gap: 8,
     width: '100%',
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 4,
   },
   actionBtnText: {
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   dismissBtn: {
     width: '100%',
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
   },
   dismissBtnText: {

@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 360,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     gap: 16,
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   button: {
     paddingHorizontal: 32,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 8,
   },
   buttonText: {

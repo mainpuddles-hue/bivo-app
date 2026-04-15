@@ -578,19 +578,19 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   content: { padding: 16, gap: 12, paddingBottom: 60 },
-  businessCard: { borderRadius: 12, padding: 16, gap: 6 },
+  businessCard: { borderRadius: 16, padding: 16, gap: 6 },
   businessName: { fontSize: 20, fontFamily: fonts.headingSemi },
   vatId: { fontSize: 13, fontFamily: fonts.body },
-  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 8 },
+  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, marginTop: 8 },
   statusText: { fontSize: 12, fontFamily: fonts.bodySemi },
   toggleCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderRadius: 12, padding: 16,
+    borderRadius: 16, padding: 16,
   },
   toggleText: { fontSize: 14, flex: 1, fontFamily: fonts.bodyMedium },
   createAdBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 12, minHeight: 48,
+    gap: 8, paddingVertical: 16, borderRadius: 16, minHeight: 48,
   },
   createAdText: { fontSize: 16, fontFamily: fonts.bodySemi },
   sectionLabel: {
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
     fontFamily: fonts.bodySemi,
   },
-  adCard: { borderRadius: 12, padding: 16, gap: 8 },
+  adCard: { borderRadius: 16, padding: 16, gap: 8 },
   adHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   adTitle: { fontSize: 14, flex: 1, fontFamily: fonts.bodySemi },
   adStatus: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
@@ -613,23 +613,23 @@ const styles = StyleSheet.create({
   emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 
   // Profile editor styles
-  editorCard: { borderRadius: 12, padding: 16, gap: 12 },
+  editorCard: { borderRadius: 16, padding: 16, gap: 12 },
   imageScroll: { gap: 12, paddingVertical: 4 },
   imageThumbWrap: { position: 'relative' },
-  imageThumb: { width: 90, height: 90, borderRadius: 12 },
+  imageThumb: { width: 90, height: 90, borderRadius: 16 },
   imageDeleteBtn: {
     position: 'absolute', top: -6, right: -6,
     width: 22, height: 22, borderRadius: 11,
     alignItems: 'center', justifyContent: 'center',
   },
   addImageBtn: {
-    width: 90, height: 90, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed',
+    width: 90, height: 90, borderRadius: 16, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   addImageText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   imageHint: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
   textArea: {
-    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 12, fontSize: 14,
     minHeight: 100, lineHeight: 22, fontFamily: fonts.body,
   },
@@ -640,18 +640,18 @@ const styles = StyleSheet.create({
   },
   geocodeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 12,
+    gap: 8, paddingVertical: 12, borderRadius: 16,
   },
   geocodeBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   coordsText: { fontSize: 12, fontFamily: fonts.body },
   contactRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   contactInput: {
-    flex: 1, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    flex: 1, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body,
   },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 12, marginTop: 4, minHeight: 48,
+    gap: 8, paddingVertical: 16, borderRadius: 16, marginTop: 4, minHeight: 48,
   },
   saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
 })

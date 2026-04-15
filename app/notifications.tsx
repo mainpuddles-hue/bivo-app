@@ -309,7 +309,7 @@ function NotificationsScreenInner() {
       </ScrollView>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
         </PressableOpacity>
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   groupBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
   unreadDot: { width: 8, height: 8, borderRadius: 4, alignSelf: 'center' as const },
   // 1a: Expanded group styles
-  expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 12, paddingVertical: 4, marginBottom: 4 },
+  expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 16, paddingVertical: 4, marginBottom: 4 },
   expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
   expandedDot: { width: 8, height: 8, borderRadius: 4 },
   expandedName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, flex: 1 },

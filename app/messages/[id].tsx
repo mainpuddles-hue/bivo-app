@@ -654,7 +654,7 @@ function ConversationScreenInner() {
           </Text>
           <PressableOpacity
             onPress={() => router.replace('/(tabs)/messages' as any)}
-            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
             accessibilityRole="button"
             accessibilityLabel={t('errors.backToMessages') ?? 'Back to messages'}
           >
@@ -893,10 +893,10 @@ const s = StyleSheet.create({
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
-  bubble: { maxWidth: '100%', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
+  bubble: { maxWidth: '100%', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16 },
   bubbleMine: { borderBottomRightRadius: 4 },
   bubbleTheirs: { borderBottomLeftRadius: 4 },
-  msgImage: { width: 200, height: 150, borderRadius: 12, marginBottom: 4 },
+  msgImage: { width: 200, height: 150, borderRadius: 16, marginBottom: 4 },
   msgText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
@@ -906,7 +906,7 @@ const s = StyleSheet.create({
   reactionsRowTheirs: { justifyContent: 'flex-start' },
   reactionBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 2,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, borderWidth: 1,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16, borderWidth: 1,
   },
   reactionEmoji: { fontSize: 14, lineHeight: 20 },
   reactionCount: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
@@ -966,7 +966,7 @@ const s = StyleSheet.create({
   // 3a: Link preview styles
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginTop: 4, padding: 8, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    marginTop: 4, padding: 8, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
     maxWidth: '100%',
   },
   linkDomain: { fontSize: 12, fontWeight: '500', lineHeight: 16, fontFamily: fonts.bodySemi },
@@ -977,7 +977,7 @@ const contextStyles = StyleSheet.create({
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     marginHorizontal: 16, marginVertical: 8, padding: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   image: { width: 40, height: 40, borderRadius: 8 },
   info: { flex: 1, gap: 4 },

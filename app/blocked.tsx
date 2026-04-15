@@ -152,7 +152,7 @@ const s = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
-  card: { borderRadius: 12, overflow: 'hidden' },
+  card: { borderRadius: 16, overflow: 'hidden' },
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderBottomWidth: StyleSheet.hairlineWidth,
@@ -161,7 +161,7 @@ const s = StyleSheet.create({
   userName: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   userNh: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   unblockBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16,
     minWidth: 100, alignItems: 'center',
   },
   unblockText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
