@@ -40,7 +40,8 @@
     "ok": "OK",
     "dismiss": "Dismiss",
     "done": "Done",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "loadError": "Failed to load. Tap to retry."
   },
   "nav": {
     "feed": "Home",

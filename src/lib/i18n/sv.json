@@ -40,7 +40,8 @@
     "ok": "OK",
     "dismiss": "Stäng",
     "done": "Klar",
-    "yesterday": "Igår"
+    "yesterday": "Igår",
+    "loadError": "Kunde inte ladda. Tryck för att försöka igen."
   },
   "nav": {
     "feed": "Hem",

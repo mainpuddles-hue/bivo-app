@@ -38,7 +38,8 @@
     "you": "sina",
     "and": "ja",
     "ok": "OK",
-    "dismiss": "Sulge"
+    "dismiss": "Sulge",
+    "loadError": "Laadimine ebaõnnestus. Puuduta uuesti proovimiseks."
   },
   "nav": {
     "feed": "Kodu",

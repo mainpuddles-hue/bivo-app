@@ -40,7 +40,8 @@
     "ok": "OK",
     "dismiss": "Sulje",
     "done": "Valmis",
-    "yesterday": "Eilen"
+    "yesterday": "Eilen",
+    "loadError": "Lataus epäonnistui. Yritä uudelleen."
   },
   "nav": {
     "feed": "Koti",

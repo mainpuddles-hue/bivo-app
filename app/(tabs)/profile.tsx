@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import {
   Settings, LogOut, LogIn, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package, ChevronRight,
-  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2, TrendingUp,
+  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2, TrendingUp, RefreshCw,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -99,11 +99,13 @@ export default function ProfileScreen() {
   const [showPointHistory, setShowPointHistory] = useState(false)
   const [pointHistory, setPointHistory] = useState<{ action: string; points: number; created_at: string }[]>([])
   const [pointHistoryLoading, setPointHistoryLoading] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
   const streakData = useStreak(profile?.id ?? null)
 
   const loadProfile = useCallback(async () => {
+    setFetchError(false)
     try {
     const cachedId = await getCachedUserId()
     if (!cachedId) { setProfileLoading(false); return }
@@ -196,6 +198,7 @@ export default function ProfileScreen() {
       setActivity(activities.slice(0, 15))
     } catch {
       // Network error — show whatever we have
+      setFetchError(true)
     } finally {
       setProfileLoading(false)
     }
@@ -427,6 +430,13 @@ export default function ProfileScreen() {
           />
         }
       >
+        {fetchError && !profileLoading && (
+          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+            <RefreshCw size={14} color={colors.destructive} />
+            <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+          </PressableOpacity>
+        )}
+
         {/* Cover banner — iOS Music/Twitter style: gradient banner + avatar overlap */}
         <LinearGradient
           colors={[colors.primary + '22', colors.primary + '44']}

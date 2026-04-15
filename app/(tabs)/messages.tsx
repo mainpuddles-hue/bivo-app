@@ -1,13 +1,13 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated, Alert } from 'react-native'
+import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated, Alert, ActionSheetIOS, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare } from 'lucide-react-native'
+import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare, MoreHorizontal, RefreshCw } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { Avatar } from '@/components/Avatar'
@@ -55,6 +55,7 @@ export default function MessagesScreen() {
   const [showArchived, setShowArchived] = useState(false)
   const [pinnedIds, setPinnedIds] = useState<string[]>([])
   const [eventChats, setEventChats] = useState<EventChatItem[]>([])
+  const [fetchError, setFetchError] = useState(false)
   const mountedRef = useRef(true)
   useEffect(() => { return () => { mountedRef.current = false } }, [])
   const conversationsRef = useRef(conversations)
@@ -103,6 +104,7 @@ export default function MessagesScreen() {
 
   const fetchConversations = useCallback(async () => {
     if (!mountedRef.current) return
+    setFetchError(false)
     try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!mountedRef.current) return
@@ -227,7 +229,7 @@ export default function MessagesScreen() {
     setLoading(false)
     setRefreshing(false)
     } catch {
-      if (mountedRef.current) { setLoading(false); setRefreshing(false) }
+      if (mountedRef.current) { setFetchError(true); setLoading(false); setRefreshing(false) }
     }
   }, [supabase])
 
@@ -443,6 +445,13 @@ export default function MessagesScreen() {
         )}
       </View>
 
+      {fetchError && !loading && (
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchConversations() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+        </PressableOpacity>
+      )}
+
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
@@ -571,11 +580,41 @@ export default function MessagesScreen() {
                 </View>
               </View>
               <View style={styles.convRight}>
-                {item.updated_at && (
-                  <Text style={[styles.convTime, { color: colors.mutedForeground }]}>
-                    {formatTimeAgo(item.updated_at, t, locale)}
-                  </Text>
-                )}
+                <View style={styles.convRightTop}>
+                  {item.updated_at && (
+                    <Text style={[styles.convTime, { color: colors.mutedForeground }]}>
+                      {formatTimeAgo(item.updated_at, t, locale)}
+                    </Text>
+                  )}
+                  <PressableOpacity
+                    onPress={() => {
+                      const pinLabel = isPinned ? (t('messages.unpinConversation') ?? 'Unpin') : (t('messages.pinConversation') ?? 'Pin')
+                      const archiveLabel = showArchived ? (t('messages.unarchive') ?? 'Unarchive') : (t('messages.archive') ?? 'Archive')
+                      const cancelLabel = t('common.cancel') ?? 'Cancel'
+                      if (Platform.OS === 'ios') {
+                        ActionSheetIOS.showActionSheetWithOptions(
+                          { options: [pinLabel, archiveLabel, cancelLabel], cancelButtonIndex: 2 },
+                          (idx) => {
+                            if (idx === 0) handleTogglePin(item.id)
+                            if (idx === 1) { hapticMedium(); handleArchive(item.id) }
+                          },
+                        )
+                      } else {
+                        Alert.alert(t('common.more') ?? 'More', '', [
+                          { text: pinLabel, onPress: () => handleTogglePin(item.id) },
+                          { text: archiveLabel, onPress: () => { hapticMedium(); handleArchive(item.id) } },
+                          { text: cancelLabel, style: 'cancel' },
+                        ])
+                      }
+                    }}
+                    style={styles.moreBtn}
+                    hitSlop={8}
+                    accessibilityLabel={t('common.more') ?? 'More'}
+                    accessibilityRole="button"
+                  >
+                    <MoreHorizontal size={16} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
+                  </PressableOpacity>
+                </View>
                 {unread > 0 && (
                   <View style={[styles.unreadBadge, { backgroundColor: colors.accent }]}>
                     <Text style={[styles.unreadText, { color: colors.accentForeground }]}>
@@ -689,6 +728,8 @@ const styles = StyleSheet.create({
   imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   convPreview: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
   convRight: { alignItems: 'flex-end', gap: 8 },
+  convRightTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  moreBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   convTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   unreadBadge: {
     minWidth: 20, height: 20, borderRadius: 10,

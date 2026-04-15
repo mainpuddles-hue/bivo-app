@@ -511,7 +511,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 }
               } finally { likingRef.current = false }
             }}
-            style={styles.actionItem}
+            style={[styles.actionItem, likingRef.current && { opacity: 0.5 }]}
           >
             <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
               <Heart size={16} color={liked ? colors.destructive : colors.mutedForeground} fill={liked ? colors.destructive : 'transparent'} />
@@ -557,7 +557,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 }
               } finally { savingRef.current = false }
             }}
-            style={styles.actionItem}
+            style={[styles.actionItem, savingRef.current && { opacity: 0.5 }]}
           >
             {saved ? (
               <BookmarkCheck size={16} color={colors.primary} fill={colors.primary} />

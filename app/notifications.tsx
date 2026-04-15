@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { Image } from 'expo-image'
-import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2, LogIn } from 'lucide-react-native'
+import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2, LogIn, X, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -134,8 +134,10 @@ function NotificationsScreenInner() {
   const [activeFilter, setActiveFilter] = useState('all')
   // 1a: Expanded groups state — tracks which grouped notifications are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const [fetchError, setFetchError] = useState(false)
 
   const fetchNotifications = useCallback(async () => {
+    setFetchError(false)
     try {
       const cachedId = await getCachedUserId()
       if (!cachedId) { setIsLoggedIn(false); setUserId(null); setLoading(false); setRefreshing(false); return }
@@ -157,6 +159,7 @@ function NotificationsScreenInner() {
       setNotifications(prioritized)
     } catch {
       setNotifications([])
+      setFetchError(true)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -305,6 +308,13 @@ function NotificationsScreenInner() {
         ))}
       </ScrollView>
 
+      {fetchError && !loading && (
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+        </PressableOpacity>
+      )}
+
       {/* Notification list */}
       {loading ? (
         <View style={{ padding: 16, gap: 8 }}>
@@ -378,7 +388,16 @@ function NotificationsScreenInner() {
                     )}
                   </View>
                 </View>
-                {/* unread dot removed — left accent bar is sufficient */}
+                {/* Visible delete button — replaces hidden long-press gesture */}
+                <PressableOpacity
+                  onPress={() => handleLongPress(item)}
+                  style={styles.notifDeleteBtn}
+                  hitSlop={8}
+                  accessibilityLabel={t('common.delete')}
+                  accessibilityRole="button"
+                >
+                  <X size={14} color={colors.mutedForeground} style={{ opacity: 0.4 }} />
+                </PressableOpacity>
               </PressableOpacity>
 
               {/* 1a: Expanded group — show individual notification names */}
@@ -466,6 +485,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   notifContent: { flex: 1, gap: 4 },
+  notifDeleteBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19, fontFamily: fonts.body },
   notifBody: { fontSize: 13, lineHeight: 17, fontFamily: fonts.body },
   notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14, fontFamily: fonts.body },

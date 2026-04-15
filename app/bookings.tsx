@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import { ImageWithFallback } from '@/components/ImageWithFallback'
-import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, ShoppingBag } from 'lucide-react-native'
+import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, ShoppingBag, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Avatar } from '@/components/Avatar'
@@ -139,6 +139,7 @@ export default function BookingsScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<'active' | 'past'>('active')
+  const [fetchError, setFetchError] = useState(false)
 
   // Feature flag gate — redirect if Payments are disabled
   useEffect(() => {
@@ -159,6 +160,7 @@ export default function BookingsScreen() {
   }, [router])
 
   const fetchBookings = useCallback(async () => {
+    setFetchError(false)
     try {
       const cachedId = await getCachedUserId()
       if (!cachedId) { setLoading(false); return }
@@ -205,6 +207,7 @@ export default function BookingsScreen() {
       if (__DEV__) console.log('[bookings] fetchBookings error:', err)
       setBookings([])
       setServiceBookings([])
+      setFetchError(true)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -607,6 +610,13 @@ export default function BookingsScreen() {
           </PressableOpacity>
         ))}
       </View>
+
+      {fetchError && !loading && (
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchBookings() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+        </PressableOpacity>
+      )}
 
       {/* Booking list */}
       {loading ? (
