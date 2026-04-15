@@ -52,7 +52,7 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
             : { backgroundColor: color + '1A' },
         ]}
       >
-        <Text style={[styles.chipText, { color: isActive ? foregroundColor : color }]}>
+        <Text style={[styles.chipText, { color: isActive ? foregroundColor : color }, isActive && { fontFamily: fonts.bodySemi }]}>
           {label}
         </Text>
       </PressableOpacity>

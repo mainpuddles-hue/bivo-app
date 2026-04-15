@@ -6,7 +6,7 @@ import { Platform } from 'react-native'
  */
 export const cardShadow = Platform.select({
   ios: {
-    shadowColor: '#2D6B5E',
+    shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.10,
     shadowRadius: 8,

@@ -877,27 +877,25 @@ export default function CreateScreen() {
               <Pressable
                 key={type}
                 onPress={() => handleCategorySelect(type)}
-                style={({ pressed }) => [styles.categoryCard, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }, isLocked && { opacity: 0.6 }]}
+                style={({ pressed }) => [
+                  styles.categoryCard,
+                  { backgroundColor: isDark ? cat.bgDark : cat.bgLight },
+                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+                  isLocked && { opacity: 0.5 },
+                ]}
               >
-                <View style={[styles.categoryIcon, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}>
-                  {Icon && <Icon size={24} color={cat.color} />}
+                <View style={[styles.categoryIconLarge, { backgroundColor: `${cat.color}20` }]}>
+                  {Icon && <Icon size={32} color={cat.color} strokeWidth={1.8} />}
                   {isLocked && (
                     <View style={styles.lockOverlay}>
                       <Lock size={14} color={colors.primaryForeground} />
                     </View>
                   )}
                 </View>
-                <View style={styles.categoryTextWrap}>
-                  <Text style={[styles.categoryName, { color: colors.foreground }]}>{t(cat.label)}</Text>
-                  <Text style={[styles.categorySub, { color: colors.mutedForeground }]}>
-                    {isLocked ? t('trust.requiresTier2Short') : t(cat.subtitle)}
-                  </Text>
-                </View>
-                {isLocked ? (
-                  <TrustBadge level={2} size="small" showLabel />
-                ) : (
-                  <ChevronRight size={16} color={colors.mutedForeground} />
-                )}
+                <Text style={[styles.categoryName, { color: cat.color }]}>{t(cat.label)}</Text>
+                <Text style={[styles.categorySub, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {isLocked ? t('trust.requiresTier2Short') : t(cat.subtitle)}
+                </Text>
               </Pressable>
             )
           })}
@@ -1771,14 +1769,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8,
   },
   headerBadgeText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', fontFamily: fonts.bodyMedium },
-  categoryGrid: { padding: 16, gap: 12 },
-  categoryCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16,
+  categoryGrid: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 12,
+    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32,
   },
-  categoryIcon: {
-    width: 48, height: 48, borderRadius: 16,
+  categoryCard: {
+    width: '47%' as any,
+    borderRadius: 16, padding: 16, gap: 8,
+    alignItems: 'center', minHeight: 130,
+    justifyContent: 'center',
+  },
+  categoryIconLarge: {
+    width: 56, height: 56, borderRadius: 28,
     alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
   },
   lockOverlay: {
     position: 'absolute', top: -4, right: -4,
@@ -1797,9 +1801,8 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 16, borderWidth: 1.5,
   },
   urgencyOptionText: { fontSize: 14, fontWeight: '700' },
-  categoryTextWrap: { flex: 1, gap: 2 },
-  categoryName: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
-  categorySub: { fontSize: 12, fontFamily: fonts.body },
+  categoryName: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20, textAlign: 'center' },
+  categorySub: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, textAlign: 'center' },
   form: { padding: 16, gap: 20, paddingBottom: 100 },
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
