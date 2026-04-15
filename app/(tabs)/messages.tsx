@@ -615,7 +615,16 @@ export default function MessagesScreen() {
                 {showArchived ? t('messages.noArchivedConversations') : t('messages.noConversations')}
               </Text>
               {!showArchived && (
-                <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.emptyHint')}</Text>
+                <>
+                  <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.emptyHint')}</Text>
+                  <PressableOpacity
+                    onPress={() => router.push('/(tabs)/index')}
+                    style={[styles.loginBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{t('nav.feed')}</Text>
+                  </PressableOpacity>
+                </>
               )}
             </View>
           )
