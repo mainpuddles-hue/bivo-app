@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { gradients } from '@/lib/theme'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -333,8 +335,14 @@ function LoginScreenInner() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <LinearGradient
+        colors={isDark ? gradients.loginDark : gradients.loginLight}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
       <ScrollView
-        style={[styles.container, { backgroundColor: colors.background }]}
+        style={styles.container}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 40 }]}
         keyboardShouldPersistTaps="handled"
       >
@@ -560,15 +568,15 @@ function LoginScreenInner() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: 'transparent' },
   content: { paddingHorizontal: 24, paddingBottom: 64 },
   logoSection: { alignItems: 'center', gap: 12, marginBottom: 32 },
   logoBigCircle: {
-    width: 80, height: 80, borderRadius: 40,
+    width: 96, height: 96, borderRadius: 48,
     alignItems: 'center', justifyContent: 'center',
   },
   appName: { fontSize: 18, lineHeight: 24, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
-  tagline: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
+  tagline: { fontSize: 16, lineHeight: 22, textAlign: 'center', fontFamily: fonts.bodyMedium },
   modeToggle: {
     flexDirection: 'row', borderRadius: 16, padding: 4, marginBottom: 16,
   },
@@ -583,7 +591,7 @@ const styles = StyleSheet.create({
   },
   googleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  dividerLine: { flex: 1, height: 1 },
   dividerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   forgotTitle: { fontSize: 20, lineHeight: 28, fontWeight: '700', fontFamily: fonts.heading },
   forgotHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },

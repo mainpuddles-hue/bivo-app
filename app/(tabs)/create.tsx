@@ -9,6 +9,8 @@ import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
+import { LinearGradient } from 'expo-linear-gradient'
+import { categoryGradients } from '@/lib/theme'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -873,29 +875,37 @@ export default function CreateScreen() {
           }).map(([type, cat]) => {
             const Icon = CATEGORY_ICON_MAP[cat.icon]
             const isLocked = type === 'lainaa' && !trust.permissions.canLainaa
+            const isFullWidth = type === 'tapahtuma'
             return (
               <Pressable
                 key={type}
                 onPress={() => handleCategorySelect(type)}
                 style={({ pressed }) => [
                   styles.categoryCard,
-                  { backgroundColor: isDark ? cat.bgDark : cat.bgLight },
+                  isFullWidth && styles.categoryCardFullWidth,
                   pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
                   isLocked && { opacity: 0.5 },
                 ]}
               >
-                <View style={[styles.categoryIconLarge, { backgroundColor: `${cat.color}20` }]}>
-                  {Icon && <Icon size={32} color={cat.color} strokeWidth={1.8} />}
-                  {isLocked && (
-                    <View style={styles.lockOverlay}>
-                      <Lock size={14} color={colors.primaryForeground} />
-                    </View>
-                  )}
-                </View>
-                <Text style={[styles.categoryName, { color: cat.color }]}>{t(cat.label)}</Text>
-                <Text style={[styles.categorySub, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {isLocked ? t('trust.requiresTier2Short') : t(cat.subtitle)}
-                </Text>
+                <LinearGradient
+                  colors={categoryGradients[type] || [cat.color, cat.color]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.categoryCardGradient}
+                >
+                  <View style={[styles.categoryIconLarge, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
+                    {Icon && <Icon size={36} color="#FFFFFF" strokeWidth={1.8} />}
+                    {isLocked && (
+                      <View style={styles.lockOverlay}>
+                        <Lock size={14} color={colors.primaryForeground} />
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.categoryName, { color: '#FFFFFF' }]}>{t(cat.label)}</Text>
+                  <Text style={[styles.categorySub, { color: 'rgba(255,255,255,0.80)' }]} numberOfLines={1}>
+                    {isLocked ? t('trust.requiresTier2Short') : t(cat.subtitle)}
+                  </Text>
+                </LinearGradient>
               </Pressable>
             )
           })}
@@ -1775,9 +1785,16 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: '47%' as any,
-    borderRadius: 16, padding: 16, gap: 8,
+    borderRadius: 16, overflow: 'hidden',
+  },
+  categoryCardFullWidth: {
+    width: '100%' as any,
+  },
+  categoryCardGradient: {
+    padding: 16, gap: 8,
     alignItems: 'center', minHeight: 130,
     justifyContent: 'center',
+    borderRadius: 16,
   },
   categoryIconLarge: {
     width: 56, height: 56, borderRadius: 28,

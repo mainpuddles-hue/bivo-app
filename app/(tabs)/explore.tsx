@@ -748,8 +748,13 @@ function ExploreScreenInner() {
         {/* ── Events sub-tab ── */}
         {activeTab === 'events' && (
           <>
-            {/* Sort row */}
-            <View style={s.filterRow}>
+            {/* Combined sort + category row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={s.filterRow}
+              style={s.filterScrollWrap}
+            >
               {eventSortOptions.map(opt => {
                 const active = eventSort === opt.key
                 return (
@@ -769,15 +774,7 @@ function ExploreScreenInner() {
                   </Pressable>
                 )
               })}
-            </View>
-
-            {/* Category row */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={s.filterRow}
-              style={s.filterScrollWrap}
-            >
+              <Text style={[s.filterSeparator, { color: colors.mutedForeground }]}>|</Text>
               {eventCategoryOptions.map(opt => {
                 const isAll = opt.key === ''
                 const active = isAll ? eventCategories.length === 0 : eventCategories.includes(opt.key)
@@ -804,7 +801,9 @@ function ExploreScreenInner() {
               <SectionSkeleton count={5} />
             ) : allEvents.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <CalendarDays size={40} color={colors.mutedForeground} strokeWidth={1.3} />
+                <View style={[s.emptyIconCircle, { backgroundColor: `${colors.primary}10` }]}>
+                  <CalendarDays size={56} color={colors.mutedForeground} strokeWidth={1.3} />
+                </View>
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noEvents')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noEventsHint')}</Text>
                 <Pressable
@@ -867,8 +866,13 @@ function ExploreScreenInner() {
         {/* ── Places sub-tab ── */}
         {activeTab === 'places' && (
           <>
-            {/* Sort row */}
-            <View style={s.filterRow}>
+            {/* Combined sort + category row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={s.filterRow}
+              style={s.filterScrollWrap}
+            >
               {placeSortOptions.map(opt => {
                 const active = placeSort === opt.key
                 return (
@@ -888,15 +892,7 @@ function ExploreScreenInner() {
                   </Pressable>
                 )
               })}
-            </View>
-
-            {/* Category row */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={s.filterRow}
-              style={s.filterScrollWrap}
-            >
+              <Text style={[s.filterSeparator, { color: colors.mutedForeground }]}>|</Text>
               {placeCategoryOptions.map(opt => {
                 const isAll = opt.key === ''
                 const active = isAll ? placeCategories.length === 0 : placeCategories.includes(opt.key)
@@ -923,7 +919,9 @@ function ExploreScreenInner() {
               <SectionSkeleton count={5} />
             ) : sortedPlaces.length === 0 ? (
               <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <MapPin size={40} color={colors.mutedForeground} strokeWidth={1.3} />
+                <View style={[s.emptyIconCircle, { backgroundColor: `${colors.primary}10` }]}>
+                  <MapPin size={56} color={colors.mutedForeground} strokeWidth={1.3} />
+                </View>
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noPlaces')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noPlacesHint')}</Text>
                 <Pressable
@@ -1042,6 +1040,13 @@ const s = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
+  },
+  filterSeparator: {
+    fontSize: 14,
+    lineHeight: 28,
+    paddingHorizontal: 4,
+    alignSelf: 'center',
+    opacity: 0.4,
   },
 
   scroll: { flex: 1 },
@@ -1180,6 +1185,14 @@ const s = StyleSheet.create({
     borderRadius: 16,
     gap: 8,
   },
+  emptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -1229,10 +1242,10 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.16,
-    lineHeight: 22,
+    fontSize: 18,
+    fontFamily: fonts.heading,
+    letterSpacing: -0.3,
+    lineHeight: 24,
   },
   groupDot: {
     width: 36,

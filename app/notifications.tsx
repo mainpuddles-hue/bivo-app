@@ -90,9 +90,38 @@ function groupByTime(items: PrioritizedNotification[], t: (k: string) => string)
   return groups.filter(g => g.data.length > 0)
 }
 
+/** Map notification type to a human-readable i18n title */
+function getLocalizedTypeTitle(type: string, t: (k: string) => string): string | null {
+  const typeMap: Record<string, string> = {
+    new_message: 'notifications.newMessage',
+    review_received: 'notifications.newReview',
+    thanks_received: 'notifications.thanks',
+    thanks: 'notifications.thanks',
+    new_follower: 'notifications.newFollower',
+    post_like: 'notifications.postLike',
+    post_comment: 'notifications.newComment',
+    comment: 'notifications.newComment',
+    event_reminder: 'notifications.eventReminder',
+    rental_request: 'notifications.rentalRequest',
+    rental_confirmed: 'notifications.rentalConfirmed',
+    rental_completed: 'notifications.rentalCompleted',
+    rental_cancelled: 'notifications.rentalCancelled',
+    rental_paid: 'notifications.rentalPaid',
+    rental_update: 'notifications.rentalUpdate',
+  }
+  const key = typeMap[type]
+  if (!key) return null
+  const translated = t(key)
+  // If translation returns the key itself, it's missing — return null so we fall back to raw title
+  return translated !== key ? translated : null
+}
+
 /** Build grouped notification display text */
 function getGroupedTitle(item: PrioritizedNotification, t: (k: string, p?: Record<string, string | number>) => string): string {
-  if (!item.isGrouped || !item.groupCount || item.groupCount <= 1) return item.title ?? ''
+  // Resolve title: prefer i18n-translated type name, fall back to stored title
+  const resolvedTitle = getLocalizedTypeTitle(item.type, t) ?? item.title ?? ''
+
+  if (!item.isGrouped || !item.groupCount || item.groupCount <= 1) return resolvedTitle
 
   const firstName = item.groupNames?.[0] ?? item.from_user?.name ?? '?'
   const othersCount = item.groupCount - 1
@@ -102,7 +131,7 @@ function getGroupedTitle(item: PrioritizedNotification, t: (k: string, p?: Recor
   }
 
   // Generic grouped: "Name and N others"
-  return `${firstName} ${t('notifications.andOthers', { count: othersCount })} — ${item.title ?? ''}`
+  return `${firstName} ${t('notifications.andOthers', { count: othersCount })} — ${resolvedTitle}`
 }
 
 function NotificationSkeleton() {

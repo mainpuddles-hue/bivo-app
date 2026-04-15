@@ -3,6 +3,8 @@ import { enableFreeze } from 'react-native-screens'
 import { Tabs, useRouter, usePathname } from 'expo-router'
 import { View, Text, StyleSheet, Platform, Animated } from 'react-native'
 import { BlurView } from 'expo-blur'
+import { LinearGradient } from 'expo-linear-gradient'
+import { gradients } from '@/lib/theme'
 import * as Notifications from 'expo-notifications'
 import * as Haptics from 'expo-haptics'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
@@ -49,9 +51,14 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
   if (isCreate) {
     return (
       <View style={s.createTabItem}>
-        <View style={[s.createFab, { backgroundColor: colors.primary }]}>
-          <Icon size={24} color={colors.primaryForeground} strokeWidth={2.5} />
-        </View>
+        <LinearGradient
+          colors={gradients.primary}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={s.createFab}
+        >
+          <Icon size={26} color="#FFFFFF" strokeWidth={2.5} />
+        </LinearGradient>
       </View>
     )
   }
@@ -60,7 +67,7 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
     <View style={s.tabItem}>
       <Animated.View style={[s.iconWrap, focused && { backgroundColor: `${colors.primary}18` }, { transform: [{ scale }] }]}>
         <Icon
-          size={24}
+          size={26}
           color={focused ? colors.primary : colors.mutedForeground}
           strokeWidth={focused ? 2.2 : 1.6}
         />
@@ -197,7 +204,7 @@ export default function TabLayout() {
 const s = StyleSheet.create({
   tabItem: { alignItems: 'center', gap: 2, position: 'relative', width: 64 },
   iconWrap: {
-    width: 40, height: 32, borderRadius: 16,
+    width: 44, height: 36, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
   createTabItem: {
@@ -210,7 +217,7 @@ const s = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
   },
-  tabLabel: { fontSize: 11, fontWeight: '500', fontFamily: fonts.body },
+  tabLabel: { fontSize: 12, fontWeight: '500', fontFamily: fonts.body },
   badge: {
     position: 'absolute' as const,
     top: -4,

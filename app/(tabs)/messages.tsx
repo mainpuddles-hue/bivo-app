@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
+import { LinearGradient } from 'expo-linear-gradient'
+import { gradients } from '@/lib/theme'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare, MoreHorizontal, RefreshCw } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -569,8 +571,8 @@ export default function MessagesScreen() {
                   {isMySent && lastMsg?.is_read && <CheckCheck size={14} color={colors.primary} />}
                   {isImageMsg ? (
                     <View style={styles.imgPreview}>
-                      <ImageIcon size={12} color={colors.mutedForeground} />
-                      <Text style={[styles.convPreview, { color: colors.mutedForeground }]}>{t('messages.imageMessage')}</Text>
+                      <ImageIcon size={12} color={unread > 0 ? colors.foreground : colors.mutedForeground} />
+                      <Text style={[styles.convPreview, { color: unread > 0 ? colors.foreground : colors.mutedForeground }]}>{t('messages.imageMessage')}</Text>
                     </View>
                   ) : (
                     <Text style={[styles.convPreview, { color: colors.mutedForeground }, unread > 0 && { color: colors.foreground }]} numberOfLines={1}>
@@ -581,8 +583,11 @@ export default function MessagesScreen() {
               </View>
               <View style={styles.convRight}>
                 <View style={styles.convRightTop}>
+                  {unread > 0 && (
+                    <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
+                  )}
                   {item.updated_at && (
-                    <Text style={[styles.convTime, { color: colors.mutedForeground }]}>
+                    <Text style={[styles.convTime, { color: unread > 0 ? colors.primary : colors.mutedForeground }]}>
                       {formatTimeAgo(item.updated_at, t, locale)}
                     </Text>
                   )}
@@ -677,11 +682,18 @@ export default function MessagesScreen() {
       {userId && (
         <PressableOpacity
           onPress={() => router.push('/search')}
-          style={[styles.newMessageFab, { backgroundColor: colors.primary, bottom: insets.bottom + 80 }]}
+          style={[styles.newMessageFab, { bottom: insets.bottom + 80 }]}
           accessibilityLabel={t('messages.newMessage')}
           accessibilityRole="button"
         >
-          <PenSquare size={22} color={colors.primaryForeground} strokeWidth={2} />
+          <LinearGradient
+            colors={gradients.primary}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.fabGradient}
+          >
+            <PenSquare size={22} color="#FFFFFF" strokeWidth={2} />
+          </LinearGradient>
         </PressableOpacity>
       )}
     </View>
@@ -775,8 +787,15 @@ const styles = StyleSheet.create({
   newMessageFab: {
     position: 'absolute', right: 16,
     width: 56, height: 56, borderRadius: 28,
-    alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
+  },
+  fabGradient: {
+    width: 56, height: 56, borderRadius: 28,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  unreadDot: {
+    width: 8, height: 8, borderRadius: 4,
   },
 })

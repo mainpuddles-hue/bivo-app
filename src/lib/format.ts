@@ -75,6 +75,9 @@ export function formatTimeAgo(dateStr: string, t: TFunction, locale: string): st
   // Weeks (up to ~8 weeks)
   const diffWeek = Math.floor(diffDay / 7)
   if (diffWeek <= 8) {
+    // Edge case: diffDay 6 → diffWeek 0 → "0 viikkoa sitten" bug.
+    // Fall back to weekday label for that day.
+    if (diffWeek < 1) return getDTFormat(resolvedLocale, { weekday: 'short' }).format(date)
     return diffWeek === 1 ? t('time.oneWeekAgo') : t('time.weeksAgo', { count: diffWeek })
   }
 

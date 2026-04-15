@@ -14,6 +14,7 @@ import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { cardShadow, cardShadowDark } from '@/lib/shadows'
+import { categoryTints, categoryAccents } from '@/lib/theme'
 import { CATEGORIES } from '@/lib/constants'
 import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -244,12 +245,17 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
       delayLongPress={400}
       style={({ pressed }) => [
         styles.card,
-        { backgroundColor: colors.card },
+        categoryTints[post.type]
+          ? { backgroundColor: categoryTints[post.type][isDark ? 'dark' : 'light'] }
+          : { backgroundColor: colors.card },
         isDark ? cardShadowDark : cardShadow,
         // Accent bar only for truly special states — category badge handles type distinction
         isUrgentPost && { borderLeftWidth: 3, borderLeftColor: colors.destructive },
         !isUrgentPost && isPro && { borderLeftWidth: 3, borderLeftColor: colors.pro },
         !isUrgentPost && !isPro && post.is_boosted && FEATURES.BOOSTS && { borderLeftWidth: 3, borderLeftColor: colors.accent },
+        !isUrgentPost && !isPro && !(post.is_boosted && FEATURES.BOOSTS) && categoryAccents[post.type]
+          ? { borderLeftWidth: 3, borderLeftColor: categoryAccents[post.type] }
+          : undefined,
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
@@ -685,7 +691,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16,
     flexShrink: 0,
   },
-  categoryBadgeText: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.2, lineHeight: 16 },
+  categoryBadgeText: { fontSize: 13, fontFamily: fonts.heading, letterSpacing: 0.2, lineHeight: 16 },
   newDot: {
     width: 6, height: 6, borderRadius: 3, marginLeft: 2,
   },

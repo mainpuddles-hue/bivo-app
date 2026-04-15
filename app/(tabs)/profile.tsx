@@ -457,6 +457,11 @@ export default function ProfileScreen() {
             <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
             {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
           </View>
+          {!trust.loading && trust.level === 1 && (
+            <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
+              {'→ Aktiivinen naapuri'}
+            </Text>
+          )}
           {profile.naapurusto && (
             <View style={s.nhRow}>
               <MapPin size={14} color={colors.primary} />
@@ -553,9 +558,11 @@ export default function ProfileScreen() {
                 <Star size={12} color={colors.pro} fill={colors.pro} />
               </View>
             ) : (
-              <Text style={[s.statNum, { color: colors.mutedForeground }]}>{'\u2013'}</Text>
+              <Text style={[s.statNum, { color: colors.mutedForeground }]}>{'\u2014'}</Text>
             )}
-            <Text numberOfLines={1} style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
+            <Text numberOfLines={1} style={[s.statLabel, { color: avgRating == null ? colors.mutedForeground : colors.mutedForeground }]}>
+              {avgRating == null ? 'Ei arvioita' : t('profile.avgRating')}
+            </Text>
           </View>
           <PressableOpacity style={s.stat} onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityLabel={`${profile?.total_points ?? 0} ${t('profile.points')}`} accessibilityRole="button">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -992,7 +999,7 @@ const s = StyleSheet.create({
   proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
   statsRow: { flexDirection: 'row', borderRadius: 16, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   stat: { flex: 1, alignItems: 'center', gap: 4, minHeight: 48 },
-  statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
+  statNum: { fontSize: 22, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 28 },
   statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 13, textTransform: 'uppercase', letterSpacing: 0.3 },
   statDiv: { width: 0, alignSelf: 'stretch' as const },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },

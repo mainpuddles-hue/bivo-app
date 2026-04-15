@@ -28,6 +28,7 @@ import {
   Gift,
   Heart,
 } from 'lucide-react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -215,6 +216,8 @@ function OnboardingScreenInner() {
             {
               backgroundColor: i === currentPage ? colors.primary : colors.muted,
               width: i === currentPage ? 24 : 8,
+              height: i === currentPage ? 10 : 8,
+              borderRadius: i === currentPage ? 5 : 4,
             },
           ]}
         />
@@ -225,6 +228,10 @@ function OnboardingScreenInner() {
   // ── Slide 1: Welcome ──
   const renderWelcome = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
+      <LinearGradient
+        colors={[colors.background, `${colors.primary}08`]}
+        style={StyleSheet.absoluteFill}
+      />
       <View style={s.welcomeContent}>
         <View style={[s.logoBigCircle, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
           <TackBirdLogo size={56} color={colors.primaryForeground} />
@@ -246,14 +253,21 @@ function OnboardingScreenInner() {
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={() => goToPage(1)}
-          style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          style={s.primaryBtnWrapper}
           accessibilityRole="button"
           accessibilityLabel={t('onboarding.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
-            {t('onboarding.next')}
-          </Text>
-          <ArrowRight size={18} color={colors.primaryForeground} />
+          <LinearGradient
+            colors={[colors.primary, `${colors.primary}CC`]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[s.primaryBtn, s.primaryBtnGradient]}
+          >
+            <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
+              {t('onboarding.next')}
+            </Text>
+            <ArrowRight size={18} color={colors.primaryForeground} />
+          </LinearGradient>
         </PressableOpacity>
         {renderDots()}
       </View>
@@ -930,6 +944,15 @@ const s = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 12,
   },
+  primaryBtnWrapper: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#2D6B5E',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -939,9 +962,13 @@ const s = StyleSheet.create({
     paddingVertical: 16,
     minHeight: 48,
   },
+  primaryBtnGradient: {
+    paddingHorizontal: 24,
+  },
   primaryBtnText: {
     fontSize: 16,
     lineHeight: 22,
+    fontWeight: '700',
   },
   dots: {
     flexDirection: 'row',

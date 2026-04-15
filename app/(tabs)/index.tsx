@@ -425,11 +425,11 @@ function FeedScreenInner() {
       <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: 4 }]}>
         <View style={styles.neighborhoodRow}>
           <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
-            <MapPin size={13} color={colors.foreground} />
+            <MapPin size={20} color={colors.foreground} />
             <Text style={[styles.neighborhoodText, { color: colors.foreground }]}>
               {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
             </Text>
-            <ChevronDown size={12} color={colors.foreground} style={{ opacity: 0.4 }} />
+            <ChevronDown size={16} color={colors.primary} />
           </PressableOpacity>
           {/* Sort — single button, opens ActionSheet */}
           <PressableOpacity
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   },
   neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
   neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, alignSelf: 'flex-start', minHeight: 32 },
-  neighborhoodText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  neighborhoodText: { fontSize: 17, fontWeight: '700', fontFamily: fonts.heading, letterSpacing: -0.3 },
   dateGroupLabel: { alignItems: 'center', paddingVertical: 4 },
   dateGroupText: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.3, lineHeight: 14 },
   list: { paddingHorizontal: 16 },

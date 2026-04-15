@@ -921,7 +921,7 @@ function PostDetailScreenInner() {
           )}
 
           {category && (
-            <View style={[styles.categoryChip, { backgroundColor: `${category.color}20` }]}>
+            <View style={[styles.categoryChip, { backgroundColor: `${category.color}26` }]}>
               <Text style={[styles.categoryText, { color: category.color }]}>
                 {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
               </Text>
@@ -1352,11 +1352,11 @@ function PostDetailScreenInner() {
         }]}>
           <PressableOpacity
             onPress={handleMessage}
-            style={[ctaStyles.messageBtn, { backgroundColor: colors.primary }]}
+            style={[ctaStyles.messageBtn, { borderColor: colors.primary }]}
             accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
           >
-            <MessageCircle size={18} color={colors.primaryForeground} />
-            <Text style={[ctaStyles.messageBtnText, { color: colors.primaryForeground }]}>
+            <MessageCircle size={18} color={colors.primary} />
+            <Text style={[ctaStyles.messageBtnText, { color: colors.primary }]}>
               {t('post.message')}
             </Text>
           </PressableOpacity>
@@ -1415,11 +1415,11 @@ const styles = StyleSheet.create({
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
   authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 36 },
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16, alignSelf: 'flex-start' },
-  categoryText: { fontSize: 11, fontFamily: fonts.bodyMedium, letterSpacing: 0.3, lineHeight: 13 },
+  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, alignSelf: 'flex-start' },
+  categoryText: { fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '700', letterSpacing: 0.3, lineHeight: 20 },
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
   expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  title: { fontSize: 22, fontFamily: fonts.headingSemi, lineHeight: 28, letterSpacing: -0.3 },
+  title: { fontSize: 22, fontFamily: fonts.heading, lineHeight: 28, letterSpacing: -0.4 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, borderWidth: 1, alignSelf: 'flex-start' },
@@ -1515,8 +1515,10 @@ const ctaStyles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   messageBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    alignSelf: 'flex-start',
+    gap: 8, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 16,
+    borderWidth: 1.5, backgroundColor: 'transparent',
   },
   messageBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })
