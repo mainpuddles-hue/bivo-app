@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Check, AlertCircle, Info, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { fonts } from '@/lib/fonts'
 import { PressableOpacity } from '@/components/ui'
@@ -55,6 +56,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToast(null)
   }, [])
 
+  // Defensive cleanup if provider unmounts with a pending timer
+  useEffect(() => () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+  }, [])
+
   return (
     <ToastContext.Provider value={{ show }}>
       {children}
@@ -65,22 +71,34 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 function ToastDisplay({ toast, onDismiss }: { toast: (ToastOptions & { id: number }) | null; onDismiss: () => void }) {
   const { colors, isDark } = useTheme()
+  const { t } = useI18n()
   const reduceMotion = useReduceMotion()
   const insets = useSafeAreaInsets()
   const translateY = useRef(new Animated.Value(100)).current
   const opacity = useRef(new Animated.Value(0)).current
+
+  // Keep the last-rendered toast in state so exit animation has content to render
+  // after `toast` becomes null. Replaced when a new toast arrives.
+  const [rendered, setRendered] = useState<(ToastOptions & { id: number }) | null>(null)
+  useEffect(() => {
+    if (toast) setRendered(toast)
+  }, [toast])
 
   useEffect(() => {
     if (!toast) {
       if (reduceMotion) {
         translateY.setValue(100)
         opacity.setValue(0)
+        setRendered(null)
         return
       }
       Animated.parallel([
         Animated.spring(translateY, { toValue: 100, friction: 8, useNativeDriver: true }),
         Animated.timing(opacity, { toValue: 0, duration: 160, useNativeDriver: true }),
-      ]).start()
+      ]).start(({ finished }) => {
+        // Only clear after exit animation completes so the UI has time to animate out
+        if (finished) setRendered(null)
+      })
       return
     }
     if (reduceMotion) {
@@ -94,9 +112,9 @@ function ToastDisplay({ toast, onDismiss }: { toast: (ToastOptions & { id: numbe
     ]).start()
   }, [toast, reduceMotion, translateY, opacity])
 
-  if (!toast) return null
+  if (!rendered) return null
 
-  const type = toast.type ?? 'success'
+  const type = rendered.type ?? 'success'
   const accent =
     type === 'success' ? colors.success :
     type === 'error' ? colors.destructive :
@@ -127,13 +145,13 @@ function ToastDisplay({ toast, onDismiss }: { toast: (ToastOptions & { id: numbe
           <Icon size={16} color={accent} strokeWidth={2.5} />
         </View>
         <Text style={[styles.message, { color: colors.foreground }]} numberOfLines={2}>
-          {toast.message}
+          {rendered.message}
         </Text>
         <PressableOpacity
           onPress={onDismiss}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Sulje"
+          accessibilityLabel={t('common.close')}
           style={styles.closeBtn}
         >
           <X size={14} color={colors.mutedForeground} />

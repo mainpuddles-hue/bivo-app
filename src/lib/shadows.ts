@@ -75,7 +75,7 @@ export const shadowLgDark = Platform.select({
 }) as any
 
 // Category-tinted shadows for PostCards
-export function categoryCardShadow(categoryColor: string, isDark: boolean) {
+export function categoryCardShadow(categoryColor: string, isDark: boolean): any {
   if (isDark) return shadowMdDark
   return Platform.select({
     ios: {
@@ -86,7 +86,7 @@ export function categoryCardShadow(categoryColor: string, isDark: boolean) {
     },
     android: { elevation: 3 },
     default: {},
-  })
+  }) as any
 }
 
 // Legacy aliases

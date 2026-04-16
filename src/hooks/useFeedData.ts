@@ -421,7 +421,7 @@ export function useFeedData() {
         setRefreshing(false)
       }
     }
-  }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userNeighborhood, userLocation])
+  }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userNeighborhood, userLocation, preferredTypes])
 
   // Ref to avoid stale closures in useFocusEffect and realtime callbacks
   const fetchPostsRef = useRef(fetchPosts)

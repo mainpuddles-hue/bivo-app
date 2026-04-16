@@ -1029,7 +1029,14 @@
     "start": "Let's go!",
     "selectCity": "Select city",
     "noNeighborhoods": "No neighborhoods found",
-    "typeNeighborhood": "Type your neighborhood"
+    "typeNeighborhood": "Type your neighborhood",
+    "purposeTitle": "What do you want to do?",
+    "purposeSubtitle": "Choose one or more — you can change this later",
+    "purposeTarvitsen": "I need help",
+    "purposeTarjoan": "I offer services",
+    "purposeIlmaista": "I give away free",
+    "purposeLainaa": "I lend or rent",
+    "purposeTapahtuma": "I join events"
   },
   "resetPassword": {
     "title": "Change password",
@@ -1498,7 +1505,8 @@
     "invalidTimeFormat": "Invalid time format",
     "priceCannotBeZero": "Price cannot be zero",
     "rollbackFailed": "Rollback failed",
-    "titleRequired": "Title required"
+    "titleRequired": "Title required",
+    "duplicateFound": "Similar post found: \"{title}\""
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",

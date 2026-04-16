@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
-import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp, Crown, CheckCircle } from 'lucide-react-native'
+import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp, Crown, CheckCircle, AlertTriangle } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
@@ -216,7 +216,7 @@ export default function CreateScreen() {
       if (!cachedId) return
       const result = await checkForDuplicates(title, selectedType, cachedId)
       if (result.isDuplicate) {
-        setDuplicateWarning(`Samankaltainen ilmoitus löytyy: "${result.similarPosts[0]?.title}"`)
+        setDuplicateWarning(t('create.duplicateFound', { title: result.similarPosts[0]?.title ?? '' }))
       } else {
         setDuplicateWarning(null)
       }
@@ -1090,9 +1090,12 @@ export default function CreateScreen() {
             )}
             <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
             {duplicateWarning && (
-              <Text style={{ fontSize: 12, color: colors.pro, fontFamily: fonts.body, paddingTop: 4 }}>
-                {'\u26A0\uFE0F'} {duplicateWarning}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 4 }}>
+                <AlertTriangle size={12} color={colors.pro} />
+                <Text style={{ fontSize: 12, color: colors.pro, fontFamily: fonts.body, flex: 1 }}>
+                  {duplicateWarning}
+                </Text>
+              </View>
             )}
           </View>
 

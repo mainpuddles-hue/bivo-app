@@ -1029,7 +1029,14 @@
     "start": "Aloita!",
     "selectCity": "Valitse kaupunki",
     "noNeighborhoods": "Naapurustoja ei löytynyt",
-    "typeNeighborhood": "Syötä naapurustosi"
+    "typeNeighborhood": "Syötä naapurustosi",
+    "purposeTitle": "Mitä haluat tehdä?",
+    "purposeSubtitle": "Valitse yksi tai useampi — voit muuttaa myöhemmin",
+    "purposeTarvitsen": "Tarvitsen apua",
+    "purposeTarjoan": "Tarjoan palveluja",
+    "purposeIlmaista": "Jaan ilmaista",
+    "purposeLainaa": "Lainaan tai vuokraan",
+    "purposeTapahtuma": "Osallistun tapahtumiin"
   },
   "resetPassword": {
     "title": "Vaihda salasana",
@@ -1498,7 +1505,8 @@
     "invalidTimeFormat": "Virheellinen aikamuoto",
     "priceCannotBeZero": "Hinta ei voi olla nolla",
     "rollbackFailed": "Peruutus epäonnistui",
-    "titleRequired": "Otsikko vaaditaan"
+    "titleRequired": "Otsikko vaaditaan",
+    "duplicateFound": "Samankaltainen ilmoitus löytyy: \"{title}\""
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",

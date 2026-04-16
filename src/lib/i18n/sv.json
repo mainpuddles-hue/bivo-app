@@ -1010,7 +1010,14 @@
     "start": "Sätt igång!",
     "selectCity": "Välj stad",
     "noNeighborhoods": "Inga stadsdelar hittades",
-    "typeNeighborhood": "Skriv ditt grannskap"
+    "typeNeighborhood": "Skriv ditt grannskap",
+    "purposeTitle": "Vad vill du göra?",
+    "purposeSubtitle": "Välj en eller flera — du kan ändra senare",
+    "purposeTarvitsen": "Jag behöver hjälp",
+    "purposeTarjoan": "Jag erbjuder tjänster",
+    "purposeIlmaista": "Jag delar gratis",
+    "purposeLainaa": "Jag lånar ut eller hyr",
+    "purposeTapahtuma": "Jag deltar i evenemang"
   },
   "resetPassword": {
     "title": "Byt lösenord",
@@ -1449,7 +1456,8 @@
     "invalidTimeFormat": "Ogiltigt tidsformat",
     "priceCannotBeZero": "Priset kan inte vara noll",
     "rollbackFailed": "Återställning misslyckades",
-    "titleRequired": "Titel krävs"
+    "titleRequired": "Titel krävs",
+    "duplicateFound": "Liknande inlägg hittades: \"{title}\""
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",

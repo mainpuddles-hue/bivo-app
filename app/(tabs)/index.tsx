@@ -258,7 +258,7 @@ function FeedScreenInner() {
     }
     // Community cards removed from feed — belong in Explore tab (progressive disclosure)
     return result
-  }, [filteredPosts, activeAds, feed.communityCards])
+  }, [filteredPosts, activeAds])
 
   // Ref for visiblePosts so renderPost can access it without dependency
   const visiblePostsRef = useRef(visiblePosts)

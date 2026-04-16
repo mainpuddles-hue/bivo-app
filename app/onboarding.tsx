@@ -405,28 +405,31 @@ function OnboardingScreenInner() {
   )
 
   // ── Slide 4: Purpose ──
+  // Hide 'lainaa' when LENDING feature is disabled so users can't select
+  // a purpose that leaves them with an empty feed.
   const PURPOSE_OPTIONS = [
-    { key: 'tarvitsen', label: 'Tarvitsen apua', icon: Handshake, color: CATEGORIES.tarvitsen.color },
-    { key: 'tarjoan', label: 'Tarjoan palveluja', icon: Gift, color: CATEGORIES.tarjoan.color },
-    { key: 'ilmaista', label: 'Jaan ilmaista', icon: Heart, color: CATEGORIES.ilmaista.color },
-    { key: 'lainaa', label: 'Lainaan tai vuokraan', icon: BookOpen, color: CATEGORIES.lainaa.color },
-    { key: 'tapahtuma', label: 'Osallistun tapahtumiin', icon: CalendarDays, color: CATEGORIES.tapahtuma.color },
+    { key: 'tarvitsen', labelKey: 'onboarding.purposeTarvitsen', icon: Handshake, color: CATEGORIES.tarvitsen.color },
+    { key: 'tarjoan', labelKey: 'onboarding.purposeTarjoan', icon: Gift, color: CATEGORIES.tarjoan.color },
+    { key: 'ilmaista', labelKey: 'onboarding.purposeIlmaista', icon: Heart, color: CATEGORIES.ilmaista.color },
+    ...(FEATURES.LENDING ? [{ key: 'lainaa', labelKey: 'onboarding.purposeLainaa', icon: BookOpen, color: CATEGORIES.lainaa.color }] : []),
+    { key: 'tapahtuma', labelKey: 'onboarding.purposeTapahtuma', icon: CalendarDays, color: CATEGORIES.tapahtuma.color },
   ]
 
   const renderPurpose = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <View style={s.purposeContent}>
         <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }]}>
-          Mitä haluat tehdä?
+          {t('onboarding.purposeTitle')}
         </Text>
         <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, textAlign: 'center' }]}>
-          Valitse yksi tai useampi — voit muuttaa myöhemmin
+          {t('onboarding.purposeSubtitle')}
         </Text>
 
         <View style={s.purposeGrid}>
           {PURPOSE_OPTIONS.map((opt) => {
             const isSelected = selectedPurposes.includes(opt.key)
             const IconComponent = opt.icon
+            const label = t(opt.labelKey)
             return (
               <PressableOpacity
                 key={opt.key}
@@ -446,7 +449,7 @@ function OnboardingScreenInner() {
                 ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={opt.label}
+                accessibilityLabel={label}
               >
                 <IconComponent
                   size={20}
@@ -461,7 +464,7 @@ function OnboardingScreenInner() {
                     },
                   ]}
                 >
-                  {opt.label}
+                  {label}
                 </Text>
                 {isSelected && <Check size={16} color="#FFFFFF" />}
               </PressableOpacity>
@@ -480,10 +483,10 @@ function OnboardingScreenInner() {
           }}
           style={[s.primaryBtn, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
-          accessibilityLabel="Seuraava"
+          accessibilityLabel={t('common.next')}
         >
           <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
-            Seuraava
+            {t('common.next')}
           </Text>
           <ChevronRight size={18} color={colors.primaryForeground} />
         </PressableOpacity>
