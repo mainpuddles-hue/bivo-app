@@ -808,9 +808,8 @@ function PostDetailScreenInner() {
   }, [userId, post, sendingService, paymentLoading, svcFee, svcTotal, serviceNotes, id, supabase, router, t, createPayment, trust])
 
   const renderCommentItem = (c: PostComment, isReply: boolean) => (
-    <View key={c.id} style={[styles.commentRow, isReply && styles.replyRow]}>
-      {isReply && <View style={[styles.replyLine, { backgroundColor: colors.border }]} />}
-      <Avatar url={c.user?.avatar_url} name={c.user?.name} size={isReply ? 24 : 32} />
+    <View key={c.id} style={[styles.commentRow, isReply && styles.replyRow, { borderBottomColor: colors.border }]}>
+      <Avatar url={c.user?.avatar_url} name={c.user?.name} size={isReply ? 28 : 36} />
       <View style={styles.commentBody}>
         <View style={styles.commentHeader}>
           <Text style={[styles.commentName, { color: colors.foreground }]} numberOfLines={1}>{c.user?.name ?? t('common.user')}</Text>
@@ -880,7 +879,7 @@ function PostDetailScreenInner() {
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: 'transparent', borderBottomColor: colors.border }]}>
         <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
         <View style={{ flex: 1 }} />
         <PressableOpacity onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></PressableOpacity>
@@ -923,9 +922,10 @@ function PostDetailScreenInner() {
           )}
 
           {category && (
-            <View style={[styles.categoryChip, { backgroundColor: `${category.color}26` }]}>
-              <Text style={[styles.categoryText, { color: category.color }]}>
-                {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
+            <View style={styles.categoryRow}>
+              <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
+              <Text style={[styles.categoryLabel, { color: colors.mutedForeground }]}>
+                {t(category.label)}
               </Text>
             </View>
           )}
@@ -1040,6 +1040,7 @@ function PostDetailScreenInner() {
             <Text style={[styles.description, { color: colors.foreground }]}>{post.description}</Text>
           ) : null}
 
+
           {post.type === 'tapahtuma' && (
             <PressableOpacity
               onPress={() => router.push('/community-events' as any)}
@@ -1059,45 +1060,59 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {/* Action row — like + count, comment + count (bookmark/share/flag in header) */}
-          <View style={styles.actionRow}>
+          {/* Action row — hairline top border, Threads-style thin icons */}
+          <View style={[styles.actionRow, { borderTopColor: colors.border }]}>
             <PressableOpacity onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
-              <Heart size={16} color={isLiked ? colors.destructive : colors.mutedForeground} fill={isLiked ? colors.destructive : 'transparent'} />
+              <Heart size={20} strokeWidth={1.8} color={isLiked ? colors.destructive : colors.foreground} fill={isLiked ? colors.destructive : 'transparent'} />
               {likeCount > 0 && (
                 <PressableOpacity onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
-                  <Text style={[styles.actionText, { color: isLiked ? colors.destructive : colors.mutedForeground }]}>{likeCount}</Text>
+                  <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{likeCount}</Text>
                 </PressableOpacity>
               )}
             </PressableOpacity>
             <View style={styles.actionItem}>
-              <MessageCircle size={16} color={colors.mutedForeground} />
+              <MessageCircle size={20} strokeWidth={1.8} color={colors.foreground} />
               {comments.length > 0 && (
                 <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{comments.length}</Text>
               )}
             </View>
+            <PressableOpacity onPress={toggleSave} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>
+              <Bookmark size={20} strokeWidth={1.8} color={isSaved ? colors.foreground : colors.foreground} fill={isSaved ? colors.foreground : 'transparent'} />
+            </PressableOpacity>
+            <PressableOpacity onPress={handleShare} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.share')}>
+              <Share2 size={20} strokeWidth={1.8} color={colors.foreground} />
+            </PressableOpacity>
           </View>
 
-          {/* Author card — compact, like feed PostCard */}
-          <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {/* Author card — Threads-style, no colored bg */}
+          <View style={[styles.authorCard, { borderTopColor: colors.border }]}>
             <PressableOpacity onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow} accessibilityRole="button" accessibilityLabel={user?.name ?? t('common.user')}>
-              <Avatar url={user?.avatar_url} name={user?.name} size={32} />
+              <Avatar url={user?.avatar_url} name={user?.name} size={44} />
               <View style={styles.authorCardInfo}>
                 <View style={styles.authorNameRow}>
                   <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name ?? t('common.user')}</Text>
                   {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
+                </View>
+                <View style={styles.authorMeta}>
                   {post.created_at && (
                     <Text style={[styles.authorTimeAgo, { color: colors.mutedForeground }]}>
-                      {'· ' + formatTimeAgo(post.created_at, t, locale)}
+                      {formatTimeAgo(post.created_at, t, locale)}
                     </Text>
                   )}
+                  {user?.naapurusto && (
+                    <>
+                      <Text style={[styles.authorMetaDivider, { color: colors.mutedForeground }]}>·</Text>
+                      <MapPin size={11} color={colors.mutedForeground} />
+                      <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>
+                    </>
+                  )}
                 </View>
-                {user?.naapurusto && (
-                  <View style={styles.authorLocationRow}>
-                    <MapPin size={11} color={colors.mutedForeground} />
-                    <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>
-                  </View>
-                )}
               </View>
+              {!isAuthor && (
+                <View style={[styles.followBtn, { borderColor: colors.foreground }]}>
+                  <Text style={[styles.followBtnText, { color: colors.foreground }]}>Seuraa</Text>
+                </View>
+              )}
             </PressableOpacity>
           </View>
 
@@ -1109,7 +1124,7 @@ function PostDetailScreenInner() {
                 {relatedPosts.map((rp) => {
                   const rpCat = CATEGORIES[rp.type as PostType]
                   return (
-                    <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card }]}>
+                    <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
                       {rp.image_url ? (<Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />) : (
                         <View style={[styles.relatedImage, { backgroundColor: rpCat ? (isDark ? rpCat.bgDark : rpCat.bgLight) : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
                           {rpCat && CATEGORY_ICON_MAP[rpCat.icon] && (() => { const I = CATEGORY_ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
@@ -1128,7 +1143,7 @@ function PostDetailScreenInner() {
 
           {/* Threaded Comments */}
           <View style={[styles.commentSection, { borderTopColor: colors.border }]}>
-            <Text style={[styles.commentTitle, { color: comments.length === 0 ? colors.mutedForeground : colors.foreground }]}>
+            <Text style={[styles.commentTitle, { color: colors.foreground }]}>
               {comments.length === 0 ? t('post.beFirstComment') : `${t('post.comments')} (${comments.length})`}
             </Text>
 
@@ -1163,7 +1178,7 @@ function PostDetailScreenInner() {
 
             {userId && (
               <View style={{ gap: 4 }}>
-              <View style={[styles.commentInput, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.commentInput, { backgroundColor: colors.muted, borderColor: 'transparent' }]}>
                 <TextInput
                   style={[styles.commentTextInput, { color: colors.foreground }]}
                   value={commentText} onChangeText={setCommentText}
@@ -1174,11 +1189,11 @@ function PostDetailScreenInner() {
                   hitSlop={8}
                   accessibilityRole="button" accessibilityLabel={t('post.sendComment')}
                   accessibilityState={{ busy: sendingComment, disabled: !commentText.trim() || sendingComment }}
-                  style={({ pressed }) => [styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim()) ? 0.5 : pressed ? 0.7 : 1 }]}>
+                  style={({ pressed }) => [styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.foreground : 'transparent', opacity: (!commentText.trim()) ? 0.4 : pressed ? 0.7 : 1 }]}>
                   {sendingComment ? (
-                    <ActivityIndicator size="small" color={colors.primaryForeground} />
+                    <ActivityIndicator size="small" color={commentText.trim() ? colors.background : colors.mutedForeground} />
                   ) : (
-                    <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
+                    <Send size={14} color={commentText.trim() ? colors.background : colors.mutedForeground} />
                   )}
                 </Pressable>
               </View>
@@ -1353,17 +1368,17 @@ function PostDetailScreenInner() {
       {/* Fixed bottom CTA — message only (bookmark/share/flag in header) */}
       {post && userId && post.user_id !== userId && (
         <View style={[ctaStyles.bar, {
-          backgroundColor: colors.card,
+          backgroundColor: colors.background,
           borderTopColor: colors.border,
           paddingBottom: insets.bottom + 8,
         }]}>
           <PressableOpacity
             onPress={handleMessage}
-            style={[ctaStyles.messageBtn, { borderColor: colors.primary }]}
+            style={[ctaStyles.messageBtn, { borderColor: colors.foreground }]}
             accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
           >
-            <MessageCircle size={18} color={colors.primary} />
-            <Text style={[ctaStyles.messageBtnText, { color: colors.primary }]}>
+            <MessageCircle size={18} strokeWidth={1.8} color={colors.foreground} />
+            <Text style={[ctaStyles.messageBtnText, { color: colors.foreground }]}>
               {t('post.message')}
             </Text>
           </PressableOpacity>
@@ -1422,54 +1437,62 @@ const styles = StyleSheet.create({
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
   authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 36 },
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, alignSelf: 'flex-start' },
-  categoryText: { fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '700', letterSpacing: 0.3, lineHeight: 20 },
+
+  // Category — Threads-style dot + muted uppercase label
+  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  categoryDot: { width: 6, height: 6, borderRadius: 3 },
+  categoryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600', letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 12 },
+
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
   expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  title: { fontSize: 22, fontFamily: fonts.heading, lineHeight: 28, letterSpacing: -0.4 },
+  title: { fontSize: 24, fontFamily: fonts.heading, lineHeight: 30, letterSpacing: -0.5, fontWeight: '800' },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, borderWidth: 1, alignSelf: 'flex-start' },
   boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22 },
+  description: { fontSize: 16, fontFamily: fonts.body, lineHeight: 24 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   locationText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
-  // Action row — unified like PostCard
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 2 },
-  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 44, paddingHorizontal: 2 },
-  actionText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  // Action row — hairline top border, Threads-style thin icons
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
+  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, paddingHorizontal: 2 },
+  actionText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
 
-  // Author card — compact single row
-  authorCard: { paddingHorizontal: 12, paddingVertical: 12, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, marginTop: 4 },
-  authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  authorCardInfo: { flex: 1, gap: 1 },
-  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'nowrap' },
-  authorName: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17, flexShrink: 1 },
-  authorTimeAgo: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, flexShrink: 0 },
+  // Author card — Threads-style, hairline top border, no bg
+  authorCard: { paddingTop: 16, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
+  authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  authorCardInfo: { flex: 1, gap: 2 },
+  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'nowrap' },
+  authorName: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '700', lineHeight: 20, flexShrink: 1 },
+  authorMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  authorMetaDivider: { fontSize: 13, lineHeight: 18 },
+  authorTimeAgo: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   authorLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  authorNh: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+  authorNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
+  followBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, backgroundColor: 'transparent' },
+  followBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
 
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100, lineHeight: 22 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  commentTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
-  commentRow: { flexDirection: 'row', gap: 8 },
-  commentAvatar: { width: 32, height: 32, borderRadius: 16 },
-  commentBody: { flex: 1, gap: 2 },
+  commentTitle: { fontSize: 15, fontFamily: fonts.headingSemi, fontWeight: '700', lineHeight: 20 },
+  commentRow: { flexDirection: 'row', gap: 10, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  commentAvatar: { width: 36, height: 36, borderRadius: 18 },
+  commentBody: { flex: 1, gap: 3 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  commentName: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  commentTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },
+  commentName: { fontSize: 13, fontFamily: fonts.bodySemi, fontWeight: '700', lineHeight: 18, flex: 1 },
+  commentTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   commentContent: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, minHeight: 32, paddingVertical: 4 },
   replyBtnText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  replyRow: { marginLeft: 32, paddingLeft: 12 },
+  replyRow: { marginLeft: 48 },
   replyLine: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, borderRadius: 1 },
-  replyAvatar: { width: 24, height: 24, borderRadius: 12 },
-  showRepliesBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 42, marginTop: 4 },
+  replyAvatar: { width: 28, height: 28, borderRadius: 14 },
+  showRepliesBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 58, marginTop: 4 },
   showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, borderWidth: 1 },
   replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
@@ -1486,10 +1509,10 @@ const styles = StyleSheet.create({
   saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 16, marginTop: 16, minHeight: 48 },
   saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  relatedTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
+  relatedTitle: { fontSize: 15, fontFamily: fonts.headingSemi, fontWeight: '700', lineHeight: 20 },
   relatedScroll: { gap: 8 },
-  relatedCard: { width: 160, borderRadius: 16, overflow: 'hidden' },
-  relatedImage: { width: 160, height: 100, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
+  relatedCard: { width: 160, borderRadius: 12, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
+  relatedImage: { width: 160, height: 100 },
   relatedCardBody: { padding: 8, gap: 4 },
   relatedCardTitle: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 17 },
   relatedCardLocation: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },

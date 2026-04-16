@@ -9,8 +9,6 @@ import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { LinearGradient } from 'expo-linear-gradient'
-import { categoryGradients } from '@/lib/theme'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -898,29 +896,25 @@ export default function CreateScreen() {
                 style={({ pressed }) => [
                   styles.categoryCard,
                   isFullWidth && styles.categoryCardFullWidth,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+                  { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, borderRadius: 16 },
+                  pressed && { backgroundColor: colors.muted },
                   isLocked && { opacity: 0.5 },
                 ]}
               >
-                <LinearGradient
-                  colors={categoryGradients[type] || [cat.color, cat.color]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.categoryCardGradient}
-                >
-                  <View style={[styles.categoryIconLarge, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
-                    {Icon && <Icon size={36} color="#FFFFFF" strokeWidth={1.8} />}
+                <View style={styles.categoryCardInner}>
+                  <View style={styles.categoryIconLarge}>
+                    {Icon && <Icon size={32} color={cat.color} strokeWidth={1.8} />}
                     {isLocked && (
                       <View style={styles.lockOverlay}>
-                        <Lock size={14} color={colors.primaryForeground} />
+                        <Lock size={14} color={colors.foreground} />
                       </View>
                     )}
                   </View>
-                  <Text style={[styles.categoryName, { color: '#FFFFFF' }]}>{t(cat.label)}</Text>
-                  <Text style={[styles.categorySub, { color: 'rgba(255,255,255,0.80)' }]} numberOfLines={1}>
+                  <Text style={[styles.categoryName, { color: colors.foreground }]}>{t(cat.label)}</Text>
+                  <Text style={[styles.categorySub, { color: colors.mutedForeground }]} numberOfLines={1}>
                     {isLocked ? t('trust.requiresTier2Short') : t(cat.subtitle)}
                   </Text>
-                </LinearGradient>
+                </View>
               </Pressable>
             )
           })}
@@ -1009,7 +1003,7 @@ export default function CreateScreen() {
                 </View>
               ))}
               {images.length < 5 && (
-                <Pressable onPress={pickImage} style={({ pressed }) => [styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
+                <Pressable onPress={pickImage} style={({ pressed }) => [styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.muted }, pressed && { opacity: 0.7 }]}>
                   <Camera size={24} color={colors.mutedForeground} />
                   <Text style={[styles.addImageText, { color: colors.mutedForeground }]}>{images.length === 0 ? t('create.addImage') : `${images.length}/5`}</Text>
                 </Pressable>
@@ -1033,7 +1027,7 @@ export default function CreateScreen() {
                     styles.tarjoanTypeChip,
                     tarjoanType === 'service'
                       ? { backgroundColor: cat?.color ?? colors.primary }
-                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                      : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                   ]}
                 >
                   {tarjoanType === 'service' && <Check size={14} color={colors.primaryForeground} />}
@@ -1051,7 +1045,7 @@ export default function CreateScreen() {
                     styles.tarjoanTypeChip,
                     tarjoanType === 'item'
                       ? { backgroundColor: cat?.color ?? colors.primary }
-                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                      : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                   ]}
                 >
                   {tarjoanType === 'item' && <Check size={14} color={colors.primaryForeground} />}
@@ -1070,7 +1064,7 @@ export default function CreateScreen() {
               ref={titleInputRef}
               style={[
                 styles.input,
-                { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border },
+                { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 },
                 touchedTitle && !title.trim() && { borderColor: colors.destructive, borderWidth: 1.5 },
               ]}
               value={title}
@@ -1107,7 +1101,7 @@ export default function CreateScreen() {
               style={[
                 styles.input,
                 styles.textArea,
-                { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border },
+                { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 },
                 touchedDescription && !description.trim() && { borderColor: colors.destructive, borderWidth: 1.5 },
               ]}
               value={description}
@@ -1178,7 +1172,7 @@ export default function CreateScreen() {
                 <View style={styles.field}>
                   <Text style={[styles.label, { color: colors.foreground }]}>{t('rental.dailyFee')} *</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                     value={dailyFee}
                     onChangeText={setDailyFee}
                     placeholder="0.00 €"
@@ -1210,7 +1204,7 @@ export default function CreateScreen() {
                 <View style={styles.field}>
                   <Text style={[styles.label, { color: colors.foreground }]}>{t('service.price')}</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                     value={servicePrice}
                     onChangeText={setServicePrice}
                     placeholder={t('service.pricePlaceholder')}
@@ -1248,7 +1242,7 @@ export default function CreateScreen() {
                 <View style={styles.field}>
                   <Text style={[styles.label, { color: colors.foreground }]}>{t('create.itemPrice')}</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                     value={servicePrice}
                     onChangeText={setServicePrice}
                     placeholder="0.00 €"
@@ -1274,7 +1268,7 @@ export default function CreateScreen() {
                             styles.tagChip,
                             isSelected
                               ? { backgroundColor: cat?.color ?? colors.primary }
-                              : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                              : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                           ]}
                         >
                           {isSelected && <Check size={12} color={colors.primaryForeground} />}
@@ -1293,7 +1287,7 @@ export default function CreateScreen() {
                 <View style={styles.field}>
                   <Text style={[styles.label, { color: colors.foreground }]}>{t('post.eventDate')} *</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                     value={eventDate}
                     onChangeText={setEventDate}
                     placeholder={(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()}
@@ -1310,7 +1304,7 @@ export default function CreateScreen() {
                       <Clock size={14} color={colors.mutedForeground} /> {t('create.eventStartTime')}
                     </Text>
                     <TextInput
-                      style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                      style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                       value={eventStartTime}
                       onChangeText={setEventStartTime}
                       placeholder={t('create.eventStartTimePlaceholder')}
@@ -1324,7 +1318,7 @@ export default function CreateScreen() {
                       <Clock size={14} color={colors.mutedForeground} /> {t('create.eventEndTime')}
                     </Text>
                     <TextInput
-                      style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                      style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                       value={eventEndTime}
                       onChangeText={setEventEndTime}
                       placeholder={t('create.eventEndTimePlaceholder')}
@@ -1338,7 +1332,7 @@ export default function CreateScreen() {
                       <Users size={14} color={colors.mutedForeground} /> {t('create.eventMaxCapacity')}
                     </Text>
                     <TextInput
-                      style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                      style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                       value={eventMaxCapacity}
                       onChangeText={setEventMaxCapacity}
                       placeholder={t('create.eventMaxCapacityPlaceholder')}
@@ -1364,7 +1358,7 @@ export default function CreateScreen() {
                             styles.tagChip,
                             isSelected
                               ? { backgroundColor: cat?.color ?? colors.primary }
-                              : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                              : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                           ]}
                         >
                           {isSelected && <Check size={12} color={colors.primaryForeground} />}
@@ -1410,7 +1404,7 @@ export default function CreateScreen() {
                           styles.tagChip,
                           isSelected
                             ? { backgroundColor: colors.primary }
-                            : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                            : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                         ]}
                       >
                         <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
@@ -1548,18 +1542,18 @@ export default function CreateScreen() {
           <PressableOpacity
             onPress={handleSubmit}
             disabled={submitting}
-            style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting ? 0.6 : 1 }]}
+            style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: submitting ? 0.6 : 1 }]}
             accessibilityRole="button"
             accessibilityLabel={t('create.publish')}
             accessibilityState={{ disabled: submitting }}
           >
             {submitting ? (
               <View style={styles.submitLoading}>
-                <ActivityIndicator size="small" color={colors.primaryForeground} />
-                <Text style={[styles.submitText, { color: colors.primaryForeground }]}>{uploadStatus || t('create.publishing')}</Text>
+                <ActivityIndicator size="small" color={colors.background} />
+                <Text style={[styles.submitText, { color: colors.background }]}>{uploadStatus || t('create.publishing')}</Text>
               </View>
             ) : (
-              <Text style={[styles.submitText, { color: colors.primaryForeground }]}>{t('create.publish')}</Text>
+              <Text style={[styles.submitText, { color: colors.background }]}>{t('create.publish')}</Text>
             )}
           </PressableOpacity>
         </ScrollView>
@@ -1593,8 +1587,10 @@ export default function CreateScreen() {
               setSuccessNeighborhood(null)
             }}
           >
-            <Pressable style={[styles.successCard, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
-              <CheckCircle size={48} color={colors.primary} />
+            <Pressable style={[styles.successCard, { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]} onPress={(e) => e.stopPropagation()}>
+              <View style={[styles.successIconCircle, { backgroundColor: colors.foreground }]}>
+                <CheckCircle size={32} color={colors.background} />
+              </View>
               <Text style={[styles.successTitle, { color: colors.foreground }]}>{t('create.published')}</Text>
               {successNeighborhood && (
                 <Text style={[styles.successSubtitle, { color: colors.mutedForeground }]}>
@@ -1619,9 +1615,9 @@ export default function CreateScreen() {
                     router.replace(`/post/${successPostId}`)
                   }
                 }}
-                style={[styles.shareBtn, { backgroundColor: colors.primary }]}
+                style={[styles.shareBtn, { backgroundColor: colors.foreground }]}
               >
-                <Text style={[styles.shareBtnText, { color: colors.primaryForeground }]}>{t('create.share')}</Text>
+                <Text style={[styles.shareBtnText, { color: colors.background }]}>{t('create.share')}</Text>
               </PressableOpacity>
             </Pressable>
           </Pressable>
@@ -1661,7 +1657,7 @@ export default function CreateScreen() {
                 {/* Simple coordinate input as native fallback */}
                 <View style={styles.coordInputRow}>
                   <TextInput
-                    style={[styles.coordInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    style={[styles.coordInput, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                     placeholder="Lat (60.17)"
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="decimal-pad"
@@ -1672,7 +1668,7 @@ export default function CreateScreen() {
                     }}
                   />
                   <TextInput
-                    style={[styles.coordInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                    style={[styles.coordInput, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                     placeholder="Lng (24.94)"
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="decimal-pad"
@@ -1826,12 +1822,12 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: '47%' as any,
-    borderRadius: 16, overflow: 'hidden',
+    borderRadius: 16,
   },
   categoryCardFullWidth: {
     width: '100%' as any,
   },
-  categoryCardGradient: {
+  categoryCardInner: {
     padding: 16, gap: 8,
     alignItems: 'center', minHeight: 130,
     justifyContent: 'center',
@@ -1859,13 +1855,13 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 16, borderWidth: 1.5,
   },
   urgencyOptionText: { fontSize: 14, fontWeight: '700' },
-  categoryName: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20, textAlign: 'center' },
-  categorySub: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, textAlign: 'center' },
+  categoryName: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20, textAlign: 'center' },
+  categorySub: { fontSize: 13, fontFamily: fonts.body, lineHeight: 16, textAlign: 'center' },
   form: { padding: 16, gap: 20, paddingBottom: 100 },
   field: { gap: 8 },
-  label: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium },
+  label: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium },
   input: {
-    borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
+    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
     fontSize: 14, minHeight: 48, fontFamily: fonts.body,
   },
   textArea: { minHeight: 120 },
@@ -1901,10 +1897,10 @@ const styles = StyleSheet.create({
   },
   detailsToggleText: { fontSize: 14, fontFamily: fonts.bodySemi },
   submitBtn: {
-    borderRadius: 16, paddingVertical: 16, alignItems: 'center',
-    justifyContent: 'center', minHeight: 48, marginTop: 8,
+    borderRadius: 24, paddingVertical: 16, alignItems: 'center',
+    justifyContent: 'center', height: 54, marginTop: 8,
   },
-  submitText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
+  submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
   submitLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   // Anonymous toggle
@@ -1928,13 +1924,17 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', padding: 32,
   },
   successCard: {
-    borderRadius: 20, padding: 32, alignItems: 'center', gap: 12,
+    borderRadius: 16, padding: 32, alignItems: 'center', gap: 12,
     width: '100%', maxWidth: 300,
+  },
+  successIconCircle: {
+    width: 64, height: 64, borderRadius: 32,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 4,
   },
   successTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, textAlign: 'center' },
   successSubtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
-  shareBtn: { borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
-  shareBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
+  shareBtn: { borderRadius: 24, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
+  shareBtnText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
 
   // Location picker
   locationRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },

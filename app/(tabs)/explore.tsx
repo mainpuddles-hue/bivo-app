@@ -464,16 +464,18 @@ function ExploreScreenInner() {
               accessibilityLabel={`${t(labelKey)}${tabCounts[key] > 0 ? `, ${tabCounts[key]}` : ''}`}
               style={[
                 s.chip,
-                { backgroundColor: isActive ? colors.primary : colors.muted },
+                isActive
+                  ? { backgroundColor: colors.foreground }
+                  : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
               ]}
             >
-              <Icon size={16} color={isActive ? colors.primaryForeground : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
-              <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
+              <Icon size={16} color={isActive ? colors.background : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
+              <Text style={[s.chipText, { color: isActive ? colors.background : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
               {tabCounts[key] > 0 && (
-                <View style={[s.chipCount, { backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : `${colors.primary}20` }]}>
-                  <Text style={[s.chipCountText, { color: isActive ? colors.primaryForeground : colors.primary }]}>
+                <View style={[s.chipCount, { backgroundColor: isActive ? 'rgba(255,255,255,0.18)' : `${colors.foreground}12` }]}>
+                  <Text style={[s.chipCountText, { color: isActive ? colors.background : colors.foreground }]}>
                     {tabCounts[key]}
                   </Text>
                 </View>
@@ -502,10 +504,10 @@ function ExploreScreenInner() {
               onPress={() => router.push('/map')}
               accessibilityRole="button"
               accessibilityLabel={t('explore.openMap')}
-              style={[s.mapTeaser, { backgroundColor: colors.card }]}
+              style={[s.mapTeaser, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
             >
               <View style={s.mapTeaserContent}>
-                <Map size={32} color={colors.primary} strokeWidth={1.6} />
+                <Map size={28} color={colors.foreground} strokeWidth={1.6} />
                 <Text style={[s.mapTeaserTitle, { color: colors.foreground }]}>
                   {t('explore.openMap')}
                 </Text>
@@ -513,7 +515,7 @@ function ExploreScreenInner() {
                   {t('explore.mapHint')}
                 </Text>
               </View>
-              <Navigation size={20} color={colors.primary} strokeWidth={1.8} />
+              <ChevronRight size={20} color={colors.mutedForeground} strokeWidth={1.6} />
             </Pressable>
 
             {/* Summary stats */}
@@ -521,12 +523,12 @@ function ExploreScreenInner() {
               <View style={s.summaryRow}>
                 {cityEvents.length > 0 && (
                   <Pressable
-                    style={[s.summaryCard, { backgroundColor: colors.card }]}
+                    style={[s.summaryCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
                     onPress={() => setActiveTab('events')}
                     accessibilityRole="button"
                     accessibilityLabel={t('explore.eventsThisWeek', { count: eventsThisWeek })}
                   >
-                    <CalendarDays size={18} color={colors.success} strokeWidth={1.8} />
+                    <CalendarDays size={18} color={colors.foreground} strokeWidth={1.8} />
                     <Text style={[s.summaryText, { color: colors.foreground }]}>
                       {t('explore.eventsThisWeek', { count: eventsThisWeek })}
                     </Text>
@@ -536,12 +538,12 @@ function ExploreScreenInner() {
 
                 {places.length > 0 && (
                   <Pressable
-                    style={[s.summaryCard, { backgroundColor: colors.card }]}
+                    style={[s.summaryCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
                     onPress={() => setActiveTab('places')}
                     accessibilityRole="button"
                     accessibilityLabel={t('explore.placesNearby', { count: placesCount })}
                   >
-                    <MapPin size={18} color={colors.info} strokeWidth={1.8} />
+                    <MapPin size={18} color={colors.foreground} strokeWidth={1.8} />
                     <Text style={[s.summaryText, { color: colors.foreground }]}>
                       {t('explore.placesNearby', { count: placesCount })}
                     </Text>
@@ -554,15 +556,15 @@ function ExploreScreenInner() {
             {/* Community Events carousel */}
             <View style={s.communitySection}>
               <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
+                <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>{t('events.communityEventsTitle').toUpperCase()}</Text>
                 <Pressable
                   onPress={() => router.push('/community-events' as any)}
                   accessibilityRole="link"
                   accessibilityLabel={`${t('events.communityEventsTitle')} — ${t('events.showAllEvents')}`}
                   style={s.seeAllLink}
                 >
-                  <Text style={[s.seeAllText, { color: colors.primary }]}>{t('events.showAllEvents')}</Text>
-                  <ChevronRight size={14} color={colors.primary} />
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('events.showAllEvents')}</Text>
+                  <ChevronRight size={12} color={colors.mutedForeground} strokeWidth={1.6} />
                 </Pressable>
               </View>
 
@@ -589,20 +591,20 @@ function ExploreScreenInner() {
                         onPress={() => router.push(`/event/${evt.id}` as any)}
                         accessibilityRole="button"
                         accessibilityLabel={`${evt.title}, ${formatEventDateShort(evt.event_date, locale)}`}
-                        style={[s.ceCard, { backgroundColor: colors.card }]}
+                        style={[s.ceCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
                       >
                         {evt.image_url ? (
                           <View style={s.ceImageWrap}>
                             <Image source={{ uri: evt.image_url }} style={s.ceImage} contentFit="cover" cachePolicy="memory-disk" />
                           </View>
                         ) : (
-                          <View style={[s.ceImagePlaceholder, { backgroundColor: `${catColor}18` }]}>
-                            <CalendarDays size={24} color={catColor} strokeWidth={1.6} />
+                          <View style={[s.ceImagePlaceholder, { backgroundColor: colors.muted }]}>
+                            <CalendarDays size={24} color={colors.mutedForeground} strokeWidth={1.6} />
                           </View>
                         )}
                         <View style={s.ceCardBody}>
                           <Text style={[s.ceCardTitle, { color: colors.foreground }]} numberOfLines={2}>{evt.title}</Text>
-                          <Text style={[s.ceCardDate, { color: colors.primary }]}>{formatEventDateShort(evt.event_date, locale)}</Text>
+                          <Text style={[s.ceCardDate, { color: colors.mutedForeground }]}>{formatEventDateShort(evt.event_date, locale)}</Text>
                           <View style={s.ceCardMeta}>
                             <Users size={12} color={colors.mutedForeground} strokeWidth={1.6} />
                             <Text style={[s.ceCardMetaText, { color: colors.mutedForeground }]}>{pLabel}</Text>
@@ -617,14 +619,14 @@ function ExploreScreenInner() {
                   onPress={() => router.push('/create-event' as any)}
                   accessibilityRole="button"
                   accessibilityLabel={t('events.createFirstEvent')}
-                  style={[s.communityCard, { backgroundColor: colors.card }]}
+                  style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}
                 >
-                  <Plus size={20} color={colors.primary} />
+                  <Plus size={20} color={colors.mutedForeground} strokeWidth={1.6} />
                   <View style={s.cardFlex}>
                     <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
                     <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('events.createFirstEvent')}</Text>
                   </View>
-                  <ChevronRight size={16} color={colors.mutedForeground} />
+                  <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
                 </Pressable>
               )}
             </View>
@@ -632,34 +634,34 @@ function ExploreScreenInner() {
             {/* Community: Groups */}
             <View style={s.communitySection}>
               <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
+                <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>{t('groups.title').toUpperCase()}</Text>
                 <Pressable
                   onPress={() => router.push('/groups' as any)}
                   accessibilityRole="link"
                   accessibilityLabel={`${t('groups.title')} — ${t('feed.showAll')}`}
                   style={s.seeAllLink}
                 >
-                  <Text style={[s.seeAllText, { color: colors.primary }]}>{t('feed.showAll')}</Text>
-                  <ChevronRight size={14} color={colors.primary} />
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll')}</Text>
+                  <ChevronRight size={12} color={colors.mutedForeground} strokeWidth={1.6} />
                 </Pressable>
               </View>
               {groups.length > 0 ? (
-                groups.map(g => (
+                groups.map((g, idx) => (
                   <Pressable
                     key={g.id}
                     onPress={() => router.push(`/groups/${g.id}` as any)}
                     accessibilityRole="button"
                     accessibilityLabel={`${g.name}, ${g.member_count} ${t('groups.members')}`}
-                    style={[s.communityCard, { backgroundColor: colors.card }]}
+                    style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
                   >
-                    <View style={[s.groupDot, { backgroundColor: groupColors[g.category] ?? colors.primary }]}>
-                      <Text style={[s.groupDotText, { color: colors.primaryForeground }]}>{(g.name || '?').charAt(0)}</Text>
+                    <View style={[s.groupDot, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+                      <Text style={[s.groupDotText, { color: colors.foreground }]}>{(g.name || '?').charAt(0)}</Text>
                     </View>
                     <View style={s.cardFlex}>
                       <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{g.name}</Text>
                       <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{g.member_count} {t('groups.members')}</Text>
                     </View>
-                    <ChevronRight size={14} color={colors.mutedForeground} />
+                    <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
                   </Pressable>
                 ))
               ) : (
@@ -667,14 +669,14 @@ function ExploreScreenInner() {
                   onPress={() => router.push('/groups' as any)}
                   accessibilityRole="button"
                   accessibilityLabel={`${t('groups.title')} — ${t('groups.joinOrCreate')}`}
-                  style={[s.communityCard, { backgroundColor: colors.card }]}
+                  style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
                 >
-                  <Users size={20} color={colors.primary} />
+                  <Users size={20} color={colors.mutedForeground} strokeWidth={1.6} />
                   <View style={s.cardFlex}>
                     <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
                     <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
                   </View>
-                  <ChevronRight size={16} color={colors.mutedForeground} />
+                  <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
                 </Pressable>
               )}
             </View>
@@ -682,32 +684,32 @@ function ExploreScreenInner() {
             {/* Community: Forum */}
             <View style={s.communitySection}>
               <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
+                <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>{t('forum.title').toUpperCase()}</Text>
                 <Pressable
                   onPress={() => router.push('/forum' as any)}
                   accessibilityRole="link"
                   accessibilityLabel={`${t('forum.title')} — ${t('feed.showAll')}`}
                   style={s.seeAllLink}
                 >
-                  <Text style={[s.seeAllText, { color: colors.primary }]}>{t('feed.showAll')}</Text>
-                  <ChevronRight size={14} color={colors.primary} />
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll')}</Text>
+                  <ChevronRight size={12} color={colors.mutedForeground} strokeWidth={1.6} />
                 </Pressable>
               </View>
               {forumPosts.length > 0 ? (
-                forumPosts.map(p => (
+                forumPosts.map((p, idx) => (
                   <Pressable
                     key={p.id}
                     onPress={() => router.push(`/forum?thread=${p.id}` as any)}
                     accessibilityRole="button"
                     accessibilityLabel={`${p.title}, ${p.comment_count} ${t('forum.replies')}`}
-                    style={[s.communityCard, { backgroundColor: colors.card }]}
+                    style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
                   >
-                    <MessageCircle size={18} color={colors.primary} />
+                    <MessageCircle size={18} color={colors.mutedForeground} strokeWidth={1.6} />
                     <View style={s.cardFlex}>
                       <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{p.title}</Text>
                       <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.comment_count} {t('forum.replies')}</Text>
                     </View>
-                    <ChevronRight size={14} color={colors.mutedForeground} />
+                    <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
                   </Pressable>
                 ))
               ) : (
@@ -715,14 +717,14 @@ function ExploreScreenInner() {
                   onPress={() => router.push('/forum' as any)}
                   accessibilityRole="button"
                   accessibilityLabel={`${t('forum.title')} — ${t('forum.startDiscussion')}`}
-                  style={[s.communityCard, { backgroundColor: colors.card }]}
+                  style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
                 >
-                  <MessageCircle size={20} color={colors.primary} />
+                  <MessageCircle size={20} color={colors.mutedForeground} strokeWidth={1.6} />
                   <View style={s.cardFlex}>
                     <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
                     <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
                   </View>
-                  <ChevronRight size={16} color={colors.mutedForeground} />
+                  <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
                 </Pressable>
               )}
             </View>
@@ -765,16 +767,18 @@ function ExploreScreenInner() {
                     accessibilityState={{ selected: active }}
                     style={[
                       s.filterChip,
-                      { backgroundColor: active ? colors.primary : colors.muted },
+                      active
+                        ? { backgroundColor: colors.foreground }
+                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                     ]}
                   >
-                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                    <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
                   </Pressable>
                 )
               })}
-              <Text style={[s.filterSeparator, { color: colors.mutedForeground }]}>|</Text>
+              <Text style={[s.filterSeparator, { color: colors.border }]}>|</Text>
               {eventCategoryOptions.map(opt => {
                 const isAll = opt.key === ''
                 const active = isAll ? eventCategories.length === 0 : eventCategories.includes(opt.key)
@@ -786,10 +790,12 @@ function ExploreScreenInner() {
                     accessibilityState={{ selected: active }}
                     style={[
                       s.filterChip,
-                      { backgroundColor: active ? colors.primary : colors.muted },
+                      active
+                        ? { backgroundColor: colors.foreground }
+                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                     ]}
                   >
-                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                    <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
                   </Pressable>
@@ -800,29 +806,27 @@ function ExploreScreenInner() {
             {loading ? (
               <SectionSkeleton count={5} />
             ) : allEvents.length === 0 ? (
-              <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <View style={[s.emptyIconCircle, { backgroundColor: `${colors.primary}10` }]}>
-                  <CalendarDays size={56} color={colors.mutedForeground} strokeWidth={1.3} />
-                </View>
+              <View style={[s.emptyState, { backgroundColor: 'transparent' }]}>
+                <CalendarDays size={40} color={colors.mutedForeground} strokeWidth={1.3} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noEvents')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noEventsHint')}</Text>
                 <Pressable
                   onPress={handleRefresh}
                   accessibilityRole="button"
                   accessibilityLabel={t('common.retry')}
-                  style={[s.emptyCta, { backgroundColor: colors.primary }]}
+                  style={[s.emptyCta, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
                 >
-                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.retry')}</Text>
+                  <Text style={[s.emptyCtaText, { color: colors.foreground }]}>{t('common.retry')}</Text>
                 </Pressable>
               </View>
             ) : (
               <View style={s.cardList}>
-                {allEvents.map((event) => (
+                {allEvents.map((event, idx) => (
                   <Pressable
                     key={event.id}
                     accessibilityRole="button"
                     accessibilityLabel={`${event.title}, ${formatEventDateShort(event.date, locale)}${event.location ? `, ${event.location}` : ''}${event.isFree ? `, ${t('events.free')}` : ''}`}
-                    style={[s.card, { backgroundColor: colors.card }]}
+                    style={[s.card, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
                     onPress={() => {
                       trackEventClick(event.id, event.category).then(() =>
                         getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))))
@@ -835,20 +839,20 @@ function ExploreScreenInner() {
                     }}
                   >
                     <View style={s.cardRow}>
-                      <View style={[s.eventIconBox, { backgroundColor: isDark ? (event.isCity ? `${colors.info}18` : `${colors.success}18`) : (event.isCity ? `${colors.info}14` : `${colors.success}14`) }]}>
-                        <CalendarDays size={18} color={event.isCity ? colors.info : colors.success} />
+                      <View style={s.eventIconBox}>
+                        <CalendarDays size={18} color={colors.mutedForeground} strokeWidth={1.6} />
                       </View>
                       <View style={s.cardContent}>
                         <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
                           {event.title}
                         </Text>
-                        <Text style={[s.cardDateText, { color: colors.primary }]}>
+                        <Text style={[s.cardDateText, { color: colors.mutedForeground }]}>
                           {formatEventDateShort(event.date, locale)}
                           {event.location ? ` \u00B7 ${event.location}` : ''}
                         </Text>
                         {event.isFree && (
-                          <View style={[s.freeBadge, { backgroundColor: `${colors.success}18` }]}>
-                            <Text style={[s.freeBadgeText, { color: colors.success }]}>
+                          <View style={[s.freeBadge, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+                            <Text style={[s.freeBadgeText, { color: colors.mutedForeground }]}>
                               {t('events.free')}
                             </Text>
                           </View>
@@ -883,16 +887,18 @@ function ExploreScreenInner() {
                     accessibilityState={{ selected: active }}
                     style={[
                       s.filterChip,
-                      { backgroundColor: active ? colors.primary : colors.muted },
+                      active
+                        ? { backgroundColor: colors.foreground }
+                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                     ]}
                   >
-                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                    <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
                   </Pressable>
                 )
               })}
-              <Text style={[s.filterSeparator, { color: colors.mutedForeground }]}>|</Text>
+              <Text style={[s.filterSeparator, { color: colors.border }]}>|</Text>
               {placeCategoryOptions.map(opt => {
                 const isAll = opt.key === ''
                 const active = isAll ? placeCategories.length === 0 : placeCategories.includes(opt.key)
@@ -904,10 +910,12 @@ function ExploreScreenInner() {
                     accessibilityState={{ selected: active }}
                     style={[
                       s.filterChip,
-                      { backgroundColor: active ? colors.primary : colors.muted },
+                      active
+                        ? { backgroundColor: colors.foreground }
+                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                     ]}
                   >
-                    <Text style={[s.filterChipText, { color: active ? colors.primaryForeground : colors.mutedForeground }]}>
+                    <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
                   </Pressable>
@@ -918,25 +926,22 @@ function ExploreScreenInner() {
             {loading ? (
               <SectionSkeleton count={5} />
             ) : sortedPlaces.length === 0 ? (
-              <View style={[s.emptyState, { backgroundColor: colors.card }]}>
-                <View style={[s.emptyIconCircle, { backgroundColor: `${colors.primary}10` }]}>
-                  <MapPin size={56} color={colors.mutedForeground} strokeWidth={1.3} />
-                </View>
+              <View style={[s.emptyState, { backgroundColor: 'transparent' }]}>
+                <MapPin size={40} color={colors.mutedForeground} strokeWidth={1.3} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noPlaces')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noPlacesHint')}</Text>
                 <Pressable
                   onPress={handleRefresh}
                   accessibilityRole="button"
                   accessibilityLabel={t('common.retry')}
-                  style={[s.emptyCta, { backgroundColor: colors.primary }]}
+                  style={[s.emptyCta, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
                 >
-                  <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.retry')}</Text>
+                  <Text style={[s.emptyCtaText, { color: colors.foreground }]}>{t('common.retry')}</Text>
                 </Pressable>
               </View>
             ) : (
               <View style={s.cardList}>
-                {sortedPlaces.map((place) => {
-                  const catColor = placeCatColors[place.category] ?? colors.mutedForeground
+                {sortedPlaces.map((place, idx) => {
                   const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other')
                   const dist = '_distance' in place
                     ? formatDistance((place as any)._distance)
@@ -947,12 +952,12 @@ function ExploreScreenInner() {
                       key={place.id}
                       accessibilityRole="button"
                       accessibilityLabel={`${place.name}, ${catLabel}${dist ? `, ${dist}` : ''}`}
-                      style={[s.card, { backgroundColor: colors.card }]}
+                      style={[s.card, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
                       onPress={() => openPlaceInMaps(place)}
                     >
                       <View style={s.cardRow}>
-                        <View style={[s.placeIconBox, { backgroundColor: `${catColor}15` }]}>
-                          <PlaceCategoryIcon category={place.category} size={18} color={catColor} />
+                        <View style={s.placeIconBox}>
+                          <PlaceCategoryIcon category={place.category} size={18} color={colors.mutedForeground} />
                         </View>
                         <View style={s.cardContent}>
                           <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -1062,21 +1067,17 @@ const s = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     gap: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
   },
   mapTeaserContent: {
     flex: 1,
     gap: 8,
   },
   mapTeaserTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontFamily: fonts.headingSemi,
+    fontWeight: '700',
     marginTop: 4,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   mapTeaserHint: {
     fontSize: 13,
@@ -1107,15 +1108,15 @@ const s = StyleSheet.create({
 
   // Cards
   cardList: {
-    gap: 8,
+    gap: 0,
   },
   card: {
-    borderRadius: 16,
     overflow: 'hidden',
   },
   cardRow: {
     flexDirection: 'row',
-    padding: 16,
+    paddingHorizontal: 4,
+    paddingVertical: 14,
     gap: 12,
     alignItems: 'center',
   },
@@ -1146,18 +1147,16 @@ const s = StyleSheet.create({
 
   // Event icon box
   eventIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   // Place icon box
   placeIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1181,17 +1180,8 @@ const s = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    borderRadius: 16,
-    gap: 8,
-  },
-  emptyIconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
+    padding: 40,
+    gap: 10,
   },
   emptyTitle: {
     fontSize: 16,
@@ -1237,15 +1227,15 @@ const s = StyleSheet.create({
     gap: 4,
   },
   seeAllText: {
-    fontSize: 13,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 18,
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontFamily: fonts.heading,
-    letterSpacing: -0.3,
-    lineHeight: 24,
+    fontSize: 11,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.5,
+    lineHeight: 16,
   },
   groupDot: {
     width: 36,
@@ -1264,8 +1254,8 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 16,
-    borderRadius: 16,
+    paddingHorizontal: 4,
+    paddingVertical: 14,
   },
   communityCardTitle: {
     fontSize: 14,
