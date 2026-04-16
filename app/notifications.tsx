@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { Image } from 'expo-image'
-import { ArrowLeft, CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, Trash2, LogIn, X, RefreshCw } from 'lucide-react-native'
+import { CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, LogIn, X, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -31,32 +31,6 @@ const ALL_FILTERS = [
 const FILTERS = FEATURES.LENDING
   ? ALL_FILTERS
   : ALL_FILTERS.filter(f => f.key !== 'rentals')
-
-function getTypeIcon(type: string) {
-  switch (type) {
-    case 'new_message': return MessageCircle
-    case 'review_received': case 'thanks_received': case 'thanks': return Star
-    case 'rental_update': case 'rental_request': case 'rental_confirmed':
-    case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return Package
-    case 'new_follower': return UserPlus
-    case 'event_reminder': return CalendarDays
-    case 'post_like': case 'post_comment': case 'comment': return Bell
-    default: return Bell
-  }
-}
-
-function getTypeColor(type: string, colors: ReturnType<typeof useTheme>['colors']) {
-  switch (type) {
-    case 'new_message': return colors.primary
-    case 'review_received': case 'thanks_received': case 'thanks': return colors.pro
-    case 'rental_update': case 'rental_request': case 'rental_confirmed':
-    case 'rental_completed': case 'rental_cancelled': case 'rental_paid': return colors.pro
-    case 'new_follower': return colors.success
-    case 'event_reminder': return colors.primary
-    case 'post_like': case 'post_comment': case 'comment': return colors.accent
-    default: return colors.info
-  }
-}
 
 function getFilterForType(type: string): string {
   if (type === 'new_message') return 'messages'
@@ -145,16 +119,22 @@ function getGroupedTitle(item: PrioritizedNotification, t: (k: string, p?: Recor
   return `${firstName} ${t('notifications.andOthers', { count: othersCount })} — ${resolvedTitle}`
 }
 
+/** Get initial letter for avatar fallback */
+function getInitial(item: PrioritizedNotification): string {
+  const name = item.from_user?.name
+  if (name && name.length > 0) return name.charAt(0).toUpperCase()
+  return '?'
+}
+
 function NotificationSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
     <View style={styles.notifRow}>
-      <Animated.View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.muted, opacity }} />
+      <Animated.View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.muted, opacity }} />
       <View style={styles.notifContent}>
         <Animated.View style={{ width: '80%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
         <Animated.View style={{ width: '60%', height: 11, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 4 }} />
-        <Animated.View style={{ width: '30%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 4 }} />
       </View>
     </View>
   )
@@ -172,7 +152,7 @@ function NotificationsScreenInner() {
   const [isLoggedIn, setIsLoggedIn] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState('all')
-  // 1a: Expanded groups state — tracks which grouped notifications are expanded
+  // Expanded groups state — tracks which grouped notifications are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [fetchError, setFetchError] = useState(false)
 
@@ -225,7 +205,7 @@ function NotificationsScreenInner() {
     return () => { supabase.removeChannel(channel) }
   }, [userId, isLoggedIn, supabase, fetchNotifications])
 
-  // 1b: Mark all as read
+  // Mark all as read
   const markAllRead = useCallback(async () => {
     try {
       const cachedId = await getCachedUserId()
@@ -235,7 +215,7 @@ function NotificationsScreenInner() {
     } catch {} // Intentional: non-critical — mark-all-read is best-effort
   }, [supabase])
 
-  // 1c: Delete notification
+  // Delete notification
   const deleteNotification = useCallback(async (notifId: string) => {
     try {
       await (supabase.from('notifications') as any).delete().eq('id', notifId)
@@ -258,7 +238,7 @@ function NotificationsScreenInner() {
     )
   }, [t, deleteNotification])
 
-  // 1a: Toggle group expansion
+  // Toggle group expansion
   const toggleGroup = useCallback((groupKey: string) => {
     setExpandedGroups(prev => {
       const next = new Set(prev)
@@ -301,7 +281,7 @@ function NotificationsScreenInner() {
   const sections = useMemo(() => groupByTime(filtered, t), [filtered, t])
   const unreadCount = notifications.filter(n => !n.is_read).length
 
-  // Per-filter unread counts — shows the user which tab needs attention
+  // Per-filter unread counts — used for accessibility labels
   const unreadByFilter = useMemo(() => {
     const counts: Record<string, number> = { all: unreadCount }
     for (const n of notifications) {
@@ -318,22 +298,17 @@ function NotificationsScreenInner() {
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
         <BackButton />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('nav.notifications')}</Text>
-        {unreadCount > 0 && (
-          <View style={[styles.headerBadge, { backgroundColor: colors.accent }]}>
-            <Text style={[styles.headerBadgeText, { color: colors.accentForeground }]}>{unreadCount}</Text>
-          </View>
-        )}
         <View style={{ flex: 1 }} />
-        {/* 1b: Mark all as read button with label */}
+        {/* Mark all as read button */}
         {unreadCount > 0 && (
           <PressableOpacity onPress={markAllRead} hitSlop={8} style={styles.markAllReadBtn} accessibilityRole="button" accessibilityLabel={t('notifications.markAllRead')}>
-            <CheckCheck size={18} color={colors.primary} />
-            <Text style={[styles.markAllReadText, { color: colors.primary }]}>{t('notifications.markAllRead')}</Text>
+            <CheckCheck size={16} color={colors.mutedForeground} />
+            <Text style={[styles.markAllReadText, { color: colors.mutedForeground }]}>{t('notifications.markAllRead')}</Text>
           </PressableOpacity>
         )}
       </View>
 
-      {/* Filter tabs with per-filter unread counts */}
+      {/* Filter chips — Threads style: active=solid fg, inactive=transparent+hairline */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} contentContainerStyle={styles.filterRow}>
         {FILTERS.map((f) => {
           const isActive = activeFilter === f.key
@@ -348,34 +323,23 @@ function NotificationsScreenInner() {
               style={[
                 styles.filterChip,
                 isActive
-                  ? { backgroundColor: colors.primary }
-                  : { backgroundColor: isDark ? colors.card : colors.muted },
+                  ? { backgroundColor: colors.foreground, borderColor: colors.foreground }
+                  : { backgroundColor: 'transparent', borderColor: colors.border },
               ]}
             >
               <Text style={[
                 styles.filterText,
-                { color: isActive ? colors.primaryForeground : colors.mutedForeground },
+                { color: isActive ? colors.background : colors.foreground },
               ]}>
                 {t(f.label)}
               </Text>
-              {count > 0 && (
-                <View style={[
-                  styles.filterBadge,
-                  { backgroundColor: isActive ? colors.primaryForeground + '33' : colors.primary },
-                ]}>
-                  <Text style={[
-                    styles.filterBadgeText,
-                    { color: isActive ? colors.primaryForeground : colors.primaryForeground },
-                  ]}>{count > 99 ? '99+' : count}</Text>
-                </View>
-              )}
             </PressableOpacity>
           )
         })}
       </ScrollView>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
         </PressableOpacity>
@@ -383,7 +347,7 @@ function NotificationsScreenInner() {
 
       {/* Notification list */}
       {loading ? (
-        <View style={{ padding: 16, gap: 8 }}>
+        <View style={{ paddingTop: 8, gap: 0 }}>
           {[0, 1, 2, 3, 4, 5].map(i => <NotificationSkeleton key={i} />)}
         </View>
       ) : (
@@ -395,16 +359,15 @@ function NotificationsScreenInner() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchNotifications() }} tintColor={colors.primary} />}
         renderSectionHeader={({ section }) => (
           <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{section.title}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{section.title}</Text>
           </View>
         )}
         renderItem={({ item }) => {
-          const TypeIcon = getTypeIcon(item.type)
-          const typeColor = getTypeColor(item.type, colors)
           const isGroupedMulti = item.isGrouped && item.groupCount && item.groupCount > 1
           const groupKey = `${item.type}:${item.link_id ?? item.id}`
           const isExpanded = expandedGroups.has(groupKey)
           const ChevronIcon = isExpanded ? ChevronUp : ChevronDown
+          const initial = getInitial(item)
 
           return (
             <View>
@@ -416,45 +379,57 @@ function NotificationsScreenInner() {
                 accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
                 accessibilityState={{ selected: !item.is_read }}
                 accessibilityHint={t('notifications.deleteNotification')}
-                style={[styles.notifRow, !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` }]}
+                style={[
+                  styles.notifRow,
+                  !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` },
+                ]}
               >
-                {!item.is_read && <View style={[styles.unreadBar, { backgroundColor: colors.primary }]} />}
+                {/* Avatar — 36px, no colored background */}
                 <View style={styles.notifAvatar}>
                   {item.from_user?.avatar_url ? (
                     <Image source={{ uri: item.from_user.avatar_url }} style={styles.avatar} contentFit="cover" cachePolicy="memory-disk" />
                   ) : (
-                    <View style={[styles.avatar, styles.avatarFb, { backgroundColor: `${typeColor}20` }]}>
-                      <TypeIcon size={18} color={typeColor} />
+                    <View style={[styles.avatar, styles.avatarFb, { backgroundColor: colors.muted }]}>
+                      <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>{initial}</Text>
                     </View>
                   )}
-                  <View style={[styles.typeIconBadge, { backgroundColor: typeColor, borderColor: colors.background }]}>
-                    <TypeIcon size={10} color={colors.primaryForeground} />
-                  </View>
                 </View>
+
+                {/* Text content */}
                 <View style={styles.notifContent}>
-                  <Text style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && { fontWeight: '600' }]} numberOfLines={2}>
-                    {getGroupedTitle(item, t)}
-                  </Text>
-                  {item.body && <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={2}>{item.body}</Text>}
-                  <View style={styles.notifMeta}>
-                    {/* 1d: Relative timestamps (already handled by formatTimeAgo) */}
+                  <View style={styles.notifTitleRow}>
+                    <Text
+                      style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && styles.notifTitleUnread]}
+                      numberOfLines={2}
+                    >
+                      {getGroupedTitle(item, t)}
+                    </Text>
+                    {/* Time on right */}
                     <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
                       {formatTimeAgo(item.created_at, t, locale)}
                     </Text>
-                    {/* 1a: Group expand chevron */}
-                    {isGroupedMulti && (
-                      <PressableOpacity
-                        onPress={() => toggleGroup(groupKey)}
-                        hitSlop={12}
-                        style={[styles.groupExpandBtn, { backgroundColor: `${colors.primary}1A` }]}
-                      >
-                        <Text style={[styles.groupBadgeText, { color: colors.primary }]}>{item.groupCount}</Text>
-                        <ChevronIcon size={12} color={colors.primary} />
-                      </PressableOpacity>
-                    )}
                   </View>
+
+                  {item.body && (
+                    <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={2}>
+                      {item.body}
+                    </Text>
+                  )}
+
+                  {/* Group expand chevron */}
+                  {isGroupedMulti && (
+                    <PressableOpacity
+                      onPress={() => toggleGroup(groupKey)}
+                      hitSlop={12}
+                      style={styles.groupExpandBtn}
+                    >
+                      <Text style={[styles.groupBadgeText, { color: colors.mutedForeground }]}>{item.groupCount}</Text>
+                      <ChevronIcon size={12} color={colors.mutedForeground} />
+                    </PressableOpacity>
+                  )}
                 </View>
-                {/* Visible delete button — replaces hidden long-press gesture */}
+
+                {/* Dismiss X — low-opacity, always visible */}
                 <PressableOpacity
                   onPress={() => handleLongPress(item)}
                   style={styles.notifDeleteBtn}
@@ -462,16 +437,19 @@ function NotificationsScreenInner() {
                   accessibilityLabel={t('common.delete')}
                   accessibilityRole="button"
                 >
-                  <X size={14} color={colors.mutedForeground} style={{ opacity: 0.4 }} />
+                  <X size={14} color={colors.mutedForeground} style={{ opacity: 0.35 }} />
                 </PressableOpacity>
               </PressableOpacity>
 
-              {/* 1a: Expanded group — show individual notification names */}
+              {/* Hairline separator */}
+              <View style={[styles.separator, { backgroundColor: colors.border }]} />
+
+              {/* Expanded group — show individual notification names */}
               {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (
                 <View style={[styles.expandedGroup, { backgroundColor: isDark ? `${colors.card}80` : `${colors.muted}80` }]}>
                   {item.groupNames.map((name, idx) => (
                     <View key={`${item.id}-${idx}`} style={styles.expandedItem}>
-                      <View style={[styles.expandedDot, { backgroundColor: typeColor }]} />
+                      <View style={[styles.expandedDot, { backgroundColor: colors.mutedForeground }]} />
                       <Text style={[styles.expandedName, { color: colors.foreground }]} numberOfLines={1}>{name}</Text>
                       <Text style={[styles.expandedAction, { color: colors.mutedForeground }]}>
                         {item.type === 'post_like' ? t('notifications.likedYourPost') : item.title}
@@ -524,51 +502,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
-  headerBadge: {
-    minWidth: 22, height: 22, borderRadius: 11,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
-  },
-  headerBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 14 },
   markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   markAllReadText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  filterChip: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
-  filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
-  filterBadge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, alignItems: 'center' as const, justifyContent: 'center' as const },
-  filterBadgeText: { fontSize: 11, fontWeight: '700' as const, fontFamily: fonts.bodySemi, lineHeight: 13 },
-  sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
-  sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 17 },
+  filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
+  filterChip: {
+    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    minHeight: 32, justifyContent: 'center', alignItems: 'center',
+  },
+  filterText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 18 },
+  sectionHeader: { paddingHorizontal: 16, paddingVertical: 6 },
+  sectionTitle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
   notifRow: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 16, position: 'relative',
+    paddingHorizontal: 16, paddingVertical: 14,
   },
-  unreadBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: 1.5 },
-  notifAvatar: { position: 'relative' },
-  avatar: { width: 40, height: 40, borderRadius: 20 },
+  notifAvatar: {},
+  avatar: { width: 36, height: 36, borderRadius: 18 },
   avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  typeIconBadge: {
-    position: 'absolute', bottom: -2, right: -2,
-    width: 18, height: 18, borderRadius: 9,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2,
-  },
-  notifContent: { flex: 1, gap: 4 },
-  notifDeleteBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
-  notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19, fontFamily: fonts.body },
+  avatarInitial: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
+  notifContent: { flex: 1, gap: 3 },
+  notifTitleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19, fontFamily: fonts.body, flex: 1 },
+  notifTitleUnread: { fontWeight: '600' },
   notifBody: { fontSize: 13, lineHeight: 17, fontFamily: fonts.body },
-  notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14, fontFamily: fonts.body },
-  notifMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
+  notifTime: { fontSize: 11, lineHeight: 19, fontFamily: fonts.body, flexShrink: 0 },
+  notifDeleteBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   groupExpandBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 2,
-    minWidth: 18, height: 22, borderRadius: 11,
-    paddingHorizontal: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2,
+    alignSelf: 'flex-start',
   },
-  groupBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 13 },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, alignSelf: 'center' as const },
-  // 1a: Expanded group styles
-  expandedGroup: { marginLeft: 68, marginRight: 16, borderRadius: 16, paddingVertical: 4, marginBottom: 4 },
+  groupBadgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: 64 },
+  // Expanded group styles
+  expandedGroup: { marginLeft: 64, marginRight: 16, borderRadius: 12, paddingVertical: 4, marginBottom: 4 },
   expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  expandedDot: { width: 8, height: 8, borderRadius: 4 },
+  expandedDot: { width: 5, height: 5, borderRadius: 2.5 },
   expandedName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, flex: 1 },
   expandedAction: { fontSize: 12, fontFamily: fonts.body, flex: 1 },
 })
