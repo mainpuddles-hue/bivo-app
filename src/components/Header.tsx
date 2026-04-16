@@ -5,6 +5,7 @@ import { Bell, Search, Map } from 'lucide-react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useState, useCallback } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
 
@@ -41,7 +42,8 @@ export function Header() {
       styles.header,
       {
         paddingTop: insets.top,
-        backgroundColor: isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)',
+        backgroundColor: colors.background,
+        borderBottomColor: colors.border,
       }
     ]}>
       <View style={styles.headerContent}>
@@ -62,8 +64,8 @@ export function Header() {
               strokeWidth={unreadCount > 0 ? 2.2 : 1.8}
             />
             {unreadCount > 0 && (
-              <View style={[styles.badge, { backgroundColor: colors.accent }]}>
-                <Text style={[styles.badgeText, { color: colors.accentForeground }]}>
+              <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+                <Text style={[styles.badgeText, { color: colors.primaryForeground }]}>
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Text>
               </View>
@@ -78,6 +80,7 @@ export function Header() {
 const styles = StyleSheet.create({
   header: {
     zIndex: 40,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerContent: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

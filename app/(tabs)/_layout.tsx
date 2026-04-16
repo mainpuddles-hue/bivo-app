@@ -51,25 +51,20 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
   if (isCreate) {
     return (
       <View style={s.createTabItem}>
-        <LinearGradient
-          colors={gradients.primary}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={s.createFab}
-        >
-          <Icon size={26} color="#FFFFFF" strokeWidth={2.5} />
-        </LinearGradient>
+        <View style={[s.createFab, { backgroundColor: colors.foreground }]}>
+          <Icon size={24} color={colors.background} strokeWidth={2.2} />
+        </View>
       </View>
     )
   }
 
   return (
     <View style={s.tabItem}>
-      <Animated.View style={[s.iconWrap, focused && { backgroundColor: `${colors.primary}18` }, { transform: [{ scale }] }]}>
+      <Animated.View style={[s.iconWrap, { transform: [{ scale }] }]}>
         <Icon
           size={26}
-          color={focused ? colors.primary : colors.mutedForeground}
-          strokeWidth={focused ? 2.2 : 1.6}
+          color={focused ? colors.foreground : colors.mutedForeground}
+          strokeWidth={focused ? 2.4 : 1.6}
         />
         {badge != null && badge > 0 && (
           <View
@@ -83,10 +78,10 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
       </Animated.View>
       <Text numberOfLines={1} style={[
         s.tabLabel,
-        { color: focused ? colors.primary : colors.mutedForeground },
+        { color: focused ? colors.foreground : colors.mutedForeground },
         focused && { fontWeight: '600' },
       ]}>{label}</Text>
-      {focused && <View style={[s.activeBar, { backgroundColor: colors.primary }]} />}
+      {focused && <View style={[s.activeBar, { backgroundColor: colors.foreground }]} />}
     </View>
   )
 }

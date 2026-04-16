@@ -18,8 +18,8 @@ const STORAGE_KEY = 'tackbird-theme'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme()
-  // Dark by default (Threads-style aesthetic) — user can still toggle in settings
-  const [theme, setThemeState] = useState<ThemeMode>('dark')
+  // Light by default (Threads-light aesthetic) — user can still toggle in settings
+  const [theme, setThemeState] = useState<ThemeMode>('light')
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {

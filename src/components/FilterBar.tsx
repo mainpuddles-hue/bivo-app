@@ -24,6 +24,7 @@ interface FilterChipProps {
   onPress: () => void
 }
 const FilterChip = memo(function FilterChip({ label, color, isActive, foregroundColor, onPress }: FilterChipProps) {
+  const { colors } = useTheme()
   const reduceMotion = useReduceMotion()
   const scale = useRef(new Animated.Value(1)).current
   const isFirstRun = useRef(true)
@@ -48,11 +49,11 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
         style={[
           styles.chip,
           isActive
-            ? { backgroundColor: color }
-            : { backgroundColor: color + '1A' },
+            ? { backgroundColor: colors.foreground }
+            : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
         ]}
       >
-        <Text style={[styles.chipText, { color: isActive ? foregroundColor : color }, isActive && { fontFamily: fonts.bodySemi }]}>
+        <Text style={[styles.chipText, { color: isActive ? colors.background : colors.foreground }, isActive && { fontFamily: fonts.bodySemi }]}>
           {label}
         </Text>
       </PressableOpacity>

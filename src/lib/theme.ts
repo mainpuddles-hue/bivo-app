@@ -1,28 +1,27 @@
 export const colors = {
   light: {
-    primary: '#10B981',
-    accent: '#34D399',
-    secondary: '#FF9500',      // warm amber — secondary actions, highlights
-    background: '#F3F4F6',
-    foreground: '#111827',
-    card: '#FFFFFF',
-    cardElevated: '#FFFFFF',   // elevated cards (modals, overlays)
-    border: '#E5E7EB',
-    muted: '#F3F4F6',
-    mutedForeground: '#6B7280',
-    // iOS tertiary label — 3rd hierarchy level (tiny captions, placeholders, disabled states)
-    tertiaryForeground: '#9CA3AF',
+    // Threads-light aesthetic: pure white canvas + hairline separators
+    primary: '#10B981',         // emerald — brand accent
+    accent: '#059669',          // darker emerald for press/active
+    secondary: '#FF9500',
+    background: '#FFFFFF',      // pure white (Threads-style)
+    foreground: '#000000',      // pure black for max contrast
+    card: '#FFFFFF',            // cards match bg — hairline creates separation
+    cardElevated: '#FAFAFA',    // elevated (toast, modal)
+    border: '#E5E5E5',          // hairline separator
+    muted: '#F5F5F5',           // input/chip inactive bg
+    mutedForeground: '#737373', // secondary text (Apple HIG-like)
+    tertiaryForeground: '#A3A3A3',
     destructive: '#DC2626',
     pro: '#F59E0B',
-    success: '#2B8A62',
+    success: '#10B981',
     info: '#3B82F6',
     purple: '#7C5CBF',
-    purpleMuted: '#F0EDFF',
+    purpleMuted: '#F4F0FF',
     primaryForeground: '#FFFFFF',
     accentForeground: '#FFFFFF',
-    // Surface layers for glassmorphism / overlays
-    surfaceOverlay: 'rgba(255,255,255,0.72)',
-    surfaceTinted: 'rgba(16,185,129,0.06)',
+    surfaceOverlay: 'rgba(255,255,255,0.82)',
+    surfaceTinted: 'rgba(16,185,129,0.04)',
   },
   dark: {
     // Threads-style dark theme: pure black base + hairline separations
