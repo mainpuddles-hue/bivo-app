@@ -351,8 +351,11 @@ function FeedScreenInner() {
       {feed.hasNewPosts && (
         <PressableOpacity
           onPress={feed.handleRefresh}
-          style={[styles.newBanner, { backgroundColor: isDark ? `${colors.primary}1F` : `${colors.primary}14` }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('feed.newPosts')}
+          style={[styles.newBanner, { backgroundColor: isDark ? `${colors.primary}1F` : `${colors.primary}14`, borderWidth: 1, borderColor: `${colors.primary}33` }]}
         >
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
           <Sparkles size={14} color={colors.primary} />
           <Text style={[styles.newBannerText, { color: colors.primary }]}>{t('feed.newPosts')}</Text>
           <RefreshCw size={14} color={colors.primary} style={{ opacity: 0.7 }} />
