@@ -32,9 +32,9 @@ export const colors = {
     secondary: '#FFAD33',
     background: '#000000',     // pure black (Threads-style)
     foreground: '#FFFFFF',     // pure white for max contrast
-    card: '#0C0C0E',           // near-black card (1.5% lighter than bg)
-    cardElevated: '#1A1A1D',   // elevated cards, modals, toast
-    border: '#262628',         // hairline separator color
+    card: '#000000',           // cards match bg — hairline borders create separation
+    cardElevated: '#141416',   // elevated cards, modals, toast
+    border: '#1F1F22',         // hairline separator (very subtle, Threads-like)
     muted: '#141416',          // input/pill inactive background
     mutedForeground: '#8E8E93',// Apple HIG secondary label
     tertiaryForeground: '#636366', // Apple HIG tertiary label
