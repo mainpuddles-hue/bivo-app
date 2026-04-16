@@ -164,6 +164,12 @@ export default function CreateScreen() {
   const [selectedType, setSelectedType] = useState<PostType | null>(null)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  // Track which fields have been touched (blurred at least once) for inline validation
+  const [touchedTitle, setTouchedTitle] = useState(false)
+  const [touchedDescription, setTouchedDescription] = useState(false)
+  // Refs to auto-focus first invalid field on submit error
+  const titleInputRef = useRef<TextInput>(null)
+  const descriptionInputRef = useRef<TextInput>(null)
   const [location, setLocation] = useState('')
   const [dailyFee, setDailyFee] = useState('')
   const [servicePrice, setServicePrice] = useState('')
@@ -509,6 +515,14 @@ export default function CreateScreen() {
     // Prevent double submission
     if (submitting) return
     if (!selectedType || !title.trim() || !description.trim()) {
+      // Mark both as touched so inline errors show, and focus first invalid
+      setTouchedTitle(true)
+      setTouchedDescription(true)
+      if (!title.trim()) {
+        titleInputRef.current?.focus()
+      } else if (!description.trim()) {
+        descriptionInputRef.current?.focus()
+      }
       Alert.alert(t('common.error'), t('create.titleAndDescRequired'))
       return
     }
@@ -1053,9 +1067,15 @@ export default function CreateScreen() {
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.foreground }]}>{t('post.titleLabel')} *</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+              ref={titleInputRef}
+              style={[
+                styles.input,
+                { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border },
+                touchedTitle && !title.trim() && { borderColor: colors.destructive, borderWidth: 1.5 },
+              ]}
               value={title}
               onChangeText={setTitle}
+              onBlur={() => setTouchedTitle(true)}
               placeholder={t('post.titleLabel')}
               placeholderTextColor={colors.mutedForeground}
               maxLength={100}
@@ -1063,6 +1083,11 @@ export default function CreateScreen() {
               autoCapitalize="sentences"
               accessibilityLabel={t('post.titleLabel')}
             />
+            {touchedTitle && !title.trim() && (
+              <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body, paddingTop: 4 }} accessibilityRole="alert">
+                {t('create.titleRequired')}
+              </Text>
+            )}
             <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
             {duplicateWarning && (
               <Text style={{ fontSize: 12, color: colors.pro, fontFamily: fonts.body, paddingTop: 4 }}>
@@ -1075,9 +1100,16 @@ export default function CreateScreen() {
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.foreground }]}>{t('post.descriptionLabel')} *</Text>
             <TextInput
-              style={[styles.input, styles.textArea, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+              ref={descriptionInputRef}
+              style={[
+                styles.input,
+                styles.textArea,
+                { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border },
+                touchedDescription && !description.trim() && { borderColor: colors.destructive, borderWidth: 1.5 },
+              ]}
               value={description}
               onChangeText={setDescription}
+              onBlur={() => setTouchedDescription(true)}
               placeholder={t('post.descriptionLabel')}
               placeholderTextColor={colors.mutedForeground}
               multiline
@@ -1087,6 +1119,11 @@ export default function CreateScreen() {
               maxLength={2000}
               inputAccessoryViewID={KEYBOARD_DONE_ID}
             />
+            {touchedDescription && !description.trim() && (
+              <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body, paddingTop: 4 }} accessibilityRole="alert">
+                {t('create.description')} *
+              </Text>
+            )}
             <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.pro : colors.mutedForeground }]}>{description.length}/2000</Text>
           </View>
 
