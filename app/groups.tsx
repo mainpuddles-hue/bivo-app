@@ -18,7 +18,6 @@ import { useShimmer } from '@/components/SkeletonLoaders'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { useSupabase } from '@/hooks/useSupabase'
 import { NEIGHBORHOODS, GROUP_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 
@@ -72,7 +71,7 @@ function GroupSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors
 }
 
 export default function GroupsScreen() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -310,20 +309,19 @@ export default function GroupsScreen() {
 
   // ── Render group card ──
   const renderGroupCard = useCallback((group: Group, isMine: boolean) => {
-    const catColor = CATEGORY_COLORS[group.category] || colors.primary
     return (
       <PressableOpacity
         key={group.id}
         style={[s.groupCard, {
-          backgroundColor: colors.card,
+          backgroundColor: 'transparent',
           borderColor: colors.border,
-        }, isDark ? cardShadowDark : cardShadow]}
+        }]}
         onPress={() => router.push(`/groups/${group.id}`)}
         accessibilityRole="button"
         accessibilityLabel={`${group.name}, ${group.member_count} ${t('groups.members')}`}
       >
-        <View style={[s.groupAvatar, { backgroundColor: catColor }]}>
-          <Text style={[s.groupAvatarText, { color: colors.primaryForeground }]}>
+        <View style={[s.groupAvatar, { backgroundColor: colors.muted }]}>
+          <Text style={[s.groupAvatarText, { color: colors.foreground }]}>
             {(group.name || '?').charAt(0).toUpperCase()}
           </Text>
         </View>
@@ -346,7 +344,7 @@ export default function GroupsScreen() {
           <ChevronRight size={18} color={colors.mutedForeground} strokeWidth={1.8} />
         ) : (
           <Pressable
-            style={[s.joinButton, { backgroundColor: colors.accent }]}
+            style={[s.joinButton, { backgroundColor: colors.foreground }]}
             onPress={() => {
               handleJoin(group)
             }}
@@ -354,14 +352,14 @@ export default function GroupsScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('groups.join')}
           >
-            <Text style={[s.joinButtonText, { color: colors.accentForeground }]}>
+            <Text style={[s.joinButtonText, { color: colors.background }]}>
               {t('groups.join')}
             </Text>
           </Pressable>
         )}
       </PressableOpacity>
     )
-  }, [colors, isDark, t, router, handleJoin])
+  }, [colors, t, router, handleJoin])
 
   // ── Coming soon empty state ──
   if (!loading && !tableExists) {
@@ -433,9 +431,9 @@ export default function GroupsScreen() {
       >
         {loading ? (
           <ScrollView style={s.scrollContent} contentContainerStyle={s.scrollContainer} keyboardShouldPersistTaps="handled">
-            <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('groups.myGroups')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>{t('groups.myGroups')}</Text>
             {[1, 2, 3].map((i) => <GroupSkeleton key={i} colors={colors} />)}
-            <Text style={[s.sectionTitle, { color: colors.foreground, marginTop: 24 }]}>{t('groups.suggested')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.mutedForeground, marginTop: 24 }]}>{t('groups.suggested')}</Text>
             {[4, 5].map((i) => <GroupSkeleton key={i} colors={colors} />)}
           </ScrollView>
         ) : (
@@ -448,11 +446,11 @@ export default function GroupsScreen() {
             }
           >
             {/* My groups */}
-            <Text style={[s.sectionTitle, { color: colors.foreground }]}>
+            <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>
               {t('groups.myGroups')}
             </Text>
             {filteredMyGroups.length === 0 ? (
-              <View style={[s.emptySection, { backgroundColor: colors.card }]}>
+              <View style={[s.emptySection, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                 <Users size={28} color={colors.mutedForeground} strokeWidth={1.6} />
                 <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
                   {t('groups.noGroups')}
@@ -466,11 +464,11 @@ export default function GroupsScreen() {
             )}
 
             {/* Suggested */}
-            <Text style={[s.sectionTitle, { color: colors.foreground, marginTop: 24 }]}>
+            <Text style={[s.sectionTitle, { color: colors.mutedForeground, marginTop: 24 }]}>
               {t('groups.suggested')}
             </Text>
             {filteredSuggested.length === 0 ? (
-              <View style={[s.emptySection, { backgroundColor: colors.card }]}>
+              <View style={[s.emptySection, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                 <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
                   {t('groups.noSuggested')}
                 </Text>
@@ -484,7 +482,7 @@ export default function GroupsScreen() {
 
       {/* FAB */}
       <PressableOpacity
-        style={[s.fab, { backgroundColor: colors.accent, bottom: insets.bottom + 20 }]}
+        style={[s.fab, { backgroundColor: colors.foreground, bottom: insets.bottom + 20 }]}
         onPress={() => {
           try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {} // Intentional: haptics unavailable on some platforms
           setShowCreateModal(true)
@@ -492,7 +490,7 @@ export default function GroupsScreen() {
         accessibilityRole="button"
         accessibilityLabel={t('groups.create')}
       >
-        <Plus size={24} color={colors.accentForeground} strokeWidth={2} />
+        <Plus size={24} color={colors.background} strokeWidth={2} />
       </PressableOpacity>
 
       {/* Create Group Modal */}
@@ -515,7 +513,7 @@ export default function GroupsScreen() {
                 {t('groups.name')}
               </Text>
               <TextInput
-                style={[s.textInput, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border }]}
+                style={[s.textInput, { color: colors.foreground, backgroundColor: colors.muted, borderWidth: 0 }]}
                 placeholder={t('groups.name')}
                 placeholderTextColor={colors.mutedForeground}
                 value={newName}
@@ -528,7 +526,7 @@ export default function GroupsScreen() {
                 {t('groups.description')}
               </Text>
               <TextInput
-                style={[s.textArea, { color: colors.foreground, backgroundColor: colors.muted, borderColor: colors.border }]}
+                style={[s.textArea, { color: colors.foreground, backgroundColor: colors.muted, borderWidth: 0 }]}
                 placeholder={t('groups.description')}
                 placeholderTextColor={colors.mutedForeground}
                 value={newDescription}
@@ -552,13 +550,13 @@ export default function GroupsScreen() {
                       style={[
                         s.chip,
                         {
-                          backgroundColor: isActive ? cat.color : colors.muted,
-                          borderColor: isActive ? cat.color : colors.border,
+                          backgroundColor: isActive ? colors.foreground : 'transparent',
+                          borderColor: isActive ? colors.foreground : colors.border,
                         },
                       ]}
                       onPress={() => setNewCategory(cat.key)}
                     >
-                      <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
+                      <Text style={[s.chipText, { color: isActive ? colors.background : colors.foreground }]}>
                         {t(cat.labelKey)}
                       </Text>
                     </PressableOpacity>
@@ -571,7 +569,7 @@ export default function GroupsScreen() {
                 {t('groups.neighborhood')}
               </Text>
               <PressableOpacity
-                style={[s.textInput, s.pickerButton, { backgroundColor: colors.muted, borderColor: colors.border }]}
+                style={[s.textInput, s.pickerButton, { backgroundColor: colors.muted, borderWidth: 0 }]}
                 onPress={() => setShowNeighborhoodPicker(true)}
               >
                 <Text style={[s.pickerButtonText, { color: newNeighborhood ? colors.foreground : colors.mutedForeground }]}>
@@ -601,14 +599,14 @@ export default function GroupsScreen() {
 
               {/* Submit */}
               <PressableOpacity
-                style={[s.submitButton, { backgroundColor: creating ? colors.muted : colors.accent }]}
+                style={[s.submitButton, { backgroundColor: creating ? colors.muted : colors.foreground }]}
                 onPress={handleCreate}
                 disabled={creating}
               >
                 {creating ? (
-                  <ActivityIndicator size="small" color={colors.accentForeground} />
+                  <ActivityIndicator size="small" color={colors.mutedForeground} />
                 ) : (
-                  <Text style={[s.submitButtonText, { color: colors.accentForeground }]}>
+                  <Text style={[s.submitButtonText, { color: colors.background }]}>
                     {t('groups.create')}
                   </Text>
                 )}
@@ -700,10 +698,12 @@ const s = StyleSheet.create({
   scrollContent: { flex: 1 },
   scrollContainer: { paddingHorizontal: 16, paddingTop: 16 },
   sectionTitle: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontFamily: fonts.headingSemi,
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: fonts.bodySemi,
     marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   groupCard: {
     flexDirection: 'row',
@@ -747,7 +747,7 @@ const s = StyleSheet.create({
   joinButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 24,
   },
   joinButtonText: {
     fontSize: 13,
@@ -794,11 +794,6 @@ const s = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
   },
   // Modal
   modalOverlay: {
@@ -900,7 +895,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 24,
     marginTop: 20,
     marginBottom: 20,
     minHeight: 48,

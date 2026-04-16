@@ -352,7 +352,7 @@ function CreateEventScreenInner() {
           styles.header,
           {
             paddingTop: insets.top + 8,
-            backgroundColor: colors.card,
+            backgroundColor: colors.background,
             borderBottomColor: colors.border,
           },
         ]}
@@ -433,7 +433,7 @@ function CreateEventScreenInner() {
           style={[
             styles.input,
             {
-              backgroundColor: colors.card,
+              backgroundColor: colors.muted,
               color: colors.foreground,
               borderColor: colors.border,
               fontFamily: fonts.body,
@@ -456,7 +456,7 @@ function CreateEventScreenInner() {
             styles.input,
             styles.multilineInput,
             {
-              backgroundColor: colors.card,
+              backgroundColor: colors.muted,
               color: colors.foreground,
               borderColor: colors.border,
               fontFamily: fonts.body,
@@ -483,7 +483,7 @@ function CreateEventScreenInner() {
             <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
               {t('events.eventDate')} *
             </Text>
-            <View style={[styles.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
               <Calendar size={18} color={colors.mutedForeground} />
               <TextInput
                 style={[styles.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -501,7 +501,7 @@ function CreateEventScreenInner() {
             <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
               {t('events.eventTime')}
             </Text>
-            <View style={[styles.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
               <Clock size={18} color={colors.mutedForeground} />
               <TextInput
                 style={[styles.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -576,7 +576,7 @@ function CreateEventScreenInner() {
         <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
           {t('events.maxParticipants')}
         </Text>
-        <View style={[styles.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
           <Users size={18} color={colors.mutedForeground} />
           <TextInput
             style={[styles.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -591,7 +591,7 @@ function CreateEventScreenInner() {
         </View>
 
         {/* Approval toggle */}
-        <View style={[styles.toggleRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.toggleRow, { backgroundColor: colors.muted, borderColor: colors.border }]}>
           <View style={styles.toggleTextContainer}>
             <Text style={[styles.toggleLabel, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
               {t('events.approvalRequired')}
@@ -609,14 +609,14 @@ function CreateEventScreenInner() {
           />
         </View>
 
-        {/* Submit button */}
+        {/* Submit button — solid foreground */}
         <PressableOpacity
           onPress={handleSubmit}
           disabled={!canSubmit}
           style={[
             styles.submitButton,
             {
-              backgroundColor: canSubmit ? colors.primary : colors.muted,
+              backgroundColor: canSubmit ? colors.foreground : colors.muted,
             },
           ]}
           accessibilityLabel={t('events.publish')}
@@ -624,13 +624,13 @@ function CreateEventScreenInner() {
           accessibilityState={{ disabled: !canSubmit }}
         >
           {submitting ? (
-            <ActivityIndicator size="small" color={colors.primaryForeground} />
+            <ActivityIndicator size="small" color={colors.background} />
           ) : (
             <Text
               style={[
                 styles.submitButtonText,
                 {
-                  color: canSubmit ? colors.primaryForeground : colors.mutedForeground,
+                  color: canSubmit ? colors.background : colors.mutedForeground,
                   fontFamily: fonts.headingSemi,
                 },
               ]}
@@ -717,8 +717,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   label: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
     marginTop: 12,
     marginBottom: 8,
   },

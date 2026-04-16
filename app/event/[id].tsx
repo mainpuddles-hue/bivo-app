@@ -38,7 +38,7 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
 }
 
 function EventDetailScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const toast = useToast()
   const insets = useSafeAreaInsets()
@@ -315,11 +315,11 @@ function EventDetailScreenInner() {
     // Past events and creators see no action button
   } else if (myStatus === 'joined' || myStatus === 'approved') {
     actionLabel = t('events.leaveEvent')
-    actionColor = colors.destructive
+    actionColor = 'outline' as any // handled below
     actionOnPress = handleLeave
   } else if (myStatus === 'pending') {
     actionLabel = t('events.pendingApproval')
-    actionColor = colors.pro
+    actionColor = colors.mutedForeground
     actionDisabled = true
   } else if (isFull) {
     actionLabel = t('events.isFull')
@@ -332,6 +332,7 @@ function EventDetailScreenInner() {
     actionLabel = t('events.joinEvent')
     actionOnPress = handleJoin
   }
+  const isLeaveBtn = myStatus === 'joined' || myStatus === 'approved'
 
   return (
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
@@ -364,12 +365,12 @@ function EventDetailScreenInner() {
               contentFit="cover"
             />
           ) : (
-            <View style={[s.heroPlaceholder, { backgroundColor: `${catColor}30` }]}>
-              <CalendarDays size={64} color={catColor} strokeWidth={1.3} />
+            <View style={[s.heroPlaceholder, { backgroundColor: colors.muted }]}>
+              <CalendarDays size={64} color={colors.mutedForeground} strokeWidth={1.3} />
             </View>
           )}
           {/* Category badge */}
-          <View style={[s.categoryBadge, { backgroundColor: catColor }]}>
+          <View style={[s.categoryBadge, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
             <Text style={s.categoryBadgeText}>{catLabel}</Text>
           </View>
         </View>
@@ -453,10 +454,15 @@ function EventDetailScreenInner() {
               accessibilityLabel={actionLabel}
               style={({ pressed }) => [
                 s.actionButton,
-                { backgroundColor: actionDisabled ? colors.muted : actionColor, opacity: actionDisabled ? 0.6 : pressed ? 0.7 : 1 },
+                isLeaveBtn
+                  ? { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }
+                  : { backgroundColor: actionDisabled ? colors.muted : colors.foreground },
+                { opacity: actionDisabled ? 0.6 : pressed ? 0.7 : 1 },
               ]}
             >
-              <Text style={[s.actionButtonText, { color: actionDisabled ? colors.mutedForeground : colors.primaryForeground }]}>
+              <Text style={[s.actionButtonText, {
+                color: isLeaveBtn ? colors.mutedForeground : actionDisabled ? colors.mutedForeground : colors.background,
+              }]}>
                 {actionLabel}
               </Text>
             </Pressable>
@@ -469,13 +475,13 @@ function EventDetailScreenInner() {
             onPress={() => router.push(`/profile/${event.creator!.id}` as any)}
             accessibilityRole="button"
             accessibilityLabel={`${event.creator.name}, ${t('events.organizer')}`}
-            style={[s.creatorCard, { backgroundColor: colors.card }]}
+            style={[s.creatorCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
           >
             <Avatar url={event.creator.avatar_url} name={event.creator.name} size={44} />
             <View style={s.creatorInfo}>
               <Text style={[s.creatorName, { color: colors.foreground }]} numberOfLines={1}>{event.creator.name}</Text>
-              <View style={[s.organizerBadge, { backgroundColor: `${colors.primary}15` }]}>
-                <Text style={[s.organizerBadgeText, { color: colors.primary }]}>{t('events.organizer')}</Text>
+              <View style={[s.organizerBadge, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+                <Text style={[s.organizerBadgeText, { color: colors.mutedForeground }]}>{t('events.organizer')}</Text>
               </View>
             </View>
           </PressableOpacity>
@@ -489,11 +495,11 @@ function EventDetailScreenInner() {
             accessibilityLabel={t('events.groupChat')}
             style={[
               s.groupChatBtn,
-              { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}30` },
+              { backgroundColor: 'transparent', borderColor: colors.border },
             ]}
           >
-            <MessageCircle size={18} color={colors.primary} strokeWidth={1.8} />
-            <Text style={[s.groupChatText, { color: colors.primary }]}>
+            <MessageCircle size={18} color={colors.foreground} strokeWidth={1.8} />
+            <Text style={[s.groupChatText, { color: colors.foreground }]}>
               {t('events.openChat')}
             </Text>
           </PressableOpacity>
@@ -505,10 +511,10 @@ function EventDetailScreenInner() {
             onPress={handleMessageCreator}
             accessibilityRole="button"
             accessibilityLabel={t('events.messageOrganizer')}
-            style={[s.messageCreatorBtn, { backgroundColor: colors.primary }]}
+            style={[s.messageCreatorBtn, { backgroundColor: colors.foreground }]}
           >
-            <MessageCircle size={18} color={colors.primaryForeground} strokeWidth={1.8} />
-            <Text style={[s.messageCreatorText, { color: colors.primaryForeground }]}>
+            <MessageCircle size={18} color={colors.background} strokeWidth={1.8} />
+            <Text style={[s.messageCreatorText, { color: colors.background }]}>
               {t('events.messageOrganizer')}
             </Text>
           </PressableOpacity>
@@ -521,15 +527,15 @@ function EventDetailScreenInner() {
               onPress={() => router.push(`/create-event?edit=${event.id}` as any)}
               accessibilityRole="button"
               accessibilityLabel={t('events.editEventAction')}
-              style={[s.creatorActionBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+              style={[s.creatorActionBtn, { backgroundColor: 'transparent', borderColor: colors.border }]}
             >
-              <Text style={[s.creatorActionText, { color: colors.primary }]}>{t('events.editEventAction')}</Text>
+              <Text style={[s.creatorActionText, { color: colors.foreground }]}>{t('events.editEventAction')}</Text>
             </PressableOpacity>
             <PressableOpacity
               onPress={handleCancelEvent}
               accessibilityRole="button"
               accessibilityLabel={t('events.cancelEvent')}
-              style={[s.creatorActionBtn, { backgroundColor: `${colors.destructive}10`, borderColor: colors.destructive }]}
+              style={s.creatorActionCancel}
             >
               <Text style={[s.creatorActionText, { color: colors.destructive }]}>{t('events.cancelEvent')}</Text>
             </PressableOpacity>
@@ -710,7 +716,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   actionButton: {
-    borderRadius: 16,
+    borderRadius: 24,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
@@ -804,8 +810,13 @@ const s = StyleSheet.create({
   },
   creatorActionBtn: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  creatorActionCancel: {
+    flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
   },

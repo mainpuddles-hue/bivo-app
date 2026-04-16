@@ -237,7 +237,7 @@ function SavedScreenInner() {
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('saved.title')}</Text>
       </View>
 
-      {/* Tab switcher */}
+      {/* Tab switcher — Threads pill pattern */}
       <View style={[s.tabBar, { backgroundColor: colors.muted }]}>
         {tabs.map((tab) => (
           <Pressable
@@ -245,12 +245,12 @@ function SavedScreenInner() {
             onPress={() => setActiveTab(tab.key)}
             style={[s.tabItem, activeTab === tab.key && [s.tabItemActive, { backgroundColor: colors.background }]]}
           >
-            <Text style={[s.tabText, { color: activeTab === tab.key ? colors.foreground : colors.mutedForeground }]}>
+            <Text style={[s.tabText, { color: activeTab === tab.key ? colors.foreground : colors.mutedForeground, fontFamily: activeTab === tab.key ? fonts.bodySemi : fonts.body }]}>
               {tab.label}
             </Text>
             {tab.count > 0 && (
-              <View style={[s.tabBadge, { backgroundColor: activeTab === tab.key ? `${colors.primary}20` : `${colors.mutedForeground}15` }]}>
-                <Text style={[s.tabBadgeText, { color: activeTab === tab.key ? colors.primary : colors.mutedForeground }]}>
+              <View style={[s.tabBadge, { backgroundColor: activeTab === tab.key ? `${colors.foreground}12` : 'transparent' }]}>
+                <Text style={[s.tabBadgeText, { color: activeTab === tab.key ? colors.foreground : colors.mutedForeground }]}>
                   {tab.count}
                 </Text>
               </View>
@@ -308,12 +308,12 @@ function SavedScreenInner() {
                 <Pressable
                   key={event.id}
                   onPress={() => router.push(`/event/${event.id}` as any)}
-                  style={[s.eventCard, { backgroundColor: colors.card }]}
+                  style={[s.eventCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
                   accessibilityRole="button"
                   accessibilityLabel={event.title}
                 >
-                  <View style={[s.eventIcon, { backgroundColor: `${colors.primary}15` }]}>
-                    <CalendarDays size={20} color={colors.primary} />
+                  <View style={[s.eventIcon, { backgroundColor: colors.muted }]}>
+                    <CalendarDays size={20} color={colors.mutedForeground} />
                   </View>
                   <View style={s.eventInfo}>
                     <Text style={[s.eventTitle, { color: colors.foreground }]} numberOfLines={2}>{event.title}</Text>
@@ -350,12 +350,12 @@ function SavedScreenInner() {
                 <Pressable
                   key={place.id}
                   onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.address ?? ''))}`).catch(() => {})}
-                  style={[s.eventCard, { backgroundColor: colors.card }]}
+                  style={[s.eventCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
                   accessibilityRole="button"
                   accessibilityLabel={`${place.name} — ${t('saved.openInMaps')}`}
                 >
-                  <View style={[s.eventIcon, { backgroundColor: `${colors.primary}15` }]}>
-                    <MapPin size={20} color={colors.primary} />
+                  <View style={[s.eventIcon, { backgroundColor: colors.muted }]}>
+                    <MapPin size={20} color={colors.mutedForeground} />
                   </View>
                   <View style={s.eventInfo}>
                     <Text style={[s.eventTitle, { color: colors.foreground }]} numberOfLines={2}>{place.name}</Text>
@@ -415,7 +415,7 @@ const s = StyleSheet.create({
   },
   eventCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16,
+    padding: 16, borderRadius: 16, overflow: 'hidden',
   },
   eventIcon: {
     width: 48, height: 48, borderRadius: 16,

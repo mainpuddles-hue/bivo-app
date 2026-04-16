@@ -264,7 +264,7 @@ export default function CreateAdScreen() {
         {/* Title */}
         <Text style={[styles.label, { color: colors.foreground }]}>{t('create.title')} *</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
           value={title}
           onChangeText={setTitle}
           placeholder={t('ads.titlePlaceholder')}
@@ -275,7 +275,7 @@ export default function CreateAdScreen() {
         {/* Description */}
         <Text style={[styles.label, { color: colors.foreground }]}>{t('create.description')}</Text>
         <TextInput
-          style={[styles.input, styles.textArea, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, styles.textArea, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
           value={description}
           onChangeText={setDescription}
           placeholder={t('ads.descriptionPlaceholder')}
@@ -304,7 +304,7 @@ export default function CreateAdScreen() {
         {/* Link URL */}
         <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.linkUrl')}</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
           value={linkUrl}
           onChangeText={setLinkUrl}
           placeholder="https://..."
@@ -346,14 +346,14 @@ export default function CreateAdScreen() {
         <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.targetNeighborhood')}</Text>
         <PressableOpacity
           onPress={() => setShowNeighborhoods(!showNeighborhoods)}
-          style={[styles.input, styles.pickerBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          style={[styles.input, styles.pickerBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
         >
           <Text style={{ color: targetNeighborhood ? colors.foreground : colors.mutedForeground, fontSize: 14, fontFamily: fonts.body }}>
             {targetNeighborhood ?? t('ads.allAreas')}
           </Text>
         </PressableOpacity>
         {showNeighborhoods && (
-          <View style={[styles.neighborhoodList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.neighborhoodList, { backgroundColor: colors.muted, borderColor: colors.border }]}>
             <PressableOpacity
               onPress={() => { setTargetNeighborhood(null); setShowNeighborhoods(false) }}
               style={[styles.neighborhoodItem, { borderBottomColor: colors.border }]}
@@ -386,18 +386,18 @@ export default function CreateAdScreen() {
               style={[
                 styles.durationCard,
                 {
-                  backgroundColor: duration === opt.days ? `${colors.primary}14` : colors.card,
-                  borderColor: duration === opt.days ? colors.primary : colors.border,
+                  backgroundColor: 'transparent',
+                  borderColor: duration === opt.days ? colors.foreground : colors.border,
                 },
               ]}
             >
-              <Text style={[styles.durationDays, { color: duration === opt.days ? colors.primary : colors.foreground }]}>
+              <Text style={[styles.durationDays, { color: colors.foreground }]}>
                 {opt.label}
               </Text>
               <Text style={[styles.durationLabel, { color: colors.mutedForeground }]}>
                 {t('common.daysShort')}
               </Text>
-              <Text style={[styles.durationPrice, { color: duration === opt.days ? colors.primary : colors.mutedForeground }]}>
+              <Text style={[styles.durationPrice, { color: colors.mutedForeground }]}>
                 {formatPrice(opt.days * pricePerDay)}
               </Text>
             </PressableOpacity>
@@ -405,7 +405,7 @@ export default function CreateAdScreen() {
         </View>
 
         {/* Price summary */}
-        <View style={[styles.priceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.priceCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
           <View style={styles.priceRow}>
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>
               {duration} {t('common.daysShort')} x {formatPrice(pricePerDay)}/{t('common.daysShort')}
@@ -428,21 +428,21 @@ export default function CreateAdScreen() {
           </Text>
         )}
 
-        {/* Submit */}
+        {/* Submit — solid foreground */}
         <PressableOpacity
           onPress={handleSubmit}
           disabled={submitting || !title.trim()}
-          style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !title.trim() ? 0.6 : 1 }]}
+          style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: submitting || !title.trim() ? 0.6 : 1 }]}
           accessibilityRole="button"
           accessibilityLabel={t('ads.publishAd')}
           accessibilityState={{ disabled: submitting || !title.trim() }}
         >
           {submitting ? (
-            <ActivityIndicator size="small" color={colors.primaryForeground} />
+            <ActivityIndicator size="small" color={colors.background} />
           ) : (
             <>
-              <Megaphone size={18} color={colors.primaryForeground} />
-              <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
+              <Megaphone size={18} color={colors.background} />
+              <Text style={[styles.submitText, { color: colors.background }]}>
                 {t('ads.publishAd')} — {formatPrice(totalPrice)}
               </Text>
             </>
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 8, paddingBottom: 64 },
-  label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
+  label: { fontSize: 13, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,

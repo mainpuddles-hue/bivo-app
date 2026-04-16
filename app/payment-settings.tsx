@@ -105,7 +105,7 @@ function PaymentSettingsScreenInner() {
         <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
           {/* Payment Methods */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.methods')}</Text>
-          <View style={[s.card, { backgroundColor: colors.card }]}>
+          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
             {/* Card */}
             <PressableOpacity style={s.row} accessibilityLabel={t('payment.card')} accessibilityRole="button">
               <CreditCard size={20} color={colors.primary} />
@@ -153,19 +153,20 @@ function PaymentSettingsScreenInner() {
           {hasProviderPosts && (
             <>
               <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.providerSettings')}</Text>
-              <View style={[s.card, { backgroundColor: colors.card }]}>
+              <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                 <View style={s.providerRow}>
                   <View style={s.providerHeader}>
                     <Landmark size={20} color={isConnectOnboarded ? colors.success : colors.pro} />
                     <Text style={[s.providerTitle, { color: colors.foreground }]}>{t('payment.connectBank')}</Text>
                     {isConnectOnboarded ? (
-                      <View style={[s.connectedBadge, { backgroundColor: `${colors.success}20` }]}>
-                        <CheckCircle size={12} color={colors.success} />
-                        <Text style={[s.connectedBadgeText, { color: colors.success }]}>{t('payment.connected')}</Text>
+                      <View style={s.statusDotRow}>
+                        <View style={[s.statusDot, { backgroundColor: colors.primary }]} />
+                        <Text style={[s.connectedBadgeText, { color: colors.mutedForeground }]}>{t('payment.connected')}</Text>
                       </View>
                     ) : (
-                      <View style={[s.connectedBadge, { backgroundColor: `${colors.pro}20` }]}>
-                        <Text style={[s.connectedBadgeText, { color: colors.pro }]}>{t('payment.notConnected')}</Text>
+                      <View style={s.statusDotRow}>
+                        <View style={[s.statusDot, { backgroundColor: colors.destructive }]} />
+                        <Text style={[s.connectedBadgeText, { color: colors.mutedForeground }]}>{t('payment.notConnected')}</Text>
                       </View>
                     )}
                   </View>
@@ -178,16 +179,16 @@ function PaymentSettingsScreenInner() {
                     <PressableOpacity
                       onPress={handleStartConnect}
                       disabled={connecting}
-                      style={[s.connectBtn, { backgroundColor: colors.primary, opacity: connecting ? 0.6 : 1 }]}
+                      style={[s.connectBtn, { backgroundColor: colors.foreground, opacity: connecting ? 0.6 : 1 }]}
                       accessibilityLabel={t('payment.startConnect')}
                       accessibilityRole="button"
                     >
                       {connecting ? (
-                        <ActivityIndicator size="small" color={colors.primaryForeground} />
+                        <ActivityIndicator size="small" color={colors.background} />
                       ) : (
                         <>
-                          <Text style={[s.connectBtnText, { color: colors.primaryForeground }]}>{t('payment.startConnect')}</Text>
-                          <ChevronRight size={16} color={colors.primaryForeground} />
+                          <Text style={[s.connectBtnText, { color: colors.background }]}>{t('payment.startConnect')}</Text>
+                          <ChevronRight size={16} color={colors.background} />
                         </>
                       )}
                     </PressableOpacity>
@@ -199,9 +200,9 @@ function PaymentSettingsScreenInner() {
 
           {/* Commission Info */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.commissionTitle')}</Text>
-          <View style={[s.card, { backgroundColor: colors.card }]}>
+          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
             <View style={s.infoRow}>
-              <Info size={18} color={colors.primary} />
+              <Info size={18} color={colors.mutedForeground} />
               <Text style={[s.infoText, { color: colors.foreground }]}>
                 {t('payment.commissionInfo')}
               </Text>
@@ -210,7 +211,7 @@ function PaymentSettingsScreenInner() {
 
           {/* Transaction History */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.history')}</Text>
-          <View style={[s.card, { backgroundColor: colors.card }]}>
+          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
             <PressableOpacity onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityLabel={t('payment.history')} accessibilityRole="button">
               <History size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.history')}</Text>
@@ -220,9 +221,9 @@ function PaymentSettingsScreenInner() {
 
           {/* Security Note */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.security')}</Text>
-          <View style={[s.card, { backgroundColor: colors.card }]}>
+          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
             <View style={s.infoRow}>
-              <ShieldCheck size={18} color={colors.primary} />
+              <ShieldCheck size={18} color={colors.mutedForeground} />
               <Text style={[s.infoText, { color: colors.mutedForeground }]}>
                 {t('payment.securityNote')}
               </Text>
@@ -257,10 +258,8 @@ const s = StyleSheet.create({
   providerHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   providerTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 23, flex: 1 },
   providerDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
-  connectedBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
-  },
+  statusDotRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
   connectedBadgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 17 },
   connectBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',

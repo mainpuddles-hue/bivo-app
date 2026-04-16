@@ -310,8 +310,8 @@ export default function OrganizationScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-        {/* Business info */}
-        <View style={[styles.businessCard, { backgroundColor: colors.card }]}>
+        {/* Business info — flat with hairline */}
+        <View style={[styles.businessCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <Text style={[styles.businessName, { color: colors.foreground }]}>
             {profile?.business_name ?? profile?.name}
           </Text>
@@ -320,8 +320,10 @@ export default function OrganizationScreen() {
               Y-tunnus: {profile.business_vat_id}
             </Text>
           )}
-          <View style={[styles.statusBadge, { backgroundColor: `${colors.success}18` }]}>
-            <Text style={[styles.statusText, { color: colors.success }]}>{t('business.active')}</Text>
+          {/* Dot + label status */}
+          <View style={[styles.statusDotRow, { marginTop: 8 }]}>
+            <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.statusText, { color: colors.mutedForeground }]}>{t('business.active')}</Text>
           </View>
         </View>
 
@@ -329,7 +331,7 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.profileImages')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageScroll}>
             {businessImages.map((uri, i) => (
               <View key={`${uri}-${i}`} style={styles.imageThumbWrap}>
@@ -373,7 +375,7 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.description')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <TextInput
             style={[styles.textArea, { color: colors.foreground, borderColor: colors.border }]}
             value={businessDescription}
@@ -394,7 +396,7 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.address')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <TextInput
             style={[styles.input, { color: colors.foreground, borderColor: colors.border }]}
             value={businessAddress}
@@ -428,7 +430,7 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.contactInfo')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <View style={styles.contactRow}>
             <Phone size={16} color={colors.mutedForeground} />
             <TextInput
@@ -464,17 +466,17 @@ export default function OrganizationScreen() {
         <PressableOpacity
           onPress={saveAll}
           disabled={saving}
-          style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}
+          style={[styles.saveBtn, { backgroundColor: colors.foreground, opacity: saving ? 0.6 : 1 }]}
           accessibilityRole="button"
           accessibilityLabel={t('business.saveAll')}
           accessibilityState={{ disabled: saving }}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={colors.primaryForeground} />
+            <ActivityIndicator size="small" color={colors.background} />
           ) : (
             <>
-              <Save size={18} color={colors.primaryForeground} />
-              <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>
+              <Save size={18} color={colors.background} />
+              <Text style={[styles.saveBtnText, { color: colors.background }]}>
                 {t('business.saveAll')}
               </Text>
             </>
@@ -482,7 +484,7 @@ export default function OrganizationScreen() {
         </PressableOpacity>
 
         {/* Map presence toggle */}
-        <View style={[styles.toggleCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.toggleCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <MapPin size={18} color={colors.primary} />
           <Text style={[styles.toggleText, { color: colors.foreground }]}>{t('business.mapPresence')}</Text>
           <Switch
@@ -493,15 +495,15 @@ export default function OrganizationScreen() {
           />
         </View>
 
-        {/* Create ad button */}
+        {/* Create ad button — solid foreground */}
         <PressableOpacity
           onPress={() => router.push('/create-ad')}
-          style={[styles.createAdBtn, { backgroundColor: colors.primary }]}
+          style={[styles.createAdBtn, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('ads.create')}
         >
-          <Plus size={18} color={colors.primaryForeground} />
-          <Text style={[styles.createAdText, { color: colors.primaryForeground }]}>
+          <Plus size={18} color={colors.background} />
+          <Text style={[styles.createAdText, { color: colors.background }]}>
             {t('ads.create')}
           </Text>
         </PressableOpacity>
@@ -516,13 +518,14 @@ export default function OrganizationScreen() {
             {ads.map(ad => {
               const isActive = ad.status === 'active' && new Date(ad.end_date) > new Date()
               return (
-                <View key={ad.id} style={[styles.adCard, { backgroundColor: colors.card }]}>
+                <View key={ad.id} style={[styles.adCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                   <View style={styles.adHeader}>
                     <Text style={[styles.adTitle, { color: colors.foreground }]} numberOfLines={1}>
                       {ad.title}
                     </Text>
-                    <View style={[styles.adStatus, { backgroundColor: isActive ? `${colors.success}18` : `${colors.mutedForeground}18` }]}>
-                      <Text style={[styles.adStatusText, { color: isActive ? colors.success : colors.mutedForeground }]}>
+                    <View style={styles.statusDotRow}>
+                      <View style={[styles.statusDot, { backgroundColor: isActive ? colors.primary : colors.mutedForeground }]} />
+                      <Text style={[styles.adStatusText, { color: colors.mutedForeground }]}>
                         {isActive ? t('ads.active') : t('ads.ended')}
                       </Text>
                     </View>
@@ -581,8 +584,9 @@ const styles = StyleSheet.create({
   businessCard: { borderRadius: 16, padding: 16, gap: 6 },
   businessName: { fontSize: 20, fontFamily: fonts.headingSemi },
   vatId: { fontSize: 13, fontFamily: fonts.body },
-  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, marginTop: 8 },
-  statusText: { fontSize: 12, fontFamily: fonts.bodySemi },
+  statusDotRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusText: { fontSize: 12, fontFamily: fonts.body },
   toggleCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     borderRadius: 16, padding: 16,
@@ -594,9 +598,9 @@ const styles = StyleSheet.create({
   },
   createAdText: { fontSize: 16, fontFamily: fonts.bodySemi },
   sectionLabel: {
-    fontSize: 12, letterSpacing: 0.5,
+    fontSize: 11, letterSpacing: 0.5, fontWeight: '600',
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
-    fontFamily: fonts.bodySemi,
+    fontFamily: fonts.bodySemi, lineHeight: 16,
   },
   adCard: { borderRadius: 16, padding: 16, gap: 8 },
   adHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },

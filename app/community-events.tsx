@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import {
-  ArrowLeft, CalendarDays, Plus, TrendingUp, Coffee,
+  ArrowLeft, CalendarDays, Plus,
 } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
@@ -36,7 +36,7 @@ const CATEGORY_FILTERS: { key: CategoryFilter; labelKey: string; color: string }
 ]
 
 function CommunityEventsScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -135,19 +135,19 @@ function CommunityEventsScreenInner() {
   const keyExtractor = useCallback((item: CommunityEvent) => item.id, [])
 
   // ── Section header component ──
-  const SectionHeader = useCallback(({ icon: Icon, iconColor, title, actionLabel, onAction }: {
-    icon: any; iconColor: string; title: string; actionLabel?: string; onAction?: () => void
+  const SectionHeader = useCallback(({ iconColor, title, actionLabel, onAction }: {
+    icon?: any; iconColor: string; title: string; actionLabel?: string; onAction?: () => void
   }) => (
     <View style={s.sectionHeader}>
       <View style={s.sectionTitleRow}>
-        <Icon size={18} color={iconColor} strokeWidth={2} />
-        <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+        <View style={[s.sectionDot, { backgroundColor: iconColor }]} />
+        <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>
           {title}
         </Text>
       </View>
       {actionLabel && onAction && (
         <Pressable onPress={onAction} hitSlop={8}>
-          <Text style={[s.sectionAction, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.sectionAction, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {actionLabel}
           </Text>
         </Pressable>
@@ -162,7 +162,6 @@ function CommunityEventsScreenInner() {
     return (
       <View style={s.section}>
         <SectionHeader
-          icon={Coffee}
           iconColor="#8B5E3C"
           title={t('tables.title')}
           actionLabel={t('events.showAllEvents')}
@@ -190,16 +189,16 @@ function CommunityEventsScreenInner() {
             }}
             style={({ pressed }) => [
               s.createTableCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
+              { backgroundColor: 'transparent', borderColor: colors.border },
               pressed && { opacity: 0.8 },
             ]}
             accessibilityRole="button"
             accessibilityLabel={t('tables.create')}
           >
-            <View style={[s.createTableIcon, { backgroundColor: `${colors.primary}15` }]}>
-              <Plus size={24} color={colors.primary} strokeWidth={2} />
+            <View style={[s.createTableIcon, { backgroundColor: colors.muted }]}>
+              <Plus size={24} color={colors.foreground} strokeWidth={2} />
             </View>
-            <Text style={[s.createTableText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
+            <Text style={[s.createTableText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
               {t('tables.create')}
             </Text>
           </Pressable>
@@ -215,7 +214,6 @@ function CommunityEventsScreenInner() {
     return (
       <View style={s.section}>
         <SectionHeader
-          icon={TrendingUp}
           iconColor={colors.primary}
           title={t('events.trending')}
         />
@@ -245,13 +243,13 @@ function CommunityEventsScreenInner() {
 
       {/* "All Events" label */}
       {filteredEvents.length > 0 && (
-        <Text style={[s.allEventsLabel, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+        <Text style={[s.allEventsLabel, { color: colors.mutedForeground }]}>
           {t('events.communityEventsTitle')}
         </Text>
       )}
     </View>
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [tableEvents, trendingEvents, filteredEvents.length, colors, t, isDark, handleQuickJoin, loading, router])
+  ), [tableEvents, trendingEvents, filteredEvents.length, colors, t, handleQuickJoin, loading, router])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
@@ -268,7 +266,7 @@ function CommunityEventsScreenInner() {
           accessibilityLabel={t('events.create')}
           style={s.backBtn}
         >
-          <Plus size={22} color={colors.primary} strokeWidth={2} />
+          <Plus size={22} color={colors.foreground} strokeWidth={2} />
         </Pressable>
       </View>
 
@@ -290,13 +288,15 @@ function CommunityEventsScreenInner() {
               accessibilityLabel={t(labelKey)}
               style={[
                 s.chip,
-                { backgroundColor: isActive ? colors.primary : colors.muted },
+                isActive
+                  ? { backgroundColor: colors.foreground }
+                  : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
               ]}
             >
               {key !== 'all' && (
-                <View style={[s.chipDot, { backgroundColor: isActive ? colors.primaryForeground : color }]} />
+                <View style={[s.chipDot, { backgroundColor: isActive ? colors.background : color }]} />
               )}
-              <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
+              <Text style={[s.chipText, { color: isActive ? colors.background : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
             </PressableOpacity>
@@ -334,10 +334,10 @@ function CommunityEventsScreenInner() {
                 onPress={() => router.push('/create-event' as any)}
                 accessibilityRole="button"
                 accessibilityLabel={t('events.createFirstEvent')}
-                style={[s.emptyCta, { backgroundColor: colors.primary }]}
+                style={[s.emptyCta, { backgroundColor: colors.foreground }]}
               >
-                <Plus size={18} color={colors.primaryForeground} strokeWidth={2} />
-                <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('events.createFirstEvent')}</Text>
+                <Plus size={18} color={colors.background} strokeWidth={2} />
+                <Text style={[s.emptyCtaText, { color: colors.background }]}>{t('events.createFirstEvent')}</Text>
               </PressableOpacity>
             </View>
           )
@@ -411,6 +411,11 @@ const s = StyleSheet.create({
   section: {
     marginBottom: 8,
   },
+  sectionDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -424,9 +429,11 @@ const s = StyleSheet.create({
     gap: 8,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    lineHeight: 24,
+    fontSize: 11,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   sectionAction: {
     fontSize: 13,
@@ -468,9 +475,11 @@ const s = StyleSheet.create({
 
   // All events label
   allEventsLabel: {
-    fontSize: 17,
-    fontWeight: '700',
-    lineHeight: 24,
+    fontSize: 11,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 4,

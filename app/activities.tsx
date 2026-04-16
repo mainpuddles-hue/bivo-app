@@ -158,7 +158,7 @@ function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hook
   return (
     <View style={{ gap: 12 }}>
       {Array.from({ length: 4 }).map((_, i) => (
-        <View key={i} style={[st.card, { backgroundColor: colors.card }]}>
+        <View key={i} style={[st.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <View style={st.cardTop}>
             <Animated.View style={[{ width: 44, height: 44, borderRadius: 16, backgroundColor: colors.muted }, { opacity }]} />
             <View style={st.cardContent}>
@@ -178,7 +178,7 @@ function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hook
 // ══════════════════════════════════════════════════════
 
 function ActivitiesScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -414,9 +414,9 @@ function ActivitiesScreenInner() {
     const isFull = item.max_members ? (item.member_count ?? 0) >= item.max_members : false
 
     return (
-      <View style={[st.card, { backgroundColor: colors.card }]}>
+      <View style={[st.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
         <View style={st.cardTop}>
-          <View style={[st.iconBox, { backgroundColor: `${catColor}20` }]}>
+          <View style={[st.iconBox, { backgroundColor: colors.muted }]}>
             <CatIcon size={20} color={catColor} />
           </View>
           <View style={st.cardContent}>
@@ -458,9 +458,10 @@ function ActivitiesScreenInner() {
               </PressableOpacity>
             )}
           </View>
-          {/* Category badge */}
-          <View style={[st.categoryBadge, { backgroundColor: `${catColor}15` }]}>
-            <Text style={[st.categoryBadgeText, { color: catColor }]}>
+          {/* Category dot + label */}
+          <View style={st.categoryBadge}>
+            <View style={[st.categoryDot, { backgroundColor: catColor }]} />
+            <Text style={[st.categoryBadgeText, { color: colors.mutedForeground }]}>
               {t(CATEGORIES.find(c => c.key === item.category)?.labelKey ?? 'activity.categoryOther')}
             </Text>
           </View>
@@ -477,12 +478,12 @@ function ActivitiesScreenInner() {
               style={[
                 st.joinBtn,
                 item.is_member
-                  ? { backgroundColor: catColor }
-                  : { borderWidth: 1, borderColor: catColor },
+                  ? { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }
+                  : { backgroundColor: colors.foreground },
               ]}
             >
-              {item.is_member && <Check size={14} color={colors.primaryForeground} strokeWidth={2.5} />}
-              <Text style={[st.joinBtnText, { color: item.is_member ? colors.primaryForeground : catColor }]}>
+              {item.is_member && <Check size={14} color={colors.mutedForeground} strokeWidth={2.5} />}
+              <Text style={[st.joinBtnText, { color: item.is_member ? colors.mutedForeground : colors.background }]}>
                 {item.is_member ? t('activity.joined') : t('activity.joinActivity')}
               </Text>
             </PressableOpacity>
@@ -510,9 +511,9 @@ function ActivitiesScreenInner() {
             if (!userId) { router.push('/(auth)/login'); return }
             setShowCreateModal(true)
           }}
-          style={[st.addBtn, { backgroundColor: colors.primary }]}
+          style={[st.addBtn, { backgroundColor: colors.foreground }]}
         >
-          <Plus size={18} color={colors.primaryForeground} strokeWidth={2.5} />
+          <Plus size={18} color={colors.background} strokeWidth={2.5} />
         </PressableOpacity>
       </View>
 
@@ -532,13 +533,13 @@ function ActivitiesScreenInner() {
               style={[
                 st.filterChip,
                 isActive
-                  ? { backgroundColor: colors.primary }
-                  : { backgroundColor: isDark ? colors.card : colors.muted },
+                  ? { backgroundColor: colors.foreground }
+                  : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
               ]}
             >
               <Text style={[
                 st.filterChipText,
-                { color: isActive ? colors.primaryForeground : colors.mutedForeground },
+                { color: isActive ? colors.background : colors.mutedForeground },
               ]}>
                 {t(chip.labelKey)}
               </Text>
@@ -581,10 +582,10 @@ function ActivitiesScreenInner() {
                   if (!userId) { router.push('/(auth)/login'); return }
                   setShowCreateModal(true)
                 }}
-                style={[st.emptyBtn, { backgroundColor: colors.primary }]}
+                style={[st.emptyBtn, { backgroundColor: colors.foreground }]}
               >
-                <Plus size={16} color={colors.primaryForeground} strokeWidth={2.5} />
-                <Text style={[st.emptyBtnText, { color: colors.primaryForeground }]}>
+                <Plus size={16} color={colors.background} strokeWidth={2.5} />
+                <Text style={[st.emptyBtnText, { color: colors.background }]}>
                   {t('activities.create')}
                 </Text>
               </PressableOpacity>
@@ -599,11 +600,11 @@ function ActivitiesScreenInner() {
           if (!userId) { router.push('/(auth)/login'); return }
           setShowCreateModal(true)
         }}
-        style={[st.fab, { backgroundColor: colors.primary, bottom: insets.bottom + 16 }]}
+        style={[st.fab, { backgroundColor: colors.foreground, bottom: insets.bottom + 16 }]}
         accessibilityRole="button"
         accessibilityLabel={t('activities.create')}
       >
-        <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
+        <Plus size={24} color={colors.background} strokeWidth={2.5} />
       </PressableOpacity>
 
       {/* ══════════════════════════════════════════════════
@@ -643,7 +644,7 @@ function ActivitiesScreenInner() {
                   onChangeText={setCreateTitle}
                   placeholder={t('activity.titlePlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
-                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  style={[st.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                   maxLength={100}
                 />
               </View>
@@ -656,7 +657,7 @@ function ActivitiesScreenInner() {
                   onChangeText={setCreateDescription}
                   placeholder={t('activity.descriptionPlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
-                  style={[st.textArea, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  style={[st.textArea, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                   multiline
                   numberOfLines={3}
                   maxLength={500}
@@ -678,12 +679,12 @@ function ActivitiesScreenInner() {
                         style={[
                           st.catChip,
                           isSelected
-                            ? { backgroundColor: cat.color }
-                            : { backgroundColor: `${cat.color}15`, borderWidth: 1, borderColor: `${cat.color}40` },
+                            ? { backgroundColor: colors.foreground }
+                            : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                         ]}
                       >
-                        <cat.Icon size={14} color={isSelected ? colors.primaryForeground : cat.color} />
-                        <Text style={[st.catChipText, { color: isSelected ? colors.primaryForeground : cat.color }]}>
+                        <cat.Icon size={14} color={isSelected ? colors.background : cat.color} />
+                        <Text style={[st.catChipText, { color: isSelected ? colors.background : cat.color }]}>
                           {t(cat.labelKey)}
                         </Text>
                       </PressableOpacity>
@@ -705,11 +706,11 @@ function ActivitiesScreenInner() {
                         style={[
                           st.schedChip,
                           isSelected
-                            ? { backgroundColor: colors.primary }
-                            : { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: colors.border },
+                            ? { backgroundColor: colors.foreground }
+                            : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                         ]}
                       >
-                        <Text style={[st.schedChipText, { color: isSelected ? colors.primaryForeground : colors.mutedForeground }]}>
+                        <Text style={[st.schedChipText, { color: isSelected ? colors.background : colors.mutedForeground }]}>
                           {t(sched.labelKey)}
                         </Text>
                       </PressableOpacity>
@@ -732,11 +733,11 @@ function ActivitiesScreenInner() {
                           style={[
                             st.dayChip,
                             isSelected
-                              ? { backgroundColor: colors.primary }
-                              : { backgroundColor: isDark ? colors.card : colors.muted },
+                              ? { backgroundColor: colors.foreground }
+                              : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                           ]}
                         >
-                          <Text style={[st.dayChipText, { color: isSelected ? colors.primaryForeground : colors.mutedForeground }]}>
+                          <Text style={[st.dayChipText, { color: isSelected ? colors.background : colors.mutedForeground }]}>
                             {t(day.labelKey).slice(0, 2).toUpperCase()}
                           </Text>
                         </PressableOpacity>
@@ -754,7 +755,7 @@ function ActivitiesScreenInner() {
                   onChangeText={setCreateScheduleTime}
                   placeholder="18:00"
                   placeholderTextColor={colors.mutedForeground}
-                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  style={[st.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                   keyboardType="numbers-and-punctuation"
                   maxLength={5}
                 />
@@ -768,7 +769,7 @@ function ActivitiesScreenInner() {
                   onChangeText={setCreateLocation}
                   placeholder={t('activity.locationPlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
-                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  style={[st.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                   maxLength={200}
                 />
               </View>
@@ -781,7 +782,7 @@ function ActivitiesScreenInner() {
                   onChangeText={setCreateMaxMembers}
                   placeholder={t('activity.maxMembersPlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
-                  style={[st.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  style={[st.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
                   keyboardType="number-pad"
                   maxLength={5}
                 />
@@ -791,14 +792,14 @@ function ActivitiesScreenInner() {
               <PressableOpacity
                 onPress={handleCreate}
                 disabled={creating}
-                style={[st.createBtn, { backgroundColor: creating ? colors.muted : colors.primary }]}
+                style={[st.createBtn, { backgroundColor: creating ? colors.muted : colors.foreground }]}
               >
                 {creating ? (
-                  <ActivityIndicator size="small" color={colors.primaryForeground} />
+                  <ActivityIndicator size="small" color={colors.mutedForeground} />
                 ) : (
                   <>
-                    <Plus size={18} color={colors.primaryForeground} strokeWidth={2.5} />
-                    <Text style={[st.createBtnText, { color: colors.primaryForeground }]}>
+                    <Plus size={18} color={colors.background} strokeWidth={2.5} />
+                    <Text style={[st.createBtnText, { color: colors.background }]}>
                       {t('activities.create')}
                     </Text>
                   </>
@@ -928,13 +929,18 @@ const st = StyleSheet.create({
     marginTop: 2,
   },
   categoryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  categoryDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   categoryBadgeText: {
     fontSize: 11,
-    fontFamily: fonts.bodySemi,
+    fontFamily: fonts.body,
     lineHeight: 16,
   },
   cardBottom: {
@@ -950,7 +956,7 @@ const st = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 24,
     minWidth: 90,
     justifyContent: 'center',
   },
@@ -1003,11 +1009,6 @@ const st = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
   },
 
   // Modal

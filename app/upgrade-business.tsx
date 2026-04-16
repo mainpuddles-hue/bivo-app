@@ -228,22 +228,20 @@ export default function UpgradeBusinessScreen() {
         style={{ flex: 1 }}
       >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        {/* Hero */}
+        {/* Hero — plain, no colored circle */}
         <View style={styles.hero}>
-          <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}18` }]}>
-            <Building2 size={40} color={colors.primary} />
-          </View>
+          <Building2 size={32} color={colors.foreground} />
           <Text style={[styles.heroTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
           <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
             {t('business.upgradeDesc')}
           </Text>
-          <Text style={[styles.heroPrice, { color: colors.primary }]}>
+          <Text style={[styles.heroPrice, { color: colors.foreground }]}>
             {t('business.monthlyPrice')}
           </Text>
         </View>
 
-        {/* Benefits */}
-        <View style={[styles.benefitsCard, { backgroundColor: colors.card }]}>
+        {/* Benefits — hairline border, muted bg */}
+        <View style={[styles.benefitsCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           {([
             { icon: Camera, text: t('business.benefitProfile') },
             { icon: MapPin, text: t('business.benefitMap') },
@@ -264,7 +262,7 @@ export default function UpgradeBusinessScreen() {
         {/* Form */}
         <Text style={[styles.label, { color: colors.foreground }]}>{t('business.businessName')} *</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
           value={businessName}
           onChangeText={setBusinessName}
           placeholder={t('business.businessNamePlaceholder')}
@@ -276,7 +274,7 @@ export default function UpgradeBusinessScreen() {
           {idFormat.label !== 'business.vatId' ? t(idFormat.label) : t('business.vatId')}
         </Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
           value={vatId}
           onChangeText={setVatId}
           placeholder={idFormat.placeholder}
@@ -313,7 +311,7 @@ export default function UpgradeBusinessScreen() {
 
         <Text style={[styles.label, { color: colors.foreground }]}>{t('business.address')}</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
           value={address}
           onChangeText={setAddress}
           placeholder={t('business.addressPlaceholder')}
@@ -327,17 +325,17 @@ export default function UpgradeBusinessScreen() {
             <PressableOpacity
               onPress={handleUpgrade}
               disabled={submitting || !businessName.trim() || !vatId.trim()}
-              style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: submitting || !businessName.trim() || !vatId.trim() ? 0.6 : 1 }]}
+              style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: submitting || !businessName.trim() || !vatId.trim() ? 0.6 : 1 }]}
               accessibilityRole="button"
               accessibilityLabel={t('business.subscribeCTA')}
               accessibilityState={{ disabled: submitting || !businessName.trim() || !vatId.trim() }}
             >
               {submitting ? (
-                <ActivityIndicator size="small" color={colors.primaryForeground} />
+                <ActivityIndicator size="small" color={colors.background} />
               ) : (
                 <>
-                  <Building2 size={18} color={colors.primaryForeground} />
-                  <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
+                  <Building2 size={18} color={colors.background} />
+                  <Text style={[styles.submitText, { color: colors.background }]}>
                     {t('business.subscribeCTA')} — {t('business.monthlyPrice')}
                   </Text>
                 </>
@@ -352,8 +350,8 @@ export default function UpgradeBusinessScreen() {
 
         {/* iOS: Subscription will be available via App Store */}
         {Platform.OS === 'ios' && (
-          <View style={[styles.iosInfoCard, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}30` }]}>
-            <Info size={20} color={colors.primary} />
+          <View style={[styles.iosInfoCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+            <Info size={20} color={colors.mutedForeground} />
             <Text style={[styles.iosInfoText, { color: colors.foreground }]}>
               {t('business.comingSoonIOS')}
             </Text>
@@ -385,7 +383,7 @@ const styles = StyleSheet.create({
   benefitsCard: { borderRadius: 16, padding: 16, gap: 12 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitText: { fontSize: 14, flex: 1, fontFamily: fonts.body },
-  label: { fontSize: 14, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
+  label: { fontSize: 13, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,

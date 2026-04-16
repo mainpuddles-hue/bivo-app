@@ -127,12 +127,10 @@ function PaymentHistoryScreenInner() {
     return (
       <PressableOpacity
         onPress={() => setExpandedId(prev => prev === item.id ? null : item.id)}
-        style={[styles.paymentRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.paymentRow, { backgroundColor: 'transparent', borderColor: colors.border }]}
       >
         <View style={styles.rowTop}>
-          <View style={[styles.iconBox, { backgroundColor: `${statusColor}15` }]}>
-            <Receipt size={18} color={statusColor} />
-          </View>
+          <Receipt size={18} color={colors.mutedForeground} />
           <View style={styles.rowInfo}>
             <Text style={[styles.rowDesc, { color: colors.foreground }]} numberOfLines={1}>
               {item.post?.title ?? item.description}
@@ -143,8 +141,10 @@ function PaymentHistoryScreenInner() {
             <Text style={[styles.rowAmount, { color: item.status === 'refunded' ? colors.mutedForeground : colors.foreground }]}>
               {item.status === 'refunded' ? '-' : ''}{formatPrice(item.amount, locale)}
             </Text>
-            <View style={[styles.miniStatus, { backgroundColor: `${statusColor}18` }]}>
-              <Text style={[styles.miniStatusText, { color: statusColor }]}>{t(STATUS_KEYS[item.status])}</Text>
+            {/* Dot + label status */}
+            <View style={styles.statusDotRow}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={[styles.miniStatusText, { color: colors.mutedForeground }]}>{t(STATUS_KEYS[item.status])}</Text>
             </View>
           </View>
           <ChevronRight
@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
+    // transparent bg — hairline only
   },
   rowTop: {
     flexDirection: 'row',
@@ -245,12 +246,15 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
+  statusDotRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 5,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   rowInfo: {
     flex: 1,
@@ -271,11 +275,6 @@ const styles = StyleSheet.create({
   rowAmount: {
     fontSize: 14,
     fontFamily: fonts.headingSemi,
-  },
-  miniStatus: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
   },
   miniStatusText: {
     fontSize: 11,

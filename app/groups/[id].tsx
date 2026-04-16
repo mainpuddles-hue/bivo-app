@@ -78,7 +78,7 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
 // 4. SEARCH WITHIN GROUP: The searchQuery state exists but there's no visible
 //    search bar in the UI to filter posts within the group. Wire it up.
 export default function GroupDetailScreen() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -618,16 +618,16 @@ export default function GroupDetailScreen() {
     if (!group) return null
     const categoryLabelKey = `groups.${group.category}` as string
     return (
-      <View style={[ps.infoCard, { backgroundColor: colors.card, shadowOpacity: isDark ? 0.12 : 0.06 }]}>
+      <View style={[ps.infoCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
         <Text style={[ps.groupName, { color: colors.foreground }]}>{group.name}</Text>
         {group.description && <Text style={[ps.groupDesc, { color: colors.mutedForeground }]}>{group.description}</Text>}
         <View style={ps.badgeRow}>
-          <View style={[ps.badge, { backgroundColor: catColor + '20' }]}>
-            <Text style={[ps.badgeText, { color: catColor }]}>{t(categoryLabelKey)}</Text>
+          <View style={[ps.badge, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+            <Text style={[ps.badgeText, { color: colors.mutedForeground }]}>{t(categoryLabelKey)}</Text>
           </View>
           {group.neighborhood && (
-            <View style={[ps.badge, { backgroundColor: colors.muted }]}>
-              <Text style={[ps.badgeText, { color: colors.foreground }]}>{group.neighborhood}</Text>
+            <View style={[ps.badge, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+              <Text style={[ps.badgeText, { color: colors.mutedForeground }]}>{group.neighborhood}</Text>
             </View>
           )}
         </View>
@@ -639,19 +639,21 @@ export default function GroupDetailScreen() {
             </Text>
           </PressableOpacity>
           <PressableOpacity
-            style={[ps.joinLeaveBtn, { backgroundColor: isMember ? 'transparent' : colors.accent, borderColor: isMember ? colors.destructive : colors.accent, borderWidth: isMember ? 1 : 0 }]}
+            style={[ps.joinLeaveBtn, isMember
+              ? { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }
+              : { backgroundColor: colors.foreground, borderWidth: 0 }]}
             onPress={handleJoinLeave}
           >
             {isMember ? (
-              <><LogOut size={14} color={colors.destructive} strokeWidth={1.8} /><Text style={[ps.joinLeaveBtnText, { color: colors.destructive }]}>{t('groups.leave')}</Text></>
+              <><LogOut size={14} color={colors.mutedForeground} strokeWidth={1.8} /><Text style={[ps.joinLeaveBtnText, { color: colors.mutedForeground }]}>{t('groups.leave')}</Text></>
             ) : (
-              <><UserPlus size={14} color={colors.accentForeground} strokeWidth={1.8} /><Text style={[ps.joinLeaveBtnText, { color: colors.accentForeground }]}>{t('groups.join')}</Text></>
+              <><UserPlus size={14} color={colors.background} strokeWidth={1.8} /><Text style={[ps.joinLeaveBtnText, { color: colors.background }]}>{t('groups.join')}</Text></>
             )}
           </PressableOpacity>
         </View>
       </View>
     )
-  }, [group, colors, isDark, catColor, t, isMember, handleJoinLeave, fetchMembers])
+  }, [group, colors, catColor, t, isMember, handleJoinLeave, fetchMembers])
 
   return (
     <ScreenErrorBoundary screenName="GroupDetail">
@@ -788,7 +790,7 @@ const ps = StyleSheet.create({
   headerSub: { fontSize: 11, fontFamily: fonts.body, marginTop: -1 },
   loadingContainer: { padding: 16 },
   listContent: { padding: 16 },
-  infoCard: { borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
+  infoCard: { borderRadius: 16, padding: 16, marginBottom: 16 },
   groupName: { fontSize: 20, fontFamily: fonts.heading, marginBottom: 4 },
   groupDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 12 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
@@ -799,7 +801,7 @@ const ps = StyleSheet.create({
   membersBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
   joinLeaveBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   joinLeaveBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
-  postCard: { borderRadius: 16, marginBottom: 12, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2, flexDirection: 'row' },
+  postCard: { borderRadius: 16, marginBottom: 12, overflow: 'hidden', flexDirection: 'row' },
   postUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   postInputBar: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, paddingHorizontal: 12 },
   imagePreviewRow: { marginBottom: 8 },

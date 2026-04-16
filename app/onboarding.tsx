@@ -30,7 +30,6 @@ import {
   BookOpen,
   CalendarDays,
 } from 'lucide-react-native'
-import { LinearGradient } from 'expo-linear-gradient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
@@ -54,7 +53,7 @@ const CITY_NAMES: Record<string, string> = {
 }
 
 function OnboardingScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -218,7 +217,7 @@ function OnboardingScreenInner() {
           style={[
             s.dot,
             {
-              backgroundColor: i === currentPage ? colors.primary : colors.muted,
+              backgroundColor: i === currentPage ? colors.foreground : colors.border,
               width: i === currentPage ? 24 : 8,
               height: i === currentPage ? 10 : 8,
               borderRadius: i === currentPage ? 5 : 4,
@@ -232,12 +231,8 @@ function OnboardingScreenInner() {
   // ── Slide 1: Welcome ──
   const renderWelcome = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
-      <LinearGradient
-        colors={[colors.background, `${colors.primary}08`]}
-        style={StyleSheet.absoluteFill}
-      />
       <View style={s.welcomeContent}>
-        <View style={[s.logoBigCircle, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
+        <View style={[s.logoBigCircle, { backgroundColor: colors.primary }]}>
           <TackBirdLogo size={56} color={colors.primaryForeground} />
         </View>
 
@@ -257,21 +252,14 @@ function OnboardingScreenInner() {
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={() => goToPage(1)}
-          style={s.primaryBtnWrapper}
+          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('onboarding.next')}
         >
-          <LinearGradient
-            colors={[colors.primary, `${colors.primary}CC`]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[s.primaryBtn, s.primaryBtnGradient]}
-          >
-            <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
-              {t('onboarding.next')}
-            </Text>
-            <ArrowRight size={18} color={colors.primaryForeground} />
-          </LinearGradient>
+          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
+            {t('onboarding.next')}
+          </Text>
+          <ArrowRight size={18} color={colors.background} />
         </PressableOpacity>
         {renderDots()}
       </View>
@@ -319,14 +307,14 @@ function OnboardingScreenInner() {
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={() => goToPage(2)}
-          style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('onboarding.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
           </Text>
-          <ChevronRight size={18} color={colors.primaryForeground} />
+          <ChevronRight size={18} color={colors.background} />
         </PressableOpacity>
         <PressableOpacity
           onPress={() => goToPage(3)}
@@ -380,14 +368,14 @@ function OnboardingScreenInner() {
       <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={() => goToPage(3)}
-          style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('onboarding.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
           </Text>
-          <ChevronRight size={18} color={colors.primaryForeground} />
+          <ChevronRight size={18} color={colors.background} />
         </PressableOpacity>
         <PressableOpacity
           onPress={() => goToPage(3)}
@@ -444,8 +432,8 @@ function OnboardingScreenInner() {
                 style={[
                   s.purposePill,
                   isSelected
-                    ? { backgroundColor: opt.color }
-                    : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                    ? { backgroundColor: colors.foreground }
+                    : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                 ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
@@ -453,20 +441,20 @@ function OnboardingScreenInner() {
               >
                 <IconComponent
                   size={20}
-                  color={isSelected ? '#FFFFFF' : opt.color}
+                  color={isSelected ? colors.background : opt.color}
                 />
                 <Text
                   style={[
                     s.purposePillText,
                     {
-                      color: isSelected ? '#FFFFFF' : colors.foreground,
+                      color: isSelected ? colors.background : colors.foreground,
                       fontFamily: isSelected ? fonts.bodySemi : fonts.body,
                     },
                   ]}
                 >
                   {label}
                 </Text>
-                {isSelected && <Check size={16} color="#FFFFFF" />}
+                {isSelected && <Check size={16} color={colors.background} />}
               </PressableOpacity>
             )
           })}
@@ -481,14 +469,14 @@ function OnboardingScreenInner() {
             }
             goToPage(4)
           }}
-          style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('common.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
             {t('common.next')}
           </Text>
-          <ChevronRight size={18} color={colors.primaryForeground} />
+          <ChevronRight size={18} color={colors.background} />
         </PressableOpacity>
         <PressableOpacity
           onPress={() => goToPage(4)}
@@ -532,8 +520,8 @@ function OnboardingScreenInner() {
                 style={[
                   s.cityChip,
                   isSelected
-                    ? { backgroundColor: colors.primary }
-                    : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                    ? { backgroundColor: colors.foreground }
+                    : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                 ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
@@ -543,7 +531,7 @@ function OnboardingScreenInner() {
                   style={[
                     s.cityChipText,
                     {
-                      color: isSelected ? colors.primaryForeground : colors.foreground,
+                      color: isSelected ? colors.background : colors.foreground,
                       fontFamily: isSelected ? fonts.bodySemi : fonts.body,
                     },
                   ]}
@@ -573,8 +561,8 @@ function OnboardingScreenInner() {
             placeholder={t('search.placeholder')}
             placeholderTextColor={colors.mutedForeground}
             style={[s.neighborhoodSearchInput, {
-              backgroundColor: colors.card,
-              borderColor: colors.border,
+              backgroundColor: colors.muted,
+              borderWidth: 0,
               color: colors.foreground,
               fontFamily: fonts.body,
             }]}
@@ -607,8 +595,9 @@ function OnboardingScreenInner() {
               placeholder={t('onboarding.typeNeighborhood')}
               placeholderTextColor={colors.mutedForeground}
               style={[s.neighborhoodSearchInput, {
-                backgroundColor: colors.card,
-                borderColor: customNeighborhood.trim() ? colors.primary : colors.border,
+                backgroundColor: colors.muted,
+                borderWidth: customNeighborhood.trim() ? StyleSheet.hairlineWidth : 0,
+                borderColor: customNeighborhood.trim() ? colors.foreground : 'transparent',
                 color: colors.foreground,
                 fontFamily: fonts.body,
               }]}
@@ -639,20 +628,20 @@ function OnboardingScreenInner() {
                 style={[
                   s.neighborhoodChip,
                   isSelected
-                    ? { backgroundColor: colors.primary }
-                    : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                    ? { backgroundColor: colors.foreground }
+                    : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
                 ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 accessibilityLabel={nh}
               >
-                {isSelected && <Check size={14} color={colors.primaryForeground} />}
-                <MapPin size={14} color={isSelected ? colors.primaryForeground : colors.mutedForeground} />
+                {isSelected && <Check size={14} color={colors.background} />}
+                <MapPin size={14} color={isSelected ? colors.background : colors.mutedForeground} />
                 <Text
                   style={[
                     s.neighborhoodText,
                     {
-                      color: isSelected ? colors.primaryForeground : colors.foreground,
+                      color: isSelected ? colors.background : colors.foreground,
                       fontFamily: fonts.bodyMedium,
                     },
                   ]}
@@ -714,8 +703,9 @@ function OnboardingScreenInner() {
           placeholder={t('referral.codeInput')}
           placeholderTextColor={colors.mutedForeground}
           style={[s.referralInput, {
-            backgroundColor: colors.card,
-            borderColor: referralStatus === 'invalid' ? colors.destructive : referralStatus === 'applied' ? colors.success : colors.border,
+            backgroundColor: colors.muted,
+            borderWidth: referralStatus !== 'idle' ? StyleSheet.hairlineWidth : 0,
+            borderColor: referralStatus === 'invalid' ? colors.destructive : referralStatus === 'applied' ? colors.success : 'transparent',
             color: colors.foreground,
             fontFamily: fonts.body,
           }]}
@@ -742,7 +732,7 @@ function OnboardingScreenInner() {
           style={[
             s.primaryBtn,
             {
-              backgroundColor: selectedNeighborhood ? colors.primary : colors.muted,
+              backgroundColor: selectedNeighborhood ? colors.foreground : colors.muted,
               opacity: saving ? 0.6 : 1,
             },
           ]}
@@ -750,14 +740,14 @@ function OnboardingScreenInner() {
           accessibilityLabel={t('onboarding.start')}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={colors.primaryForeground} />
+            <ActivityIndicator size="small" color={colors.background} />
           ) : (
             <>
               <Text
                 style={[
                   s.primaryBtnText,
                   {
-                    color: selectedNeighborhood ? colors.primaryForeground : colors.mutedForeground,
+                    color: selectedNeighborhood ? colors.background : colors.mutedForeground,
                     fontFamily: fonts.bodySemi,
                   },
                 ]}
@@ -766,7 +756,7 @@ function OnboardingScreenInner() {
               </Text>
               <Check
                 size={18}
-                color={selectedNeighborhood ? colors.primaryForeground : colors.mutedForeground}
+                color={selectedNeighborhood ? colors.background : colors.mutedForeground}
               />
             </>
           )}
@@ -823,11 +813,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
-    shadowColor: '#2D6B5E',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 4,
   },
   appName: {
     fontSize: 32,
@@ -1077,20 +1062,15 @@ const s = StyleSheet.create({
     gap: 12,
   },
   primaryBtnWrapper: {
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#2D6B5E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    borderRadius: 16,
+    borderRadius: 24,
     paddingVertical: 16,
     minHeight: 48,
   },

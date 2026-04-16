@@ -147,7 +147,7 @@ function CreateTableScreenInner() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} style={s.backButton} accessibilityLabel={t('common.back')} accessibilityRole="button">
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
@@ -205,7 +205,7 @@ function CreateTableScreenInner() {
           {t('tables.whatToDo')} *
         </Text>
         <TextInput
-          style={[s.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border, fontFamily: fonts.body }]}
+          style={[s.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border, fontFamily: fonts.body }]}
           value={title}
           onChangeText={setTitle}
           placeholder={t('tables.whatPlaceholder')}
@@ -218,7 +218,7 @@ function CreateTableScreenInner() {
         <Text style={[s.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
           {t('tables.where')}
         </Text>
-        <View style={[s.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[s.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
           <MapPin size={18} color={colors.mutedForeground} />
           <TextInput
             style={[s.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -297,19 +297,19 @@ function CreateTableScreenInner() {
           })}
         </View>
 
-        {/* Submit */}
+        {/* Submit — solid foreground */}
         <Pressable
           onPress={handleSubmit}
           disabled={!canSubmit}
-          style={[s.submitButton, { backgroundColor: canSubmit ? CATEGORY_OPTIONS.find(c => c.key === category)?.color ?? colors.primary : colors.muted }]}
+          style={[s.submitButton, { backgroundColor: canSubmit ? colors.foreground : colors.muted }]}
           accessibilityLabel={t('tables.create')}
           accessibilityRole="button"
           accessibilityState={{ disabled: !canSubmit }}
         >
           {submitting ? (
-            <ActivityIndicator size="small" color="#FFF" />
+            <ActivityIndicator size="small" color={colors.background} />
           ) : (
-            <Text style={[s.submitText, { color: canSubmit ? '#FFF' : colors.mutedForeground, fontFamily: fonts.headingSemi }]}>
+            <Text style={[s.submitText, { color: canSubmit ? colors.background : colors.mutedForeground, fontFamily: fonts.headingSemi }]}>
               {t('tables.create')}
             </Text>
           )}
@@ -347,8 +347,9 @@ const s = StyleSheet.create({
     gap: 4,
   },
   label: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
   },

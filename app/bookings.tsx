@@ -375,7 +375,7 @@ export default function BookingsScreen() {
         onPress={() => router.push(`/booking/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
-        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
+        style={[styles.bookingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
       >
         <View style={styles.cardTop}>
           <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<Package size={24} color={colors.mutedForeground} />} />
@@ -399,12 +399,14 @@ export default function BookingsScreen() {
             )}
           </View>
           <View style={styles.cardRight}>
-            <View style={[styles.statusBadge, { backgroundColor: `${statusColor}18` }]}>
-              <Text style={[styles.statusText, { color: statusColor }]}>
+            {/* Dot + label status indicator */}
+            <View style={styles.statusDotRow}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
                 {t(STATUS_KEYS[item.status])}
               </Text>
             </View>
-            <Text style={[styles.priceText, { color: colors.primary }]}>
+            <Text style={[styles.priceText, { color: colors.foreground }]}>
               {formatPrice(item.total_amount, locale)}
             </Text>
           </View>
@@ -417,14 +419,14 @@ export default function BookingsScreen() {
               <PressableOpacity
                 onPress={() => handleConfirm(item)}
                 disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, { backgroundColor: colors.success }]}
+                style={[styles.actionBtn, { backgroundColor: colors.foreground }]}
               >
                 {isActionLoading(item.id) ? (
-                  <ActivityIndicator size="small" color={colors.primaryForeground} />
+                  <ActivityIndicator size="small" color={colors.background} />
                 ) : (
                   <>
-                    <CheckCircle size={14} color={colors.primaryForeground} />
-                    <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text>
+                    <CheckCircle size={14} color={colors.background} />
+                    <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('rental.confirmBooking')}</Text>
                   </>
                 )}
               </PressableOpacity>
@@ -433,14 +435,14 @@ export default function BookingsScreen() {
               <PressableOpacity
                 onPress={() => handleMarkReturned(item)}
                 disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+                style={[styles.actionBtn, { backgroundColor: colors.foreground }]}
               >
                 {isActionLoading(item.id) ? (
-                  <ActivityIndicator size="small" color={colors.primaryForeground} />
+                  <ActivityIndicator size="small" color={colors.background} />
                 ) : (
                   <>
-                    <RotateCcw size={14} color={colors.primaryForeground} />
-                    <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.returnItem')}</Text>
+                    <RotateCcw size={14} color={colors.background} />
+                    <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('rental.returnItem')}</Text>
                   </>
                 )}
               </PressableOpacity>
@@ -449,7 +451,7 @@ export default function BookingsScreen() {
               <PressableOpacity
                 onPress={() => handleCancel(item)}
                 disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}
+                style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
               >
                 <XCircle size={14} color={colors.destructive} />
                 <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('rental.cancelBooking')}</Text>
@@ -458,10 +460,10 @@ export default function BookingsScreen() {
             {canReview && (
               <PressableOpacity
                 onPress={() => handleLeaveReview(item)}
-                style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}
+                style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
               >
-                <Star size={14} color={colors.pro} />
-                <Text style={[styles.actionBtnText, { color: colors.pro }]}>{t('rental.leaveReview')}</Text>
+                <Star size={14} color={colors.mutedForeground} />
+                <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
               </PressableOpacity>
             )}
           </View>
@@ -491,7 +493,7 @@ export default function BookingsScreen() {
         onPress={() => router.push(`/booking/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
-        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
+        style={[styles.bookingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
       >
         <View style={styles.cardTop}>
           <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<ShoppingBag size={24} color={colors.mutedForeground} />} />
@@ -512,12 +514,14 @@ export default function BookingsScreen() {
             )}
           </View>
           <View style={styles.cardRight}>
-            <View style={[styles.statusBadge, { backgroundColor: `${statusColor}18` }]}>
-              <Text style={[styles.statusText, { color: statusColor }]}>
+            {/* Dot + label status indicator */}
+            <View style={styles.statusDotRow}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
                 {t(STATUS_KEYS[safeStatus])}
               </Text>
             </View>
-            <Text style={[styles.priceText, { color: TARJOAN_COLOR }]}>
+            <Text style={[styles.priceText, { color: colors.foreground }]}>
               {formatPrice(item.total_amount, locale)}
             </Text>
           </View>
@@ -526,32 +530,32 @@ export default function BookingsScreen() {
         {(canConfirm || canStart || canComplete || canCancel || canReview) && (
           <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
             {canConfirm && (
-              <PressableOpacity onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
-                <CheckCircle size={14} color={colors.primaryForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.acceptJob')}</Text>
+              <PressableOpacity onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.foreground }]}>
+                <CheckCircle size={14} color={colors.background} />
+                <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('service.acceptJob')}</Text>
               </PressableOpacity>
             )}
             {canStart && (
-              <PressableOpacity onPress={() => handleServiceStart(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.primary }]}>
-                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
+              <PressableOpacity onPress={() => handleServiceStart(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.foreground }]}>
+                <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('service.startWork')}</Text>
               </PressableOpacity>
             )}
             {canComplete && (
-              <PressableOpacity onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.success }]}>
-                <CheckCircle size={14} color={colors.primaryForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.markDone')}</Text>
+              <PressableOpacity onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.foreground }]}>
+                <CheckCircle size={14} color={colors.background} />
+                <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('service.markDone')}</Text>
               </PressableOpacity>
             )}
             {canCancel && (
-              <PressableOpacity onPress={() => handleServiceCancel(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}>
+              <PressableOpacity onPress={() => handleServiceCancel(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}>
                 <XCircle size={14} color={colors.destructive} />
                 <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('service.cancelBooking')}</Text>
               </PressableOpacity>
             )}
             {canReview && (
-              <PressableOpacity onPress={() => { const id = isBuyer ? item.provider_id : item.buyer_id; router.push(`/profile/${id}` as any) }} style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}>
-                <Star size={14} color={colors.pro} />
-                <Text style={[styles.actionBtnText, { color: colors.pro }]}>{t('rental.leaveReview')}</Text>
+              <PressableOpacity onPress={() => { const id = isBuyer ? item.provider_id : item.buyer_id; router.push(`/profile/${id}` as any) }} style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}>
+                <Star size={14} color={colors.mutedForeground} />
+                <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
               </PressableOpacity>
             )}
           </View>
@@ -598,15 +602,15 @@ export default function BookingsScreen() {
         </PressableOpacity>
       </View>
 
-      {/* Status filter chips */}
-      <View style={styles.statusFilterRow}>
+      {/* Status filter chips — Threads pill pattern */}
+      <View style={[styles.statusFilterRow, { backgroundColor: colors.muted }]}>
         {(['active', 'past'] as const).map(f => (
           <PressableOpacity
             key={f}
             onPress={() => setStatusFilter(f)}
-            style={[styles.statusFilterChip, { backgroundColor: statusFilter === f ? colors.primary : (isDark ? colors.card : colors.muted) }]}
+            style={[styles.statusFilterChip, statusFilter === f && [styles.statusFilterChipActive, { backgroundColor: colors.background }]]}
           >
-            <Text style={[styles.statusFilterText, { color: statusFilter === f ? colors.primaryForeground : colors.mutedForeground }]}>
+            <Text style={[styles.statusFilterText, { color: statusFilter === f ? colors.foreground : colors.mutedForeground }]}>
               {t(`bookings.${f}`)}
             </Text>
           </PressableOpacity>
@@ -683,6 +687,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
+    // transparent bg — no card shadow
   },
   cardTop: {
     flexDirection: 'row',
@@ -733,16 +738,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 8,
   },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+  statusDotRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   statusText: {
     fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    fontFamily: fonts.bodySemi,
+    fontFamily: fonts.body,
     lineHeight: 16,
   },
   priceText: {
@@ -774,14 +782,20 @@ const styles = StyleSheet.create({
   },
   statusFilterRow: {
     flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginVertical: 10,
+    borderRadius: 20,
+    padding: 3,
+    gap: 3,
   },
   statusFilterChip: {
-    paddingHorizontal: 16,
+    flex: 1,
+    alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 17,
+  },
+  statusFilterChipActive: {
+    // background set inline
   },
   statusFilterText: {
     fontSize: 13,
