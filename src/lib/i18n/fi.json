@@ -41,7 +41,11 @@
     "dismiss": "Sulje",
     "done": "Valmis",
     "yesterday": "Eilen",
-    "loadError": "Lataus epäonnistui. Yritä uudelleen."
+    "loadError": "Lataus epäonnistui. Yritä uudelleen.",
+    "by": "käyttäjältä",
+    "continue": "Jatka",
+    "notFound": "Ei löytynyt",
+    "tryAgain": "Yritä uudelleen"
   },
   "nav": {
     "feed": "Koti",
@@ -115,7 +119,9 @@
     "online": "naapurustossasi",
     "postsThisWeek": "tällä viikolla",
     "eventsThisWeek": "tapahtumaa",
-    "activeThisWeek": "aktiivista"
+    "activeThisWeek": "aktiivista",
+    "boosted": "Nostettu",
+    "moreOptions": "Lisää vaihtoehtoja"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
@@ -207,7 +213,9 @@
     "priceContext": "Tyypillinen hinta alueella: {min}–{max}€",
     "beFirstComment": "Ole ensimmäinen kommentoija!",
     "browseCommunityEvents": "Selaa yhteisötapahtumia",
-    "openGallery": "Avaa kuvagalleria"
+    "openGallery": "Avaa kuvagalleria",
+    "liked": "Tykätty",
+    "deleteCommentConfirm": "Poista kommentti?"
   },
   "events": {
     "title": "Tapahtumat",
@@ -354,7 +362,10 @@
     "trending": "Trendaavat",
     "groupChat": "Ryhmächat",
     "openChat": "Avaa chat",
-    "chatMembers": "{count} jäsentä"
+    "chatMembers": "{count} jäsentä",
+    "eventPassed": "Tapahtuma on jo päättynyt",
+    "imageUploadFailed": "Kuvan lataus epäonnistui",
+    "participants": "Osallistujat"
   },
   "activity": {
     "activities": "Porukalla",
@@ -541,7 +552,10 @@
     "attachImage": "Liitä kuva",
     "searchConversations": "Hae keskusteluja",
     "showActive": "Näytä aktiiviset keskustelut",
-    "eventChats": "Tapahtumachatit"
+    "eventChats": "Tapahtumachatit",
+    "unread": "Lukematon",
+    "archiveError": "Arkistointi epäonnistui",
+    "longPressToPinHint": "Paina pitkään kiinnittääksesi"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -683,7 +697,9 @@
     "activitySummary": "Toiminnan yhteenveto",
     "listings": "Ilmoitukset",
     "reviewCountSingular": "arvostelu",
-    "noImages": "Ei kuvia"
+    "noImages": "Ei kuvia",
+    "name": "Nimi",
+    "bioUpdateFailed": "Kuvauksen päivitys epäonnistui"
   },
   "settings": {
     "title": "Asetukset",
@@ -844,7 +860,8 @@
     "sectionPrivacy": "Yksityisyys",
     "sectionNotifications": "Ilmoitukset",
     "sectionAbout": "Tietoja",
-    "sectionDanger": "Vaara-alue"
+    "sectionDanger": "Vaara-alue",
+    "saveFailed": "Tallennus epäonnistui"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -1187,7 +1204,8 @@
     "total": "Yhteensä",
     "notes": "Muistiinpanot",
     "dates": "Päivämäärät",
-    "otherParty": "Toinen osapuoli"
+    "otherParty": "Toinen osapuoli",
+    "viewPost": "Näytä ilmoitus"
   },
   "payment": {
     "success": "Maksu onnistui!",
@@ -1226,7 +1244,8 @@
     "commissionTitle": "Komissiot",
     "commissionInfo": "TackBird veloittaa 10% palvelumaksun kaikista transaktioista. Palveluntarjoaja saa 90% hinnasta.",
     "securityNote": "Maksutiedot käsittelee Stripe. TackBird ei tallenna korttitietojasi.",
-    "startConnect": "Aloita Stripe-yhdistäminen"
+    "startConnect": "Aloita Stripe-yhdistäminen",
+    "subscriptionActivating": "Tilaus aktivoituu…"
   },
   "push": {
     "permissionDenied": "Ilmoituslupa evätty",
@@ -1465,7 +1484,19 @@
     "suggestedTags": "Ehdotetut:",
     "priceRange": "Markkinahinta",
     "median": "mediaani",
-    "demandInsightsLabel": "Naapurustossasi haetaan eniten"
+    "demandInsightsLabel": "Naapurustossasi haetaan eniten",
+    "addPhotos": "Lisää kuvia",
+    "contentBlocked": "Sisältö estetty",
+    "description": "Kuvaus",
+    "endTimeBeforeStart": "Päättymisaika on ennen aloitusta",
+    "eventCreateFailed": "Tapahtuman luonti epäonnistui",
+    "imageTooLarge": "Kuva on liian suuri",
+    "imageUploadFailed": "Kuvan lataus epäonnistui",
+    "invalidMaxCapacity": "Virheellinen maksimimäärä",
+    "invalidTimeFormat": "Virheellinen aikamuoto",
+    "priceCannotBeZero": "Hinta ei voi olla nolla",
+    "rollbackFailed": "Peruutus epäonnistui",
+    "titleRequired": "Otsikko vaaditaan"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -1593,7 +1624,8 @@
     "ended": "Päättynyt",
     "noAdsYet": "Ei mainoksia",
     "noAdsDesc": "Luo ensimmäinen mainoksesi ja tavoita naapurustosi asiakkaat.",
-    "iosPaymentNote": "Mainoskampanjoiden maksu käsitellään Stripe-maksupalvelun kautta."
+    "iosPaymentNote": "Mainoskampanjoiden maksu käsitellään Stripe-maksupalvelun kautta.",
+    "businessRequired": "Yritystili vaaditaan"
   },
   "business": {
     "upgrade": "Yritystili",
@@ -1650,7 +1682,8 @@
     "location": "Sijainti",
     "showOnMap": "Näytä kartalla",
     "hours": "Aukioloajat",
-    "noImages": "Ei kuvia"
+    "noImages": "Ei kuvia",
+    "verified": "Vahvistettu"
   },
   "search": {
     "placeholder": "Hae ilmoituksia...",
@@ -1750,7 +1783,8 @@
     "placeSaved": "Paikka tallennettu",
     "placeUnsaved": "Paikka poistettu tallennetuista",
     "removed": "Ilmoitus poistettu tallennetuista",
-    "openInMaps": "Avaa kartassa"
+    "openInMaps": "Avaa kartassa",
+    "unsave": "Poista tallennetuista"
   },
   "error": {
     "pageLoadFailed": "Sivua ei voitu ladata",
@@ -2416,7 +2450,8 @@
     "noMorePosts": "Ei enempää keskusteluja",
     "newestFirst": "Uusin ensin",
     "oldestFirst": "Vanhin ensin",
-    "beFirstReply": "Vastaa ensimmäisenä"
+    "beFirstReply": "Vastaa ensimmäisenä",
+    "create": "Luo keskustelu"
   },
   "about": {
     "title": "Tietoja",
@@ -2606,7 +2641,8 @@
     "markedComplete": "Palvelu merkitty suoritetuksi! Rahat vapautetaan pian.",
     "cancelBooking": "Peru varaus",
     "cancelConfirm": "Haluatko varmasti perua tämän palveluvarauksen?",
-    "statusInProgress": "Käynnissä"
+    "statusInProgress": "Käynnissä",
+    "updateFailed": "Päivitys epäonnistui"
   },
   "verification": {
     "successTitle": "Henkilöllisyys vahvistettu!",

@@ -41,7 +41,11 @@
     "dismiss": "Dismiss",
     "done": "Done",
     "yesterday": "Yesterday",
-    "loadError": "Failed to load. Tap to retry."
+    "loadError": "Failed to load. Tap to retry.",
+    "by": "by",
+    "continue": "Continue",
+    "notFound": "Not found",
+    "tryAgain": "Try again"
   },
   "nav": {
     "feed": "Home",
@@ -115,7 +119,9 @@
     "online": "in your neighborhood",
     "postsThisWeek": "this week",
     "eventsThisWeek": "events",
-    "activeThisWeek": "active"
+    "activeThisWeek": "active",
+    "boosted": "Boosted",
+    "moreOptions": "More options"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",
@@ -207,7 +213,9 @@
     "priceContext": "Typical price in area: {min}–{max}€",
     "beFirstComment": "Be the first to comment!",
     "browseCommunityEvents": "Browse community events",
-    "openGallery": "Open image gallery"
+    "openGallery": "Open image gallery",
+    "liked": "Liked",
+    "deleteCommentConfirm": "Delete comment?"
   },
   "events": {
     "title": "Events",
@@ -354,7 +362,10 @@
     "trending": "Trending",
     "groupChat": "Group Chat",
     "openChat": "Open chat",
-    "chatMembers": "{count} members"
+    "chatMembers": "{count} members",
+    "eventPassed": "Event has passed",
+    "imageUploadFailed": "Image upload failed",
+    "participants": "Participants"
   },
   "activity": {
     "activities": "Together",
@@ -541,7 +552,10 @@
     "attachImage": "Attach image",
     "searchConversations": "Search conversations",
     "showActive": "Show active conversations",
-    "eventChats": "Event Chats"
+    "eventChats": "Event Chats",
+    "unread": "Unread",
+    "archiveError": "Archiving failed",
+    "longPressToPinHint": "Long press to pin"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -683,7 +697,9 @@
     "activitySummary": "Activity summary",
     "listings": "Listings",
     "reviewCountSingular": "review",
-    "noImages": "No images"
+    "noImages": "No images",
+    "name": "Name",
+    "bioUpdateFailed": "Bio update failed"
   },
   "settings": {
     "title": "Settings",
@@ -844,7 +860,8 @@
     "sectionPrivacy": "Privacy",
     "sectionNotifications": "Notifications",
     "sectionAbout": "About",
-    "sectionDanger": "Danger zone"
+    "sectionDanger": "Danger zone",
+    "saveFailed": "Save failed"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -1187,7 +1204,8 @@
     "total": "Total",
     "notes": "Notes",
     "dates": "Dates",
-    "otherParty": "Other party"
+    "otherParty": "Other party",
+    "viewPost": "View post"
   },
   "payment": {
     "success": "Payment successful!",
@@ -1226,7 +1244,8 @@
     "commissionTitle": "Commissions",
     "commissionInfo": "TackBird charges a 10% service fee on all transactions. The provider receives 90% of the price.",
     "securityNote": "Payment data is handled by Stripe. TackBird does not store your card details.",
-    "startConnect": "Start Stripe setup"
+    "startConnect": "Start Stripe setup",
+    "subscriptionActivating": "Subscription activating…"
   },
   "push": {
     "permissionDenied": "Notification permission denied",
@@ -1465,7 +1484,19 @@
     "suggestedTags": "Suggested:",
     "priceRange": "Market price",
     "median": "median",
-    "demandInsightsLabel": "Most wanted in your neighborhood"
+    "demandInsightsLabel": "Most wanted in your neighborhood",
+    "addPhotos": "Add photos",
+    "contentBlocked": "Content blocked",
+    "description": "Description",
+    "endTimeBeforeStart": "End time is before start",
+    "eventCreateFailed": "Event creation failed",
+    "imageTooLarge": "Image too large",
+    "imageUploadFailed": "Image upload failed",
+    "invalidMaxCapacity": "Invalid max capacity",
+    "invalidTimeFormat": "Invalid time format",
+    "priceCannotBeZero": "Price cannot be zero",
+    "rollbackFailed": "Rollback failed",
+    "titleRequired": "Title required"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -1593,7 +1624,8 @@
     "ended": "Ended",
     "noAdsYet": "No ads yet",
     "noAdsDesc": "Create your first ad and reach customers in your neighborhood.",
-    "iosPaymentNote": "Ad campaign payments are processed via Stripe payment service."
+    "iosPaymentNote": "Ad campaign payments are processed via Stripe payment service.",
+    "businessRequired": "Business account required"
   },
   "business": {
     "upgrade": "Business account",
@@ -1650,7 +1682,8 @@
     "location": "Location",
     "showOnMap": "Show on map",
     "hours": "Business Hours",
-    "noImages": "No images"
+    "noImages": "No images",
+    "verified": "Verified"
   },
   "search": {
     "placeholder": "Search posts...",
@@ -1750,7 +1783,8 @@
     "placeSaved": "Place saved",
     "placeUnsaved": "Place removed from saved",
     "removed": "Post removed from saved",
-    "openInMaps": "Open in Maps"
+    "openInMaps": "Open in Maps",
+    "unsave": "Unsave"
   },
   "error": {
     "pageLoadFailed": "Page could not be loaded",
@@ -2416,7 +2450,8 @@
     "noMorePosts": "No more discussions",
     "newestFirst": "Newest first",
     "oldestFirst": "Oldest first",
-    "beFirstReply": "Be the first to reply"
+    "beFirstReply": "Be the first to reply",
+    "create": "Create discussion"
   },
   "about": {
     "title": "About",
@@ -2606,7 +2641,8 @@
     "markedComplete": "Service marked complete! Funds will be released soon.",
     "cancelBooking": "Cancel booking",
     "cancelConfirm": "Are you sure you want to cancel this service booking?",
-    "statusInProgress": "In progress"
+    "statusInProgress": "In progress",
+    "updateFailed": "Update failed"
   },
   "verification": {
     "successTitle": "Identity verified!",

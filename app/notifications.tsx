@@ -301,6 +301,17 @@ function NotificationsScreenInner() {
   const sections = useMemo(() => groupByTime(filtered, t), [filtered, t])
   const unreadCount = notifications.filter(n => !n.is_read).length
 
+  // Per-filter unread counts — shows the user which tab needs attention
+  const unreadByFilter = useMemo(() => {
+    const counts: Record<string, number> = { all: unreadCount }
+    for (const n of notifications) {
+      if (n.is_read) continue
+      const f = getFilterForType(n.type)
+      counts[f] = (counts[f] ?? 0) + 1
+    }
+    return counts
+  }, [notifications, unreadCount])
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -322,30 +333,45 @@ function NotificationsScreenInner() {
         )}
       </View>
 
-      {/* Filter tabs */}
+      {/* Filter tabs with per-filter unread counts */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} contentContainerStyle={styles.filterRow}>
-        {FILTERS.map((f) => (
-          <PressableOpacity
-            key={f.key}
-            onPress={() => setActiveFilter(f.key)}
-            accessibilityRole="button"
-            accessibilityLabel={t(f.label)}
-            accessibilityState={{ selected: activeFilter === f.key }}
-            style={[
-              styles.filterChip,
-              activeFilter === f.key
-                ? { backgroundColor: colors.primary }
-                : { backgroundColor: isDark ? colors.card : colors.muted },
-            ]}
-          >
-            <Text style={[
-              styles.filterText,
-              { color: activeFilter === f.key ? colors.primaryForeground : colors.mutedForeground },
-            ]}>
-              {t(f.label)}
-            </Text>
-          </PressableOpacity>
-        ))}
+        {FILTERS.map((f) => {
+          const isActive = activeFilter === f.key
+          const count = unreadByFilter[f.key] ?? 0
+          return (
+            <PressableOpacity
+              key={f.key}
+              onPress={() => setActiveFilter(f.key)}
+              accessibilityRole="button"
+              accessibilityLabel={count > 0 ? `${t(f.label)} (${count} uutta)` : t(f.label)}
+              accessibilityState={{ selected: isActive }}
+              style={[
+                styles.filterChip,
+                isActive
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: isDark ? colors.card : colors.muted },
+              ]}
+            >
+              <Text style={[
+                styles.filterText,
+                { color: isActive ? colors.primaryForeground : colors.mutedForeground },
+              ]}>
+                {t(f.label)}
+              </Text>
+              {count > 0 && (
+                <View style={[
+                  styles.filterBadge,
+                  { backgroundColor: isActive ? colors.primaryForeground + '33' : colors.primary },
+                ]}>
+                  <Text style={[
+                    styles.filterBadgeText,
+                    { color: isActive ? colors.primaryForeground : colors.primaryForeground },
+                  ]}>{count > 99 ? '99+' : count}</Text>
+                </View>
+              )}
+            </PressableOpacity>
+          )
+        })}
       </ScrollView>
 
       {fetchError && !loading && (
@@ -506,8 +532,10 @@ const styles = StyleSheet.create({
   markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   markAllReadText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
+  filterChip: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, minHeight: 36, justifyContent: 'center' as const },
   filterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
+  filterBadge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, alignItems: 'center' as const, justifyContent: 'center' as const },
+  filterBadgeText: { fontSize: 11, fontWeight: '700' as const, fontFamily: fonts.bodySemi, lineHeight: 13 },
   sectionHeader: { paddingHorizontal: 16, paddingVertical: 8 },
   sectionTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 17 },
   notifRow: {

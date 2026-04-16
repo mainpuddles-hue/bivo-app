@@ -364,13 +364,13 @@ function FeedScreenInner() {
         <PressableOpacity
           onPress={feed.handleRefresh}
           accessibilityRole="button"
-          accessibilityLabel={`${feed.error}. ${t('common.tryAgain')}`}
+          accessibilityLabel={`${feed.error}. ${t('errors.tryAgain')}`}
           style={[styles.errorRow, { backgroundColor: `${colors.destructive}10`, borderWidth: 1, borderColor: `${colors.destructive}30` }]}
         >
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={[styles.errorRowText, { color: colors.destructive }]} numberOfLines={1}>{feed.error}</Text>
           <Text style={[styles.errorRowText, { color: colors.destructive, fontFamily: fonts.bodySemi, textDecorationLine: 'underline' }]}>
-            {t('common.tryAgain')}
+            {t('errors.tryAgain')}
           </Text>
         </PressableOpacity>
       )}

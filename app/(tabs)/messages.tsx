@@ -9,7 +9,7 @@ import { PressableOpacity } from '@/components/ui'
 import { LinearGradient } from 'expo-linear-gradient'
 import { gradients } from '@/lib/theme'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare, MoreHorizontal, RefreshCw } from 'lucide-react-native'
+import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare, MoreHorizontal, RefreshCw, ArrowLeftRight } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { Avatar } from '@/components/Avatar'
@@ -58,8 +58,20 @@ export default function MessagesScreen() {
   const [pinnedIds, setPinnedIds] = useState<string[]>([])
   const [eventChats, setEventChats] = useState<EventChatItem[]>([])
   const [fetchError, setFetchError] = useState(false)
+  const [showSwipeHint, setShowSwipeHint] = useState(false)
   const mountedRef = useRef(true)
   useEffect(() => { return () => { mountedRef.current = false } }, [])
+
+  useEffect(() => {
+    AsyncStorage.getItem('messages_swipe_hint_dismissed').then(v => {
+      if (v !== 'true') setShowSwipeHint(true)
+    })
+  }, [])
+
+  const dismissSwipeHint = useCallback(() => {
+    setShowSwipeHint(false)
+    AsyncStorage.setItem('messages_swipe_hint_dismissed', 'true').catch(() => {})
+  }, [])
   const conversationsRef = useRef(conversations)
   conversationsRef.current = conversations
   // Fast client-side filter for realtime events — avoids refetching when
@@ -452,6 +464,28 @@ export default function MessagesScreen() {
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
         </PressableOpacity>
+      )}
+
+      {showSwipeHint && filtered.length > 0 && (
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          backgroundColor: `${colors.primary}10`,
+          marginHorizontal: 16,
+          marginBottom: 8,
+          borderRadius: 12,
+        }}>
+          <ArrowLeftRight size={14} color={colors.primary} />
+          <Text style={{ flex: 1, fontSize: 12, color: colors.foreground, fontFamily: fonts.body }}>
+            Pyyhkäise sivusuunnassa arkistoidaksesi tai pinnataksesi keskustelu
+          </Text>
+          <PressableOpacity onPress={dismissSwipeHint} hitSlop={8}>
+            <X size={14} color={colors.mutedForeground} />
+          </PressableOpacity>
+        </View>
       )}
 
       <FlatList

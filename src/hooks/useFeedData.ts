@@ -30,6 +30,23 @@ export function useFeedData() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
+
+  // On first mount, apply user's onboarding purpose preference as initial filter.
+  // If they picked exactly one purpose, pre-filter the feed to it. Multiple =
+  // keep "all" (they have varied interests). User can always change.
+  useEffect(() => {
+    let mounted = true
+    AsyncStorage.getItem('onboarding_purposes').then(raw => {
+      if (!mounted || !raw) return
+      try {
+        const purposes = JSON.parse(raw) as string[]
+        if (Array.isArray(purposes) && purposes.length === 1) {
+          setActiveFilter(purposes[0] as PostType)
+        }
+      } catch {}
+    }).catch(() => {})
+    return () => { mounted = false }
+  }, [])
   const [sortBy, setSortBy] = useState<FeedSortBy>('recommended')
   const [hasMore, setHasMore] = useState(true)
   const [hasNewPosts, setHasNewPosts] = useState(false)

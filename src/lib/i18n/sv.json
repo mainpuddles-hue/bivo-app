@@ -41,7 +41,11 @@
     "dismiss": "Stäng",
     "done": "Klar",
     "yesterday": "Igår",
-    "loadError": "Kunde inte ladda. Tryck för att försöka igen."
+    "loadError": "Kunde inte ladda. Tryck för att försöka igen.",
+    "by": "av",
+    "continue": "Fortsätt",
+    "notFound": "Hittades inte",
+    "tryAgain": "Försök igen"
   },
   "nav": {
     "feed": "Hem",
@@ -115,7 +119,9 @@
     "online": "i ditt grannskap",
     "postsThisWeek": "denna vecka",
     "eventsThisWeek": "evenemang",
-    "activeThisWeek": "aktiva"
+    "activeThisWeek": "aktiva",
+    "boosted": "Framhävt",
+    "moreOptions": "Fler alternativ"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",
@@ -207,7 +213,9 @@
     "priceContext": "Typiskt pris i området: {min}–{max}€",
     "beFirstComment": "Bli den första att kommentera!",
     "browseCommunityEvents": "Bläddra bland gemenskapens evenemang",
-    "openGallery": "Öppna bildgalleri"
+    "openGallery": "Öppna bildgalleri",
+    "liked": "Gillat",
+    "deleteCommentConfirm": "Ta bort kommentar?"
   },
   "events": {
     "title": "Evenemang",
@@ -336,7 +344,10 @@
     "groupChat": "Gruppchatt",
     "openChat": "Öppna chatt",
     "chatMembers": "{count} medlemmar",
-    "joinFailed": "Det gick inte att gå med i evenemanget"
+    "joinFailed": "Det gick inte att gå med i evenemanget",
+    "eventPassed": "Evenemanget har passerat",
+    "imageUploadFailed": "Bildladdning misslyckades",
+    "participants": "Deltagare"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -522,7 +533,10 @@
     "attachImage": "Bifoga bild",
     "searchConversations": "Sök konversationer",
     "showActive": "Visa aktiva konversationer",
-    "eventChats": "Eventchattar"
+    "eventChats": "Eventchattar",
+    "unread": "Oläst",
+    "archiveError": "Arkivering misslyckades",
+    "longPressToPinHint": "Tryck länge för att fästa"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -664,7 +678,9 @@
     "activitySummary": "Aktivitetssammanfattning",
     "listings": "Annonser",
     "reviewCountSingular": "recension",
-    "noImages": "Inga bilder"
+    "noImages": "Inga bilder",
+    "name": "Namn",
+    "bioUpdateFailed": "Biografi uppdatering misslyckades"
   },
   "settings": {
     "title": "Inställningar",
@@ -825,7 +841,8 @@
     "sectionPrivacy": "Integritet",
     "sectionNotifications": "Aviseringar",
     "sectionAbout": "Om",
-    "sectionDanger": "Farozon"
+    "sectionDanger": "Farozon",
+    "saveFailed": "Sparning misslyckades"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -1138,7 +1155,8 @@
     "total": "Totalt",
     "notes": "Anteckningar",
     "dates": "Datum",
-    "otherParty": "Motpart"
+    "otherParty": "Motpart",
+    "viewPost": "Visa inlägg"
   },
   "payment": {
     "success": "Betalning lyckades!",
@@ -1177,7 +1195,8 @@
     "commissionTitle": "Provisioner",
     "commissionInfo": "TackBird tar ut en 10% serviceavgift på alla transaktioner. Leverantören får 90% av priset.",
     "securityNote": "Betalningsdata hanteras av Stripe. TackBird lagrar inte dina kortuppgifter.",
-    "startConnect": "Starta Stripe-anslutning"
+    "startConnect": "Starta Stripe-anslutning",
+    "subscriptionActivating": "Prenumeration aktiveras…"
   },
   "push": {
     "permissionDenied": "Aviseringsbehörighet nekad",
@@ -1416,7 +1435,19 @@
     "suggestedTags": "Föreslagna:",
     "priceRange": "Marknadspris",
     "median": "median",
-    "demandInsightsLabel": "Mest eftersökt i ditt grannskap"
+    "demandInsightsLabel": "Mest eftersökt i ditt grannskap",
+    "addPhotos": "Lägg till foton",
+    "contentBlocked": "Innehåll blockerat",
+    "description": "Beskrivning",
+    "endTimeBeforeStart": "Sluttid är före starttid",
+    "eventCreateFailed": "Skapande av evenemang misslyckades",
+    "imageTooLarge": "Bilden är för stor",
+    "imageUploadFailed": "Bildladdning misslyckades",
+    "invalidMaxCapacity": "Ogiltig maximal kapacitet",
+    "invalidTimeFormat": "Ogiltigt tidsformat",
+    "priceCannotBeZero": "Priset kan inte vara noll",
+    "rollbackFailed": "Återställning misslyckades",
+    "titleRequired": "Titel krävs"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -1544,7 +1575,8 @@
     "ended": "Avslutad",
     "noAdsYet": "Inga annonser ännu",
     "noAdsDesc": "Skapa din första annons och nå kunder i ditt grannskap.",
-    "iosPaymentNote": "Annonskampanjbetalningar behandlas via Stripe-betaltjänsten."
+    "iosPaymentNote": "Annonskampanjbetalningar behandlas via Stripe-betaltjänsten.",
+    "businessRequired": "Företagskonto krävs"
   },
   "business": {
     "upgrade": "Företagskonto",
@@ -1601,7 +1633,8 @@
     "location": "Plats",
     "showOnMap": "Visa på karta",
     "hours": "Öppettider",
-    "noImages": "Inga bilder"
+    "noImages": "Inga bilder",
+    "verified": "Verifierad"
   },
   "search": {
     "placeholder": "Sök inlägg...",
@@ -1701,7 +1734,8 @@
     "placeSaved": "Plats sparad",
     "placeUnsaved": "Plats borttagen från sparade",
     "removed": "Inlägg borttaget från sparade",
-    "openInMaps": "Öppna i kartor"
+    "openInMaps": "Öppna i kartor",
+    "unsave": "Ta bort"
   },
   "error": {
     "pageLoadFailed": "Sidan kunde inte laddas",
@@ -2367,7 +2401,8 @@
     "noMorePosts": "Inga fler diskussioner",
     "newestFirst": "Nyaste först",
     "oldestFirst": "Äldst först",
-    "beFirstReply": "Bli den första att svara"
+    "beFirstReply": "Bli den första att svara",
+    "create": "Skapa diskussion"
   },
   "about": {
     "title": "Om",
@@ -2557,7 +2592,8 @@
     "markedComplete": "Tjänsten markerad som klar! Pengarna frigörs snart.",
     "cancelBooking": "Avboka",
     "cancelConfirm": "Är du säker på att du vill avboka denna tjänstbokning?",
-    "statusInProgress": "Pågår"
+    "statusInProgress": "Pågår",
+    "updateFailed": "Uppdatering misslyckades"
   },
   "verification": {
     "successTitle": "Identitet verifierad!",
