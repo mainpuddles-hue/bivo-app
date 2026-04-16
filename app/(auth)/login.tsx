@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
-import { gradients } from '@/lib/theme'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -334,15 +332,9 @@ function LoginScreenInner() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <LinearGradient
-        colors={isDark ? gradients.loginDark : gradients.loginLight}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 40 }]}
         keyboardShouldPersistTaps="handled"
       >
@@ -351,18 +343,14 @@ function LoginScreenInner() {
           <View style={[styles.logoBigCircle, { backgroundColor: colors.primary }]}>
             <TackBirdLogo size={40} color={colors.primaryForeground} />
           </View>
-          <Text style={[styles.appName, { color: colors.primary }]}>TACKBIRD</Text>
-          <Text style={[styles.tagline, { color: colors.mutedForeground }]}>
-            {t('events.heroTitle')}
-          </Text>
         </View>
 
         {/* Mode toggle */}
             {mode !== 'forgot' && (
-              <View style={[styles.modeToggle, { backgroundColor: colors.muted }]}>
+              <View style={[styles.modeToggle, { borderBottomColor: colors.border }]}>
                 <PressableOpacity
                   onPress={() => setMode('login')}
-                  style={[styles.modeBtn, mode === 'login' && { backgroundColor: colors.card, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }]}
+                  style={[styles.modeBtn, mode === 'login' && { borderBottomWidth: 2, borderBottomColor: colors.foreground }]}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: mode === 'login' }}
                   accessibilityLabel={t('auth.login')}
@@ -373,7 +361,7 @@ function LoginScreenInner() {
                 </PressableOpacity>
                 <PressableOpacity
                   onPress={() => setMode('register')}
-                  style={[styles.modeBtn, mode === 'register' && { backgroundColor: colors.card, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }]}
+                  style={[styles.modeBtn, mode === 'register' && { borderBottomWidth: 2, borderBottomColor: colors.foreground }]}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: mode === 'register' }}
                   accessibilityLabel={t('auth.register')}
@@ -405,7 +393,7 @@ function LoginScreenInner() {
             {mode !== 'forgot' && (
               <PressableOpacity
                 onPress={handleGoogleOAuth}
-                style={[styles.googleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[styles.googleBtn, { backgroundColor: 'transparent', borderColor: colors.border }]}
                 accessibilityRole="button"
                 accessibilityLabel={t('auth.signInWithGoogle')}
               >
@@ -437,7 +425,7 @@ function LoginScreenInner() {
             <View style={styles.form}>
               {mode === 'register' && (
                 <TextInput
-                  style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                  style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: 'transparent' }]}
                   value={name}
                   onChangeText={setName}
                   placeholder={t('auth.namePlaceholder')}
@@ -449,7 +437,7 @@ function LoginScreenInner() {
                 />
               )}
               <TextInput
-                style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: 'transparent' }]}
                 value={email}
                 onChangeText={setEmail}
                 placeholder={t('auth.emailPlaceholder')}
@@ -464,7 +452,7 @@ function LoginScreenInner() {
               {mode !== 'forgot' && (
                 <View>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border, paddingRight: 48 }]}
+                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: 'transparent', paddingRight: 48 }]}
                     value={password}
                     onChangeText={setPassword}
                     placeholder={t('auth.passwordPlaceholder')}
@@ -542,14 +530,14 @@ function LoginScreenInner() {
               <PressableOpacity
                 onPress={handleSubmit}
                 disabled={loading || (mode === 'register' && !termsAccepted)}
-                style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: (loading || (mode === 'register' && !termsAccepted)) ? 0.6 : 1 }]}
+                style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: (loading || (mode === 'register' && !termsAccepted)) ? 0.5 : 1 }]}
                 accessibilityRole="button"
                 accessibilityLabel={mode === 'forgot' ? t('auth.sendResetLink') : mode === 'login' ? t('auth.login') : t('auth.register')}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color={colors.primaryForeground} />
+                  <ActivityIndicator size="small" color={colors.background} />
                 ) : (
-                  <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
+                  <Text style={[styles.submitText, { color: colors.background }]}>
                     {mode === 'forgot' ? t('auth.sendResetLink') : mode === 'login' ? t('auth.login') : t('auth.register')}
                   </Text>
                 )}
@@ -568,7 +556,7 @@ function LoginScreenInner() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
+  container: { flex: 1 },
   content: { paddingHorizontal: 24, paddingBottom: 64 },
   logoSection: { alignItems: 'center', gap: 12, marginBottom: 32 },
   logoBigCircle: {
@@ -578,9 +566,9 @@ const styles = StyleSheet.create({
   appName: { fontSize: 18, lineHeight: 24, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
   tagline: { fontSize: 16, lineHeight: 22, textAlign: 'center', fontFamily: fonts.bodyMedium },
   modeToggle: {
-    flexDirection: 'row', borderRadius: 16, padding: 4, marginBottom: 16,
+    flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 16,
   },
-  modeBtn: { flex: 1, paddingVertical: 12, borderRadius: 16, alignItems: 'center', minHeight: 44 },
+  modeBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', minHeight: 44 },
   modeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   // AppleAuthenticationButton manages its own backgroundColor and borderRadius;
   // we only set dimensions and margin.
@@ -597,7 +585,7 @@ const styles = StyleSheet.create({
   forgotHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   form: { gap: 12 },
   input: {
-    borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
+    borderWidth: 0, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
     fontSize: 14, lineHeight: 20, minHeight: 48, fontFamily: fonts.body,
   },
   eyeBtn: { position: 'absolute', right: 4, top: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },

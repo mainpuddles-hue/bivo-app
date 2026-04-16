@@ -97,7 +97,7 @@ function DiscoveryView({
         <View style={s.section}>
           <View style={s.sectionHeader}>
             <Clock size={16} color={colors.mutedForeground} />
-            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.recentSearches')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>{t('search.recentSearches')}</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
             {history.map((h) => (
@@ -128,12 +128,12 @@ function DiscoveryView({
         <View style={s.section}>
           <View style={s.sectionHeader}>
             <Star size={16} color={colors.mutedForeground} />
-            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.savedSearches')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>{t('search.savedSearches')}</Text>
           </View>
           {savedSearches.map((saved) => {
             const savedFilterCount = countActiveFilters(saved.filters)
             return (
-              <View key={saved.id} style={s.historyRow}>
+              <View key={saved.id} style={[s.historyRow, { borderBottomColor: colors.border }]}>
                 <PressableOpacity
                   onPress={() => loadSavedSearch(saved)}
                   style={s.historyBtn}
@@ -161,7 +161,7 @@ function DiscoveryView({
       <View style={s.section}>
         <View style={s.sectionHeader}>
           <TrendingUp size={16} color={colors.mutedForeground} />
-          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.trending')}</Text>
+          <Text style={[s.sectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>{t('search.trending')}</Text>
         </View>
         {trendingPosts.length === 0 ? (
           <Text style={[s.hintText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noTrending')}</Text>
@@ -173,13 +173,10 @@ function DiscoveryView({
                 <PressableOpacity
                   key={tp.id}
                   onPress={() => router.push(`/post/${tp.id}` as any)}
-                  style={[s.trendingCard, { backgroundColor: colors.card }]}
+                  style={[s.trendingCard, { borderBottomColor: colors.border }]}
                   accessibilityRole="button"
                   accessibilityLabel={tp.title}
                 >
-                  {tpCat && (
-                    <View style={[s.trendingDot, { backgroundColor: tpCat.color }]} />
-                  )}
                   <View style={{ flex: 1 }}>
                     <Text style={[s.trendingTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={1}>{tp.title}</Text>
                     {tpCat && <Text style={[s.trendingCat, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t(tpCat.label)}</Text>}
@@ -200,7 +197,7 @@ function DiscoveryView({
         <View style={s.section}>
           <View style={s.sectionHeader}>
             <TrendingUp size={16} color={colors.primary} />
-            <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.demandInsightsTitle')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>{t('search.demandInsightsTitle')}</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
             {demandInsights.map((d) => (
@@ -224,7 +221,7 @@ function DiscoveryView({
       <View style={s.section}>
         <View style={s.sectionHeader}>
           <LayoutGrid size={16} color={colors.mutedForeground} />
-          <Text style={[s.sectionTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.browseByCategory')}</Text>
+          <Text style={[s.sectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>{t('search.browseByCategory')}</Text>
         </View>
         <View style={s.categoryGrid}>
           {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
@@ -241,12 +238,12 @@ function DiscoveryView({
                   setQuery(t(cat.label))
                   executeSearch(t(cat.label), undefined, type)
                 }}
-                style={[s.categoryCard, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}
+                style={[s.categoryCard, { borderBottomColor: colors.border }]}
                 accessibilityRole="button"
                 accessibilityLabel={t(cat.label)}
               >
-                <View style={[s.categoryIconBox, { backgroundColor: `${cat.color}20` }]}>
-                  {CatIcon && <CatIcon size={22} color={cat.color} />}
+                <View style={[s.categoryIconBox, { backgroundColor: `${cat.color}15` }]}>
+                  {CatIcon && <CatIcon size={20} color={cat.color} />}
                 </View>
                 <Text style={[s.categoryCardText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t(cat.label)}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} style={{ marginLeft: 'auto' }} />
@@ -884,7 +881,7 @@ function SearchScreenInner() {
         <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={24} color={colors.foreground} />
         </PressableOpacity>
-        <View style={[s.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[s.searchBar, { backgroundColor: colors.muted, borderColor: 'transparent' }]}>
           <SearchIcon size={18} color={colors.mutedForeground} />
           <TextInput
             style={[s.searchInput, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -1284,7 +1281,7 @@ const s = StyleSheet.create({
   },
   searchBar: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, height: 48,
+    borderWidth: 0, borderRadius: 14, paddingHorizontal: 16, height: 48,
   },
   searchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   filterButton: { position: 'relative', padding: 4 },
@@ -1317,7 +1314,7 @@ const s = StyleSheet.create({
   discovery: { padding: 16, gap: 24, paddingBottom: 100 },
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
+  sectionTitle: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.5 },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -1325,18 +1322,18 @@ const s = StyleSheet.create({
     borderWidth: 1,
   },
   recentChipText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-  historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
+  historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
   historyText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   savedFilterHint: { fontSize: 11, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
   hintText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  categoryGrid: { gap: 8 },
+  categoryGrid: { gap: 0 },
   categoryCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 16, borderRadius: 16,
+    paddingHorizontal: 0, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   categoryIconBox: {
-    width: 44, height: 44, borderRadius: 16,
+    width: 36, height: 36, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center',
   },
   categoryCardText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
@@ -1354,10 +1351,10 @@ const s = StyleSheet.create({
   userNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   resultCountRow: { paddingHorizontal: 16, paddingVertical: 8 },
   resultCountText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 18 },
-  trendingList: { gap: 8 },
+  trendingList: { gap: 0 },
   trendingCard: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16,
+    paddingHorizontal: 0, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   trendingDot: { width: 10, height: 10, borderRadius: 5 },
   trendingTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },

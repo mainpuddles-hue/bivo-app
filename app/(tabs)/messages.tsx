@@ -6,8 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
-import { LinearGradient } from 'expo-linear-gradient'
-import { gradients } from '@/lib/theme'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare, MoreHorizontal, RefreshCw, ArrowLeftRight } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -41,7 +39,7 @@ function MessageItemSeparator() {
   const { colors } = useTheme()
   return <View style={[separatorStyle, { backgroundColor: colors.border }]} />
 }
-const separatorStyle = { height: StyleSheet.hairlineWidth, marginLeft: 76 } as const
+const separatorStyle = { height: StyleSheet.hairlineWidth, marginLeft: 72 } as const
 
 export default function MessagesScreen() {
   const { colors, isDark } = useTheme()
@@ -473,17 +471,15 @@ export default function MessagesScreen() {
           gap: 8,
           paddingHorizontal: 16,
           paddingVertical: 10,
-          backgroundColor: `${colors.primary}10`,
-          marginHorizontal: 16,
-          marginBottom: 8,
-          borderRadius: 12,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: colors.border,
         }}>
-          <ArrowLeftRight size={14} color={colors.primary} />
-          <Text style={{ flex: 1, fontSize: 12, color: colors.foreground, fontFamily: fonts.body }}>
+          <ArrowLeftRight size={13} color={colors.mutedForeground} />
+          <Text style={{ flex: 1, fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
             Pyyhkäise sivusuunnassa arkistoidaksesi tai pinnataksesi keskustelu
           </Text>
           <PressableOpacity onPress={dismissSwipeHint} hitSlop={8}>
-            <X size={14} color={colors.mutedForeground} />
+            <X size={13} color={colors.mutedForeground} />
           </PressableOpacity>
         </View>
       )}
@@ -585,45 +581,45 @@ export default function MessagesScreen() {
             <PressableOpacity
               onPress={() => router.push(`/messages/${item.id}`)}
               onLongPress={() => handleTogglePin(item.id)}
-              style={[styles.convRow, { backgroundColor: colors.background }, unread > 0 && { borderLeftWidth: 3, borderLeftColor: colors.primary }]}
+              style={[styles.convRow, { backgroundColor: colors.background }]}
               accessibilityRole="button"
               accessibilityLabel={`${other?.name ?? t('messages.unknownUser')}${unread > 0 ? `, ${unread} ${t('messages.unread') ?? 'unread'}` : ''}${isPinned ? `, ${t('messages.pinned') ?? 'pinned'}` : ''}`}
               accessibilityHint={t('messages.longPressToPinHint') ?? 'Long press to pin or unpin'}
             >
               <View style={styles.avatarWrap}>
-                <Avatar url={other?.avatar_url} name={other?.name} size={48} borderColor={unread > 0 ? colors.primary : undefined} borderWidth={unread > 0 ? 2 : undefined} />
+                <Avatar url={other?.avatar_url} name={other?.name} size={44} />
                 {online && <View style={[styles.onlineDot, { borderColor: colors.background, backgroundColor: colors.success }]} accessibilityLabel={t('messages.online')} />}
               </View>
               <View style={styles.convContent}>
                 <View style={styles.convNameRow}>
-                  {isPinned && <Pin size={12} color={colors.primary} />}
-                  <Text style={[styles.convName, { color: colors.foreground }, unread > 0 && { fontWeight: '700' }]} numberOfLines={1}>
+                  {isPinned && <Pin size={12} color={colors.mutedForeground} />}
+                  <Text style={[styles.convName, { color: colors.foreground }]} numberOfLines={1}>
                     {other?.name ?? t('messages.unknownUser')}
                   </Text>
                 </View>
                 <View style={styles.previewRow}>
-                  {isMySent && lastMsg?.is_read && <CheckCheck size={14} color={colors.primary} />}
+                  {isMySent && lastMsg?.is_read && <CheckCheck size={13} color={colors.mutedForeground} />}
                   {isImageMsg ? (
                     <View style={styles.imgPreview}>
-                      <ImageIcon size={12} color={unread > 0 ? colors.foreground : colors.mutedForeground} />
-                      <Text style={[styles.convPreview, { color: unread > 0 ? colors.foreground : colors.mutedForeground }]}>{t('messages.imageMessage')}</Text>
+                      <ImageIcon size={12} color={colors.mutedForeground} />
+                      <Text style={[styles.convPreview, { color: colors.mutedForeground }]}>{t('messages.imageMessage')}</Text>
                     </View>
                   ) : (
-                    <Text style={[styles.convPreview, { color: colors.mutedForeground }, unread > 0 && { color: colors.foreground }]} numberOfLines={1}>
+                    <Text style={[styles.convPreview, { color: colors.mutedForeground }]} numberOfLines={1}>
                       {isMySent && lastMsg?.content ? t('messages.you', { message: lastMsg.content }) : lastMsg?.content || t('messages.noMessagesYet')}
                     </Text>
                   )}
                 </View>
               </View>
               <View style={styles.convRight}>
-                <View style={styles.convRightTop}>
+                {item.updated_at && (
+                  <Text style={[styles.convTime, { color: colors.mutedForeground }]}>
+                    {formatTimeAgo(item.updated_at, t, locale)}
+                  </Text>
+                )}
+                <View style={styles.convRightBottom}>
                   {unread > 0 && (
                     <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
-                  )}
-                  {item.updated_at && (
-                    <Text style={[styles.convTime, { color: unread > 0 ? colors.primary : colors.mutedForeground }]}>
-                      {formatTimeAgo(item.updated_at, t, locale)}
-                    </Text>
                   )}
                   <PressableOpacity
                     onPress={() => {
@@ -654,13 +650,6 @@ export default function MessagesScreen() {
                     <MoreHorizontal size={16} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
                   </PressableOpacity>
                 </View>
-                {unread > 0 && (
-                  <View style={[styles.unreadBadge, { backgroundColor: colors.accent }]}>
-                    <Text style={[styles.unreadText, { color: colors.accentForeground }]}>
-                      {unread > 9 ? '9+' : unread}
-                    </Text>
-                  </View>
-                )}
               </View>
             </PressableOpacity>
             </Swipeable>
@@ -718,18 +707,11 @@ export default function MessagesScreen() {
       {userId && (
         <PressableOpacity
           onPress={() => router.push('/search')}
-          style={[styles.newMessageFab, { bottom: insets.bottom + 80 }]}
+          style={[styles.newMessageFab, { bottom: insets.bottom + 80, backgroundColor: colors.foreground }]}
           accessibilityLabel={t('messages.newMessage')}
           accessibilityRole="button"
         >
-          <LinearGradient
-            colors={gradients.primary}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.fabGradient}
-          >
-            <PenSquare size={22} color="#FFFFFF" strokeWidth={2} />
-          </LinearGradient>
+          <PenSquare size={22} color={colors.background} strokeWidth={2} />
         </PressableOpacity>
       )}
     </View>
@@ -753,7 +735,7 @@ const styles = StyleSheet.create({
   list: {},
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 16,
+    paddingHorizontal: 16, paddingVertical: 12,
   },
   swipeActionRight: {
     justifyContent: 'center',
@@ -771,20 +753,15 @@ const styles = StyleSheet.create({
   },
   convContent: { flex: 1, gap: 4 },
   convNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  convName: { fontSize: 14, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodyMedium },
+  convName: { fontSize: 15, fontWeight: '700', lineHeight: 20, fontFamily: fonts.bodySemi, flex: 1 },
   previewRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   convPreview: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
-  convRight: { alignItems: 'flex-end', gap: 8 },
-  convRightTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  convRight: { alignItems: 'flex-end', gap: 4, minWidth: 56 },
+  convRightBottom: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   moreBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   convTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
-  unreadBadge: {
-    minWidth: 20, height: 20, borderRadius: 10,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
-  },
-  unreadText: { fontSize: 11, fontWeight: '700', lineHeight: 14, fontFamily: fonts.bodySemi },
-  separator: { height: StyleSheet.hairlineWidth, marginLeft: 76 },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: 72 },
   empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
   emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.headingSemi },
@@ -822,14 +799,8 @@ const styles = StyleSheet.create({
   eventChatPreview: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   sectionDivider: { height: StyleSheet.hairlineWidth, marginTop: 12, marginHorizontal: 16 },
   newMessageFab: {
-    position: 'absolute', right: 16,
-    width: 56, height: 56, borderRadius: 28,
-    overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
-  },
-  fabGradient: {
-    width: 56, height: 56, borderRadius: 28,
+    position: 'absolute', right: 20,
+    width: 52, height: 52, borderRadius: 26,
     alignItems: 'center', justifyContent: 'center',
   },
   unreadDot: {

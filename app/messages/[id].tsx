@@ -540,11 +540,11 @@ function ConversationScreenInner() {
             <View style={[
               s.bubble,
               isMine
-                ? [s.bubbleMine, { backgroundColor: colors.primary }]
-                : [s.bubbleTheirs, { backgroundColor: isDark ? colors.card : colors.muted }],
+                ? { backgroundColor: colors.foreground }
+                : { backgroundColor: isDark ? colors.card : colors.muted },
             ]}>
               {isDeleted ? (
-                <Text style={[s.msgText, s.deletedText, { color: isMine ? `${colors.primaryForeground}88` : colors.mutedForeground }]}>
+                <Text style={[s.msgText, s.deletedText, { color: isMine ? `${colors.background}88` : colors.mutedForeground }]}>
                   {t('conversation.messageDeleted')}
                 </Text>
               ) : (
@@ -553,19 +553,19 @@ function ConversationScreenInner() {
                     <Image source={{ uri: getImageUrl(item.image_url, 'medium')! }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" />
                   ) : null}
                   {item.content ? (
-                    <Text selectable style={[s.msgText, { color: isMine ? colors.primaryForeground : colors.foreground }]}>{item.content}</Text>
+                    <Text selectable style={[s.msgText, { color: isMine ? colors.background : colors.foreground }]}>{item.content}</Text>
                   ) : null}
                 </>
               )}
               <View style={s.msgMeta}>
-                <Text style={[s.msgTime, { color: isMine ? `${colors.primaryForeground}99` : colors.mutedForeground }]}>
+                <Text style={[s.msgTime, { color: isMine ? `${colors.background}99` : colors.mutedForeground }]}>
                   {formatTimeAgo(item.created_at, t, locale)}
                 </Text>
                 {/* 3d: Delivered/read indicators */}
                 {isMine && (
                   item.is_read
-                    ? <CheckCheck size={12} color={`${colors.primaryForeground}99`} />
-                    : <Check size={12} color={`${colors.primaryForeground}66`} />
+                    ? <CheckCheck size={12} color={`${colors.background}99`} />
+                    : <Check size={12} color={`${colors.background}66`} />
                 )}
               </View>
             </View>
@@ -842,7 +842,7 @@ function ConversationScreenInner() {
           <ImageIcon size={22} color={colors.mutedForeground} />
         </PressableOpacity>
         <TextInput
-          style={[s.textInput, { backgroundColor: colors.muted, color: colors.foreground }]}
+          style={[s.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
           value={input}
           onChangeText={(text) => { setInput(text); if (text.length > 0) setShowQuickReplies(false); sendTyping() }}
           placeholder={t('messages.sendPlaceholder')}
@@ -859,12 +859,12 @@ function ConversationScreenInner() {
           accessibilityRole="button"
           accessibilityLabel={t('messages.send')}
           accessibilityState={{ busy: sending, disabled: !input.trim() || sending }}
-          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted, opacity: !input.trim() ? 0.5 : 1 }]}
+          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.foreground : colors.muted, opacity: !input.trim() ? 0.4 : 1 }]}
         >
           {sending ? (
-            <ActivityIndicator size="small" color={colors.primaryForeground} />
+            <ActivityIndicator size="small" color={colors.background} />
           ) : (
-            <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
+            <Send size={18} color={input.trim() ? colors.background : colors.mutedForeground} />
           )}
         </PressableOpacity>
       </View>
@@ -898,9 +898,7 @@ const s = StyleSheet.create({
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
-  bubble: { maxWidth: '100%', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16 },
-  bubbleMine: { borderBottomRightRadius: 4 },
-  bubbleTheirs: { borderBottomLeftRadius: 4 },
+  bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20 },
   msgImage: { width: 200, height: 150, borderRadius: 16, marginBottom: 4 },
   msgText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
@@ -950,8 +948,9 @@ const s = StyleSheet.create({
   },
   imageBtn: { paddingBottom: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   textInput: {
-    flex: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 12,
+    flex: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10,
     fontSize: 14, maxHeight: 120, minHeight: 40, fontFamily: fonts.body,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,

@@ -564,7 +564,7 @@ export default function SettingsScreen() {
 
       <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
         {/* ── Section: Account ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
+        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
           {t('settings.sectionAccount')}
         </Text>
 
@@ -572,8 +572,8 @@ export default function SettingsScreen() {
         {userEmail && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.email')}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
-              <View style={s.row}>
+            <View style={s.card}>
+              <View style={[s.row, { borderBottomColor: colors.border }]}>
                 <Mail size={18} color={colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]} numberOfLines={1}>{userEmail}</Text>
                 {emailVerified ? (
@@ -596,7 +596,7 @@ export default function SettingsScreen() {
         {profile && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.displayName') ?? 'Nimi'}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
+            <View style={s.card}>
               {editingName ? (
                 <View style={{ padding: 16, gap: 12 }}>
                   <TextInput
@@ -628,7 +628,7 @@ export default function SettingsScreen() {
                   </View>
                 </View>
               ) : (
-                <PressableOpacity onPress={() => setEditingName(true)} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.displayName')}>
+                <PressableOpacity onPress={() => setEditingName(true)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.displayName')}>
                   <User size={18} color={colors.mutedForeground} />
                   <Text style={[s.rowText, { color: colors.foreground }]}>{profile.name}</Text>
                   <Pencil size={14} color={colors.mutedForeground} />
@@ -642,8 +642,8 @@ export default function SettingsScreen() {
         {accountCreatedAt && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.accountInfo') ?? 'Tilin tiedot'}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
-              <View style={s.row}>
+            <View style={s.card}>
+              <View style={[s.row, { borderBottomColor: colors.border }]}>
                 <CalendarDays size={18} color={colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>
                   {t('settings.memberSince') ?? 'Jäsen alkaen'}: {new Date(accountCreatedAt).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -654,15 +654,15 @@ export default function SettingsScreen() {
         )}
 
         {/* ── Section: Appearance ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
+        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
           {t('settings.sectionAppearance')}
         </Text>
 
         {/* Language */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={s.card}>
           {(['fi', 'en', 'sv'] as Locale[]).map((l) => (
-            <PressableOpacity key={l} onPress={() => setLocale(l)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locale === l }} accessibilityLabel={langLabel(l)}>
+            <PressableOpacity key={l} onPress={() => setLocale(l)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: locale === l }} accessibilityLabel={langLabel(l)}>
               <Globe size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{langLabel(l)}</Text>
               <View style={[locale === l ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
@@ -672,9 +672,9 @@ export default function SettingsScreen() {
 
         {/* Theme */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.theme')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={s.card}>
           {THEME_OPTIONS.map(({ key, label, icon: Icon }) => (
-            <PressableOpacity key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark') }} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
+            <PressableOpacity key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark') }} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
               <Icon size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[theme === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
@@ -686,7 +686,7 @@ export default function SettingsScreen() {
         {availableCities.length > 1 && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.city')}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
+            <View style={s.card}>
               {showCityPicker ? (
                 <>
                   {availableCities.map((city) => (
@@ -720,7 +720,7 @@ export default function SettingsScreen() {
                           setShowCityPicker(false)
                         }
                       }}
-                      style={s.row}
+                      style={[s.row, { borderBottomColor: colors.border }]}
                     >
                       <MapPin size={18} color={city.id === userCityId ? colors.primary : colors.mutedForeground} />
                       <Text style={[s.rowText, { color: colors.foreground }]}>{city.name}</Text>
@@ -729,7 +729,7 @@ export default function SettingsScreen() {
                   ))}
                 </>
               ) : (
-                <PressableOpacity onPress={() => setShowCityPicker(true)} style={s.row}>
+                <PressableOpacity onPress={() => setShowCityPicker(true)} style={[s.row, { borderBottomColor: colors.border }]}>
                   <MapPin size={18} color={colors.primary} />
                   <Text style={[s.rowText, { color: colors.foreground }]}>{userCityName}</Text>
                   <ChevronRight size={16} color={colors.mutedForeground} />
@@ -741,8 +741,8 @@ export default function SettingsScreen() {
 
         {/* Neighborhood — allows user to change neighborhood after onboarding */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('onboarding.chooseNeighborhood')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressableOpacity onPress={() => setShowNeighborhoodPicker(true)} style={s.row}>
+        <View style={s.card}>
+          <PressableOpacity onPress={() => setShowNeighborhoodPicker(true)} style={[s.row, { borderBottomColor: colors.border }]}>
             <MapPin size={18} color={colors.primary} />
             <Text style={[s.rowText, { color: colors.foreground }]}>
               {profile?.naapurusto ?? userCityName}
@@ -753,9 +753,9 @@ export default function SettingsScreen() {
 
         {/* Profile Visibility */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.profileVisibility')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={s.card}>
           {VISIBILITY_OPTIONS.map(({ key, label }) => (
-            <PressableOpacity key={key} onPress={() => markDirty(setVisibility)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: visibility === key }} accessibilityLabel={t(label)}>
+            <PressableOpacity key={key} onPress={() => markDirty(setVisibility)(key)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: visibility === key }} accessibilityLabel={t(label)}>
               <Eye size={18} color={colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
               <View style={[visibility === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
@@ -764,15 +764,15 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Section: Privacy ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
+        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
           {t('settings.sectionPrivacy')}
         </Text>
 
         {/* Location Accuracy */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.locationAccuracy')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={s.card}>
           {LOCATION_ACCURACY_OPTIONS.map(({ key, label, desc }) => (
-            <PressableOpacity key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={s.row} accessibilityRole="radio" accessibilityState={{ checked: locationAccuracy === key }} accessibilityLabel={t(label)}>
+            <PressableOpacity key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: locationAccuracy === key }} accessibilityLabel={t(label)}>
               <MapPin size={18} color={colors.mutedForeground} />
               <View style={{ flex: 1 }}>
                 <Text style={[s.rowText, { color: colors.foreground, flex: undefined }]}>{t(label)}</Text>
@@ -784,15 +784,15 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Section: Notifications ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
+        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
           {t('settings.sectionNotifications')}
         </Text>
 
         {/* Notifications — granular preferences */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.notifSection')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={s.card}>
           {notifPrefs.loading ? (
-            <View style={s.toggleRow}>
+            <View style={[s.toggleRow, { borderBottomColor: colors.border }]}>
               <ActivityIndicator size="small" color={colors.primary} />
               <Text style={[s.rowText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
             </View>
@@ -806,7 +806,7 @@ export default function SettingsScreen() {
               { type: 'follows' as NotificationType, label: 'settings.notifFollows', Icon: UserPlus },
               { type: 'nappaa' as NotificationType, label: 'settings.notifNappaa', Icon: Zap },
             ]).map(({ type, label, Icon }) => (
-              <View key={type} style={s.toggleRow}>
+              <View key={type} style={[s.toggleRow, { borderBottomColor: colors.border }]}>
                 <Icon size={18} color={notifPrefs.preferences[type] ? colors.primary : colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
                 <Switch
@@ -820,7 +820,7 @@ export default function SettingsScreen() {
             ))
           )}
           {push.isSupported && (
-            <View style={s.toggleRow}>
+            <View style={[s.toggleRow, { borderBottomColor: colors.border }]}>
               <Bell size={18} color={push.isSubscribed ? colors.primary : colors.mutedForeground} />
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.pushNotifications')}</Text>
               <Switch
@@ -839,8 +839,8 @@ export default function SettingsScreen() {
         {FEATURES.PRO_SUBSCRIPTION && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.proSubscription')}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
-              <PressableOpacity onPress={() => router.push('/pro')} style={s.row}>
+            <View style={s.card}>
+              <PressableOpacity onPress={() => router.push('/pro')} style={[s.row, { borderBottomColor: colors.border }]}>
                 <Crown size={18} color={colors.pro} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Pro</Text>
                 {profile?.is_pro ? (
@@ -866,10 +866,10 @@ export default function SettingsScreen() {
         {FEATURES.BUSINESS_ACCOUNT && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('business.upgrade')}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
+            <View style={s.card}>
               <PressableOpacity
                 onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
-                style={s.row}
+                style={[s.row, { borderBottomColor: colors.border }]}
               >
                 <Building2 size={18} color={colors.primary} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>
@@ -887,7 +887,7 @@ export default function SettingsScreen() {
 
         {/* Security */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.security')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={s.card}>
           <View style={{ padding: 16, gap: 12 }}>
             <Text style={[s.rowText, { color: colors.foreground, fontWeight: '600' }]}>{t('settings.changePassword')}</Text>
             {isOAuthUser ? (
@@ -955,7 +955,7 @@ export default function SettingsScreen() {
         {!referral.invitedBy && !referral.loading && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('referral.applyCodeTitle')}</Text>
-            <View style={[s.card, { backgroundColor: colors.card, padding: 16, gap: 12 }]}>
+            <View style={[s.card, { padding: 16, gap: 12 }]}>
               <Text style={{ fontSize: 13, lineHeight: 18, color: colors.mutedForeground, fontFamily: fonts.body }}>
                 {t('referral.applyCodeDesc')}
               </Text>
@@ -1022,8 +1022,8 @@ export default function SettingsScreen() {
 
         {/* Saved items */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('saved.title')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressableOpacity onPress={() => router.push('/saved')} style={s.row} accessibilityRole="button" accessibilityLabel={t('saved.title')}>
+        <View style={s.card}>
+          <PressableOpacity onPress={() => router.push('/saved')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('saved.title')}>
             <Bookmark size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('saved.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
@@ -1034,13 +1034,13 @@ export default function SettingsScreen() {
         {FEATURES.PAYMENTS && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.settings')}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
-              <PressableOpacity onPress={() => router.push('/payment-settings' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('payment.settings')}>
+            <View style={s.card}>
+              <PressableOpacity onPress={() => router.push('/payment-settings' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('payment.settings')}>
                 <CreditCard size={18} color={colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.settings')}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} />
               </PressableOpacity>
-              <PressableOpacity onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.paymentHistory')}>
+              <PressableOpacity onPress={() => router.push('/payment-history' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.paymentHistory')}>
                 <CreditCard size={18} color={colors.mutedForeground} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.paymentHistory')}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} />
@@ -1050,14 +1050,14 @@ export default function SettingsScreen() {
         )}
 
         {/* ── Section: Danger zone ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
+        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.destructive, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
           {t('settings.sectionDanger')}
         </Text>
 
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressableOpacity onPress={handleExport} disabled={exporting} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.export')}>
+        <View style={s.card}>
+          <PressableOpacity onPress={handleExport} disabled={exporting} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.export')}>
             {exporting ? <ActivityIndicator size="small" color={colors.primary} /> : <Download size={18} color={colors.mutedForeground} />}
             <View style={{ flex: 1 }}>
               <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
@@ -1071,8 +1071,8 @@ export default function SettingsScreen() {
 
         {/* Blocked users */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.blockedUsers')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressableOpacity onPress={() => router.push('/blocked')} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.blockedUsers')}>
+        <View style={s.card}>
+          <PressableOpacity onPress={() => router.push('/blocked')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.blockedUsers')}>
             <ShieldBan size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.blockedUsers')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
@@ -1080,34 +1080,34 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Section: About ── */}
-        <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, letterSpacing: 0.3 }}>
+        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
           {t('settings.sectionAbout')}
         </Text>
 
         {/* About & info links */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.about')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressableOpacity onPress={() => router.push('/about' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('about.title')}>
+        <View style={s.card}>
+          <PressableOpacity onPress={() => router.push('/about' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('about.title')}>
             <Info size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('about.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/help' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('help.title')}>
+          <PressableOpacity onPress={() => router.push('/help' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('help.title')}>
             <HelpCircle size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('help.title')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/privacy')} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.privacy')}>
+          <PressableOpacity onPress={() => router.push('/privacy')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.privacy')}>
             <Lock size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/terms')} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.terms')}>
+          <PressableOpacity onPress={() => router.push('/terms')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.terms')}>
             <FileText size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
           </PressableOpacity>
-          <PressableOpacity onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}>
+          <PressableOpacity onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}>
             <Bug size={18} color={colors.mutedForeground} />
             <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}</Text>
             <ChevronRight size={16} color={colors.mutedForeground} />
@@ -1118,8 +1118,8 @@ export default function SettingsScreen() {
         {(profile as any)?.is_admin && (
           <>
             <Text style={[s.section, { color: colors.mutedForeground }]}>{t('admin.title')}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
-              <PressableOpacity onPress={() => router.push('/admin' as any)} style={s.row} accessibilityRole="button" accessibilityLabel={t('admin.title')}>
+            <View style={s.card}>
+              <PressableOpacity onPress={() => router.push('/admin' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('admin.title')}>
                 <Shield size={18} color={colors.destructive} />
                 <Text style={[s.rowText, { color: colors.foreground }]}>{t('admin.title')}</Text>
                 <ChevronRight size={16} color={colors.mutedForeground} />
@@ -1130,15 +1130,15 @@ export default function SettingsScreen() {
 
         {/* Danger zone */}
         <Text style={[s.section, { color: colors.destructive }]}>{t('settings.deleteAccount')}</Text>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressableOpacity onPress={handleDeleteAccount} style={s.row} accessibilityRole="button" accessibilityLabel={t('settings.deleteAccount')}>
+        <View style={s.card}>
+          <PressableOpacity onPress={handleDeleteAccount} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.deleteAccount')}>
             <Trash2 size={18} color={colors.destructive} />
             <Text style={[s.rowText, { color: colors.destructive }]}>{t('settings.deletePermanently')}</Text>
           </PressableOpacity>
         </View>
 
         {/* Logout */}
-        <PressableOpacity onPress={handleLogout} style={[s.logoutBtn, { backgroundColor: colors.card }]} accessibilityRole="button" accessibilityLabel={t('settings.logout')}>
+        <PressableOpacity onPress={handleLogout} style={[s.logoutBtn, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.logout')}>
           <LogOut size={18} color={colors.destructive} />
           <Text style={{ fontSize: 14, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('settings.logout')}</Text>
         </PressableOpacity>
@@ -1222,10 +1222,10 @@ const s = StyleSheet.create({
   },
   saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
-  section: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.3, marginTop: 16, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
-  card: { borderRadius: 16, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
+  section: { fontSize: 11, lineHeight: 16, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
+  card: { overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderBottomWidth: StyleSheet.hairlineWidth },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderBottomWidth: StyleSheet.hairlineWidth },
   rowText: { fontSize: 14, lineHeight: 20, flex: 1, fontFamily: fonts.body },
   radio: { width: 18, height: 18, borderRadius: 9 },
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
@@ -1235,7 +1235,7 @@ const s = StyleSheet.create({
   changePwBtn: { borderRadius: 8, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, padding: 16, borderRadius: 16, marginTop: 16,
+    gap: 8, padding: 16, marginTop: 16, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   verifiedBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
