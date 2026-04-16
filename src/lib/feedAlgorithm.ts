@@ -7,6 +7,8 @@ interface FeedContext {
   now?: number
   personalScores?: Map<string, number> // post_id -> personalization score from DB
   boostedPostIds?: Set<string>
+  /** Post types the user selected during onboarding. Boosts matching posts. */
+  preferredTypes?: string[]
 }
 
 /**
@@ -73,9 +75,13 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   // A low-quality boosted post won't dominate a high-quality organic one
   const boostMultiplier = ctx.boostedPostIds?.has(post.id) ? 1.4 : 1.0
 
+  // Preferred types from onboarding: gentle 1.15x boost for matching categories
+  // so user sees more of what they're interested in without being exclusionary
+  const preferredBoost = ctx.preferredTypes && ctx.preferredTypes.includes(post.type) ? 1.15 : 1.0
+
   // Weighted sum (base 0.0–1.0, boosted up to 1.4)
   const baseScore = recency * 0.20 + engagement * 0.20 + urgency * 0.20 + proximity * 0.10 + social * 0.10 + personalScore * 0.15 + timeRelevance * 0.05
-  return baseScore * boostMultiplier
+  return baseScore * boostMultiplier * preferredBoost
 }
 
 /**

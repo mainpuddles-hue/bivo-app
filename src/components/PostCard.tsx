@@ -114,6 +114,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
   const isAnonymous = post.is_anonymous === true
   const isUrgentPost = post.is_urgent && post.expires_at && new Date(post.expires_at).getTime() > Date.now()
+  const isExpired = !!(post.expires_at && new Date(post.expires_at).getTime() <= Date.now())
   const [showMore, setShowMore] = useState(false)
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
@@ -256,6 +257,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         !isUrgentPost && !isPro && !(post.is_boosted && FEATURES.BOOSTS) && categoryAccents[post.type]
           ? { borderLeftWidth: 3, borderLeftColor: categoryAccents[post.type] }
           : undefined,
+        isExpired && { opacity: 0.55 },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >

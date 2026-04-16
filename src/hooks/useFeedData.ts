@@ -30,18 +30,22 @@ export function useFeedData() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
+  const [preferredTypes, setPreferredTypes] = useState<string[]>([])
 
-  // On first mount, apply user's onboarding purpose preference as initial filter.
-  // If they picked exactly one purpose, pre-filter the feed to it. Multiple =
-  // keep "all" (they have varied interests). User can always change.
+  // On first mount, load user's onboarding purpose preferences.
+  // - Single purpose: pre-filter feed to it (user can still change)
+  // - Multiple purposes: use as gentle ranking boost (1.15x) in rankFeed
   useEffect(() => {
     let mounted = true
     AsyncStorage.getItem('onboarding_purposes').then(raw => {
       if (!mounted || !raw) return
       try {
         const purposes = JSON.parse(raw) as string[]
-        if (Array.isArray(purposes) && purposes.length === 1) {
-          setActiveFilter(purposes[0] as PostType)
+        if (Array.isArray(purposes)) {
+          setPreferredTypes(purposes)
+          if (purposes.length === 1) {
+            setActiveFilter(purposes[0] as PostType)
+          }
         }
       } catch {}
     }).catch(() => {})
@@ -366,6 +370,7 @@ export function useFeedData() {
           followedIds,
           personalScores,
           boostedPostIds,
+          preferredTypes,
         })
       } else if (sortBy === 'nearest' && userLocation) {
         // Client-side distance sort
