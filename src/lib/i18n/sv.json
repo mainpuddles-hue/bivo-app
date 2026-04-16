@@ -121,7 +121,9 @@
     "eventsThisWeek": "evenemang",
     "activeThisWeek": "aktiva",
     "boosted": "Framhävt",
-    "moreOptions": "Fler alternativ"
+    "moreOptions": "Fler alternativ",
+    "switchToGrid": "Rutnätsvy",
+    "switchToList": "Listvy"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",
@@ -349,7 +351,8 @@
     "imageUploadFailed": "Bildladdning misslyckades",
     "participants": "Deltagare",
     "joinedSuccess": "Du gick med i evenemanget!",
-    "joinPending": "Förfrågan skickad"
+    "joinPending": "Förfrågan skickad",
+    "eventPending": "Datum ej bekräftat"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -866,7 +869,8 @@
     "verified": "Verifierad",
     "tapToOpen": "Tryck för att öppna annons",
     "hide": "Dölj inlägg",
-    "moreOptions": "Fler alternativ"
+    "moreOptions": "Fler alternativ",
+    "urgent": "Brådskande"
   },
   "auth": {
     "login": "Logga in",

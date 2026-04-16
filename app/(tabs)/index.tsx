@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIn
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown, LayoutGrid, List } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -19,6 +19,7 @@ import { usePresence } from '@/hooks/usePresence'
 import { useSessionManager } from '@/hooks/useSessionManager'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
+import { PostCardGrid } from '@/components/PostCardGrid'
 import { AlertBanner } from '@/components/AlertBanner'
 import { SmartMatchBanner } from '@/components/SmartMatchBanner'
 // DiscoverySection moved to Explore tab
@@ -216,6 +217,22 @@ function FeedScreenInner() {
   const [lastFeedVisit, setLastFeedVisit] = useState<string | null>(null)
   const [missedCount, setMissedCount] = useState(0)
   const [showMissedBanner, setShowMissedBanner] = useState(false)
+
+  // ── Feed layout: list (default) or grid (2-col masonry, hybrid marketplace/community) ──
+  const [feedLayout, setFeedLayout] = useState<'list' | 'grid'>('list')
+  useEffect(() => {
+    AsyncStorage.getItem('tackbird_feed_layout').then(val => {
+      if (val === 'grid' || val === 'list') setFeedLayout(val)
+    }).catch(() => {})
+  }, [])
+  const toggleFeedLayout = useCallback(() => {
+    setFeedLayout(prev => {
+      const next = prev === 'list' ? 'grid' : 'list'
+      AsyncStorage.setItem('tackbird_feed_layout', next).catch(() => {})
+      try { Haptics.selectionAsync() } catch {}
+      return next
+    })
+  }, [])
   useEffect(() => {
     AsyncStorage.getItem('tackbird_last_feed_visit').then(val => {
       if (val) setLastFeedVisit(val)
@@ -303,8 +320,22 @@ function FeedScreenInner() {
     }
 
     const post = item as Post
+    const postIsNew = !!(lastFeedVisit && post.created_at && post.created_at > lastFeedVisit)
+
+    // Grid mode — no date group labels (they break 2-col layout)
+    if (feedLayout === 'grid') {
+      return (
+        <PostCardGrid
+          post={post}
+          userId={feed.currentUserId}
+          onInteraction={trackInteraction}
+          index={index}
+        />
+      )
+    }
+
+    // List mode — original layout with date groups
     const currentGroup = post.created_at ? getDateGroup(post.created_at) : ''
-    // Walk backwards to find the previous real post for date group comparison
     let prevGroup = ''
     for (let i = index - 1; i >= 0; i--) {
       const prev = visiblePostsRef.current[i]
@@ -314,7 +345,6 @@ function FeedScreenInner() {
       }
     }
     const showLabel = index > 0 && currentGroup !== prevGroup
-    const postIsNew = !!(lastFeedVisit && post.created_at && post.created_at > lastFeedVisit)
 
     return (
       <View>
@@ -326,7 +356,7 @@ function FeedScreenInner() {
         <PostCard post={post} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} index={index} />
       </View>
     )
-  }, [feed.userLocation, feed.currentUserId, colors, t, trackInteraction, handleHidePost, lastFeedVisit, router])
+  }, [feed.userLocation, feed.currentUserId, colors, t, trackInteraction, handleHidePost, lastFeedVisit, router, feedLayout])
 
   // ── ListHeader — content-first: only contextual banners, no filler ──
   const ListHeader = useMemo(() => (
@@ -461,6 +491,21 @@ function FeedScreenInner() {
           >
             <ArrowUpDown size={14} color={colors.mutedForeground} />
           </PressableOpacity>
+          {/* Layout toggle: list ↔ grid */}
+          <PressableOpacity
+            onPress={toggleFeedLayout}
+            style={[styles.sortBtn, { backgroundColor: isDark ? colors.card : colors.muted }]}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={feedLayout === 'list' ? t('feed.switchToGrid') : t('feed.switchToList')}
+            accessibilityState={{ selected: feedLayout === 'grid' }}
+          >
+            {feedLayout === 'list' ? (
+              <LayoutGrid size={14} color={colors.mutedForeground} />
+            ) : (
+              <List size={14} color={colors.mutedForeground} />
+            )}
+          </PressableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 8, alignItems: 'center', paddingHorizontal: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
@@ -479,10 +524,17 @@ function FeedScreenInner() {
       </View>
 
       <FlatList
+        key={feedLayout}  /* Force remount when switching layouts — otherwise numColumns warning */
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isCommunity' in item ? `community-${(item as any)._isCommunity}-${item.id}` : '_isAd' in item ? `ad-${item.id}` : item.id)}
-        contentContainerStyle={[styles.list, { paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96 }]}
+        numColumns={feedLayout === 'grid' ? 2 : 1}
+        columnWrapperStyle={feedLayout === 'grid' ? { gap: 10, paddingHorizontal: 12 } : undefined}
+        contentContainerStyle={[
+          feedLayout === 'grid'
+            ? { paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96, gap: 10 }
+            : [styles.list, { paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96 }],
+        ]}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
@@ -490,12 +542,12 @@ function FeedScreenInner() {
         onEndReached={feed.handleLoadMore}
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}
-        ItemSeparatorComponent={ItemSeparator16}
+        ItemSeparatorComponent={feedLayout === 'grid' ? undefined : ItemSeparator16}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         removeClippedSubviews={true}
-        initialNumToRender={6}
+        initialNumToRender={feedLayout === 'grid' ? 8 : 6}
         maxToRenderPerBatch={10}
         windowSize={5}
       />

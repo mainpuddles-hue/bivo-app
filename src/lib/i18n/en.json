@@ -121,7 +121,9 @@
     "eventsThisWeek": "events",
     "activeThisWeek": "active",
     "boosted": "Boosted",
-    "moreOptions": "More options"
+    "moreOptions": "More options",
+    "switchToGrid": "Grid view",
+    "switchToList": "List view"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",
@@ -367,7 +369,8 @@
     "imageUploadFailed": "Image upload failed",
     "participants": "Participants",
     "joinedSuccess": "You joined the event!",
-    "joinPending": "Request sent"
+    "joinPending": "Request sent",
+    "eventPending": "Date pending"
   },
   "activity": {
     "activities": "Together",
@@ -885,7 +888,8 @@
     "verified": "Verified",
     "tapToOpen": "Tap to open listing",
     "hide": "Hide post",
-    "moreOptions": "More options"
+    "moreOptions": "More options",
+    "urgent": "Urgent"
   },
   "auth": {
     "login": "Log in",

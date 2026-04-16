@@ -121,7 +121,9 @@
     "eventsThisWeek": "tapahtumaa",
     "activeThisWeek": "aktiivista",
     "boosted": "Nostettu",
-    "moreOptions": "Lisää vaihtoehtoja"
+    "moreOptions": "Lisää vaihtoehtoja",
+    "switchToGrid": "Ruutunäkymä",
+    "switchToList": "Listanäkymä"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
@@ -367,7 +369,8 @@
     "imageUploadFailed": "Kuvan lataus epäonnistui",
     "participants": "Osallistujat",
     "joinedSuccess": "Liityit tapahtumaan!",
-    "joinPending": "Pyyntö lähetetty"
+    "joinPending": "Pyyntö lähetetty",
+    "eventPending": "Päivä ei vahvistettu"
   },
   "activity": {
     "activities": "Porukalla",
@@ -885,7 +888,8 @@
     "verified": "Vahvistettu",
     "tapToOpen": "Avaa ilmoitus napauttamalla",
     "hide": "Piilota ilmoitus",
-    "moreOptions": "Lisää vaihtoehtoja"
+    "moreOptions": "Lisää vaihtoehtoja",
+    "urgent": "Kiireellinen"
   },
   "auth": {
     "login": "Kirjaudu",
