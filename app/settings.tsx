@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n, type Locale } from '@/lib/i18n'
+import { useToast } from '@/components/Toast'
 import { useSupabase } from '@/hooks/useSupabase'
 import { downloadAsFile } from '@/lib/share'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
@@ -46,6 +47,7 @@ const LOCATION_ACCURACY_OPTIONS: { key: LocationAccuracy; label: string; desc: s
 export default function SettingsScreen() {
   const { colors, isDark, theme, setTheme: setAppTheme } = useTheme()
   const { t, locale, setLocale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
@@ -176,11 +178,11 @@ export default function SettingsScreen() {
         return
       }
       setDirty(false)
-      Alert.alert(t('common.success'), t('settings.settingsSaved'))
+      toast.show({ message: t('settings.settingsSaved'), type: 'success' })
     } catch {
-      Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
+      toast.show({ message: t('settings.settingsSaveFailed'), type: 'error' })
     } finally { setSaving(false) }
-  }, [profile, visibility, locationAccuracy, theme, supabase, t])
+  }, [profile, visibility, locationAccuracy, theme, supabase, t, toast])
 
   const handleSaveName = useCallback(async () => {
     if (!profile || !nameText.trim()) return
@@ -193,11 +195,11 @@ export default function SettingsScreen() {
       }
       setProfile(prev => prev ? { ...prev, name: nameText.trim() } : null)
       setEditingName(false)
-      Alert.alert(t('common.success'), t('settings.settingsSaved'))
+      toast.show({ message: t('settings.settingsSaved'), type: 'success' })
     } catch {
-      Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
+      toast.show({ message: t('settings.settingsSaveFailed'), type: 'error' })
     } finally { setSavingName(false) }
-  }, [profile, nameText, supabase, t])
+  }, [profile, nameText, supabase, t, toast])
 
   const handleChangePassword = useCallback(async () => {
     if (!isPasswordRecovery && !currentPw) {
@@ -228,7 +230,7 @@ export default function SettingsScreen() {
       }
       const { error } = await supabase.auth.updateUser({ password: newPw })
       if (error) throw error
-      Alert.alert(t('common.success'), t('settings.passwordChanged'))
+      toast.show({ message: t('settings.passwordChanged'), type: 'success' })
       setCurrentPw('')
       setNewPw('')
       setIsPasswordRecovery(false)

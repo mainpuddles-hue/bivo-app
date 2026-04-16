@@ -14,6 +14,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { useToast } from '@/components/Toast'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { shareContent } from '@/lib/share'
@@ -48,6 +49,7 @@ import type { Post, PostType, PostComment } from '@/lib/types'
 function PostDetailScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -456,7 +458,7 @@ function PostDetailScreenInner() {
       const success = await boosts.useBoostOnPost(id)
       if (success) {
         setPost(prev => prev ? { ...prev, is_boosted: true } : prev)
-        Alert.alert(t('boost.title'), t('boost.boostSuccess'))
+        toast.show({ message: t('boost.boostSuccess'), type: 'success' })
       }
     } finally {
       setBoosting(false)

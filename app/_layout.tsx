@@ -12,6 +12,7 @@ import { useFonts, BricolageGrotesque_500Medium, BricolageGrotesque_600SemiBold,
 import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans'
 import { I18nProvider, useI18n, type Locale } from '@/lib/i18n'
 import { useTheme, ThemeProvider } from '@/hooks/useTheme'
+import { ToastProvider } from '@/components/Toast'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useLocationDetection } from '@/hooks/useLocationDetection'
 import { isValidUUID } from '@/lib/validation'
@@ -683,7 +684,9 @@ export default function RootLayout() {
         <I18nProvider>
           <ThemeProvider>
             <SafeAreaProvider>
-              <RootLayoutInner />
+              <ToastProvider>
+                <RootLayoutInner />
+              </ToastProvider>
             </SafeAreaProvider>
           </ThemeProvider>
         </I18nProvider>
