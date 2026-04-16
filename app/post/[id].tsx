@@ -719,9 +719,9 @@ function PostDetailScreenInner() {
         // When Stripe is available, the user will be redirected to Stripe Checkout.
         // If payment is not completed, the booking stays 'pending' — add a timeout/cleanup job
         // and a "Retry payment" or "Cancel booking" button in /bookings screen.
-        Alert.alert(t('common.success'), t('rental.bookingCreated'))
+        toast.show({ message: t('rental.bookingCreated'), type: 'success' })
       } else {
-        Alert.alert(t('common.success'), t('rental.bookingCreatedPaymentPending'))
+        toast.show({ message: t('rental.bookingCreatedPaymentPending'), type: 'info' })
       }
     } catch {
       // Roll back the booking row if Stripe session creation threw — otherwise
@@ -792,9 +792,9 @@ function PostDetailScreenInner() {
       if (!sessionId) {
         // TODO: UX — service booking created with status='pending'. If the provider never responds,
         // there is no timeout mechanism. Add a 48h auto-cancel job and show countdown in /bookings screen.
-        Alert.alert(t('common.success'), t('service.bookingCreated'))
+        toast.show({ message: t('service.bookingCreated'), type: 'success' })
       } else {
-        Alert.alert(t('common.success'), t('service.bookingCreatedPaymentPending'))
+        toast.show({ message: t('service.bookingCreatedPaymentPending'), type: 'info' })
       }
     } catch {
       // Roll back the service booking if Stripe session creation threw

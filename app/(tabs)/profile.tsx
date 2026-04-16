@@ -34,6 +34,7 @@ import { StarRating } from '@/components/StarRating'
 import { ReferralCard } from '@/components/ReferralCard'
 import { getCachedUserId, clearAuthCache } from '@/lib/authCache'
 import { clearExpiredPro } from '@/lib/proExpiry'
+import { useToast } from '@/components/Toast'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 interface ActivityItem {
@@ -69,6 +70,7 @@ const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
 export default function ProfileScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
@@ -232,7 +234,7 @@ export default function ProfileScreen() {
       const { error: updateError } = await (supabase.from('profiles') as any).update({ avatar_url: avatarUrlWithCacheBust }).eq('id', profile.id)
       if (updateError) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       setProfile(prev => prev ? { ...prev, avatar_url: avatarUrlWithCacheBust } : null)
-      Alert.alert(t('common.success'), t('profile.avatarUpdated'))
+      toast.show({ message: t('profile.avatarUpdated'), type: 'success' })
     } catch { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')) }
   }, [profile, supabase, t])
 
@@ -301,14 +303,14 @@ export default function ProfileScreen() {
     const { error } = await (supabase.from('posts') as any).update({ is_active: true, expires_at: newExpiry }).eq('id', postId)
     if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
     setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: true, expires_at: newExpiry } : p))
-    Alert.alert(t('common.success'), t('profile.postReactivated'))
+    toast.show({ message: t('profile.postReactivated'), type: 'success' })
   }, [supabase, t])
 
   const handleClosePost = useCallback(async (postId: string) => {
     const { error } = await (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId)
     if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
     setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: false } : p))
-    Alert.alert(t('common.success'), t('profile.postClosedSuccess'))
+    toast.show({ message: t('profile.postClosedSuccess'), type: 'success' })
   }, [supabase, t])
 
   const handleDeletePost = useCallback(async (postId: string) => {
@@ -324,7 +326,7 @@ export default function ProfileScreen() {
             const { error } = await (supabase.from('posts') as any).delete().eq('id', postId)
             if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
             setAllPosts(prev => prev.filter(p => p.id !== postId))
-            Alert.alert(t('common.success'), t('profile.postDeleted'))
+            toast.show({ message: t('profile.postDeleted'), type: 'success' })
           },
         },
       ]

@@ -21,6 +21,7 @@ import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { BackButton, PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
+import { useToast } from '@/components/Toast'
 
 function BookingCardSkeleton() {
   const { colors } = useTheme()
@@ -127,6 +128,7 @@ function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useThem
 export default function BookingsScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
@@ -296,7 +298,7 @@ export default function BookingsScreen() {
       Alert.alert(t('common.error'), t('rental.completeFailed'))
     } else {
       setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'completed' as BookingStatus } : b))
-      Alert.alert(t('common.success'), t('rental.markedReturned'))
+      toast.show({ message: t('rental.markedReturned'), type: 'success' })
     }
     setActionLoading(null)
   }, [supabase, t])
@@ -335,7 +337,7 @@ export default function BookingsScreen() {
       const { error } = await (supabase.from('service_bookings') as any).update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', booking.id)
       if (error) throw error
       setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'completed' } : b))
-      Alert.alert(t('common.success'), t('service.markedComplete'))
+      toast.show({ message: t('service.markedComplete'), type: 'success' })
     } catch {
       Alert.alert(t('common.error'), t('service.updateFailed'))
     } finally { setActionLoading(null) }

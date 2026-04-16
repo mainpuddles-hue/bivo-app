@@ -31,6 +31,7 @@ import { isValidUUID } from '@/lib/validation'
 import { FEATURES } from '@/lib/featureFlags'
 import { isProfileVisible } from '@/lib/privacyUtils'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
+import { useToast } from '@/components/Toast'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
 const HERO_IMAGE_HEIGHT = 200
@@ -38,6 +39,7 @@ const HERO_IMAGE_HEIGHT = 200
 export default function PublicProfileScreen() {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { userId } = useLocalSearchParams<{ userId: string }>()
@@ -293,14 +295,14 @@ export default function PublicProfileScreen() {
               try {
                 await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
                 clearBlockedCache()
-                Alert.alert(t('common.success'), t('profile.unblocked'))
+                toast.show({ message: t('profile.unblocked'), type: 'success' })
               } catch (err) { setIsBlocked(true); if (__DEV__) console.warn('[profile] unblock failed:', err); Alert.alert(t('common.error')) }
             } else {
               setIsBlocked(true)
               try {
                 await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
                 clearBlockedCache()
-                Alert.alert(t('common.success'), t('profile.blocked'))
+                toast.show({ message: t('profile.blocked'), type: 'success' })
               } catch (err) { setIsBlocked(false); if (__DEV__) console.warn('[profile] block failed:', err); Alert.alert(t('common.error')) }
             }
           },
