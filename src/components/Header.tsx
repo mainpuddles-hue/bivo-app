@@ -55,7 +55,7 @@ export function Header() {
           <PressableOpacity accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
             <Map size={22} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
-          <PressableOpacity accessibilityLabel={t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
+          <PressableOpacity accessibilityLabel={unreadCount > 0 ? `${t('nav.notifications')} (${unreadCount} uutta)` : t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={22}
               color={unreadCount > 0 ? colors.primary : colors.foreground}

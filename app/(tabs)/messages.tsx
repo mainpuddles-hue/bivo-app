@@ -654,19 +654,21 @@ export default function MessagesScreen() {
             </View>
           ) : (
             <View style={styles.empty}>
-              <MessageCircle size={48} color={colors.mutedForeground} />
+              <View style={[styles.emptyIconCircle, { backgroundColor: colors.primary + '10' }]}>
+                <MessageCircle size={52} color={colors.primary} />
+              </View>
               <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
                 {showArchived ? t('messages.noArchivedConversations') : t('messages.noConversations')}
               </Text>
               {!showArchived && (
                 <>
-                  <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.emptyHint')}</Text>
+                  <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{'Ei vielä keskusteluja — kirjoita naapurillesi ensimmäinen viesti'}</Text>
                   <PressableOpacity
-                    onPress={() => router.push('/(tabs)/index')}
+                    onPress={() => router.push('/search')}
                     style={[styles.loginBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
                     accessibilityRole="button"
                   >
-                    <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{t('nav.feed')}</Text>
+                    <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{'Aloita keskustelu'}</Text>
                   </PressableOpacity>
                 </>
               )}
@@ -750,6 +752,7 @@ const styles = StyleSheet.create({
   unreadText: { fontSize: 11, fontWeight: '700', lineHeight: 14, fontFamily: fonts.bodySemi },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 76 },
   empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
+  emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.headingSemi },
   emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
   loginBtn: { marginTop: 8, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 32, alignItems: 'center' },

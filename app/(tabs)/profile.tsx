@@ -777,10 +777,12 @@ export default function ProfileScreen() {
               </View>
             ) : filteredPosts.length === 0 ? (
               <View style={s.emptyActivity}>
-                <FileText size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
+                <View style={[s.emptyPostsIconCircle, { backgroundColor: colors.primary + '10' }]}>
+                  <FileText size={48} color={colors.primary} strokeWidth={1.6} />
+                </View>
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
-                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, marginTop: 4 }]}>
-                  <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('nav.create')}</Text>
+                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, marginTop: 8 }]}>
+                  <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{'Luo ensimmäinen ilmoitus'}</Text>
                 </PressableOpacity>
               </View>
             ) : (
@@ -1044,6 +1046,7 @@ const s = StyleSheet.create({
   reviewComment: { fontSize: 14, lineHeight: 19, fontFamily: fonts.body },
   emptyText: { fontSize: 14, fontFamily: fonts.body },
   emptyHint: { fontSize: 13, marginTop: 4, fontFamily: fonts.body, lineHeight: 18 },
+  emptyPostsIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyActivity: { alignItems: 'center', paddingTop: 24, gap: 4 },
   activityItem: { flexDirection: 'row', gap: 12, paddingLeft: 16, borderLeftWidth: 2, paddingVertical: 8 },
   activityDot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: -24 },

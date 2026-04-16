@@ -72,7 +72,11 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
           strokeWidth={focused ? 2.2 : 1.6}
         />
         {badge != null && badge > 0 && (
-          <View style={[s.badge, { borderColor: colors.card, backgroundColor: colors.destructive }]}>
+          <View
+            style={[s.badge, { borderColor: colors.card, backgroundColor: colors.destructive }]}
+            accessibilityLabel={`${badge} uutta viestiä`}
+            accessibilityRole="text"
+          >
             <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
           </View>
         )}

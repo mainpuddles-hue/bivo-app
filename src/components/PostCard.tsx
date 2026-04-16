@@ -460,6 +460,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {/* Like button — always show */}
           <Pressable
             hitSlop={8}
+            accessibilityRole="button"
             accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
             accessibilityState={{ selected: liked }}
             onPress={async (e) => {
@@ -532,7 +533,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           </Pressable>
 
           {/* Comment count */}
-          <View style={styles.actionItem}>
+          <View
+            style={styles.actionItem}
+            accessibilityRole="text"
+            accessibilityLabel={t('engagement.comments', { count: post.comment_count ?? 0 })}
+          >
             <MessageCircle size={16} color={colors.mutedForeground} />
             {(post.comment_count ?? 0) > 0 && (
               <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{post.comment_count}</Text>
@@ -542,6 +547,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {/* Save */}
           <Pressable
             hitSlop={8}
+            accessibilityRole="button"
             accessibilityLabel={saved ? t('post.unsave') : t('post.save')}
             accessibilityState={{ selected: saved }}
             onPress={async (e) => {
@@ -630,6 +636,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           {/* More toggle */}
           <Pressable
             hitSlop={8}
+            accessibilityRole="button"
             accessibilityLabel={t('postCard.moreOptions')}
             accessibilityState={{ expanded: showMore }}
             onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}

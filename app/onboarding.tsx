@@ -27,6 +27,8 @@ import {
   Handshake,
   Gift,
   Heart,
+  BookOpen,
+  CalendarDays,
 } from 'lucide-react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -43,7 +45,7 @@ import { useReferral } from '@/hooks/useReferral'
 import { trackEvent } from '@/lib/analytics'
 import { FEATURES } from '@/lib/featureFlags'
 
-const TOTAL_PAGES = 4
+const TOTAL_PAGES = 5
 
 // City display names
 const CITY_NAMES: Record<string, string> = {
@@ -66,6 +68,7 @@ function OnboardingScreenInner() {
   const [neighborhoodCoordsMap, setNeighborhoodCoordsMap] = useState<Record<string, { lat: number; lng: number }>>({})
   const [neighborhoodsLoading, setNeighborhoodsLoading] = useState(false)
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
+  const [selectedPurposes, setSelectedPurposes] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
@@ -133,9 +136,9 @@ function OnboardingScreenInner() {
     return () => { cancelled = true }
   }, [selectedCity, supabase])
 
-  // Auto-verify when neighborhood is selected on page 4 (index 3)
+  // Auto-verify when neighborhood is selected on page 5 (index 4)
   useEffect(() => {
-    if (selectedNeighborhood && currentPage === 3) {
+    if (selectedNeighborhood && currentPage === 4) {
       const coords = neighborhoodCoordsMap[selectedNeighborhood]
       verify(selectedNeighborhood, coords)
     }
@@ -400,11 +403,108 @@ function OnboardingScreenInner() {
     </View>
   )
 
-  // ── Slide 4: Choose Neighborhood ──
+  // ── Slide 4: Purpose ──
+  const PURPOSE_OPTIONS = [
+    { key: 'tarvitsen', label: 'Tarvitsen apua', icon: Handshake, color: CATEGORIES.tarvitsen.color },
+    { key: 'tarjoan', label: 'Tarjoan palveluja', icon: Gift, color: CATEGORIES.tarjoan.color },
+    { key: 'ilmaista', label: 'Jaan ilmaista', icon: Heart, color: CATEGORIES.ilmaista.color },
+    { key: 'lainaa', label: 'Lainaan tai vuokraan', icon: BookOpen, color: CATEGORIES.lainaa.color },
+    { key: 'tapahtuma', label: 'Osallistun tapahtumiin', icon: CalendarDays, color: CATEGORIES.tapahtuma.color },
+  ]
+
+  const renderPurpose = () => (
+    <View style={[s.page, { width: SCREEN_WIDTH }]}>
+      <View style={s.purposeContent}>
+        <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }]}>
+          Mitä haluat tehdä?
+        </Text>
+        <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, textAlign: 'center' }]}>
+          Valitse yksi tai useampi — voit muuttaa myöhemmin
+        </Text>
+
+        <View style={s.purposeGrid}>
+          {PURPOSE_OPTIONS.map((opt) => {
+            const isSelected = selectedPurposes.includes(opt.key)
+            const IconComponent = opt.icon
+            return (
+              <PressableOpacity
+                key={opt.key}
+                onPress={() => {
+                  setSelectedPurposes((prev) =>
+                    prev.includes(opt.key)
+                      ? prev.filter((k) => k !== opt.key)
+                      : [...prev, opt.key]
+                  )
+                }}
+                style={[
+                  s.purposePill,
+                  isSelected
+                    ? { backgroundColor: opt.color }
+                    : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={opt.label}
+              >
+                <IconComponent
+                  size={20}
+                  color={isSelected ? '#FFFFFF' : opt.color}
+                />
+                <Text
+                  style={[
+                    s.purposePillText,
+                    {
+                      color: isSelected ? '#FFFFFF' : colors.foreground,
+                      fontFamily: isSelected ? fonts.bodySemi : fonts.body,
+                    },
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+                {isSelected && <Check size={16} color="#FFFFFF" />}
+              </PressableOpacity>
+            )
+          })}
+        </View>
+      </View>
+
+      <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
+        <PressableOpacity
+          onPress={async () => {
+            if (selectedPurposes.length > 0) {
+              await AsyncStorage.setItem('onboarding_purposes', JSON.stringify(selectedPurposes))
+            }
+            goToPage(4)
+          }}
+          style={[s.primaryBtn, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel="Seuraava"
+        >
+          <Text style={[s.primaryBtnText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
+            Seuraava
+          </Text>
+          <ChevronRight size={18} color={colors.primaryForeground} />
+        </PressableOpacity>
+        <PressableOpacity
+          onPress={() => goToPage(4)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.skip')}
+        >
+          <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {t('onboarding.skip')}
+          </Text>
+        </PressableOpacity>
+        {renderDots()}
+      </View>
+    </View>
+  )
+
+  // ── Slide 5: Choose Neighborhood ──
   const renderNeighborhood = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       {/* Back button so user can return to previous slides and change choices */}
-      <PressableOpacity onPress={() => goToPage(2)} style={s.backBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+      <PressableOpacity onPress={() => goToPage(3)} style={s.backBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
         <ArrowRight size={18} color={colors.mutedForeground} style={{ transform: [{ rotate: '180deg' }] }} />
         <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
           {t('common.back')}
@@ -686,6 +786,7 @@ function OnboardingScreenInner() {
         {renderWelcome()}
         {renderHowItWorks()}
         {renderTrustSafety()}
+        {renderPurpose()}
         {renderNeighborhood()}
       </ScrollView>
     </KeyboardAvoidingView>
@@ -937,6 +1038,32 @@ const s = StyleSheet.create({
     lineHeight: 16,
     marginTop: 4,
     paddingHorizontal: 4,
+  },
+
+  // Purpose
+  purposeContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
+    paddingHorizontal: 24,
+  },
+  purposeGrid: {
+    gap: 10,
+    width: '100%',
+  },
+  purposePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 20,
+  },
+  purposePillText: {
+    fontSize: 15,
+    flex: 1,
+    lineHeight: 20,
   },
 
   // Bottom area

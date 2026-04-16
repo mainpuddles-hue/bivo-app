@@ -263,17 +263,38 @@ function DiscoveryView({
 interface SearchEmptyStateProps {
   query: string
   colors: ReturnType<typeof useTheme>['colors']
+  isDark: boolean
   t: ReturnType<typeof useI18n>['t']
+  onSelectCategory: (type: PostType, label: string) => void
 }
 
-function SearchEmptyState({ query, colors, t }: SearchEmptyStateProps) {
+function SearchEmptyState({ query, colors, isDark, t, onSelectCategory }: SearchEmptyStateProps) {
   return (
     <View style={s.empty}>
-      <BoardIllustration size={100} />
+      <View style={[s.emptyIconCircle, { backgroundColor: colors.primary + '10' }]}>
+        <BoardIllustration size={52} />
+      </View>
       <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
         {query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}
       </Text>
-      <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.tryDifferent')}</Text>
+      <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{'Ei hakutuloksia — kokeile eri hakusanaa tai laajenna hakualuetta'}</Text>
+      <View style={s.emptyCategoryRow}>
+        {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
+          const CatIcon = CATEGORY_ICON_MAP[cat.icon]
+          return (
+            <PressableOpacity
+              key={type}
+              onPress={() => onSelectCategory(type, t(cat.label))}
+              style={[s.emptyCategoryChip, { backgroundColor: isDark ? cat.bgDark : cat.bgLight, borderColor: `${cat.color}30` }]}
+              accessibilityRole="button"
+              accessibilityLabel={t(cat.label)}
+            >
+              {CatIcon && <CatIcon size={14} color={cat.color} />}
+              <Text style={[s.emptyCategoryChipText, { color: cat.color, fontFamily: fonts.bodySemi }]}>{t(cat.label)}</Text>
+            </PressableOpacity>
+          )
+        })}
+      </View>
     </View>
   )
 }
@@ -1111,7 +1132,7 @@ function SearchScreenInner() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} /> : null}
-          ListEmptyComponent={<SearchEmptyState query={query} colors={colors} t={t} />}
+          ListEmptyComponent={<SearchEmptyState query={query} colors={colors} isDark={isDark} t={t} onSelectCategory={(type, label) => { setActiveFilter(type); setQuery(label); executeSearch(label, undefined, type) }} />}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews={true}
           maxToRenderPerBatch={10}
@@ -1320,8 +1341,12 @@ const s = StyleSheet.create({
   },
   categoryCardText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
   empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
+  emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi, lineHeight: 22 },
   emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body, lineHeight: 20 },
+  emptyCategoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 4 },
+  emptyCategoryChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
+  emptyCategoryChipText: { fontSize: 13, fontWeight: '600', lineHeight: 18 },
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth },
   searchEventIcon: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
