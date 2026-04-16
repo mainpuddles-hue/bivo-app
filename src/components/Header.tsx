@@ -48,23 +48,23 @@ export function Header() {
     ]}>
       <View style={styles.headerContent}>
         {/* Left: Search */}
-        <PressableOpacity accessibilityLabel={t('common.search')} onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
+        <PressableOpacity accessibilityLabel={t('common.search')} accessibilityRole="button" onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
           <Search size={22} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
 
         {/* Right: Map + Notifications */}
         <View style={styles.actions}>
-          <PressableOpacity accessibilityLabel={t('nav.map')} onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
+          <PressableOpacity accessibilityLabel={t('nav.map')} accessibilityRole="button" onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
             <Map size={22} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
-          <PressableOpacity accessibilityLabel={unreadCount > 0 ? `${t('nav.notifications')} (${unreadCount} uutta)` : t('nav.notifications')} onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
+          <PressableOpacity accessibilityLabel={unreadCount > 0 ? `${t('nav.notifications')} (${unreadCount} uutta)` : t('nav.notifications')} accessibilityRole="button" onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={22}
               color={unreadCount > 0 ? colors.primary : colors.foreground}
               strokeWidth={unreadCount > 0 ? 2.2 : 1.8}
             />
             {unreadCount > 0 && (
-              <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+              <View style={[styles.badge, { backgroundColor: colors.primary }]} importantForAccessibility="no-hide-descendants">
                 <Text style={[styles.badgeText, { color: colors.primaryForeground }]}>
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Text>

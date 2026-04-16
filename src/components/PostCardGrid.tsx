@@ -175,14 +175,16 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           </Text>
         )}
       </View>
-      <MoreHorizontal size={14} color={colors.mutedForeground} strokeWidth={2} />
+      <View importantForAccessibility="no-hide-descendants">
+        <MoreHorizontal size={14} color={colors.mutedForeground} strokeWidth={2} />
+      </View>
     </View>
   )
 
   // ── Threads-style category label: tiny dot + muted uppercase text ──
   const CategoryLabel = category ? (
-    <View style={styles.categoryRow}>
-      <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
+    <View style={styles.categoryRow} accessible={false}>
+      <View style={[styles.categoryDot, { backgroundColor: category.color }]} accessible={false} importantForAccessibility="no" />
       <Text style={[styles.categoryText, { color: colors.mutedForeground }]} numberOfLines={1}>
         {t(category.label)}
       </Text>
@@ -214,10 +216,15 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           </Text>
         )}
       </Pressable>
-      <View style={styles.action}>
+      <View
+        style={styles.action}
+        accessible
+        accessibilityLabel={`${post.comment_count ?? 0} ${t('post.comments')}`}
+        importantForAccessibility="yes"
+      >
         <MessageCircle size={15} color={colors.foreground} strokeWidth={1.8} />
         {(post.comment_count ?? 0) > 0 && (
-          <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
+          <Text style={[styles.actionText, { color: colors.mutedForeground }]} accessible={false}>
             {post.comment_count}
           </Text>
         )}

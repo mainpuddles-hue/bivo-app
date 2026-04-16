@@ -893,6 +893,9 @@ export default function CreateScreen() {
               <Pressable
                 key={type}
                 onPress={() => handleCategorySelect(type)}
+                accessibilityRole="button"
+                accessibilityLabel={`${t(cat.label)}${isLocked ? `, ${t('trust.requiresTier2Short')}` : ''}`}
+                accessibilityState={{ disabled: isLocked }}
                 style={({ pressed }) => [
                   styles.categoryCard,
                   isFullWidth && styles.categoryCardFullWidth,
@@ -901,7 +904,7 @@ export default function CreateScreen() {
                   isLocked && { opacity: 0.5 },
                 ]}
               >
-                <View style={styles.categoryCardInner}>
+                <View style={styles.categoryCardInner} importantForAccessibility="no-hide-descendants">
                   <View style={styles.categoryIconLarge}>
                     {Icon && <Icon size={32} color={cat.color} strokeWidth={1.8} />}
                     {isLocked && (
@@ -1084,7 +1087,7 @@ export default function CreateScreen() {
             )}
             <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
             {duplicateWarning && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 4 }} accessibilityLiveRegion="polite">
                 <AlertTriangle size={12} color={colors.pro} />
                 <Text style={{ fontSize: 12, color: colors.pro, fontFamily: fonts.body, flex: 1 }}>
                   {duplicateWarning}
@@ -1354,6 +1357,9 @@ export default function CreateScreen() {
                         <PressableOpacity
                           key={tag.id}
                           onPress={() => toggleTag(tag.id)}
+                          accessibilityRole="checkbox"
+                          accessibilityLabel={t(tag.label)}
+                          accessibilityState={{ checked: isSelected }}
                           style={[
                             styles.tagChip,
                             isSelected
@@ -1378,6 +1384,8 @@ export default function CreateScreen() {
                         <PressableOpacity
                           key={tag}
                           onPress={() => setSelectedTags(prev => prev.includes(tag) ? prev : [...prev, tag])}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t('create.addTag') ?? 'Lisää'} ${t(`tags.${tag}`) ?? tag}`}
                           style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, backgroundColor: `${colors.primary}15` }}
                         >
                           <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.body }}>+ {t(`tags.${tag}`) ?? tag}</Text>

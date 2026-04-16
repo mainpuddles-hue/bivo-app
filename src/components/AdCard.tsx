@@ -6,7 +6,6 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
-import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { getImageUrl } from '@/lib/imageUtils'
 
 export interface Ad {
@@ -31,7 +30,7 @@ interface AdCardProps {
 }
 
 export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const supabase = useSupabase()
 
@@ -76,16 +75,15 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
       onPress={handlePress}
       style={[
         styles.card,
-        { backgroundColor: colors.card },
-        isDark ? cardShadowDark : cardShadow,
+        { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
       ]}
       accessibilityRole="button"
       accessibilityLabel={[t('ads.sponsored'), ad.title, ad.description].filter(Boolean).join(', ')}
     >
       {/* Sponsored label */}
-      <View style={[styles.sponsoredBadge, { backgroundColor: `${colors.pro}18` }]}>
-        <Megaphone size={11} color={colors.pro} />
-        <Text style={[styles.sponsoredText, { color: colors.pro }]}>{t('ads.sponsored')}</Text>
+      <View style={[styles.sponsoredBadge, { backgroundColor: colors.muted }]}>
+        <Megaphone size={11} color={colors.mutedForeground} />
+        <Text style={[styles.sponsoredText, { color: colors.mutedForeground }]}>{t('ads.sponsored')}</Text>
       </View>
 
       {/* Image */}
@@ -118,11 +116,11 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
 
         {/* CTA button */}
         {ad.cta_text && ad.link_url && (
-          <View style={[styles.ctaBtn, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.ctaText, { color: colors.primaryForeground }]} numberOfLines={1}>
+          <View style={[styles.ctaBtn, { backgroundColor: colors.foreground }]}>
+            <Text style={[styles.ctaText, { color: colors.background }]} numberOfLines={1}>
               {ad.cta_text}
             </Text>
-            <ExternalLink size={14} color={colors.primaryForeground} />
+            <ExternalLink size={14} color={colors.background} />
           </View>
         )}
       </View>

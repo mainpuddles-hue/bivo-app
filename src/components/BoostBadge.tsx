@@ -14,11 +14,11 @@ export function BoostBadge({ subtitle }: BoostBadgeProps) {
   const { t } = useI18n()
 
   return (
-    <View style={[styles.badge, { backgroundColor: `${colors.accent}20`, borderColor: `${colors.accent}40` }]}>
-      <TrendingUp size={10} color={colors.accent} />
-      <Text style={[styles.text, { color: colors.accent }]}>{t('feed.boosted')}</Text>
+    <View style={[styles.badge, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+      <TrendingUp size={10} color={colors.mutedForeground} />
+      <Text style={[styles.text, { color: colors.mutedForeground }]}>{t('feed.boosted')}</Text>
       {subtitle ? (
-        <Text style={[styles.subtitle, { color: colors.accent }]}>{subtitle}</Text>
+        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{subtitle}</Text>
       ) : null}
     </View>
   )

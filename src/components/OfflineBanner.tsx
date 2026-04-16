@@ -15,7 +15,11 @@ export function OfflineBanner({ visible }: OfflineBannerProps) {
   if (!visible) return null
 
   return (
-    <View style={[styles.banner, { backgroundColor: colors.destructive }]}>
+    <View
+      style={[styles.banner, { backgroundColor: colors.destructive }]}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="alert"
+    >
       <WifiOff size={14} color={colors.primaryForeground} />
       <Text style={[styles.text, { color: colors.primaryForeground }]}>
         {t('common.offline')}

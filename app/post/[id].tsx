@@ -1070,10 +1070,15 @@ function PostDetailScreenInner() {
                 </PressableOpacity>
               )}
             </PressableOpacity>
-            <View style={styles.actionItem}>
+            <View
+              style={styles.actionItem}
+              accessible
+              accessibilityLabel={`${comments.length} ${t('post.comments')}`}
+              importantForAccessibility="yes"
+            >
               <MessageCircle size={20} strokeWidth={1.8} color={colors.foreground} />
               {comments.length > 0 && (
-                <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{comments.length}</Text>
+                <Text style={[styles.actionText, { color: colors.mutedForeground }]} accessible={false}>{comments.length}</Text>
               )}
             </View>
             <PressableOpacity onPress={toggleSave} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>

@@ -31,8 +31,8 @@ export function MessageListSkeleton() {
   return (
     <View style={{ gap: 1 }}>
       {[0, 1, 2, 3, 4, 5].map(i => (
-        <View key={i} style={[skel.messageRow, { backgroundColor: colors.card }]}>
-          <Animated.View style={[skel.avatar, { backgroundColor: colors.muted, opacity }]} />
+        <View key={i} style={[skel.messageRow, { backgroundColor: colors.card, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}>
+          <Animated.View style={[skel.avatar, { backgroundColor: colors.muted, opacity, borderRadius: 18 }]} />
           <View style={skel.messageInfo}>
             <Animated.View style={[skel.line, { width: '50%', backgroundColor: colors.muted, opacity }]} />
             <Animated.View style={[skel.line, { width: '80%', backgroundColor: colors.muted, opacity }]} />
@@ -70,7 +70,7 @@ export function SearchSkeleton() {
   return (
     <View style={{ gap: 12, padding: 16 }}>
       {[0, 1, 2, 3].map(i => (
-        <View key={i} style={[skel.searchRow, { backgroundColor: colors.card }]}>
+        <View key={i} style={[skel.searchRow, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <Animated.View style={[skel.searchImage, { backgroundColor: colors.muted, opacity }]} />
           <View style={skel.searchInfo}>
             <Animated.View style={[skel.line, { width: '70%', backgroundColor: colors.muted, opacity }]} />
@@ -87,7 +87,7 @@ export function PostCardSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={[postSkel.card, { backgroundColor: colors.card }]}>
+    <View style={[postSkel.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
       <Animated.View style={[postSkel.image, { backgroundColor: colors.muted, opacity }]} />
       <View style={postSkel.body}>
         <Animated.View style={[skel.line, postSkel.lineShort, { backgroundColor: colors.muted, opacity }]} />
@@ -109,7 +109,7 @@ export function SectionSkeleton({ count = 3 }: { count?: number }) {
   return (
     <View style={{ gap: 12 }}>
       {Array.from({ length: count }).map((_, i) => (
-        <View key={i} style={[sectionSkel.card, { backgroundColor: colors.card }]}>
+        <View key={i} style={[sectionSkel.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <View style={sectionSkel.cardRow}>
             <Animated.View style={[sectionSkel.circle, { backgroundColor: colors.muted, opacity }]} />
             <View style={sectionSkel.content}>
@@ -126,7 +126,7 @@ export function SectionSkeleton({ count = 3 }: { count?: number }) {
 const skel = StyleSheet.create({
   // Message
   messageRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  avatar: { width: 48, height: 48, borderRadius: 24 },
+  avatar: { width: 48, height: 48, borderRadius: 18 },
   messageInfo: { flex: 1, gap: 8 },
   line: { height: 12, borderRadius: 6 },
   timeBadge: { width: 40, height: 12, borderRadius: 6 },
@@ -202,7 +202,7 @@ export function EventCardSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={[eventSkel.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <View style={[eventSkel.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
       {/* Image placeholder */}
       <Animated.View style={[eventSkel.image, { backgroundColor: colors.muted, opacity }]} />
       {/* Content */}
@@ -237,7 +237,7 @@ export function TableCardSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={[tableSkel.card, { backgroundColor: colors.muted, borderColor: `${colors.border}` }]}>
+    <View style={[tableSkel.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
       {/* Emoji placeholder */}
       <Animated.View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: colors.card, opacity }} />
       {/* Title */}

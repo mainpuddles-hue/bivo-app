@@ -30,13 +30,13 @@ export function AlertBanner() {
   if (visibleAlerts.length === 0) return null
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityLiveRegion="polite">
       {shownAlerts.map(alert => {
         const isWeather = alert.type === 'weather'
         const isSevere = alert.severity === 'severe' || alert.severity === 'warning'
-        const bgColor = isSevere ? `${colors.destructive}18` : `${'#E8A050'}18`
-        const borderColor = isSevere ? `${colors.destructive}44` : `${'#E8A050'}44`
-        const iconColor = isSevere ? colors.destructive : '#E8A050'
+        const bgColor = colors.muted
+        const borderColor = colors.border
+        const iconColor = isSevere ? colors.destructive : colors.mutedForeground
         const isExpanded = expandedId === alert.id
 
         return (
@@ -52,11 +52,13 @@ export function AlertBanner() {
             style={[styles.alertCard, { backgroundColor: bgColor, borderColor }]}
           >
             <View style={styles.alertHeader}>
-              {isWeather ? (
-                <AlertTriangle size={16} color={iconColor} />
-              ) : (
-                <Bus size={16} color={iconColor} />
-              )}
+              <View importantForAccessibility="no-hide-descendants">
+                {isWeather ? (
+                  <AlertTriangle size={16} color={iconColor} />
+                ) : (
+                  <Bus size={16} color={iconColor} />
+                )}
+              </View>
               <Text style={[styles.alertTitle, { color: iconColor }]} numberOfLines={isExpanded ? undefined : 1}>
                 {alert.title}
               </Text>

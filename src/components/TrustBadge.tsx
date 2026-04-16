@@ -29,8 +29,8 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress }
   const fontSize = size === 'large' ? 13 : size === 'medium' ? 11 : 9
 
   const content = (
-    <View style={[styles.badge, { backgroundColor: `${tier.color}18` }, size === 'large' && styles.badgeLarge]}>
-      <Icon size={iconSize} color={tier.color} />
+    <View style={[styles.badge, size === 'large' && styles.badgeLarge]}>
+      <Icon size={iconSize} color={tier.color} strokeWidth={1.5} />
       {showLabel && (
         <Text style={[styles.label, { color: tier.color, fontSize }]}>
           {t(tier.nameKey)}
@@ -147,14 +147,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
     paddingVertical: 2,
-    borderRadius: 16,
   },
   badgeLarge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
   },
   label: {
     fontFamily: fonts.bodySemi,

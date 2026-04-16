@@ -31,7 +31,7 @@ function getUrgencyColor(expiresAt: string): string {
 }
 
 function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const router = useRouter()
 
@@ -61,10 +61,8 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={[styles.pulseCircle, { backgroundColor: `${colors.destructive}${isDark ? '40' : '20'}` }]}>
-          <Zap size={14} color={colors.destructive} fill={colors.destructive} />
-        </View>
-        <Text style={[styles.headerText, { color: colors.destructive }]}>
+        <Zap size={14} color={colors.mutedForeground} />
+        <Text style={[styles.headerText, { color: colors.foreground }]}>
           {t('urgency.juuriNyt')} ({urgentPosts.length})
         </Text>
       </View>
@@ -89,7 +87,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
               }}
               style={({ pressed }) => [
                 styles.card,
-                { backgroundColor: colors.card },
+                { backgroundColor: 'transparent', borderColor: colors.border },
                 pressed && { transform: [{ scale: 0.96 }] },
               ]}
             >
@@ -99,7 +97,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
               {/* Category + countdown row */}
               <View style={styles.topRow}>
                 {CatIcon && <CatIcon size={12} color={category?.color ?? colors.primary} />}
-                <View style={[styles.countdownBadge, { backgroundColor: `${urgencyColor}18` }]}>
+                <View style={[styles.countdownBadge, { backgroundColor: colors.muted }]}>
                   <Clock size={10} color={urgencyColor} />
                   <Text style={[styles.countdownText, { color: urgencyColor }]}>{label}</Text>
                 </View>
@@ -136,11 +134,7 @@ export const JuuriNytStrip = memo(JuuriNytStripInner)
 
 const styles = StyleSheet.create({
   container: { gap: 8 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
-  pulseCircle: {
-    width: 26, height: 26, borderRadius: 13,
-    alignItems: 'center', justifyContent: 'center',
-  },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 },
   headerText: {
     fontSize: 14,
     fontFamily: fonts.headingSemi,
@@ -150,14 +144,10 @@ const styles = StyleSheet.create({
   card: {
     width: 160,
     borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: 12,
     gap: 8,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
   },
   accentBar: {
     position: 'absolute',

@@ -102,24 +102,24 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
                 style={[
                   styles.item,
                   {
-                    backgroundColor: isSelected ? `${colors.primary}14` : 'transparent',
+                    backgroundColor: isSelected ? colors.foreground : 'transparent',
                     borderBottomColor: colors.border,
                   },
                 ]}
               >
-                <MapPin size={14} color={isSelected ? colors.primary : colors.mutedForeground} />
+                <MapPin size={14} color={isSelected ? colors.background : colors.mutedForeground} />
                 <Text
                   style={[
                     styles.itemText,
                     {
-                      color: isSelected ? colors.primary : colors.foreground,
+                      color: isSelected ? colors.background : colors.foreground,
                       fontWeight: isSelected ? '600' : '400',
                     },
                   ]}
                 >
                   {nh}
                 </Text>
-                {isSelected && <Check size={16} color={colors.primary} />}
+                {isSelected && <Check size={16} color={colors.background} />}
               </Pressable>
             )
           })}

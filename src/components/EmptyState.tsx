@@ -15,7 +15,7 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
   const { colors } = useTheme()
   return (
     <View style={styles.container}>
-      <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}12` }]}>
+      <View style={styles.iconWrap}>
         {icon}
       </View>
       <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
@@ -23,8 +23,12 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
         <Text style={[styles.description, { color: colors.mutedForeground }]}>{description}</Text>
       )}
       {actionLabel && onAction && (
-        <PressableOpacity onPress={onAction} style={[styles.actionBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
-          <Text style={[styles.actionText, { color: colors.primaryForeground }]}>{actionLabel}</Text>
+        <PressableOpacity
+          onPress={onAction}
+          style={[styles.actionBtn, { borderColor: colors.border }]}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.actionText, { color: colors.foreground }]}>{actionLabel}</Text>
         </PressableOpacity>
       )}
     </View>
@@ -32,8 +36,7 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
 }
 
 const styles = StyleSheet.create({
-  // Apple HIG: empty states feel calm and breathing — generous spacing,
-  // friendly icon size, clear hierarchy
+  // Threads-light: plain icon, bold title, muted description, outline CTA
   container: {
     alignItems: 'center',
     paddingTop: 80,
@@ -41,26 +44,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     gap: 14,
   },
-  iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+  iconWrap: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   title: {
-    fontSize: 20,
+    fontSize: 17,
     fontFamily: fonts.headingSemi,
-    lineHeight: 26,
+    fontWeight: '700',
+    lineHeight: 22,
     textAlign: 'center',
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: fonts.body,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20,
     maxWidth: 280,
   },
   actionBtn: {
@@ -68,6 +71,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    backgroundColor: 'transparent',
   },
   actionText: {
     fontSize: 14,

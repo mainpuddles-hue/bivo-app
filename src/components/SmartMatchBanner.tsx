@@ -30,10 +30,10 @@ export const SmartMatchBanner = memo(function SmartMatchBanner({ matches, onDism
     <Pressable
       accessibilityLabel={t('smartMatch.neighborNeeds', { name: match.posterName })}
       onPress={() => router.push(`/post/${match.postId}`)}
-      style={[styles.banner, { backgroundColor: `${colors.primary}14`, borderColor: `${colors.primary}33` }]}
+      style={[styles.banner, { backgroundColor: 'transparent', borderColor: colors.border }]}
     >
-      <View style={[styles.iconWrap, { backgroundColor: `${colors.primary}1F` }]}>
-        <Zap size={18} color={colors.primary} fill={colors.primary} />
+      <View style={[styles.iconWrap, { backgroundColor: colors.muted }]}>
+        <Zap size={18} color={colors.mutedForeground} />
       </View>
       <View style={styles.content}>
         <View style={styles.titleRow}>
@@ -41,8 +41,8 @@ export const SmartMatchBanner = memo(function SmartMatchBanner({ matches, onDism
             {t('smartMatch.neighborNeeds', { name: match.posterName })}
           </Text>
           {match.matchScore != null && match.matchScore > 0 && (
-            <View style={[styles.scoreBadge, { backgroundColor: `${colors.primary}20` }]}>
-              <Text style={[styles.scoreText, { color: colors.primary }]}>{match.matchScore}%</Text>
+            <View style={[styles.scoreBadge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.scoreText, { color: colors.mutedForeground }]}>{match.matchScore}%</Text>
             </View>
           )}
         </View>

@@ -1,16 +1,11 @@
 import Svg, { Path, Circle, Rect } from 'react-native-svg'
+import { useTheme } from '@/hooks/useTheme'
 
-// Helsinki Dusk brand colors
+// Legacy color constants — used only by PinIllustration and CityMapIllustration
 const PRIMARY = '#2D6B5E'
 const ACCENT = '#4CAF6A'
 const MUTED_GREEN = '#3A8B6E'
 const LIGHT_GREEN = '#A8D5BA'
-
-// Category colors
-const TARVITSEN = '#C75B3A'
-const TARJOAN = '#7C5CBF'
-const ILMAISTA = '#3B7DD8'
-const NAPPAA = '#E8A050'
 
 /**
  * PinIllustration — A teardrop map pin in primary green with a white center dot.
@@ -34,26 +29,29 @@ export function PinIllustration({ size = 120 }: { size?: number }) {
 }
 
 /**
- * BoardIllustration — A bulletin board with 4 colored cards pinned to it.
+ * BoardIllustration — Monochrome outline bulletin board. Uses foreground/mutedForeground
+ * so it works on Threads-light (pure white) and dark backgrounds alike.
  */
 export function BoardIllustration({ size = 120 }: { size?: number }) {
+  const { colors } = useTheme()
+  const stroke = colors.foreground
+  const strokeMuted = colors.mutedForeground
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
       {/* Board frame */}
-      <Rect x={10} y={14} width={80} height={72} rx={6} fill={PRIMARY} opacity={0.15} />
-      <Rect x={14} y={18} width={72} height={64} rx={4} fill="#FFFFFF" opacity={0.6} />
+      <Rect x={10} y={14} width={80} height={72} rx={6} fill="none" stroke={stroke} strokeWidth={1.5} />
       {/* Card 1 - top left */}
-      <Rect x={20} y={24} width={24} height={18} rx={2} fill={TARVITSEN} opacity={0.85} />
-      <Circle cx={32} cy={24} r={3} fill={PRIMARY} />
+      <Rect x={20} y={24} width={24} height={18} rx={2} fill="none" stroke={strokeMuted} strokeWidth={1} />
+      <Circle cx={32} cy={24} r={2.5} fill={strokeMuted} />
       {/* Card 2 - top right */}
-      <Rect x={56} y={26} width={24} height={16} rx={2} fill={TARJOAN} opacity={0.85} />
-      <Circle cx={68} cy={26} r={3} fill={PRIMARY} />
+      <Rect x={56} y={26} width={24} height={16} rx={2} fill="none" stroke={strokeMuted} strokeWidth={1} />
+      <Circle cx={68} cy={26} r={2.5} fill={strokeMuted} />
       {/* Card 3 - bottom left */}
-      <Rect x={22} y={50} width={22} height={20} rx={2} fill={ILMAISTA} opacity={0.85} />
-      <Circle cx={33} cy={50} r={3} fill={PRIMARY} />
+      <Rect x={22} y={50} width={22} height={20} rx={2} fill="none" stroke={strokeMuted} strokeWidth={1} />
+      <Circle cx={33} cy={50} r={2.5} fill={strokeMuted} />
       {/* Card 4 - bottom right */}
-      <Rect x={54} y={52} width={26} height={16} rx={2} fill={NAPPAA} opacity={0.85} />
-      <Circle cx={67} cy={52} r={3} fill={PRIMARY} />
+      <Rect x={54} y={52} width={26} height={16} rx={2} fill="none" stroke={strokeMuted} strokeWidth={1} />
+      <Circle cx={67} cy={52} r={2.5} fill={strokeMuted} />
     </Svg>
   )
 }

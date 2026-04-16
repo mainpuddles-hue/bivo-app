@@ -34,7 +34,7 @@ export function UnsupportedAreaScreen({
   userId,
   onContinue,
 }: UnsupportedAreaScreenProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const supabase = useSupabase()
   const insets = useSafeAreaInsets()
@@ -107,13 +107,8 @@ export function UnsupportedAreaScreen({
         keyboardShouldPersistTaps="handled"
       >
         {/* Globe icon */}
-        <View
-          style={[
-            styles.iconCircle,
-            { backgroundColor: isDark ? `${colors.primary}20` : `${colors.primary}15` },
-          ]}
-        >
-          <Globe size={48} color={colors.primary} strokeWidth={1.3} />
+        <View style={styles.iconWrap}>
+          <Globe size={40} color={colors.mutedForeground} strokeWidth={1.5} />
         </View>
 
         {/* Title */}
@@ -154,7 +149,7 @@ export function UnsupportedAreaScreen({
 
         {/* Waitlist section */}
         {submitted ? (
-          <View style={[styles.successCard, { backgroundColor: isDark ? `${colors.primary}20` : `${colors.primary}15` }]}>
+          <View style={[styles.successCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
             <Check size={20} color={colors.success} />
             <Text style={[styles.successText, { color: colors.success }]}>
               {t('unsupported.waitlistSuccess')}
@@ -191,17 +186,17 @@ export function UnsupportedAreaScreen({
               style={({ pressed }) => [
                 styles.waitlistBtn,
                 {
-                  backgroundColor: colors.primary,
+                  backgroundColor: colors.foreground,
                   opacity: pressed ? 0.8 : submitting ? 0.7 : 1,
                 },
               ]}
             >
               {submitting ? (
-                <ActivityIndicator size="small" color={colors.primaryForeground} />
+                <ActivityIndicator size="small" color={colors.background} />
               ) : (
                 <>
-                  <Mail size={18} color={colors.primaryForeground} />
-                  <Text style={[styles.waitlistBtnText, { color: colors.primaryForeground }]}>
+                  <Mail size={18} color={colors.background} />
+                  <Text style={[styles.waitlistBtnText, { color: colors.background }]}>
                     {t('unsupported.joinWaitlist')}
                   </Text>
                 </>
@@ -247,10 +242,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     gap: 20,
   },
-  iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+  iconWrap: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
@@ -340,6 +334,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 16,
+    overflow: 'hidden',
   },
   successText: {
     flex: 1,
