@@ -349,6 +349,7 @@ export default function CreateScreen() {
   }, [hasUnsavedContent, t])
 
   const handleCategorySelect = (type: PostType) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     // Gate lainaa behind trust level 2
     if (type === 'lainaa' && !trust.permissions.canLainaa) {
       setShowTrustGate(true)

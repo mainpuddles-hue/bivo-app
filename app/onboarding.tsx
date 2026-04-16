@@ -32,6 +32,7 @@ import {
 } from 'lucide-react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -430,6 +431,7 @@ function OnboardingScreenInner() {
               <PressableOpacity
                 key={opt.key}
                 onPress={() => {
+                  try { Haptics.selectionAsync() } catch {}
                   setSelectedPurposes((prev) =>
                     prev.includes(opt.key)
                       ? prev.filter((k) => k !== opt.key)
