@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   notifContent: { flex: 1, gap: 4 },
-  notifDeleteBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
+  notifDeleteBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19, fontFamily: fonts.body },
   notifBody: { fontSize: 13, lineHeight: 17, fontFamily: fonts.body },
   notifTime: { fontSize: 11, marginTop: 2, lineHeight: 14, fontFamily: fonts.body },

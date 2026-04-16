@@ -458,9 +458,24 @@ export default function ProfileScreen() {
             {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
           </View>
           {!trust.loading && trust.level === 1 && (
-            <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-              {'→ Aktiivinen naapuri'}
-            </Text>
+            <View style={{ gap: 4, marginTop: 2 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.bodyMedium, letterSpacing: 0.3 }}>
+                  {'PERUSKÄYTTÄJÄ → AKTIIVINEN NAAPURI'}
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.primary, fontFamily: fonts.bodySemi }}>
+                  {`${Math.round(trust.score)}/100`}
+                </Text>
+              </View>
+              <View style={{ height: 6, backgroundColor: colors.muted, borderRadius: 3, overflow: 'hidden' }}>
+                <View style={{
+                  width: `${Math.min(100, Math.max(0, trust.score))}%`,
+                  height: '100%',
+                  backgroundColor: colors.primary,
+                  borderRadius: 3,
+                }} />
+              </View>
+            </View>
           )}
           {profile.naapurusto && (
             <View style={s.nhRow}>

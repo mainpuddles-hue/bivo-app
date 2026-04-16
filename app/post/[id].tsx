@@ -1171,8 +1171,13 @@ function PostDetailScreenInner() {
                 <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
                   hitSlop={8}
                   accessibilityRole="button" accessibilityLabel={t('post.sendComment')}
-                  style={({ pressed }) => [styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim() || sendingComment) ? 0.5 : pressed ? 0.7 : 1 }]}>
-                  <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
+                  accessibilityState={{ busy: sendingComment, disabled: !commentText.trim() || sendingComment }}
+                  style={({ pressed }) => [styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.primary : colors.muted, opacity: (!commentText.trim()) ? 0.5 : pressed ? 0.7 : 1 }]}>
+                  {sendingComment ? (
+                    <ActivityIndicator size="small" color={colors.primaryForeground} />
+                  ) : (
+                    <Send size={14} color={commentText.trim() ? colors.primaryForeground : colors.mutedForeground} />
+                  )}
                 </Pressable>
               </View>
               {commentText.length > 0 && (

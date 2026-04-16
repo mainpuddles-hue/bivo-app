@@ -325,6 +325,41 @@ function useAuthStateListener() {
         // Don't navigate if auth/callback is handling the redirect
         if (authSegmentsRef.current[0] === 'auth') return
 
+        // BUG FIX: cold-boot SIGNED_IN should NOT redirect to '/'. The session-
+        // restoration event fires on every app start even when the user is
+        // already on a valid authenticated route (e.g. deep-linked or URL-
+        // navigated to /profile, /create, /messages). Previously this caused
+        // every direct URL navigation to bounce back to the feed.
+        // Only redirect if this is a genuine new login (no prior session).
+        const isFreshLogin = !initialCheckDoneRef.current || !hadSessionRef.current
+        if (!isFreshLogin) {
+          // Session was restored on app start — user is already on a route.
+          // Still verify ban / onboarding but do NOT force-navigate.
+          const timer = setTimeout(async () => {
+            if (!mounted) return
+            try {
+              const { data: banProfile } = await supabase
+                .from('profiles')
+                .select('is_banned, naapurusto')
+                .eq('id', session.user.id)
+                .maybeSingle()
+              if (!mounted) return
+              if ((banProfile as any)?.is_banned) {
+                setTimeout(() => {
+                  supabase.auth.signOut().catch(() => {})
+                  Alert.alert(tRef.current('auth.accountBanned'), tRef.current('auth.accountBannedDesc'))
+                }, 0)
+                return
+              }
+              if ((banProfile as any)?.naapurusto) {
+                await AsyncStorage.setItem('onboarding_complete', 'true')
+              }
+            } catch {}
+          }, 100)
+          timers.push(timer)
+          return
+        }
+
         const timer = setTimeout(async () => {
           if (!mounted) return
           try {

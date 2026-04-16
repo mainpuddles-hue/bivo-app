@@ -104,7 +104,11 @@ export default function GroupsScreen() {
   useEffect(() => {
     async function fetchUser() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        // Not logged in — clear loading so UI isn't stuck on skeleton forever
+        setLoading(false)
+        return
+      }
       setCurrentUserId(user.id)
       try {
         const { data: profile } = await (supabase.from('profiles') as any)
