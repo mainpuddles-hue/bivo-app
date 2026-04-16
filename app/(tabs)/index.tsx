@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIn
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown, LayoutGrid, List } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, X as XIcon, CalendarDays, MessageCircle, ChevronRight, ArrowUpDown } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -218,21 +218,7 @@ function FeedScreenInner() {
   const [missedCount, setMissedCount] = useState(0)
   const [showMissedBanner, setShowMissedBanner] = useState(false)
 
-  // ── Feed layout: list (default) or grid (2-col masonry, hybrid marketplace/community) ──
-  const [feedLayout, setFeedLayout] = useState<'list' | 'grid'>('list')
-  useEffect(() => {
-    AsyncStorage.getItem('tackbird_feed_layout').then(val => {
-      if (val === 'grid' || val === 'list') setFeedLayout(val)
-    }).catch(() => {})
-  }, [])
-  const toggleFeedLayout = useCallback(() => {
-    setFeedLayout(prev => {
-      const next = prev === 'list' ? 'grid' : 'list'
-      AsyncStorage.setItem('tackbird_feed_layout', next).catch(() => {})
-      try { Haptics.selectionAsync() } catch {}
-      return next
-    })
-  }, [])
+  // Feed is always grid — 2-col masonry hybrid marketplace/community layout
   useEffect(() => {
     AsyncStorage.getItem('tackbird_last_feed_visit').then(val => {
       if (val) setLastFeedVisit(val)
@@ -262,20 +248,12 @@ function FeedScreenInner() {
     [feed.posts, hiddenIds],
   )
 
-  // Interleave ads every 5th post, then community cards at positions 3, 9, 16
+  // Feed is always grid (2-col) — ads and community cards are full-width-only
+  // and don't fit the 2-column Pinterest/Depop-style layout. They belong in
+  // Explore or dedicated placements.
   const visiblePosts = useMemo(() => {
-    const result: (Post | Ad | CommunityCardItem)[] = []
-    let adIdx = 0
-    for (let i = 0; i < filteredPosts.length; i++) {
-      result.push(filteredPosts[i])
-      if ((i + 1) % 5 === 0 && adIdx < activeAds.length) {
-        result.push(activeAds[adIdx])
-        adIdx++
-      }
-    }
-    // Community cards removed from feed — belong in Explore tab (progressive disclosure)
-    return result
-  }, [filteredPosts, activeAds])
+    return filteredPosts as (Post | Ad | CommunityCardItem)[]
+  }, [filteredPosts])
 
   // Ref for visiblePosts so renderPost can access it without dependency
   const visiblePostsRef = useRef(visiblePosts)
@@ -320,43 +298,15 @@ function FeedScreenInner() {
     }
 
     const post = item as Post
-    const postIsNew = !!(lastFeedVisit && post.created_at && post.created_at > lastFeedVisit)
-
-    // Grid mode — no date group labels (they break 2-col layout)
-    if (feedLayout === 'grid') {
-      return (
-        <PostCardGrid
-          post={post}
-          userId={feed.currentUserId}
-          onInteraction={trackInteraction}
-          index={index}
-        />
-      )
-    }
-
-    // List mode — original layout with date groups
-    const currentGroup = post.created_at ? getDateGroup(post.created_at) : ''
-    let prevGroup = ''
-    for (let i = index - 1; i >= 0; i--) {
-      const prev = visiblePostsRef.current[i]
-      if (prev && !('_isAd' in prev) && !('_isCommunity' in prev) && (prev as Post).created_at) {
-        prevGroup = getDateGroup((prev as Post).created_at!)
-        break
-      }
-    }
-    const showLabel = index > 0 && currentGroup !== prevGroup
-
     return (
-      <View>
-        {showLabel && currentGroup ? (
-          <View style={styles.dateGroupLabel}>
-            <Text style={[styles.dateGroupText, { color: colors.mutedForeground }]}>{t(`feed.${currentGroup}`)}</Text>
-          </View>
-        ) : null}
-        <PostCard post={post} userLocation={feed.userLocation} userId={feed.currentUserId} onInteraction={trackInteraction} onHide={handleHidePost} isNew={postIsNew} index={index} />
-      </View>
+      <PostCardGrid
+        post={post}
+        userId={feed.currentUserId}
+        onInteraction={trackInteraction}
+        index={index}
+      />
     )
-  }, [feed.userLocation, feed.currentUserId, colors, t, trackInteraction, handleHidePost, lastFeedVisit, router, feedLayout])
+  }, [feed.currentUserId, colors, t, trackInteraction, router])
 
   // ── ListHeader — content-first: only contextual banners, no filler ──
   const ListHeader = useMemo(() => (
@@ -491,21 +441,6 @@ function FeedScreenInner() {
           >
             <ArrowUpDown size={14} color={colors.mutedForeground} />
           </PressableOpacity>
-          {/* Layout toggle: list ↔ grid */}
-          <PressableOpacity
-            onPress={toggleFeedLayout}
-            style={[styles.sortBtn, { backgroundColor: isDark ? colors.card : colors.muted }]}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={feedLayout === 'list' ? t('feed.switchToGrid') : t('feed.switchToList')}
-            accessibilityState={{ selected: feedLayout === 'grid' }}
-          >
-            {feedLayout === 'list' ? (
-              <LayoutGrid size={14} color={colors.mutedForeground} />
-            ) : (
-              <List size={14} color={colors.mutedForeground} />
-            )}
-          </PressableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 8, alignItems: 'center', paddingHorizontal: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
@@ -524,17 +459,12 @@ function FeedScreenInner() {
       </View>
 
       <FlatList
-        key={feedLayout}  /* Force remount when switching layouts — otherwise numColumns warning */
         data={visiblePosts}
         renderItem={renderPost}
         keyExtractor={item => ('_isCommunity' in item ? `community-${(item as any)._isCommunity}-${item.id}` : '_isAd' in item ? `ad-${item.id}` : item.id)}
-        numColumns={feedLayout === 'grid' ? 2 : 1}
-        columnWrapperStyle={feedLayout === 'grid' ? { gap: 10, paddingHorizontal: 12 } : undefined}
-        contentContainerStyle={[
-          feedLayout === 'grid'
-            ? { paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96, gap: 10 }
-            : [styles.list, { paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96 }],
-        ]}
+        numColumns={2}
+        columnWrapperStyle={{ gap: 10, paddingHorizontal: 12 }}
+        contentContainerStyle={{ paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96, gap: 10 }}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
@@ -542,12 +472,11 @@ function FeedScreenInner() {
         onEndReached={feed.handleLoadMore}
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}
-        ItemSeparatorComponent={feedLayout === 'grid' ? undefined : ItemSeparator16}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         removeClippedSubviews={true}
-        initialNumToRender={feedLayout === 'grid' ? 8 : 6}
+        initialNumToRender={8}
         maxToRenderPerBatch={10}
         windowSize={5}
       />

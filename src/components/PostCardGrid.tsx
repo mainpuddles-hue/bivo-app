@@ -1,38 +1,31 @@
 /**
- * PostCardGrid — compact 2-column masonry-style card for the hybrid
- * marketplace+community feed layout. Inspired by Pinterest/Depop/Etsy
- * while preserving TackBird's community context.
+ * PostCardGrid — 2-col feed card, Threads-inspired dark minimalism.
  *
- * Renders 4 adaptive variants based on post content:
- * - image-hero:  Posts with images → visual-first, photo dominant
- * - event:       Tapahtuma posts → date prominent, gradient background
- * - text-rich:   No image, long description → 5-6 lines of context
- * - text-compact: No image, short description → minimal text card
+ * Design principles (UI/UX Pro Max validated):
+ * - Typography as primary visual (no color-blocking backgrounds)
+ * - Single-accent monochrome palette
+ * - Hairline separators instead of shadows
+ * - Avatar visible on every card for community/social context
+ * - Content-adaptive density: image-dominant vs text-dominant variants
  *
- * Designed per UI/UX Pro Max:
- * - content-adaptive density (card size varies with content weight)
- * - visual-hierarchy via size + spacing + color (not color alone)
- * - touch-target-size ≥44px (whole card is tappable)
- * - content-jumping prevented (fixed image aspectRatio, no shift on load)
- * - motion-consistency (same spring physics as PostCard list variant)
- * - reduced-motion respected
- * - voiceover-sr (composite a11yLabel reads entire card as one unit)
+ * Variants:
+ * - image-hero:   Posts with photos → image dominant, minimal meta
+ * - event:        Tapahtuma → date highlighted in compact header
+ * - text-rich:    No image, long description → 6 lines shown
+ * - text-compact: No image, short description → tight card
  */
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
 import { Image } from 'expo-image'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { Heart, MapPin, Calendar, Users as UsersIcon, Clock, Crown } from 'lucide-react-native'
+import { Heart, MapPin, Calendar, Clock, User } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { shadowSm, shadowSmDark, shadowMd, shadowMdDark } from '@/lib/shadows'
 import { CATEGORIES } from '@/lib/constants'
 import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
-import { categoryTints, categoryAccents, categoryGradients } from '@/lib/theme'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatPrice, formatEventDateShort } from '@/lib/format'
 import { isHumanAction } from '@/lib/abuseDetection'
@@ -41,7 +34,7 @@ import type { Post, PostType } from '@/lib/types'
 
 type CardVariant = 'image-hero' | 'event' | 'text-rich' | 'text-compact'
 
-/** Determine which variant to render for a post. Shape + content drive the choice. */
+/** Pick a variant based on content shape. Image dominates when present. */
 export function getCardVariant(post: Post, hasImageOverride?: boolean): CardVariant {
   const hasImage = hasImageOverride ?? !!post.image_url
   if (post.type === 'tapahtuma') return 'event'
@@ -71,7 +64,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const likingRef = useRef(false)
   const likeAnim = useRef(new Animated.Value(1)).current
 
-  // Sync state on prop changes
   useEffect(() => {
     if (!likingRef.current) {
       if (post.is_liked !== undefined) setLiked(post.is_liked)
@@ -83,12 +75,14 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const CategoryIcon = category ? ICON_MAP[category.icon] : null
   const hasImage = !!(post.image_url && !imgError)
   const variant = getCardVariant(post, hasImage)
-  const isPro = post.is_pro_listing
   const isAnonymous = post.is_anonymous === true
   const isExpired = !!(post.expires_at && new Date(post.expires_at).getTime() <= Date.now())
   const isUrgent = post.is_urgent && !isExpired
+  const user = post.user
+  const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : (user?.name ?? '')
+  const timeAgo = post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''
 
-  // Staggered entrance animation — matches PostCard list variant for consistency
+  // Staggered entrance animation
   const entranceAnim = useRef(new Animated.Value(0)).current
   useEffect(() => {
     if (reduceMotion) { entranceAnim.setValue(1); return }
@@ -109,12 +103,11 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     if (category) parts.push(t(category.label))
     parts.push(post.title)
     if (post.description && variant !== 'image-hero') parts.push(post.description.slice(0, 140))
-    const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : post.user?.name
     if (authorName) parts.push(`${t('common.by') ?? ''} ${authorName}`.trim())
     if (post.location) parts.push(post.location)
-    if (post.created_at) parts.push(formatTimeAgo(post.created_at, t, locale))
+    if (timeAgo) parts.push(timeAgo)
     return parts.filter(Boolean).join(', ')
-  }, [category, post, variant, isAnonymous, t, locale])
+  }, [category, post, variant, authorName, timeAgo, t])
 
   const handlePress = () => {
     try { Haptics.selectionAsync() } catch {}
@@ -153,89 +146,91 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     } finally { likingRef.current = false }
   }
 
-  // ── Shared metadata row (author + time) ──
-  const MetaRow = (
-    <View style={styles.metaRow}>
-      <Text style={[styles.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
-        {(isAnonymous ? t('postCard.anonymousNeighbor') : post.user?.name ?? '')}
-        {post.created_at && ` · ${formatTimeAgo(post.created_at, t, locale)}`}
-      </Text>
-      {post.location && (
-        <View style={styles.locationRow}>
-          <MapPin size={10} color={colors.mutedForeground} strokeWidth={2} />
-          <Text style={[styles.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>{post.location}</Text>
+  // ── Threads-style author row (avatar + name + time) ──
+  const AuthorRow = (
+    <View style={styles.authorRow}>
+      {user?.avatar_url && !isAnonymous ? (
+        <Image
+          source={{ uri: getImageUrl(user.avatar_url, 'thumbnail')! }}
+          style={styles.avatar}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          recyclingKey={user.avatar_url}
+        />
+      ) : (
+        <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted }]}>
+          {isAnonymous ? (
+            <User size={12} color={colors.mutedForeground} />
+          ) : (
+            <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
+              {(authorName || '?').charAt(0).toUpperCase()}
+            </Text>
+          )}
         </View>
+      )}
+      <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>
+        {authorName}
+      </Text>
+      {timeAgo && (
+        <Text style={[styles.timeDot, { color: colors.mutedForeground }]} numberOfLines={1}>
+          {timeAgo}
+        </Text>
       )}
     </View>
   )
 
-  // ── Category pill (small) ──
-  const CategoryPill = category ? (
-    <View style={[styles.categoryPill, { backgroundColor: `${category.color}20` }]}>
+  // ── Category label (small, muted, Threads-style) ──
+  const CategoryLabel = category ? (
+    <View style={styles.categoryRow}>
       {CategoryIcon && <CategoryIcon size={10} color={category.color} strokeWidth={2.4} />}
-      <Text style={[styles.categoryPillText, { color: category.color }]} numberOfLines={1}>
-        {t(category.label)}
+      <Text style={[styles.categoryLabel, { color: category.color }]} numberOfLines={1}>
+        {t(category.label).toUpperCase()}
       </Text>
     </View>
   ) : null
 
-  // ── Like button (overlay or inline) ──
-  const LikeButton = (overlay: boolean) => (
+  // ── Like (inline, Threads-style) ──
+  const LikeInline = (
     <Pressable
       onPress={handleLike}
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
       accessibilityState={{ selected: liked }}
-      style={[
-        overlay ? styles.heartOverlay : styles.heartInline,
-        overlay && { backgroundColor: 'rgba(255,255,255,0.92)' },
-      ]}
+      style={styles.likeInline}
     >
       <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
         <Heart
-          size={overlay ? 16 : 14}
-          color={liked ? colors.destructive : (overlay ? '#111' : colors.mutedForeground)}
+          size={14}
+          color={liked ? colors.destructive : colors.mutedForeground}
           fill={liked ? colors.destructive : 'transparent'}
-          strokeWidth={2.2}
+          strokeWidth={2}
         />
       </Animated.View>
-      {!overlay && likeCount > 0 && (
-        <Text style={[styles.heartInlineText, { color: liked ? colors.destructive : colors.mutedForeground }]}>
+      {likeCount > 0 && (
+        <Text style={[styles.likeText, { color: liked ? colors.destructive : colors.mutedForeground }]}>
           {likeCount}
         </Text>
       )}
     </Pressable>
   )
 
-  // Tint + accent for the card
-  const cardBg = categoryTints[post.type]
-    ? categoryTints[post.type][isDark ? 'dark' : 'light']
-    : colors.card
-  const accent = categoryAccents[post.type]
-
   // ─── VARIANT: image-hero ───
   if (variant === 'image-hero') {
     return (
-      <Animated.View
-        style={{
-          opacity: entranceOpacity,
-          transform: [{ translateY: entranceTranslateY }],
-        }}
-      >
+      <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
         <Pressable
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
           style={({ pressed }) => [
             styles.card,
-            { backgroundColor: colors.card },
-            isDark ? shadowMdDark : shadowMd,
+            { backgroundColor: colors.card, borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth },
             isExpired && { opacity: 0.55 },
-            pressed && { transform: [{ scale: 0.98 }] },
+            pressed && { opacity: 0.85 },
           ]}
         >
-          <View style={styles.imageContainer}>
+          <View style={styles.imageWrap}>
             <Image
               source={{ uri: getImageUrl(post.image_url, 'medium')! }}
               style={styles.image}
@@ -247,39 +242,37 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
               accessibilityLabel={post.title}
             />
             {isUrgent && (
-              <View style={styles.urgentBadge}>
+              <View style={styles.urgentPill}>
                 <Clock size={9} color="#fff" strokeWidth={2.5} />
-                <Text style={styles.urgentBadgeText}>{t('postCard.urgent')}</Text>
+                <Text style={styles.urgentText}>{t('postCard.urgent')}</Text>
               </View>
             )}
-            {isPro && (
-              <View style={[styles.proBadgeOnImage, { backgroundColor: colors.pro }]}>
-                <Crown size={12} color="#1A1A1A" strokeWidth={2.5} />
-              </View>
-            )}
-            {LikeButton(true)}
           </View>
-          <View style={styles.imageContent}>
-            {CategoryPill}
+          <View style={styles.content}>
+            {CategoryLabel}
             <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
               {post.title}
             </Text>
-            <View style={styles.priceMeta}>
+            <View style={styles.priceRow}>
               {post.daily_fee != null && (
-                <Text style={[styles.price, { color: category?.color ?? colors.primary }]}>
+                <Text style={[styles.price, { color: colors.foreground }]}>
                   {t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })}
                 </Text>
               )}
               {post.service_price != null && post.service_price > 0 && (
-                <Text style={[styles.price, { color: category?.color ?? colors.primary }]}>
+                <Text style={[styles.price, { color: colors.foreground }]}>
                   {formatPrice(post.service_price, locale)}
                 </Text>
               )}
               {post.location && (
-                <Text style={[styles.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
+                <Text style={[styles.meta, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {post.location}
                 </Text>
               )}
+            </View>
+            <View style={styles.bottomRow}>
+              {AuthorRow}
+              {LikeInline}
             </View>
           </View>
         </Pressable>
@@ -289,33 +282,27 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
   // ─── VARIANT: event ───
   if (variant === 'event') {
-    const gradient = categoryGradients.tapahtuma
     return (
-      <Animated.View style={{ opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
+      <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
         <Pressable
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
           style={({ pressed }) => [
             styles.card,
-            isDark ? shadowMdDark : shadowMd,
+            { backgroundColor: colors.card, borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth },
             isExpired && { opacity: 0.55 },
-            pressed && { transform: [{ scale: 0.98 }] },
-            { overflow: 'hidden' },
+            pressed && { opacity: 0.85 },
           ]}
         >
-          <LinearGradient
-            colors={gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.eventHeader}
-          >
-            <Calendar size={14} color="#FFFFFF" strokeWidth={2.2} />
-            <Text style={styles.eventDate} numberOfLines={1}>
+          <View style={[styles.eventDateBox, { backgroundColor: `${category?.color ?? colors.primary}18`, borderBottomColor: colors.border }]}>
+            <Calendar size={12} color={category?.color ?? colors.primary} strokeWidth={2.2} />
+            <Text style={[styles.eventDateText, { color: category?.color ?? colors.primary }]} numberOfLines={1}>
               {post.event_date ? formatEventDateShort(post.event_date, locale) : t('events.eventPending')}
             </Text>
-          </LinearGradient>
-          <View style={[styles.eventBody, { backgroundColor: colors.card }]}>
+          </View>
+          <View style={styles.content}>
+            {CategoryLabel}
             <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
               {post.title}
             </Text>
@@ -326,19 +313,15 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             )}
             {post.location && (
               <View style={styles.locationRow}>
-                <MapPin size={11} color={colors.mutedForeground} strokeWidth={2} />
-                <Text style={[styles.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
+                <MapPin size={10} color={colors.mutedForeground} strokeWidth={2} />
+                <Text style={[styles.meta, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {post.location}
                 </Text>
               </View>
             )}
-            <View style={styles.actionRow}>
-              {LikeButton(false)}
-              {post.comment_count != null && post.comment_count > 0 && (
-                <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
-                  · {post.comment_count} {t('post.comments', { count: post.comment_count })}
-                </Text>
-              )}
+            <View style={styles.bottomRow}>
+              {AuthorRow}
+              {LikeInline}
             </View>
           </View>
         </Pressable>
@@ -349,37 +332,31 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   // ─── VARIANT: text-rich ───
   if (variant === 'text-rich') {
     return (
-      <Animated.View style={{ opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
+      <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
         <Pressable
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
           style={({ pressed }) => [
             styles.card,
-            styles.textCard,
-            { backgroundColor: cardBg },
-            accent ? { borderLeftWidth: 3, borderLeftColor: accent } : undefined,
-            isDark ? shadowSmDark : shadowSm,
+            { backgroundColor: colors.card, borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth },
             isExpired && { opacity: 0.55 },
-            pressed && { transform: [{ scale: 0.98 }] },
+            pressed && { opacity: 0.85 },
           ]}
         >
-          <View style={styles.textContent}>
-            {CategoryPill}
+          <View style={styles.content}>
+            {CategoryLabel}
             <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
               {post.title}
             </Text>
             {post.description && (
-              <Text
-                style={[styles.descriptionRich, { color: colors.mutedForeground }]}
-                numberOfLines={6}
-              >
+              <Text style={[styles.descriptionRich, { color: colors.mutedForeground }]} numberOfLines={6}>
                 {post.description}
               </Text>
             )}
-            <View style={styles.textFooter}>
-              {MetaRow}
-              {LikeButton(false)}
+            <View style={styles.bottomRow}>
+              {AuthorRow}
+              {LikeInline}
             </View>
           </View>
         </Pressable>
@@ -389,37 +366,31 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
   // ─── VARIANT: text-compact ───
   return (
-    <Animated.View style={{ opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
+    <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
       <Pressable
         onPress={handlePress}
         accessibilityRole="button"
         accessibilityLabel={a11yLabel}
         style={({ pressed }) => [
           styles.card,
-          styles.textCard,
-          { backgroundColor: cardBg },
-          accent ? { borderLeftWidth: 3, borderLeftColor: accent } : undefined,
-          isDark ? shadowSmDark : shadowSm,
+          { backgroundColor: colors.card, borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth },
           isExpired && { opacity: 0.55 },
-          pressed && { transform: [{ scale: 0.98 }] },
+          pressed && { opacity: 0.85 },
         ]}
       >
-        <View style={styles.textContent}>
-          {CategoryPill}
+        <View style={styles.content}>
+          {CategoryLabel}
           <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
             {post.title}
           </Text>
           {post.description && (
-            <Text
-              style={[styles.description, { color: colors.mutedForeground }]}
-              numberOfLines={3}
-            >
+            <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={3}>
               {post.description}
             </Text>
           )}
-          <View style={styles.textFooter}>
-            {MetaRow}
-            {LikeButton(false)}
+          <View style={styles.bottomRow}>
+            {AuthorRow}
+            {LikeInline}
           </View>
         </View>
       </Pressable>
@@ -428,55 +399,35 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 })
 
 const styles = StyleSheet.create({
+  // ── Card shell ──
   card: {
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    position: 'relative',
-  },
-  textCard: {
-    // Text cards don't need overflow hidden; allows subtle border accent to show
-    overflow: 'visible',
   },
 
-  // ── image-hero variant ──
-  imageContainer: {
+  // ── Image variant ──
+  imageWrap: {
     position: 'relative',
     aspectRatio: 4 / 5,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#111',
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  imageContent: {
-    padding: 10,
-    gap: 4,
-  },
-
-  // Image overlays
-  heartOverlay: {
+  urgentPill: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  urgentBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 6,
+    left: 6,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
     backgroundColor: '#DC2626',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
-  urgentBadgeText: {
+  urgentText: {
     fontSize: 9,
     fontWeight: '700',
     color: '#FFFFFF',
@@ -484,96 +435,70 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
-  proBadgeOnImage: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 
-  // ── event variant ──
-  eventHeader: {
+  // ── Event variant ──
+  eventDateBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  eventDate: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    fontFamily: fonts.bodySemi,
-    letterSpacing: 0.2,
-  },
-  eventBody: {
-    padding: 10,
-    gap: 6,
-  },
-
-  // ── text variant (rich + compact) ──
-  textContent: {
-    padding: 10,
-    gap: 6,
-  },
-  descriptionRich: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontFamily: fonts.body,
-  },
-  textFooter: {
     gap: 4,
-    marginTop: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  eventDateText: {
+    fontSize: 11,
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
 
-  // ── shared ──
+  // ── Content (shared) ──
+  content: {
+    padding: 10,
+    gap: 6,
+  },
+
+  // ── Category label (Threads-style: small, colored, uppercase) ──
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  categoryLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.6,
+    lineHeight: 12,
+  },
+
+  // ── Typography ──
   title: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     fontFamily: fonts.heading,
-    letterSpacing: -0.2,
-    lineHeight: 18,
+    letterSpacing: -0.3,
+    lineHeight: 19,
   },
   description: {
     fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.body,
   },
-  categoryPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+  descriptionRich: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontFamily: fonts.body,
   },
-  categoryPillText: {
-    fontSize: 10,
-    fontWeight: '700',
-    fontFamily: fonts.bodySemi,
-    lineHeight: 12,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  metaRow: {
-    gap: 2,
-  },
-  metaText: {
+  meta: {
     fontSize: 11,
     fontFamily: fonts.body,
     lineHeight: 14,
   },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  priceMeta: {
+
+  // ── Price row (image-hero) ──
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -585,21 +510,65 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
-  },
-  heartInline: {
+
+  // ── Location ──
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    minHeight: 32,
-    paddingRight: 4,
-    paddingVertical: 4,
   },
-  heartInlineText: {
+
+  // ── Bottom row: author + like ──
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    gap: 6,
+  },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    flex: 1,
+    minWidth: 0,
+  },
+  avatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
+  avatarFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  authorName: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.1,
+    flexShrink: 1,
+  },
+  timeDot: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    flexShrink: 0,
+  },
+
+  // ── Like inline ──
+  likeInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    minHeight: 24,
+    paddingHorizontal: 2,
+  },
+  likeText: {
     fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,

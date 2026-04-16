@@ -25,28 +25,29 @@ export const colors = {
     surfaceTinted: 'rgba(16,185,129,0.06)',
   },
   dark: {
-    primary: '#6FCF97',
-    accent: '#6FCF97',
-    secondary: '#FFAD33',      // warm amber for dark mode
-    background: '#0A0A0C',
-    foreground: '#EDEDEF',
-    card: '#161618',
-    cardElevated: '#1E1E20',   // elevated cards in dark
-    border: '#2A2A2E',
-    muted: '#1C1C1F',
-    mutedForeground: '#8A8F98',
-    // iOS tertiary label — 3rd hierarchy level (tiny captions, placeholders, disabled states)
-    tertiaryForeground: '#555860',
-    destructive: '#EF4444',
+    // Threads-style dark theme: pure black base + hairline separations
+    // Per UI/UX Pro Max: desaturated primary for dark mode vibrancy
+    primary: '#34D399',        // lighter emerald (was #6FCF97)
+    accent: '#6EE7B7',         // even lighter for highlights
+    secondary: '#FFAD33',
+    background: '#000000',     // pure black (Threads-style)
+    foreground: '#FFFFFF',     // pure white for max contrast
+    card: '#0C0C0E',           // near-black card (1.5% lighter than bg)
+    cardElevated: '#1A1A1D',   // elevated cards, modals, toast
+    border: '#262628',         // hairline separator color
+    muted: '#141416',          // input/pill inactive background
+    mutedForeground: '#8E8E93',// Apple HIG secondary label
+    tertiaryForeground: '#636366', // Apple HIG tertiary label
+    destructive: '#FF453A',    // iOS system red (dark mode)
     pro: '#FBBF24',
     success: '#34D399',
-    info: '#60A5FA',
-    purple: '#A88AE3',
+    info: '#0A84FF',           // iOS system blue (dark mode)
+    purple: '#BF5AF2',         // iOS system purple (dark mode)
     purpleMuted: '#1E1628',
-    primaryForeground: '#0A0A0C',
-    accentForeground: '#0A0A0C',
-    surfaceOverlay: 'rgba(22,22,24,0.78)',
-    surfaceTinted: 'rgba(111,207,151,0.08)',
+    primaryForeground: '#000000',
+    accentForeground: '#000000',
+    surfaceOverlay: 'rgba(12,12,14,0.82)',
+    surfaceTinted: 'rgba(52,211,153,0.06)',
   },
 }
 
