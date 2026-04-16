@@ -495,6 +495,7 @@ function FeedScreenInner() {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         removeClippedSubviews={true}
+        initialNumToRender={6}
         maxToRenderPerBatch={10}
         windowSize={5}
       />

@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert, Linking } from 'react-native'
+import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert, Linking, ActivityIndicator } from 'react-native'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -858,9 +858,14 @@ function ConversationScreenInner() {
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t('messages.send')}
-          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted, opacity: (!input.trim() || sending) ? 0.5 : 1 }]}
+          accessibilityState={{ busy: sending, disabled: !input.trim() || sending }}
+          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted, opacity: !input.trim() ? 0.5 : 1 }]}
         >
-          <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
+          {sending ? (
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
+          ) : (
+            <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
+          )}
         </PressableOpacity>
       </View>
 
