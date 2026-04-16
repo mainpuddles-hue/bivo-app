@@ -365,7 +365,9 @@
     "chatMembers": "{count} members",
     "eventPassed": "Event has passed",
     "imageUploadFailed": "Image upload failed",
-    "participants": "Participants"
+    "participants": "Participants",
+    "joinedSuccess": "You joined the event!",
+    "joinPending": "Request sent"
   },
   "activity": {
     "activities": "Together",

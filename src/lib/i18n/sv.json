@@ -347,7 +347,9 @@
     "joinFailed": "Det gick inte att gå med i evenemanget",
     "eventPassed": "Evenemanget har passerat",
     "imageUploadFailed": "Bildladdning misslyckades",
-    "participants": "Deltagare"
+    "participants": "Deltagare",
+    "joinedSuccess": "Du gick med i evenemanget!",
+    "joinPending": "Förfrågan skickad"
   },
   "activity": {
     "activities": "Tillsammans",

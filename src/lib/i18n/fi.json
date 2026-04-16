@@ -365,7 +365,9 @@
     "chatMembers": "{count} jäsentä",
     "eventPassed": "Tapahtuma on jo päättynyt",
     "imageUploadFailed": "Kuvan lataus epäonnistui",
-    "participants": "Osallistujat"
+    "participants": "Osallistujat",
+    "joinedSuccess": "Liityit tapahtumaan!",
+    "joinPending": "Pyyntö lähetetty"
   },
   "activity": {
     "activities": "Porukalla",

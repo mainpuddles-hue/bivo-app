@@ -12,6 +12,7 @@ import {
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { useToast } from '@/components/Toast'
 import { fonts } from '@/lib/fonts'
 import { EventDetailSkeleton } from '@/components/SkeletonLoaders'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -39,6 +40,7 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
 function EventDetailScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -124,6 +126,11 @@ function EventDetailScreenInner() {
         // 23505 = already joined — just refresh
         await fetchEvent()
       } else {
+        // Success feedback — toast is less intrusive than Alert for expected success
+        toast.show({
+          message: status === 'pending' ? t('events.joinPending') : t('events.joinedSuccess'),
+          type: status === 'pending' ? 'info' : 'success',
+        })
         // Add user to event group chat (soft fail)
         addMemberToChat(supabase, event.id, userId).catch(() => {})
         // Notify event creator about new participant
@@ -203,7 +210,7 @@ function EventDetailScreenInner() {
               if (error) {
                 Alert.alert(t('common.error'), t('events.cancelFailed'))
               } else {
-                Alert.alert(t('common.success'), t('events.eventCancelled'))
+                toast.show({ message: t('events.eventCancelled'), type: 'success' })
                 router.back()
               }
             } catch {
