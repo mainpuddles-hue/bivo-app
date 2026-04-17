@@ -201,7 +201,13 @@ function CreateEventScreenInner() {
       // resulting in events shifting by the user's tz offset on display.
       // Using `new Date(y, m, d, h, min)` avoids the ambiguous string
       // parsing that Safari/Hermes treat differently.
-      const [dateY, dateM, dateD] = eventDate.trim().split('-').map((s) => parseInt(s, 10))
+      const dateParts = eventDate.trim().split('-').map((s) => parseInt(s, 10))
+      if (dateParts.length < 3) {
+        Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+        setSubmitting(false)
+        return
+      }
+      const [dateY, dateM, dateD] = dateParts
       if (!Number.isFinite(dateY) || !Number.isFinite(dateM) || !Number.isFinite(dateD)) {
         Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
         setSubmitting(false)

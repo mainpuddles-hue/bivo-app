@@ -2892,5 +2892,10 @@
     "addMoreTags": "Lisää tageja auttaaksesi löydettävyydessä",
     "addTag": "Lisää vähintään yksi tagi",
     "addLocation": "Lisää sijainti — lähellä olevat löytävät sinut helpommin"
+  },
+  "screenError": {
+    "title": "Virhe",
+    "description": "Jotain meni pieleen. Yritä ladata uudelleen.",
+    "retry": "Yritä uudelleen"
   }
 }

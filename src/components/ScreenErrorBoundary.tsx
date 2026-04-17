@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { AlertCircle, RotateCcw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
 
 interface Props {
   children: React.ReactNode
@@ -21,16 +22,17 @@ interface State {
  */
 function ScreenErrorFallbackUI({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
   const { colors } = useTheme()
+  const { t } = useI18n()
 
   return (
     <View style={styles.wrapper}>
       <View style={[styles.card, { backgroundColor: colors.card, shadowColor: '#000' }]}>
         <View style={styles.iconRow}>
           <AlertCircle size={22} color={colors.destructive} />
-          <Text style={[styles.title, { color: colors.foreground }]}>Virhe / Error</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>{t('screenError.title')}</Text>
         </View>
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
-          Jotain meni pieleen. Yritä ladata uudelleen.
+          {t('screenError.description')}
         </Text>
         {__DEV__ && error && (
           <Text
@@ -48,10 +50,10 @@ function ScreenErrorFallbackUI({ error, onRetry }: { error: Error | null; onRetr
             pressed && styles.retryBtnPressed,
           ]}
           accessibilityRole="button"
-          accessibilityLabel="Yritä uudelleen / Try again"
+          accessibilityLabel={t('screenError.retry')}
         >
           <RotateCcw size={16} color={colors.primaryForeground} />
-          <Text style={[styles.retryText, { color: colors.primaryForeground }]}>Yritä uudelleen</Text>
+          <Text style={[styles.retryText, { color: colors.primaryForeground }]}>{t('screenError.retry')}</Text>
         </Pressable>
       </View>
     </View>

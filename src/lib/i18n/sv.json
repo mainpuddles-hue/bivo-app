@@ -2843,5 +2843,10 @@
     "addMoreTags": "Lägg till taggar för att förbättra sökbarheten",
     "addTag": "Lägg till minst en tagg",
     "addLocation": "Lägg till plats — folk i närheten hittar dig lättare"
+  },
+  "screenError": {
+    "title": "Fel",
+    "description": "Något gick fel. Försök ladda om.",
+    "retry": "Försök igen"
   }
 }

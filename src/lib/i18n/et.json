@@ -1815,7 +1815,40 @@
     "outOfAreaDesc": "Sündmused ja kohad kuvatakse ainult linnas {city}",
     "changeCity": "Vaheta linn",
     "businesses": "Ettevõtted",
-    "showProfile": "Näita profiili"
+    "showProfile": "Näita profiili",
+    "allTypes": "Kõik tüübid",
+    "allCategories": "Kõik kategooriad",
+    "allPlaces": "Kõik kohad",
+    "timeAll": "Kõik",
+    "timeToday": "Täna",
+    "timeTomorrow": "Homme",
+    "timeThisWeek": "Sel nädalal",
+    "place": {
+      "restaurant": "Restoran",
+      "cafe": "Kohvik",
+      "bar": "Baar",
+      "shop": "Pood",
+      "library": "Raamatukogu",
+      "health": "Tervis",
+      "sport": "Sport",
+      "culture": "Kultuur",
+      "hotel": "Hotell",
+      "attraction": "Vaatamisväärsus",
+      "service": "Teenus",
+      "fast_food": "Kiirtoit",
+      "pub": "Pubi",
+      "other": "Muu"
+    },
+    "eventCat": {
+      "culture": "Kultuur",
+      "music": "Muusika",
+      "sport": "Sport",
+      "family": "Pere",
+      "theatre": "Teater",
+      "exhibition": "Näitus",
+      "food": "Toit",
+      "other": "Muu"
+    }
   },
   "privacy": {
     "title": "Andmekaitseteade",
@@ -2655,5 +2688,21 @@
     "members": "Liikmed",
     "viewEvent": "Vaata üritust",
     "sendFailed": "Sõnumi saatmine ebaõnnestus"
+  },
+  "contentQuality": {
+    "longerTitle": "Pikem pealkiri saab rohkem tähelepanu",
+    "addTitle": "Lisa kirjeldavam pealkiri",
+    "longerDescription": "Pikem kirjeldus aitab inimestel sinu kuulutust leida",
+    "addDescription": "Lisa kirjeldus — see parandab nähtavust",
+    "addMoreImages": "Lisa rohkem pilte — piltidega kuulutused saavad 3x rohkem tähelepanu",
+    "addImage": "Lisa pilt — see parandab nähtavust oluliselt",
+    "addMoreTags": "Lisa silte, et aidata leitavust",
+    "addTag": "Lisa vähemalt üks silt",
+    "addLocation": "Lisa asukoht — lähedal olevad inimesed leiavad sind lihtsamini"
+  },
+  "screenError": {
+    "title": "Viga",
+    "description": "Midagi läks valesti. Proovi uuesti laadida.",
+    "retry": "Proovi uuesti"
   }
 }

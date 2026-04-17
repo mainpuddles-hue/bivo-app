@@ -2892,5 +2892,10 @@
     "addMoreTags": "Add tags to help with discoverability",
     "addTag": "Add at least one tag",
     "addLocation": "Add location — nearby people find you easier"
+  },
+  "screenError": {
+    "title": "Error",
+    "description": "Something went wrong. Try reloading.",
+    "retry": "Try again"
   }
 }

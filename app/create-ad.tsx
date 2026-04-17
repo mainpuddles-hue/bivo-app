@@ -28,11 +28,15 @@ const DURATION_OPTIONS = [
 ]
 
 const CTA_OPTIONS = [
-  { value: 'Katso lisää', fi: 'Katso lisää', en: 'Learn more', sv: 'Läs mer' },
-  { value: 'Osta nyt', fi: 'Osta nyt', en: 'Buy now', sv: 'Köp nu' },
-  { value: 'Varaa aika', fi: 'Varaa aika', en: 'Book now', sv: 'Boka nu' },
-  { value: 'Ota yhteyttä', fi: 'Ota yhteyttä', en: 'Contact us', sv: 'Kontakta oss' },
+  { key: 'learn_more', fi: 'Katso lisää', en: 'Learn more', sv: 'Läs mer' },
+  { key: 'buy_now', fi: 'Osta nyt', en: 'Buy now', sv: 'Köp nu' },
+  { key: 'book_now', fi: 'Varaa aika', en: 'Book now', sv: 'Boka nu' },
+  { key: 'contact', fi: 'Ota yhteyttä', en: 'Contact us', sv: 'Kontakta oss' },
 ]
+
+function getCtaLabel(opt: (typeof CTA_OPTIONS)[number], locale: string) {
+  return locale === 'fi' ? opt.fi : locale === 'sv' ? opt.sv : opt.en
+}
 
 const PRICE_PER_DAY = 299 // cents
 const PRO_PRICE_PER_DAY = 239 // cents
@@ -49,7 +53,7 @@ export default function CreateAdScreen() {
   const [description, setDescription] = useState('')
   const [imageUri, setImageUri] = useState<string | null>(null)
   const [linkUrl, setLinkUrl] = useState('')
-  const [ctaText, setCtaText] = useState(CTA_OPTIONS[0].value)
+  const [ctaKey, setCtaKey] = useState(CTA_OPTIONS[0].key)
   const [targetNeighborhood, setTargetNeighborhood] = useState<string | null>(null)
   const [duration, setDuration] = useState(7)
   const [submitting, setSubmitting] = useState(false)
@@ -179,7 +183,7 @@ export default function CreateAdScreen() {
         description: description.trim() || null,
         image_url: uploadedImageUrl,
         link_url: linkUrl.trim() || null,
-        cta_text: ctaText,
+        cta_text: getCtaLabel(CTA_OPTIONS.find(o => o.key === ctaKey) ?? CTA_OPTIONS[0], locale),
         target_naapurusto: targetNeighborhood,
         duration_days: duration,
         daily_rate: pricePerDay,
@@ -246,7 +250,7 @@ export default function CreateAdScreen() {
     } finally {
       setSubmitting(false)
     }
-  }, [title, description, imageUri, linkUrl, ctaText, targetNeighborhood, duration, profile, pricePerDay, totalPrice, supabase, router, t, uploadImage])
+  }, [title, description, imageUri, linkUrl, ctaKey, targetNeighborhood, duration, profile, pricePerDay, totalPrice, supabase, router, t, uploadImage])
 
   const formatPrice = (cents: number) => formatPriceUtil(cents / 100, locale)
 
@@ -318,25 +322,25 @@ export default function CreateAdScreen() {
         <View style={styles.ctaRow}>
           {CTA_OPTIONS.map(opt => (
             <PressableOpacity
-              key={opt.value}
-              onPress={() => setCtaText(opt.value)}
+              key={opt.key}
+              onPress={() => setCtaKey(opt.key)}
               style={[
                 styles.ctaChip,
                 {
-                  backgroundColor: ctaText === opt.value ? colors.primary : colors.card,
-                  borderColor: ctaText === opt.value ? colors.primary : colors.border,
+                  backgroundColor: ctaKey === opt.key ? colors.primary : colors.card,
+                  borderColor: ctaKey === opt.key ? colors.primary : colors.border,
                 },
               ]}
               accessibilityRole="button"
-              accessibilityState={{ selected: ctaText === opt.value }}
+              accessibilityState={{ selected: ctaKey === opt.key }}
             >
               <Text
                 style={[
                   styles.ctaChipText,
-                  { color: ctaText === opt.value ? colors.primaryForeground : colors.foreground },
+                  { color: ctaKey === opt.key ? colors.primaryForeground : colors.foreground },
                 ]}
               >
-                {locale === 'fi' ? opt.fi : locale === 'sv' ? opt.sv : opt.en}
+                {getCtaLabel(opt, locale)}
               </Text>
             </PressableOpacity>
           ))}
