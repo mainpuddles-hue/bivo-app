@@ -504,7 +504,7 @@ function ExploreScreenInner() {
               onPress={() => router.push('/map')}
               accessibilityRole="button"
               accessibilityLabel={t('explore.openMap')}
-              style={[s.mapTeaser, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+              style={[s.mapTeaser, { backgroundColor: colors.muted, borderWidth: 0 }]}
             >
               <View style={s.mapTeaserContent}>
                 <Map size={28} color={colors.foreground} strokeWidth={1.6} />
@@ -523,7 +523,7 @@ function ExploreScreenInner() {
               <View style={s.summaryRow}>
                 {cityEvents.length > 0 && (
                   <Pressable
-                    style={[s.summaryCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+                    style={[s.summaryCard, { backgroundColor: colors.muted, borderWidth: 0 }]}
                     onPress={() => setActiveTab('events')}
                     accessibilityRole="button"
                     accessibilityLabel={t('explore.eventsThisWeek', { count: eventsThisWeek })}
@@ -538,7 +538,7 @@ function ExploreScreenInner() {
 
                 {places.length > 0 && (
                   <Pressable
-                    style={[s.summaryCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+                    style={[s.summaryCard, { backgroundColor: colors.muted, borderWidth: 0 }]}
                     onPress={() => setActiveTab('places')}
                     accessibilityRole="button"
                     accessibilityLabel={t('explore.placesNearby', { count: placesCount })}
@@ -619,7 +619,7 @@ function ExploreScreenInner() {
                   onPress={() => router.push('/create-event' as any)}
                   accessibilityRole="button"
                   accessibilityLabel={t('events.createFirstEvent')}
-                  style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}
+                  style={[s.communityCard, { backgroundColor: colors.muted, borderTopWidth: 0 }]}
                 >
                   <Plus size={20} color={colors.mutedForeground} strokeWidth={1.6} />
                   <View style={s.cardFlex}>

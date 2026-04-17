@@ -147,7 +147,7 @@ function FeedScreenInner() {
       const nh = feed.userNeighborhood
       toast.show({
         message: nh
-          ? (t('feed.welcomeToast') || `Tervetuloa ${nh}n ilmoitustaululle!`)
+          ? (t('feed.welcomeToast', { neighborhood: nh }) || `Tervetuloa ${nh}n ilmoitustaululle!`)
           : (t('feed.welcomeToastGeneric') || 'Tervetuloa TackBirdiin!'),
         type: 'success',
       })

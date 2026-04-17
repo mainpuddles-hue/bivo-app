@@ -1170,8 +1170,9 @@ function PostDetailScreenInner() {
                   return (
                     <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
                       {rp.image_url ? (<Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />) : (
-                        <View style={[styles.relatedImage, { backgroundColor: rpCat ? (isDark ? rpCat.bgDark : rpCat.bgLight) : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                          {rpCat && CATEGORY_ICON_MAP[rpCat.icon] && (() => { const I = CATEGORY_ICON_MAP[rpCat.icon]; return <I size={28} color={rpCat.color} /> })()}
+                        <View style={[styles.relatedImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                          {rpCat && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: rpCat.color, marginBottom: 4 }} />}
+                          <Text style={{ fontSize: 14, fontWeight: '700', color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
                         </View>
                       )}
                       <View style={styles.relatedCardBody}>

@@ -476,7 +476,7 @@ export default function MessagesScreen() {
         }}>
           <ArrowLeftRight size={13} color={colors.mutedForeground} />
           <Text style={{ flex: 1, fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-            Pyyhkäise sivusuunnassa arkistoidaksesi tai pinnataksesi keskustelu
+            ← → Pyyhkäise arkistoidaksesi tai pinnataksesi
           </Text>
           <PressableOpacity onPress={dismissSwipeHint} hitSlop={8}>
             <X size={13} color={colors.mutedForeground} />

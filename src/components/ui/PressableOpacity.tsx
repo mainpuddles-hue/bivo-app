@@ -25,7 +25,7 @@ export function PressableOpacity({ style, activeOpacity = 0.7, ...props }: Press
       {...props}
       style={(state) => {
         const baseStyle = typeof style === 'function' ? style(state) : style
-        return [baseStyle, state.pressed && { opacity: activeOpacity }]
+        return [baseStyle, state.pressed && { opacity: activeOpacity, transform: [{ scale: 0.98 }] }]
       }}
     />
   )

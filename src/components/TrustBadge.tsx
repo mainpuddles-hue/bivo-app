@@ -93,16 +93,7 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
         </View>
       </View>
 
-      {/* Factor breakdown — DEV only (raw scores confuse users) */}
-      {__DEV__ && factorEntries.length > 0 && (
-        <View style={styles.factors}>
-          {factorEntries.map(([key, value]) => (
-            <Text key={key} style={[styles.factorText, { color: colors.mutedForeground }]}>
-              {key}: {typeof value === 'number' ? value.toFixed(0) : value}
-            </Text>
-          ))}
-        </View>
-      )}
+      {/* Factor breakdown hidden — raw scores confuse users even in dev */}
 
       {/* Next tier hints */}
       {level < 3 && (

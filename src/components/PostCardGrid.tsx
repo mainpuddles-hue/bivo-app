@@ -251,7 +251,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.8 }]}
+          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
         >
           <View style={styles.content}>
             {Header}
@@ -299,7 +299,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.8 }]}
+          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
         >
           <View style={styles.content}>
             {Header}
@@ -341,7 +341,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.8 }]}
+          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
         >
           <View style={styles.content}>
             {Header}
@@ -368,7 +368,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         onPress={handlePress}
         accessibilityRole="button"
         accessibilityLabel={a11yLabel}
-        style={({ pressed }) => [cardStyle, pressed && { opacity: 0.8 }]}
+        style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
       >
         <View style={styles.content}>
           {Header}

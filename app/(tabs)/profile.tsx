@@ -539,7 +539,7 @@ export default function ProfileScreen() {
           {!trust.loading && trust.level === 1 && (
             <View style={s.trustBarWrap}>
               <View style={s.trustBarTrack}>
-                <View style={[s.trustBarFill, { width: `${Math.min(100, Math.max(0, trust.score))}%`, backgroundColor: colors.primary }]} />
+                <View style={[s.trustBarFill, { width: `${Math.min(100, Math.max(0, trust.score))}%`, backgroundColor: trust.score < 40 ? colors.destructive : trust.score < 75 ? colors.pro : colors.primary }]} />
               </View>
               <Text style={[s.trustBarLabel, { color: colors.mutedForeground }]}>{Math.round(trust.score)}/100</Text>
             </View>

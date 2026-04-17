@@ -190,7 +190,7 @@ function CommunityEventsScreenInner() {
             style={({ pressed }) => [
               s.createTableCard,
               { backgroundColor: 'transparent', borderColor: colors.border },
-              pressed && { opacity: 0.8 },
+              pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] },
             ]}
             accessibilityRole="button"
             accessibilityLabel={t('tables.create')}

@@ -101,7 +101,7 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
           style={({ pressed }) => [
             s.joinPill,
             { backgroundColor: catColor },
-            pressed && { opacity: 0.8 },
+            pressed && { opacity: 0.92, transform: [{ scale: 0.97 }] },
           ]}
           accessibilityRole="button"
           accessibilityLabel={t('tables.quickJoin')}
