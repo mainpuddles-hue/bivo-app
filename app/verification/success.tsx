@@ -38,7 +38,7 @@ function VerificationSuccessScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       <View style={styles.content}>
         {/* Animated shield */}
-        <Animated.View style={[styles.iconCircle, { backgroundColor: `${tier2Color}18`, transform: [{ scale: scaleAnim }] }]}>
+        <Animated.View style={[styles.iconCircle, { backgroundColor: colors.muted, transform: [{ scale: scaleAnim }] }]}>
           <ShieldCheck size={56} color={tier2Color} />
         </Animated.View>
 
@@ -46,12 +46,12 @@ function VerificationSuccessScreenInner() {
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('verification.successMessage')}</Text>
 
         {/* Unlocked features */}
-        <Animated.View style={[styles.unlockedCard, { backgroundColor: colors.card, borderColor: colors.border, opacity: fadeAnim }]}>
+        <Animated.View style={[styles.unlockedCard, { backgroundColor: 'transparent', borderColor: colors.border, opacity: fadeAnim }]}>
           <Text style={[styles.unlockedTitle, { color: colors.foreground }]}>{t('verification.unlockedTitle')}</Text>
 
           <View style={styles.featureRow}>
-            <View style={[styles.featureIcon, { backgroundColor: `${tier2Color}18` }]}>
-              <BookOpen size={18} color={tier2Color} />
+            <View style={[styles.featureIcon, { backgroundColor: colors.muted }]}>
+              <BookOpen size={18} color={colors.foreground} />
             </View>
             <View style={styles.featureText}>
               <Text style={[styles.featureName, { color: colors.foreground }]}>{t('verification.featureBorrow')}</Text>
@@ -60,8 +60,8 @@ function VerificationSuccessScreenInner() {
           </View>
 
           <View style={styles.featureRow}>
-            <View style={[styles.featureIcon, { backgroundColor: `${colors.info}18` }]}>
-              <ShieldCheck size={18} color={colors.info} />
+            <View style={[styles.featureIcon, { backgroundColor: colors.muted }]}>
+              <ShieldCheck size={18} color={colors.foreground} />
             </View>
             <View style={styles.featureText}>
               <Text style={[styles.featureName, { color: colors.foreground }]}>{t('verification.featureServices')}</Text>
@@ -71,9 +71,9 @@ function VerificationSuccessScreenInner() {
         </Animated.View>
 
         <View style={styles.actions}>
-          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.primaryBtn, { backgroundColor: tier2Color }]} accessibilityLabel={t('verification.backToApp')} accessibilityRole="button">
-            <Home size={18} color={colors.primaryForeground} />
-            <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('verification.backToApp')}</Text>
+          <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.primaryBtn, { backgroundColor: colors.foreground }]} accessibilityLabel={t('verification.backToApp')} accessibilityRole="button">
+            <Home size={18} color={colors.background} />
+            <Text style={[styles.primaryBtnText, { color: colors.background }]}>{t('verification.backToApp')}</Text>
           </Pressable>
         </View>
       </View>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   featureName: { fontSize: 14, fontFamily: fonts.bodySemi },
   featureDesc: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   actions: { width: '100%', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 24 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
 })
 

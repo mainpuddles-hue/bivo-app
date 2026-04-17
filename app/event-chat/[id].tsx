@@ -32,7 +32,7 @@ interface EventInfo {
 }
 
 function EventChatScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -164,11 +164,11 @@ function EventChatScreenInner() {
         <View style={[
           s.bubble,
           isOwn
-            ? { backgroundColor: colors.primary, borderBottomRightRadius: 4 }
+            ? { backgroundColor: colors.foreground, borderBottomRightRadius: 4 }
             : { backgroundColor: colors.muted, borderBottomLeftRadius: 4 },
         ]}>
           {!isOwn && (
-            <Text style={[s.senderName, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
+            <Text style={[s.senderName, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {senderName}
             </Text>
           )}
@@ -180,17 +180,17 @@ function EventChatScreenInner() {
             />
           )}
           {item.content ? (
-            <Text style={[s.msgText, { color: isOwn ? '#FFF' : colors.foreground, fontFamily: fonts.body }]}>
+            <Text style={[s.msgText, { color: isOwn ? colors.background : colors.foreground, fontFamily: fonts.body }]}>
               {item.content}
             </Text>
           ) : null}
-          <Text style={[s.msgTime, { color: isOwn ? 'rgba(255,255,255,0.6)' : colors.mutedForeground }]}>
+          <Text style={[s.msgTime, { color: isOwn ? `${colors.background}99` : colors.mutedForeground }]}>
             {formatTimeAgo(item.created_at, t, locale)}
           </Text>
         </View>
       </View>
     )
-  }, [userId, colors, isDark, t, locale])
+  }, [userId, colors, t, locale])
 
   const keyExtractor = useCallback((item: any) => item.id, [])
 
@@ -235,7 +235,7 @@ function EventChatScreenInner() {
       {/* Event info bar */}
       {eventInfo && (
         <Pressable
-          style={[s.eventBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
+          style={[s.eventBar, { backgroundColor: 'transparent', borderBottomColor: colors.border }]}
           onPress={() => router.push(`/event/${eventInfo.id}` as any)}
         >
           <CalendarDays size={14} color={colors.primary} />
@@ -304,9 +304,9 @@ function EventChatScreenInner() {
           onPress={handleSend}
           disabled={!input.trim() || sending}
           hitSlop={8}
-          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.primary : colors.muted }]}
+          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.foreground : colors.muted }]}
         >
-          <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
+          <Send size={18} color={input.trim() ? colors.background : colors.mutedForeground} />
         </Pressable>
       </View>
       <KeyboardDoneAccessory />

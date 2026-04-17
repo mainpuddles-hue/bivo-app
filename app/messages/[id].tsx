@@ -831,7 +831,7 @@ function ConversationScreenInner() {
       )}
 
       {/* Input */}
-      <View style={[s.inputBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
+      <View style={[s.inputBar, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
         <PressableOpacity
           onPress={handleSendImage}
           style={s.imageBtn}
@@ -842,7 +842,7 @@ function ConversationScreenInner() {
           <ImageIcon size={22} color={colors.mutedForeground} />
         </PressableOpacity>
         <TextInput
-          style={[s.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
+          style={[s.textInput, { backgroundColor: colors.muted, borderWidth: 0, color: colors.foreground }]}
           value={input}
           onChangeText={(text) => { setInput(text); if (text.length > 0) setShowQuickReplies(false); sendTyping() }}
           placeholder={t('messages.sendPlaceholder')}

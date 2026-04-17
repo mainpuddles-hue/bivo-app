@@ -20,7 +20,6 @@ import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { BackButton, PressableOpacity } from '@/components/ui'
 import { fonts } from '@/lib/fonts'
-import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { SERVICE_FEE_RATE } from '@/lib/constants'
@@ -87,7 +86,7 @@ function getStepIndex(status: BookingStatus, steps: BookingStatus[]): number {
 }
 
 function BookingDetailScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -325,7 +324,7 @@ function BookingDetailScreenInner() {
         {/* Post info card */}
         <PressableOpacity
           onPress={() => booking.post?.id && router.push(`/post/${booking.post.id}` as any)}
-          style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
+          style={[styles.postCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
           accessibilityRole="button"
           accessibilityLabel={booking.post?.title ?? t('booking.viewPost')}
         >
@@ -350,7 +349,7 @@ function BookingDetailScreenInner() {
         {booking.other_user && (
           <PressableOpacity
             onPress={() => router.push(`/profile/${booking.other_user!.id}` as any)}
-            style={[styles.userCard, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}
+            style={[styles.userCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel={booking.other_user!.name}
           >
@@ -363,9 +362,10 @@ function BookingDetailScreenInner() {
         )}
 
         {/* Status badge */}
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}>
-          <View style={[styles.statusBadgeLarge, { backgroundColor: `${statusColor}18` }]}>
-            <Text style={[styles.statusTextLarge, { color: statusColor }]}>
+        <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+          <View style={[styles.statusBadgeLarge, { backgroundColor: colors.muted }]}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: statusColor, marginRight: 6 }} />
+            <Text style={[styles.statusTextLarge, { color: colors.mutedForeground }]}>
               {t(STATUS_KEYS[booking.status] ?? 'rental.statusPending')}
             </Text>
           </View>
@@ -373,7 +373,7 @@ function BookingDetailScreenInner() {
 
         {/* Status timeline */}
         {currentStepIndex >= 0 && (
-          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}>
+          <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.statusTimeline')}</Text>
             <View style={styles.timeline}>
               {steps.map((step, i) => {
@@ -409,7 +409,7 @@ function BookingDetailScreenInner() {
 
         {/* Dates section (rentals) */}
         {booking.start_date && booking.end_date && (
-          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}>
+          <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.dates')}</Text>
             <View style={styles.dateRow}>
               <Calendar size={16} color={colors.mutedForeground} />
@@ -421,7 +421,7 @@ function BookingDetailScreenInner() {
         )}
 
         {/* Price breakdown */}
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}>
+        <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.priceBreakdown')}</Text>
           <View style={styles.priceRow}>
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>
@@ -443,7 +443,7 @@ function BookingDetailScreenInner() {
 
         {/* Notes (service bookings) */}
         {booking.notes && (
-          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }, isDark ? cardShadowDark : cardShadow]}>
+          <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.notes')}</Text>
             <Text style={{ fontSize: 14, color: colors.foreground, lineHeight: 20, fontFamily: fonts.body }}>{booking.notes}</Text>
           </View>
@@ -494,7 +494,7 @@ function BookingDetailScreenInner() {
             <PressableOpacity
               onPress={handleCancel}
               disabled={actionLoading}
-              style={[styles.actionBtn, { backgroundColor: `${colors.destructive}15`, borderColor: colors.destructive, borderWidth: 1 }]}
+              style={[styles.actionBtn, { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
               accessibilityLabel={t('rental.cancelBooking')}
               accessibilityRole="button"
             >
@@ -505,12 +505,12 @@ function BookingDetailScreenInner() {
           {canReview && (
             <PressableOpacity
               onPress={handleLeaveReview}
-              style={[styles.actionBtn, { backgroundColor: `${colors.pro}15`, borderColor: colors.pro, borderWidth: 1 }]}
+              style={[styles.actionBtn, { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
               accessibilityLabel={t('rental.leaveReview')}
               accessibilityRole="button"
             >
-              <Star size={16} color={colors.pro} />
-              <Text style={[styles.actionBtnText, { color: colors.pro }]}>{t('rental.leaveReview')}</Text>
+              <Star size={16} color={colors.foreground} />
+              <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
             </PressableOpacity>
           )}
 
@@ -567,11 +567,12 @@ const styles = StyleSheet.create({
 
   // Status badge
   statusBadgeLarge: {
-    alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8,
+    alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 24,
+    flexDirection: 'row', alignItems: 'center',
   },
   statusTextLarge: {
-    fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5,
-    fontFamily: fonts.bodySemi, lineHeight: 20,
+    fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5,
+    fontFamily: fonts.bodySemi, lineHeight: 16,
   },
 
   // Timeline
@@ -599,7 +600,7 @@ const styles = StyleSheet.create({
   actionsContainer: { gap: 8, marginTop: 8 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 16, minHeight: 48,
+    gap: 8, paddingVertical: 16, borderRadius: 24, minHeight: 48,
   },
   actionBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })

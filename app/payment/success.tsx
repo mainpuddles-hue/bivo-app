@@ -129,7 +129,7 @@ function PaymentSuccessScreenInner() {
       ) : (
         <View style={styles.content}>
           {/* Success icon */}
-          <View style={[styles.iconCircle, { backgroundColor: `${colors.success}18` }]}>
+          <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
             <CheckCircle size={56} color={colors.success} />
           </View>
 
@@ -143,7 +143,7 @@ function PaymentSuccessScreenInner() {
             </Text>
           )}
           {booking && (
-            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.summaryCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
               <Text style={[styles.summaryTitle, { color: colors.foreground }]}>{booking.post_title}</Text>
 
               {booking.start_date === booking.end_date ? (
@@ -184,12 +184,12 @@ function PaymentSuccessScreenInner() {
           <View style={styles.actions}>
             <Pressable
               onPress={() => router.push('/bookings' as any)}
-              style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+              style={[styles.primaryBtn, { backgroundColor: colors.foreground }]}
               accessibilityLabel={t('payment.viewBooking')}
               accessibilityRole="button"
             >
-              <Calendar size={18} color={colors.primaryForeground} />
-              <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('payment.viewBooking')}</Text>
+              <Calendar size={18} color={colors.background} />
+              <Text style={[styles.primaryBtnText, { color: colors.background }]}>{t('payment.viewBooking')}</Text>
             </Pressable>
 
             <Pressable
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 24,
   },
   primaryBtnText: {
     fontSize: 16,

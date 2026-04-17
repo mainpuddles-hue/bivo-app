@@ -29,7 +29,7 @@ function LeaderboardRowSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={[s.row, { backgroundColor: colors.card }]}>
+    <View style={[s.row, { backgroundColor: 'transparent', borderColor: colors.border }]}>
       <Animated.View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.muted, opacity }} />
       <Animated.View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.muted, opacity }} />
       <View style={s.info}>
@@ -44,7 +44,7 @@ function LeaderboardRowSkeleton() {
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'] // gold, silver, bronze
 
 export default function LeaderboardScreen() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -214,12 +214,12 @@ export default function LeaderboardScreen() {
         accessibilityLabel={`#${rank} ${item.name ?? t('common.user')}, ${item.total_points} ${t('profile.points')}`}
         style={[
           s.row,
-          { backgroundColor: isCurrentUser ? `${colors.primary}10` : colors.card },
+          { backgroundColor: 'transparent', borderColor: isCurrentUser ? colors.foreground : colors.border },
           isTop3 && { borderLeftWidth: 3, borderLeftColor: medalColor },
         ]}
       >
         {/* Rank */}
-        <View style={[s.rankCircle, isTop3 ? { backgroundColor: `${medalColor}25` } : { backgroundColor: colors.muted }]}>
+        <View style={[s.rankCircle, { backgroundColor: colors.muted }]}>
           {isTop3 ? (
             <Trophy size={16} color={medalColor} />
           ) : (
@@ -271,12 +271,12 @@ export default function LeaderboardScreen() {
           accessibilityState={{ selected: filter === 'all' }}
           style={[
             s.filterChip,
-            {
-              backgroundColor: filter === 'all' ? colors.primary : (isDark ? colors.card : colors.muted),
-            },
+            filter === 'all'
+              ? { backgroundColor: colors.foreground }
+              : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
           ]}
         >
-          <Text style={[s.filterText, { color: filter === 'all' ? colors.primaryForeground : colors.foreground }]}>
+          <Text style={[s.filterText, { color: filter === 'all' ? colors.background : colors.foreground }]}>
             {t('leaderboard.allNeighborhoods')}
           </Text>
         </PressableOpacity>
@@ -288,12 +288,12 @@ export default function LeaderboardScreen() {
             accessibilityState={{ selected: filter === 'neighborhood' }}
             style={[
               s.filterChip,
-              {
-                backgroundColor: filter === 'neighborhood' ? colors.primary : (isDark ? colors.card : colors.muted),
-              },
+              filter === 'neighborhood'
+                ? { backgroundColor: colors.foreground }
+                : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
             ]}
           >
-            <Text style={[s.filterText, { color: filter === 'neighborhood' ? colors.primaryForeground : colors.foreground }]}>
+            <Text style={[s.filterText, { color: filter === 'neighborhood' ? colors.background : colors.foreground }]}>
               {userNeighborhood}
             </Text>
           </PressableOpacity>
@@ -305,7 +305,7 @@ export default function LeaderboardScreen() {
 
       {/* Pro upsell banner */}
       {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
-        <PressableOpacity onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: `${colors.pro}12` }]}>
+        <PressableOpacity onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <Crown size={16} color={colors.pro} />
           <Text style={[s.proBannerText, { color: colors.pro }]}>{t('pro.leaderboardBanner')}</Text>
           <ChevronRight size={14} color={colors.pro} />
@@ -338,10 +338,10 @@ export default function LeaderboardScreen() {
           }
           ListFooterComponent={
             currentUserId && !isCurrentUserInTop10 && currentUserRank != null && currentUserPoints > 0 ? (
-              <View style={[s.yourRankCard, { backgroundColor: `${colors.primary}10`, borderColor: colors.primary }]}>
-                <Text style={[s.yourRankLabel, { color: colors.primary }]}>{t('leaderboard.yourRank')}</Text>
+              <View style={[s.yourRankCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+                <Text style={[s.yourRankLabel, { color: colors.mutedForeground }]}>{t('leaderboard.yourRank')}</Text>
                 <View style={s.yourRankRow}>
-                  <Text style={[s.yourRankNum, { color: colors.primary }]}>#{currentUserRank}</Text>
+                  <Text style={[s.yourRankNum, { color: colors.foreground }]}>#{currentUserRank}</Text>
                   <View style={s.pointsWrap}>
                     <Zap size={14} color={colors.pro} fill={colors.pro} />
                     <Text style={[s.points, { color: colors.pro }]}>{currentUserPoints}</Text>
@@ -383,7 +383,7 @@ const s = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 24,
   },
   filterText: {
     fontSize: 14,
@@ -425,6 +425,7 @@ const s = StyleSheet.create({
     gap: 12,
     padding: 16,
     borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   rankCircle: {
     width: 32,

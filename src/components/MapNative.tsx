@@ -168,7 +168,7 @@ export default function MapScreen() {
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     if (item.id.startsWith('__empty_')) {
       return (
-        <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.emptyCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
           <Text style={[styles.emptyCardText, { color: colors.mutedForeground }]}>{item.title}</Text>
         </View>
       )
@@ -198,7 +198,7 @@ export default function MapScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Top Bar ── */}
-      <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)', borderBottomColor: colors.border }]}>
+      <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={24} color={colors.foreground} />
         </Pressable>
@@ -220,7 +220,7 @@ export default function MapScreen() {
       {/* ── Search Bar ── */}
       {showSearch && (
         <>
-        <View style={[styles.searchBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <View style={[styles.searchBar, { backgroundColor: colors.muted, borderBottomColor: colors.border }]}>
           <Search size={16} color={colors.mutedForeground} />
           <TextInput
             style={[styles.searchInput, { color: colors.foreground }]}
@@ -328,13 +328,13 @@ export default function MapScreen() {
           ))}
         </MapView>
         {(loading || neighborhoodLoading) && (
-          <View style={[styles.mapOverlay, { backgroundColor: isDark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)' }]}>
+          <View style={[styles.mapOverlay, { backgroundColor: `${colors.background}D9` }]}>
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
         )}
         <Pressable
           onPress={() => setMapExpanded(prev => !prev)}
-          style={[styles.mapToggleBtn, { backgroundColor: colors.card, top: 8 }]}
+          style={[styles.mapToggleBtn, { backgroundColor: colors.muted, top: 8 }]}
         >
           {mapExpanded ? <ChevronUp size={18} color={colors.foreground} /> : <ChevronDown size={18} color={colors.foreground} />}
         </Pressable>
@@ -349,12 +349,11 @@ export default function MapScreen() {
           style={[
             styles.gpsButton,
             {
-              backgroundColor: userLocation ? colors.primary : colors.card,
-              shadowColor: '#000',
+              backgroundColor: userLocation ? colors.foreground : colors.muted,
             },
           ]}
         >
-          <Crosshair size={20} color={selectedNeighborhood === '__gps__' ? colors.primaryForeground : colors.foreground} />
+          <Crosshair size={20} color={userLocation ? colors.background : colors.foreground} />
         </Pressable>
 
         {/* ── Business toggle chip ── */}
@@ -368,13 +367,13 @@ export default function MapScreen() {
           style={[
             styles.businessToggle,
             {
-              backgroundColor: showBusinesses ? colors.primary : colors.card,
-              borderColor: showBusinesses ? colors.primary : colors.border,
+              backgroundColor: showBusinesses ? colors.foreground : 'transparent',
+              borderColor: showBusinesses ? colors.foreground : colors.border,
             },
           ]}
         >
-          <Building2 size={14} color={showBusinesses ? colors.primaryForeground : colors.mutedForeground} />
-          <Text style={[styles.businessToggleText, { color: showBusinesses ? colors.primaryForeground : colors.mutedForeground }]}>
+          <Building2 size={14} color={showBusinesses ? colors.background : colors.mutedForeground} />
+          <Text style={[styles.businessToggleText, { color: showBusinesses ? colors.background : colors.mutedForeground }]}>
             {t('map.businesses')}
           </Text>
         </Pressable>
@@ -433,10 +432,10 @@ export default function MapScreen() {
               </Text>
               <Pressable
                 onPress={() => router.push('/(tabs)/create')}
-                style={[styles.emptyCreateBtn, { backgroundColor: colors.accent }]}
+                style={[styles.emptyCreateBtn, { backgroundColor: colors.foreground }]}
               >
-                <Plus size={16} color={colors.primaryForeground} />
-                <Text style={[styles.emptyCreateBtnText, { color: colors.primaryForeground }]}>{t('map.createFirstPost')}</Text>
+                <Plus size={16} color={colors.background} />
+                <Text style={[styles.emptyCreateBtnText, { color: colors.background }]}>{t('map.createFirstPost')}</Text>
               </Pressable>
               <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
                 <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 16 }}>{t('map.tryAnotherArea')}</Text>
@@ -497,7 +496,7 @@ export default function MapScreen() {
 
       {/* ── Business Preview Card ── */}
       {FEATURES.BUSINESS_ACCOUNT && selectedBusiness && (
-        <View style={[styles.businessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.businessCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <Pressable
             onPress={() => setSelectedBusiness(null)}
             style={styles.businessCardClose}
@@ -544,9 +543,9 @@ export default function MapScreen() {
               setSelectedBusiness(null)
               router.push(`/profile/${bizId}` as any)
             }}
-            style={[styles.businessCardButton, { backgroundColor: colors.primary }]}
+            style={[styles.businessCardButton, { backgroundColor: colors.foreground }]}
           >
-            <Text style={styles.businessCardButtonText}>{t('map.showProfile')}</Text>
+            <Text style={[styles.businessCardButtonText, { color: colors.background }]}>{t('map.showProfile')}</Text>
           </Pressable>
         </View>
       )}
@@ -631,11 +630,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
     zIndex: 11,
   },
   sectionHeader: {
@@ -722,8 +716,8 @@ const styles = StyleSheet.create({
   emptyActionBtn: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
     marginTop: 4,
   },
   emptyCreateBtn: {
@@ -732,16 +726,10 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 24,
     marginTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
   },
   emptyCreateBtnText: {
-    color: '#FFF',
     fontSize: 14,
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
@@ -755,11 +743,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
   },
   loadMoreFooter: {
     paddingVertical: 16,
@@ -780,13 +763,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginVertical: 4,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
   },
   emptyCardText: {
     padding: 16,
@@ -840,13 +818,8 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
     zIndex: 11,
   },
   businessToggleText: {
@@ -860,13 +833,8 @@ const styles = StyleSheet.create({
     left: 12,
     right: 12,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 6,
     zIndex: 20,
   },
   businessCardClose: {
@@ -921,10 +889,9 @@ const styles = StyleSheet.create({
   businessCardButton: {
     alignItems: 'center',
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 24,
   },
   businessCardButtonText: {
-    color: '#FFF',
     fontSize: 14,
     fontFamily: fonts.bodySemi,
     lineHeight: 20,

@@ -16,7 +16,7 @@ function VerificationErrorScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       <View style={styles.content}>
-        <View style={[styles.iconCircle, { backgroundColor: `${colors.destructive}18` }]}>
+        <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
           <ShieldAlert size={56} color={colors.destructive} />
         </View>
 
@@ -24,9 +24,9 @@ function VerificationErrorScreenInner() {
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('verification.errorMessage')}</Text>
 
         <View style={styles.actions}>
-          <Pressable onPress={() => router.replace('/settings' as any)} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityLabel={t('verification.tryAgain')} accessibilityRole="button">
-            <RotateCcw size={18} color={colors.primaryForeground} />
-            <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('verification.tryAgain')}</Text>
+          <Pressable onPress={() => router.replace('/settings' as any)} style={[styles.primaryBtn, { backgroundColor: colors.foreground }]} accessibilityLabel={t('verification.tryAgain')} accessibilityRole="button">
+            <RotateCcw size={18} color={colors.background} />
+            <Text style={[styles.primaryBtnText, { color: colors.background }]}>{t('verification.tryAgain')}</Text>
           </Pressable>
 
           <Pressable onPress={() => router.replace('/(tabs)')} style={[styles.secondaryBtn, { borderColor: colors.border }]} accessibilityLabel={t('verification.backToApp')} accessibilityRole="button">
@@ -46,9 +46,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
   actions: { width: '100%', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 24 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
-  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16, borderWidth: 1 },
+  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth },
   secondaryBtnText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })
 

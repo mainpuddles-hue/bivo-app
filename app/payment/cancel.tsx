@@ -17,7 +17,7 @@ function PaymentCancelScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       <View style={styles.content}>
         {/* Cancel icon */}
-        <View style={[styles.iconCircle, { backgroundColor: `${colors.destructive}15` }]}>
+        <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
           <XCircle size={56} color={colors.destructive} />
         </View>
 
@@ -28,12 +28,12 @@ function PaymentCancelScreenInner() {
         <View style={styles.actions}>
           <Pressable
             onPress={() => router.back()}
-            style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+            style={[styles.primaryBtn, { backgroundColor: colors.foreground }]}
             accessibilityLabel={t('payment.tryAgain')}
             accessibilityRole="button"
           >
-            <RotateCcw size={18} color={colors.primaryForeground} />
-            <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('payment.tryAgain')}</Text>
+            <RotateCcw size={18} color={colors.background} />
+            <Text style={[styles.primaryBtnText, { color: colors.background }]}>{t('payment.tryAgain')}</Text>
           </Pressable>
 
           <Pressable
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 24,
   },
   primaryBtnText: {
     fontSize: 16,

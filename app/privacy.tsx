@@ -22,7 +22,7 @@ function PrivacyScreenInner() {
       </View>
 
       <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <Text style={[s.updated, { color: colors.mutedForeground }]}>{t('privacy.updated')}</Text>
 
           {/* Feature availability disclaimer */}
@@ -98,7 +98,7 @@ function PrivacyScreenInner() {
         </View>
 
         {/* Data export CTA */}
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <Text style={[s.paragraph, { color: colors.mutedForeground }]}>{t('privacy.right1')}</Text>
           <PressableOpacity onPress={() => router.push('/settings')} accessibilityLabel={t('settings.export')} accessibilityRole="button">
             <Text style={[s.link, { color: colors.primary }]}>{t('settings.export')} →</Text>

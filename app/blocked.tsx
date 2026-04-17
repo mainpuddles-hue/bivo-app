@@ -103,7 +103,7 @@ function BlockedUsersScreenInner() {
         />
       ) : (
         <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
-          <View style={[s.card, { backgroundColor: colors.card }]}>
+          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
             {blockedUsers.map((item) => {
               const user = item.blocked_user
               return (

@@ -16,7 +16,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import type { BoostTier } from '@/lib/types'
 
 function BoostsScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -86,8 +86,8 @@ function BoostsScreenInner() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Balance display */}
-        <View style={[styles.balanceCard, { backgroundColor: colors.card }]}>
-          <View style={[styles.balanceCircle, { backgroundColor: `${colors.accent}15` }]}>
+        <View style={[styles.balanceCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+          <View style={[styles.balanceCircle, { backgroundColor: colors.muted }]}>
             <Zap size={32} color={colors.accent} fill={colors.accent} />
           </View>
           <Text style={[styles.balanceNumber, { color: colors.foreground }]}>{balance}</Text>
@@ -97,7 +97,7 @@ function BoostsScreenInner() {
         </View>
 
         {/* Tier info */}
-        <View style={[styles.tierCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.tierCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
           <View style={styles.tierRow}>
             <View style={styles.tierInfo}>
               <Text style={[styles.tierLabel, { color: colors.foreground }]}>{tierLabels[tier]}</Text>
@@ -105,12 +105,8 @@ function BoostsScreenInner() {
                 {t('boost.duration', { duration: durationLabel })}
               </Text>
             </View>
-            <View style={[styles.tierBadge, {
-              backgroundColor: tier === 'business' ? `${colors.pro}20` : tier === 'pro' ? `${colors.primary}20` : `${colors.accent}20`,
-            }]}>
-              <Text style={[styles.tierBadgeText, {
-                color: tier === 'business' ? colors.pro : tier === 'pro' ? colors.primary : colors.accent,
-              }]}>
+            <View style={[styles.tierBadge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.tierBadgeText, { color: colors.mutedForeground }]}>
                 {tier.charAt(0).toUpperCase() + tier.slice(1)}
               </Text>
             </View>
@@ -121,11 +117,11 @@ function BoostsScreenInner() {
               key={t2}
               style={[
                 styles.tierItem,
-                { borderColor: t2 === tier ? colors.accent : colors.border },
-                t2 === tier && { borderWidth: 2, backgroundColor: `${colors.accent}08` },
+                { borderColor: t2 === tier ? colors.foreground : colors.border },
+                t2 === tier && { borderWidth: 1 },
               ]}
             >
-              {t2 === tier && <CheckCircle size={14} color={colors.accent} />}
+              {t2 === tier && <CheckCircle size={14} color={colors.foreground} />}
               <Text style={[styles.tierItemText, { color: t2 === tier ? colors.foreground : colors.mutedForeground }]}>
                 {tierLabels[t2]}
               </Text>
@@ -134,7 +130,7 @@ function BoostsScreenInner() {
         </View>
 
         {/* Purchase options */}
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('boost.buyBoosts')}</Text>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{t('boost.buyBoosts')}</Text>
 
         <View style={styles.purchaseList}>
           {BOOST_PRODUCTS.map((product, index) => {
@@ -163,9 +159,9 @@ function BoostsScreenInner() {
         {/* Active boosts */}
         {activeBoosts.length > 0 && (
           <View style={styles.activeSection}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('boost.activeBoosts')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{t('boost.activeBoosts')}</Text>
             {activeBoosts.map(boost => (
-              <PressableOpacity key={boost.id} onPress={() => router.push(`/post/${boost.post_id}` as any)} style={[styles.activeBoostCard, { backgroundColor: colors.card, borderColor: `${colors.accent}40` }]}>
+              <PressableOpacity key={boost.id} onPress={() => router.push(`/post/${boost.post_id}` as any)} style={[styles.activeBoostCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
                 <TrendingUp size={16} color={colors.accent} />
                 <View style={styles.activeBoostInfo}>
                   <Text style={[styles.activeBoostTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -297,10 +293,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontFamily: fonts.headingSemi,
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: fonts.bodySemi,
     marginTop: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   purchaseList: {
     gap: 12,

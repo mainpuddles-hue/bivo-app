@@ -46,7 +46,7 @@ function InviteScreenInner() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.card, { backgroundColor: colors.card }]}>
+      <View style={[styles.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
         {status === 'loading' ? (
           <>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -56,8 +56,8 @@ function InviteScreenInner() {
           </>
         ) : status === 'success' ? (
           <>
-            <View style={[styles.iconCircle, { backgroundColor: `${colors.success}20` }]}>
-              <Check size={32} color={colors.success} />
+            <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
+              <Check size={32} color={colors.foreground} />
             </View>
             <Text style={[styles.title, { color: colors.foreground }]}>
               {t('referral.applyCodeSuccess')}
@@ -65,8 +65,8 @@ function InviteScreenInner() {
           </>
         ) : status === 'already_referred' ? (
           <>
-            <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}20` }]}>
-              <Gift size={32} color={colors.primary} />
+            <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
+              <Gift size={32} color={colors.foreground} />
             </View>
             <Text style={[styles.title, { color: colors.foreground }]}>
               {t('referral.applyCodeAlreadyReferred')}
@@ -74,7 +74,7 @@ function InviteScreenInner() {
           </>
         ) : (
           <>
-            <View style={[styles.iconCircle, { backgroundColor: `${colors.destructive}20` }]}>
+            <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
               <XCircle size={32} color={colors.destructive} />
             </View>
             <Text style={[styles.title, { color: colors.foreground }]}>
@@ -85,9 +85,9 @@ function InviteScreenInner() {
 
         <PressableOpacity
           onPress={() => router.replace('/')}
-          style={[styles.button, { backgroundColor: colors.primary }]}
+          style={[styles.button, { backgroundColor: colors.foreground }]}
         >
-          <Text style={[styles.buttonText, { color: colors.primaryForeground }]}>
+          <Text style={[styles.buttonText, { color: colors.background }]}>
             {t('common.continue') ?? 'Jatka'}
           </Text>
         </PressableOpacity>
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   button: {
     paddingHorizontal: 32,
     paddingVertical: 14,
-    borderRadius: 16,
+    borderRadius: 24,
     marginTop: 8,
   },
   buttonText: {

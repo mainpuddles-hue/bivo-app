@@ -423,7 +423,7 @@ export default function PublicProfileScreen() {
           )}
 
           {/* 2. Business Info Card */}
-          <View style={[bs.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[bs.infoCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
             <View style={bs.infoCardHeader}>
               <Avatar url={profile.avatar_url} name={profile.business_name || profile.name} size={56} borderColor={colors.primary} borderWidth={2} />
               <View style={bs.infoCardHeaderText}>
@@ -431,8 +431,8 @@ export default function PublicProfileScreen() {
                   {profile.business_name || profile.name}
                 </Text>
                 {profile.business_category && (
-                  <View style={[bs.categoryBadge, { backgroundColor: `${colors.primary}18` }]}>
-                    <Text style={[bs.categoryBadgeText, { color: colors.primary }]}>
+                  <View style={[bs.categoryBadge, { backgroundColor: colors.muted }]}>
+                    <Text style={[bs.categoryBadgeText, { color: colors.mutedForeground }]}>
                       {profile.business_category}
                     </Text>
                   </View>
@@ -442,9 +442,9 @@ export default function PublicProfileScreen() {
 
             {/* PRH Verified Trust Badge */}
             {profile.business_vat_id && (
-              <View style={[bs.prhBadge, { backgroundColor: `${colors.primary}12` }]}>
-                <BadgeCheck size={16} color={colors.primary} />
-                <Text style={[bs.prhBadgeText, { color: colors.primary }]}>
+              <View style={[bs.prhBadge, { backgroundColor: colors.muted }]}>
+                <BadgeCheck size={16} color={colors.mutedForeground} />
+                <Text style={[bs.prhBadgeText, { color: colors.mutedForeground }]}>
                   {t('business.prhVerified')}
                 </Text>
                 <Text style={[bs.prhVatText, { color: colors.mutedForeground }]}>
@@ -486,13 +486,13 @@ export default function PublicProfileScreen() {
 
           {/* Action buttons */}
           <View style={s.actions}>
-            <PressableOpacity onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
+            <PressableOpacity onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? 'transparent' : colors.foreground, borderWidth: isFollowing ? StyleSheet.hairlineWidth : 0, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
               {isFollowing ? (
                 <UserMinus size={16} color={colors.foreground} />
               ) : (
-                <UserPlus size={16} color={colors.primaryForeground} />
+                <UserPlus size={16} color={colors.background} />
               )}
-              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.primaryForeground }]}>
+              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.background }]}>
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </PressableOpacity>
@@ -504,14 +504,14 @@ export default function PublicProfileScreen() {
 
           {/* Write Review button */}
           {currentUserId && hasTransaction && !hasExistingReview && (
-            <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: 'transparent', borderColor: colors.border }]}>
               <PenLine size={16} color={colors.pro} />
               <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
             </PressableOpacity>
           )}
 
           {/* Stats row */}
-          <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[s.statsRow, { backgroundColor: 'transparent', borderColor: colors.border }]}>
             <View style={s.stat}>
               <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount > 0 ? followerCount : '\u2013'}</Text>
               <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
@@ -535,7 +535,7 @@ export default function PublicProfileScreen() {
 
           {/* 3. Location Card */}
           {(profile.business_lat != null && profile.business_lng != null) && (
-            <View style={[bs.locationCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[bs.locationCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
               <View style={bs.locationCardHeader}>
                 <MapPin size={18} color={colors.primary} />
                 <Text style={[bs.locationCardTitle, { color: colors.foreground }]}>
@@ -548,14 +548,14 @@ export default function PublicProfileScreen() {
                 </Text>
               )}
               <PressableOpacity
-                style={[bs.mapButton, { backgroundColor: `${colors.primary}12` }]}
+                style={[bs.mapButton, { backgroundColor: colors.foreground }]}
                 onPress={() => {
                   const url = `https://www.google.com/maps/search/?api=1&query=${profile.business_lat},${profile.business_lng}`
                   Linking.openURL(url).catch(() => {})
                 }}
               >
-                <MapPin size={16} color={colors.primary} />
-                <Text style={[bs.mapButtonText, { color: colors.primary }]}>
+                <MapPin size={16} color={colors.background} />
+                <Text style={[bs.mapButtonText, { color: colors.background }]}>
                   {t('business.showOnMap')}
                 </Text>
               </PressableOpacity>
@@ -564,7 +564,7 @@ export default function PublicProfileScreen() {
 
           {/* 4. Contact Card */}
           {hasContactInfo && (
-            <View style={[bs.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[bs.contactCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
               <Text style={[bs.contactCardTitle, { color: colors.foreground }]}>
                 {t('business.contactInfo')}
               </Text>
@@ -574,14 +574,14 @@ export default function PublicProfileScreen() {
                   style={bs.contactRow}
                   onPress={() => Linking.openURL(`tel:${profile.business_phone}`).catch(() => {})}
                 >
-                  <View style={[bs.contactIconWrap, { backgroundColor: `${colors.primary}12` }]}>
-                    <Phone size={16} color={colors.primary} />
+                  <View style={[bs.contactIconWrap, { backgroundColor: colors.muted }]}>
+                    <Phone size={16} color={colors.mutedForeground} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
                       {t('business.phone')}
                     </Text>
-                    <Text style={[bs.contactValue, { color: colors.primary }]}>{profile.business_phone}</Text>
+                    <Text style={[bs.contactValue, { color: colors.foreground }]}>{profile.business_phone}</Text>
                   </View>
                 </PressableOpacity>
               )}
@@ -595,14 +595,14 @@ export default function PublicProfileScreen() {
                     try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch(() => {}) } catch {}
                   }}
                 >
-                  <View style={[bs.contactIconWrap, { backgroundColor: `${colors.primary}12` }]}>
-                    <Globe size={16} color={colors.primary} />
+                  <View style={[bs.contactIconWrap, { backgroundColor: colors.muted }]}>
+                    <Globe size={16} color={colors.mutedForeground} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
                       {t('business.website')}
                     </Text>
-                    <Text style={[bs.contactValue, { color: colors.primary }]} numberOfLines={1}>
+                    <Text style={[bs.contactValue, { color: colors.foreground }]} numberOfLines={1}>
                       {profile.business_website}
                     </Text>
                   </View>
@@ -612,8 +612,8 @@ export default function PublicProfileScreen() {
               {businessHours && Object.keys(businessHours).length > 0 && (
                 <View style={bs.hoursSection}>
                   <View style={bs.contactRow}>
-                    <View style={[bs.contactIconWrap, { backgroundColor: `${colors.primary}12` }]}>
-                      <Clock size={16} color={colors.primary} />
+                    <View style={[bs.contactIconWrap, { backgroundColor: colors.muted }]}>
+                      <Clock size={16} color={colors.mutedForeground} />
                     </View>
                     <Text style={[bs.contactLabel, { color: colors.mutedForeground }]}>
                       {t('business.hours')}
@@ -671,7 +671,7 @@ export default function PublicProfileScreen() {
 
           {/* Rating Summary Card (same as non-business) */}
           {totalReviewCount > 0 && (
-            <View style={[s.ratingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[s.ratingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
               <View style={s.ratingOverview}>
                 <View style={s.ratingStarsCol}>
                   <StarRating rating={Math.round(avgRating ?? 0)} size={18} />
@@ -704,7 +704,7 @@ export default function PublicProfileScreen() {
               <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
             ) : (
               reviews.map((rev) => (
-                <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
+                <View key={rev.id} style={[s.reviewCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                   <View style={s.reviewHeader}>
                     <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
                     <View style={{ flex: 1, gap: 2 }}>
@@ -722,13 +722,13 @@ export default function PublicProfileScreen() {
           {/* Block / Report */}
           {currentUserId && currentUserId !== userId && (
             <View style={s.dangerActions}>
-              <PressableOpacity onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+              <PressableOpacity onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                 <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
                 <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
                   {isBlocked ? t('post.unblock') : t('post.block')}
                 </Text>
               </PressableOpacity>
-              <PressableOpacity onPress={handleReport} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+              <PressableOpacity onPress={handleReport} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                 <Flag size={18} color={colors.mutedForeground} />
                 <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
               </PressableOpacity>
@@ -815,9 +815,9 @@ export default function PublicProfileScreen() {
                 if (!cfg) return null
                 const Icon = cfg.icon
                 return (
-                  <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: `${cfg.color}20` }]}>
-                    <Icon size={12} color={cfg.color} />
-                    <Text style={[s.badgeText, { color: cfg.color }]}>{t(`badges.${b.badge_type}`)}</Text>
+                  <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: colors.muted }]}>
+                    <Icon size={12} color={colors.mutedForeground} />
+                    <Text style={[s.badgeText, { color: colors.mutedForeground }]}>{t(`badges.${b.badge_type}`)}</Text>
                   </View>
                 )
               })}
@@ -825,21 +825,21 @@ export default function PublicProfileScreen() {
           )}
 
           {profile.is_pro && (
-            <View style={[s.proBadge, { backgroundColor: `${colors.pro}20` }]}>
-              <Crown size={14} color={colors.pro} fill={colors.pro} />
-              <Text style={[s.proText, { color: colors.pro }]}>Pro</Text>
+            <View style={[s.proBadge, { backgroundColor: colors.muted }]}>
+              <Crown size={14} color={colors.mutedForeground} />
+              <Text style={[s.proText, { color: colors.mutedForeground }]}>Pro</Text>
             </View>
           )}
 
           {/* Action buttons */}
           <View style={s.actions}>
-            <PressableOpacity onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? colors.muted : colors.primary }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
+            <PressableOpacity onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? 'transparent' : colors.foreground, borderWidth: isFollowing ? StyleSheet.hairlineWidth : 0, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
               {isFollowing ? (
                 <UserMinus size={16} color={colors.foreground} />
               ) : (
-                <UserPlus size={16} color={colors.primaryForeground} />
+                <UserPlus size={16} color={colors.background} />
               )}
-              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.primaryForeground }]}>
+              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.background }]}>
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
             </PressableOpacity>
@@ -851,7 +851,7 @@ export default function PublicProfileScreen() {
 
           {/* Write Review button — only if user has had a transaction and hasn't reviewed yet */}
           {currentUserId && hasTransaction && !hasExistingReview && (
-            <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
+            <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: 'transparent', borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
               <PenLine size={16} color={colors.pro} />
               <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
             </PressableOpacity>
@@ -859,7 +859,7 @@ export default function PublicProfileScreen() {
         </View>
 
         {/* Stats 4-column — hide zeros, show dashes */}
-        <View style={[s.statsRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[s.statsRow, { backgroundColor: 'transparent', borderColor: colors.border }]}>
           <View style={s.stat}>
             <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount > 0 ? followerCount : '\u2013'}</Text>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
@@ -886,7 +886,7 @@ export default function PublicProfileScreen() {
 
         {/* Rating Summary Card */}
         {totalReviewCount > 0 && (
-          <View style={[s.ratingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[s.ratingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
             <Text style={[s.ratingCardTitle, { color: colors.foreground }]}>
               {t('profile.ratingsSummary')} ({totalReviewCount} {t('profile.reviewCount')})
             </Text>
@@ -918,7 +918,7 @@ export default function PublicProfileScreen() {
         )}
 
         {/* Verification Badges / Trust Info */}
-        <View style={[s.verificationCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[s.verificationCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
           {badges.some(b => (b.badge_type as string) === 'verified' || (b.badge_type as string) === 'suomifi') && (
             <View style={s.verifyRow}>
               <ShieldCheck size={16} color={colors.primary} />
@@ -950,7 +950,7 @@ export default function PublicProfileScreen() {
         </View>
 
         {/* Activity Summary */}
-        <View style={[s.activitySummaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[s.activitySummaryCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
           <Text style={[s.activitySummaryTitle, { color: colors.foreground }]}>{t('profile.activitySummary')}</Text>
           <Text style={[s.activitySummaryText, { color: colors.mutedForeground }]}>
             {postCount} {t('profile.totalPosts')}, {totalReviewCount} {t('profile.reviewCount')}, {(profile as any)?.total_points ?? 0} {t('profile.points')}
@@ -975,11 +975,11 @@ export default function PublicProfileScreen() {
 
         {/* Tabs */}
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
-            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground }]}>{t('profile.posts')}</Text>
+          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.foreground }]]}>
+            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.foreground : colors.mutedForeground }]}>{t('profile.posts')}</Text>
           </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('reviews')} style={[s.tab, activeTab === 'reviews' && [s.tabActive, { borderBottomColor: colors.primary }]]}>
-            <Text style={[s.tabText, { color: activeTab === 'reviews' ? colors.primary : colors.mutedForeground }]}>{t('profile.reviews')}</Text>
+          <PressableOpacity onPress={() => setActiveTab('reviews')} style={[s.tab, activeTab === 'reviews' && [s.tabActive, { borderBottomColor: colors.foreground }]]}>
+            <Text style={[s.tabText, { color: activeTab === 'reviews' ? colors.foreground : colors.mutedForeground }]}>{t('profile.reviews')}</Text>
           </PressableOpacity>
         </View>
 
@@ -1003,7 +1003,7 @@ export default function PublicProfileScreen() {
               <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
             ) : (
               reviews.map((rev) => (
-                <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
+                <View key={rev.id} style={[s.reviewCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
                   <View style={s.reviewHeader}>
                     <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
                     <View style={{ flex: 1, gap: 2 }}>
@@ -1022,13 +1022,13 @@ export default function PublicProfileScreen() {
         {/* Block / Report */}
         {currentUserId && currentUserId !== userId && (
           <View style={s.dangerActions}>
-            <PressableOpacity onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+            <PressableOpacity onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
               <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
               <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
                 {isBlocked ? t('post.unblock') : t('post.block')}
               </Text>
             </PressableOpacity>
-            <PressableOpacity onPress={handleReport} style={[s.dangerBtn, { backgroundColor: colors.card }]}>
+            <PressableOpacity onPress={handleReport} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
               <Flag size={18} color={colors.mutedForeground} />
               <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
             </PressableOpacity>
@@ -1103,15 +1103,15 @@ const s = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 12, marginTop: 8, width: '100%', paddingHorizontal: 16 },
   followBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 16,
+    gap: 8, paddingVertical: 12, borderRadius: 24,
   },
   followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 16, borderWidth: 1,
+    gap: 8, paddingVertical: 12, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth,
   },
   messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
-  statsRow: { flexDirection: 'row', borderRadius: 16, padding: 16, borderWidth: StyleSheet.hairlineWidth, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
+  statsRow: { flexDirection: 'row', borderRadius: 16, padding: 16, borderWidth: StyleSheet.hairlineWidth },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
   statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
   statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textTransform: 'uppercase', letterSpacing: 0.3 },
@@ -1136,7 +1136,7 @@ const s = StyleSheet.create({
   dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   reviewBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 16, borderWidth: 1, width: '100%', paddingHorizontal: 16,
+    gap: 8, paddingVertical: 12, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth, width: '100%', paddingHorizontal: 16,
   },
   reviewBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body, lineHeight: 22 },

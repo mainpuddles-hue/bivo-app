@@ -49,7 +49,7 @@ const FORUM_CATEGORIES: ForumCategoryFilterDef[] = [
 function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
   const opacity = useShimmer()
   return (
-    <View style={[s.card, { backgroundColor: colors.card }]}>
+    <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
       <View style={[s.categoryBar, { backgroundColor: colors.muted }]} />
       <View style={s.cardBody}>
         <View style={s.cardUserRow}>
@@ -79,7 +79,7 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
 const ForumSeparator = () => <View style={{ height: 10 }} />
 
 export default function ForumScreen() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const { awardPoints } = usePoints()
   const insets = useSafeAreaInsets()
@@ -511,7 +511,7 @@ export default function ForumScreen() {
     <ScreenErrorBoundary screenName="Forum">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: isDark ? `${colors.card}F8` : `${colors.card}F8`, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <View style={s.headerContent}>
           <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
@@ -523,10 +523,10 @@ export default function ForumScreen() {
       <View style={[s.filterBar, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <Pressable
           onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setNeighborhoodFilter(prev => prev ? null : userNeighborhood) }}
-          style={[s.neighborhoodChip, { backgroundColor: neighborhoodFilter ? `${colors.primary}14` : isDark ? colors.card : colors.muted, borderColor: neighborhoodFilter ? colors.primary : 'transparent' }]}
+          style={[s.neighborhoodChip, neighborhoodFilter ? { backgroundColor: colors.foreground, borderColor: colors.foreground } : { backgroundColor: 'transparent', borderColor: colors.border }]}
         >
-          <MapPin size={12} color={neighborhoodFilter ? colors.primary : colors.mutedForeground} />
-          <Text style={[s.neighborhoodChipText, { color: neighborhoodFilter ? colors.primary : colors.mutedForeground }]}>{neighborhoodFilter ?? t('forum.allAreas')}</Text>
+          <MapPin size={12} color={neighborhoodFilter ? colors.background : colors.mutedForeground} />
+          <Text style={[s.neighborhoodChipText, { color: neighborhoodFilter ? colors.background : colors.mutedForeground }]}>{neighborhoodFilter ?? t('forum.allAreas')}</Text>
         </Pressable>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryChips}>
           {FORUM_CATEGORIES.map((cat) => {
@@ -534,8 +534,8 @@ export default function ForumScreen() {
             const chipColor = cat.key ? cat.color : colors.primary
             return (
               <Pressable key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setActiveCategory(cat.key) }}
-                style={[s.categoryChip, isActive ? { backgroundColor: chipColor } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
-                <Text style={[s.categoryChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
+                style={[s.categoryChip, isActive ? { backgroundColor: colors.foreground } : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+                <Text style={[s.categoryChipText, { color: isActive ? colors.background : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
               </Pressable>
             )
           })}
@@ -548,8 +548,8 @@ export default function ForumScreen() {
           const isActive = sortBy === opt
           return (
             <Pressable key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setSortBy(opt) }}
-              style={[s.sortChip, isActive ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}>
-              <Text style={[s.sortChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
+              style={[s.sortChip, isActive ? { backgroundColor: colors.foreground } : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+              <Text style={[s.sortChipText, { color: isActive ? colors.background : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
                 {opt === 'newest' ? t('forum.sortNewest') : t('forum.sortPopular')}
               </Text>
             </Pressable>
@@ -559,8 +559,8 @@ export default function ForumScreen() {
 
       {/* New posts banner */}
       {newPostsBanner && (
-        <Pressable onPress={() => { setNewPostsBanner(false); setPage(0); setLoading(true); fetchPosts(0) }} style={[s.newPostsBanner, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('forum.newPosts')}>
-          <Text style={[s.newPostsBannerText, { color: colors.primaryForeground }]}>{t('forum.newPosts')}</Text>
+        <Pressable onPress={() => { setNewPostsBanner(false); setPage(0); setLoading(true); fetchPosts(0) }} style={[s.newPostsBanner, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('forum.newPosts')}>
+          <Text style={[s.newPostsBannerText, { color: colors.background }]}>{t('forum.newPosts')}</Text>
         </Pressable>
       )}
 
@@ -592,10 +592,10 @@ export default function ForumScreen() {
       {/* FAB */}
       {tableExists && currentUserId && (
         <Pressable onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setShowCreateModal(true) }}
-          style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.accent }]}
+          style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('forum.create')}>
-          <Plus size={24} color={colors.primaryForeground} />
+          <Plus size={24} color={colors.background} />
         </Pressable>
       )}
 
@@ -619,15 +619,15 @@ export default function ForumScreen() {
           <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
             <ModalCloseButton onClose={() => setEditingPost(null)} />
             <Text style={[s.modalTitle, { color: colors.foreground }]}>{t('forum.editPostTitle')}</Text>
-            <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={({ pressed }) => [s.publishBtn, { backgroundColor: colors.primary, opacity: savingEdit ? 0.6 : pressed ? 0.7 : 1 }]}>
-              {savingEdit ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[s.publishBtnText, { color: colors.primaryForeground }]}>{t('forum.saveEdit')}</Text>}
+            <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={({ pressed }) => [s.publishBtn, { backgroundColor: colors.foreground, opacity: savingEdit ? 0.6 : pressed ? 0.7 : 1 }]}>
+              {savingEdit ? <ActivityIndicator size="small" color={colors.background} /> : <Text style={[s.publishBtnText, { color: colors.background }]}>{t('forum.saveEdit')}</Text>}
             </Pressable>
           </View>
           <View style={s.modalSection}>
-            <TextInput style={[s.titleInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
+            <TextInput style={[s.titleInput, { color: colors.foreground, borderWidth: 0, backgroundColor: colors.muted }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
           </View>
           <View style={[s.modalSection, { flex: 1 }]}>
-            <TextInput style={[s.contentInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
+            <TextInput style={[s.contentInput, { color: colors.foreground, borderWidth: 0, backgroundColor: colors.muted }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
           </View>
           <KeyboardDoneAccessory />
         </KeyboardAvoidingView>
@@ -690,13 +690,13 @@ const s = StyleSheet.create({
   newPostsBannerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   listHeaderGap: { height: 4 },
-  card: { borderRadius: 16, overflow: 'hidden', flexDirection: 'row', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+  card: { borderRadius: 16, overflow: 'hidden', flexDirection: 'row' },
   categoryBar: { width: 4 },
   cardBody: { flex: 1, padding: 16, gap: 8 },
   cardUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   skelAvatar: { width: 32, height: 32, borderRadius: 16 },
   skelLine: { height: 10, borderRadius: 5 },
-  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 },
+  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
   emptyState: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 12 },
   emptyTitle: { fontSize: 18, lineHeight: 24, fontFamily: fonts.headingSemi, letterSpacing: -0.18 },
   emptyHint: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20 },

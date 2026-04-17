@@ -91,8 +91,8 @@ function HelpScreenInner() {
 
         {FAQ_CATEGORIES.map((category, ci) => (
           <View key={ci}>
-            <Text style={[s.categoryTitle, { color: colors.foreground }]}>{t(category.titleKey)}</Text>
-            <View style={[s.card, { backgroundColor: colors.card }]}>
+            <Text style={[s.categoryTitle, { color: colors.mutedForeground }]}>{t(category.titleKey)}</Text>
+            <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
               {category.items.map((item, qi) => {
                 const key = `${ci}-${qi}`
                 const isExpanded = expandedItems.has(key)
@@ -124,12 +124,12 @@ function HelpScreenInner() {
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
           <PressableOpacity
             onPress={() => Linking.openURL('mailto:tuki@tackbird.com').catch(() => Alert.alert(t('common.error'), t('common.error')))}
-            style={[s.contactBtn, { backgroundColor: colors.primary }]}
+            style={[s.contactBtn, { backgroundColor: colors.foreground }]}
             accessibilityLabel="tuki@tackbird.com"
             accessibilityRole="link"
           >
-            <Mail size={16} color={colors.primaryForeground} />
-            <Text style={[s.contactBtnText, { color: colors.primaryForeground }]}>tuki@tackbird.com</Text>
+            <Mail size={16} color={colors.background} />
+            <Text style={[s.contactBtnText, { color: colors.background }]}>tuki@tackbird.com</Text>
           </PressableOpacity>
         </View>
 
@@ -159,7 +159,7 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 8 },
-  categoryTitle: { fontSize: 14, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 8, paddingHorizontal: 4 },
+  categoryTitle: { fontSize: 11, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 8, paddingHorizontal: 4, color: undefined, textTransform: 'uppercase', letterSpacing: 0.5 },
   card: { borderRadius: 16, overflow: 'hidden' },
   divider: { height: StyleSheet.hairlineWidth },
   faqRow: {
@@ -173,7 +173,7 @@ const s = StyleSheet.create({
   contactDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   contactBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 16, minHeight: 48,
+    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 24, minHeight: 48,
   },
   contactBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   linkRow: {
