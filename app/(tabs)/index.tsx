@@ -557,10 +557,10 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-    paddingBottom: 12, gap: 8,
+    paddingBottom: 12, gap: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12, shadowRadius: 6, elevation: 2,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },
   neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
   neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, alignSelf: 'flex-start', minHeight: 32 },

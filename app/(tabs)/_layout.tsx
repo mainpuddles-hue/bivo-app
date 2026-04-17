@@ -58,16 +58,20 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
 
   return (
     <View style={s.tabItem}>
-      <Animated.View style={[s.iconWrap, { transform: [{ scale }] }]}>
+      <Animated.View style={[
+        s.iconWrap,
+        { transform: [{ scale }] },
+        focused && { backgroundColor: `${colors.primary}14`, borderRadius: 16 },
+      ]}>
         <Icon
-          size={26}
-          color={focused ? colors.foreground : colors.mutedForeground}
+          size={24}
+          color={focused ? colors.primary : colors.mutedForeground}
           strokeWidth={focused ? 2.4 : 1.6}
         />
         {badge != null && badge > 0 && (
           <View
             style={[s.badge, { borderColor: colors.card, backgroundColor: colors.destructive }]}
-            accessibilityLabel={`${badge} uutta viestiä`}
+            accessibilityLabel={`${badge} ${label}`}
             accessibilityRole="text"
           >
             <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
@@ -76,10 +80,9 @@ function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
       </Animated.View>
       <Text numberOfLines={1} style={[
         s.tabLabel,
-        { color: focused ? colors.foreground : colors.mutedForeground },
-        focused && { fontWeight: '600' },
+        { color: focused ? colors.primary : colors.mutedForeground },
+        focused && { fontFamily: fonts.bodySemi },
       ]}>{label}</Text>
-      {focused && <View style={[s.activeBar, { backgroundColor: colors.foreground }]} />}
     </View>
   )
 }
@@ -233,9 +236,5 @@ const s = StyleSheet.create({
     fontWeight: '700' as const,
     lineHeight: 12,
     fontFamily: fonts.bodySemi,
-  },
-  activeBar: {
-    position: 'absolute', bottom: -6,
-    width: 20, height: 3, borderRadius: 1.5,
   },
 })

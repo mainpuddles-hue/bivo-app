@@ -30,6 +30,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatPrice, formatEventDateShort } from '@/lib/format'
 import { isHumanAction } from '@/lib/abuseDetection'
 import { getImageUrl } from '@/lib/imageUtils'
+import { categoryCardShadow } from '@/lib/shadows'
 import type { Post, PostType } from '@/lib/types'
 
 type CardVariant = 'image-hero' | 'event' | 'text-rich' | 'text-compact'
@@ -235,10 +236,14 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     </View>
   )
 
-  // Shared card shell — hairline border only, no bg fill beyond base
+  // Card shell — filled card with category-tinted shadow for depth
   const cardStyle = [
     styles.card,
-    { borderColor: colors.border },
+    {
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+    },
+    category && categoryCardShadow(category.color, isDark),
     isExpired && { opacity: 0.55 },
   ]
 
@@ -540,18 +545,22 @@ const styles = StyleSheet.create({
     gap: 3,
   },
 
-  // ── Action row ──
+  // ── Action row — 36pt minimum for touch accessibility ──
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    marginTop: 2,
+    gap: 16,
+    marginTop: 4,
+    paddingTop: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(128,128,128,0.12)',
   },
   action: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    minHeight: 26,
+    minHeight: 36,
+    paddingHorizontal: 2,
   },
   actionText: {
     fontSize: 12,

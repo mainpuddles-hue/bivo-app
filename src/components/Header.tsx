@@ -72,15 +72,18 @@ export function Header() {
           <Search size={22} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
 
-        {/* Center: Online indicator */}
-        {onlineCount >= 3 && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary }} />
-            <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-              {onlineCount}
-            </Text>
-          </View>
-        )}
+        {/* Center: Brand wordmark + online indicator */}
+        <View style={styles.centerBlock}>
+          <Text style={[styles.wordmark, { color: colors.foreground }]}>TackBird</Text>
+          {onlineCount >= 3 && (
+            <View style={styles.onlineRow}>
+              <View style={[styles.onlineDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.onlineText, { color: colors.mutedForeground }]}>
+                {onlineCount}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* Right: Map + Notifications */}
         <View style={styles.actions}>
@@ -116,6 +119,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     height: 44, paddingHorizontal: 8,
   },
+  centerBlock: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row', gap: 8,
+  },
+  wordmark: {
+    fontSize: 18, fontWeight: '800', fontFamily: fonts.heading,
+    letterSpacing: -0.5,
+  },
+  onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  onlineDot: { width: 6, height: 6, borderRadius: 3 },
+  onlineText: { fontSize: 12, fontFamily: fonts.body },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 0 },
   iconButton: {
     width: 44, height: 44, borderRadius: 22,
