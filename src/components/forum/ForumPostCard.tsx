@@ -6,7 +6,6 @@ import { ChevronUp, MessageCircle, MapPin, Pencil, Trash2, Flag } from 'lucide-r
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 
@@ -69,7 +68,7 @@ function ForumPostCardInner({
   onReport,
   onUserPress,
 }: ForumPostCardProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const catColor = CATEGORY_COLORS[post.category] || colors.primary
   const user = post.user
@@ -87,7 +86,7 @@ function ForumPostCardInner({
   return (
     <Pressable
       onPress={() => onSelect(post)}
-      style={[styles.card, { backgroundColor: colors.card }, isDark ? cardShadowDark : cardShadow]}
+      style={[styles.card, { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
       accessibilityRole="button"
       accessibilityLabel={[getCategoryLabel(post.category), post.title, post.content?.slice(0, 120), `${post.comment_count} ${t('forum.replies')}`].filter(Boolean).join(', ')}
     >

@@ -8,7 +8,6 @@ import { PressableOpacity, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { cardShadow, cardShadowDark } from '@/lib/shadows'
 import { Avatar } from '@/components/Avatar'
 import { formatTimeAgo } from '@/lib/format'
 import { getImageUrl } from '@/lib/imageUtils'
@@ -85,12 +84,12 @@ function GroupPostCardInner({
   savingPostEdit,
   children,
 }: GroupPostCardProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const isEditing = editingPostId === post.id
 
   return (
-    <View style={[styles.postCard, { backgroundColor: colors.card }, isDark ? cardShadowDark : cardShadow]}>
+    <View style={[styles.postCard, { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
       <View style={[styles.categoryBar, { backgroundColor: catColor }]} />
       <View style={styles.postBody}>
         {/* User row */}

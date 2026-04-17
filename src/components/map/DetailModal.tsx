@@ -1,6 +1,5 @@
 import { View, Text, Pressable, Modal, StyleSheet, Linking, Platform, Share } from 'react-native'
 import { Image } from 'expo-image'
-import { LinearGradient } from 'expo-linear-gradient'
 import { MapPin, Navigation, X, ExternalLink } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import { getImageUrl } from '@/lib/imageUtils'
@@ -77,10 +76,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
     <Modal visible={item !== null} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={[styles.detailModal, { backgroundColor: colors.background }]}>
         {/* Header */}
-        <LinearGradient
-          colors={[`${item.color}18`, 'transparent']}
-          style={[styles.detailHeader, { borderBottomColor: colors.border }]}
-        >
+        <View style={[styles.detailHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
           <View style={[styles.detailColorBar, { backgroundColor: item.color }]} />
           <Text style={[styles.detailHeaderTitle, { color: colors.foreground }]} numberOfLines={1}>
             {item.kind === 'city_event' ? t('feedContent.cityEventLabel')
@@ -91,7 +87,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           <Pressable onPress={onClose} hitSlop={12}>
             <X size={22} color={colors.foreground} />
           </Pressable>
-        </LinearGradient>
+        </View>
 
         {/* Image */}
         {imgUrl ? (

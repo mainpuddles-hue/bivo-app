@@ -1,7 +1,6 @@
 import { memo, useState, useMemo, useRef, useEffect } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated, Share, ActionSheetIOS, Alert, Platform } from 'react-native'
 import { Image } from 'expo-image'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
@@ -13,8 +12,6 @@ import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { cardShadow, cardShadowDark } from '@/lib/shadows'
-import { categoryTints, categoryAccents } from '@/lib/theme'
 import { CATEGORIES } from '@/lib/constants'
 import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -246,17 +243,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
       delayLongPress={400}
       style={({ pressed }) => [
         styles.card,
-        categoryTints[post.type]
-          ? { backgroundColor: categoryTints[post.type][isDark ? 'dark' : 'light'] }
-          : { backgroundColor: colors.card },
-        isDark ? cardShadowDark : cardShadow,
+        { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
         // Accent bar only for truly special states — category badge handles type distinction
         isUrgentPost && { borderLeftWidth: 3, borderLeftColor: colors.destructive },
         !isUrgentPost && isPro && { borderLeftWidth: 3, borderLeftColor: colors.pro },
         !isUrgentPost && !isPro && post.is_boosted && FEATURES.BOOSTS && { borderLeftWidth: 3, borderLeftColor: colors.accent },
-        !isUrgentPost && !isPro && !(post.is_boosted && FEATURES.BOOSTS) && categoryAccents[post.type]
-          ? { borderLeftWidth: 3, borderLeftColor: categoryAccents[post.type] }
-          : undefined,
         isExpired && { opacity: 0.55 },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
@@ -369,13 +360,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               cachePolicy="memory-disk"
               recyclingKey={post.image_url!}
             />
-            {/* Subtle bottom gradient for Apple News-style depth — darkens the
-                lower third so the image blends into the card below */}
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.35)']}
-              style={styles.imageGradient}
-              pointerEvents="none"
-            />
+            {/* Subtle bottom overlay for depth */}
+            <View style={styles.imageGradient} pointerEvents="none" />
             {/* Multi-image badge */}
             {post.images && post.images.length > 1 && (
               <View style={styles.multiImageBadge}>
@@ -715,6 +701,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: '45%',
+    backgroundColor: 'rgba(0,0,0,0.18)',
   },
   multiImageBadge: {
     position: 'absolute', bottom: 8, right: 8,
