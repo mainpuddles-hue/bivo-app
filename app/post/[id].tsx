@@ -192,7 +192,7 @@ function PostDetailScreenInner() {
     supabase
       .from('reviews')
       .select('rating')
-      .eq('reviewed_user_id', post.user_id)
+      .eq('reviewed_id', post.user_id)
       .then(({ data }) => {
         if (!mounted || !data || data.length === 0) return
         const avg = data.reduce((s: number, r: any) => s + r.rating, 0) / data.length
@@ -1154,7 +1154,7 @@ function PostDetailScreenInner() {
               </View>
               {!isAuthor && (
                 <View style={[styles.followBtn, { borderColor: colors.foreground }]}>
-                  <Text style={[styles.followBtnText, { color: colors.foreground }]}>Seuraa</Text>
+                  <Text style={[styles.followBtnText, { color: colors.foreground }]}>{t('profile.follow')}</Text>
                 </View>
               )}
             </PressableOpacity>

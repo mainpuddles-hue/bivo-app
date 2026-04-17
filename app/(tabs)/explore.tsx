@@ -1225,6 +1225,8 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    minHeight: 44,
+    paddingHorizontal: 8,
   },
   seeAllText: {
     fontSize: 11,

@@ -685,13 +685,13 @@ export default function MessagesScreen() {
               </Text>
               {!showArchived && (
                 <>
-                  <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{'Ei vielä keskusteluja — kirjoita naapurillesi ensimmäinen viesti'}</Text>
+                  <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.emptyHint')}</Text>
                   <PressableOpacity
                     onPress={() => router.push('/search')}
                     style={[styles.loginBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
                     accessibilityRole="button"
                   >
-                    <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{'Aloita keskustelu'}</Text>
+                    <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{t('messages.startConversation')}</Text>
                   </PressableOpacity>
                 </>
               )}

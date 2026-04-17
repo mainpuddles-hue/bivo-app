@@ -42,6 +42,8 @@ export function Header() {
     let mounted = true
     async function fetchOnline() {
       try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || !mounted) return
         const threshold = new Date(Date.now() - 15 * 60000).toISOString()
         const { count } = await supabase
           .from('profiles')

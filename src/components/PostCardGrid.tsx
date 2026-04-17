@@ -199,9 +199,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const ActionRow = (
     <View style={styles.actions}>
       <Pressable
-        onPress={handleLike}
+        onPress={(e) => { e?.stopPropagation?.(); handleLike() }}
         hitSlop={8}
-        accessibilityRole="button"
         accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
         accessibilityState={{ selected: liked }}
         style={styles.action}
