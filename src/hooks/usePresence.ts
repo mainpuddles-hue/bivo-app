@@ -6,14 +6,42 @@ import { useSupabase } from './useSupabase'
 
 /**
  * Track user presence and count online users in neighborhood.
- * Uses Supabase Realtime Presence channels.
+ * Uses Supabase Realtime Presence channels + profiles.last_seen_at heartbeat.
  */
 export function usePresence(userId: string | null, neighborhood: string | null) {
   const supabase = useSupabase()
   const [onlineCount, setOnlineCount] = useState(0)
   const [onlineUsers, setOnlineUsers] = useState<string[]>([])
   const channelRef = useRef<any>(null)
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // Heartbeat: update profiles.last_seen_at every 5 min
+  useEffect(() => {
+    if (!userId) return
+
+    const updateLastSeen = () => {
+      ;(supabase.from('profiles') as any)
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq('id', userId)
+        .then(() => {})
+    }
+
+    // Immediately mark as online
+    updateLastSeen()
+
+    heartbeatRef.current = setInterval(updateLastSeen, 5 * 60000)
+
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') updateLastSeen()
+    })
+
+    return () => {
+      subscription.remove()
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+    }
+  }, [userId, supabase])
+
+  // Realtime Presence channel
   useEffect(() => {
     if (!userId || !neighborhood) return
 
@@ -38,7 +66,7 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
     channelRef.current = channel
 
     // Track app state — untrack when backgrounded
-    const subscription = AppState.addEventListener('change', (state) => {
+    const appSub = AppState.addEventListener('change', (state) => {
       if (state === 'active' && channelRef.current) {
         channelRef.current.track({ user_id: userId, online_at: new Date().toISOString() })
       } else if (state === 'background' && channelRef.current) {
@@ -47,7 +75,7 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
     })
 
     return () => {
-      subscription.remove()
+      appSub.remove()
       supabase.removeChannel(channel)
     }
   }, [userId, neighborhood, supabase])
