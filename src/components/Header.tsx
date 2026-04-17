@@ -6,7 +6,7 @@ import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
 
 export function Header() {
@@ -16,6 +16,7 @@ export function Header() {
   const router = useRouter()
   const supabase = useSupabase()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [onlineCount, setOnlineCount] = useState(0)
 
   useFocusEffect(useCallback(() => {
     let mounted = true
@@ -37,6 +38,23 @@ export function Header() {
     return () => { mounted = false }
   }, [supabase]))
 
+  useEffect(() => {
+    let mounted = true
+    async function fetchOnline() {
+      try {
+        const threshold = new Date(Date.now() - 15 * 60000).toISOString()
+        const { count } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .gte('last_seen_at', threshold)
+        if (mounted && count != null && count >= 3) setOnlineCount(count)
+      } catch {}
+    }
+    fetchOnline()
+    const interval = setInterval(fetchOnline, 60000)
+    return () => { mounted = false; clearInterval(interval) }
+  }, [supabase])
+
   return (
     <View style={[
       styles.header,
@@ -51,6 +69,16 @@ export function Header() {
         <PressableOpacity accessibilityLabel={t('common.search')} accessibilityRole="button" onPress={() => router.push('/search')} style={styles.iconButton} hitSlop={8}>
           <Search size={22} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
+
+        {/* Center: Online indicator */}
+        {onlineCount >= 3 && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary }} />
+            <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
+              {onlineCount}
+            </Text>
+          </View>
+        )}
 
         {/* Right: Map + Notifications */}
         <View style={styles.actions}>

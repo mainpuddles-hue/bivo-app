@@ -123,7 +123,13 @@
     "boosted": "Boosted",
     "moreOptions": "More options",
     "switchToGrid": "Grid view",
-    "switchToList": "List view"
+    "switchToList": "List view",
+    "inviteTitle": "Your neighborhood has neighbors",
+    "inviteBody": "Invite your neighbors to make the community livelier!",
+    "inviteButton": "Invite neighbor →",
+    "inviteShareText": "Join TackBird — your neighborhood bulletin board! https://tackbird.com",
+    "welcomeToast": "Welcome to {neighborhood}'s bulletin board!",
+    "welcomeToastGeneric": "Welcome to TackBird!"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",
@@ -217,7 +223,8 @@
     "browseCommunityEvents": "Browse community events",
     "openGallery": "Open image gallery",
     "liked": "Liked",
-    "deleteCommentConfirm": "Delete comment?"
+    "deleteCommentConfirm": "Delete comment?",
+    "safetyTip": "Meet in a public place. Don't share personal information before meeting."
   },
   "events": {
     "title": "Events",
@@ -539,7 +546,9 @@
     "unpinConversation": "Unpin conversation",
     "quickThanks": "Thanks for the message! 👋",
     "quickHelp": "I can help! When works?",
-    "quickAvailable": "Is this still available?",
+    "quickAvailable": "Is it still available?",
+    "quickHello": "Hi! I'm interested.",
+    "quickPickup": "When can I pick up?",
     "aboutPost": "About listing",
     "sendFailed": "Failed to send message",
     "imageSendFailed": "Failed to send image",

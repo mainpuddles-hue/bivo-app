@@ -10,7 +10,7 @@ import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
   Send, Flag, Clock, TrendingUp,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
-  ShoppingBag,
+  ShoppingBag, Star, Shield,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -72,6 +72,7 @@ function PostDetailScreenInner() {
   const [saving, setSaving] = useState(false)
   const [relatedPosts, setRelatedPosts] = useState<{ id: string; type: string; title: string; image_url: string | null; location: string | null; created_at: string }[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [authorRating, setAuthorRating] = useState<{ avg: number; count: number } | null>(null)
   const likingRef = useRef(false)
   const savingRef = useRef(false)
   const messagingRef = useRef(false)
@@ -184,6 +185,21 @@ function PostDetailScreenInner() {
     loadPost().then(() => { if (cancelled) return })
     return () => { cancelled = true }
   }, [loadPost])
+
+  useEffect(() => {
+    if (!post?.user_id) return
+    let mounted = true
+    supabase
+      .from('reviews')
+      .select('rating')
+      .eq('reviewed_user_id', post.user_id)
+      .then(({ data }) => {
+        if (!mounted || !data || data.length === 0) return
+        const avg = data.reduce((s: number, r: any) => s + r.rating, 0) / data.length
+        setAuthorRating({ avg: Math.round(avg * 10) / 10, count: data.length })
+      })
+    return () => { mounted = false }
+  }, [post?.user_id, supabase])
 
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
@@ -876,6 +892,8 @@ function PostDetailScreenInner() {
 
   // expirationInfo moved before early returns (React hooks rules)
 
+  const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
+
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
@@ -1060,6 +1078,16 @@ function PostDetailScreenInner() {
             </View>
           )}
 
+          {/* Safety tip for item exchange posts */}
+          {isItemExchange && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10 }}>
+              <Shield size={14} color={colors.mutedForeground} strokeWidth={1.8} />
+              <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, flex: 1, lineHeight: 16 }}>
+                {t('post.safetyTip') || 'Tapaa julkisella paikalla. Älä jaa henkilökohtaisia tietoja ennen tapaamista.'}
+              </Text>
+            </View>
+          )}
+
           {/* Action row — hairline top border, Threads-style thin icons */}
           <View style={[styles.actionRow, { borderTopColor: colors.border }]}>
             <PressableOpacity onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
@@ -1112,6 +1140,17 @@ function PostDetailScreenInner() {
                     </>
                   )}
                 </View>
+                {authorRating && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                    <Star size={12} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi }}>
+                      {authorRating.avg}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body }}>
+                      ({authorRating.count})
+                    </Text>
+                  </View>
+                )}
               </View>
               {!isAuthor && (
                 <View style={[styles.followBtn, { borderColor: colors.foreground }]}>

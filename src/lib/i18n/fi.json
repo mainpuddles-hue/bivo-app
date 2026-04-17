@@ -123,7 +123,13 @@
     "boosted": "Nostettu",
     "moreOptions": "Lisää vaihtoehtoja",
     "switchToGrid": "Ruutunäkymä",
-    "switchToList": "Listanäkymä"
+    "switchToList": "Listanäkymä",
+    "inviteTitle": "Naapurustossasi on jo naapureita",
+    "inviteBody": "Kutsu naapurisi ja tee yhteisöstä vilkkaampi!",
+    "inviteButton": "Kutsu naapuri →",
+    "inviteShareText": "Liity TackBirdiin — naapurustosi ilmoitustaulu! https://tackbird.com",
+    "welcomeToast": "Tervetuloa {neighborhood}n ilmoitustaululle!",
+    "welcomeToastGeneric": "Tervetuloa TackBirdiin!"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
@@ -217,7 +223,8 @@
     "browseCommunityEvents": "Selaa yhteisötapahtumia",
     "openGallery": "Avaa kuvagalleria",
     "liked": "Tykätty",
-    "deleteCommentConfirm": "Poista kommentti?"
+    "deleteCommentConfirm": "Poista kommentti?",
+    "safetyTip": "Tapaa julkisella paikalla. Älä jaa henkilökohtaisia tietoja ennen tapaamista."
   },
   "events": {
     "title": "Tapahtumat",
@@ -539,7 +546,9 @@
     "unpinConversation": "Poista kiinnitys",
     "quickThanks": "Kiitos viestistä! 👋",
     "quickHelp": "Voin auttaa! Milloin sopii?",
-    "quickAvailable": "Onko tämä vielä saatavilla?",
+    "quickAvailable": "Onko vielä saatavilla?",
+    "quickHello": "Hei! Olen kiinnostunut.",
+    "quickPickup": "Milloin voin noutaa?",
     "aboutPost": "Liittyy ilmoitukseen",
     "sendFailed": "Viestin lähetys epäonnistui",
     "imageSendFailed": "Kuvan lähetys epäonnistui",

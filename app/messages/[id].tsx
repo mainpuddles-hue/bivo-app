@@ -304,10 +304,12 @@ function ConversationScreenInner() {
   }, [id, userId])
 
   const quickReplies = useMemo(() => [
-    t('messages.quickReplyThanks'),
-    t('messages.quickReplyOk'),
-    t('messages.quickReplyWhen'),
+    t('messages.quickHello') || 'Hei! Olen kiinnostunut.',
+    t('messages.quickAvailable') || 'Onko vielä saatavilla?',
+    t('messages.quickPickup') || 'Milloin voin noutaa?',
   ], [t])
+
+  const myMessageCount = useMemo(() => messages.filter(m => m.sender_id === userId).length, [messages, userId])
 
   // 3c: Quick reply auto-send handler
   const handleQuickReply = useCallback(async (text: string) => {
@@ -807,7 +809,7 @@ function ConversationScreenInner() {
       </Modal>
 
       {/* 3c: Quick Replies — auto-send on tap */}
-      {showQuickReplies && (
+      {myMessageCount === 0 && showQuickReplies && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -818,13 +820,12 @@ function ConversationScreenInner() {
           {quickReplies.map((reply, i) => (
             <PressableOpacity
               key={i}
-              onPress={() => handleQuickReply(reply)}
-              style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: 1, borderColor: colors.border }]}
+              onPress={() => { setInput(reply); setShowQuickReplies(false) }}
+              style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
               accessibilityRole="button"
               accessibilityLabel={`${t('messages.quickReply') ?? 'Quick reply'}: ${reply}`}
             >
               <Text style={[s.quickReplyText, { color: colors.foreground }]}>{reply}</Text>
-              <Send size={11} color={colors.primary} />
             </PressableOpacity>
           ))}
         </ScrollView>

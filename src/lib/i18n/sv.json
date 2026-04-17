@@ -123,7 +123,13 @@
     "boosted": "Framhävt",
     "moreOptions": "Fler alternativ",
     "switchToGrid": "Rutnätsvy",
-    "switchToList": "Listvy"
+    "switchToList": "Listvy",
+    "inviteTitle": "Ditt grannskap har grannar",
+    "inviteBody": "Bjud in dina grannar för att göra gemenskapen livligare!",
+    "inviteButton": "Bjud in granne →",
+    "inviteShareText": "Gå med i TackBird — ditt grannskaps anslagstavla! https://tackbird.com",
+    "welcomeToast": "Välkommen till {neighborhood}s anslagstavla!",
+    "welcomeToastGeneric": "Välkommen till TackBird!"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",
@@ -217,7 +223,8 @@
     "browseCommunityEvents": "Bläddra bland gemenskapens evenemang",
     "openGallery": "Öppna bildgalleri",
     "liked": "Gillat",
-    "deleteCommentConfirm": "Ta bort kommentar?"
+    "deleteCommentConfirm": "Ta bort kommentar?",
+    "safetyTip": "Möts på en offentlig plats. Dela inte personlig information innan mötet."
   },
   "events": {
     "title": "Evenemang",
@@ -520,7 +527,9 @@
     "unpinConversation": "Avfäst konversation",
     "quickThanks": "Tack för meddelandet! 👋",
     "quickHelp": "Jag kan hjälpa! När passar?",
-    "quickAvailable": "Finns detta fortfarande?",
+    "quickAvailable": "Är det fortfarande tillgängligt?",
+    "quickHello": "Hej! Jag är intresserad.",
+    "quickPickup": "När kan jag hämta?",
     "aboutPost": "Gäller annons",
     "sendFailed": "Kunde inte skicka meddelande",
     "imageSendFailed": "Kunde inte skicka bild",

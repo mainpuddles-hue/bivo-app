@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken, ScrollView, ActionSheetIOS, Alert, Platform } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable, ActivityIndicator, ViewToken, ScrollView, ActionSheetIOS, Alert, Platform, Share } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -17,6 +17,7 @@ import { useStreak } from '@/hooks/useStreak'
 import { useInteractionTracker } from '@/hooks/useInteractionTracker'
 import { usePresence } from '@/hooks/usePresence'
 import { useSessionManager } from '@/hooks/useSessionManager'
+import { useToast } from '@/components/Toast'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCard } from '@/components/PostCard'
 import { PostCardGrid } from '@/components/PostCardGrid'
@@ -125,6 +126,9 @@ function FeedScreenInner() {
   const insets = useSafeAreaInsets()
   const params = useLocalSearchParams<{ openNeighborhoodPicker?: string }>()
 
+  const toast = useToast()
+  const welcomeShownRef = useRef(false)
+
   const feed = useFeedData()
   const supabase = useSupabase()
   const { matches, dismissMatch } = useSmartMatch(feed.currentUserId)
@@ -133,6 +137,23 @@ function FeedScreenInner() {
   usePresence(feed.currentUserId, feed.userNeighborhood)
   useSessionManager(feed.currentUserId)
   useEffect(() => { recordActivity() }, [recordActivity])
+
+  // Welcome toast on first feed load (shown once per install)
+  useEffect(() => {
+    if (welcomeShownRef.current || feed.loading || feed.posts.length === 0) return
+    AsyncStorage.getItem('welcome_toast_shown').then(val => {
+      if (val === 'true' || welcomeShownRef.current) return
+      welcomeShownRef.current = true
+      const nh = feed.userNeighborhood
+      toast.show({
+        message: nh
+          ? (t('feed.welcomeToast') || `Tervetuloa ${nh}n ilmoitustaululle!`)
+          : (t('feed.welcomeToastGeneric') || 'Tervetuloa TackBirdiin!'),
+        type: 'success',
+      })
+      AsyncStorage.setItem('welcome_toast_shown', 'true').catch(() => {})
+    }).catch(() => {})
+  }, [feed.loading, feed.posts.length, feed.userNeighborhood])
 
   // Open neighborhood picker when navigated from settings with param
   useEffect(() => {
@@ -406,9 +427,45 @@ function FeedScreenInner() {
         </View>
       )
     }
+    // Invite card — shown when feed has loaded posts
+    if (!feed.loading && feed.posts.length > 0) {
+      sections.push(
+        <View key="invite" style={{
+          marginTop: 24,
+          marginHorizontal: 4,
+          padding: 20,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.border,
+          borderRadius: 12,
+          alignItems: 'center',
+          gap: 10,
+        }}>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }}>
+            {t('feed.inviteTitle') || `${feed.userNeighborhood ?? 'Naapurustossa'}ssa on jo naapureita`}
+          </Text>
+          <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body, textAlign: 'center' }}>
+            {t('feed.inviteBody') || 'Kutsu naapurisi ja tee yhteisöstä vilkkaampi!'}
+          </Text>
+          <PressableOpacity
+            onPress={() => {
+              Share.share({ message: t('feed.inviteShareText') || 'Liity TackBirdiin — naapurustosi ilmoitustaulu! https://tackbird.com' })
+            }}
+            style={{
+              paddingHorizontal: 20, paddingVertical: 10, borderRadius: 24,
+              borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi }}>
+              {t('feed.inviteButton') || 'Kutsu naapuri →'}
+            </Text>
+          </PressableOpacity>
+        </View>
+      )
+    }
+
     if (sections.length === 0) return null
     return <View style={{ paddingBottom: 12 }}>{sections}</View>
-  }, [feed.loading, feed.hasMore, feed.posts.length, colors, t])
+  }, [feed.loading, feed.hasMore, feed.posts.length, feed.userNeighborhood, colors, fonts, t])
 
   // ── Render ──
   return (
