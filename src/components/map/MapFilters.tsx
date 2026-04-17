@@ -70,7 +70,7 @@ export function MapFilters({
                 onPress={() => { try { Haptics.selectionAsync() } catch {} onTimeFilterChange(timeFilter === tf.key ? 'all' : tf.key) }}
               >
                 <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? colors.primaryForeground : colors.foreground }]}>
-                  {tf.label}
+                  {t(tf.labelKey)}
                 </Text>
               </Pressable>
             ))}
@@ -92,7 +92,7 @@ export function MapFilters({
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
-                      {sc.label} ({count})
+                      {t(sc.labelKey)} ({count})
                     </Text>
                   </Pressable>
                 )
@@ -115,7 +115,7 @@ export function MapFilters({
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
-                      {sc.label} ({count})
+                      {t(sc.labelKey)} ({count})
                     </Text>
                   </Pressable>
                 )

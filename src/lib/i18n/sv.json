@@ -1916,7 +1916,40 @@
     "outOfAreaDesc": "Evenemang och platser visas bara i {city}",
     "changeCity": "Byt stad",
     "businesses": "Företag",
-    "showProfile": "Visa profil"
+    "showProfile": "Visa profil",
+    "allTypes": "Alla typer",
+    "allCategories": "Alla kategorier",
+    "allPlaces": "Alla platser",
+    "timeAll": "Alla",
+    "timeToday": "Idag",
+    "timeTomorrow": "Imorgon",
+    "timeThisWeek": "Denna vecka",
+    "place": {
+      "restaurant": "Restaurang",
+      "cafe": "Café",
+      "bar": "Bar",
+      "shop": "Butik",
+      "library": "Bibliotek",
+      "health": "Hälsa",
+      "sport": "Sport",
+      "culture": "Kultur",
+      "hotel": "Hotell",
+      "attraction": "Sevärdhet",
+      "service": "Tjänst",
+      "fast_food": "Snabbmat",
+      "pub": "Pub",
+      "other": "Övrigt"
+    },
+    "eventCat": {
+      "culture": "Kultur",
+      "music": "Musik",
+      "sport": "Sport",
+      "family": "Familj",
+      "theatre": "Teater",
+      "exhibition": "Utställning",
+      "food": "Mat",
+      "other": "Övrigt"
+    }
   },
   "privacy": {
     "title": "Integritetspolicy",
@@ -2799,5 +2832,16 @@
     "members": "Medlemmar",
     "viewEvent": "Visa event",
     "sendFailed": "Kunde inte skicka meddelande"
+  },
+  "contentQuality": {
+    "longerTitle": "En längre titel får mer uppmärksamhet",
+    "addTitle": "Lägg till en mer beskrivande titel",
+    "longerDescription": "En längre beskrivning hjälper folk att hitta ditt inlägg",
+    "addDescription": "Lägg till en beskrivning — det förbättrar synligheten",
+    "addMoreImages": "Lägg till fler bilder — inlägg med bilder får 3x mer uppmärksamhet",
+    "addImage": "Lägg till en bild — det förbättrar synligheten avsevärt",
+    "addMoreTags": "Lägg till taggar för att förbättra sökbarheten",
+    "addTag": "Lägg till minst en tagg",
+    "addLocation": "Lägg till plats — folk i närheten hittar dig lättare"
   }
 }

@@ -1,9 +1,4 @@
-// TODO: i18n — All label strings in this file (PLACE_LABEL, POST_SUBCATS,
-// EVENT_SUBCATS, PLACE_SUBCATS, TIME_FILTERS) are hardcoded in Finnish.
-// They should be internationalized in a future pass. Since this is a plain
-// constants file (not a React component), it cannot use the useI18n() hook.
-// Approach: add a `labelKey` field mapping to i18n translation keys, and
-// resolve translations in the consuming components.
+import { FEATURES } from '@/lib/featureFlags'
 
 export const LAYER_COLORS = {
   post: '#2D6B5E',
@@ -11,54 +6,52 @@ export const LAYER_COLORS = {
   place: '#78716C',
 } as const
 
-export const PLACE_LABEL: Record<string, string> = {
-  restaurant: 'Ravintola', cafe: 'Kahvila', bar: 'Baari', shop: 'Kauppa',
-  library: 'Kirjasto', health: 'Terveys', sport: 'Urheilu', culture: 'Kulttuuri',
-  hotel: 'Hotelli', attraction: 'Nähtävyys', service: 'Palvelu',
-  fast_food: 'Pikaruoka', pub: 'Pubi', other: 'Muu',
-}
-
-import { FEATURES } from '@/lib/featureFlags'
+// Place labels use i18n keys — resolve in consuming component via t(`map.place.${key}`)
+export const PLACE_TYPES = [
+  'restaurant', 'cafe', 'bar', 'shop', 'library', 'health',
+  'sport', 'culture', 'hotel', 'attraction', 'service',
+  'fast_food', 'pub', 'other',
+] as const
 
 export const POST_SUBCATS = [
-  { key: null, label: 'Kaikki tyypit', color: LAYER_COLORS.post },
-  { key: 'tarvitsen', label: 'Tarvitsen', color: '#C75B3A' },
-  { key: 'tarjoan', label: 'Tarjoan', color: '#7C5CBF' },
-  { key: 'ilmaista', label: 'Ilmaista', color: '#3B7DD8' },
-  { key: 'nappaa', label: 'Nappaa', color: '#E8A050' },
-  ...(FEATURES.LENDING ? [{ key: 'lainaa' as const, label: 'Lainaa', color: '#C98B2E' }] : []),
-  { key: 'tapahtuma', label: 'Tapahtuma', color: '#2B8A62' },
+  { key: null, labelKey: 'map.allTypes', color: LAYER_COLORS.post },
+  { key: 'tarvitsen', labelKey: 'categories.tarvitsen', color: '#C75B3A' },
+  { key: 'tarjoan', labelKey: 'categories.tarjoan', color: '#7C5CBF' },
+  { key: 'ilmaista', labelKey: 'categories.ilmaista', color: '#3B7DD8' },
+  { key: 'nappaa', labelKey: 'categories.nappaa', color: '#E8A050' },
+  ...(FEATURES.LENDING ? [{ key: 'lainaa' as const, labelKey: 'categories.lainaa', color: '#C98B2E' }] : []),
+  { key: 'tapahtuma', labelKey: 'categories.tapahtuma', color: '#2B8A62' },
 ]
 
 export const EVENT_SUBCATS = [
-  { key: null, label: 'Kaikki kategoriat' },
-  { key: 'culture', label: 'Kulttuuri' },
-  { key: 'music', label: 'Musiikki' },
-  { key: 'sport', label: 'Urheilu' },
-  { key: 'family', label: 'Perhe' },
-  { key: 'theatre', label: 'Teatteri' },
-  { key: 'exhibition', label: 'Näyttely' },
-  { key: 'food', label: 'Ruoka' },
-  { key: 'other', label: 'Muu' },
+  { key: null, labelKey: 'map.allCategories' },
+  { key: 'culture', labelKey: 'map.eventCat.culture' },
+  { key: 'music', labelKey: 'map.eventCat.music' },
+  { key: 'sport', labelKey: 'map.eventCat.sport' },
+  { key: 'family', labelKey: 'map.eventCat.family' },
+  { key: 'theatre', labelKey: 'map.eventCat.theatre' },
+  { key: 'exhibition', labelKey: 'map.eventCat.exhibition' },
+  { key: 'food', labelKey: 'map.eventCat.food' },
+  { key: 'other', labelKey: 'map.eventCat.other' },
 ]
 
 export const PLACE_SUBCATS = [
-  { key: null, label: 'Kaikki paikat' },
-  { key: 'restaurant', label: 'Ravintolat' },
-  { key: 'cafe', label: 'Kahvilat' },
-  { key: 'bar', label: 'Baarit' },
-  { key: 'shop', label: 'Kaupat' },
-  { key: 'culture', label: 'Kulttuuri' },
-  { key: 'sport', label: 'Urheilu' },
-  { key: 'library', label: 'Kirjastot' },
-  { key: 'health', label: 'Terveys' },
+  { key: null, labelKey: 'map.allPlaces' },
+  { key: 'restaurant', labelKey: 'map.place.restaurant' },
+  { key: 'cafe', labelKey: 'map.place.cafe' },
+  { key: 'bar', labelKey: 'map.place.bar' },
+  { key: 'shop', labelKey: 'map.place.shop' },
+  { key: 'culture', labelKey: 'map.place.culture' },
+  { key: 'sport', labelKey: 'map.place.sport' },
+  { key: 'library', labelKey: 'map.place.library' },
+  { key: 'health', labelKey: 'map.place.health' },
 ]
 
 export const TIME_FILTERS = [
-  { key: 'all' as const, label: 'Kaikki' },
-  { key: 'today' as const, label: 'Tänään' },
-  { key: 'tomorrow' as const, label: 'Huomenna' },
-  { key: 'week' as const, label: 'Tällä vkolla' },
+  { key: 'all' as const, labelKey: 'map.timeAll' },
+  { key: 'today' as const, labelKey: 'map.timeToday' },
+  { key: 'tomorrow' as const, labelKey: 'map.timeTomorrow' },
+  { key: 'week' as const, labelKey: 'map.timeThisWeek' },
 ]
 
 export const PLACES_INITIAL_LIMIT = 8

@@ -14,7 +14,7 @@ import { isToday, isTomorrow, isWithinDays } from '@/lib/dateHelpers'
 import { haversineKm } from '@/lib/geo'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import type { ListItem, StableMarker, FilterKey, Section, ItemKind } from './types'
-import { LAYER_COLORS, PLACE_LABEL, PLACES_INITIAL_LIMIT, formatDistance } from './constants'
+import { LAYER_COLORS, PLACES_INITIAL_LIMIT, formatDistance } from './constants'
 
 // ── Neighborhood Centers ──
 
@@ -417,9 +417,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     for (const pl of places) {
       const dist = haversineKm(cLat, cLng, pl.latitude, pl.longitude)
       if (dist > radiusKm) continue
-      const plLabel = t(`placeCategories.${pl.category}`) !== `placeCategories.${pl.category}`
-        ? t(`placeCategories.${pl.category}`)
-        : PLACE_LABEL[pl.category] ?? ''
+      const plLabel = t(`map.place.${pl.category}`)
       const plParts = [plLabel, pl.address, pl.opening_hours].filter(Boolean)
       items.push({
         id: `place-${pl.id}`,

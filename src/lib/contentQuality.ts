@@ -9,35 +9,35 @@ export function scoreContentQuality(post: {
   tags: string[]
   location?: string
   price?: number
-}): { score: number; tips: string[] } {
+}, t: (key: string) => string): { score: number; tips: string[] } {
   let score = 0
   const tips: string[] = []
 
   // Title (max 25)
   if (post.title.length >= 10) score += 15
-  else if (post.title.length >= 5) { score += 8; tips.push('Pidempi otsikko saa enemman huomiota') }
-  else tips.push('Lisaa kuvaavampi otsikko')
+  else if (post.title.length >= 5) { score += 8; tips.push(t('contentQuality.longerTitle')) }
+  else tips.push(t('contentQuality.addTitle'))
 
   if (post.title.length >= 20) score += 10
 
   // Description (max 25)
   if (post.description && post.description.length >= 50) score += 25
-  else if (post.description && post.description.length >= 20) { score += 15; tips.push('Pidempi kuvaus auttaa loytamaan postauksesi') }
-  else { score += 0; tips.push('Lisaa kuvaus — se parantaa nakyvyytta') }
+  else if (post.description && post.description.length >= 20) { score += 15; tips.push(t('contentQuality.longerDescription')) }
+  else { score += 0; tips.push(t('contentQuality.addDescription')) }
 
   // Images (max 20)
   if (post.imageCount >= 2) score += 20
-  else if (post.imageCount === 1) { score += 12; tips.push('Lisaa kuvia — postaukset kuvilla saavat 3x enemman huomiota') }
-  else tips.push('Lisaa kuva — se parantaa nakyvyytta merkittavasti')
+  else if (post.imageCount === 1) { score += 12; tips.push(t('contentQuality.addMoreImages')) }
+  else tips.push(t('contentQuality.addImage'))
 
   // Tags (max 15)
   if (post.tags.length >= 2) score += 15
-  else if (post.tags.length === 1) { score += 8; tips.push('Lisaa tageja auttaaksesi loydettavyydessa') }
-  else tips.push('Lisaa vahintaan yksi tagi')
+  else if (post.tags.length === 1) { score += 8; tips.push(t('contentQuality.addMoreTags')) }
+  else tips.push(t('contentQuality.addTag'))
 
   // Location (max 10)
   if (post.location) score += 10
-  else tips.push('Lisaa sijainti — lahella olevat loytavat sinut helpommin')
+  else tips.push(t('contentQuality.addLocation'))
 
   // Price (max 5 — only for relevant types)
   if (post.price && post.price > 0) score += 5

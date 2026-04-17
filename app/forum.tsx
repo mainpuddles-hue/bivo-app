@@ -138,7 +138,7 @@ export default function ForumScreen() {
 
   const sortedReplies = useMemo(() => {
     if (!replySortNewest) return replies
-    return [...replies].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    return [...replies].sort((a, b) => (new Date(b.created_at).getTime() || 0) - (new Date(a.created_at).getTime() || 0))
   }, [replies, replySortNewest])
 
   // ── Fetch user info ──

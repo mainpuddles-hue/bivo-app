@@ -757,7 +757,7 @@ export default function ProfileScreen() {
                 </View>
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
                 <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, marginTop: 8 }]}>
-                  <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{'Luo ensimmäinen ilmoitus'}</Text>
+                  <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('profile.createFirst')}</Text>
                 </PressableOpacity>
               </View>
             ) : (

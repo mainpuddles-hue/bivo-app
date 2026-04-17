@@ -308,7 +308,7 @@ export default function CreateScreen() {
   const quality = useMemo(() => scoreContentQuality({
     title, description, imageCount: images.length, tags: selectedTags,
     location, price: parseFloat(servicePrice || dailyFee || '0'),
-  }), [title, description, images.length, selectedTags, location, servicePrice, dailyFee])
+  }, t), [title, description, images.length, selectedTags, location, servicePrice, dailyFee, t])
 
   // Discard confirmation when going back with unsaved content (error prevention)
   const hasUnsavedContent = title.trim().length > 0 || description.trim().length > 0 || images.length > 0
@@ -462,7 +462,8 @@ export default function CreateScreen() {
       // Use blob MIME type (reliable) instead of URI extension
       const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       const mimeType = ALLOWED_MIMES.includes(blob.type) ? blob.type : 'image/jpeg'
-      const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : mimeType.split('/')[1]
+      const mimeSubtype = mimeType.split('/')[1] ?? 'jpeg'
+      const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `${userId}/${postId}/${i}.${ext}`
       const arrayBuffer = await blob.arrayBuffer()
 

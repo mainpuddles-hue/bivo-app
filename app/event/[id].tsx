@@ -59,7 +59,7 @@ function EventDetailScreenInner() {
   const participantCount = participants.filter(p => p.status === 'joined' || p.status === 'approved').length
   const isCreator = userId != null && event?.creator_id === userId
   const isFull = event?.max_participants != null && participantCount >= event.max_participants
-  const isPast = event != null && new Date(event.event_date) < new Date()
+  const isPast = event != null && !isNaN(new Date(event.event_date).getTime()) && new Date(event.event_date) < new Date()
 
   const fetchEvent = useCallback(async () => {
     if (!id || !isValidUUID(id)) {
@@ -103,7 +103,7 @@ function EventDetailScreenInner() {
     if (!userId) { router.push('/(auth)/login'); return }
     if (joiningRef.current || !event) return
     // Prevent joining past events
-    if (new Date(event.event_date) < new Date()) {
+    if (!isNaN(new Date(event.event_date).getTime()) && new Date(event.event_date) < new Date()) {
       Alert.alert(t('common.error'), t('events.eventPassed') ?? 'Tapahtuma on jo päättynyt')
       return
     }

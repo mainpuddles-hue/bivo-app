@@ -26,7 +26,8 @@ import fi from '../src/lib/i18n/fi.json'
 import en from '../src/lib/i18n/en.json'
 import sv from '../src/lib/i18n/sv.json'
 
-type TranslationFile = Record<string, Record<string, string>>
+type TranslationValue = string | Record<string, string | Record<string, string>>
+type TranslationFile = Record<string, Record<string, TranslationValue>>
 
 const locales: Record<string, TranslationFile> = { fi, en, sv }
 const localeNames = Object.keys(locales)

@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import type { LocalPlace } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
-import { LAYER_COLORS, PLACE_LABEL, formatDistance } from './constants'
+import { LAYER_COLORS, formatDistance } from './constants'
 
 interface PlaceRowProps {
   item: ListItem
@@ -30,7 +30,7 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
   }
 
   const placeData = item.sourceData as LocalPlace
-  const placeCategory = PLACE_LABEL[placeData.category] ?? ''
+  const placeCategory = t(`map.place.${placeData.category}`) ?? ''
   // Category-specific color for left border accent
   const placeCatColor = placeData.category === 'restaurant' || placeData.category === 'fast_food' ? '#C75B3A'
     : placeData.category === 'cafe' ? '#E8A050'

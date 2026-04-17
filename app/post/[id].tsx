@@ -687,11 +687,14 @@ function PostDetailScreenInner() {
         if (!data) return
         const blocked: string[] = []
         for (const booking of data as any[]) {
+          if (!booking.start_date || !booking.end_date) continue
           // Use date strings directly to avoid DST issues with setDate() iteration
           const startParts = booking.start_date.split('T')[0].split('-').map(Number)
           const endParts = booking.end_date.split('T')[0].split('-').map(Number)
+          if (startParts.length < 3 || endParts.length < 3) continue
           const startMs = Date.UTC(startParts[0], startParts[1] - 1, startParts[2])
           const endMs = Date.UTC(endParts[0], endParts[1] - 1, endParts[2])
+          if (isNaN(startMs) || isNaN(endMs) || endMs < startMs) continue
           for (let ms = startMs; ms <= endMs; ms += 86400000) {
             const d = new Date(ms)
             blocked.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`)

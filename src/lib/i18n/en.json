@@ -1965,7 +1965,40 @@
     "outOfAreaDesc": "Events and places are only shown in {city}",
     "changeCity": "Change city",
     "businesses": "Businesses",
-    "showProfile": "Show profile"
+    "showProfile": "Show profile",
+    "allTypes": "All types",
+    "allCategories": "All categories",
+    "allPlaces": "All places",
+    "timeAll": "All",
+    "timeToday": "Today",
+    "timeTomorrow": "Tomorrow",
+    "timeThisWeek": "This week",
+    "place": {
+      "restaurant": "Restaurant",
+      "cafe": "Cafe",
+      "bar": "Bar",
+      "shop": "Shop",
+      "library": "Library",
+      "health": "Health",
+      "sport": "Sports",
+      "culture": "Culture",
+      "hotel": "Hotel",
+      "attraction": "Attraction",
+      "service": "Service",
+      "fast_food": "Fast food",
+      "pub": "Pub",
+      "other": "Other"
+    },
+    "eventCat": {
+      "culture": "Culture",
+      "music": "Music",
+      "sport": "Sports",
+      "family": "Family",
+      "theatre": "Theatre",
+      "exhibition": "Exhibition",
+      "food": "Food",
+      "other": "Other"
+    }
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -2848,5 +2881,16 @@
     "members": "Members",
     "viewEvent": "View event",
     "sendFailed": "Failed to send message"
+  },
+  "contentQuality": {
+    "longerTitle": "A longer title gets more attention",
+    "addTitle": "Add a more descriptive title",
+    "longerDescription": "A longer description helps people find your post",
+    "addDescription": "Add a description — it improves visibility",
+    "addMoreImages": "Add more images — posts with images get 3x more attention",
+    "addImage": "Add an image — it significantly improves visibility",
+    "addMoreTags": "Add tags to help with discoverability",
+    "addTag": "Add at least one tag",
+    "addLocation": "Add location — nearby people find you easier"
   }
 }

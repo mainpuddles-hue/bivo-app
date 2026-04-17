@@ -3,9 +3,9 @@
  *
  * Validates the map layer constants used by the Explore screen:
  * - POST_SUBCATS conditional lainaa based on FEATURES.LENDING
- * - All subcategory entries have required fields
+ * - All subcategory entries have required fields (labelKey for i18n)
  * - Layer colors are valid hex
- * - PLACE_LABEL covers all place subcategory types
+ * - PLACE_TYPES covers all place subcategory types
  */
 
 // Mock react-native modules before any imports
@@ -23,7 +23,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 import { FEATURES } from '../src/lib/featureFlags'
 import {
   LAYER_COLORS,
-  PLACE_LABEL,
+  PLACE_TYPES,
   POST_SUBCATS,
   EVENT_SUBCATS,
   PLACE_SUBCATS,
@@ -45,7 +45,7 @@ describe('POST_SUBCATS and FEATURES.LENDING', () => {
     if (FEATURES.LENDING) {
       const lainaaEntry = POST_SUBCATS.find(s => s.key === 'lainaa')
       expect(lainaaEntry).toBeDefined()
-      expect(lainaaEntry!.label).toBeTruthy()
+      expect(lainaaEntry!.labelKey).toBeTruthy()
       expect(lainaaEntry!.color).toBeTruthy()
     }
   })
@@ -64,16 +64,16 @@ describe('POST_SUBCATS and FEATURES.LENDING', () => {
 })
 
 // ══════════════════════════════════════════════════════
-// Subcategory Entries: Required Fields
+// Subcategory Entries: Required Fields (labelKey for i18n)
 // ══════════════════════════════════════════════════════
 
 describe('POST_SUBCATS entries have required fields', () => {
   for (const entry of POST_SUBCATS) {
     const name = entry.key ?? 'all'
 
-    test(`${name} has a label`, () => {
-      expect(typeof entry.label).toBe('string')
-      expect(entry.label.length).toBeGreaterThan(0)
+    test(`${name} has a labelKey`, () => {
+      expect(typeof entry.labelKey).toBe('string')
+      expect(entry.labelKey.length).toBeGreaterThan(0)
     })
 
     if (entry.key !== null) {
@@ -90,10 +90,10 @@ describe('EVENT_SUBCATS entries have required fields', () => {
   for (const entry of EVENT_SUBCATS) {
     const name = entry.key ?? 'all'
 
-    test(`${name} has key and label`, () => {
+    test(`${name} has key and labelKey`, () => {
       expect(entry).toHaveProperty('key')
-      expect(typeof entry.label).toBe('string')
-      expect(entry.label.length).toBeGreaterThan(0)
+      expect(typeof entry.labelKey).toBe('string')
+      expect(entry.labelKey.length).toBeGreaterThan(0)
     })
   }
 
@@ -106,10 +106,10 @@ describe('PLACE_SUBCATS entries have required fields', () => {
   for (const entry of PLACE_SUBCATS) {
     const name = entry.key ?? 'all'
 
-    test(`${name} has key and label`, () => {
+    test(`${name} has key and labelKey`, () => {
       expect(entry).toHaveProperty('key')
-      expect(typeof entry.label).toBe('string')
-      expect(entry.label.length).toBeGreaterThan(0)
+      expect(typeof entry.labelKey).toBe('string')
+      expect(entry.labelKey.length).toBeGreaterThan(0)
     })
   }
 
@@ -156,12 +156,12 @@ describe('POST_SUBCATS colors are valid hex', () => {
 })
 
 // ══════════════════════════════════════════════════════
-// PLACE_LABEL Coverage
+// PLACE_TYPES Coverage
 // ══════════════════════════════════════════════════════
 
-describe('PLACE_LABEL covers required place types', () => {
-  test('PLACE_LABEL is a non-empty object', () => {
-    expect(Object.keys(PLACE_LABEL).length).toBeGreaterThan(0)
+describe('PLACE_TYPES covers required place types', () => {
+  test('PLACE_TYPES is a non-empty array', () => {
+    expect(PLACE_TYPES.length).toBeGreaterThan(0)
   })
 
   const expectedPlaceTypes = [
@@ -170,29 +170,18 @@ describe('PLACE_LABEL covers required place types', () => {
   ]
 
   for (const type of expectedPlaceTypes) {
-    test(`PLACE_LABEL covers type: ${type}`, () => {
-      expect(PLACE_LABEL).toHaveProperty(type)
-      expect(typeof PLACE_LABEL[type]).toBe('string')
-      expect(PLACE_LABEL[type].length).toBeGreaterThan(0)
+    test(`PLACE_TYPES covers type: ${type}`, () => {
+      expect(PLACE_TYPES).toContain(type)
     })
   }
 
-  test('all PLACE_SUBCATS keys (except null) have a PLACE_LABEL entry', () => {
+  test('all PLACE_SUBCATS keys (except null) are in PLACE_TYPES', () => {
     const placeSubKeys = PLACE_SUBCATS
       .map(s => s.key)
       .filter((k): k is string => k !== null)
 
     for (const key of placeSubKeys) {
-      // PLACE_SUBCATS uses plural form (e.g., "Ravintolat") while PLACE_LABEL uses singular
-      // The key in PLACE_SUBCATS should map to a PLACE_LABEL entry
-      expect(PLACE_LABEL).toHaveProperty(key)
-    }
-  })
-
-  test('all PLACE_LABEL values are non-empty strings', () => {
-    for (const [key, value] of Object.entries(PLACE_LABEL)) {
-      expect(typeof value).toBe('string')
-      expect(value.length).toBeGreaterThan(0)
+      expect(PLACE_TYPES).toContain(key)
     }
   })
 })
