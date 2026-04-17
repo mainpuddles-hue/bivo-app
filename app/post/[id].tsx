@@ -1171,44 +1171,6 @@ function PostDetailScreenInner() {
               )
             })}
 
-            {replyToComment && (
-              <View style={[styles.replyIndicator, { backgroundColor: `${colors.primary}10`, borderColor: colors.primary }]}>
-                <Reply size={12} color={colors.primary} />
-                <Text style={[styles.replyIndicatorText, { color: colors.primary }]} numberOfLines={1}>
-                  {t('post.replyingTo', { name: replyToComment.user?.name ?? t('common.user') })}
-                </Text>
-                <PressableOpacity onPress={() => setReplyToComment(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><X size={14} color={colors.mutedForeground} /></PressableOpacity>
-              </View>
-            )}
-
-            {userId && (
-              <View style={{ gap: 4 }}>
-              <View style={[styles.commentInput, { backgroundColor: colors.muted, borderColor: 'transparent' }]}>
-                <TextInput
-                  style={[styles.commentTextInput, { color: colors.foreground }]}
-                  value={commentText} onChangeText={setCommentText}
-                  placeholder={replyToComment ? t('post.writeReply') : t('post.addComment')}
-                  placeholderTextColor={colors.mutedForeground} maxLength={500}
-                />
-                <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
-                  hitSlop={8}
-                  accessibilityRole="button" accessibilityLabel={t('post.sendComment')}
-                  accessibilityState={{ busy: sendingComment, disabled: !commentText.trim() || sendingComment }}
-                  style={({ pressed }) => [styles.commentSendBtn, { backgroundColor: commentText.trim() ? colors.foreground : 'transparent', opacity: (!commentText.trim()) ? 0.4 : pressed ? 0.7 : 1 }]}>
-                  {sendingComment ? (
-                    <ActivityIndicator size="small" color={commentText.trim() ? colors.background : colors.mutedForeground} />
-                  ) : (
-                    <Send size={14} color={commentText.trim() ? colors.background : colors.mutedForeground} />
-                  )}
-                </Pressable>
-              </View>
-              {commentText.length > 0 && (
-                <Text style={{ fontSize: 11, color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', paddingRight: 4, fontFamily: fonts.body, lineHeight: 16 }}>
-                  {commentText.length}/500
-                </Text>
-              )}
-              </View>
-            )}
           </View>
         </View>
       </ScrollView>
@@ -1370,23 +1332,59 @@ function PostDetailScreenInner() {
         <KeyboardDoneAccessory />
       </Modal>
 
-      {/* Fixed bottom CTA — message only (bookmark/share/flag in header) */}
-      {post && userId && post.user_id !== userId && (
+      {/* Sticky bottom bar — comment input always visible + optional Lähetä viesti */}
+      {post && userId && (
         <View style={[ctaStyles.bar, {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
           paddingBottom: insets.bottom + 8,
         }]}>
-          <PressableOpacity
-            onPress={handleMessage}
-            style={[ctaStyles.messageBtn, { borderColor: colors.foreground }]}
-            accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
-          >
-            <MessageCircle size={18} strokeWidth={1.8} color={colors.foreground} />
-            <Text style={[ctaStyles.messageBtnText, { color: colors.foreground }]}>
-              {t('post.message')}
-            </Text>
-          </PressableOpacity>
+          {replyToComment && (
+            <View style={[ctaStyles.replyIndicator, { backgroundColor: `${colors.primary}10`, borderColor: colors.primary }]}>
+              <Reply size={12} color={colors.primary} />
+              <Text style={[ctaStyles.replyIndicatorText, { color: colors.primary }]} numberOfLines={1}>
+                {t('post.replyingTo', { name: replyToComment.user?.name ?? t('common.user') })}
+              </Text>
+              <PressableOpacity onPress={() => setReplyToComment(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><X size={14} color={colors.mutedForeground} /></PressableOpacity>
+            </View>
+          )}
+          <View style={ctaStyles.inputRow}>
+            <View style={[ctaStyles.commentInput, { backgroundColor: colors.muted }]}>
+              <TextInput
+                style={[ctaStyles.commentTextInput, { color: colors.foreground }]}
+                value={commentText} onChangeText={setCommentText}
+                placeholder={replyToComment ? t('post.writeReply') : t('post.addComment')}
+                placeholderTextColor={colors.mutedForeground} maxLength={500}
+              />
+              {commentText.length > 0 && (
+                <Text style={[ctaStyles.charCount, { color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground }]}>
+                  {commentText.length}/500
+                </Text>
+              )}
+              <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
+                hitSlop={8}
+                accessibilityRole="button" accessibilityLabel={t('post.sendComment')}
+                accessibilityState={{ busy: sendingComment, disabled: !commentText.trim() || sendingComment }}
+                style={({ pressed }) => [ctaStyles.sendBtn, { backgroundColor: commentText.trim() ? colors.foreground : 'transparent', opacity: (!commentText.trim()) ? 0.4 : pressed ? 0.7 : 1 }]}>
+                {sendingComment ? (
+                  <ActivityIndicator size="small" color={commentText.trim() ? colors.background : colors.mutedForeground} />
+                ) : (
+                  <Send size={14} color={commentText.trim() ? colors.background : colors.mutedForeground} />
+                )}
+              </Pressable>
+            </View>
+            {post.user_id !== userId && (
+              <PressableOpacity
+                onPress={handleMessage}
+                style={[ctaStyles.messageBtn, { backgroundColor: colors.foreground }]}
+                accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
+              >
+                <Text style={[ctaStyles.messageBtnText, { color: colors.background }]}>
+                  {t('post.message')}
+                </Text>
+              </PressableOpacity>
+            )}
+          </View>
         </View>
       )}
 
@@ -1545,17 +1543,30 @@ const styles = StyleSheet.create({
 const ctaStyles = StyleSheet.create({
   bar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingTop: 12,
+    flexDirection: 'column', gap: 6,
+    paddingHorizontal: 16, paddingTop: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  messageBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    alignSelf: 'flex-start',
-    gap: 8, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 16,
-    borderWidth: 1.5, backgroundColor: 'transparent',
+  replyIndicator: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1,
   },
-  messageBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  inputRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+  },
+  commentInput: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6,
+  },
+  commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 34, lineHeight: 20 },
+  charCount: { fontSize: 10, fontFamily: fonts.body, lineHeight: 14 },
+  sendBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  messageBtn: {
+    alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 9, paddingHorizontal: 14, borderRadius: 20,
+  },
+  messageBtnText: { fontSize: 13, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 18 },
 })
 
 export default function PostDetailScreen() {

@@ -1,5 +1,13 @@
 import type { Post } from './types'
 
+// Deterministic hour offsets — index-stable so seed posts don't reshuffle on every render.
+// Results in display strings like "2 tuntia sitten", "8 tuntia sitten", "eilen", etc.
+const SEED_OFFSETS_HOURS = [2, 5, 8, 12, 18, 24, 30, 36, 42, 48]
+
+function seedTs(index: number): string {
+  return new Date(Date.now() - SEED_OFFSETS_HOURS[index % SEED_OFFSETS_HOURS.length] * 3600000).toISOString()
+}
+
 export function getSeedPosts(neighborhood: string): Partial<Post>[] {
   return [
     {
@@ -12,8 +20,8 @@ export function getSeedPosts(neighborhood: string): Partial<Post>[] {
       like_count: 3,
       comment_count: 1,
       tags: ['tyokalut'],
-      created_at: new Date(Date.now() - 3600000).toISOString(),
-      updated_at: new Date(Date.now() - 3600000).toISOString(),
+      created_at: seedTs(0),
+      updated_at: seedTs(0),
       is_active: true,
       is_seed: true,
       user: {
@@ -33,8 +41,8 @@ export function getSeedPosts(neighborhood: string): Partial<Post>[] {
       like_count: 5,
       comment_count: 2,
       tags: ['lemmikit'],
-      created_at: new Date(Date.now() - 7200000).toISOString(),
-      updated_at: new Date(Date.now() - 7200000).toISOString(),
+      created_at: seedTs(1),
+      updated_at: seedTs(1),
       is_active: true,
       is_seed: true,
       user: {
@@ -54,8 +62,8 @@ export function getSeedPosts(neighborhood: string): Partial<Post>[] {
       like_count: 8,
       comment_count: 4,
       tags: ['huonekalut'],
-      created_at: new Date(Date.now() - 10800000).toISOString(),
-      updated_at: new Date(Date.now() - 10800000).toISOString(),
+      created_at: seedTs(2),
+      updated_at: seedTs(2),
       is_active: true,
       is_seed: true,
       user: {
@@ -76,8 +84,8 @@ export function getSeedPosts(neighborhood: string): Partial<Post>[] {
       comment_count: 6,
       tags: ['ruoka'],
       expires_at: new Date(Date.now() + 43200000).toISOString(),
-      created_at: new Date(Date.now() - 1800000).toISOString(),
-      updated_at: new Date(Date.now() - 1800000).toISOString(),
+      created_at: seedTs(3),
+      updated_at: seedTs(3),
       is_active: true,
       is_seed: true,
       user: {
@@ -98,8 +106,8 @@ export function getSeedPosts(neighborhood: string): Partial<Post>[] {
       like_count: 2,
       comment_count: 0,
       tags: ['tyokalut'],
-      created_at: new Date(Date.now() - 86400000).toISOString(),
-      updated_at: new Date(Date.now() - 86400000).toISOString(),
+      created_at: seedTs(4),
+      updated_at: seedTs(4),
       is_active: true,
       is_seed: true,
       user: {

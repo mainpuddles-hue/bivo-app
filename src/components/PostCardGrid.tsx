@@ -20,7 +20,7 @@ import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { Heart, MessageCircle, MapPin, Calendar, Clock, User, MoreHorizontal } from 'lucide-react-native'
+import { Heart, MessageCircle, MapPin, Calendar, Clock, User, MoreHorizontal, BadgeCheck } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
@@ -79,6 +79,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const user = post.user
   const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : (user?.name ?? '')
   const timeAgo = post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''
+  const isVerified = !isAnonymous && (post.user?.user_badges?.some((b: any) => b.badge_type === 'verified') ?? false)
 
   // Entrance animation
   const entranceAnim = useRef(new Animated.Value(0)).current
@@ -166,9 +167,12 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         </View>
       )}
       <View style={styles.headerNameBlock}>
-        <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>
-          {authorName}
-        </Text>
+        <View style={styles.authorNameRow}>
+          <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>
+            {authorName}
+          </Text>
+          {isVerified && <BadgeCheck size={12} color={colors.primary} strokeWidth={2.5} />}
+        </View>
         {timeAgo && (
           <Text style={[styles.timeText, { color: colors.mutedForeground }]} numberOfLines={1}>
             {timeAgo}
@@ -418,6 +422,11 @@ const styles = StyleSheet.create({
   headerNameBlock: {
     flex: 1,
     minWidth: 0,
+  },
+  authorNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   authorName: {
     fontSize: 12,

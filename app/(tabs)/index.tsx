@@ -32,6 +32,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { AdCard } from '@/components/AdCard'
 import type { Ad } from '@/components/AdCard'
 import type { Post } from '@/lib/types'
+import { FirstVisitBanner } from '@/components/FirstVisitBanner'
 // useNeighborhoodStats — stats moved to Explore tab
 import { getDateGroup } from '@/lib/dateHelpers'
 
@@ -311,6 +312,9 @@ function FeedScreenInner() {
   // ── ListHeader — content-first: only contextual banners, no filler ──
   const ListHeader = useMemo(() => (
     <View style={{ gap: 8 }}>
+      {/* First-visit explainer — shown once, dismissable */}
+      <FirstVisitBanner neighborhood={feed.userNeighborhood} />
+
       {/* Missed posts — only when returning after 24h+ */}
       {showMissedBanner && missedCount > 0 && (
         <View style={[styles.missedBanner, { backgroundColor: colors.primary }]}>
@@ -359,7 +363,7 @@ function FeedScreenInner() {
       )}
     </View>
   ), [feed.hasNewPosts, feed.error, feed.handleRefresh, isDark, colors, t,
-    feed.posts, matches, dismissMatch, showMissedBanner, missedCount])
+    feed.posts, matches, dismissMatch, showMissedBanner, missedCount, feed.userNeighborhood])
 
   // ── Empty state ──
   const EmptyComponent = useMemo(() => {
