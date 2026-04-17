@@ -84,7 +84,7 @@ export default function PublicProfileScreen() {
     }
 
     // Fetch profile
-    const { data: p } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto, bio, is_pro, is_business, trust_level, total_points, business_name, business_phone, business_website, business_lat, business_lng, created_at, profile_visibility, business_hours').eq('id', userId).maybeSingle()
+    const { data: p } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto, bio, is_pro, is_business, total_points, business_name, business_phone, business_website, business_lat, business_lng, created_at, profile_visibility, business_hours').eq('id', userId).maybeSingle()
     if (!p) { setLoading(false); setRefreshing(false); return }
     // Don't show deleted/anonymized profiles
     if ((p as any).name === '[Poistettu]' || (p as any).name === '[Deleted]') {

@@ -126,10 +126,9 @@ function ToastDisplay({ toast, onDismiss }: { toast: (ToastOptions & { id: numbe
 
   return (
     <Animated.View
-      pointerEvents="box-none"
       style={[
         styles.container,
-        { bottom: insets.bottom + 88, transform: [{ translateY }], opacity },
+        { bottom: insets.bottom + 88, transform: [{ translateY }], opacity, pointerEvents: 'box-none' },
       ]}
     >
       <View

@@ -622,7 +622,8 @@ export default function MessagesScreen() {
                     <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
                   )}
                   <PressableOpacity
-                    onPress={() => {
+                    onPress={(e) => {
+                      e?.stopPropagation?.()
                       const pinLabel = isPinned ? (t('messages.unpinConversation') ?? 'Unpin') : (t('messages.pinConversation') ?? 'Pin')
                       const archiveLabel = showArchived ? (t('messages.unarchive') ?? 'Unarchive') : (t('messages.archive') ?? 'Archive')
                       const cancelLabel = t('common.cancel') ?? 'Cancel'
@@ -645,7 +646,6 @@ export default function MessagesScreen() {
                     style={styles.moreBtn}
                     hitSlop={8}
                     accessibilityLabel={t('common.more') ?? 'More'}
-                    accessibilityRole="button"
                   >
                     <MoreHorizontal size={16} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
                   </PressableOpacity>

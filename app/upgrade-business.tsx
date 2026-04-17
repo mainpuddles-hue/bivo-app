@@ -74,7 +74,7 @@ export default function UpgradeBusinessScreen() {
         try {
           const { data: countryConfig } = await (supabase.from('country_configs') as any)
             .select('business_validation')
-            .eq('country_id', (data as any).country_id ?? 'FI')
+            .eq('country_id', (data as any).detected_country ?? 'FI')
             .maybeSingle()
           if (countryConfig?.business_validation) {
             setBusinessValidationType(countryConfig.business_validation)

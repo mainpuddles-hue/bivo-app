@@ -361,7 +361,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               recyclingKey={post.image_url!}
             />
             {/* Subtle bottom overlay for depth */}
-            <View style={styles.imageGradient} pointerEvents="none" />
+            <View style={[styles.imageGradient, { pointerEvents: 'none' }]} />
             {/* Multi-image badge */}
             {post.images && post.images.length > 1 && (
               <View style={styles.multiImageBadge}>
