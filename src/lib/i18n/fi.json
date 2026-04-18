@@ -1208,6 +1208,8 @@
     "disputeNonReturn": "Tavara ei palautunut",
     "disputeOther": "Muu syy",
     "disputeSubmitted": "Ongelma ilmoitettu — käsittelemme asian",
+    "disputeDescriptionPlaceholder": "Kuvaile ongelma...",
+    "uploadPhotosButton": "Lataa kuvat",
     "comparePhotos": "Vertaa kuvia",
     "gracePeriod": "Grace-aika (24h)"
   },

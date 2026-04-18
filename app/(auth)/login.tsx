@@ -122,6 +122,7 @@ function LoginScreenInner() {
     if (!password.trim()) { Alert.alert(t('common.error'), t('auth.passwordRequired')); return }
 
     if (mode === 'register') {
+      if (!termsAccepted) { setErrorMsg(t('auth.acceptTerms')); return }
       if (!name.trim()) { Alert.alert(t('common.error'), t('auth.nameRequired')); return }
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
         Alert.alert(t('common.error'), t('settings.passwordTooWeak'))

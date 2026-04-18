@@ -1208,6 +1208,8 @@
     "disputeNonReturn": "Item not returned",
     "disputeOther": "Other reason",
     "disputeSubmitted": "Issue reported — we'll handle it",
+    "disputeDescriptionPlaceholder": "Describe the issue...",
+    "uploadPhotosButton": "Upload photos",
     "comparePhotos": "Compare photos",
     "gracePeriod": "Grace period (24h)"
   },

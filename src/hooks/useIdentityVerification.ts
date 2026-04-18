@@ -96,26 +96,31 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
         return
       }
 
-      // SECURITY NOTE: In production, badge insertion must happen server-side
-      // via Suomi.fi OIDC callback Edge Function. Client-side insertion is
-      // enabled only for development/testing until DVV credentials are obtained.
-      // TODO: Replace with Edge Function call when Suomi.fi is live
-      const { error: badgeError } = await (supabase.from('user_badges') as any)
-        .insert({ user_id: userId, badge_type: 'verified' })
-
-      if (badgeError) {
-        setError('verification_failed')
+      // Call server-side Edge Function to perform verification.
+      // Direct client-side badge insertion is blocked — only the server can
+      // grant 'verified' badges after identity validation (Suomi.fi OIDC).
+      const { data: { session: authSession } } = await supabase.auth.getSession()
+      if (!authSession?.access_token) {
+        setError('auth_required')
         setStatus('error')
         return
       }
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+      const res = await fetch(`${supabaseUrl}/functions/v1/verify-identity`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authSession.access_token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      })
 
-      // Set identity_verified_at on profile
-      const { error: profileError } = await (supabase.from('profiles') as any)
-        .update({ identity_verified_at: new Date().toISOString() })
-        .eq('id', userId)
-
-      if (profileError) {
-        if (__DEV__) console.log('[verification] profile update failed:', profileError.message)
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        if (__DEV__) console.log('[verification] Edge Function error:', errBody)
+        setError(errBody?.error === 'not_available' ? 'not_available' : 'verification_failed')
+        setStatus('error')
+        return
       }
 
       setIsVerified(true)

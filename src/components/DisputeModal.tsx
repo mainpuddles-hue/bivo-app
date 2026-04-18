@@ -139,7 +139,7 @@ export function DisputeModal({
           {reason && (
             <TextInput
               style={[styles.input, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]}
-              placeholder="Kuvaile ongelma..."
+              placeholder={t('rental.disputeDescriptionPlaceholder')}
               placeholderTextColor={colors.mutedForeground}
               multiline
               value={description}

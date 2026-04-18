@@ -172,7 +172,7 @@ export function HandoffPhotoModal({
               <>
                 <Upload size={18} color={photos.length >= MIN_PHOTOS ? colors.primaryForeground : colors.mutedForeground} />
                 <Text style={[styles.submitText, { color: photos.length >= MIN_PHOTOS ? colors.primaryForeground : colors.mutedForeground }]}>
-                  {t('rental.photoUploaded').replace('ladattu', 'lataa')} ({photos.length})
+                  {t('rental.uploadPhotosButton')} ({photos.length})
                 </Text>
               </>
             )}

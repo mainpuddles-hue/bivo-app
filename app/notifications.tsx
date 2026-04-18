@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, SectionList, RefreshControl, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -258,19 +260,23 @@ function NotificationsScreenInner() {
       }
     }
 
-    // Mark as read
-    if (!item.is_read) {
-      await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
-      setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n))
+    try {
+      // Mark as read
+      if (!item.is_read) {
+        await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
+        setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n))
+      }
+      // Navigate based on link_type — validate UUID before navigating to prevent crashes
+      const linkId = item.link_id
+      if (!linkId) return
+      if (item.link_type === 'post') router.push(`/post/${linkId}`)
+      else if (item.link_type === 'conversation') router.push(`/messages/${linkId}`)
+      else if (item.link_type === 'profile') router.push(`/profile/${linkId}`)
+      else if (item.link_type === 'booking') router.push(`/booking/${linkId}`)
+      else if (item.link_type === 'event') router.push(`/event/${linkId}` as any)
+    } catch (err) {
+      if (__DEV__) console.error('[notifications] handleTap error:', err)
     }
-    // Navigate based on link_type — validate UUID before navigating to prevent crashes
-    const linkId = item.link_id
-    if (!linkId) return
-    if (item.link_type === 'post') router.push(`/post/${linkId}`)
-    else if (item.link_type === 'conversation') router.push(`/messages/${linkId}`)
-    else if (item.link_type === 'profile') router.push(`/profile/${linkId}`)
-    else if (item.link_type === 'booking') router.push(`/booking/${linkId}`)
-    else if (item.link_type === 'event') router.push(`/event/${linkId}` as any)
   }, [supabase, router, expandedGroups, toggleGroup])
 
   const filtered = useMemo(() => {
