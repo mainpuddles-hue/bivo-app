@@ -39,7 +39,8 @@
     "and": "ja",
     "ok": "OK",
     "dismiss": "Sulge",
-    "loadError": "Laadimine ebaõnnestus. Puuduta uuesti proovimiseks."
+    "loadError": "Laadimine ebaõnnestus. Puuduta uuesti proovimiseks.",
+    "rateLimitExceeded": "Liiga palju toiminguid. Oota hetk ja proovi uuesti. (Max {{max}}/{{minutes}}min)"
   },
   "nav": {
     "feed": "Kodu",

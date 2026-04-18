@@ -42,6 +42,7 @@
     "done": "Klar",
     "yesterday": "Igår",
     "loadError": "Kunde inte ladda. Tryck för att försöka igen.",
+    "rateLimitExceeded": "För många åtgärder. Vänta en stund och försök igen. (Max {{max}}/{{minutes}}min)",
     "by": "av",
     "continue": "Fortsätt",
     "notFound": "Hittades inte",

@@ -528,7 +528,7 @@ export default function CreateScreen() {
 
     // Rate limiting
     if (!await checkRateLimit('post_create')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('post_create'))
+      Alert.alert(t('common.error'), getRateLimitMessage('post_create', t))
       return
     }
 
@@ -592,6 +592,14 @@ export default function CreateScreen() {
       today.setHours(0, 0, 0, 0)
       if (!isNaN(eventDateObj.getTime()) && eventDateObj < today) {
         Alert.alert(t('common.error'), t('create.eventDateInPast'))
+        return
+      }
+    }
+    // Validate event max capacity BEFORE post insert to prevent orphaned posts
+    if (selectedType === 'tapahtuma' && eventMaxCapacity) {
+      const maxAtt = parseInt(eventMaxCapacity, 10)
+      if (isNaN(maxAtt) || maxAtt < 1) {
+        Alert.alert(t('common.error'), t('create.invalidMaxCapacity') ?? 'Invalid max capacity')
         return
       }
     }
@@ -742,14 +750,8 @@ export default function CreateScreen() {
           }
         }
 
+        // maxCapacity already validated in pre-submit checks — safe to parse
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
-        if (maxAtt !== null && (isNaN(maxAtt) || maxAtt < 1)) {
-          // Delete the orphaned post that was already inserted
-          try { await (supabase.from('posts') as any).delete().eq('id', post.id) } catch {}
-          Alert.alert(t('common.error'), t('create.invalidMaxCapacity') ?? 'Invalid max capacity')
-          setSubmitting(false)
-          return
-        }
 
         const { error: eventError } = await (supabase.from('events') as any).insert({
           post_id: post.id,
@@ -766,7 +768,11 @@ export default function CreateScreen() {
         })
         if (eventError) {
           if (__DEV__) console.error('[create] event insert failed:', eventError.message)
+          // Clean up orphaned post since event creation failed
+          try { await (supabase.from('posts') as any).delete().eq('id', post.id) } catch {}
           Alert.alert(t('common.error'), t('create.eventCreateFailed') ?? 'Event creation failed')
+          setSubmitting(false)
+          return
         }
       }
 

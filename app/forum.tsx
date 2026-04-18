@@ -456,7 +456,7 @@ export default function ForumScreen() {
     if (!content.trim()) { Alert.alert(t('common.error'), t('forum.contentRequired')); return }
     if (!currentUserId) return
     if (!await checkRateLimit('forum_post')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('forum_post'))
+      Alert.alert(t('common.error'), getRateLimitMessage('forum_post', t))
       return
     }
     setPublishing(true)

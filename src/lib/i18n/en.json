@@ -42,6 +42,7 @@
     "done": "Done",
     "yesterday": "Yesterday",
     "loadError": "Failed to load. Tap to retry.",
+    "rateLimitExceeded": "Too many actions. Wait a moment and try again. (Max {{max}}/{{minutes}}min)",
     "by": "by",
     "continue": "Continue",
     "notFound": "Not found",

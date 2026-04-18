@@ -315,7 +315,7 @@ function ConversationScreenInner() {
   const handleQuickReply = useCallback(async (text: string) => {
     if (!userId || sending) return
     if (!await checkRateLimit('message')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('message'))
+      Alert.alert(t('common.error'), getRateLimitMessage('message', t))
       return
     }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -336,7 +336,7 @@ function ConversationScreenInner() {
   const handleSend = useCallback(async () => {
     if (!input.trim() || !userId || sending) return
     if (!await checkRateLimit('message')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('message'))
+      Alert.alert(t('common.error'), getRateLimitMessage('message', t))
       return
     }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -364,7 +364,7 @@ function ConversationScreenInner() {
   const handleSendImage = useCallback(async () => {
     if (!userId) return
     if (!await checkRateLimit('message')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('message'))
+      Alert.alert(t('common.error'), getRateLimitMessage('message', t))
       return
     }
     const result = await ImagePicker.launchImageLibraryAsync({

@@ -221,9 +221,16 @@ describe('getRateLimitMessage', () => {
     expect(getRateLimitMessage('unknown_action')).toBe('')
   })
 
-  test('Message contains Finnish text', () => {
+  test('Message contains English fallback without t()', () => {
     const msg = getRateLimitMessage('post_create')
-    expect(msg).toContain('Liian monta')
+    expect(msg).toContain('Too many actions')
+  })
+
+  test('Uses t() function when provided', () => {
+    const mockT = jest.fn((key: string) => `translated:${key}`)
+    const msg = getRateLimitMessage('post_create', mockT)
+    expect(mockT).toHaveBeenCalledWith('common.rateLimitExceeded', { max: 5, minutes: 60 })
+    expect(msg).toContain('translated:')
   })
 
   test('Returns messages for all known action types', () => {

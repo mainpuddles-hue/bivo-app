@@ -72,9 +72,8 @@ export function Header() {
           <Search size={22} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
 
-        {/* Center: Brand wordmark + online indicator */}
+        {/* Center: online indicator (no wordmark — brand expressed via icon/color only) */}
         <View style={styles.centerBlock}>
-          <Text style={[styles.wordmark, { color: colors.foreground }]}>TackBird</Text>
           {onlineCount >= 3 && (
             <View style={styles.onlineRow}>
               <View style={[styles.onlineDot, { backgroundColor: colors.primary }]} />
@@ -90,7 +89,7 @@ export function Header() {
           <PressableOpacity accessibilityLabel={t('nav.map')} accessibilityRole="button" onPress={() => router.push('/map')} style={styles.iconButton} hitSlop={8}>
             <Map size={22} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
-          <PressableOpacity accessibilityLabel={unreadCount > 0 ? `${t('nav.notifications')} (${unreadCount} uutta)` : t('nav.notifications')} accessibilityRole="button" onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
+          <PressableOpacity accessibilityLabel={unreadCount > 0 ? `${t('nav.notifications')} (${unreadCount})` : t('nav.notifications')} accessibilityRole="button" onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={22}
               color={unreadCount > 0 ? colors.primary : colors.foreground}
@@ -122,10 +121,6 @@ const styles = StyleSheet.create({
   centerBlock: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     flexDirection: 'row', gap: 8,
-  },
-  wordmark: {
-    fontSize: 18, fontWeight: '800', fontFamily: fonts.heading,
-    letterSpacing: -0.5,
   },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   onlineDot: { width: 6, height: 6, borderRadius: 3 },

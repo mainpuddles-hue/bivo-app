@@ -355,7 +355,7 @@ function PostDetailScreenInner() {
   const handleSendComment = useCallback(async () => {
     if (!userId || !commentText.trim() || sendingComment) return
     if (!await checkRateLimit('comment')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('comment'))
+      Alert.alert(t('common.error'), getRateLimitMessage('comment', t))
       return
     }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}

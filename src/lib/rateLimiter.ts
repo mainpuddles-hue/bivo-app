@@ -46,9 +46,17 @@ export async function checkRateLimit(action: string): Promise<boolean> {
   }
 }
 
-export function getRateLimitMessage(action: string): string {
+/**
+ * Returns a locale-aware rate limit message.
+ * Pass the t() function from useI18n() for localized text.
+ * Falls back to English if t is not provided.
+ */
+export function getRateLimitMessage(action: string, t?: (key: string, params?: Record<string, string | number>) => string): string {
   const config = LIMITS[action]
   if (!config) return ''
   const minutes = Math.ceil(config.windowMs / 60000)
-  return `Liian monta toimintoa. Odota hetki ja yrit\u00e4 uudelleen. (Max ${config.maxActions}/${minutes}min)`
+  if (t) {
+    return t('common.rateLimitExceeded', { max: config.maxActions, minutes })
+  }
+  return `Too many actions. Wait a moment and try again. (Max ${config.maxActions}/${minutes}min)`
 }
