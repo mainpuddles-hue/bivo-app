@@ -961,11 +961,11 @@ const s = StyleSheet.create({
   content: { padding: 16, gap: 16 },
 
   // Hero — Threads style
-  hero: { gap: 10, paddingBottom: 4 },
+  hero: { gap: 12, paddingBottom: 4 },
   heroRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
   heroInfo: { flex: 1, gap: 4, paddingTop: 4 },
   profileName: { fontSize: 17, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 22, letterSpacing: -0.2 },
-  nhRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   nhText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
 
   // Inline stats
@@ -974,7 +974,7 @@ const s = StyleSheet.create({
   inlineStatSep: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
 
   // Inline badge (Pro, Business) next to name
-  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 },
+  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   inlineBadgeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 13 },
 
   // Trust bar — thin, no label noise
@@ -994,8 +994,8 @@ const s = StyleSheet.create({
   bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, minHeight: 64, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
   bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16 },
-  badgesRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 10 },
+  badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
 
   // Flat list with hairline separators (replaces grouped card)
@@ -1023,7 +1023,7 @@ const s = StyleSheet.create({
   emptyActivity: { alignItems: 'center', paddingTop: 24, gap: 4 },
   activityItem: { flexDirection: 'row', gap: 12, paddingLeft: 16, borderLeftWidth: 2, paddingVertical: 8 },
   activityDot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: -24 },
-  activityContent: { flex: 1, gap: 2 },
+  activityContent: { flex: 1, gap: 4 },
   activityTitle: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   activityMeta: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   activityTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },

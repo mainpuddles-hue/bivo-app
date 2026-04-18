@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   filterWrapper: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-    paddingBottom: 12, gap: 10,
+    paddingBottom: 12, gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },
   allLoadedLine: { height: 1, width: '100%' },
-  allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   allLoadedText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   missedBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

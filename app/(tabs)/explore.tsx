@@ -1029,7 +1029,7 @@ const s = StyleSheet.create({
   // Filter chip rows
   filterRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     paddingVertical: 4,
   },
   filterScrollWrap: {

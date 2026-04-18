@@ -100,9 +100,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    minHeight: 36,
+    paddingVertical: 10,
+    borderRadius: 999,
+    minHeight: 44,
   },
-  chipText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
+  chipText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
 })

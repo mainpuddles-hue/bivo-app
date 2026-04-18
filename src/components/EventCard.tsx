@@ -71,13 +71,13 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
         <View style={s.topRow}>
           <View style={[s.categoryBadge, { backgroundColor: `${categoryColor}18` }]}>
             <View style={[s.categoryDot, { backgroundColor: categoryColor }]} />
-            <Text style={[s.categoryText, { color: categoryColor, fontFamily: fonts.bodySemi }]}>
+            <Text style={[s.categoryText, { color: categoryColor }]}>
               {t(`events.cat${event.category.charAt(0).toUpperCase() + event.category.slice(1)}`)}
             </Text>
           </View>
           {isTable && (
             <View style={[s.tableBadge, { backgroundColor: `${colors.success}15` }]}>
-              <Text style={[s.tableText, { color: colors.success, fontFamily: fonts.bodySemi }]}>
+              <Text style={[s.tableText, { color: colors.success }]}>
                 {t('tables.title')}
               </Text>
             </View>
@@ -85,7 +85,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
         </View>
 
         {/* Title */}
-        <Text style={[s.title, { color: colors.foreground, fontFamily: fonts.headingSemi }]} numberOfLines={2}>
+        <Text style={[s.title, { color: colors.foreground }]} numberOfLines={2}>
           {event.title}
         </Text>
 
@@ -157,21 +157,21 @@ const s = StyleSheet.create({
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 16,
   },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
-  categoryText: { fontSize: 11, fontWeight: '600', lineHeight: 14 },
+  categoryText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
   tableBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 16,
   },
-  tableText: { fontSize: 11, fontWeight: '600', lineHeight: 14 },
-  title: { fontSize: 16, fontWeight: '700', lineHeight: 22 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  tableText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
+  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   infoText: { fontSize: 13, lineHeight: 18 },
   bottomRow: {
     flexDirection: 'row',
@@ -179,6 +179,6 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 4,
   },
-  participantCount: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  participantCount: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   creatorText: { fontSize: 12, lineHeight: 16, maxWidth: 120 },
 })

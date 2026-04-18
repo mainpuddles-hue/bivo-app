@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
-  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 6 },
+  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 8 },
 
   // Top row: user + category badge
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 8, right: 8,
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 16,
-    paddingHorizontal: 8, paddingVertical: 3,
+    paddingHorizontal: 8, paddingVertical: 4,
   },
   multiImageText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
   proBadgeOnImage: {
@@ -719,7 +719,7 @@ const styles = StyleSheet.create({
   // Expiration
   expirationBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 16,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16,
     alignSelf: 'flex-start',
   },
   expirationText: { fontSize: 11, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
@@ -731,19 +731,19 @@ const styles = StyleSheet.create({
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  priceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 16 },
+  priceBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
-  conditionBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 16 },
+  conditionBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
   conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1, minWidth: 0 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 },
   locationText: { fontSize: 12, fontFamily: fonts.body, flex: 1, lineHeight: 16 },
 
   // Action row — tight, touch targets met via hitSlop not minHeight
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 36, minWidth: 36, paddingHorizontal: 4, justifyContent: 'center' as const },
   actionText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 16 },
   // popularBadge removed — visual hierarchy: action row is for actions only
-  distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 3 },
+  distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4 },
   distanceText: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
 
   // Badges

@@ -15,7 +15,7 @@ export function BoostBadge({ subtitle }: BoostBadgeProps) {
 
   return (
     <View style={[styles.badge, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-      <TrendingUp size={10} color={colors.mutedForeground} />
+      <TrendingUp size={12} color={colors.mutedForeground} />
       <Text style={[styles.text, { color: colors.mutedForeground }]}>{t('feed.boosted')}</Text>
       {subtitle ? (
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{subtitle}</Text>
@@ -28,9 +28,9 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 16,
     borderWidth: 1,
   },

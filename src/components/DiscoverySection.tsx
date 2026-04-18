@@ -72,7 +72,7 @@ export const DiscoverySection = memo(function DiscoverySection({
       {/* Section header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 4 }}>
         <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />
-        <Text style={[styles.sectionTitle, { color: colors.foreground, marginLeft: 10 }]}>{placesSectionTitle}</Text>
+        <Text style={[styles.sectionTitle, { color: colors.foreground, marginLeft: 12 }]}>{placesSectionTitle}</Text>
         <View style={{ flex: 1 }} />
         <Pressable
           onPress={() => router.push('/map')}
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
 
   // ── Show All link ──
   showAllBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 2,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   showAllText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
 

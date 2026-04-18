@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { AlertTriangle, RotateCcw } from 'lucide-react-native'
 import * as Sentry from '@sentry/react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { fonts } from '@/lib/fonts'
 
 interface Props {
   children: React.ReactNode
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     letterSpacing: -0.3,
     marginBottom: 8,
     textAlign: 'center',
@@ -162,6 +163,6 @@ const styles = StyleSheet.create({
   },
   retryText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 })

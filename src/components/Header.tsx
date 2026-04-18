@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    height: 44, paddingHorizontal: 8,
+    height: 44, paddingHorizontal: 16,
   },
   centerBlock: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
@@ -135,5 +135,5 @@ const styles = StyleSheet.create({
     minWidth: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
   },
-  badgeText: { fontSize: 11, fontWeight: '600', lineHeight: 12 },
+  badgeText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 12 },
 })

@@ -126,12 +126,12 @@ const s = StyleSheet.create({
     width: 180,
     borderRadius: 16,
     padding: 16,
-    gap: 6,
+    gap: 8,
   },
   emoji: { fontSize: 28 },
-  title: { fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  title: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  timeText: { fontSize: 12, fontWeight: '600', lineHeight: 16 },
+  timeText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   locationText: { fontSize: 11, lineHeight: 16, flex: 1 },
   bottomRow: {
     flexDirection: 'row',
@@ -149,7 +149,7 @@ const s = StyleSheet.create({
     borderRadius: 20,
     marginTop: 4,
   },
-  joinText: { fontSize: 12, fontWeight: '600', color: '#FFFFFF', lineHeight: 16 },
+  joinText: { fontSize: 12, fontFamily: fonts.bodySemi, color: '#FFFFFF', lineHeight: 16 },
   joinedBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
@@ -157,5 +157,5 @@ const s = StyleSheet.create({
     borderRadius: 20,
     marginTop: 4,
   },
-  joinedText: { fontSize: 12, fontWeight: '600', lineHeight: 16 },
+  joinedText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 })

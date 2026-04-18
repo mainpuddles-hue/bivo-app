@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   hints: {
-    gap: 3,
+    gap: 4,
   },
   hintText: {
     fontSize: 12,

@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   content: {
-    padding: 10,
+    padding: 12,
     gap: 8,
   },
 
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 8,
   },
   avatar: {
     width: 26,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   authorNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
   authorName: {
     fontSize: 12,
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   categoryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
   categoryDot: {
     width: 6,
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
 
   // ── Action row — 36pt minimum for touch accessibility ──
@@ -551,14 +551,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     marginTop: 4,
-    paddingTop: 6,
+    paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(128,128,128,0.12)',
   },
   action: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
     minHeight: 36,
     paddingHorizontal: 2,
   },

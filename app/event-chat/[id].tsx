@@ -336,7 +336,7 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     lineHeight: 22,
   },
   headerMeta: {
@@ -395,7 +395,7 @@ const s = StyleSheet.create({
   },
   senderName: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 14,
     marginBottom: 2,
   },

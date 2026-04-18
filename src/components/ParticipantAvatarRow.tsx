@@ -64,5 +64,5 @@ const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
   avatarWrap: { borderWidth: 2, borderRadius: 999 },
   overflowBadge: { alignItems: 'center', justifyContent: 'center' },
-  overflowText: { fontWeight: '600' },
+  overflowText: { fontFamily: fonts.bodySemi },
 })

@@ -134,7 +134,7 @@ export const JuuriNytStrip = memo(JuuriNytStripInner)
 
 const styles = StyleSheet.create({
   container: { gap: 8 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
   headerText: {
     fontSize: 14,
     fontFamily: fonts.headingSemi,
@@ -165,10 +165,10 @@ const styles = StyleSheet.create({
   countdownBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   countdownText: {
     fontSize: 11,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
   locationText: {
     fontSize: 11,

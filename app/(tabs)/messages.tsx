@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
   imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   convPreview: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
   convRight: { alignItems: 'flex-end', gap: 4, minWidth: 56 },
-  convRightBottom: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  convRightBottom: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   moreBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   convTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 72 },

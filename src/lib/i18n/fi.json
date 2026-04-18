@@ -46,7 +46,8 @@
     "by": "käyttäjältä",
     "continue": "Jatka",
     "notFound": "Ei löytynyt",
-    "tryAgain": "Yritä uudelleen"
+    "tryAgain": "Yritä uudelleen",
+    "details": "Tiedot"
   },
   "nav": {
     "feed": "Koti",

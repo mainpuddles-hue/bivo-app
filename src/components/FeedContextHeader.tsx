@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingVertical: 8,
-    gap: 2,
+    gap: 4,
     minHeight: 60,
     justifyContent: 'center',
   },

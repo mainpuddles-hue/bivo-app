@@ -46,7 +46,8 @@
     "by": "by",
     "continue": "Continue",
     "notFound": "Not found",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "details": "Details"
   },
   "nav": {
     "feed": "Home",

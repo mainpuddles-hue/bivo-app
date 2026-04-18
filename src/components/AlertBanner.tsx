@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Linking } from 'react-native'
 import { AlertTriangle, Bus, X, ChevronDown, ChevronUp } from 'lucide-react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
+import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { fetchAllAlerts, type AppAlert } from '@/lib/alerts'
 
@@ -11,6 +12,7 @@ const dismissedAlertIds = new Set<string>()
 
 export function AlertBanner() {
   const { colors } = useTheme()
+  const { t } = useI18n()
   const [alerts, setAlerts] = useState<AppAlert[]>([])
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set(dismissedAlertIds))
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -67,7 +69,7 @@ export function AlertBanner() {
               </Text>
               <View style={styles.alertActions}>
                 {alert.description && (
-                  <Pressable onPress={(e) => { e.stopPropagation?.(); setExpandedId(prev => prev === alert.id ? null : alert.id) }} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Toggle details">
+                  <Pressable onPress={(e) => { e.stopPropagation?.(); setExpandedId(prev => prev === alert.id ? null : alert.id) }} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.details')}>
                     {isExpanded ? (
                       <ChevronUp size={14} color={iconColor} />
                     ) : (
@@ -75,7 +77,7 @@ export function AlertBanner() {
                     )}
                   </Pressable>
                 )}
-                <Pressable onPress={(e) => { e.stopPropagation?.(); handleDismiss(alert.id) }} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel="Dismiss">
+                <Pressable onPress={(e) => { e.stopPropagation?.(); handleDismiss(alert.id) }} hitSlop={12} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityRole="button" accessibilityLabel={t('common.close')}>
                   <X size={14} color={colors.mutedForeground} />
                 </Pressable>
               </View>

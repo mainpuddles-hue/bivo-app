@@ -1479,7 +1479,7 @@ const styles = StyleSheet.create({
   headerBtn: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
-  body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 14 },
+  body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 16 },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16 },
   closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
@@ -1487,7 +1487,7 @@ const styles = StyleSheet.create({
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 
   // Category — Threads-style dot + muted uppercase label
-  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
   categoryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600', letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 12 },
 
@@ -1503,7 +1503,7 @@ const styles = StyleSheet.create({
   description: { fontSize: 16, fontFamily: fonts.body, lineHeight: 24 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   locationText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
   // Action row — hairline top border, Threads-style thin icons
@@ -1514,13 +1514,13 @@ const styles = StyleSheet.create({
   // Author card — Threads-style, hairline top border, no bg
   authorCard: { paddingTop: 16, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
   authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  authorCardInfo: { flex: 1, gap: 2 },
-  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'nowrap' },
+  authorCardInfo: { flex: 1, gap: 4 },
+  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'nowrap' },
   authorName: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '700', lineHeight: 20, flexShrink: 1 },
   authorMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   authorMetaDivider: { fontSize: 13, lineHeight: 18 },
   authorTimeAgo: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-  authorLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  authorLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   authorNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   followBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, backgroundColor: 'transparent' },
   followBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
@@ -1528,9 +1528,9 @@ const styles = StyleSheet.create({
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100, lineHeight: 22 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
   commentTitle: { fontSize: 15, fontFamily: fonts.headingSemi, fontWeight: '700', lineHeight: 20 },
-  commentRow: { flexDirection: 'row', gap: 10, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  commentRow: { flexDirection: 'row', gap: 12, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   commentAvatar: { width: 36, height: 36, borderRadius: 18 },
-  commentBody: { flex: 1, gap: 3 },
+  commentBody: { flex: 1, gap: 4 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   commentName: { fontSize: 13, fontFamily: fonts.bodySemi, fontWeight: '700', lineHeight: 18, flex: 1 },
   commentTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
@@ -1588,8 +1588,8 @@ const styles = StyleSheet.create({
 const ctaStyles = StyleSheet.create({
   bar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'column', gap: 6,
-    paddingHorizontal: 16, paddingTop: 10,
+    flexDirection: 'column', gap: 8,
+    paddingHorizontal: 16, paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   replyIndicator: {
@@ -1601,8 +1601,8 @@ const ctaStyles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
   },
   commentInput: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6,
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8,
   },
   commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 34, lineHeight: 20 },
   charCount: { fontSize: 10, fontFamily: fonts.body, lineHeight: 14 },

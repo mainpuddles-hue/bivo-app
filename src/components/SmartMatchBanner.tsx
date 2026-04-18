@@ -67,12 +67,12 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
   },
-  content: { flex: 1, gap: 2 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  content: { flex: 1, gap: 4 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { fontSize: 13, fontFamily: fonts.bodySemi },
   subtitle: { fontSize: 12, fontFamily: fonts.body },
   scoreBadge: {
-    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
   },
   scoreText: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi },
 })

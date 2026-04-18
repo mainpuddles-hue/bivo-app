@@ -46,7 +46,8 @@
     "by": "av",
     "continue": "Fortsätt",
     "notFound": "Hittades inte",
-    "tryAgain": "Försök igen"
+    "tryAgain": "Försök igen",
+    "details": "Detaljer"
   },
   "nav": {
     "feed": "Hem",

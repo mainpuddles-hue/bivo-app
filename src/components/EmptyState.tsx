@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     paddingBottom: 48,
     paddingHorizontal: 40,
-    gap: 14,
+    gap: 16,
   },
   iconWrap: {
     width: 40,
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 17,
+    fontSize: 18,
     fontFamily: fonts.headingSemi,
     fontWeight: '700',
     lineHeight: 22,
