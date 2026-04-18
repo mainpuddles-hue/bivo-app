@@ -150,7 +150,7 @@ export default function ForumScreen() {
       const { data: profile } = await (supabase.from('profiles') as any).select('naapurusto').eq('id', user.id).maybeSingle()
       if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto)
     }
-    fetchUser()
+    fetchUser().catch(() => {})
   }, [supabase])
 
   // ── Fetch posts ──
@@ -395,7 +395,7 @@ export default function ForumScreen() {
         } catch { Alert.alert(t('common.error'), t('post.deleteFailed')) }
       }},
     ])
-  }, [supabase, t, selectedPost])
+  }, [supabase, t, selectedPost, currentUserId])
 
   // ── Delete reply ──
   const handleDeleteReply = useCallback((reply: ForumReply) => {

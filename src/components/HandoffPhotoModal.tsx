@@ -58,17 +58,21 @@ export function HandoffPhotoModal({
     try {
       const uploadedUrls: string[] = []
 
+      const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       for (let i = 0; i < photos.length; i++) {
         const uri = photos[i]
-        const ext = uri.split('.').pop() ?? 'jpg'
+        const response = await fetch(uri)
+        const blob = await response.blob()
+        const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
+        if (!mimeType) { throw new Error('Invalid image type') }
+        const mimeSubtype = mimeType.split('/')[1]
+        const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
         const path = `booking-photos/${bookingId}/${phase}/${role}_${Date.now()}_${i}.${ext}`
 
-        const formData = new FormData()
-        formData.append('file', { uri, name: `photo.${ext}`, type: `image/${ext}` } as any)
-
+        const arrayBuffer = await blob.arrayBuffer()
         const { error } = await supabase.storage
           .from('booking-photos')
-          .upload(path, formData, { contentType: `image/${ext}`, upsert: false })
+          .upload(path, arrayBuffer, { contentType: mimeType, upsert: false })
 
         if (error) throw error
 
@@ -103,7 +107,7 @@ export function HandoffPhotoModal({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
         <View style={styles.header}>

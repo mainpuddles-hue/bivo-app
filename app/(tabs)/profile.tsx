@@ -44,7 +44,6 @@ interface ActivityItem {
   meta?: string
 }
 
-const ALLOWED_AVATAR_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
 const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
 
 // TODO: UX — CONTENT MANAGEMENT (friction for returning users after 2+ weeks):
@@ -217,14 +216,17 @@ export default function ProfileScreen() {
     if (result.canceled || !result.assets[0]) return
     try {
       const uri = result.assets[0].uri
-      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
-      if (!ALLOWED_AVATAR_EXTS.includes(ext)) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
-      const path = `avatars/${profile.id}.${ext}`
       const response = await fetch(uri)
       const blob = await response.blob()
+      const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
+      if (!mimeType) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       if (blob.size > MAX_AVATAR_SIZE) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
+      const mimeSubtype = mimeType.split('/')[1]
+      const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
+      const path = `avatars/${profile.id}.${ext}`
       const arrayBuffer = await blob.arrayBuffer()
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: mimeType, upsert: true })
       if (uploadError) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
       if (!urlData?.publicUrl) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }

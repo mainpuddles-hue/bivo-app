@@ -75,7 +75,7 @@ export default function CreateAdScreen() {
         router.replace('/(auth)/login')
       }
     }
-    checkAuth()
+    checkAuth().catch(() => {})
   }, [supabase, router])
 
   useEffect(() => {

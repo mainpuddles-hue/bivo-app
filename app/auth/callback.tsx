@@ -49,7 +49,8 @@ function AuthCallbackScreenInner() {
         // Token hash is passed as query param, app verifies it via POST
         const tokenHash = params.token_hash as string | undefined
         if (tokenHash) {
-          const authType = (params.type as string) || 'signup'
+          const ALLOWED_AUTH_TYPES = ['signup', 'recovery', 'invite', 'email_change', 'magiclink']
+          const authType = ALLOWED_AUTH_TYPES.includes(params.type as string) ? (params.type as string) : 'signup'
           const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
           const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
           const verifyRes = await fetch(`${supabaseUrl}/auth/v1/verify`, {

@@ -148,7 +148,7 @@ function AdminScreenInner() {
       const { data } = await supabase
         .from('profiles')
         .select('id, name, avatar_url, naapurusto, total_points, is_banned, created_at')
-        .ilike('name', `%${userSearch.trim()}%`)
+        .ilike('name', `%${userSearch.trim().replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
         .limit(20)
       setUsers((data ?? []) as unknown as AdminUser[])
     } catch (err) {

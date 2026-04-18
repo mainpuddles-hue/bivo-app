@@ -73,7 +73,7 @@ export default function PublicProfileScreen() {
 
   const loadProfile = useCallback(async () => {
     if (!userId || !isValidUUID(userId)) { setLoading(false); setRefreshing(false); return }
-
+    try {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) setCurrentUserId(user.id)
 
@@ -192,8 +192,12 @@ export default function PublicProfileScreen() {
       .limit(20)
     setPosts((userPosts ?? []) as unknown as Post[])
 
-    setLoading(false)
-    setRefreshing(false)
+    } catch (err) {
+      if (__DEV__) console.error('[profile] loadProfile error:', err)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
   }, [userId, supabase, router])
 
   useFocusEffect(useCallback(() => { loadProfile() }, [loadProfile]))

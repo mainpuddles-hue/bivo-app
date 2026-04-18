@@ -234,7 +234,7 @@ function ConversationScreenInner() {
       supabase.removeChannel(channel)
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
     }
-  }, [id, userId, supabase])
+  }, [id, supabase]) // userId excluded — userIdRef.current used inside callback to avoid double-subscribe
 
   // Extra safety: clear typing timers on unmount
   useEffect(() => {
@@ -347,7 +347,8 @@ function ConversationScreenInner() {
     try {
       const { error } = await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content })
       if (error) throw error
-      await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
+      // Non-critical: update conversation timestamp for sort order. Don't restore input if only this fails.
+      (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch(() => {})
     } catch (err) {
       setInput(content)
       Alert.alert(t('common.error'), t('messages.sendFailed'))
