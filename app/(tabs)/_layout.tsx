@@ -18,6 +18,7 @@ import { Header } from '@/components/Header'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useUnreadCount } from '@/hooks/useUnreadCount'
 import { useEventChatUnread } from '@/hooks/useEventChatUnread'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
   icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
@@ -104,6 +105,8 @@ export default function TabLayout() {
   const unreadCount = useUnreadCount(userId)
   const eventChatUnread = useEventChatUnread(userId)
   const totalUnread = unreadCount + eventChatUnread
+  // Auto-register push token on app start (EAS builds only)
+  usePushNotifications(userId)
   // Sync app icon badge with combined unread count. Centralized here so
   // useUnreadCount and useEventChatUnread can't fight each other. Change
   // detection prevents no-op bridge calls.
