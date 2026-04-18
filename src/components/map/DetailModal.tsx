@@ -84,7 +84,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
               : item.kind === 'post' ? t('map.layerPosts')
               : t('places.title')}
           </Text>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
             <X size={22} color={colors.foreground} />
           </Pressable>
         </View>
@@ -178,6 +178,8 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
                 router.push(`/post/${post.id}`)
               }}
               style={[styles.detailActionBtn, { backgroundColor: item.color }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('map.viewPost')}
             >
               <ExternalLink size={16} color={colors.primaryForeground} />
               <Text style={styles.detailActionText}>{t('map.viewPost')}</Text>
@@ -187,6 +189,8 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
             <Pressable
               onPress={() => Linking.openURL((item.sourceData as CityEvent).info_url!).catch(() => {})}
               style={[styles.detailActionBtn, { backgroundColor: item.color }]}
+              accessibilityRole="link"
+              accessibilityLabel={t('map.moreInfo')}
             >
               <ExternalLink size={16} color={colors.primaryForeground} />
               <Text style={styles.detailActionText}>{t('map.moreInfo')}</Text>
@@ -196,6 +200,8 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
             <Pressable
               onPress={() => Linking.openURL((item.sourceData as LocalPlace).website!).catch(() => {})}
               style={[styles.detailActionBtn, { backgroundColor: item.color }]}
+              accessibilityRole="link"
+              accessibilityLabel={t('map.website')}
             >
               <ExternalLink size={16} color={colors.primaryForeground} />
               <Text style={styles.detailActionText}>{t('map.website')}</Text>
@@ -204,6 +210,8 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           <Pressable
             onPress={openDirections}
             style={[styles.detailActionBtn, { backgroundColor: colors.accent }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('map.directions')}
           >
             <Navigation size={16} color={colors.accentForeground} />
             <Text style={[styles.detailActionText, { color: colors.accentForeground }]}>{t('map.directions')}</Text>

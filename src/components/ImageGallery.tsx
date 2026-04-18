@@ -26,6 +26,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated'
 import { fonts } from '@/lib/fonts'
+import { useI18n } from '@/lib/i18n'
 
 const AnimatedImage = Animated.createAnimatedComponent(Image)
 
@@ -124,6 +125,7 @@ const zoomStyles = StyleSheet.create({
 })
 
 export default function ImageGallery({ images, initialIndex = 0, visible, onClose }: ImageGalleryProps) {
+  const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
@@ -189,6 +191,8 @@ export default function ImageGallery({ images, initialIndex = 0, visible, onClos
                 onPress={onClose}
                 hitSlop={16}
                 style={[styles.closeBtn, { top: insets.top + 12 }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.close')}
               >
                 <X size={24} color="#FFFFFF" />
               </Pressable>

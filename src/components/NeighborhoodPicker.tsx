@@ -83,7 +83,7 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
           <Text style={[styles.title, { color: colors.foreground }]}>
             {t('onboarding.neighborhoodTitle')}
           </Text>
-          <Pressable onPress={handleClose} hitSlop={12}>
+          <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
             <X size={22} color={colors.mutedForeground} />
           </Pressable>
         </View>

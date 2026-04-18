@@ -1232,13 +1232,13 @@ function PostDetailScreenInner() {
               <ModalCloseButton onClose={() => setEditModalVisible(false)} />
             </View>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')} *</Text>
-            <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} />
+            <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} accessibilityLabel={t('post.titleLabel')} />
             <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editTitle.length}/100</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.descriptionLabel')}</Text>
-            <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
+            <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} inputAccessoryViewID={KEYBOARD_DONE_ID} accessibilityLabel={t('post.descriptionLabel')} />
             <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
-            <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} />
+            <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} accessibilityLabel={t('post.locationLabel')} />
             <PressableOpacity onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }]}>
               {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.saveChanges')}</Text>}
             </PressableOpacity>
@@ -1324,6 +1324,7 @@ function PostDetailScreenInner() {
               multiline
               maxLength={500}
               inputAccessoryViewID={KEYBOARD_DONE_ID}
+              accessibilityLabel={t('service.notesLabel')}
             />
             {serviceNotes.length > 0 && (
               <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>
@@ -1398,6 +1399,7 @@ function PostDetailScreenInner() {
                 value={commentText} onChangeText={setCommentText}
                 placeholder={replyToComment ? t('post.writeReply') : t('post.addComment')}
                 placeholderTextColor={colors.mutedForeground} maxLength={500}
+                accessibilityLabel={replyToComment ? t('post.writeReply') : t('post.addComment')}
               />
               {commentText.length > 0 && (
                 <Text style={[ctaStyles.charCount, { color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground }]}>

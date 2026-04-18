@@ -24,6 +24,7 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
         .update({ last_seen_at: new Date().toISOString() })
         .eq('id', userId)
         .then(() => {})
+        .catch(() => {})
     }
 
     // Immediately mark as online

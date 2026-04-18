@@ -220,7 +220,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           ]}
         >
           <View style={styles.headerLeft}>
-            <Pressable onPress={onClose} hitSlop={12}>
+            <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
               <X size={24} color={colors.foreground} />
             </Pressable>
             <Text style={[styles.headerTitle, { color: colors.foreground }]}>
@@ -234,7 +234,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
               </View>
             )}
           </View>
-          <Pressable onPress={handleClear} hitSlop={8}>
+          <Pressable onPress={handleClear} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('search.clearAll')}>
             <View style={styles.clearBtn}>
               <RotateCcw size={14} color={colors.mutedForeground} />
               <Text style={[styles.clearText, { color: colors.mutedForeground }]}>
@@ -275,6 +275,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                     placeholder="0"
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="numeric"
+                    accessibilityLabel={t('search.minPrice')}
                   />
                 </View>
                 <Text style={[styles.priceDash, { color: colors.mutedForeground }]}>—</Text>
@@ -296,6 +297,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                     placeholder="999"
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="numeric"
+                    accessibilityLabel={t('search.maxPrice')}
                   />
                 </View>
               </View>

@@ -406,7 +406,7 @@ export function useSmartMatch(userId: string | null) {
       await evaluateMatches(userNeeds, offerPosts, dismissedRef.current, neighborhood, userId)
     }
 
-    fetchAndEvaluate()
+    fetchAndEvaluate().catch(() => {})
 
     // Re-evaluate every 60 seconds instead of using a realtime channel
     const interval = setInterval(() => {

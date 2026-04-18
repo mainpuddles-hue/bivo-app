@@ -855,6 +855,7 @@ function ConversationScreenInner() {
           maxLength={2000}
           blurOnSubmit={false}
           inputAccessoryViewID={KEYBOARD_DONE_ID}
+          accessibilityLabel={t('messages.sendPlaceholder')}
         />
         <PressableOpacity
           onPress={handleSend}
