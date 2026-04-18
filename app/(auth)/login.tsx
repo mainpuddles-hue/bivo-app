@@ -251,10 +251,14 @@ function LoginScreenInner() {
             if (accessToken && refreshToken) {
               const { data: { user } } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
               if (user) {
-                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
-                if ((oauthProfile as any)?.is_banned) {
+                const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
+                if (banErr || (oauthProfile as any)?.is_banned) {
                   await supabase.auth.signOut()
-                  Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                  if ((oauthProfile as any)?.is_banned) {
+                    Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                  } else {
+                    Alert.alert(t('common.error'), t('auth.googleFailedNetwork'))
+                  }
                   return
                 }
               }
@@ -263,10 +267,14 @@ function LoginScreenInner() {
             } else if (code) {
               const { data: { user } } = await supabase.auth.exchangeCodeForSession(code)
               if (user) {
-                const { data: oauthProfile } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
-                if ((oauthProfile as any)?.is_banned) {
+                const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
+                if (banErr || (oauthProfile as any)?.is_banned) {
                   await supabase.auth.signOut()
-                  Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                  if ((oauthProfile as any)?.is_banned) {
+                    Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                  } else {
+                    Alert.alert(t('common.error'), t('auth.googleFailedNetwork'))
+                  }
                   return
                 }
               }

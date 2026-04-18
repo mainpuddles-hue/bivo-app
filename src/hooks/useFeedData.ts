@@ -389,6 +389,8 @@ export function useFeedData() {
         ranked = newPosts
       }
 
+      if (controller.signal.aborted) return
+
       if (reset) {
         if (ranked.length === 0) {
           // Show seed content for empty neighborhoods

@@ -31,7 +31,18 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
 
   return (
     <PressableOpacity
-      onPress={() => event.info_url ? Linking.openURL(event.info_url).catch(() => {}) : router.push('/community-events' as any)}
+      onPress={() => {
+        if (event.info_url) {
+          try {
+            const u = new URL(event.info_url)
+            if (u.protocol === 'http:' || u.protocol === 'https:') {
+              Linking.openURL(event.info_url).catch(() => {})
+              return
+            }
+          } catch {}
+        }
+        router.push('/community-events' as any)
+      }}
       style={[styles.todayEventCard, { backgroundColor: colors.card }]}
       accessibilityRole="button"
       accessibilityLabel={[getCityEventName(event, locale), event.location_name].filter(Boolean).join(', ')}

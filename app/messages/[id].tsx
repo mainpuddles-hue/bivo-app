@@ -358,7 +358,6 @@ function ConversationScreenInner() {
     }
   }, [input, userId, id, supabase, sending, t])
 
-  const ALLOWED_MSG_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
   const MAX_MSG_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
   const handleSendImage = useCallback(async () => {
@@ -375,14 +374,17 @@ function ConversationScreenInner() {
     setSending(true)
     try {
       const uri = result.assets[0].uri
-      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
-      if (!ALLOWED_MSG_EXTS.includes(ext)) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
-      const path = `messages/${id}/${Date.now()}.${ext}`
       const response = await fetch(uri)
       const blob = await response.blob()
+      const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
+      if (!mimeType) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
       if (blob.size > MAX_MSG_FILE_SIZE) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
+      const mimeSubtype = mimeType.split('/')[1]
+      const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
+      const path = `messages/${id}/${Date.now()}.${ext}`
       const arrayBuffer = await blob.arrayBuffer()
-      const { error: uploadError } = await supabase.storage.from('message-images').upload(path, arrayBuffer, { contentType: `image/${ext}` })
+      const { error: uploadError } = await supabase.storage.from('message-images').upload(path, arrayBuffer, { contentType: mimeType })
       if (uploadError) throw uploadError
       const { data: urlData } = supabase.storage.from('message-images').getPublicUrl(path)
       await (supabase.from('messages') as any).insert({

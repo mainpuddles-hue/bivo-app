@@ -444,7 +444,6 @@ export default function CreateScreen() {
     })
   }
 
-  const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
   const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
   const uploadImages = async (userId: string, postId: string): Promise<string | null> => {
@@ -607,6 +606,7 @@ export default function CreateScreen() {
     // All validation passed — give success haptic feedback
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     setSubmitting(true)
+    let createdPostIdForCleanup: string | null = null
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { Alert.alert(t('common.error'), t('auth.loginRequired')); return }
@@ -683,6 +683,7 @@ export default function CreateScreen() {
       }).select('id').single()
 
       if (error) throw error
+      createdPostIdForCleanup = post?.id ?? null
 
       // Upload images if any
       if (images.length > 0 && post?.id) {
@@ -873,6 +874,10 @@ export default function CreateScreen() {
       }, 2000)
     } catch (err: any) {
       if (__DEV__) console.log('[create] error:', JSON.stringify(err))
+      // Clean up orphaned post if it was created with is_active: false
+      if (createdPostIdForCleanup) {
+        try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch {}
+      }
       Alert.alert(t('common.error'), err?.message || t('create.createFailed'))
     } finally {
       setSubmitting(false)
