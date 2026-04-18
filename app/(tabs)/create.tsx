@@ -1,10 +1,10 @@
 declare const __DEV__: boolean
 
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
-import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, TrendingUp, Crown, CheckCircle, AlertTriangle } from 'lucide-react-native'
+import { useRouter, useLocalSearchParams } from 'expo-router'
+import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
@@ -15,11 +15,6 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { CATEGORIES } from '@/lib/constants'
 import { FEATURES } from '@/lib/featureFlags'
 import { fonts } from '@/lib/fonts'
-import { usePoints } from '@/hooks/usePoints'
-import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
-import { getPriceInsight } from '@/lib/priceIntelligence'
-import type { PriceInsight } from '@/lib/priceIntelligence'
-import { useDemandInsights } from '@/hooks/useDemandInsights'
 import { triggerPush } from '@/lib/pushTrigger'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { useIdentityVerification } from '@/hooks/useIdentityVerification'
@@ -34,12 +29,9 @@ import { trackEvent } from '@/lib/analytics'
 import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
-import { useBoosts } from '@/hooks/useBoosts'
 import { suggestTags } from '@/lib/autoCategory'
-import { checkForDuplicates } from '@/lib/duplicateDetection'
 import type { PostType, TrustLevel } from '@/lib/types'
 import { suggestExpirationDays } from '@/lib/expirePrediction'
-import { scoreContentQuality } from '@/lib/contentQuality'
 
 const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
   { id: 'kodinhoito', label: 'tags.kodinhoito' },
@@ -195,9 +187,7 @@ export default function CreateScreen() {
   const [successNeighborhood, setSuccessNeighborhood] = useState<string | null>(null)
   const [successPostId, setSuccessPostId] = useState<string | null>(null)
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [boostPost, setBoostPost] = useState(false)
   const [autoTags, setAutoTags] = useState<string[]>([])
-  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null)
 
   // Auto-suggest tags based on title + description
   useEffect(() => {
@@ -205,22 +195,6 @@ export default function CreateScreen() {
     const { suggestedTags: suggested } = suggestTags(title, description)
     setAutoTags(suggested)
   }, [title, description])
-
-  // Debounced duplicate detection
-  useEffect(() => {
-    if (!title || title.length < 8 || !selectedType) { setDuplicateWarning(null); return }
-    const timer = setTimeout(async () => {
-      const cachedId = await getCachedUserId()
-      if (!cachedId) return
-      const result = await checkForDuplicates(title, selectedType, cachedId)
-      if (result.isDuplicate) {
-        setDuplicateWarning(t('create.duplicateFound', { title: result.similarPosts[0]?.title ?? '' }))
-      } else {
-        setDuplicateWarning(null)
-      }
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [title, selectedType])
 
   // Handle pre-selected type from query params (e.g., from events screen)
   useEffect(() => {
@@ -250,37 +224,14 @@ export default function CreateScreen() {
       setIsAuthenticated(!!id)
       setCurrentUserId(id)
       if (!id) { router.replace('/(auth)/login'); return }
-      // Fetch user neighborhood for price suggestions
+      // Fetch user neighborhood + Pro status
       supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).maybeSingle()
         .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) }, () => {})
     }).catch(() => {})
   }, [supabase, router])
 
-  const { awardPoints } = usePoints()
   const trust = useTrustLevel(currentUserId)
   const identity = useIdentityVerification(currentUserId)
-  const { suggestion: priceSuggestion } = usePriceSuggestion(selectedType, selectedTags, userNeighborhood)
-  const boosts = useBoosts(currentUserId)
-  const { demands: demandInsights } = useDemandInsights()
-
-  // Client-side price intelligence (supplements Edge Function price suggestion)
-  const [priceInsight, setPriceInsight] = useState<PriceInsight | null>(null)
-  useEffect(() => {
-    if (!selectedType || (selectedType !== 'lainaa' && selectedType !== 'tarjoan')) {
-      setPriceInsight(null)
-      return
-    }
-    const timer = setTimeout(async () => {
-      const insight = await getPriceInsight(selectedType as 'lainaa' | 'tarjoan', selectedTags, userNeighborhood)
-      if (insight) setPriceInsight(insight)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [selectedType, selectedTags, userNeighborhood])
-
-  // Refresh boost balance when screen gains focus (e.g. returning from boosts purchase screen)
-  useFocusEffect(useCallback(() => {
-    boosts.refreshBalance()
-  }, [boosts.refreshBalance]))
 
   // Smart default: auto-populate location from user's neighborhood
   useEffect(() => {
@@ -303,12 +254,6 @@ export default function CreateScreen() {
       setExpirationDays(suggested)
     }
   }, [selectedType, selectedTags])
-
-  // Content quality scoring
-  const quality = useMemo(() => scoreContentQuality({
-    title, description, imageCount: images.length, tags: selectedTags,
-    location, price: parseFloat(servicePrice || dailyFee || '0'),
-  }, t), [title, description, images.length, selectedTags, location, servicePrice, dailyFee, t])
 
   // Discard confirmation when going back with unsaved content (error prevention)
   const hasUnsavedContent = title.trim().length > 0 || description.trim().length > 0 || images.length > 0
@@ -339,7 +284,6 @@ export default function CreateScreen() {
               setExpirationDays(0)
               setIsAnonymous(false)
               setIsUrgent(false)
-              setBoostPost(false)
               setLatitude(null)
               setLongitude(null)
               setStep('category')
@@ -777,20 +721,6 @@ export default function CreateScreen() {
         }
       }
 
-      // Award points for creating a post
-      if (post?.id && user.id) {
-        awardPoints(user.id, 'post_created', post.id).catch((err) => { if (__DEV__) console.warn('[create] awardPoints failed:', err) })
-        // Check if this is the user's first post — award bonus
-        Promise.resolve(
-          supabase.from('posts').select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id).eq('is_active', true)
-        ).then(({ count }) => {
-          if (count === 1) {
-            awardPoints(user.id, 'first_post_bonus', post.id).catch((err) => { if (__DEV__) console.warn('[create] first_post_bonus failed:', err) })
-          }
-        }).catch(() => {})
-      }
-
       // Trigger semantic embedding for the new post (fire-and-forget)
       if (post?.id) {
         const { data: { session: authSession } } = await supabase.auth.getSession()
@@ -851,12 +781,6 @@ export default function CreateScreen() {
       setLongitude(null)
       setStep('category')
 
-      // Boost the post if requested
-      if (boostPost && createdPostId) {
-        await boosts.useBoostOnPost(createdPostId)
-        setBoostPost(false)
-      }
-
       // Haptic celebration on successful post creation
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
 
@@ -883,7 +807,7 @@ export default function CreateScreen() {
       setSubmitting(false)
       setUploadStatus('')
     }
-  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, awardPoints, boostPost, boosts, userNeighborhood, uploadImages])
+  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages])
 
   // ── Category selection step ──
   if (step === 'category') {
@@ -934,15 +858,6 @@ export default function CreateScreen() {
             )
           })}
         </ScrollView>
-
-        {/* Demand insights — show what neighbors need most */}
-        {demandInsights.length > 0 && (
-          <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
-            <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-              {t('create.demandInsightsLabel')}: {demandInsights.map(d => `${d.tag} (${d.count})`).join(', ')}
-            </Text>
-          </View>
-        )}
 
         <TrustGateModal
           visible={showTrustGate}
@@ -1098,14 +1013,6 @@ export default function CreateScreen() {
               </Text>
             )}
             <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
-            {duplicateWarning && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingTop: 4 }} accessibilityLiveRegion="polite">
-                <AlertTriangle size={12} color={colors.pro} />
-                <Text style={{ fontSize: 12, color: colors.pro, fontFamily: fonts.body, flex: 1 }}>
-                  {duplicateWarning}
-                </Text>
-              </View>
-            )}
           </View>
 
           {/* Description */}
@@ -1194,23 +1101,6 @@ export default function CreateScreen() {
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="decimal-pad"
                   />
-                  {priceSuggestion && selectedType === 'lainaa' && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 4 }}>
-                      <TrendingUp size={14} color={colors.primary} />
-                      <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.bodyMedium }}>
-                        {t('create.priceSuggestionDaily', {
-                          min: priceSuggestion.min,
-                          max: priceSuggestion.max,
-                          count: priceSuggestion.count,
-                        })}
-                      </Text>
-                    </View>
-                  )}
-                  {priceInsight && !priceSuggestion && selectedType === 'lainaa' && (
-                    <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, paddingTop: 4 }}>
-                      {t('create.priceRange')}: {priceInsight.min}–{priceInsight.max}€ ({t('create.median')} {priceInsight.median}€)
-                    </Text>
-                  )}
                 </View>
               )}
 
@@ -1232,23 +1122,6 @@ export default function CreateScreen() {
                   ) : trust.permissions.maxServicePrice !== null && servicePrice && parseFloat(servicePrice) > trust.permissions.maxServicePrice ? (
                     <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice })}</Text>
                   ) : null}
-                  {priceSuggestion && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 4 }}>
-                      <TrendingUp size={14} color={colors.primary} />
-                      <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.bodyMedium }}>
-                        {t('create.priceSuggestion', {
-                          min: priceSuggestion.min,
-                          max: priceSuggestion.max,
-                          count: priceSuggestion.count,
-                        })}
-                      </Text>
-                    </View>
-                  )}
-                  {priceInsight && !priceSuggestion && (
-                    <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, paddingTop: 4 }}>
-                      {t('create.priceRange')}: {priceInsight.min}–{priceInsight.max}€ ({t('create.median')} {priceInsight.median}€)
-                    </Text>
-                  )}
                 </View>
               )}
 
@@ -1493,69 +1366,6 @@ export default function CreateScreen() {
                 </View>
               )}
             </>
-          )}
-
-          {/* Boost toggle — gate behind FEATURES.BOOSTS */}
-          {FEATURES.BOOSTS && (
-            <View style={styles.boostSection}>
-              <View style={[styles.anonymousRow, { borderColor: boostPost ? colors.accent : colors.border }]}>
-                <View style={styles.anonymousInfo}>
-                  <TrendingUp size={16} color={boostPost ? colors.accent : colors.mutedForeground} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('boost.boostToggle')}</Text>
-                    <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('boost.boostHint')}</Text>
-                  </View>
-                </View>
-                <Switch
-                  value={boostPost}
-                  onValueChange={(val) => {
-                    if (val && boosts.balance <= 0) {
-                      Alert.alert(t('boost.title'), t('boost.noBalance'), [
-                        { text: t('common.cancel'), style: 'cancel' },
-                        { text: t('boost.buyBoosts'), onPress: () => router.push('/boosts') },
-                      ])
-                      return
-                    }
-                    setBoostPost(val)
-                  }}
-                  trackColor={{ false: colors.muted, true: colors.accent }}
-                  thumbColor={colors.primaryForeground}
-                />
-              </View>
-              {boostPost && (
-                <View style={[styles.boostInfo, { backgroundColor: `${colors.accent}10` }]}>
-                  <Text style={[styles.boostInfoText, { color: colors.accent }]}>
-                    {boosts.balance === 1 ? t('boost.balanceOne') : t('boost.balance', { count: boosts.balance })}
-                  </Text>
-                </View>
-              )}
-              {!boostPost && boosts.balance <= 0 && (
-                <PressableOpacity onPress={() => router.push('/boosts')} style={[styles.boostUpsell, { backgroundColor: `${colors.accent}10` }]}>
-                  <Text style={[styles.boostUpsellText, { color: colors.accent }]}>{t('boost.buyBoosts')}</Text>
-                  <ChevronRight size={14} color={colors.accent} />
-                </PressableOpacity>
-              )}
-            </View>
-          )}
-
-          {/* Content quality indicator */}
-          {step === 'form' && title.length > 0 && (
-            <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.border }}>
-                  <View style={{ width: `${quality.score}%`, height: '100%', borderRadius: 2,
-                    backgroundColor: quality.score >= 70 ? colors.success : quality.score >= 40 ? colors.pro : colors.destructive }} />
-                </View>
-                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body }}>
-                  {quality.score}%
-                </Text>
-              </View>
-              {quality.tips.length > 0 && quality.score < 70 && (
-                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, paddingTop: 4 }}>
-                  {quality.tips[0]}
-                </Text>
-              )}
-            </View>
           )}
 
           {/* Submit */}
@@ -1865,11 +1675,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   urgencySection: { gap: 8 },
-  boostSection: { gap: 8 },
-  boostInfo: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  boostInfoText: { fontSize: 12, fontFamily: fonts.bodySemi },
-  boostUpsell: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 8, borderRadius: 8 },
-  boostUpsellText: { fontSize: 12, fontFamily: fonts.bodySemi },
   urgencyOptions: { flexDirection: 'row', gap: 12 },
   urgencyOption: {
     flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 16, borderWidth: 1.5,
