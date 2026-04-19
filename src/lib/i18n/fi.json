@@ -2524,7 +2524,9 @@
     "description": "TackBird on naapuruston ilmoitustaulu, joka yhdistää lähiyhteisösi asukkaat. Löydä ja tarjoa apua, lainaa tavaroita, löydä ilmaisia tavaroita ja osallistu paikallisiin tapahtumiin. Kaikki tämä yhdessä turvallisessa ja helppokäyttöisessä sovelluksessa.",
     "credits": "Tekijät",
     "creditsContent": "Suunniteltu ja kehitetty Helsingissä. Kiitos kaikille beta-testaajille ja yhteisön jäsenille, jotka ovat auttaneet tekemään TackBirdistä paremman.",
-    "copyright": "© 2024–2026 TackBird. Kaikki oikeudet pidätetään."
+    "copyright": "© 2024–2026 TackBird. Kaikki oikeudet pidätetään.",
+    "linksSection": "Linkit",
+    "creditsSection": "Tekijät"
   },
   "groups": {
     "title": "Ryhmät",

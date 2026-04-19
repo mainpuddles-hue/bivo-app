@@ -206,8 +206,9 @@ function ActivitiesScreenInner() {
   // ── Fetch activities ──
   const fetchActivities = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
+      const { getCachedUserId } = await import('@/lib/authCache')
+      const cachedId = await getCachedUserId()
+      if (cachedId) setUserId(cachedId)
 
       const { data, error } = await supabase
         .from('activities')
@@ -237,11 +238,11 @@ function ActivitiesScreenInner() {
 
         // Check which ones the user is a member of
         let memberSet = new Set<string>()
-        if (user) {
+        if (cachedId) {
           const { data: myMemberships } = await supabase
             .from('activity_members')
             .select('activity_id')
-            .eq('user_id', user.id)
+            .eq('user_id', cachedId)
             .in('activity_id', ids)
 
           memberSet = new Set((myMemberships ?? []).map((m: any) => m.activity_id))
@@ -255,8 +256,8 @@ function ActivitiesScreenInner() {
       }
 
       // Filter out activities from blocked users
-      if (user) {
-        const blocked = await getBlockedUserIds(user.id)
+      if (cachedId) {
+        const blocked = await getBlockedUserIds(cachedId)
         if (blocked.size > 0) activityList = activityList.filter(a => !blocked.has((a as any).creator_id))
       }
       setActivities(activityList)

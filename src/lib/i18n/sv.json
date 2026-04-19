@@ -2489,7 +2489,9 @@
     "description": "TackBird är grannskapets anslagstavla som förenar ditt lokala samhälle. Hitta och erbjud hjälp, låna saker, upptäck gratis saker och delta i lokala evenemang. Allt i en säker och lättanvänd app.",
     "credits": "Medverkande",
     "creditsContent": "Designad och utvecklad i Helsingfors. Tack till alla betatestare och communitymedlemmar som hjälpt till att göra TackBird bättre.",
-    "copyright": "© 2024–2026 TackBird. Alla rättigheter förbehållna."
+    "copyright": "© 2024–2026 TackBird. Alla rättigheter förbehållna.",
+    "linksSection": "Länkar",
+    "creditsSection": "Medverkande"
   },
   "groups": {
     "title": "Grupper",

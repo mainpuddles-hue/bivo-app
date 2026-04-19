@@ -2524,7 +2524,9 @@
     "description": "TackBird is a neighborhood bulletin board that connects your local community. Find and offer help, borrow items, discover free stuff, and join local events. All in one safe and easy-to-use app.",
     "credits": "Credits",
     "creditsContent": "Designed and developed in Helsinki. Thanks to all beta testers and community members who helped make TackBird better.",
-    "copyright": "© 2024–2026 TackBird. All rights reserved."
+    "copyright": "© 2024–2026 TackBird. All rights reserved.",
+    "linksSection": "Links",
+    "creditsSection": "Credits"
   },
   "groups": {
     "title": "Groups",

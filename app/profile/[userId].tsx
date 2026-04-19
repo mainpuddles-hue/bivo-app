@@ -74,11 +74,12 @@ export default function PublicProfileScreen() {
   const loadProfile = useCallback(async () => {
     if (!userId || !isValidUUID(userId)) { setLoading(false); setRefreshing(false); return }
     try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) setCurrentUserId(user.id)
+    const { getCachedUserId } = await import('@/lib/authCache')
+    const cachedId = await getCachedUserId()
+    if (cachedId) setCurrentUserId(cachedId)
 
     // If viewing own profile, redirect to profile tab
-    if (user && user.id === userId) {
+    if (cachedId && cachedId === userId) {
       router.replace('/(tabs)/profile')
       return
     }
@@ -94,10 +95,10 @@ export default function PublicProfileScreen() {
 
     // Check profile visibility before rendering
     let viewerNeighborhood: string | null = null
-    if (user) {
+    if (cachedId) {
       const { data: viewerProfile } = await (supabase.from('profiles') as any)
         .select('naapurusto')
-        .eq('id', user.id)
+        .eq('id', cachedId)
         .maybeSingle()
       viewerNeighborhood = viewerProfile?.naapurusto ?? null
     }
@@ -105,7 +106,7 @@ export default function PublicProfileScreen() {
       (prof as any).profile_visibility,
       prof.naapurusto,
       viewerNeighborhood,
-      user?.id === userId,
+      cachedId === userId,
     )) {
       setProfileHidden(true)
       setLoading(false)
@@ -129,16 +130,16 @@ export default function PublicProfileScreen() {
     setFollowingCount(followingRes.count ?? 0)
 
     // Check follow/block status + transaction history for reviews
-    if (user) {
+    if (cachedId) {
       const [followSettled, blockSettled, convSettled, existingReviewSettled] = await Promise.allSettled([
-        supabase.from('user_follows').select('id').eq('follower_id', user.id).eq('followed_id', userId).maybeSingle(),
-        supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', userId).maybeSingle(),
+        supabase.from('user_follows').select('id').eq('follower_id', cachedId).eq('followed_id', userId).maybeSingle(),
+        supabase.from('blocked_users').select('id').eq('blocker_id', cachedId).eq('blocked_id', userId).maybeSingle(),
         // Check if there's been a conversation (transaction proxy) between users
         supabase.from('conversations').select('id').or(
-          `and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`
+          `and(user1_id.eq.${cachedId},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${cachedId})`
         ).maybeSingle(),
         // Check for existing review
-        supabase.from('reviews').select('id').eq('reviewer_id', user.id).eq('reviewed_id', userId).maybeSingle(),
+        supabase.from('reviews').select('id').eq('reviewer_id', cachedId).eq('reviewed_id', userId).maybeSingle(),
       ])
       const followRes = followSettled.status === 'fulfilled' ? followSettled.value : { data: null }
       const blockRes = blockSettled.status === 'fulfilled' ? blockSettled.value : { data: null }

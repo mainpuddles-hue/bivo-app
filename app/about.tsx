@@ -29,7 +29,7 @@ function AboutScreenInner() {
         >
           <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>Tietoa</Text>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('about.title')}</Text>
         <View style={s.headerSpacer} />
       </View>
 
@@ -50,7 +50,7 @@ function AboutScreenInner() {
         </View>
 
         {/* Links */}
-        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>LINKIT</Text>
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('about.linksSection').toUpperCase()}</Text>
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <PressableOpacity onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
             <FileText size={18} color={colors.mutedForeground} />
@@ -85,7 +85,7 @@ function AboutScreenInner() {
         </View>
 
         {/* Credits */}
-        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>TEKIJ{'\u00c4'}T</Text>
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('about.creditsSection').toUpperCase()}</Text>
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.creditsTitle, { color: colors.foreground }]}>{t('about.credits')}</Text>
           <Text style={[s.creditsText, { color: colors.mutedForeground }]}>{t('about.creditsContent')}</Text>
