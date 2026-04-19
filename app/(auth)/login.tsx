@@ -346,9 +346,9 @@ function LoginScreenInner() {
       : t('auth.register')
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.card }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#FFFFFF' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        style={[styles.scroll, { backgroundColor: colors.card }]}
+        style={[styles.scroll, { backgroundColor: '#FFFFFF' }]}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -382,7 +382,7 @@ function LoginScreenInner() {
         </Text>
 
         {/* Email input */}
-        <View style={[styles.inputField, { borderColor: colors.foreground, borderWidth: 1.5 }]}>
+        <View style={[styles.inputField, { borderColor: colors.border, borderWidth: 1, backgroundColor: colors.card }]}>
           <TextInput
             style={[styles.inputText, { color: colors.foreground }]}
             value={email}
@@ -470,7 +470,7 @@ function LoginScreenInner() {
             accessibilityLabel={t('auth.forgotPassword')}
             style={styles.forgotBtn}
           >
-            <Text style={[styles.forgotText, { color: colors.foreground }]}>{t('auth.forgotPassword')}</Text>
+            <Text style={[styles.forgotText, { color: colors.mutedForeground }]}>{t('auth.forgotPassword')}</Text>
           </PressableOpacity>
         )}
 
@@ -564,7 +564,7 @@ function LoginScreenInner() {
                 ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
                 : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
             }
-            cornerRadius={12}
+            cornerRadius={999}
             style={styles.appleBtn}
             onPress={handleAppleSignIn}
           />
@@ -574,7 +574,7 @@ function LoginScreenInner() {
         {mode !== 'forgot' && (
           <PressableOpacity
             onPress={handleGoogleOAuth}
-            style={[styles.socialBtn, { borderColor: colors.border }]}
+            style={[styles.socialBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
             accessibilityRole="button"
             accessibilityLabel={t('auth.signInWithGoogle')}
           >
@@ -622,10 +622,11 @@ const styles = StyleSheet.create({
   logoMark: {
     width: 48,
     height: 48,
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 44,
+    alignSelf: 'center',
   },
   logoText: {
     fontFamily: fonts.heading,
@@ -635,45 +636,48 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
 
-  // Headline — large serif-like
+  // Headline — H1 size, centered
   headline: {
     fontFamily: fonts.heading,
-    fontSize: 36,
-    lineHeight: 38,
-    letterSpacing: -1.4,
+    fontSize: 24,
+    lineHeight: 30,
+    letterSpacing: -0.5,
     marginBottom: 10,
+    textAlign: 'center',
   },
 
   // Subtitle
   subtitle: {
     fontFamily: fonts.body,
     fontSize: 13.5,
-    lineHeight: 20,
+    lineHeight: 21,
     marginBottom: 36,
+    textAlign: 'center',
+    alignSelf: 'center',
     maxWidth: 280,
   },
 
-  // Section label — uppercase micro
+  // Section label — Meta style uppercase
   sectionLabel: {
     fontFamily: fonts.bodySemi,
-    fontSize: 10.5,
-    letterSpacing: 1,
+    fontSize: 11,
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
     marginBottom: 8,
   },
 
-  // Input field — border container
+  // Input field — pill shape
   inputField: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 14,
+    borderRadius: 999,
+    paddingHorizontal: 18,
     minHeight: 48,
   },
   inputText: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 14.5,
-    letterSpacing: -0.1,
+    fontSize: 15,
+    letterSpacing: 0,
     flex: 1,
     paddingVertical: 14,
   },
@@ -687,7 +691,7 @@ const styles = StyleSheet.create({
     marginRight: -8,
   },
 
-  // Forgot password
+  // Forgot password — muted, 13px, underlined
   forgotBtn: {
     alignSelf: 'flex-end',
     minHeight: 44,
@@ -695,19 +699,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   forgotText: {
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.body,
     fontSize: 13,
     lineHeight: 18,
     textDecorationLine: 'underline',
   },
 
-  // Terms (inline for login)
+  // Terms (inline for login) — 11px muted centered
   termsInline: {
     fontFamily: fonts.body,
     fontSize: 11,
     lineHeight: 17,
     marginTop: 14,
     marginBottom: 8,
+    textAlign: 'center',
   },
 
   // Terms row (for register with checkbox)
@@ -744,7 +749,7 @@ const styles = StyleSheet.create({
 
   // Error
   errorBanner: {
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 12,
     marginTop: 8,
   },
@@ -755,20 +760,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Primary CTA — pill
+  // Primary CTA — pill, 54px height, 15px 600
   primaryBtn: {
     borderRadius: 999,
-    paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 50,
+    height: 54,
+    minHeight: 54,
     marginTop: 18,
   },
   primaryBtnText: {
     fontFamily: fonts.bodySemi,
-    fontSize: 14,
+    fontSize: 15,
     lineHeight: 20,
-    letterSpacing: -0.05,
+    letterSpacing: 0,
   },
 
   // Back to login
@@ -803,28 +808,29 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  // Apple button
+  // Apple button — pill, 50px height
   appleBtn: {
     width: '100%',
+    height: 50,
     minHeight: 48,
     marginBottom: 10,
   },
 
-  // Social button — bordered
+  // Social button — pill, surface bg, 1px border, 48-52px height
   socialBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 13,
+    borderRadius: 999,
+    height: 50,
     minHeight: 48,
     marginBottom: 10,
   },
   socialBtnText: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 13.5,
+    fontSize: 15,
     lineHeight: 20,
   },
 
@@ -837,8 +843,8 @@ const styles = StyleSheet.create({
   },
   bottomText: {
     fontFamily: fonts.body,
-    fontSize: 12.5,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
   },
   bottomLinkHit: {
     minHeight: 44,
@@ -846,8 +852,8 @@ const styles = StyleSheet.create({
   },
   bottomLink: {
     fontFamily: fonts.bodySemi,
-    fontSize: 12.5,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
     textDecorationLine: 'underline',
   },
 })

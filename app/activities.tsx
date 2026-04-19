@@ -831,7 +831,7 @@ const st = StyleSheet.create({
     borderWidth: 1,
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 14,
     letterSpacing: -0.3,
     fontFamily: fonts.headingSemi,
     lineHeight: 22,
@@ -867,7 +867,7 @@ const st = StyleSheet.create({
 
   // Card
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   cardTop: {
@@ -1019,7 +1019,7 @@ const st = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,
@@ -1028,7 +1028,7 @@ const st = StyleSheet.create({
   },
   textArea: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,

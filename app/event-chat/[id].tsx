@@ -368,9 +368,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 16,
-    fontFamily: fonts.heading,
-    lineHeight: 24,
+    fontSize: 14,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 22,
   },
   headerMeta: {
     flexDirection: 'row',

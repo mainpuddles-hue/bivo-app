@@ -1572,7 +1572,7 @@ const s = StyleSheet.create({
 
   // ── Results container ──
   resultsContainer: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 4,
@@ -1639,7 +1639,7 @@ const s = StyleSheet.create({
   },
   similarCard: {
     width: 130,
-    borderRadius: 14,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },

@@ -1,6 +1,6 @@
-import { Pressable } from 'react-native'
+import { Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { ArrowLeft } from 'lucide-react-native'
+import { ChevronLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 
@@ -12,18 +12,8 @@ interface BackButtonProps {
 }
 
 /**
- * Standardized back button.
- *
- * UI UX Pro Max rules applied:
- * - Icon: ArrowLeft, size 24 (consistent)
- * - Touch target: 44×44pt minimum
- * - Pressed feedback: opacity 0.7
- * - Accessibility: role="button", label="Back"
- * - hitSlop: 12
- *
- * Usage:
- *   <BackButton />
- *   <BackButton onPress={() => router.replace('/')} />
+ * Helsinki Monochrome back button — 36px circle, surface bg, 1px border.
+ * Touch target 44pt via hitSlop.
  */
 export function BackButton({ onPress, color }: BackButtonProps) {
   const router = useRouter()
@@ -37,16 +27,26 @@ export function BackButton({ onPress, color }: BackButtonProps) {
       accessibilityRole="button"
       accessibilityLabel={t('common.back')}
       style={({ pressed }) => [
+        bk.circle,
         {
-          minWidth: 44,
-          minHeight: 44,
-          alignItems: 'center' as const,
-          justifyContent: 'center' as const,
+          backgroundColor: colors.card,
+          borderColor: colors.border,
         },
         pressed && { opacity: 0.7 },
       ]}
     >
-      <ArrowLeft size={24} color={color ?? colors.foreground} />
+      <ChevronLeft size={20} color={color ?? colors.foreground} />
     </Pressable>
   )
 }
+
+const bk = StyleSheet.create({
+  circle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+})

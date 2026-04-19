@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12,
   },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 17, fontFamily: fonts.heading, lineHeight: 22 },
+  headerTitle: { fontSize: 14, fontFamily: fonts.headingSemi, lineHeight: 22 },
   instructions: { alignItems: 'center', paddingHorizontal: 32, paddingVertical: 24, gap: 8 },
   instructionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, textAlign: 'center', lineHeight: 22 },
   instructionHint: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20 },
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   footer: { paddingHorizontal: 16, paddingVertical: 16, marginTop: 'auto' },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    height: 52, borderRadius: 16,
+    height: 52, borderRadius: 999,
   },
   submitText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
 })

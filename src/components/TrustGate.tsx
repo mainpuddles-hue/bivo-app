@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '100%',
-    borderRadius: 16,
+    borderRadius: 28,
     padding: 24,
     gap: 12,
     alignItems: 'center',
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     gap: 8,
     width: '100%',
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     marginTop: 4,
   },
   actionBtnText: {
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   dismissBtn: {
     width: '100%',
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     alignItems: 'center',
   },
   dismissBtnText: {

@@ -1238,7 +1238,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.15,

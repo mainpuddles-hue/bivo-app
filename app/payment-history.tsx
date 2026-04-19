@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
     lineHeight: 22,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   sectionCards: { gap: 8 },
   paymentRow: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },

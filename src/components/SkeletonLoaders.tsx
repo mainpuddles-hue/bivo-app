@@ -136,13 +136,13 @@ const skel = StyleSheet.create({
   profileStats: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
   profileStatBox: { width: 80, height: 60, borderRadius: 16 },
   // Search
-  searchRow: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 16 },
+  searchRow: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 20 },
   searchImage: { width: 60, height: 60, borderRadius: 8 },
   searchInfo: { flex: 1, gap: 8, justifyContent: 'center' },
 })
 
 const postSkel = StyleSheet.create({
-  card: { borderRadius: 16, overflow: 'hidden' },
+  card: { borderRadius: 20, overflow: 'hidden' },
   image: { width: '100%', aspectRatio: 16 / 9, borderRadius: 0 },
   body: { padding: 16, gap: 12 },
   lineShort: { width: '40%' },
@@ -191,7 +191,7 @@ export function PostDetailSkeleton() {
 }
 
 const sectionSkel = StyleSheet.create({
-  card: { borderRadius: 16, overflow: 'hidden' },
+  card: { borderRadius: 20, overflow: 'hidden' },
   cardRow: { flexDirection: 'row', padding: 16, gap: 12, alignItems: 'center' },
   circle: { width: 40, height: 40, borderRadius: 20 },
   content: { flex: 1, gap: 3 },
@@ -321,7 +321,7 @@ export function FeedLoadMoreSkeleton() {
 
 const feedMoreSkel = StyleSheet.create({
   container: { flexDirection: 'row', gap: 10, paddingHorizontal: 12, paddingVertical: 12 },
-  card: { flex: 1, borderRadius: 16, overflow: 'hidden' },
+  card: { flex: 1, borderRadius: 20, overflow: 'hidden' },
   image: { width: '100%', aspectRatio: 16 / 9 },
   body: { padding: 12, gap: 8 },
 })
@@ -371,17 +371,17 @@ const pubProfileSkel = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
   actionBtn: { flex: 1, height: 44, borderRadius: 14 },
   postsRow: { flexDirection: 'row', gap: 10 },
-  postCard: { flex: 1, borderRadius: 16, overflow: 'hidden' },
+  postCard: { flex: 1, borderRadius: 20, overflow: 'hidden' },
   postImage: { width: '100%', aspectRatio: 16 / 9 },
 })
 
 const eventSkel = StyleSheet.create({
-  card: { borderRadius: 16, overflow: 'hidden' },
+  card: { borderRadius: 20, overflow: 'hidden' },
   image: { width: '100%', height: 140 },
   content: { padding: 14, gap: 8 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 })
 
 const tableSkel = StyleSheet.create({
-  card: { width: 180, borderRadius: 16, padding: 14, gap: 6 },
+  card: { width: 180, borderRadius: 20, padding: 14, gap: 6 },
 })

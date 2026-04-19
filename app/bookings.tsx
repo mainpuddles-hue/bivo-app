@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 14,
     letterSpacing: -0.2,
     fontFamily: fonts.headingSemi,
     lineHeight: 24,
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
 
   // Booking card — monochrome
   bookingCard: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
   itemImage: {
     width: 64,
     height: 64,
-    borderRadius: 14,
+    borderRadius: 16,
   },
   cardInfo: {
     flex: 1,
@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
     gap: 8,
     margin: 16,
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
   },
   errorBannerText: {

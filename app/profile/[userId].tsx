@@ -1120,7 +1120,7 @@ const s = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     paddingVertical: 14,
     paddingHorizontal: 10,
@@ -1266,7 +1266,7 @@ const s = StyleSheet.create({
   },
   listingGridCard: {
     width: '48%' as any,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
     minHeight: 44,

@@ -263,7 +263,7 @@ const CELL_SIZE = 40
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
     padding: 12,
   },

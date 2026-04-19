@@ -17,7 +17,7 @@ function TermsScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Bar header */}
-      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <PressableOpacity
           onPress={() => router.back()}
           accessibilityRole="button"
@@ -118,7 +118,7 @@ const s = StyleSheet.create({
   headerSpacer: { width: 36 },
   content: { padding: 20, paddingBottom: 40 },
   updated: { fontSize: 12, fontFamily: fonts.body, marginBottom: 16 },
-  disclaimer: { borderRadius: 14, padding: 14, marginBottom: 20 },
+  disclaimer: { borderRadius: 20, padding: 14, marginBottom: 20 },
   disclaimerText: { fontSize: 13, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 19 },
   sectionTitle: { fontSize: 15, fontFamily: fonts.bodySemi, marginTop: 24, marginBottom: 6, letterSpacing: -0.1 },
   paragraph: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22 },

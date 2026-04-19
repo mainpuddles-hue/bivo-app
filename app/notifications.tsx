@@ -598,13 +598,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // --- Header: Bar pattern ---
+  // --- Header: Bar pattern (back circle 36px + centered title + "Merkitse" action) ---
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 14,
   },
   headerBackBtn: {
     width: 36,
@@ -615,9 +615,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   headerTitle: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontFamily: fonts.bodySemi,
+    fontWeight: '600',
     lineHeight: 20,
+    letterSpacing: -0.15,
   },
   headerRightBtn: {
     minWidth: 36,
@@ -626,10 +628,11 @@ const styles = StyleSheet.create({
   headerRightText: {
     fontSize: 11.5,
     fontFamily: fonts.bodySemi,
+    fontWeight: '600',
     lineHeight: 16,
   },
 
-  // --- Filter chips ---
+  // --- Filter chips (pill shape, borderRadius 999) ---
   filterScrollView: {
     flexGrow: 0,
     flexShrink: 0,
@@ -642,25 +645,28 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 999,
   },
   filterText: {
     fontSize: 12,
+    fontWeight: '500',
     lineHeight: 16,
   },
 
-  // --- Section headers ---
+  // --- Section headers (uppercase section label, 10.5px muted 600, 0.9 tracking) ---
   sectionHeader: {
     paddingHorizontal: 16,
     paddingBottom: 10,
-    paddingTop: 16,
+    paddingTop: 18,
   },
   sectionTitle: {
     fontSize: 10.5,
+    fontWeight: '600',
     letterSpacing: 0.9,
     textTransform: 'uppercase',
     fontFamily: fonts.bodySemi,
+    lineHeight: 14,
   },
 
   // --- Row card container ---
@@ -699,7 +705,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
 
-  // --- Content ---
+  // --- Content (title bold + body 13.5px + time 11px muted) ---
   notifContent: {
     flex: 1,
     gap: 2,
@@ -711,6 +717,7 @@ const styles = StyleSheet.create({
   },
   notifTitleBold: {
     fontFamily: fonts.bodySemi,
+    fontWeight: '600',
   },
   notifBody: {
     fontSize: 13.5,
@@ -721,7 +728,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     fontFamily: fonts.body,
-    marginTop: 2,
+    marginTop: 3,
   },
 
   // --- Unread dot ---
@@ -733,7 +740,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // --- Action buttons ---
+  // --- Action buttons (CTA: ink pill primary + surface pill border secondary) ---
   actionRow: {
     flexDirection: 'row',
     gap: 8,
@@ -746,6 +753,7 @@ const styles = StyleSheet.create({
   },
   actionPrimaryText: {
     fontSize: 11.5,
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
@@ -757,14 +765,15 @@ const styles = StyleSheet.create({
   },
   actionSecondaryText: {
     fontSize: 11.5,
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
 
-  // --- Divider ---
+  // --- Divider (1px, indent past avatar) ---
   divider: {
-    height: 1,
-    marginLeft: 68, // 16 padding + 40 avatar + 12 gap = 68
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 60, // indent past avatar
   },
 
   // --- Error banner ---
@@ -774,7 +783,7 @@ const styles = StyleSheet.create({
     gap: 8,
     margin: 16,
     padding: 12,
-    borderRadius: 20,
+    borderRadius: 16,
   },
   errorText: {
     fontSize: 13,
@@ -794,9 +803,9 @@ const styles = StyleSheet.create({
 
   // --- Expanded group ---
   expandedGroup: {
-    marginLeft: 68,
+    marginLeft: 60,
     marginRight: 16,
-    borderRadius: 20,
+    borderRadius: 16,
     paddingVertical: 4,
     marginBottom: 4,
   },

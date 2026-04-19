@@ -356,7 +356,7 @@ function CreateEventScreenInner() {
         style={[
           styles.header,
           {
-            paddingTop: insets.top + 8,
+            paddingTop: insets.top + 12,
             backgroundColor: colors.background,
             borderBottomColor: colors.border,
           },
@@ -364,7 +364,7 @@ function CreateEventScreenInner() {
       >
         <PressableOpacity
           onPress={() => router.back()}
-          style={[styles.closeButton, { backgroundColor: colors.muted }]}
+          style={[styles.closeButton, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
   imagePicker: {
     width: '100%',
     aspectRatio: 1.25,
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     overflow: 'hidden',
@@ -735,9 +735,9 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 20,
     paddingHorizontal: 14,
-    height: 50,
+    height: 48,
     fontSize: 14,
     lineHeight: 20,
     justifyContent: 'center',
@@ -765,16 +765,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 20,
     paddingHorizontal: 14,
-    height: 50,
+    height: 48,
     gap: 8,
   },
   inputInner: {
     flex: 1,
     fontSize: 14,
     lineHeight: 20,
-    height: 50,
+    height: 48,
   },
   chipContainer: {
     flexDirection: 'row',
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 20,
     paddingHorizontal: 14,
     height: 56,
     marginTop: 12,

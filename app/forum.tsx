@@ -693,7 +693,7 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 14,
     lineHeight: 24,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.2,
@@ -723,14 +723,14 @@ const s = StyleSheet.create({
   listHeaderGap: { height: 4 },
 
   // Card skeleton — monochrome
-  card: { borderRadius: 16, overflow: 'hidden' },
+  card: { borderRadius: 20, overflow: 'hidden' },
   cardBody: { flex: 1, padding: 16, gap: 8 },
   cardUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   skelAvatar: { width: 32, height: 32, borderRadius: 16 },
   skelLine: { height: 10, borderRadius: 5 },
 
   // FAB — monochrome INK
-  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
 
   // Empty state
   emptyState: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 12 },
@@ -744,6 +744,6 @@ const s = StyleSheet.create({
   modalSection: { paddingHorizontal: 16, paddingTop: 16 },
   publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, minWidth: 80, alignItems: 'center' },
   publishBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
-  titleInput: { fontSize: 14, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
-  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
+  titleInput: { fontSize: 14, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
+  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
 })

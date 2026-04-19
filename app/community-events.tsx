@@ -367,7 +367,7 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.2,
     lineHeight: 24,
@@ -442,7 +442,7 @@ const s = StyleSheet.create({
   // Create table card — monochrome
   createTableCard: {
     width: 180,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     borderStyle: 'dashed',
     padding: 16,

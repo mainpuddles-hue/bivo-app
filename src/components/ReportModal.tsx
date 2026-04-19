@@ -195,7 +195,7 @@ const s = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 16,
+    borderRadius: 28,
     padding: 20,
     gap: 12,
   },
@@ -270,7 +270,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   submitBtn: {
-    borderRadius: 16,
+    borderRadius: 999,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',

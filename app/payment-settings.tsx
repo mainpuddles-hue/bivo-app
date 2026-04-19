@@ -273,7 +273,7 @@ const s = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
     lineHeight: 22,
@@ -291,7 +291,7 @@ const s = StyleSheet.create({
     lineHeight: 15,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },

@@ -941,7 +941,7 @@ const s = StyleSheet.create({
   // ── Hero illustration area ──
   heroArea: {
     marginHorizontal: 20,
-    borderRadius: 28,
+    borderRadius: 24,
     height: 280,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1033,7 +1033,7 @@ const s = StyleSheet.create({
   },
   bodyText: {
     fontSize: 13.5,
-    lineHeight: 21,
+    lineHeight: 21,  // ~1.55x
     letterSpacing: 0,
   },
   bodyTextSmall: {
@@ -1141,10 +1141,9 @@ const s = StyleSheet.create({
     marginBottom: 4,
   },
   neighborhoodExplainer: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'center',
-    paddingHorizontal: 32,
+    fontSize: 13,
+    lineHeight: 18,
+    paddingHorizontal: 20,
     marginBottom: 8,
   },
   neighborhoodSearchRow: {
@@ -1202,7 +1201,7 @@ const s = StyleSheet.create({
     marginHorizontal: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     marginBottom: 8,
   },

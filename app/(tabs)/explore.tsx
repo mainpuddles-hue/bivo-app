@@ -618,7 +618,7 @@ function ExploreScreenInner() {
             {/* Community Events carousel */}
             <View style={s.sectionWrap}>
               <View style={s.sectionHeaderRow}>
-                <Text style={[s.sectionHeading, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
+                <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('events.communityEventsTitle')}</Text>
                 <PressableOpacity
                   onPress={() => router.push('/community-events' as any)}
                   accessibilityRole="link"
@@ -692,7 +692,7 @@ function ExploreScreenInner() {
             {/* Community: Groups */}
             <View style={s.sectionWrap}>
               <View style={s.sectionHeaderRow}>
-                <Text style={[s.sectionHeading, { color: colors.foreground }]}>{t('groups.title')}</Text>
+                <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('groups.title')}</Text>
                 <PressableOpacity
                   onPress={() => router.push('/groups' as any)}
                   accessibilityRole="link"
@@ -747,7 +747,7 @@ function ExploreScreenInner() {
             {/* Community: Forum */}
             <View style={s.sectionWrap}>
               <View style={s.sectionHeaderRow}>
-                <Text style={[s.sectionHeading, { color: colors.foreground }]}>{t('forum.title')}</Text>
+                <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('forum.title')}</Text>
                 <PressableOpacity
                   onPress={() => router.push('/forum' as any)}
                   accessibilityRole="link"
@@ -1060,11 +1060,6 @@ const s = StyleSheet.create({
     paddingBottom: 12,
     gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
     zIndex: 10,
   },
   headerRow: {
@@ -1179,7 +1174,7 @@ const s = StyleSheet.create({
   mapTeaser: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 20,
     gap: 16,
     borderWidth: 1,
@@ -1210,7 +1205,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    borderRadius: 18,
+    borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderWidth: 1,
@@ -1235,11 +1230,12 @@ const s = StyleSheet.create({
     paddingHorizontal: 2,
   },
   sectionHeading: {
-    fontSize: 17,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.2,
-    lineHeight: 22,
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: 1.0,
+    textTransform: 'uppercase',
+    lineHeight: 14,
   },
   seeAllLink: {
     minHeight: 44,
@@ -1255,7 +1251,7 @@ const s = StyleSheet.create({
 
   // ── Section card container (groups list, forum list, event list, place list) ──
   sectionCardContainer: {
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -1383,7 +1379,7 @@ const s = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
   },
   communityCardTitle: {
@@ -1402,7 +1398,7 @@ const s = StyleSheet.create({
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 8,
-    borderRadius: 18,
+    borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginTop: 16,
@@ -1424,7 +1420,7 @@ const s = StyleSheet.create({
   },
   ceCard: {
     width: 200,
-    borderRadius: 18,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
   },

@@ -87,17 +87,12 @@ const styles = StyleSheet.create({
   postCard: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
     flexDirection: 'row',
     padding: 10,
     gap: 12,
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 2,
   },
   cardImage: {
     width: 72,

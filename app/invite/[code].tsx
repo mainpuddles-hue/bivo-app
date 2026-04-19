@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 360,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 32,
     alignItems: 'center',
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   button: {
     paddingHorizontal: 32,
     paddingVertical: 14,
-    borderRadius: 24,
+    borderRadius: 999,
     marginTop: 8,
     width: '100%',
     alignItems: 'center',
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   outlineButton: {
     paddingHorizontal: 32,
     paddingVertical: 14,
-    borderRadius: 24,
+    borderRadius: 999,
     borderWidth: 1,
     width: '100%',
     alignItems: 'center',

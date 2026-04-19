@@ -177,7 +177,7 @@ const s = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
     lineHeight: 22,
@@ -189,7 +189,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
   },
   userInfo: { flex: 1, gap: 2 },

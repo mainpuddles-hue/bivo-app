@@ -225,7 +225,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     >
       {/* Pro banner — only when no image (crown badge handles image cards) */}
       {isPro && !hasImage && (
-        <View style={[styles.proBanner, { backgroundColor: colors.foreground, shadowColor: colors.foreground }]}>
+        <View style={[styles.proBanner, { backgroundColor: colors.foreground }]}>
           <Crown size={12} color={colors.primaryForeground} />
           <Text style={[styles.proBannerText, { color: colors.primaryForeground }]}>Pro</Text>
         </View>
@@ -558,11 +558,10 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 })
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 24, overflow: 'hidden', position: 'relative' as const },
+  card: { borderRadius: 20, overflow: 'hidden', position: 'relative' as const },
   proBanner: {
     height: 22,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
-    shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
   proBannerText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 8 },

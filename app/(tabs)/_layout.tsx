@@ -22,65 +22,87 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 const TAB_ICONS = [Newspaper, Compass, Plus, MessageCircle, User] as const
 const TAB_LABEL_KEYS = ['nav.feed', 'explore.title', 'nav.create', 'nav.messages', 'nav.profile'] as const
 
-// --- Monochrome Bottom Tab Bar ---
+// --- Floating Pill Nav ---
+// Matches Helsinki Monochrome mockup: floating pill bar, icon-only, active = ink circle
 
-function MonochromeTabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
+function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBarProps) {
   const { colors } = useTheme()
-  const { t } = useI18n()
 
   return (
     <View
       style={[
-        s.tabBarContainer,
+        s.pillOuter,
         {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+          bottom: Math.max(insets.bottom, 22),
         },
       ]}
+      pointerEvents="box-none"
     >
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key]
-        const focused = state.index === index
-        const Icon = TAB_ICONS[index]
-        const label = t(TAB_LABEL_KEYS[index])
-        const badge = options.tabBarBadge as number | undefined
-        const iconColor = focused ? colors.foreground : colors.mutedForeground
+      <View
+        style={[
+          s.pillBar,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            ...Platform.select({
+              ios: {
+                shadowColor: '#1A1D1F',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.08,
+                shadowRadius: 20,
+              },
+              android: {
+                elevation: 8,
+              },
+            }),
+          },
+        ]}
+      >
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key]
+          const focused = state.index === index
+          const Icon = TAB_ICONS[index]
+          const badge = options.tabBarBadge as number | undefined
+          const iconColor = focused ? colors.primaryForeground : colors.foreground
 
-        const onPress = () => {
-          try { Haptics.selectionAsync() } catch {}
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          })
-          if (!focused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params)
+          const onPress = () => {
+            try { Haptics.selectionAsync() } catch {}
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            })
+            if (!focused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params)
+            }
           }
-        }
 
-        const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          })
-        }
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key,
+            })
+          }
 
-        return (
-          <Pressable
-            key={route.key}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: focused }}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            style={s.tabItem}
-          >
-            <View style={s.iconContainer}>
+          return (
+            <Pressable
+              key={route.key}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: focused }}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              style={[
+                s.pillItem,
+                {
+                  backgroundColor: focused ? colors.foreground : 'transparent',
+                },
+              ]}
+            >
               <Icon
-                size={22}
+                size={20}
                 color={iconColor}
-                strokeWidth={focused ? 2.2 : 1.6}
+                strokeWidth={focused ? 2 : 1.6}
               />
               {badge != null && badge > 0 && (
                 <View
@@ -91,22 +113,10 @@ function MonochromeTabBar({ state, descriptors, navigation, insets }: BottomTabB
                   <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
                 </View>
               )}
-            </View>
-            <Text
-              style={[
-                s.tabLabel,
-                {
-                  color: iconColor,
-                  fontWeight: focused ? '600' : '400',
-                },
-              ]}
-              numberOfLines={1}
-            >
-              {label}
-            </Text>
-          </Pressable>
-        )
-      })}
+            </Pressable>
+          )
+        })}
+      </View>
     </View>
   )
 }
@@ -154,10 +164,11 @@ export default function TabLayout() {
   return (
     <View style={{ flex: 1 }}>
     <Tabs
-      tabBar={(props) => <MonochromeTabBar {...props} />}
+      tabBar={(props) => <FloatingPillNav {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        sceneStyle: { paddingBottom: 100 },
       }}
     >
       <Tabs.Screen name="index" options={{
@@ -184,31 +195,31 @@ export default function TabLayout() {
 // --- Styles ---
 
 const s = StyleSheet.create({
-  tabBarContainer: {
+  pillOuter: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    zIndex: 40,
+  },
+  pillBar: {
     flexDirection: 'row',
-    borderTopWidth: 1,
-    paddingTop: 8,
+    alignItems: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    padding: 8,
+    gap: 4,
   },
-  tabItem: {
+  pillItem: {
     flex: 1,
+    height: 44,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
-  },
-  iconContainer: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabLabel: {
-    fontSize: 11,
-    letterSpacing: 0.1,
   },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -8,
+    top: 4,
+    right: 8,
     minWidth: 16,
     height: 16,
     borderRadius: 8,

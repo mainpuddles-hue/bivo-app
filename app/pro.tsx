@@ -109,7 +109,7 @@ export default function ProScreen() {
     <ScreenErrorBoundary screenName="Pro">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header — circle back button + centered title */}
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
         <PressableOpacity
           onPress={() => router.back()}
           hitSlop={12}
@@ -120,7 +120,7 @@ export default function ProScreen() {
           <ArrowLeft size={20} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>TackBird Pro</Text>
-        <View style={{ width: 40 }} />
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
@@ -330,10 +330,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backCircle: {
-    width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
+    width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },
-  headerTitle: { fontSize: 18, lineHeight: 24, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 14, lineHeight: 22, letterSpacing: -0.3, fontFamily: fonts.headingSemi, flex: 1, textAlign: 'center' },
   content: { padding: 20, gap: 16, paddingBottom: 60 },
 
   // Hero
@@ -357,7 +357,7 @@ const s = StyleSheet.create({
   },
 
   // Feature comparison — SURFACE card with LINE border
-  comparisonCard: { borderRadius: 16, overflow: 'hidden' },
+  comparisonCard: { borderRadius: 20, overflow: 'hidden' },
   comparisonHeader: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
@@ -378,7 +378,7 @@ const s = StyleSheet.create({
   // Pricing
   pricingRow: { flexDirection: 'row', gap: 10 },
   pricingCard: {
-    flex: 1, borderRadius: 16, borderWidth: 1,
+    flex: 1, borderRadius: 20, borderWidth: 1,
     padding: 16, alignItems: 'center', gap: 4, position: 'relative', overflow: 'hidden',
   },
   pricingCardFree: {
@@ -404,7 +404,7 @@ const s = StyleSheet.create({
 
   // Manage
   manageBtn: {
-    alignItems: 'center', paddingVertical: 16, borderRadius: 16,
+    alignItems: 'center', paddingVertical: 16, borderRadius: 20,
     borderWidth: 1, minHeight: 48,
   },
   manageBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -412,7 +412,7 @@ const s = StyleSheet.create({
   // Info card
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16, borderWidth: 1, marginTop: 8,
+    padding: 16, borderRadius: 20, borderWidth: 1, marginTop: 8,
   },
   infoIconCircle: {
     width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',

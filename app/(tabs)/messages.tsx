@@ -588,7 +588,7 @@ export default function MessagesScreen() {
             >
               {/* Avatar with online dot */}
               <View style={styles.avatarWrap}>
-                <Avatar url={other?.avatar_url} name={other?.name} size={48} />
+                <Avatar url={other?.avatar_url} name={other?.name} size={42} />
                 {online && <View style={[styles.onlineDot, { borderColor: colors.card, backgroundColor: colors.success }]} accessibilityLabel={t('messages.online')} />}
               </View>
 
@@ -630,11 +630,7 @@ export default function MessagesScreen() {
                   </Text>
                 )}
                 {unread > 0 && (
-                  <View style={[styles.unreadBadge, { backgroundColor: colors.foreground }]}>
-                    <Text style={[styles.unreadBadgeText, { color: colors.background }]}>
-                      {unread > 99 ? '99+' : unread}
-                    </Text>
-                  </View>
+                  <View style={[styles.unreadBadge, { backgroundColor: colors.foreground }]} />
                 )}
                 <PressableOpacity
                   onPress={(e) => {
@@ -741,7 +737,7 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
-  // ── Header (Helsinki Monochrome: eyebrow + title + action circles) ──
+  // ── Header (Helsinki Monochrome: eyebrow + H1 title + action circles) ──
   header: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -751,10 +747,10 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flex: 1, gap: 2 },
   locationEyebrow: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    letterSpacing: 1.2,
+    letterSpacing: 0.9,
     textTransform: 'uppercase',
     lineHeight: 14,
   },
@@ -771,9 +767,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -790,11 +786,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 16,
-    height: 46,
+    height: 42,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13.5,
     lineHeight: 20,
     fontFamily: fonts.body,
     paddingVertical: 0,
@@ -828,13 +824,13 @@ const styles = StyleSheet.create({
   // ── List ──
   list: { paddingTop: 8, paddingHorizontal: 16 },
 
-  // ── Conversation row (card-based: SURFACE bg, borderRadius 18, 1px LINE border) ──
+  // ── Conversation row (card-based: SURFACE bg, borderRadius 16-18, 1px LINE border) ──
   convRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 14,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     marginBottom: 8,
   },
@@ -842,7 +838,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,
-    borderRadius: 18,
+    borderRadius: 16,
     marginBottom: 8,
     marginLeft: 4,
   },
@@ -851,21 +847,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 2,
   },
-  convContent: { flex: 1, gap: 4 },
+  convContent: { flex: 1, gap: 3 },
   convNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
   convName: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '600',
-    lineHeight: 20,
+    lineHeight: 19,
     fontFamily: fonts.bodySemi,
     flex: 1,
   },
@@ -883,9 +879,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   convPreview: {
-    fontSize: 12.5,
+    fontSize: 11.5,
     flex: 1,
-    lineHeight: 17,
+    lineHeight: 16,
     fontFamily: fonts.body,
   },
   convRight: {
@@ -894,7 +890,7 @@ const styles = StyleSheet.create({
     minWidth: 36,
   },
   convTime: {
-    fontSize: 11,
+    fontSize: 10.5,
     lineHeight: 14,
     fontFamily: fonts.body,
   },
@@ -905,18 +901,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   unreadBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   unreadBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 12,
-    fontFamily: fonts.bodySemi,
+    fontSize: 0,
+    lineHeight: 0,
   },
 
   // ── Empty states ──
@@ -927,38 +918,38 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptyIconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   emptyTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
-    lineHeight: 24,
+    lineHeight: 22,
     fontFamily: fonts.heading,
-    letterSpacing: -0.2,
+    letterSpacing: -0.15,
   },
   emptyHint: {
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 18,
     fontFamily: fonts.body,
   },
   ctaBtn: {
     marginTop: 12,
     borderRadius: 999,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingVertical: 12,
+    paddingHorizontal: 28,
     alignItems: 'center',
-    minHeight: 48,
+    minHeight: 44,
   },
   ctaBtnText: {
-    fontSize: 15,
+    fontSize: 13.5,
     fontWeight: '600',
-    lineHeight: 22,
+    lineHeight: 20,
     fontFamily: fonts.bodySemi,
   },
 
@@ -968,11 +959,11 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionLabel: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10.5,
+    fontWeight: '600',
     lineHeight: 14,
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: 1.2,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.9,
     textTransform: 'uppercase',
     marginBottom: 10,
   },
@@ -981,7 +972,7 @@ const styles = StyleSheet.create({
   },
   eventChatCard: {
     width: 136,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 12,
     gap: 4,
@@ -1028,13 +1019,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
   },
 
-  // ── FAB ──
+  // ── FAB (shadow allowed for FAB) ──
   fab: {
     position: 'absolute',
     right: 20,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 48,
+    height: 48,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#1A1D1F',

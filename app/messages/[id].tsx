@@ -551,7 +551,7 @@ function ConversationScreenInner() {
               isMine
                 ? { backgroundColor: colors.foreground, borderTopLeftRadius: 18, borderTopRightRadius: 18, borderBottomRightRadius: 6, borderBottomLeftRadius: 18 }
                 : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderTopLeftRadius: 18, borderTopRightRadius: 18, borderBottomRightRadius: 18, borderBottomLeftRadius: 6 },
-            ]}>
+            ]} accessibilityRole="text">
               {isDeleted ? (
                 <Text style={[s.msgText, s.deletedText, { color: isMine ? `${colors.background}88` : colors.mutedForeground }]}>
                   {t('conversation.messageDeleted')}
@@ -663,7 +663,7 @@ function ConversationScreenInner() {
           </Text>
           <PressableOpacity
             onPress={() => router.replace('/(tabs)/messages' as any)}
-            style={{ backgroundColor: colors.foreground, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
+            style={{ backgroundColor: colors.foreground, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999 }}
             accessibilityRole="button"
             accessibilityLabel={t('errors.backToMessages') ?? 'Back to messages'}
           >
@@ -907,10 +907,10 @@ function ConversationScreenInner() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  // ── Header — Monochrome 06 ─────────────────────────────────
+  // ── Header — Monochrome 06 (surface bg, 1px bottom border) ──
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 14, borderBottomWidth: 1,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1,
   },
   circleBtn: {
     width: 36, height: 36, borderRadius: 999,
@@ -919,36 +919,36 @@ const s = StyleSheet.create({
   },
   headerName: { fontSize: 14.5, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.bodySemi },
   headerSub: { fontSize: 11, lineHeight: 16, fontFamily: fonts.body },
-  onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 1 },
+  onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
   onlineDot: { width: 6, height: 6, borderRadius: 999 },
-  onlineText: { fontSize: 11, fontFamily: fonts.body },
+  onlineText: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   // ── Messages ────────────────────────────────────────────────
-  msgList: { padding: 16, gap: 4, flexGrow: 1 },
+  msgList: { padding: 16, gap: 3, flexGrow: 1 },
   dayStampRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginVertical: 10,
+    marginVertical: 12,
   },
-  dayStampLine: { flex: 1, height: 1 },
+  dayStampLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dateHeader: {
-    fontSize: 10.5, fontWeight: '500', letterSpacing: 1.2,
-    fontFamily: fonts.bodyMedium,
+    fontSize: 10.5, fontWeight: '500', letterSpacing: 0.9,
+    fontFamily: fonts.bodyMedium, textTransform: 'uppercase',
   },
-  msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
+  msgRow: { flexDirection: 'row', gap: 8, marginVertical: 3 },
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
   bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
-  msgImage: { width: 200, height: 150, borderRadius: 16, marginBottom: 4 },
+  msgImage: { width: 200, height: 150, borderRadius: 14, marginBottom: 4 },
   msgText: { fontSize: 13.5, lineHeight: 19, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
-  msgTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
+  msgTime: { fontSize: 10.5, lineHeight: 14, fontFamily: fonts.body },
   reactionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   reactionsRowMine: { justifyContent: 'flex-end' },
   reactionsRowTheirs: { justifyContent: 'flex-start' },
   reactionBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 2,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16, borderWidth: 1,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, borderWidth: 1,
   },
   reactionEmoji: { fontSize: 14, lineHeight: 20 },
   reactionCount: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
@@ -964,10 +964,10 @@ const s = StyleSheet.create({
   // ── Reaction picker modal ──────────────────────────────────
   modalOverlay: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   reactionPickerContainer: {
-    borderRadius: 18, borderWidth: 1, overflow: 'hidden',
+    borderRadius: 20, borderWidth: 1, overflow: 'hidden',
     elevation: 8,
   },
   reactionPickerRow: {
@@ -983,10 +983,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth,
   },
   deleteText: { fontSize: 14, fontWeight: '500', lineHeight: 20, fontFamily: fonts.bodyMedium },
-  // ── Composer — Monochrome 06 ───────────────────────────────
+  // ── Composer — Monochrome 06 (circle add 40px + pill input 42px + circle send 40px) ──
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
-    paddingHorizontal: 14, paddingTop: 10, borderTopWidth: 1,
+    paddingHorizontal: 14, paddingTop: 10, borderTopWidth: 0,
   },
   composerCircle: {
     width: 40, height: 40, borderRadius: 999,
@@ -1003,24 +1003,24 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  emptyText: { textAlign: 'center', fontSize: 14, lineHeight: 20, marginTop: 40, fontFamily: fonts.body },
-  // ── Quick replies — Monochrome pills ───────────────────────
+  emptyText: { textAlign: 'center', fontSize: 13, lineHeight: 18, marginTop: 40, fontFamily: fonts.body },
+  // ── Quick replies — Monochrome pills (borderRadius 999, surface bg, 1px border) ──
   quickRepliesRow: {
     flexDirection: 'row', gap: 8,
     paddingHorizontal: 16, paddingVertical: 8,
   },
   quickReplyChip: {
-    paddingHorizontal: 14, paddingVertical: 8,
+    paddingHorizontal: 14, paddingVertical: 7,
     borderRadius: 999, borderWidth: 1,
   },
   quickReplyText: { fontSize: 12.5, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   // ── Link preview ────────────────────────────────────────────
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginTop: 4, padding: 8, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
+    marginTop: 4, padding: 8, borderRadius: 14, borderWidth: 1,
     maxWidth: '100%',
   },
-  linkDomain: { fontSize: 12, fontWeight: '500', lineHeight: 16, fontFamily: fonts.bodySemi },
+  linkDomain: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
   linkAction: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
 })
 
@@ -1032,7 +1032,7 @@ const contextStyles = StyleSheet.create({
   },
   image: { width: 46, height: 46, borderRadius: 12 },
   info: { flex: 1, minWidth: 0, gap: 2 },
-  eyebrow: { fontSize: 10, letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 14 },
+  eyebrow: { fontSize: 10, fontWeight: '500', letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   showLink: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
 })

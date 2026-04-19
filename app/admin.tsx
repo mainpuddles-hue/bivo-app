@@ -465,10 +465,10 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
-    lineHeight: 28,
+    lineHeight: 22,
     textAlign: 'center',
     flex: 1,
   },
@@ -485,7 +485,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
     borderWidth: 1,
   },
   tabText: {
@@ -498,7 +498,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 16,
     marginBottom: 8,
@@ -564,7 +564,7 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     minHeight: 44,
   },
   actionText: {
@@ -578,7 +578,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     marginBottom: 12,
   },
@@ -625,7 +625,7 @@ const s = StyleSheet.create({
   banBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -633,7 +633,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   statCard: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 16,
     alignItems: 'center',

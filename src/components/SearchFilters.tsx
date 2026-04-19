@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '700', lineHeight: 24, fontFamily: fonts.heading },
+  headerTitle: { fontSize: 14, fontWeight: '600', lineHeight: 24, fontFamily: fonts.headingSemi },
   headerBadge: {
     minWidth: 20,
     height: 20,
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   nhChipText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   sortOption: {
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   footerBtn: {
     flex: 1,
     height: 48,
-    borderRadius: 16,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },

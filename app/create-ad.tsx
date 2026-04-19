@@ -258,10 +258,10 @@ export default function CreateAdScreen() {
     <ScreenErrorBoundary screenName="CreateAd">
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header — circle close + centered title */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border, backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border, backgroundColor: colors.background }]}>
         <PressableOpacity
           onPress={() => router.back()}
-          style={[styles.closeButton, { backgroundColor: colors.muted }]}
+          style={[styles.closeButton, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
@@ -509,10 +509,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 14,
-    height: 50,
+    height: 48,
     fontSize: 14,
     justifyContent: 'center',
   },
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   imagePicker: {
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     aspectRatio: 1.25,
@@ -533,8 +533,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   imagePickerText: { fontSize: 13 },
-  imagePreview: { borderRadius: 22, overflow: 'hidden', position: 'relative' },
-  previewImage: { width: '100%', height: 200, borderRadius: 22 },
+  imagePreview: { borderRadius: 20, overflow: 'hidden', position: 'relative' },
+  previewImage: { width: '100%', height: 200, borderRadius: 20 },
   removeImage: {
     position: 'absolute',
     top: 10,
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   ctaChipText: { fontSize: 13 },
   pickerBtn: { justifyContent: 'center' },
   neighborhoodList: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     maxHeight: 200,
     overflow: 'hidden',
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
   durationRow: { flexDirection: 'row', gap: 12 },
   durationCard: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     alignItems: 'center',
     gap: 4,
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   durationLabel: { fontSize: 12 },
   durationPrice: { fontSize: 13, marginTop: 4 },
   priceCard: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 16,
     gap: 4,

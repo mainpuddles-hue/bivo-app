@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '100%',
-    borderRadius: 16,
+    borderRadius: 28,
     overflow: 'hidden',
     gap: 12,
   },
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginHorizontal: 20,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   primaryBtnText: {
     fontSize: 16,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 20,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     alignItems: 'center',
   },
   cancelBtnText: {

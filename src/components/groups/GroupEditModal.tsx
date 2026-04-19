@@ -162,8 +162,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingTop: 16,
     maxHeight: '70%',
   },
@@ -191,11 +191,11 @@ const styles = StyleSheet.create({
   toggleChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
   },
   saveBtn: {
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     alignItems: 'center',
     marginTop: 4,
   },
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
     marginTop: 4,
   },

@@ -135,7 +135,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   sponsoredBadge: {
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 999,
     marginTop: 6,
   },
   ctaText: {

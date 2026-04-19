@@ -382,7 +382,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
     lineHeight: 22,
@@ -422,7 +422,7 @@ const s = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
   },
   proBannerText: {
@@ -441,7 +441,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
   },
   rowTop3: {
@@ -500,7 +500,7 @@ const s = StyleSheet.create({
   yourRankCard: {
     marginTop: 16,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     gap: 8,
   },

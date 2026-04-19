@@ -302,12 +302,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 20,
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    borderRadius: 999,
   },
   detailActionText: {
     fontSize: 14,

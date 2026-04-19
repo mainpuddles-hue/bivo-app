@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 17, marginBottom: 8,
   },
   publishBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999,
     minWidth: 80, alignItems: 'center',
   },
   publishBtnText: {
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     gap: 8, paddingRight: 4,
   },
   categoryChip: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999,
   },
   categoryChipText: {
     fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17,

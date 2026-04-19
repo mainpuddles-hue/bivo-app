@@ -791,7 +791,7 @@ const s = StyleSheet.create({
   },
   headerTitle: { fontSize: 14.5, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
   headerCircle: {
-    width: 36, height: 36, borderRadius: 18,
+    width: 36, height: 36, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },
@@ -800,7 +800,7 @@ const s = StyleSheet.create({
   // Hero — centered (mockup 08)
   hero: { alignItems: 'center', gap: 12, paddingTop: 8 },
   avatarWrap: { position: 'relative' },
-  heroCenterInfo: { alignItems: 'center', gap: 4 },
+  heroCenterInfo: { alignItems: 'center', gap: 4, marginTop: 2 },
   profileName: { fontSize: 24, fontWeight: '600', fontFamily: fonts.heading, lineHeight: 30, letterSpacing: -0.5 },
   heroSubtitle: { fontSize: 12.5, fontFamily: fonts.body, lineHeight: 16, letterSpacing: 0.1, textAlign: 'center' },
 
@@ -812,7 +812,7 @@ const s = StyleSheet.create({
     alignItems: 'center', gap: 2,
   },
   statNum: { fontSize: 19, fontWeight: '600', fontFamily: fonts.heading, letterSpacing: -0.3, lineHeight: 24 },
-  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, letterSpacing: 0.2 },
+  statLabel: { fontSize: 11, fontFamily: fonts.bodyMedium, fontWeight: '500', lineHeight: 14, letterSpacing: 0.3, textTransform: 'uppercase' },
 
   // Menu rows (mockup 08)
   menuSection: { gap: 8 },

@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
     minWidth: 260,
     maxWidth: 420,

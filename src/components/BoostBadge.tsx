@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
   },
   text: {

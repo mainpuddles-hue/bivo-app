@@ -215,7 +215,7 @@ export default function UpgradeBusinessScreen() {
     <ScreenErrorBoundary screenName="UpgradeBusiness">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header — circle back button + centered title */}
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
         <PressableOpacity
           onPress={() => router.back()}
           hitSlop={12}
@@ -226,7 +226,7 @@ export default function UpgradeBusinessScreen() {
           <ArrowLeft size={20} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
-        <View style={{ width: 40 }} />
+        <View style={{ width: 36 }} />
       </View>
 
       <KeyboardAvoidingView
@@ -394,10 +394,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backCircle: {
-    width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
+    width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },
-  headerTitle: { fontSize: 18, lineHeight: 24, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  headerTitle: { fontSize: 14, lineHeight: 22, letterSpacing: -0.3, fontFamily: fonts.headingSemi, flex: 1, textAlign: 'center' },
   content: { padding: 20, gap: 12, paddingBottom: 64 },
 
   // Hero
@@ -411,7 +411,7 @@ const s = StyleSheet.create({
   heroPrice: { fontSize: 22, lineHeight: 28, marginTop: 8, fontFamily: fonts.heading },
 
   // Benefits — SURFACE card
-  benefitsCard: { borderRadius: 16, padding: 16, gap: 14 },
+  benefitsCard: { borderRadius: 20, padding: 16, gap: 14 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitIconCircle: {
     width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
@@ -421,7 +421,7 @@ const s = StyleSheet.create({
   // Form
   label: { fontSize: 13, lineHeight: 18, marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
-    borderRadius: 12, borderWidth: 1,
+    borderRadius: 20, borderWidth: 1,
     paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,
   },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -432,7 +432,7 @@ const s = StyleSheet.create({
 
   // Pricing card — INK bg
   pricingCard: {
-    borderRadius: 16, padding: 20, alignItems: 'center', gap: 4, marginTop: 8,
+    borderRadius: 20, padding: 20, alignItems: 'center', gap: 4, marginTop: 8,
   },
   pricingTierLabel: { fontSize: 12, lineHeight: 16, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: fonts.bodySemi },
   pricingPrice: { fontSize: 28, lineHeight: 34, fontWeight: '800', fontFamily: fonts.heading },
@@ -449,7 +449,7 @@ const s = StyleSheet.create({
   // iOS info
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16, borderWidth: 1, marginTop: 12,
+    padding: 16, borderRadius: 20, borderWidth: 1, marginTop: 12,
   },
   infoIconCircle: {
     width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',

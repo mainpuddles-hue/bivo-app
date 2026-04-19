@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12,
   },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 17, fontFamily: fonts.heading, lineHeight: 22 },
+  headerTitle: { fontSize: 14, fontFamily: fonts.headingSemi, lineHeight: 22 },
   content: { paddingHorizontal: 16, paddingBottom: 32, gap: 24 },
   photoSection: { gap: 12 },
   sectionTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   footer: { paddingHorizontal: 16, paddingVertical: 16 },
   submitBtn: {
-    height: 52, borderRadius: 16,
+    height: 52, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
   },
   submitText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },

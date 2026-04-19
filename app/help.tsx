@@ -82,7 +82,7 @@ function HelpScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Bar header */}
-      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <PressableOpacity
           onPress={() => router.back()}
           accessibilityRole="button"
@@ -196,7 +196,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 4,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },

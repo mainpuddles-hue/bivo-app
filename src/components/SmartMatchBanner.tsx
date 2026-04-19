@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingVertical: 12,
-    borderRadius: 16, borderWidth: 1,
+    borderRadius: 20, borderWidth: 1,
   },
   iconWrap: {
     width: 36, height: 36, borderRadius: 18,

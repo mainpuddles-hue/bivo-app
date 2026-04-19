@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     width: '100%',
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 16,
     gap: 12,

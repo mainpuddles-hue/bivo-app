@@ -43,7 +43,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
         }
         router.push('/community-events' as any)
       }}
-      style={[styles.todayEventCard, { backgroundColor: colors.card }]}
+      style={[styles.todayEventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       accessibilityRole="button"
       accessibilityLabel={[getCityEventName(event, locale), event.location_name].filter(Boolean).join(', ')}
     >
@@ -76,8 +76,7 @@ const styles = StyleSheet.create({
   todayEventCard: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 20,
     overflow: 'hidden', gap: 12, paddingRight: 12,
-    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
+    borderWidth: 1,
   },
   todayEventImage: { width: 56, height: 56 },
   todayEventImageFallback: {

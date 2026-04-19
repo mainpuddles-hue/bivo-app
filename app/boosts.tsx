@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
     lineHeight: 22,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   balanceCard: {
     alignItems: 'center',
     padding: 24,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     gap: 8,
   },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   tierCard: {
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     gap: 12,
   },
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 20,
     borderWidth: 1,
   },
   tierItemText: {
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
   },
   activeBoostInfo: {

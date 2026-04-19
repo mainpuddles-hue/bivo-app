@@ -202,7 +202,7 @@ export const ForumPostCard = memo(ForumPostCardInner)
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16, overflow: 'hidden', flexDirection: 'row',
+    borderRadius: 20, overflow: 'hidden', flexDirection: 'row',
   },
   categoryBar: {
     width: 4,

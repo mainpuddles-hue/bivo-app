@@ -58,7 +58,7 @@ export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loa
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },

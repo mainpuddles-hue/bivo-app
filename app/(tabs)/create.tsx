@@ -1255,9 +1255,9 @@ const mk = StyleSheet.create({
 
   // Category grid
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
-  catCard: { width: '47%' as any, borderRadius: 22 },
+  catCard: { width: '47%' as any, borderRadius: 20 },
   catCardFull: { width: '100%' as any },
-  catCardInner: { padding: 16, gap: 8, alignItems: 'center', minHeight: 130, justifyContent: 'center', borderRadius: 22 },
+  catCardInner: { padding: 16, gap: 8, alignItems: 'center', minHeight: 130, justifyContent: 'center', borderRadius: 20 },
   catIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   lockBadge: { position: 'absolute', top: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   catName: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20, textAlign: 'center' },
@@ -1265,23 +1265,23 @@ const mk = StyleSheet.create({
 
   // Photo uploader
   photoWrap: { paddingHorizontal: 20, paddingTop: 18 },
-  photoDashed: { aspectRatio: 1.25, borderRadius: 22, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  photoDashed: { aspectRatio: 1.25, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 8 },
   photoCircle: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   photoMainText: { fontSize: 13.5, fontWeight: '500', fontFamily: fonts.bodyMedium },
   photoSubText: { fontSize: 11, fontFamily: fonts.body },
   imgRow: { flexDirection: 'row', gap: 8 },
-  imgThumb: { width: 100, height: 100, borderRadius: 16, overflow: 'hidden', position: 'relative', borderWidth: 1 },
+  imgThumb: { width: 100, height: 100, borderRadius: 20, overflow: 'hidden', position: 'relative', borderWidth: 1 },
   imgThumbImg: { width: '100%', height: '100%' },
   imgRemove: { position: 'absolute', top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   imgMainBadge: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingVertical: 2, alignItems: 'center' },
   imgMainBadgeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi },
-  imgAddMore: { width: 100, height: 100, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
   imgAddMoreText: { fontSize: 11, fontFamily: fonts.body },
 
   // Form fields
   fieldWrap: { gap: 4, paddingHorizontal: 20, paddingTop: 14 },
-  input: { height: 50, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 14.5, fontWeight: '600', fontFamily: fonts.heading },
-  textarea: { minHeight: 90, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 13.5, lineHeight: 20, fontFamily: fonts.body, textAlignVertical: 'top' },
+  input: { height: 50, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, fontSize: 14.5, fontWeight: '600', fontFamily: fonts.heading },
+  textarea: { minHeight: 90, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 13.5, lineHeight: 20, fontFamily: fonts.body, textAlignVertical: 'top' },
   charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
 
   // 2-column
@@ -1290,7 +1290,7 @@ const mk = StyleSheet.create({
   twoColInputWrap: { flex: 1 },
 
   // Map picker row
-  mapRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 10, paddingHorizontal: 16, height: 50, borderRadius: 16, borderWidth: 1 },
+  mapRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 10, paddingHorizontal: 16, height: 50, borderRadius: 20, borderWidth: 1 },
   mapRowText: { fontSize: 13.5, fontWeight: '500', fontFamily: fonts.bodyMedium },
   coordsSmall: { fontSize: 11, marginTop: 4, marginHorizontal: 20, fontFamily: fonts.body },
 
@@ -1326,7 +1326,7 @@ const mk = StyleSheet.create({
   publishLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   // Pro banner
-  proBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, marginHorizontal: 20, marginTop: 8, borderRadius: 16 },
+  proBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, marginHorizontal: 20, marginTop: 8, borderRadius: 20 },
   proBannerText: { flex: 1, fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // Success overlay
@@ -1345,11 +1345,11 @@ const mk = StyleSheet.create({
   modalFooter: { paddingHorizontal: 16, paddingVertical: 12 },
   confirmBtn: { borderRadius: 999, paddingVertical: 16, alignItems: 'center', justifyContent: 'center', minHeight: 48 },
   confirmBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
-  coordsDisplay: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16 },
+  coordsDisplay: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20 },
   coordsDisplayText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.body },
   mapFallback: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32 },
   mapFallbackText: { fontSize: 16, fontWeight: '600', textAlign: 'center', fontFamily: fonts.headingSemi },
   mapFallbackHint: { fontSize: 13, textAlign: 'center', fontFamily: fonts.body },
   coordInputRow: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
-  coordInput: { flex: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
+  coordInput: { flex: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
 })

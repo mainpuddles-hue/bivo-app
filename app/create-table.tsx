@@ -149,10 +149,10 @@ function CreateTableScreenInner() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Header — circle close + centered title */}
-      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+      <View style={[s.header, { paddingTop: insets.top + 12, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <PressableOpacity
           onPress={() => router.back()}
-          style={[s.closeButton, { backgroundColor: colors.muted }]}
+          style={[s.closeButton, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
@@ -378,9 +378,9 @@ const s = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 20,
     paddingHorizontal: 14,
-    height: 50,
+    height: 48,
     fontSize: 14,
     lineHeight: 20,
     justifyContent: 'center',
@@ -389,16 +389,16 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 20,
     paddingHorizontal: 14,
-    height: 50,
+    height: 48,
     gap: 8,
   },
   inputInner: {
     flex: 1,
     fontSize: 14,
     lineHeight: 20,
-    height: 50,
+    height: 48,
   },
   chipRow: {
     gap: 10,

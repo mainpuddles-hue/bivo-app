@@ -251,7 +251,7 @@ export default function VerifyOtpScreen() {
   return (
     <ScreenErrorBoundary screenName="VerifyOtp">
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={[styles.container, { backgroundColor: colors.card, paddingTop: insets.top }]}>
+      <View style={[styles.container, { backgroundColor: '#FFFFFF', paddingTop: insets.top }]}>
         {/* Bar header with circle back button */}
         <View style={styles.header}>
           <PressableOpacity
@@ -278,7 +278,7 @@ export default function VerifyOtpScreen() {
             <Text style={[styles.subtitleEmail, { color: colors.foreground }]}>{maskedEmail}</Text>.
           </Text>
 
-          {/* 6 digit boxes */}
+          {/* 6 digit boxes — surface bg, 1px border, borderRadius 14, 54x72 */}
           <View style={styles.digitRow}>
             {digits.map((digit, index) => {
               const isFilled = digit !== ''
@@ -290,8 +290,8 @@ export default function VerifyOtpScreen() {
                     styles.digitBox,
                     {
                       borderColor: isFilled || isActive ? colors.foreground : colors.border,
-                      borderWidth: isFilled || isActive ? 1.5 : 1,
-                      backgroundColor: isFilled ? colors.card : colors.background,
+                      borderWidth: 1,
+                      backgroundColor: colors.card,
                     },
                   ]}
                 >
@@ -326,6 +326,7 @@ export default function VerifyOtpScreen() {
           ) : null}
 
           {/* Resend countdown text */}
+          {/* "Lahetä uudelleen" — underlined muted text with timer */}
           <PressableOpacity
             onPress={handleResend}
             disabled={resendCooldown > 0 || resending}
@@ -336,12 +337,12 @@ export default function VerifyOtpScreen() {
             {resending ? (
               <ActivityIndicator size={12} color={colors.mutedForeground} />
             ) : (
-              <Text style={[styles.resendText, { color: colors.mutedForeground }]}>
+              <Text style={[styles.resendText, { color: colors.mutedForeground, textDecorationLine: 'underline' }]}>
                 {resendCooldown > 0
                   ? `${t('auth.otpResend')} `
                   : t('auth.otpResend')}
                 {resendCooldown > 0 ? (
-                  <Text style={{ color: colors.tertiaryForeground }}>
+                  <Text style={{ color: colors.tertiaryForeground, textDecorationLine: 'none' }}>
                     ({formatCooldown(resendCooldown)})
                   </Text>
                 ) : null}
@@ -349,8 +350,8 @@ export default function VerifyOtpScreen() {
             )}
           </PressableOpacity>
 
-          {/* Info box */}
-          <View style={[styles.infoBox, { backgroundColor: colors.background }]}>
+          {/* Info box — warm-tint bg */}
+          <View style={[styles.infoBox, { backgroundColor: colors.warmTint }]}>
             <Info size={15} color={colors.foreground} strokeWidth={1.8} style={styles.infoIcon} />
             <Text style={[styles.infoText, { color: colors.foreground }]}>
               {t('auth.otpNotReceived')}
@@ -390,15 +391,15 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   headline: {
-    fontSize: 36,
-    lineHeight: 38,
-    letterSpacing: -1.2,
+    fontSize: 24,
+    lineHeight: 30,
+    letterSpacing: -0.5,
     fontFamily: fonts.heading,
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 13.5,
-    lineHeight: 20,
+    lineHeight: 21,
     fontFamily: fonts.body,
     marginBottom: 36,
   },
@@ -407,20 +408,21 @@ const styles = StyleSheet.create({
   },
   digitRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     marginBottom: 20,
+    justifyContent: 'center',
   },
   digitBox: {
-    flex: 1,
-    aspectRatio: 1 / 1.1,
-    borderRadius: 12,
+    width: 54,
+    height: 72,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   digitInput: {
-    fontSize: 22,
-    fontWeight: '500',
+    fontSize: 36,
+    fontWeight: '600',
     fontFamily: fonts.heading,
     textAlign: 'center',
     width: '100%',
@@ -441,11 +443,11 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   resendText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: fonts.body,
   },
   infoBox: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
     flexDirection: 'row',
     gap: 10,
