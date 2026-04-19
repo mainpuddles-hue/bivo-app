@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { CheckCircle, Calendar, Home } from 'lucide-react-native'
+import { Check, Calendar, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -125,12 +125,12 @@ function PaymentSuccessScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
+        <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
       ) : (
         <View style={styles.content}>
           {/* Success icon */}
-          <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
-            <CheckCircle size={56} color={colors.success} />
+          <View style={[styles.iconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Check size={40} color={colors.success} strokeWidth={2.5} />
           </View>
 
           <Text style={[styles.title, { color: colors.foreground }]}>{t('payment.success')}</Text>
@@ -143,7 +143,7 @@ function PaymentSuccessScreenInner() {
             </Text>
           )}
           {booking && (
-            <View style={[styles.summaryCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[styles.summaryTitle, { color: colors.foreground }]}>{booking.post_title}</Text>
 
               {booking.start_date === booking.end_date ? (
@@ -173,7 +173,7 @@ function PaymentSuccessScreenInner() {
 
               <View style={[styles.summaryRow, styles.totalRow, { borderTopColor: colors.border }]}>
                 <Text style={[styles.totalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text>
-                <Text style={[styles.totalValue, { color: colors.primary }]}>
+                <Text style={[styles.totalValue, { color: colors.foreground }]}>
                   {formatPrice(booking.total_amount, locale)}
                 </Text>
               </View>
@@ -188,13 +188,13 @@ function PaymentSuccessScreenInner() {
               accessibilityLabel={t('payment.viewBooking')}
               accessibilityRole="button"
             >
-              <Calendar size={18} color={colors.background} />
-              <Text style={[styles.primaryBtnText, { color: colors.background }]}>{t('payment.viewBooking')}</Text>
+              <Calendar size={18} color={colors.primaryForeground} />
+              <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('payment.viewBooking')}</Text>
             </Pressable>
 
             <Pressable
               onPress={() => router.replace('/(tabs)')}
-              style={[styles.secondaryBtn, { borderColor: colors.border }]}
+              style={[styles.secondaryBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityLabel={t('payment.backToHome')}
               accessibilityRole="button"
             >
@@ -217,9 +217,10 @@ const styles = StyleSheet.create({
     paddingTop: 64,
   },
   iconCircle: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     width: '100%',
     borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     padding: 16,
     gap: 12,
     marginBottom: 32,
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 24,
+    borderRadius: 999,
   },
   primaryBtnText: {
     fontSize: 16,
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
   },
   secondaryBtnText: {

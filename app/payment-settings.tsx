@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Platform, Linking } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
@@ -13,10 +13,10 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { usePaymentMethods } from '@/hooks/usePaymentMethods'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 
 function PaymentSettingsScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -90,33 +90,45 @@ function PaymentSettingsScreenInner() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
+      {/* Bar header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={18} color={colors.foreground} />
+        </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('payment.settings')}</Text>
-        <View style={{ flex: 1 }} />
+        <View style={s.headerSpacer} />
       </View>
 
       {loading ? (
         <View style={s.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.foreground} />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
           {/* Payment Methods */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.methods')}</Text>
-          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+          <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {/* Card */}
-            <PressableOpacity style={s.row} accessibilityLabel={t('payment.card')} accessibilityRole="button">
-              <CreditCard size={20} color={colors.primary} />
+            <PressableOpacity style={[s.row, { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth }]} accessibilityLabel={t('payment.card')} accessibilityRole="button">
+              <View style={[s.iconCircle, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+                <CreditCard size={16} color={colors.foreground} />
+              </View>
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.card')}</Text>
-              <Text style={[s.statusText, { color: colors.primary }]}>{t('payment.available')}</Text>
+              <Text style={[s.statusText, { color: colors.foreground }]}>{t('payment.available')}</Text>
               <ChevronRight size={16} color={colors.mutedForeground} />
             </PressableOpacity>
 
             {/* Apple Pay */}
-            <View style={s.row}>
-              <Smartphone size={20} color={availableMethods.applePay ? colors.primary : colors.mutedForeground} />
+            <View style={[s.row, { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth }]}>
+              <View style={[s.iconCircle, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+                <Smartphone size={16} color={availableMethods.applePay ? colors.foreground : colors.mutedForeground} />
+              </View>
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.applePay')}</Text>
               {availableMethods.applePay ? (
                 <View style={s.statusBadge}>
@@ -133,7 +145,9 @@ function PaymentSettingsScreenInner() {
 
             {/* Google Pay */}
             <View style={s.row}>
-              <Smartphone size={20} color={availableMethods.googlePay ? colors.primary : colors.mutedForeground} />
+              <View style={[s.iconCircle, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+                <Smartphone size={16} color={availableMethods.googlePay ? colors.foreground : colors.mutedForeground} />
+              </View>
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.googlePay')}</Text>
               {availableMethods.googlePay ? (
                 <View style={s.statusBadge}>
@@ -153,14 +167,16 @@ function PaymentSettingsScreenInner() {
           {hasProviderPosts && (
             <>
               <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.providerSettings')}</Text>
-              <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+              <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={s.providerRow}>
                   <View style={s.providerHeader}>
-                    <Landmark size={20} color={isConnectOnboarded ? colors.success : colors.pro} />
+                    <View style={[s.iconCircle, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+                      <Landmark size={16} color={isConnectOnboarded ? colors.success : colors.foreground} />
+                    </View>
                     <Text style={[s.providerTitle, { color: colors.foreground }]}>{t('payment.connectBank')}</Text>
                     {isConnectOnboarded ? (
                       <View style={s.statusDotRow}>
-                        <View style={[s.statusDot, { backgroundColor: colors.primary }]} />
+                        <View style={[s.statusDot, { backgroundColor: colors.success }]} />
                         <Text style={[s.connectedBadgeText, { color: colors.mutedForeground }]}>{t('payment.connected')}</Text>
                       </View>
                     ) : (
@@ -184,11 +200,11 @@ function PaymentSettingsScreenInner() {
                       accessibilityRole="button"
                     >
                       {connecting ? (
-                        <ActivityIndicator size="small" color={colors.background} />
+                        <ActivityIndicator size="small" color={colors.primaryForeground} />
                       ) : (
                         <>
-                          <Text style={[s.connectBtnText, { color: colors.background }]}>{t('payment.startConnect')}</Text>
-                          <ChevronRight size={16} color={colors.background} />
+                          <Text style={[s.connectBtnText, { color: colors.primaryForeground }]}>{t('payment.startConnect')}</Text>
+                          <ChevronRight size={16} color={colors.primaryForeground} />
                         </>
                       )}
                     </PressableOpacity>
@@ -200,7 +216,7 @@ function PaymentSettingsScreenInner() {
 
           {/* Commission Info */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.commissionTitle')}</Text>
-          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+          <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={s.infoRow}>
               <Info size={18} color={colors.mutedForeground} />
               <Text style={[s.infoText, { color: colors.foreground }]}>
@@ -211,9 +227,11 @@ function PaymentSettingsScreenInner() {
 
           {/* Transaction History */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.history')}</Text>
-          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+          <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <PressableOpacity onPress={() => router.push('/payment-history' as any)} style={s.row} accessibilityLabel={t('payment.history')} accessibilityRole="button">
-              <History size={18} color={colors.mutedForeground} />
+              <View style={[s.iconCircle, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+                <History size={16} color={colors.mutedForeground} />
+              </View>
               <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.history')}</Text>
               <ChevronRight size={16} color={colors.mutedForeground} />
             </PressableOpacity>
@@ -221,7 +239,7 @@ function PaymentSettingsScreenInner() {
 
           {/* Security Note */}
           <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.security')}</Text>
-          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+          <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={s.infoRow}>
               <ShieldCheck size={18} color={colors.mutedForeground} />
               <Text style={[s.infoText, { color: colors.mutedForeground }]}>
@@ -238,32 +256,68 @@ function PaymentSettingsScreenInner() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.3,
+    lineHeight: 22,
+  },
+  headerSpacer: { width: 36 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   section: {
-    fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.5,
-    textTransform: 'uppercase', marginTop: 12, paddingHorizontal: 4, lineHeight: 17,
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 12,
+    paddingHorizontal: 4,
+    lineHeight: 15,
   },
-  card: { borderRadius: 16, overflow: 'hidden' },
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   rowText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, flex: 1 },
-  statusText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
+  statusText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  statusBadgeText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 17 },
+  statusBadgeText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
   providerRow: { padding: 16, gap: 12 },
   providerHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  providerTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 23, flex: 1 },
+  providerTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 23, flex: 1 },
   providerDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   statusDotRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
-  connectedBadgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 17 },
+  connectedBadgeText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 17 },
   connectBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 16,
+    gap: 8, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 999,
     marginTop: 8,
   },
   connectBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },

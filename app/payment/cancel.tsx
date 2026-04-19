@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { XCircle, RotateCcw, ArrowLeft } from 'lucide-react-native'
+import { X, RotateCcw, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -17,8 +17,8 @@ function PaymentCancelScreenInner() {
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       <View style={styles.content}>
         {/* Cancel icon */}
-        <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
-          <XCircle size={56} color={colors.destructive} />
+        <View style={[styles.iconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <X size={40} color={colors.destructive} strokeWidth={2.5} />
         </View>
 
         <Text style={[styles.title, { color: colors.foreground }]}>{t('payment.cancelled')}</Text>
@@ -32,17 +32,17 @@ function PaymentCancelScreenInner() {
             accessibilityLabel={t('payment.tryAgain')}
             accessibilityRole="button"
           >
-            <RotateCcw size={18} color={colors.background} />
-            <Text style={[styles.primaryBtnText, { color: colors.background }]}>{t('payment.tryAgain')}</Text>
+            <RotateCcw size={18} color={colors.primaryForeground} />
+            <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('payment.tryAgain')}</Text>
           </Pressable>
 
           <Pressable
             onPress={() => router.replace('/(tabs)')}
-            style={[styles.secondaryBtn, { borderColor: colors.border }]}
+            style={[styles.secondaryBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             accessibilityLabel={t('payment.backToHome')}
             accessibilityRole="button"
           >
-            <ArrowLeft size={24} color={colors.foreground} />
+            <Home size={18} color={colors.foreground} />
             <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>{t('payment.backToHome')}</Text>
           </Pressable>
         </View>
@@ -60,9 +60,10 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   iconCircle: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 24,
+    borderRadius: 999,
   },
   primaryBtnText: {
     fontSize: 16,
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
   },
   secondaryBtnText: {

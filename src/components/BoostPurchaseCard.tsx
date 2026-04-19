@@ -14,7 +14,7 @@ interface BoostPurchaseCardProps {
 }
 
 export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loading, onPurchase }: BoostPurchaseCardProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t } = useI18n()
 
   return (
@@ -23,7 +23,7 @@ export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loa
       disabled={loading}
       style={({ pressed }) => [
         styles.card,
-        { backgroundColor: colors.card, borderColor: isBestValue ? colors.accent : colors.border },
+        { backgroundColor: colors.card, borderColor: isBestValue ? colors.foreground : colors.border },
         isBestValue && { borderWidth: 2 },
         pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 },
         loading && { opacity: 0.6 },
@@ -32,22 +32,22 @@ export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loa
       accessibilityLabel={`${t(label)} - ${priceLabel}`}
     >
       {isBestValue && (
-        <View style={[styles.bestValueBadge, { backgroundColor: colors.accent }]}>
+        <View style={[styles.bestValueBadge, { backgroundColor: colors.foreground }]}>
           <Text style={[styles.bestValueText, { color: colors.primaryForeground }]}>{t('boost.bestValue')}</Text>
         </View>
       )}
       <View style={styles.row}>
-        <View style={[styles.iconCircle, { backgroundColor: `${colors.accent}15` }]}>
-          <Zap size={20} color={colors.accent} fill={colors.accent} />
+        <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
+          <Zap size={20} color={colors.foreground} />
         </View>
         <View style={styles.info}>
           <Text style={[styles.creditsText, { color: colors.foreground }]}>{t(label)}</Text>
           <Text style={[styles.priceText, { color: colors.mutedForeground }]}>{priceLabel}</Text>
         </View>
         {loading ? (
-          <ActivityIndicator size="small" color={colors.accent} />
+          <ActivityIndicator size="small" color={colors.foreground} />
         ) : (
-          <View style={[styles.buyBtn, { backgroundColor: colors.accent }]}>
+          <View style={[styles.buyBtn, { backgroundColor: colors.foreground }]}>
             <Text style={[styles.buyText, { color: colors.primaryForeground }]}>{t('boost.buyBoosts')}</Text>
           </View>
         )}
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   buyBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
   },
   buyText: {
     fontSize: 12,

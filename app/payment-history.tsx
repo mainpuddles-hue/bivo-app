@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, FlatList, Pressable, RefreshControl, StyleSheet, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Receipt, ChevronRight, CreditCard } from 'lucide-react-native'
@@ -11,7 +11,7 @@ import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 import { formatPrice } from '@/lib/format'
 
 type PaymentStatus = 'paid' | 'refunded' | 'pending' | 'failed'
@@ -48,8 +48,20 @@ function getStatusColor(status: PaymentStatus, colors: ReturnType<typeof useThem
   }
 }
 
+/** Group payments by month string */
+function groupByMonth(payments: PaymentRecord[], localeStr: string): { month: string; items: PaymentRecord[] }[] {
+  const groups: Map<string, PaymentRecord[]> = new Map()
+  for (const p of payments) {
+    const d = new Date(p.created_at)
+    const key = d.toLocaleDateString(localeStr, { month: 'long', year: 'numeric' })
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(p)
+  }
+  return Array.from(groups.entries()).map(([month, items]) => ({ month, items }))
+}
+
 function PaymentHistoryScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -110,8 +122,9 @@ function PaymentHistoryScreenInner() {
   useFocusEffect(useCallback(() => { fetchPayments() }, [fetchPayments]))
 
   const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
+  const grouped = groupByMonth(payments, localeStr)
 
-  const renderPayment = ({ item }: { item: PaymentRecord }) => {
+  const renderPayment = (item: PaymentRecord) => {
     const statusColor = getStatusColor(item.status, colors)
     const isExpanded = expandedId === item.id
     const dateStr = new Date(item.created_at).toLocaleDateString(localeStr, {
@@ -126,11 +139,14 @@ function PaymentHistoryScreenInner() {
 
     return (
       <PressableOpacity
+        key={item.id}
         onPress={() => setExpandedId(prev => prev === item.id ? null : item.id)}
-        style={[styles.paymentRow, { backgroundColor: 'transparent', borderColor: colors.border }]}
+        style={[styles.paymentRow, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
         <View style={styles.rowTop}>
-          <Receipt size={18} color={colors.mutedForeground} />
+          <View style={[styles.iconCircle, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+            <Receipt size={16} color={colors.mutedForeground} />
+          </View>
           <View style={styles.rowInfo}>
             <Text style={[styles.rowDesc, { color: colors.foreground }]} numberOfLines={1}>
               {item.post?.title ?? item.description}
@@ -175,11 +191,11 @@ function PaymentHistoryScreenInner() {
             {item.post_id && (
               <PressableOpacity
                 onPress={() => router.push(`/post/${item.post_id}` as any)}
-                style={[styles.viewPostBtn, { borderColor: colors.border }]}
+                style={[styles.viewPostBtn, { backgroundColor: colors.foreground }]}
                 accessibilityLabel={t('post.viewPost') ?? 'View post'}
                 accessibilityRole="button"
               >
-                <Text style={[styles.viewPostBtnText, { color: colors.primary }]}>{t('post.viewPost') ?? 'View post'}</Text>
+                <Text style={[styles.viewPostBtnText, { color: colors.primaryForeground }]}>{t('post.viewPost') ?? 'View post'}</Text>
               </PressableOpacity>
             )}
           </View>
@@ -190,34 +206,50 @@ function PaymentHistoryScreenInner() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
+      {/* Bar header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[styles.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={18} color={colors.foreground} />
+        </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('payment.history')}</Text>
-        <View style={{ flex: 1 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
+        <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
+      ) : payments.length === 0 ? (
+        <View style={styles.empty}>
+          <CreditCard size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+          <Text style={[styles.emptyTitle, { color: colors.mutedForeground }]}>{t('payment.noPayments')}</Text>
+          <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('payment.noPaymentsHint')}</Text>
+        </View>
       ) : (
         <FlatList
-          data={payments}
-          keyExtractor={item => item.id}
-          renderItem={renderPayment}
-          contentContainerStyle={styles.listContent}
+          data={grouped}
+          keyExtractor={g => g.month}
+          renderItem={({ item: group }) => (
+            <View>
+              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                {group.month.toUpperCase()}
+              </Text>
+              <View style={styles.sectionCards}>
+                {group.items.map(p => renderPayment(p))}
+              </View>
+            </View>
+          )}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 40 }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => { setRefreshing(true); fetchPayments() }}
-              tintColor={colors.primary}
+              tintColor={colors.foreground}
             />
-          }
-          ListEmptyComponent={
-            <View style={styles.empty}>
-              <CreditCard size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-              <Text style={[styles.emptyTitle, { color: colors.mutedForeground }]}>{t('payment.noPayments')}</Text>
-              <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('payment.noPaymentsHint')}</Text>
-            </View>
           }
           showsVerticalScrollIndicator={false}
         />
@@ -229,22 +261,57 @@ function PaymentHistoryScreenInner() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
-  listContent: { padding: 16, gap: 8, paddingBottom: 40 },
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.3,
+    lineHeight: 22,
+  },
+  headerSpacer: { width: 36 },
+  listContent: { padding: 16, gap: 16, paddingBottom: 40 },
+  sectionLabel: {
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  sectionCards: { gap: 8 },
   paymentRow: {
     borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     overflow: 'hidden',
-    // transparent bg — hairline only
   },
   rowTop: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     gap: 12,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statusDotRow: {
     flexDirection: 'row',
@@ -306,9 +373,8 @@ const styles = StyleSheet.create({
   },
   viewPostBtn: {
     alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
+    paddingVertical: 10,
+    borderRadius: 999,
     marginTop: 8,
   },
   viewPostBtnText: {

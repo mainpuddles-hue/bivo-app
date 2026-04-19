@@ -60,14 +60,20 @@ function BoostsScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-            <ArrowLeft size={24} color={colors.foreground} />
+          <PressableOpacity
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            style={[styles.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('boost.title')}</Text>
-          <View style={{ width: 24 }} />
+          <View style={styles.headerSpacer} />
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.foreground} />
         </View>
       </View>
     )
@@ -75,20 +81,26 @@ function BoostsScreenInner() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
-      {/* Header */}
+      {/* Bar header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <ArrowLeft size={24} color={colors.foreground} />
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[styles.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('boost.title')}</Text>
-        <View style={{ width: 24 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
         {/* Balance display */}
-        <View style={[styles.balanceCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.balanceCircle, { backgroundColor: colors.muted }]}>
-            <Zap size={32} color={colors.accent} fill={colors.accent} />
+            <Zap size={32} color={colors.foreground} />
           </View>
           <Text style={[styles.balanceNumber, { color: colors.foreground }]}>{balance}</Text>
           <Text style={[styles.balanceLabel, { color: colors.mutedForeground }]}>
@@ -97,7 +109,7 @@ function BoostsScreenInner() {
         </View>
 
         {/* Tier info */}
-        <View style={[styles.tierCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View style={[styles.tierCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.tierRow}>
             <View style={styles.tierInfo}>
               <Text style={[styles.tierLabel, { color: colors.foreground }]}>{tierLabels[tier]}</Text>
@@ -161,8 +173,8 @@ function BoostsScreenInner() {
           <View style={styles.activeSection}>
             <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{t('boost.activeBoosts')}</Text>
             {activeBoosts.map(boost => (
-              <PressableOpacity key={boost.id} onPress={() => router.push(`/post/${boost.post_id}` as any)} style={[styles.activeBoostCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-                <TrendingUp size={16} color={colors.accent} />
+              <PressableOpacity key={boost.id} onPress={() => router.push(`/post/${boost.post_id}` as any)} style={[styles.activeBoostCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <TrendingUp size={16} color={colors.foreground} />
                 <View style={styles.activeBoostInfo}>
                   <Text style={[styles.activeBoostTitle, { color: colors.foreground }]} numberOfLines={1}>
                     {boost.post_id.slice(0, 8)}...
@@ -199,18 +211,27 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-    fontFamily: fonts.headingSemi,
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.3,
+    lineHeight: 22,
+  },
+  headerSpacer: { width: 36 },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
@@ -225,6 +246,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     borderRadius: 16,
+    borderWidth: 1,
     gap: 8,
   },
   balanceCircle: {
@@ -247,6 +269,7 @@ const styles = StyleSheet.create({
   tierCard: {
     padding: 16,
     borderRadius: 16,
+    borderWidth: 1,
     gap: 12,
   },
   tierRow: {
@@ -271,7 +294,7 @@ const styles = StyleSheet.create({
   tierBadge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 999,
   },
   tierBadgeText: {
     fontSize: 11,
@@ -293,12 +316,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     lineHeight: 16,
     fontFamily: fonts.bodySemi,
     marginTop: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   purchaseList: {
     gap: 12,

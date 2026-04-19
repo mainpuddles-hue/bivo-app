@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
 
@@ -88,56 +88,69 @@ function BlockedUsersScreenInner() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
+      {/* Bar header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={18} color={colors.foreground} />
+        </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('blocked.title')}</Text>
-        <View style={{ flex: 1 }} />
+        <View style={s.headerSpacer} />
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
+        <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
       ) : blockedUsers.length === 0 ? (
         <EmptyState
-          icon={<ShieldOff size={36} color={colors.primary} />}
+          icon={<ShieldOff size={36} color={colors.mutedForeground} />}
           title={t('blocked.noBlocked')}
         />
       ) : (
         <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
-          <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-            {blockedUsers.map((item) => {
-              const user = item.blocked_user
-              return (
-                <View key={item.blocked_id} style={[s.row, { borderBottomColor: colors.border }]}>
-                  <Avatar url={user?.avatar_url} name={user?.name} size={44} />
+          {blockedUsers.map((item, index) => {
+            const user = item.blocked_user
+            return (
+              <View
+                key={item.blocked_id}
+                style={[
+                  s.userCard,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
+                <Avatar url={user?.avatar_url} name={user?.name} size={44} />
 
-                  <View style={s.userInfo}>
-                    <Text style={[s.userName, { color: colors.foreground }]} numberOfLines={1}>
-                      {user?.name ?? t('common.user')}
+                <View style={s.userInfo}>
+                  <Text style={[s.userName, { color: colors.foreground }]} numberOfLines={1}>
+                    {user?.name ?? t('common.user')}
+                  </Text>
+                  {user?.naapurusto && (
+                    <Text style={[s.userNh, { color: colors.mutedForeground }]} numberOfLines={1}>
+                      {user.naapurusto}
                     </Text>
-                    {user?.naapurusto && (
-                      <Text style={[s.userNh, { color: colors.mutedForeground }]} numberOfLines={1}>
-                        {user.naapurusto}
-                      </Text>
-                    )}
-                  </View>
-
-                  <PressableOpacity
-                    onPress={() => handleUnblock(item.blocked_id, user?.name ?? null)}
-                    disabled={unblocking === item.blocked_id}
-                    style={[s.unblockBtn, { backgroundColor: colors.destructive, opacity: unblocking === item.blocked_id ? 0.5 : 1 }]}
-                    accessibilityLabel={t('blocked.removeBlock')}
-                    accessibilityRole="button"
-                  >
-                    {unblocking === item.blocked_id ? (
-                      <ActivityIndicator size="small" color={colors.primaryForeground} />
-                    ) : (
-                      <Text style={[s.unblockText, { color: colors.primaryForeground }]}>{t('blocked.removeBlock')}</Text>
-                    )}
-                  </PressableOpacity>
+                  )}
                 </View>
-              )
-            })}
-          </View>
+
+                <PressableOpacity
+                  onPress={() => handleUnblock(item.blocked_id, user?.name ?? null)}
+                  disabled={unblocking === item.blocked_id}
+                  style={[s.unblockBtn, { backgroundColor: colors.warmTint, opacity: unblocking === item.blocked_id ? 0.5 : 1 }]}
+                  accessibilityLabel={t('blocked.removeBlock')}
+                  accessibilityRole="button"
+                >
+                  {unblocking === item.blocked_id ? (
+                    <ActivityIndicator size="small" color="#A03030" />
+                  ) : (
+                    <Text style={s.unblockText}>{t('blocked.removeBlock')}</Text>
+                  )}
+                </PressableOpacity>
+              </View>
+            )
+          })}
         </ScrollView>
       )}
     </View>
@@ -147,24 +160,54 @@ function BlockedUsersScreenInner() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.3,
+    lineHeight: 22,
+  },
+  headerSpacer: { width: 36 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
-  card: { borderRadius: 16, overflow: 'hidden' },
-  row: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderBottomWidth: StyleSheet.hairlineWidth,
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
   },
   userInfo: { flex: 1, gap: 2 },
   userName: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   userNh: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   unblockBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16,
-    minWidth: 100, alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    minWidth: 100,
+    alignItems: 'center',
   },
-  unblockText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
+  unblockText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: fonts.bodySemi,
+    color: '#A03030',
+  },
 })
 
 export default function BlockedUsersScreen() {
