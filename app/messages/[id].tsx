@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronLeft, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink, Phone, Plus } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
@@ -523,9 +523,13 @@ function ConversationScreenInner() {
     return (
       <View>
         {showDateHeader && (
-          <Text style={[s.dateHeader, { color: colors.mutedForeground }]}>
-            {formatDateHeader(item.created_at, locale)}
-          </Text>
+          <View style={s.dayStampRow}>
+            <View style={[s.dayStampLine, { backgroundColor: colors.border }]} />
+            <Text style={[s.dateHeader, { color: colors.mutedForeground }]}>
+              {formatDateHeader(item.created_at, locale).toUpperCase()}
+            </Text>
+            <View style={[s.dayStampLine, { backgroundColor: colors.border }]} />
+          </View>
         )}
         <View style={[s.msgRow, isMine ? s.msgRowMine : s.msgRowTheirs]}>
           {!isMine && !sameAuthorAsPrev ? (
@@ -545,8 +549,8 @@ function ConversationScreenInner() {
             <View style={[
               s.bubble,
               isMine
-                ? { backgroundColor: colors.foreground, borderRadius: 18, borderBottomRightRadius: 6 }
-                : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderRadius: 18, borderBottomLeftRadius: 6 },
+                ? { backgroundColor: colors.foreground, borderTopLeftRadius: 18, borderTopRightRadius: 18, borderBottomRightRadius: 6, borderBottomLeftRadius: 18 }
+                : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderTopLeftRadius: 18, borderTopRightRadius: 18, borderBottomRightRadius: 18, borderBottomLeftRadius: 6 },
             ]}>
               {isDeleted ? (
                 <Text style={[s.msgText, s.deletedText, { color: isMine ? `${colors.background}88` : colors.mutedForeground }]}>
@@ -638,15 +642,15 @@ function ConversationScreenInner() {
   if (notFound && !loading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
+        <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <PressableOpacity
             onPress={() => router.back()}
             hitSlop={12}
-            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+            style={[s.circleBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel={t('common.back') ?? 'Go back'}
           >
-            <ArrowLeft size={24} color={colors.foreground} />
+            <ChevronLeft size={14} color={colors.foreground} strokeWidth={2.5} />
           </PressableOpacity>
           <Text style={[s.headerName, { color: colors.foreground }]}>{t('messages.title')}</Text>
         </View>
@@ -677,38 +681,43 @@ function ConversationScreenInner() {
       style={[s.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: `${colors.card}F8`, borderBottomColor: colors.border }]}>
+      {/* Header — Monochrome 06 */}
+      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <PressableOpacity
           onPress={() => router.back()}
           hitSlop={12}
-          style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+          style={[s.circleBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
           accessibilityRole="button"
           accessibilityLabel={t('common.back') ?? 'Go back'}
           accessibilityHint={t('messages.backToConversations') ?? 'Returns to conversations list'}
         >
-          <ArrowLeft size={24} color={colors.foreground} />
+          <ChevronLeft size={14} color={colors.foreground} strokeWidth={2.5} />
         </PressableOpacity>
         <PressableOpacity onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} hitSlop={8} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
-          <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={36} />
+          <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={40} />
         </PressableOpacity>
         <PressableOpacity onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
           <Text style={[s.headerName, { color: colors.foreground }]} numberOfLines={1}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
           {otherTyping ? (
             <Text style={[s.headerSub, { color: colors.primary }]}>{t('messages.typing')}</Text>
-          ) : otherUser?.naapurusto ? (
-            <Text style={[s.headerSub, { color: colors.mutedForeground }]}>{otherUser.naapurusto}</Text>
-          ) : null}
+          ) : (
+            <View style={s.onlineRow}>
+              <View style={[s.onlineDot, { backgroundColor: colors.foreground }]} />
+              <Text style={[s.onlineText, { color: colors.mutedForeground }]}>
+                {t('messages.onlineNow') ?? 'Paikalla nyt'}
+              </Text>
+            </View>
+          )}
         </PressableOpacity>
         {otherUser && (
           <PressableOpacity
             onPress={() => setShowReportModal(true)}
             hitSlop={8}
-            style={{ padding: 8 }}
+            style={[s.circleBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel={t('report.title')}
           >
-            <Flag size={18} color={colors.mutedForeground} strokeWidth={1.8} />
+            <Phone size={14} color={colors.foreground} strokeWidth={2} />
           </PressableOpacity>
         )}
       </View>
@@ -734,19 +743,27 @@ function ConversationScreenInner() {
         ListHeaderComponent={
           <View>
             {linkedPost && (
-              <PressableOpacity
-                onPress={() => router.push(`/post/${linkedPost.id}`)}
-                style={[contextStyles.card, { backgroundColor: isDark ? colors.card : colors.muted }]}
-              >
+              <View style={[contextStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 {linkedPost.image_url && (
                   <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" />
                 )}
                 <View style={contextStyles.info}>
-                  <Text style={[contextStyles.label, { color: colors.mutedForeground }]}>{t('messages.aboutPost')}</Text>
+                  <Text style={[contextStyles.eyebrow, { color: colors.mutedForeground }]}>
+                    {(t('messages.aboutPost') ?? 'KESKUSTELETTE KOHTEESTA').toUpperCase()}
+                  </Text>
                   <Text style={[contextStyles.title, { color: colors.foreground }]} numberOfLines={1}>{linkedPost.title}</Text>
                 </View>
-                <ChevronRight size={14} color={colors.mutedForeground} />
-              </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => router.push(`/post/${linkedPost.id}`)}
+                  hitSlop={8}
+                  accessibilityRole="link"
+                  accessibilityLabel={t('common.show') ?? 'Näytä'}
+                >
+                  <Text style={[contextStyles.showLink, { color: colors.foreground }]}>
+                    {t('common.show') ?? 'Näytä'}
+                  </Text>
+                </PressableOpacity>
+              </View>
             )}
             {hasOlder ? (
               <PressableOpacity onPress={loadOlder} style={[s.loadOlderBtn, { borderColor: colors.border }]}>
@@ -811,7 +828,7 @@ function ConversationScreenInner() {
         </Pressable>
       </Modal>
 
-      {/* 3c: Quick Replies — auto-send on tap */}
+      {/* 3c: Quick Replies — Monochrome pills */}
       {myMessageCount === 0 && showQuickReplies && (
         <ScrollView
           horizontal
@@ -824,7 +841,7 @@ function ConversationScreenInner() {
             <PressableOpacity
               key={i}
               onPress={() => { setInput(reply); setShowQuickReplies(false) }}
-              style={[s.quickReplyChip, { backgroundColor: isDark ? colors.card : colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+              style={[s.quickReplyChip, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
               accessibilityLabel={`${t('messages.quickReply') ?? 'Quick reply'}: ${reply}`}
             >
@@ -834,23 +851,23 @@ function ConversationScreenInner() {
         </ScrollView>
       )}
 
-      {/* Input */}
-      <View style={[s.inputBar, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
+      {/* Composer — Monochrome 06 */}
+      <View style={[s.inputBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom > 0 ? insets.bottom : 20 }]}>
         <PressableOpacity
           onPress={handleSendImage}
-          style={s.imageBtn}
+          style={[s.composerCircle, { backgroundColor: colors.background, borderColor: colors.border }]}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t('messages.attachImage') ?? 'Attach image'}
         >
-          <ImageIcon size={22} color={colors.mutedForeground} />
+          <Plus size={16} color={colors.foreground} strokeWidth={2} />
         </PressableOpacity>
         <TextInput
-          style={[s.textInput, { backgroundColor: colors.muted, borderWidth: 0, color: colors.foreground }]}
+          style={[s.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
           value={input}
           onChangeText={(text) => { setInput(text); if (text.length > 0) setShowQuickReplies(false); sendTyping() }}
           placeholder={t('messages.sendPlaceholder')}
-          placeholderTextColor={colors.mutedForeground}
+          placeholderTextColor={colors.tertiaryForeground}
           multiline
           maxLength={2000}
           blurOnSubmit={false}
@@ -864,12 +881,12 @@ function ConversationScreenInner() {
           accessibilityRole="button"
           accessibilityLabel={t('messages.send')}
           accessibilityState={{ busy: sending, disabled: !input.trim() || sending }}
-          style={[s.sendBtn, { backgroundColor: input.trim() ? colors.foreground : colors.muted, opacity: !input.trim() ? 0.4 : 1 }]}
+          style={[s.sendBtn, { backgroundColor: colors.foreground, opacity: !input.trim() && !sending ? 0.35 : 1 }]}
         >
           {sending ? (
             <ActivityIndicator size="small" color={colors.background} />
           ) : (
-            <Send size={18} color={input.trim() ? colors.background : colors.mutedForeground} />
+            <Send size={14} color={colors.background} />
           )}
         </PressableOpacity>
       </View>
@@ -890,22 +907,39 @@ function ConversationScreenInner() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
+  // ── Header — Monochrome 06 ─────────────────────────────────
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingBottom: 14, borderBottomWidth: 1,
   },
-  headerAvatar: { width: 36, height: 36, borderRadius: 18 },
-  headerName: { fontSize: 14, fontWeight: '600', lineHeight: 20, fontFamily: fonts.bodyMedium },
-  headerSub: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
+  circleBtn: {
+    width: 36, height: 36, borderRadius: 999,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1,
+  },
+  headerName: { fontSize: 14.5, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.bodySemi },
+  headerSub: { fontSize: 11, lineHeight: 16, fontFamily: fonts.body },
+  onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 1 },
+  onlineDot: { width: 6, height: 6, borderRadius: 999 },
+  onlineText: { fontSize: 11, fontFamily: fonts.body },
+  // ── Messages ────────────────────────────────────────────────
   msgList: { padding: 16, gap: 4, flexGrow: 1 },
-  dateHeader: { fontSize: 12, fontWeight: '500', lineHeight: 16, textAlign: 'center', marginVertical: 16, fontFamily: fonts.bodyMedium },
+  dayStampRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginVertical: 10,
+  },
+  dayStampLine: { flex: 1, height: 1 },
+  dateHeader: {
+    fontSize: 10.5, fontWeight: '500', letterSpacing: 1.2,
+    fontFamily: fonts.bodyMedium,
+  },
   msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
-  bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20 },
+  bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
   msgImage: { width: 200, height: 150, borderRadius: 16, marginBottom: 4 },
-  msgText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
+  msgText: { fontSize: 13.5, lineHeight: 19, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
   msgTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
@@ -918,20 +952,22 @@ const s = StyleSheet.create({
   },
   reactionEmoji: { fontSize: 14, lineHeight: 20 },
   reactionCount: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
-  loadOlderBtn: { alignSelf: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 16 },
+  loadOlderBtn: { alignSelf: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 16 },
   loadOlderText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
+  // ── Scroll to bottom ───────────────────────────────────────
   scrollBtn: {
     position: 'absolute', right: 16, bottom: 80,
-    width: 40, height: 40, borderRadius: 20,
+    width: 40, height: 40, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, elevation: 3,
   },
+  // ── Reaction picker modal ──────────────────────────────────
   modalOverlay: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   reactionPickerContainer: {
-    borderRadius: 16, borderWidth: 1, overflow: 'hidden',
+    borderRadius: 18, borderWidth: 1, overflow: 'hidden',
     elevation: 8,
   },
   reactionPickerRow: {
@@ -947,32 +983,38 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth,
   },
   deleteText: { fontSize: 14, fontWeight: '500', lineHeight: 20, fontFamily: fonts.bodyMedium },
+  // ── Composer — Monochrome 06 ───────────────────────────────
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
-    paddingHorizontal: 16, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 14, paddingTop: 10, borderTopWidth: 1,
   },
-  imageBtn: { paddingBottom: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  composerCircle: {
+    width: 40, height: 40, borderRadius: 999,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, flexShrink: 0,
+  },
   textInput: {
-    flex: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10,
-    fontSize: 14, maxHeight: 120, minHeight: 40, fontFamily: fonts.body,
-    borderWidth: StyleSheet.hairlineWidth,
+    flex: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10,
+    fontSize: 13.5, maxHeight: 120, minHeight: 42, fontFamily: fonts.body,
+    borderWidth: 1,
   },
   sendBtn: {
-    width: 44, height: 44, borderRadius: 22,
+    width: 40, height: 40, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
   },
   emptyText: { textAlign: 'center', fontSize: 14, lineHeight: 20, marginTop: 40, fontFamily: fonts.body },
+  // ── Quick replies — Monochrome pills ───────────────────────
   quickRepliesRow: {
     flexDirection: 'row', gap: 8,
     paddingHorizontal: 16, paddingVertical: 8,
   },
   quickReplyChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 16,
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: 999, borderWidth: 1,
   },
-  quickReplyText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
-  // 3a: Link preview styles
+  quickReplyText: { fontSize: 12.5, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
+  // ── Link preview ────────────────────────────────────────────
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginTop: 4, padding: 8, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
@@ -984,14 +1026,15 @@ const s = StyleSheet.create({
 
 const contextStyles = StyleSheet.create({
   card: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    marginHorizontal: 16, marginVertical: 8, padding: 12,
-    borderRadius: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginVertical: 8, padding: 10,
+    borderRadius: 18, borderWidth: 1,
   },
-  image: { width: 40, height: 40, borderRadius: 8 },
-  info: { flex: 1, gap: 4 },
-  label: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
+  image: { width: 46, height: 46, borderRadius: 12 },
+  info: { flex: 1, minWidth: 0, gap: 2 },
+  eyebrow: { fontSize: 10, letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 14 },
+  title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.bodySemi },
+  showLink: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
 })
 
 export default function ConversationScreen() {
