@@ -93,6 +93,9 @@ const STATUS_KEYS: Record<BookingStatus, string> = {
   refunded: 'rental.statusRefunded',
 }
 
+const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active', 'in_progress']
+const PAST_STATUSES: BookingStatus[] = ['completed', 'cancelled', 'disputed', 'refunded']
+
 function getStatusStyle(status: BookingStatus, colors: ReturnType<typeof useTheme>['colors']): { bg: string; text: string } {
   switch (status) {
     case 'active': case 'in_progress':
@@ -217,9 +220,6 @@ export default function BookingsScreen() {
   }, [supabase, t])
 
   useFocusEffect(useCallback(() => { fetchBookings() }, [fetchBookings]))
-
-  const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active', 'in_progress']
-  const PAST_STATUSES: BookingStatus[] = ['completed', 'cancelled', 'disputed', 'refunded']
 
   const filteredBookings = useMemo(() => {
     if (!userId) return []

@@ -113,6 +113,9 @@ export default function VerifyOtpScreen() {
           })
           if (sessionError) {
             if (__DEV__) console.warn('[verify-otp] Failed to establish recovery session:', sessionError.message)
+            setError(t('auth.otpExpired'))
+            setLoading(false)
+            return
           }
         }
         trackEvent('auth_login_success' as any)

@@ -76,27 +76,17 @@ export default function MessagesScreen() {
     return () => { cancelled = true }
   }, [])
 
-  const savePinnedIds = useCallback(async (ids: string[]) => {
-    setPinnedIds(ids)
-    // Swallow storage failures instead of propagating — the UI state is
-    // already updated and a failed write is non-critical (the pin just
-    // won't persist across app restarts). An uncaught rejection here
-    // would bubble up to the global error handler and spam Sentry.
+  const handleTogglePin = useCallback(async (convId: string) => {
+    const newIds = pinnedIds.includes(convId)
+      ? pinnedIds.filter(id => id !== convId)
+      : [...pinnedIds, convId]
+    setPinnedIds(newIds)
     try {
-      await AsyncStorage.setItem(PINNED_KEY, JSON.stringify(ids))
+      await AsyncStorage.setItem(PINNED_KEY, JSON.stringify(newIds))
     } catch (err) {
       if (__DEV__) console.warn('[messages] failed to persist pinned ids:', err)
     }
-  }, [])
-
-  const handleTogglePin = useCallback(async (convId: string) => {
-    setPinnedIds(prev => {
-      const isPinned = prev.includes(convId)
-      const newIds = isPinned ? prev.filter(id => id !== convId) : [...prev, convId]
-      AsyncStorage.setItem(PINNED_KEY, JSON.stringify(newIds)).catch(() => {})
-      return newIds
-    })
-  }, [])
+  }, [pinnedIds])
 
   const fetchConversations = useCallback(async () => {
     if (!mountedRef.current) return

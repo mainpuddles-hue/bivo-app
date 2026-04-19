@@ -139,15 +139,17 @@ export default function ForumScreen() {
 
   // ── Fetch user info ──
   useEffect(() => {
+    let mounted = true
     async function fetchUser() {
       const { getCachedUserId } = await import('@/lib/authCache')
       const cachedId = await getCachedUserId()
-      if (!cachedId) return
+      if (!cachedId || !mounted) return
       setCurrentUserId(cachedId)
       const { data: profile } = await (supabase.from('profiles') as any).select('naapurusto').eq('id', cachedId).maybeSingle()
-      if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto)
+      if (mounted && profile?.naapurusto) setUserNeighborhood(profile.naapurusto)
     }
     fetchUser().catch(() => {})
+    return () => { mounted = false }
   }, [supabase])
 
   // ── Fetch posts ──
