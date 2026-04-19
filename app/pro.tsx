@@ -17,6 +17,8 @@ const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
 type Plan = 'monthly' | 'yearly'
 
+const WARM_TINT = '#F0EEE9'
+
 export default function ProScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -106,26 +108,34 @@ export default function ProScreen() {
   return (
     <ScreenErrorBoundary screenName="Pro">
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
+      {/* Header — circle back button + centered title */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <ArrowLeft size={24} color={colors.foreground} />
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>TackBird Pro</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-        {/* Hero — plain, no gradient/colored circle */}
+        {/* Hero */}
         <View style={s.hero}>
-          <Crown size={32} color={colors.foreground} />
+          <View style={[s.heroIconCircle, { backgroundColor: colors.background }]}>
+            <Crown size={28} color={colors.foreground} />
+          </View>
           <Text style={[s.heroTitle, { color: colors.foreground }]}>TackBird Pro</Text>
           <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]}>
             {t('pro.subtitle')}
           </Text>
           {isPro && (
-            <View style={styles.heroActiveDot}>
-              <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
+            <View style={s.heroActiveDot}>
+              <View style={[s.statusDot, { backgroundColor: colors.foreground }]} />
               <Text style={[s.activeBadgeText, { color: colors.mutedForeground }]}>{t('profile.proActive')}</Text>
             </View>
           )}
@@ -136,14 +146,14 @@ export default function ProScreen() {
           )}
         </View>
 
-        {/* Feature comparison */}
+        {/* Feature comparison — SURFACE cards with LINE border */}
         <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('pro.freeVsPro')}</Text>
-        <View style={[s.comparisonCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View style={[s.comparisonCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
           {/* Table header */}
           <View style={[s.comparisonHeader, { borderBottomColor: colors.border }]}>
             <View style={s.comparisonIconCol} />
             <Text style={[s.comparisonColLabel, s.comparisonFreeCol, { color: colors.mutedForeground }]}>{t('pro.free')}</Text>
-            <Text style={[s.comparisonColLabel, s.comparisonProCol, { color: colors.pro }]}>{t('pro.proLabel')}</Text>
+            <Text style={[s.comparisonColLabel, s.comparisonProCol, { color: colors.foreground }]}>{t('pro.proLabel')}</Text>
           </View>
           {FEATURES.map(({ icon: Icon, free, pro }, i) => (
             <View
@@ -154,14 +164,16 @@ export default function ProScreen() {
               ]}
             >
               <View style={s.comparisonIconCol}>
-                <Icon size={18} color={colors.mutedForeground} />
+                <View style={[s.featureIconCircle, { backgroundColor: colors.background }]}>
+                  <Icon size={14} color={colors.mutedForeground} />
+                </View>
               </View>
               <View style={s.comparisonFreeCol}>
                 <X size={14} color={colors.destructive} />
                 <Text style={[s.comparisonText, { color: colors.mutedForeground }]}>{free}</Text>
               </View>
               <View style={s.comparisonProCol}>
-                <Check size={14} color={colors.pro} />
+                <Check size={14} color={colors.foreground} />
                 <Text style={[s.comparisonText, { color: colors.foreground }]}>{pro}</Text>
               </View>
             </View>
@@ -173,44 +185,59 @@ export default function ProScreen() {
           <>
             <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('pro.upgradeToPro').toUpperCase()}</Text>
             <View style={s.pricingRow}>
-              {/* Monthly */}
+              {/* Free tier card — SURFACE bg */}
+              <View style={[s.pricingCard, s.pricingCardFree, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[s.pricingTierLabel, { color: colors.mutedForeground }]}>{t('pro.free')}</Text>
+                <Text style={[s.pricingPrice, { color: colors.foreground }]}>
+                  0 {'\u20AC'}
+                </Text>
+                <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>{t('pro.perMonth')}</Text>
+              </View>
+
+              {/* Monthly — selectable */}
               <PressableOpacity
                 onPress={() => setSelectedPlan('monthly')}
                 style={[
                   s.pricingCard,
-                  { backgroundColor: 'transparent', borderColor: selectedPlan === 'monthly' ? colors.foreground : colors.border },
+                  {
+                    backgroundColor: selectedPlan === 'monthly' ? colors.foreground : colors.card,
+                    borderColor: selectedPlan === 'monthly' ? colors.foreground : colors.border,
+                  },
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={`${t('pro.monthly')} 4.99 €`}
                 accessibilityState={{ selected: selectedPlan === 'monthly' }}
               >
-                <Text style={[s.pricingLabel, { color: colors.foreground }]}>{t('pro.monthly')}</Text>
-                <Text style={[s.pricingPrice, { color: colors.foreground }]}>
+                <Text style={[s.pricingTierLabel, { color: selectedPlan === 'monthly' ? colors.background : colors.mutedForeground }]}>{t('pro.monthly')}</Text>
+                <Text style={[s.pricingPrice, { color: selectedPlan === 'monthly' ? colors.background : colors.foreground }]}>
                   4.99 {'\u20AC'}
                 </Text>
-                <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>{t('pro.perMonth')}</Text>
+                <Text style={[s.pricingPeriod, { color: selectedPlan === 'monthly' ? colors.background : colors.mutedForeground }]}>{t('pro.perMonth')}</Text>
               </PressableOpacity>
 
-              {/* Yearly */}
+              {/* Yearly — selectable, featured INK bg when selected */}
               <PressableOpacity
                 onPress={() => setSelectedPlan('yearly')}
                 style={[
                   s.pricingCard,
-                  { backgroundColor: 'transparent', borderColor: selectedPlan === 'yearly' ? colors.foreground : colors.border },
+                  {
+                    backgroundColor: selectedPlan === 'yearly' ? colors.foreground : colors.card,
+                    borderColor: selectedPlan === 'yearly' ? colors.foreground : colors.border,
+                  },
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={`${t('pro.yearly')} 39.99 €`}
                 accessibilityState={{ selected: selectedPlan === 'yearly' }}
               >
-                <View style={[s.saveBadge, { backgroundColor: colors.foreground }]}>
-                  <Text style={[s.saveBadgeText, { color: colors.background }]}>-33%</Text>
+                <View style={[s.saveBadge, { backgroundColor: selectedPlan === 'yearly' ? colors.background : colors.foreground }]}>
+                  <Text style={[s.saveBadgeText, { color: selectedPlan === 'yearly' ? colors.foreground : colors.background }]}>-33%</Text>
                 </View>
-                <Text style={[s.pricingLabel, { color: colors.foreground }]}>{t('pro.yearly')}</Text>
-                <Text style={[s.pricingPrice, { color: colors.foreground }]}>
+                <Text style={[s.pricingTierLabel, { color: selectedPlan === 'yearly' ? colors.background : colors.mutedForeground }]}>{t('pro.yearly')}</Text>
+                <Text style={[s.pricingPrice, { color: selectedPlan === 'yearly' ? colors.background : colors.foreground }]}>
                   39.99 {'\u20AC'}
                 </Text>
-                <Text style={[s.pricingPeriod, { color: colors.mutedForeground }]}>{t('pro.perYear')}</Text>
-                <Text style={[s.pricingSubtext, { color: colors.mutedForeground }]}>3.33 {'\u20AC'}{t('pro.perMonth')}</Text>
+                <Text style={[s.pricingPeriod, { color: selectedPlan === 'yearly' ? colors.background : colors.mutedForeground }]}>{t('pro.perYear')}</Text>
+                <Text style={[s.pricingSubtext, { color: selectedPlan === 'yearly' ? colors.background : colors.mutedForeground }]}>3.33 {'\u20AC'}{t('pro.perMonth')}</Text>
               </PressableOpacity>
             </View>
 
@@ -219,7 +246,7 @@ export default function ProScreen() {
               {t('pro.autoRenewalNotice')}
             </Text>
 
-            {/* Subscribe button — solid foreground */}
+            {/* Subscribe button — INK bg, white text, pill shape */}
             <PressableOpacity
               onPress={handleSubscribe}
               disabled={purchasing}
@@ -258,8 +285,10 @@ export default function ProScreen() {
 
         {/* iOS: Subscription will be available via App Store */}
         {!isPro && Platform.OS === 'ios' && (
-          <View style={[s.iosInfoCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
-            <Info size={20} color={colors.mutedForeground} />
+          <View style={[s.iosInfoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[s.infoIconCircle, { backgroundColor: colors.background }]}>
+              <Info size={16} color={colors.mutedForeground} />
+            </View>
             <Text style={[s.iosInfoText, { color: colors.foreground }]}>
               {t('pro.comingSoonIOS')}
             </Text>
@@ -294,50 +323,69 @@ export default function ProScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  heroActiveDot: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  statusDot: { width: 6, height: 6, borderRadius: 3 },
-})
-
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, lineHeight: 28, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  content: { padding: 16, gap: 16, paddingBottom: 60 },
-  hero: { alignItems: 'center', paddingVertical: 24, gap: 8 },
-  heroTitle: { fontSize: 32, lineHeight: 36, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
-  heroSubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', fontFamily: fonts.body },
+  backCircle: {
+    width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1,
+  },
+  headerTitle: { fontSize: 18, lineHeight: 24, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  content: { padding: 20, gap: 16, paddingBottom: 60 },
+
+  // Hero
+  hero: { alignItems: 'center', paddingVertical: 28, gap: 8 },
+  heroIconCircle: {
+    width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
+  },
+  heroTitle: { fontSize: 28, lineHeight: 34, fontWeight: '700', letterSpacing: -0.5, fontFamily: fonts.heading },
+  heroSubtitle: { fontSize: 15, lineHeight: 22, textAlign: 'center', fontFamily: fonts.body, paddingHorizontal: 16 },
+  heroActiveDot: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
   activeBadgeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
   renewsText: { fontSize: 13, lineHeight: 18, marginTop: 8, fontFamily: fonts.body },
+
+  // Section
   sectionLabel: {
-    fontSize: 11, lineHeight: 16, fontWeight: '600', letterSpacing: 0.5,
+    fontSize: 11, lineHeight: 16, fontWeight: '600', letterSpacing: 0.8,
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
     fontFamily: fonts.bodySemi,
   },
+
+  // Feature comparison — SURFACE card with LINE border
   comparisonCard: { borderRadius: 16, overflow: 'hidden' },
   comparisonHeader: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  comparisonIconCol: { width: 32 },
+  comparisonIconCol: { width: 40 },
+  featureIconCircle: {
+    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+  },
   comparisonFreeCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   comparisonProCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   comparisonColLabel: { fontSize: 12, lineHeight: 16, fontWeight: '700', textTransform: 'uppercase', fontFamily: fonts.bodySemi },
   comparisonRow: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 14,
   },
   comparisonText: { fontSize: 13, lineHeight: 18, flex: 1, fontFamily: fonts.body },
-  pricingRow: { flexDirection: 'row', gap: 12 },
+
+  // Pricing
+  pricingRow: { flexDirection: 'row', gap: 10 },
   pricingCard: {
-    flex: 1, borderRadius: 16, borderWidth: 2,
+    flex: 1, borderRadius: 16, borderWidth: 1,
     padding: 16, alignItems: 'center', gap: 4, position: 'relative', overflow: 'hidden',
   },
-  pricingLabel: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
-  pricingPrice: { fontSize: 32, lineHeight: 36, fontWeight: '800', fontFamily: fonts.heading },
+  pricingCardFree: {
+    // Non-interactive free tier
+  },
+  pricingTierLabel: { fontSize: 12, lineHeight: 16, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
+  pricingPrice: { fontSize: 28, lineHeight: 34, fontWeight: '800', fontFamily: fonts.heading },
   pricingPeriod: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
   pricingSubtext: { fontSize: 12, lineHeight: 16, fontWeight: '600', marginTop: 2, fontFamily: fonts.bodySemi },
   saveBadge: {
@@ -346,26 +394,37 @@ const s = StyleSheet.create({
     transform: [{ rotate: '30deg' }],
   },
   saveBadgeText: { fontSize: 11, lineHeight: 14, fontWeight: '800', fontFamily: fonts.bodySemi },
+
+  // CTA — INK bg, white text, pill
   subscribeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 12, paddingVertical: 16, borderRadius: 16, marginTop: 4, minHeight: 48,
+    gap: 12, height: 54, borderRadius: 999, marginTop: 4,
   },
   subscribeBtnText: { fontSize: 16, lineHeight: 22, fontWeight: '700', fontFamily: fonts.bodySemi },
+
+  // Manage
   manageBtn: {
     alignItems: 'center', paddingVertical: 16, borderRadius: 16,
     borderWidth: 1, minHeight: 48,
   },
   manageBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
-  errorText: { fontSize: 13, lineHeight: 18, textAlign: 'center', fontFamily: fonts.body },
-  termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
+
+  // Info card
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderRadius: 16, borderWidth: 1, marginTop: 8,
   },
+  infoIconCircle: {
+    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+  },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
+
+  // Misc
+  errorText: { fontSize: 13, lineHeight: 18, textAlign: 'center', fontFamily: fonts.body },
+  termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   restoreBtn: {
-    alignItems: 'center', paddingVertical: 12, borderRadius: 16,
+    alignItems: 'center', paddingVertical: 12, borderRadius: 999,
     borderWidth: 1, minHeight: 48,
   },
   restoreBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '500', fontFamily: fonts.bodyMedium },

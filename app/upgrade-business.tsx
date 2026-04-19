@@ -213,35 +213,43 @@ export default function UpgradeBusinessScreen() {
 
   return (
     <ScreenErrorBoundary screenName="UpgradeBusiness">
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <ArrowLeft size={24} color={colors.foreground} />
+    <View style={[s.container, { backgroundColor: colors.background }]}>
+      {/* Header — circle back button + centered title */}
+      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
         </PressableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
-        <View style={{ width: 24 }} />
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        {/* Hero — plain, no colored circle */}
-        <View style={styles.hero}>
-          <Building2 size={32} color={colors.foreground} />
-          <Text style={[styles.heroTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
-          <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {/* Hero */}
+        <View style={s.hero}>
+          <View style={[s.heroIconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Building2 size={28} color={colors.foreground} />
+          </View>
+          <Text style={[s.heroTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
+          <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]}>
             {t('business.upgradeDesc')}
           </Text>
-          <Text style={[styles.heroPrice, { color: colors.foreground }]}>
+          <Text style={[s.heroPrice, { color: colors.foreground }]}>
             {t('business.monthlyPrice')}
           </Text>
         </View>
 
-        {/* Benefits — hairline border, muted bg */}
-        <View style={[styles.benefitsCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        {/* Benefits — SURFACE card with LINE border, icon circles */}
+        <View style={[s.benefitsCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
           {([
             { icon: Camera, text: t('business.benefitProfile') },
             { icon: MapPin, text: t('business.benefitMap') },
@@ -251,18 +259,20 @@ export default function UpgradeBusinessScreen() {
           ] as const).map((benefit, i) => {
             const Icon = benefit.icon
             return (
-              <View key={i} style={styles.benefitRow}>
-                <Icon size={16} color={colors.primary} />
-                <Text style={[styles.benefitText, { color: colors.foreground }]}>{benefit.text}</Text>
+              <View key={i} style={s.benefitRow}>
+                <View style={[s.benefitIconCircle, { backgroundColor: colors.background }]}>
+                  <Icon size={14} color={colors.foreground} />
+                </View>
+                <Text style={[s.benefitText, { color: colors.foreground }]}>{benefit.text}</Text>
               </View>
             )
           })}
         </View>
 
         {/* Form */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('business.businessName')} *</Text>
+        <Text style={[s.label, { color: colors.foreground }]}>{t('business.businessName')} *</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+          style={[s.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
           value={businessName}
           onChangeText={setBusinessName}
           placeholder={t('business.businessNamePlaceholder')}
@@ -270,11 +280,11 @@ export default function UpgradeBusinessScreen() {
           maxLength={100}
         />
 
-        <Text style={[styles.label, { color: colors.foreground }]}>
+        <Text style={[s.label, { color: colors.foreground }]}>
           {idFormat.label !== 'business.vatId' ? t(idFormat.label) : t('business.vatId')}
         </Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+          style={[s.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
           value={vatId}
           onChangeText={setVatId}
           placeholder={idFormat.placeholder}
@@ -282,17 +292,17 @@ export default function UpgradeBusinessScreen() {
           maxLength={20}
         />
 
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('business.category')}</Text>
-        <View style={styles.categoryRow}>
+        <Text style={[s.label, { color: colors.foreground }]}>{t('business.category')}</Text>
+        <View style={s.categoryRow}>
           {BUSINESS_CATEGORIES.map(cat => (
             <PressableOpacity
               key={cat.id}
               onPress={() => setCategory(cat.id)}
               style={[
-                styles.categoryChip,
+                s.categoryChip,
                 {
-                  backgroundColor: category === cat.id ? colors.primary : colors.card,
-                  borderColor: category === cat.id ? colors.primary : colors.border,
+                  backgroundColor: category === cat.id ? colors.foreground : colors.card,
+                  borderColor: category === cat.id ? colors.foreground : colors.border,
                 },
               ]}
               accessibilityRole="button"
@@ -300,8 +310,8 @@ export default function UpgradeBusinessScreen() {
               accessibilityState={{ selected: category === cat.id }}
             >
               <Text style={[
-                styles.categoryText,
-                { color: category === cat.id ? colors.primaryForeground : colors.foreground },
+                s.categoryText,
+                { color: category === cat.id ? colors.background : colors.foreground },
               ]}>
                 {getCategoryLabel(cat.id)}
               </Text>
@@ -309,9 +319,9 @@ export default function UpgradeBusinessScreen() {
           ))}
         </View>
 
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('business.address')}</Text>
+        <Text style={[s.label, { color: colors.foreground }]}>{t('business.address')}</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+          style={[s.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
           value={address}
           onChangeText={setAddress}
           placeholder={t('business.addressPlaceholder')}
@@ -319,13 +329,24 @@ export default function UpgradeBusinessScreen() {
           maxLength={200}
         />
 
-        {/* Submit — Stripe flow (Android/web only) */}
+        {/* Pricing section — INK card */}
+        {Platform.OS !== 'ios' && (
+          <View style={[s.pricingCard, { backgroundColor: colors.foreground }]}>
+            <Text style={[s.pricingTierLabel, { color: colors.background }]}>BUSINESS</Text>
+            <Text style={[s.pricingPrice, { color: colors.background }]}>
+              {t('business.monthlyPrice')}
+            </Text>
+            <Text style={[s.pricingPeriod, { color: colors.background }]}>{t('pro.perMonth')}</Text>
+          </View>
+        )}
+
+        {/* Submit — INK bg, white text, pill shape */}
         {Platform.OS !== 'ios' && (
           <>
             <PressableOpacity
               onPress={handleUpgrade}
               disabled={submitting || !businessName.trim() || !vatId.trim()}
-              style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: submitting || !businessName.trim() || !vatId.trim() ? 0.6 : 1 }]}
+              style={[s.submitBtn, { backgroundColor: colors.foreground, opacity: submitting || !businessName.trim() || !vatId.trim() ? 0.6 : 1 }]}
               accessibilityRole="button"
               accessibilityLabel={t('business.subscribeCTA')}
               accessibilityState={{ disabled: submitting || !businessName.trim() || !vatId.trim() }}
@@ -335,14 +356,14 @@ export default function UpgradeBusinessScreen() {
               ) : (
                 <>
                   <Building2 size={18} color={colors.background} />
-                  <Text style={[styles.submitText, { color: colors.background }]}>
+                  <Text style={[s.submitText, { color: colors.background }]}>
                     {t('business.subscribeCTA')} — {t('business.monthlyPrice')}
                   </Text>
                 </>
               )}
             </PressableOpacity>
 
-            <Text style={[styles.terms, { color: colors.mutedForeground }]}>
+            <Text style={[s.terms, { color: colors.mutedForeground }]}>
               {t('pro.cancelAnytime')}. {t('business.termsNote')}
             </Text>
           </>
@@ -350,9 +371,11 @@ export default function UpgradeBusinessScreen() {
 
         {/* iOS: Subscription will be available via App Store */}
         {Platform.OS === 'ios' && (
-          <View style={[styles.iosInfoCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
-            <Info size={20} color={colors.mutedForeground} />
-            <Text style={[styles.iosInfoText, { color: colors.foreground }]}>
+          <View style={[s.iosInfoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[s.infoIconCircle, { backgroundColor: colors.background }]}>
+              <Info size={16} color={colors.mutedForeground} />
+            </View>
+            <Text style={[s.iosInfoText, { color: colors.foreground }]}>
               {t('business.comingSoonIOS')}
             </Text>
           </View>
@@ -364,40 +387,72 @@ export default function UpgradeBusinessScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  content: { padding: 16, gap: 8, paddingBottom: 64 },
-  hero: { alignItems: 'center', paddingVertical: 24, gap: 8 },
-  heroTitle: { fontSize: 24, letterSpacing: -0.3, fontFamily: fonts.heading },
-  heroSubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
-  heroPrice: { fontSize: 22, marginTop: 8, fontFamily: fonts.heading },
-  benefitsCard: { borderRadius: 16, padding: 16, gap: 12 },
+  backCircle: {
+    width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1,
+  },
+  headerTitle: { fontSize: 18, lineHeight: 24, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
+  content: { padding: 20, gap: 12, paddingBottom: 64 },
+
+  // Hero
+  hero: { alignItems: 'center', paddingVertical: 28, gap: 8 },
+  heroIconCircle: {
+    width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, marginBottom: 4,
+  },
+  heroTitle: { fontSize: 24, lineHeight: 30, letterSpacing: -0.3, fontFamily: fonts.heading },
+  heroSubtitle: { fontSize: 15, lineHeight: 22, textAlign: 'center', fontFamily: fonts.body, paddingHorizontal: 16 },
+  heroPrice: { fontSize: 22, lineHeight: 28, marginTop: 8, fontFamily: fonts.heading },
+
+  // Benefits — SURFACE card
+  benefitsCard: { borderRadius: 16, padding: 16, gap: 14 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  benefitText: { fontSize: 14, flex: 1, fontFamily: fonts.body },
-  label: { fontSize: 13, marginTop: 8, fontFamily: fonts.bodySemi },
+  benefitIconCircle: {
+    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+  },
+  benefitText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
+
+  // Form
+  label: { fontSize: 13, lineHeight: 18, marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
-    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 12, borderWidth: 1,
     paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,
   },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   categoryChip: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, borderWidth: 1,
   },
   categoryText: { fontSize: 13, fontFamily: fonts.bodyMedium },
+
+  // Pricing card — INK bg
+  pricingCard: {
+    borderRadius: 16, padding: 20, alignItems: 'center', gap: 4, marginTop: 8,
+  },
+  pricingTierLabel: { fontSize: 12, lineHeight: 16, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: fonts.bodySemi },
+  pricingPrice: { fontSize: 28, lineHeight: 34, fontWeight: '800', fontFamily: fonts.heading },
+  pricingPeriod: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body, opacity: 0.7 },
+
+  // CTA — INK bg, pill
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 16, marginTop: 12, minHeight: 48,
+    gap: 8, height: 54, borderRadius: 999, marginTop: 12,
   },
-  submitText: { fontSize: 16, fontFamily: fonts.bodySemi },
+  submitText: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi },
   terms: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
+
+  // iOS info
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderRadius: 16, borderWidth: 1, marginTop: 12,
+  },
+  infoIconCircle: {
+    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
   },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
 })
