@@ -25,14 +25,14 @@ import type { CommunityEvent, EventCategory } from '@/lib/types'
 
 type CategoryFilter = 'all' | EventCategory
 
-const CATEGORY_FILTERS: { key: CategoryFilter; labelKey: string; color: string }[] = [
-  { key: 'all', labelKey: 'events.categoryAll', color: '#6B7280' },
-  { key: 'social', labelKey: 'events.catSocial', color: '#7C5CBF' },
-  { key: 'sports', labelKey: 'events.catSports', color: '#2B8A62' },
-  { key: 'culture', labelKey: 'events.catCulture', color: '#3B7DD8' },
-  { key: 'nature', labelKey: 'events.catNature', color: '#2B8A62' },
-  { key: 'kids', labelKey: 'events.catKids', color: '#E8A050' },
-  { key: 'other', labelKey: 'events.catOther', color: '#6B7280' },
+const CATEGORY_FILTERS: { key: CategoryFilter; labelKey: string }[] = [
+  { key: 'all', labelKey: 'events.categoryAll' },
+  { key: 'social', labelKey: 'events.catSocial' },
+  { key: 'sports', labelKey: 'events.catSports' },
+  { key: 'culture', labelKey: 'events.catCulture' },
+  { key: 'nature', labelKey: 'events.catNature' },
+  { key: 'kids', labelKey: 'events.catKids' },
+  { key: 'other', labelKey: 'events.catOther' },
 ]
 
 function CommunityEventsScreenInner() {
@@ -135,16 +135,13 @@ function CommunityEventsScreenInner() {
   const keyExtractor = useCallback((item: CommunityEvent) => item.id, [])
 
   // ── Section header component ──
-  const SectionHeader = useCallback(({ iconColor, title, actionLabel, onAction }: {
-    icon?: any; iconColor: string; title: string; actionLabel?: string; onAction?: () => void
+  const SectionHeader = useCallback(({ title, actionLabel, onAction }: {
+    title: string; actionLabel?: string; onAction?: () => void
   }) => (
     <View style={s.sectionHeader}>
-      <View style={s.sectionTitleRow}>
-        <View style={[s.sectionDot, { backgroundColor: iconColor }]} />
-        <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>
-          {title}
-        </Text>
-      </View>
+      <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>
+        {title}
+      </Text>
       {actionLabel && onAction && (
         <Pressable onPress={onAction} hitSlop={8}>
           <Text style={[s.sectionAction, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
@@ -162,7 +159,6 @@ function CommunityEventsScreenInner() {
     return (
       <View style={s.section}>
         <SectionHeader
-          iconColor="#8B5E3C"
           title={t('tables.title')}
           actionLabel={t('events.showAllEvents')}
           onAction={() => {}}
@@ -189,7 +185,7 @@ function CommunityEventsScreenInner() {
             }}
             style={({ pressed }) => [
               s.createTableCard,
-              { backgroundColor: 'transparent', borderColor: colors.border },
+              { backgroundColor: colors.card, borderColor: colors.border },
               pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] },
             ]}
             accessibilityRole="button"
@@ -214,7 +210,6 @@ function CommunityEventsScreenInner() {
     return (
       <View style={s.section}>
         <SectionHeader
-          iconColor={colors.primary}
           title={t('events.trending')}
         />
         <ScrollView
@@ -253,31 +248,37 @@ function CommunityEventsScreenInner() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
-      {/* Header */}
-      <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <ArrowLeft size={24} color={colors.foreground} />
+      {/* Header — circle back button + centered title + create button */}
+      <View style={s.header}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
-        <Pressable
+        <PressableOpacity
           onPress={() => router.push('/create-event' as any)}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t('events.create')}
-          style={s.backBtn}
+          style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <Plus size={22} color={colors.foreground} strokeWidth={2} />
-        </Pressable>
+          <Plus size={20} color={colors.foreground} strokeWidth={2} />
+        </PressableOpacity>
       </View>
 
-      {/* Category filter chips */}
+      {/* Category filter chips — monochrome pills */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={s.chipRow}
         style={s.chipScroll}
       >
-        {CATEGORY_FILTERS.map(({ key, labelKey, color }) => {
+        {CATEGORY_FILTERS.map(({ key, labelKey }) => {
           const isActive = categoryFilter === key
           return (
             <PressableOpacity
@@ -290,13 +291,10 @@ function CommunityEventsScreenInner() {
                 s.chip,
                 isActive
                   ? { backgroundColor: colors.foreground }
-                  : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                  : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
               ]}
             >
-              {key !== 'all' && (
-                <View style={[s.chipDot, { backgroundColor: isActive ? colors.background : color }]} />
-              )}
-              <Text style={[s.chipText, { color: isActive ? colors.background : colors.mutedForeground }]}>
+              <Text style={[s.chipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
                 {t(labelKey)}
               </Text>
             </PressableOpacity>
@@ -317,7 +315,7 @@ function CommunityEventsScreenInner() {
         ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.foreground} />
         }
         ListEmptyComponent={
           loading ? (
@@ -336,8 +334,8 @@ function CommunityEventsScreenInner() {
                 accessibilityLabel={t('events.createFirstEvent')}
                 style={[s.emptyCta, { backgroundColor: colors.foreground }]}
               >
-                <Plus size={18} color={colors.background} strokeWidth={2} />
-                <Text style={[s.emptyCtaText, { color: colors.background }]}>{t('events.createFirstEvent')}</Text>
+                <Plus size={18} color={colors.primaryForeground} strokeWidth={2} />
+                <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('events.createFirstEvent')}</Text>
               </PressableOpacity>
             </View>
           )
@@ -350,26 +348,33 @@ function CommunityEventsScreenInner() {
 // ── Styles ──
 const s = StyleSheet.create({
   container: { flex: 1 },
+
+  // Header — circle back + centered title + circle create
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 12,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.3,
-    lineHeight: 28,
-  },
-  backBtn: {
-    minWidth: 44,
-    minHeight: 44,
+  circleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerTitle: {
+    flex: 1,
+    fontSize: 17,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.2,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+
+  // Filter chips — monochrome pills
   chipScroll: {
     flexGrow: 0,
     flexShrink: 0,
@@ -386,17 +391,12 @@ const s = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
-  },
-  chipDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    borderRadius: 999,
   },
   chipText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   listContent: {
     paddingTop: 4,
@@ -411,11 +411,6 @@ const s = StyleSheet.create({
   section: {
     marginBottom: 8,
   },
-  sectionDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -423,17 +418,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    fontWeight: '600',
   },
   sectionAction: {
     fontSize: 13,
@@ -448,7 +439,7 @@ const s = StyleSheet.create({
     width: 260,
   },
 
-  // Create table card
+  // Create table card — monochrome
   createTableCard: {
     width: 180,
     borderRadius: 16,
@@ -473,13 +464,14 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // All events label
+  // All events label — monochrome section label
   allEventsLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    fontWeight: '600',
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 4,
@@ -505,7 +497,7 @@ const s = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   emptyCtaText: {
     fontSize: 14,

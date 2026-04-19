@@ -18,7 +18,7 @@ import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 import { useToast } from '@/components/Toast'
 
@@ -28,7 +28,7 @@ function BookingCardSkeleton() {
   return (
     <View style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.cardTop}>
-        <Animated.View style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={{ width: 64, height: 64, borderRadius: 14, backgroundColor: colors.muted, opacity }} />
         <View style={styles.cardInfo}>
           <Animated.View style={{ width: '70%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
           <Animated.View style={{ width: '50%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
@@ -42,8 +42,6 @@ function BookingCardSkeleton() {
     </View>
   )
 }
-
-const TARJOAN_COLOR = '#7C5CBF'
 
 type BookingStatus = 'pending' | 'confirmed' | 'paid' | 'active' | 'in_progress' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
@@ -95,16 +93,19 @@ const STATUS_KEYS: Record<BookingStatus, string> = {
   refunded: 'rental.statusRefunded',
 }
 
-function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useTheme>['colors']): string {
+function getStatusStyle(status: BookingStatus, colors: ReturnType<typeof useTheme>['colors']): { bg: string; text: string } {
   switch (status) {
-    case 'pending': return colors.pro
-    case 'confirmed': case 'paid': return colors.info
-    case 'active': case 'in_progress': return colors.primary
-    case 'completed': return colors.success
-    case 'cancelled': return colors.destructive
-    case 'disputed': return colors.pro
-    case 'refunded': return colors.mutedForeground
-    default: return colors.mutedForeground
+    case 'active': case 'in_progress':
+      return { bg: colors.foreground, text: colors.primaryForeground }
+    case 'completed':
+      return { bg: colors.muted, text: colors.foreground }
+    case 'cancelled': case 'disputed':
+      return { bg: `${colors.destructive}14`, text: colors.destructive }
+    case 'refunded':
+      return { bg: colors.muted, text: colors.mutedForeground }
+    case 'pending': case 'confirmed': case 'paid':
+    default:
+      return { bg: colors.muted, text: colors.mutedForeground }
   }
 }
 
@@ -361,7 +362,7 @@ export default function BookingsScreen() {
   const isActionLoading = (id: string) => actionLoading === id
 
   const renderBooking = useCallback(({ item }: { item: RentalBooking }) => {
-    const statusColor = getStatusColor(item.status, colors)
+    const statusStyle = getStatusStyle(item.status, colors)
     const otherUser = activeTab === 'borrower' ? item.lender : item.borrower
     const isLender = activeTab === 'lender'
     const canConfirm = isLender && item.status === 'pending'
@@ -374,7 +375,7 @@ export default function BookingsScreen() {
         onPress={() => router.push(`/booking/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
-        style={[styles.bookingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
+        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
         <View style={styles.cardTop}>
           <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<Package size={24} color={colors.mutedForeground} />} />
@@ -398,10 +399,9 @@ export default function BookingsScreen() {
             )}
           </View>
           <View style={styles.cardRight}>
-            {/* Dot + label status indicator */}
-            <View style={styles.statusDotRow}>
-              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-              <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
+            {/* Status badge pill */}
+            <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+              <Text style={[styles.statusText, { color: statusStyle.text }]}>
                 {t(STATUS_KEYS[item.status])}
               </Text>
             </View>
@@ -418,14 +418,14 @@ export default function BookingsScreen() {
               <PressableOpacity
                 onPress={() => handleConfirm(item)}
                 disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, { backgroundColor: colors.foreground }]}
+                style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
               >
                 {isActionLoading(item.id) ? (
-                  <ActivityIndicator size="small" color={colors.background} />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
                   <>
-                    <CheckCircle size={14} color={colors.background} />
-                    <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('rental.confirmBooking')}</Text>
+                    <CheckCircle size={14} color={colors.primaryForeground} />
+                    <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text>
                   </>
                 )}
               </PressableOpacity>
@@ -434,14 +434,14 @@ export default function BookingsScreen() {
               <PressableOpacity
                 onPress={() => handleMarkReturned(item)}
                 disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, { backgroundColor: colors.foreground }]}
+                style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
               >
                 {isActionLoading(item.id) ? (
-                  <ActivityIndicator size="small" color={colors.background} />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
                   <>
-                    <RotateCcw size={14} color={colors.background} />
-                    <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('rental.returnItem')}</Text>
+                    <RotateCcw size={14} color={colors.primaryForeground} />
+                    <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.returnItem')}</Text>
                   </>
                 )}
               </PressableOpacity>
@@ -450,16 +450,16 @@ export default function BookingsScreen() {
               <PressableOpacity
                 onPress={() => handleCancel(item)}
                 disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
+                style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
               >
-                <XCircle size={14} color={colors.destructive} />
-                <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('rental.cancelBooking')}</Text>
+                <XCircle size={14} color={colors.mutedForeground} />
+                <Text style={[styles.actionBtnText, { color: colors.mutedForeground }]}>{t('rental.cancelBooking')}</Text>
               </PressableOpacity>
             )}
             {canReview && (
               <PressableOpacity
                 onPress={() => handleLeaveReview(item)}
-                style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
+                style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
               >
                 <Star size={14} color={colors.mutedForeground} />
                 <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
@@ -477,7 +477,7 @@ export default function BookingsScreen() {
 
   const renderServiceBooking = useCallback(({ item }: { item: any }) => {
     const safeStatus: BookingStatus = isBookingStatus(item.status) ? item.status : 'pending'
-    const statusColor = getStatusColor(safeStatus, colors)
+    const statusStyle = getStatusStyle(safeStatus, colors)
     const isBuyer = item.buyer_id === userId
     const otherUser = isBuyer ? item.provider : item.buyer
     const isProvider = item.provider_id === userId
@@ -492,7 +492,7 @@ export default function BookingsScreen() {
         onPress={() => router.push(`/booking/${item.id}` as any)}
         accessibilityRole="button"
         accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
-        style={[styles.bookingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
+        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
         <View style={styles.cardTop}>
           <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<ShoppingBag size={24} color={colors.mutedForeground} />} />
@@ -500,7 +500,7 @@ export default function BookingsScreen() {
             <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
               {item.post?.title ?? t('service.deletedPost')}
             </Text>
-            <Text style={{ fontSize: 11, color: TARJOAN_COLOR, fontFamily: fonts.bodySemi }}>
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>
               {isBuyer ? t('service.youBought') : t('service.youProvide')}
             </Text>
             {otherUser && (
@@ -513,10 +513,9 @@ export default function BookingsScreen() {
             )}
           </View>
           <View style={styles.cardRight}>
-            {/* Dot + label status indicator */}
-            <View style={styles.statusDotRow}>
-              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-              <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
+            {/* Status badge pill */}
+            <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+              <Text style={[styles.statusText, { color: statusStyle.text }]}>
                 {t(STATUS_KEYS[safeStatus])}
               </Text>
             </View>
@@ -529,30 +528,30 @@ export default function BookingsScreen() {
         {(canConfirm || canStart || canComplete || canCancel || canReview) && (
           <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
             {canConfirm && (
-              <PressableOpacity onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.foreground }]}>
-                <CheckCircle size={14} color={colors.background} />
-                <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('service.acceptJob')}</Text>
+              <PressableOpacity onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}>
+                <CheckCircle size={14} color={colors.primaryForeground} />
+                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.acceptJob')}</Text>
               </PressableOpacity>
             )}
             {canStart && (
-              <PressableOpacity onPress={() => handleServiceStart(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.foreground }]}>
-                <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('service.startWork')}</Text>
+              <PressableOpacity onPress={() => handleServiceStart(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}>
+                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
               </PressableOpacity>
             )}
             {canComplete && (
-              <PressableOpacity onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { backgroundColor: colors.foreground }]}>
-                <CheckCircle size={14} color={colors.background} />
-                <Text style={[styles.actionBtnText, { color: colors.background }]}>{t('service.markDone')}</Text>
+              <PressableOpacity onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}>
+                <CheckCircle size={14} color={colors.primaryForeground} />
+                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.markDone')}</Text>
               </PressableOpacity>
             )}
             {canCancel && (
-              <PressableOpacity onPress={() => handleServiceCancel(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}>
-                <XCircle size={14} color={colors.destructive} />
-                <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('service.cancelBooking')}</Text>
+              <PressableOpacity onPress={() => handleServiceCancel(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}>
+                <XCircle size={14} color={colors.mutedForeground} />
+                <Text style={[styles.actionBtnText, { color: colors.mutedForeground }]}>{t('service.cancelBooking')}</Text>
               </PressableOpacity>
             )}
             {canReview && (
-              <PressableOpacity onPress={() => { const id = isBuyer ? item.provider_id : item.buyer_id; router.push(`/profile/${id}` as any) }} style={[styles.actionBtn, { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}>
+              <PressableOpacity onPress={() => { const id = isBuyer ? item.provider_id : item.buyer_id; router.push(`/profile/${id}` as any) }} style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}>
                 <Star size={14} color={colors.mutedForeground} />
                 <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
               </PressableOpacity>
@@ -563,63 +562,87 @@ export default function BookingsScreen() {
     )
   }, [colors, isDark, userId, router, t, locale, handleServiceConfirm, handleServiceStart, handleServiceComplete, handleServiceCancel, actionLoading])
 
+  // Filter chip data
+  const TAB_FILTERS = [
+    { key: 'borrower' as const, label: `${t('rental.myRentals')} (${borrowerCount})` },
+    { key: 'lender' as const, label: `${t('rental.lendingOut')} (${lenderCount})` },
+    { key: 'services' as const, label: `${t('service.services')} (${serviceCount})` },
+  ]
+
+  const STATUS_FILTERS = [
+    { key: 'all' as const, label: t('bookings.all') ?? t('common.all') ?? 'Kaikki' },
+    { key: 'active' as const, label: t('bookings.active') },
+    { key: 'past' as const, label: t('bookings.past') },
+  ]
+
   return (
     <ScreenErrorBoundary screenName="Bookings">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
+      {/* Header — circle back button + centered title */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
+        </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('bookings.title')}</Text>
-        <View style={{ flex: 1 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
-      {/* Tabs */}
-      <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
-        <PressableOpacity
-          onPress={() => setActiveTab('borrower')}
-          style={[styles.tab, activeTab === 'borrower' && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-        >
-          <Text style={[styles.tabText, { color: activeTab === 'borrower' ? colors.primary : colors.mutedForeground }]}>
-            {t('rental.myRentals')} ({borrowerCount})
-          </Text>
-        </PressableOpacity>
-        <PressableOpacity
-          onPress={() => setActiveTab('lender')}
-          style={[styles.tab, activeTab === 'lender' && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-        >
-          <Text style={[styles.tabText, { color: activeTab === 'lender' ? colors.primary : colors.mutedForeground }]}>
-            {t('rental.lendingOut')} ({lenderCount})
-          </Text>
-        </PressableOpacity>
-        <PressableOpacity
-          onPress={() => setActiveTab('services')}
-          style={[styles.tab, activeTab === 'services' && { borderBottomColor: TARJOAN_COLOR, borderBottomWidth: 2 }]}
-        >
-          <Text style={[styles.tabText, { color: activeTab === 'services' ? TARJOAN_COLOR : colors.mutedForeground }]}>
-            {t('service.services')} ({serviceCount})
-          </Text>
-        </PressableOpacity>
+      {/* Tab chips */}
+      <View style={styles.tabRow}>
+        {TAB_FILTERS.map(tab => {
+          const isActive = activeTab === tab.key
+          return (
+            <PressableOpacity
+              key={tab.key}
+              onPress={() => setActiveTab(tab.key)}
+              style={[
+                styles.pillChip,
+                isActive
+                  ? { backgroundColor: colors.foreground }
+                  : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.pillChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
+                {tab.label}
+              </Text>
+            </PressableOpacity>
+          )
+        })}
       </View>
 
-      {/* Status filter chips — Threads pill pattern */}
-      <View style={[styles.statusFilterRow, { backgroundColor: colors.muted }]}>
-        {(['active', 'past'] as const).map(f => (
-          <PressableOpacity
-            key={f}
-            onPress={() => setStatusFilter(f)}
-            style={[styles.statusFilterChip, statusFilter === f && [styles.statusFilterChipActive, { backgroundColor: colors.background }]]}
-          >
-            <Text style={[styles.statusFilterText, { color: statusFilter === f ? colors.foreground : colors.mutedForeground }]}>
-              {t(`bookings.${f}`)}
-            </Text>
-          </PressableOpacity>
-        ))}
+      {/* Status filter chips */}
+      <View style={styles.statusFilterRow}>
+        {(['active', 'past'] as const).map(f => {
+          const isActive = statusFilter === f
+          return (
+            <PressableOpacity
+              key={f}
+              onPress={() => setStatusFilter(f)}
+              style={[
+                styles.pillChipSmall,
+                isActive
+                  ? { backgroundColor: colors.foreground }
+                  : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.pillChipSmallText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
+                {t(`bookings.${f}`)}
+              </Text>
+            </PressableOpacity>
+          )
+        })}
       </View>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchBookings() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
-          <RefreshCw size={14} color={colors.destructive} />
-          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchBookings() }} style={[styles.errorBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <RefreshCw size={14} color={colors.mutedForeground} />
+          <Text style={[styles.errorBannerText, { color: colors.foreground }]}>{t('common.loadError')}</Text>
         </PressableOpacity>
       )}
 
@@ -640,14 +663,14 @@ export default function BookingsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => { setRefreshing(true); fetchBookings() }}
-              tintColor={colors.primary}
+              tintColor={colors.foreground}
             />
           }
           ListEmptyComponent={
             <EmptyState
               icon={activeTab === 'services'
-                ? <ShoppingBag size={36} color={colors.primary} />
-                : <Package size={36} color={colors.primary} />
+                ? <ShoppingBag size={36} color={colors.mutedForeground} />
+                : <Package size={36} color={colors.mutedForeground} />
               }
               title={activeTab === 'services' ? t('service.noBookings') : t('rental.noBookings')}
               description={activeTab === 'services' ? t('service.noBookingsHint') : activeTab === 'borrower' ? t('rental.noBookingsHint') : t('rental.noLendingHint')}
@@ -666,27 +689,82 @@ export default function BookingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  // Header — circle back + centered title
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 12,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  circleBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 17,
+    letterSpacing: -0.2,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  headerSpacer: { width: 36 },
+
+  // Tab chips
   tabRow: {
     flexDirection: 'row',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
   },
-  tab: {
-    flex: 1,
+  pillChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    minHeight: 36,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
   },
-  tabText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  pillChipText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+
+  // Status filter chips
+  statusFilterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  pillChipSmall: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    minHeight: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pillChipSmallText: {
+    fontSize: 12,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 16,
+  },
+
   listContent: { padding: 16, gap: 12, paddingBottom: 100 },
+
+  // Booking card — monochrome
   bookingCard: {
     borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     overflow: 'hidden',
-    // transparent bg — no card shadow
   },
   cardTop: {
     flexDirection: 'row',
@@ -696,11 +774,7 @@ const styles = StyleSheet.create({
   itemImage: {
     width: 64,
     height: 64,
-    borderRadius: 16,
-  },
-  itemImageFb: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 14,
   },
   cardInfo: {
     flex: 1,
@@ -737,68 +811,70 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 8,
   },
-  statusDotRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+
+  // Status badge — monochrome pill
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
   },
   statusText: {
-    fontSize: 11,
-    fontFamily: fonts.body,
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
     lineHeight: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
+
   priceText: {
     fontSize: 16,
     fontFamily: fonts.headingSemi,
     lineHeight: 24,
   },
+
+  // Actions row
   actionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
   },
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: 999,
     minHeight: 44,
+  },
+  actionBtnPrimary: {
+    // INK bg — set inline
+  },
+  actionBtnOutline: {
+    borderWidth: 1,
   },
   actionBtnText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
-  statusFilterRow: {
+
+  // Error banner
+  errorBanner: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginVertical: 10,
-    borderRadius: 20,
-    padding: 3,
-    gap: 3,
-  },
-  statusFilterChip: {
-    flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 17,
+    gap: 8,
+    margin: 16,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
   },
-  statusFilterChipActive: {
-    // background set inline
-  },
-  statusFilterText: {
+  errorBannerText: {
     fontSize: 13,
     fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+    flex: 1,
   },
 })

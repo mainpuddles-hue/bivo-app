@@ -1,26 +1,29 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, Animated, Linking } from 'react-native'
+import { useState, useCallback } from 'react'
+import {
+  View, Text, ScrollView, RefreshControl, Pressable,
+  StyleSheet, Alert, Dimensions,
+} from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import {
-  ArrowLeft, Bookmark, BookmarkCheck, CalendarDays, MapPin,
+  ArrowLeft, Heart, CalendarDays, MapPin, Bookmark,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
-import { PostCard } from '@/components/PostCard'
 import { EmptyState } from '@/components/EmptyState'
 import { PostCardSkeleton } from '@/components/SkeletonLoaders'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
+import { getImageUrl } from '@/lib/imageUtils'
+import { formatPrice } from '@/lib/format'
 import type { Post } from '@/lib/types'
 
-type SavedTab = 'posts' | 'events' | 'places'
+type SavedTab = 'all' | 'posts' | 'events'
 
 interface SavedEvent {
   id: string
@@ -31,15 +34,13 @@ interface SavedEvent {
   name_fi?: string
 }
 
-interface SavedPlace {
-  id: string
-  name: string
-  category: string | null
-  address: string | null
-}
+const SCREEN_WIDTH = Dimensions.get('window').width
+const GRID_GAP = 10
+const GRID_PADDING = 12
+const CARD_WIDTH = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP) / 2
 
 function SavedScreenInner() {
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -47,10 +48,9 @@ function SavedScreenInner() {
 
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [activeTab, setActiveTab] = useState<SavedTab>('posts')
+  const [activeTab, setActiveTab] = useState<SavedTab>('all')
   const [posts, setPosts] = useState<Post[]>([])
   const [events, setEvents] = useState<SavedEvent[]>([])
-  const [places, setPlaces] = useState<SavedPlace[]>([])
   const [unsavingId, setUnsavingId] = useState<string | null>(null)
 
   const loadSaved = useCallback(async () => {
@@ -59,8 +59,8 @@ function SavedScreenInner() {
       if (!cachedId) { router.replace('/(auth)/login'); setLoading(false); setRefreshing(false); return }
       const user = { id: cachedId }
 
-      // Fetch saved posts, events, and places in parallel
-      const [savedPostsRes, savedEventsRes, savedPlacesRes] = await Promise.all([
+      // Fetch saved posts and events in parallel
+      const [savedPostsRes, savedEventsRes] = await Promise.all([
         supabase
           .from('saved_posts')
           .select(`
@@ -81,18 +81,6 @@ function SavedScreenInner() {
           .then(res => {
             if (res.error) {
               if (__DEV__) console.log('[saved] saved_events error:', res.error.message)
-              return { ...res, data: [] }
-            }
-            return res
-          }),
-        supabase
-          .from('saved_places')
-          .select('place_id')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .then(res => {
-            if (res.error) {
-              if (__DEV__) console.log('[saved] saved_places error:', res.error.message)
               return { ...res, data: [] }
             }
             return res
@@ -147,22 +135,6 @@ function SavedScreenInner() {
       }
 
       setEvents(allEvents)
-
-      // Fetch place details
-      const placeIds = (savedPlacesRes.data ?? []).map((p: any) => p.place_id)
-      if (placeIds.length > 0) {
-        const { data: placeData, error: placesError } = await supabase
-          .from('local_places')
-          .select('id, name, category, address')
-          .in('id', placeIds)
-        if (placesError) {
-          if (__DEV__) console.log('[saved] local_places error:', placesError.message)
-          // Continue — just don't show saved places
-        } else {
-          setPlaces((placeData ?? []) as SavedPlace[])
-        }
-      }
-
     } catch (err) {
       if (__DEV__) console.warn('[saved] loadSaved failed:', err)
     } finally {
@@ -196,7 +168,7 @@ function SavedScreenInner() {
     }
   }, [unsavingId, supabase, t])
 
-  const handleUnsaveEvent = useCallback(async (eventId: string, eventType: string) => {
+  const handleUnsaveEvent = useCallback(async (eventId: string, _eventType: string) => {
     const prev = events
     setEvents(e => e.filter(ev => ev.id !== eventId))
     try {
@@ -210,105 +182,239 @@ function SavedScreenInner() {
     }
   }, [events, supabase, t])
 
-  const handleUnsavePlace = useCallback(async (placeId: string) => {
-    const prev = places
-    setPlaces(p => p.filter(pl => pl.id !== placeId))
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-      const { error } = await (supabase.from('saved_places') as any).delete().eq('place_id', placeId).eq('user_id', user.id)
-      if (error) throw error
-    } catch {
-      setPlaces(prev)
-      Alert.alert(t('common.error'))
+  // Derive display price for a post
+  const getPostPrice = (post: Post): string => {
+    if (post.type === 'ilmaista') return locale === 'fi' ? 'Ilmainen' : 'Free'
+    if (post.daily_fee != null && post.daily_fee > 0) {
+      return `${formatPrice(post.daily_fee, locale)} / ${locale === 'fi' ? 'pv' : locale === 'sv' ? 'dag' : 'day'}`
     }
-  }, [places, supabase, t])
+    if (post.service_price != null && post.service_price > 0) {
+      return formatPrice(post.service_price, locale)
+    }
+    return locale === 'fi' ? 'Ilmainen' : 'Free'
+  }
 
+  // Tab definitions
   const tabs: { key: SavedTab; label: string; count: number }[] = [
+    { key: 'all', label: locale === 'fi' ? 'Kaikki' : locale === 'sv' ? 'Alla' : 'All', count: posts.length + events.length },
     { key: 'posts', label: t('saved.tabPosts'), count: posts.length },
     { key: 'events', label: t('saved.tabEvents'), count: events.length },
-    { key: 'places', label: t('saved.tabPlaces'), count: places.length },
   ]
+
+  // Items to display based on active tab
+  const showPosts = activeTab === 'all' || activeTab === 'posts'
+  const showEvents = activeTab === 'all' || activeTab === 'events'
+  const isEmpty = (showPosts ? posts.length : 0) + (showEvents ? events.length : 0) === 0
+
+  // Build pairs for 2-column grid layout of posts
+  const postRows: Post[][] = []
+  if (showPosts) {
+    for (let i = 0; i < posts.length; i += 2) {
+      postRows.push(posts.slice(i, i + 2))
+    }
+  }
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('saved.title')}</Text>
+      {/* ── Bar header: circle back + centered title ── */}
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={({ pressed }) => [
+            s.backCircle,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            },
+            pressed && { opacity: 0.7 },
+          ]}
+        >
+          <ArrowLeft size={13} color={colors.foreground} />
+        </Pressable>
+        <View style={s.headerTitleWrap}>
+          <Text style={[s.headerTitle, { color: colors.foreground }]}>
+            {t('saved.title')}
+          </Text>
+        </View>
+        {/* Spacer to balance the back button */}
+        <View style={s.headerSpacer} />
       </View>
 
-      {/* Tab switcher — Threads pill pattern */}
-      <View style={[s.tabBar, { backgroundColor: colors.muted }]}>
-        {tabs.map((tab) => (
-          <Pressable
-            key={tab.key}
-            onPress={() => setActiveTab(tab.key)}
-            style={[s.tabItem, activeTab === tab.key && [s.tabItemActive, { backgroundColor: colors.background }]]}
-          >
-            <Text style={[s.tabText, { color: activeTab === tab.key ? colors.foreground : colors.mutedForeground, fontFamily: activeTab === tab.key ? fonts.bodySemi : fonts.body }]}>
-              {tab.label}
-            </Text>
-            {tab.count > 0 && (
-              <View style={[s.tabBadge, { backgroundColor: activeTab === tab.key ? `${colors.foreground}12` : 'transparent' }]}>
-                <Text style={[s.tabBadgeText, { color: activeTab === tab.key ? colors.foreground : colors.mutedForeground }]}>
-                  {tab.count}
+      {/* ── Filter tabs: pill chips ── */}
+      <View style={s.tabBarWrap}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.tabBar}
+        >
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.key
+            return (
+              <Pressable
+                key={tab.key}
+                onPress={() => setActiveTab(tab.key)}
+                style={[
+                  s.tabPill,
+                  isActive
+                    ? { backgroundColor: colors.foreground }
+                    : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+                ]}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+              >
+                <Text
+                  style={[
+                    s.tabPillText,
+                    { color: isActive ? colors.primaryForeground : colors.foreground },
+                  ]}
+                >
+                  {tab.label}
                 </Text>
-              </View>
-            )}
-          </Pressable>
-        ))}
+                {tab.count > 0 && (
+                  <Text
+                    style={[
+                      s.tabPillCount,
+                      { color: isActive ? colors.primaryForeground : colors.tertiaryForeground },
+                    ]}
+                  >
+                    {tab.count}
+                  </Text>
+                )}
+              </Pressable>
+            )
+          })}
+        </ScrollView>
       </View>
 
+      {/* ── Content ── */}
       {loading ? (
-        <View style={s.content}>
+        <View style={s.loadingWrap}>
           <PostCardSkeleton />
           <PostCardSkeleton />
           <PostCardSkeleton />
         </View>
+      ) : isEmpty ? (
+        <EmptyState
+          icon={<Bookmark size={36} color={colors.foreground} />}
+          title={t('saved.empty')}
+          description={t('saved.emptyHint')}
+          actionLabel={t('saved.browse')}
+          onAction={() => router.push('/')}
+        />
       ) : (
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadSaved() }} tintColor={colors.primary} />}>
-          {/* Posts tab */}
-          {activeTab === 'posts' && (
-            posts.length === 0 ? (
-              <EmptyState
-                icon={<Bookmark size={36} color={colors.primary} />}
-                title={t('saved.empty')}
-                description={t('saved.emptyHint')}
-                actionLabel={t('saved.browse')}
-                onAction={() => router.push('/')}
-              />
-            ) : (
-              posts.map((post) => (
-                <View key={post.id} style={s.savedItem}>
-                  <PostCard post={post} />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={s.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => { setRefreshing(true); loadSaved() }}
+              tintColor={colors.foreground}
+            />
+          }
+        >
+          {/* ── Posts grid (2-col) ── */}
+          {showPosts && postRows.map((row, rowIdx) => (
+            <View key={`row-${rowIdx}`} style={s.gridRow}>
+              {row.map((post) => {
+                const imageUri = getImageUrl(post.image_url, 'thumbnail')
+                return (
                   <Pressable
-                    onPress={() => handleUnsavePost(post.id)}
-                    disabled={unsavingId === post.id}
-                    style={[s.unsaveBtn, { backgroundColor: colors.card }]}
+                    key={post.id}
+                    onPress={() => router.push(`/post/${post.id}` as any)}
+                    style={({ pressed }) => [
+                      s.gridCard,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                        width: CARD_WIDTH,
+                      },
+                      pressed && { opacity: 0.85 },
+                    ]}
                     accessibilityRole="button"
-                    accessibilityLabel={t('saved.unsave')}
+                    accessibilityLabel={post.title}
                   >
-                    <BookmarkCheck size={16} color={colors.primary} />
-                  </Pressable>
-                </View>
-              ))
-            )
-          )}
+                    {/* Image */}
+                    <View style={s.gridImageWrap}>
+                      {imageUri ? (
+                        <Image
+                          source={{ uri: imageUri }}
+                          style={s.gridImage}
+                          contentFit="cover"
+                          transition={200}
+                        />
+                      ) : (
+                        <View style={[s.gridImagePlaceholder, { backgroundColor: colors.muted }]}>
+                          <Bookmark size={24} color={colors.tertiaryForeground} />
+                        </View>
+                      )}
+                      {/* Heart overlay */}
+                      <Pressable
+                        onPress={(e) => {
+                          e.stopPropagation?.()
+                          handleUnsavePost(post.id)
+                        }}
+                        disabled={unsavingId === post.id}
+                        style={[s.heartOverlay, { backgroundColor: colors.foreground }]}
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('saved.unsave')}
+                      >
+                        <Heart size={13} color="#fff" fill="#fff" />
+                      </Pressable>
+                    </View>
 
-          {/* Events tab */}
-          {activeTab === 'events' && (
-            events.length === 0 ? (
-              <EmptyState
-                icon={<CalendarDays size={36} color={colors.primary} />}
-                title={t('saved.emptyEvents')}
-                description={t('saved.emptyEventsHint')}
-              />
-            ) : (
-              events.map((event) => (
+                    {/* Info */}
+                    <View style={s.gridInfo}>
+                      <Text
+                        style={[s.gridTitle, { color: colors.foreground }]}
+                        numberOfLines={1}
+                      >
+                        {post.title}
+                      </Text>
+                      {post.location && (
+                        <Text
+                          style={[s.gridMeta, { color: colors.mutedForeground }]}
+                          numberOfLines={1}
+                        >
+                          {post.location}
+                        </Text>
+                      )}
+                      <Text style={[s.gridPrice, { color: colors.foreground }]}>
+                        {getPostPrice(post)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                )
+              })}
+              {/* Fill empty space if odd number of items in last row */}
+              {row.length === 1 && <View style={{ width: CARD_WIDTH }} />}
+            </View>
+          ))}
+
+          {/* ── Events list ── */}
+          {showEvents && events.length > 0 && (
+            <View style={s.eventsSection}>
+              {showPosts && posts.length > 0 && (
+                <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+                  {t('saved.tabEvents').toUpperCase()}
+                </Text>
+              )}
+              {events.map((event) => (
                 <Pressable
                   key={event.id}
                   onPress={() => router.push(`/event/${event.id}` as any)}
-                  style={[s.eventCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+                  style={({ pressed }) => [
+                    s.eventCard,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    },
+                    pressed && { opacity: 0.85 },
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={event.title}
                 >
@@ -316,65 +422,42 @@ function SavedScreenInner() {
                     <CalendarDays size={20} color={colors.mutedForeground} />
                   </View>
                   <View style={s.eventInfo}>
-                    <Text style={[s.eventTitle, { color: colors.foreground }]} numberOfLines={2}>{event.title}</Text>
+                    <Text
+                      style={[s.eventTitle, { color: colors.foreground }]}
+                      numberOfLines={2}
+                    >
+                      {event.title}
+                    </Text>
                     <Text style={[s.eventDate, { color: colors.mutedForeground }]}>
-                      {new Date(event.event_date).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', {
-                        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                      })}
+                      {new Date(event.event_date).toLocaleDateString(
+                        locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB',
+                        { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
+                      )}
                     </Text>
                     {event.location && (
                       <View style={s.eventLocationRow}>
                         <MapPin size={12} color={colors.mutedForeground} />
-                        <Text style={[s.eventLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{event.location}</Text>
+                        <Text
+                          style={[s.eventLocation, { color: colors.mutedForeground }]}
+                          numberOfLines={1}
+                        >
+                          {event.location}
+                        </Text>
                       </View>
                     )}
                   </View>
-                  <Pressable onPress={() => handleUnsaveEvent(event.id, event.event_type)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-                    <BookmarkCheck size={18} color={colors.primary} />
+                  <Pressable
+                    onPress={() => handleUnsaveEvent(event.id, event.event_type)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('saved.unsave')}
+                    style={s.eventUnsaveBtn}
+                  >
+                    <Heart size={18} color={colors.foreground} fill={colors.foreground} />
                   </Pressable>
                 </Pressable>
-              ))
-            )
-          )}
-
-          {/* Places tab */}
-          {activeTab === 'places' && (
-            places.length === 0 ? (
-              <EmptyState
-                icon={<MapPin size={36} color={colors.primary} />}
-                title={t('saved.emptyPlaces')}
-                description={t('saved.emptyPlacesHint')}
-              />
-            ) : (
-              places.map((place) => (
-                <Pressable
-                  key={place.id}
-                  onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.address ?? ''))}`).catch(() => {})}
-                  style={[s.eventCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${place.name} — ${t('saved.openInMaps')}`}
-                >
-                  <View style={[s.eventIcon, { backgroundColor: colors.muted }]}>
-                    <MapPin size={20} color={colors.mutedForeground} />
-                  </View>
-                  <View style={s.eventInfo}>
-                    <Text style={[s.eventTitle, { color: colors.foreground }]} numberOfLines={2}>{place.name}</Text>
-                    {place.category && (
-                      <Text style={[s.eventDate, { color: colors.mutedForeground, textTransform: 'capitalize' }]}>{place.category}</Text>
-                    )}
-                    {place.address && (
-                      <View style={s.eventLocationRow}>
-                        <MapPin size={12} color={colors.mutedForeground} />
-                        <Text style={[s.eventLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{place.address}</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Pressable onPress={() => handleUnsavePlace(place.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('saved.unsave')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-                    <BookmarkCheck size={18} color={colors.primary} />
-                  </Pressable>
-                </Pressable>
-              ))
-            )
+              ))}
+            </View>
           )}
         </ScrollView>
       )}
@@ -383,49 +466,208 @@ function SavedScreenInner() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+  },
+
+  /* ── Header ── */
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 12,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Touch target expanded via hitSlop
+    minWidth: 44,
+    minHeight: 44,
+  },
+  headerTitleWrap: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
+  },
+  headerSpacer: {
+    width: 36,
+    height: 36,
+  },
+
+  /* ── Tab pills ── */
+  tabBarWrap: {
+    paddingBottom: 14,
+  },
   tabBar: {
-    flexDirection: 'row', marginHorizontal: 16, marginTop: 12, borderRadius: 16,
-    padding: 4, gap: 4,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 8,
   },
-  tabItem: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 8, borderRadius: 8,
+  tabPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    gap: 5,
+    minHeight: 44,
   },
-  tabItemActive: { borderRadius: 8 },
-  tabText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
-  tabBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  tabBadgeText: { fontSize: 11, lineHeight: 16, fontFamily: fonts.heading },
-  content: { padding: 16, gap: 12, paddingBottom: 100 },
-  emptyState: { alignItems: 'center', paddingTop: 40, gap: 12 },
-  emptyTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi },
-  emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 32, lineHeight: 20, fontFamily: fonts.body },
-  browseBtn: { marginTop: 8, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 },
-  browseBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
-  savedItem: { position: 'relative' },
-  unsaveBtn: {
-    position: 'absolute', top: 8, right: 8, zIndex: 10,
-    width: 44, height: 44, borderRadius: 22,
-    alignItems: 'center', justifyContent: 'center',
+  tabPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  tabPillCount: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+  },
+
+  /* ── Loading ── */
+  loadingWrap: {
+    padding: 16,
+    gap: 12,
+  },
+
+  /* ── Scroll content ── */
+  scrollContent: {
+    paddingHorizontal: GRID_PADDING,
+    paddingBottom: 100,
+  },
+
+  /* ── Posts grid ── */
+  gridRow: {
+    flexDirection: 'row',
+    gap: GRID_GAP,
+    marginBottom: GRID_GAP,
+  },
+  gridCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  gridImageWrap: {
+    aspectRatio: 1,
+    width: '100%',
+  },
+  gridImage: {
+    width: '100%',
+    height: '100%',
+  },
+  gridImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heartOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Expanded touch target via hitSlop
+    minWidth: 44,
+    minHeight: 44,
+  },
+  gridInfo: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
+  },
+  gridTitle: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.1,
+  },
+  gridMeta: {
+    fontSize: 10.5,
+    fontFamily: fonts.body,
+    marginTop: 3,
+  },
+  gridPrice: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    marginTop: 6,
+  },
+
+  /* ── Events ── */
+  eventsSection: {
+    gap: 8,
+    marginTop: 4,
+  },
+  sectionLabel: {
+    fontSize: 10.5,
+    letterSpacing: 0.9,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+    paddingHorizontal: 4,
   },
   eventCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16, overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   eventIcon: {
-    width: 48, height: 48, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center',
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  eventInfo: { flex: 1, gap: 2 },
-  eventTitle: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  eventDate: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
-  eventLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
-  eventLocation: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
+  eventInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  eventTitle: {
+    fontSize: 13.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+  eventDate: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  eventLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 1,
+  },
+  eventLocation: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  eventUnsaveBtn: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 })
 
 export default function SavedScreen() {

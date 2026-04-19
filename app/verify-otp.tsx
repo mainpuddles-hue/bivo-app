@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { View, Text, TextInput, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Mail, ArrowLeft, RefreshCw } from 'lucide-react-native'
+import { ArrowLeft, Info } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -12,6 +12,8 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 
 type OtpMode = 'signup' | 'recovery'
+
+const DIGIT_COUNT = 6
 
 export default function VerifyOtpScreen() {
   const { colors } = useTheme()
@@ -23,18 +25,23 @@ export default function VerifyOtpScreen() {
   const { email, mode: modeParam } = useLocalSearchParams<{ email: string; mode?: string }>()
   const otpMode: OtpMode = modeParam === 'recovery' ? 'recovery' : 'signup'
 
-  const [code, setCode] = useState('')
+  const [digits, setDigits] = useState<string[]>(Array(DIGIT_COUNT).fill(''))
+  const [activeIndex, setActiveIndex] = useState(0)
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [error, setError] = useState('')
-  const inputRef = useRef<TextInput>(null)
+
+  const inputRefs = useRef<(TextInput | null)[]>([])
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Auto-focus input on mount
+  // Helper: get full code string from digits
+  const getCode = useCallback(() => digits.join(''), [digits])
+
+  // Auto-focus first input on mount
   useEffect(() => {
     const timer = setTimeout(() => {
-      inputRef.current?.focus()
+      inputRefs.current[0]?.focus()
     }, 300)
     return () => clearTimeout(timer)
   }, [])
@@ -63,8 +70,9 @@ export default function VerifyOtpScreen() {
     }
   }, [resendCooldown > 0]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleVerify = async () => {
-    if (!code.trim() || code.trim().length < 6) {
+  const handleVerify = async (codeOverride?: string) => {
+    const code = codeOverride ?? getCode()
+    if (code.length < 6) {
       setError(t('auth.otpTooShort'))
       return
     }
@@ -159,11 +167,73 @@ export default function VerifyOtpScreen() {
     }
   }
 
-  const handleCodeChange = (text: string) => {
+  const handleDigitChange = (text: string, index: number) => {
     // Only allow digits
-    const digits = text.replace(/[^0-9]/g, '')
-    setCode(digits)
+    const cleaned = text.replace(/[^0-9]/g, '')
+
+    if (cleaned.length === 0) {
+      // Deletion
+      const newDigits = [...digits]
+      newDigits[index] = ''
+      setDigits(newDigits)
+      setError('')
+      return
+    }
+
+    // Handle paste: user pasted full code into one field
+    if (cleaned.length > 1) {
+      const pastedDigits = cleaned.slice(0, DIGIT_COUNT).split('')
+      const newDigits = [...digits]
+      pastedDigits.forEach((d, i) => {
+        if (index + i < DIGIT_COUNT) {
+          newDigits[index + i] = d
+        }
+      })
+      setDigits(newDigits)
+      setError('')
+      const nextIndex = Math.min(index + pastedDigits.length, DIGIT_COUNT - 1)
+      setActiveIndex(nextIndex)
+      inputRefs.current[nextIndex]?.focus()
+      // Auto-verify if all filled
+      const fullCode = newDigits.join('')
+      if (fullCode.length === DIGIT_COUNT) {
+        setTimeout(() => handleVerify(fullCode), 100)
+      }
+      return
+    }
+
+    // Single digit entry
+    const newDigits = [...digits]
+    newDigits[index] = cleaned[0]
+    setDigits(newDigits)
     setError('')
+
+    // Auto-advance to next field
+    if (index < DIGIT_COUNT - 1) {
+      setActiveIndex(index + 1)
+      inputRefs.current[index + 1]?.focus()
+    }
+
+    // Auto-verify when last digit entered
+    const fullCode = newDigits.join('')
+    if (fullCode.length === DIGIT_COUNT) {
+      setTimeout(() => handleVerify(fullCode), 100)
+    }
+  }
+
+  const handleKeyPress = (e: { nativeEvent: { key: string } }, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !digits[index] && index > 0) {
+      // Move to previous field on backspace when current is empty
+      const newDigits = [...digits]
+      newDigits[index - 1] = ''
+      setDigits(newDigits)
+      setActiveIndex(index - 1)
+      inputRefs.current[index - 1]?.focus()
+    }
+  }
+
+  const handleFocus = (index: number) => {
+    setActiveIndex(index)
   }
 
   const maskedEmail = email
@@ -172,115 +242,119 @@ export default function VerifyOtpScreen() {
       )
     : ''
 
+  const formatCooldown = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
   return (
     <ScreenErrorBoundary screenName="VerifyOtp">
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
-        {/* Header */}
-        <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
+      <View style={[styles.container, { backgroundColor: colors.card, paddingTop: insets.top }]}>
+        {/* Bar header with circle back button */}
+        <View style={styles.header}>
+          <PressableOpacity
+            onPress={() => router.back()}
+            hitSlop={12}
+            style={[styles.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+          >
+            <ArrowLeft size={16} color={colors.foreground} strokeWidth={2.2} />
           </PressableOpacity>
         </View>
 
         {/* Content */}
         <View style={styles.content}>
-          {/* Icon */}
-          <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}15` }]}>
-            <Mail size={32} color={colors.primary} />
-          </View>
-
-          {/* Title */}
-          <Text style={[styles.title, { color: colors.foreground }]}>
+          {/* Large serif headline */}
+          <Text style={[styles.headline, { color: colors.foreground }]}>
             {otpMode === 'recovery' ? t('auth.otpRecoveryTitle') : t('auth.otpTitle')}
           </Text>
 
-          {/* Description */}
-          <Text style={[styles.description, { color: colors.mutedForeground }]}>
-            {otpMode === 'recovery' ? t('auth.otpRecoveryDescription') : t('auth.otpDescription')}
+          {/* Subtitle with email */}
+          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+            {otpMode === 'recovery' ? t('auth.otpRecoveryDescription') : t('auth.otpDescription')}{' '}
+            <Text style={[styles.subtitleEmail, { color: colors.foreground }]}>{maskedEmail}</Text>.
           </Text>
 
-          {/* Email display */}
-          <Text style={[styles.emailDisplay, { color: colors.foreground }]}>
-            {maskedEmail}
-          </Text>
-
-          {/* Code input */}
-          <TextInput
-            ref={inputRef}
-            style={[
-              styles.codeInput,
-              {
-                backgroundColor: colors.card,
-                color: colors.foreground,
-                borderColor: error ? colors.destructive : colors.border,
-              },
-            ]}
-            value={code}
-            onChangeText={handleCodeChange}
-            placeholder="000000"
-            placeholderTextColor={colors.mutedForeground}
-            keyboardType="number-pad"
-            maxLength={6}
-            autoFocus
-            textContentType="oneTimeCode"
-            autoComplete="one-time-code"
-            accessibilityLabel={t('auth.otpTitle')}
-          />
+          {/* 6 digit boxes */}
+          <View style={styles.digitRow}>
+            {digits.map((digit, index) => {
+              const isFilled = digit !== ''
+              const isActive = activeIndex === index && !isFilled
+              return (
+                <View
+                  key={index}
+                  style={[
+                    styles.digitBox,
+                    {
+                      borderColor: isFilled || isActive ? colors.foreground : colors.border,
+                      borderWidth: isFilled || isActive ? 1.5 : 1,
+                      backgroundColor: isFilled ? colors.card : colors.background,
+                    },
+                  ]}
+                >
+                  <TextInput
+                    ref={(ref) => { inputRefs.current[index] = ref }}
+                    style={[styles.digitInput, { color: colors.foreground }]}
+                    value={digit}
+                    onChangeText={(text) => handleDigitChange(text, index)}
+                    onKeyPress={(e) => handleKeyPress(e, index)}
+                    onFocus={() => handleFocus(index)}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    textContentType="oneTimeCode"
+                    autoComplete={index === 0 ? 'one-time-code' : 'off'}
+                    selectTextOnFocus
+                    caretHidden
+                    accessibilityLabel={`${t('auth.otpTitle')} ${index + 1}`}
+                  />
+                </View>
+              )
+            })}
+          </View>
 
           {/* Error message */}
           {error ? (
             <Text style={[styles.errorText, { color: colors.destructive }]} accessibilityRole="alert">{error}</Text>
           ) : null}
 
-          {/* Verify button */}
+          {/* Loading indicator */}
+          {loading ? (
+            <ActivityIndicator size="small" color={colors.foreground} style={styles.loadingIndicator} />
+          ) : null}
+
+          {/* Resend countdown text */}
           <PressableOpacity
-            onPress={handleVerify}
-            disabled={loading || code.length < 6}
-            style={[
-              styles.verifyBtn,
-              {
-                backgroundColor: colors.primary,
-                opacity: loading || code.length < 6 ? 0.6 : 1,
-              },
-            ]}
+            onPress={handleResend}
+            disabled={resendCooldown > 0 || resending}
             accessibilityRole="button"
-            accessibilityLabel={t('auth.otpVerify')}
-            accessibilityState={{ disabled: loading || code.length < 6 }}
+            accessibilityLabel={t('auth.otpResend')}
+            style={styles.resendBtn}
           >
-            {loading ? (
-              <ActivityIndicator size="small" color={colors.primaryForeground} />
+            {resending ? (
+              <ActivityIndicator size={12} color={colors.mutedForeground} />
             ) : (
-              <Text style={[styles.verifyBtnText, { color: colors.primaryForeground }]}>
-                {t('auth.otpVerify')}
+              <Text style={[styles.resendText, { color: colors.mutedForeground }]}>
+                {resendCooldown > 0
+                  ? `${t('auth.otpResend')} `
+                  : t('auth.otpResend')}
+                {resendCooldown > 0 ? (
+                  <Text style={{ color: colors.tertiaryForeground }}>
+                    ({formatCooldown(resendCooldown)})
+                  </Text>
+                ) : null}
               </Text>
             )}
           </PressableOpacity>
 
-          {/* Resend link */}
-          <View style={styles.resendRow}>
-            <Text style={[styles.resendLabel, { color: colors.mutedForeground }]}>
+          {/* Info box */}
+          <View style={[styles.infoBox, { backgroundColor: colors.background }]}>
+            <Info size={15} color={colors.foreground} strokeWidth={1.8} style={styles.infoIcon} />
+            <Text style={[styles.infoText, { color: colors.foreground }]}>
               {t('auth.otpNotReceived')}
             </Text>
-            <PressableOpacity onPress={handleResend} disabled={resendCooldown > 0 || resending} accessibilityRole="button" accessibilityLabel={t('auth.otpResend')}>
-              <View style={styles.resendBtnInner}>
-                {resending ? (
-                  <ActivityIndicator size={14} color={colors.primary} />
-                ) : (
-                  <RefreshCw size={14} color={resendCooldown > 0 ? colors.mutedForeground : colors.primary} />
-                )}
-                <Text
-                  style={[
-                    styles.resendBtnText,
-                    { color: resendCooldown > 0 ? colors.mutedForeground : colors.primary },
-                  ]}
-                >
-                  {resendCooldown > 0
-                    ? `${t('auth.otpResendIn')} ${resendCooldown}s`
-                    : t('auth.otpResend')}
-                </Text>
-              </View>
-            </PressableOpacity>
           </View>
         </View>
       </View>
@@ -297,98 +371,94 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 12,
+    gap: 12,
   },
-  backBtn: {
-    padding: 8,
-    minWidth: 44,
-    minHeight: 44,
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minWidth: 44,
+    minHeight: 44,
   },
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 24,
-    alignItems: 'center',
+    paddingTop: 8,
   },
-  iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
+  headline: {
+    fontSize: 36,
+    lineHeight: 38,
+    letterSpacing: -1.2,
+    fontFamily: fonts.heading,
+    marginBottom: 10,
   },
-  title: {
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 8,
-    fontFamily: fonts.headingSemi,
-  },
-  description: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 8,
+  subtitle: {
+    fontSize: 13.5,
+    lineHeight: 20,
     fontFamily: fonts.body,
+    marginBottom: 36,
   },
-  emailDisplay: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 32,
+  subtitleEmail: {
     fontFamily: fonts.bodySemi,
   },
-  codeInput: {
-    width: '100%',
-    maxWidth: 280,
-    borderWidth: 1,
+  digitRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  digitBox: {
+    flex: 1,
+    aspectRatio: 1 / 1.1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 32,
-    letterSpacing: 8,
-    textAlign: 'center',
-    minHeight: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  digitInput: {
+    fontSize: 22,
+    fontWeight: '500',
     fontFamily: fonts.heading,
+    textAlign: 'center',
+    width: '100%',
+    height: '100%',
+    padding: 0,
   },
   errorText: {
     fontSize: 13,
-    marginTop: 8,
-    textAlign: 'center',
+    marginBottom: 8,
     fontFamily: fonts.body,
   },
-  verifyBtn: {
-    width: '100%',
-    maxWidth: 280,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
+  loadingIndicator: {
+    marginBottom: 8,
+  },
+  resendBtn: {
+    minHeight: 44,
     justifyContent: 'center',
-    minHeight: 48,
-    marginTop: 24,
+    marginBottom: 32,
   },
-  verifyBtnText: {
-    fontSize: 16,
-    fontFamily: fonts.bodySemi,
-  },
-  resendRow: {
-    alignItems: 'center',
-    marginTop: 24,
-    gap: 8,
-  },
-  resendLabel: {
-    fontSize: 14,
+  resendText: {
+    fontSize: 12,
     fontFamily: fonts.body,
   },
-  resendBtnInner: {
+  infoBox: {
+    borderRadius: 12,
+    padding: 14,
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    gap: 10,
+    alignItems: 'flex-start',
   },
-  resendBtnText: {
-    fontSize: 14,
-    fontFamily: fonts.bodySemi,
+  infoIcon: {
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  infoText: {
+    fontSize: 11.5,
+    lineHeight: 17,
+    fontFamily: fonts.body,
+    flex: 1,
   },
 })

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -11,7 +11,6 @@ import { GoogleLogo } from '@/components/GoogleLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
-import { TackBirdLogo } from '@/components/TackBirdLogo'
 import { fonts } from '@/lib/fonts'
 import { trackEvent } from '@/lib/analytics'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -225,9 +224,6 @@ function LoginScreenInner() {
         if (error) Alert.alert(t('common.error'), t('auth.googleFailed'))
       } else {
         // Native: use WebBrowser to open OAuth flow and capture redirect
-        // Use the app scheme directly — WebBrowser.openAuthSessionAsync intercepts
-        // the redirect before the OS handles the deep link, so this works in Expo Go too.
-        // The URL must match Supabase's allowed redirect URLs (tackbird://**)
         const redirectTo = 'tackbird://auth/callback'
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
@@ -340,281 +336,520 @@ function LoginScreenInner() {
     }
   }
 
+  // Derived
+  const isSubmitDisabled = loading || (mode === 'register' && !termsAccepted)
+
+  const submitLabel = mode === 'forgot'
+    ? t('auth.sendResetLink')
+    : mode === 'login'
+      ? t('auth.login')
+      : t('auth.register')
+
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.card }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 40 }]}
+        style={[styles.scroll, { backgroundColor: colors.card }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {/* Logo */}
-        <View style={styles.logoSection}>
-          <View style={[styles.logoBigCircle, { backgroundColor: colors.primary }]}>
-            <TackBirdLogo size={40} color={colors.primaryForeground} />
-          </View>
+        {/* Logo mark — 48x48 ink rounded square with italic "tb" */}
+        <View style={[styles.logoMark, { backgroundColor: colors.foreground }]}>
+          <Text style={[styles.logoText, { color: colors.primaryForeground }]}>tb</Text>
         </View>
 
-        {/* Mode toggle */}
-            {mode !== 'forgot' && (
-              <View style={[styles.modeToggle, { borderBottomColor: colors.border }]}>
-                <PressableOpacity
-                  onPress={() => setMode('login')}
-                  style={[styles.modeBtn, mode === 'login' && { borderBottomWidth: 2, borderBottomColor: colors.foreground }]}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: mode === 'login' }}
-                  accessibilityLabel={t('auth.login')}
-                >
-                  <Text style={[styles.modeText, { color: mode === 'login' ? colors.foreground : colors.mutedForeground }]}>
-                    {t('auth.login')}
-                  </Text>
-                </PressableOpacity>
-                <PressableOpacity
-                  onPress={() => setMode('register')}
-                  style={[styles.modeBtn, mode === 'register' && { borderBottomWidth: 2, borderBottomColor: colors.foreground }]}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: mode === 'register' }}
-                  accessibilityLabel={t('auth.register')}
-                >
-                  <Text style={[styles.modeText, { color: mode === 'register' ? colors.foreground : colors.mutedForeground }]}>
-                    {t('auth.register')}
-                  </Text>
-                </PressableOpacity>
-              </View>
-            )}
+        {/* Headline */}
+        <Text style={[styles.headline, { color: colors.foreground }]}>
+          {mode === 'register'
+            ? t('auth.joinTackBird')
+            : mode === 'forgot'
+              ? t('auth.resetPassword')
+              : t('auth.tagline')}
+        </Text>
 
-            {/* Apple Sign In — iOS only. App Store Review Guideline 4.8 requires
-                the NATIVE AppleAuthenticationButton component (not a custom one). */}
-            {mode !== 'forgot' && Platform.OS === 'ios' && (
-              <AppleAuthentication.AppleAuthenticationButton
-                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-                buttonStyle={
-                  isDark
-                    ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
-                    : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-                }
-                cornerRadius={12}
-                style={styles.appleBtn}
-                onPress={handleAppleSignIn}
-              />
-            )}
+        {/* Subtitle */}
+        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+          {mode === 'forgot'
+            ? t('auth.resetPasswordHint')
+            : mode === 'register'
+              ? t('auth.fillAllFields')
+              : t('auth.resetDescription')}
+        </Text>
 
-            {/* Google OAuth */}
-            {mode !== 'forgot' && (
-              <PressableOpacity
-                onPress={handleGoogleOAuth}
-                style={[styles.googleBtn, { backgroundColor: 'transparent', borderColor: colors.border }]}
-                accessibilityRole="button"
-                accessibilityLabel={t('auth.signInWithGoogle')}
-              >
-                <GoogleLogo size={20} />
-                <Text style={[styles.googleBtnText, { color: colors.foreground }]}>
-                  {t('auth.signInWithGoogle')}
-                </Text>
-              </PressableOpacity>
-            )}
+        {/* Section label */}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('auth.email').toUpperCase()}
+        </Text>
 
-            {/* Divider */}
-            {mode !== 'forgot' && (
-              <View style={styles.divider}>
-                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-                <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>{t('common.or')}</Text>
-                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-              </View>
-            )}
+        {/* Email input */}
+        <View style={[styles.inputField, { borderColor: colors.foreground, borderWidth: 1.5 }]}>
+          <TextInput
+            style={[styles.inputText, { color: colors.foreground }]}
+            value={email}
+            onChangeText={setEmail}
+            placeholder={t('auth.emailPlaceholder')}
+            placeholderTextColor={colors.tertiaryForeground}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            textContentType="emailAddress"
+            returnKeyType={mode === 'forgot' ? 'send' : 'next'}
+            accessibilityLabel={t('auth.email')}
+          />
+        </View>
 
-            {/* Forgot password header */}
-            {mode === 'forgot' && (
-              <View style={{ gap: 8, marginBottom: 16 }}>
-                <Text style={[styles.forgotTitle, { color: colors.foreground }]}>{t('auth.resetPassword')}</Text>
-                <Text style={[styles.forgotHint, { color: colors.mutedForeground }]}>{t('auth.resetPasswordHint')}</Text>
-              </View>
-            )}
-
-            {/* Form */}
-            <View style={styles.form}>
-              {mode === 'register' && (
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: 'transparent' }]}
-                  value={name}
-                  onChangeText={setName}
-                  placeholder={t('auth.namePlaceholder')}
-                  placeholderTextColor={colors.mutedForeground}
-                  autoCapitalize="words"
-                  textContentType="name"
-                  returnKeyType="next"
-                  accessibilityLabel={t('auth.name')}
-                />
-              )}
+        {/* Name input — register only */}
+        {mode === 'register' && (
+          <>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground, marginTop: 18 }]}>
+              {t('auth.name').toUpperCase()}
+            </Text>
+            <View style={[styles.inputField, { borderColor: colors.border, borderWidth: 1 }]}>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: 'transparent' }]}
-                value={email}
-                onChangeText={setEmail}
-                placeholder={t('auth.emailPlaceholder')}
-                placeholderTextColor={colors.mutedForeground}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                textContentType="emailAddress"
-                returnKeyType={mode === 'forgot' ? 'send' : 'next'}
-                accessibilityLabel={t('auth.email')}
+                style={[styles.inputText, { color: colors.foreground }]}
+                value={name}
+                onChangeText={setName}
+                placeholder={t('auth.namePlaceholder')}
+                placeholderTextColor={colors.tertiaryForeground}
+                autoCapitalize="words"
+                textContentType="name"
+                returnKeyType="next"
+                accessibilityLabel={t('auth.name')}
               />
-              {mode !== 'forgot' && (
-                <View>
-                  <TextInput
-                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: 'transparent', paddingRight: 48 }]}
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder={t('auth.passwordPlaceholder')}
-                    placeholderTextColor={colors.mutedForeground}
-                    secureTextEntry={!showPassword}
-                    autoComplete="password"
-                    textContentType={mode === 'register' ? 'newPassword' : 'password'}
-                    returnKeyType={mode === 'register' ? 'next' : 'go'}
-                    onSubmitEditing={mode === 'login' ? handleSubmit : undefined}
-                    accessibilityLabel={t('auth.password')}
-                  />
-                  <PressableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeBtn}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
-                  >
-                    {showPassword ? (
-                      <EyeOff size={20} color={colors.mutedForeground} />
-                    ) : (
-                      <Eye size={20} color={colors.mutedForeground} />
-                    )}
-                  </PressableOpacity>
-                </View>
-              )}
+            </View>
+          </>
+        )}
 
-              {/* Password strength (register only) */}
-              {mode === 'register' && (
-                <PasswordStrength password={password} colors={colors} />
-              )}
-
-              {/* Forgot password link */}
-              {mode === 'login' && (
-                <PressableOpacity
-                  onPress={() => setMode('forgot')}
-                  accessibilityRole="link"
-                  accessibilityLabel={t('auth.forgotPassword')}
-                  style={{ minHeight: 44, justifyContent: 'center' }}
-                >
-                  <Text style={[styles.forgotLink, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
-                </PressableOpacity>
-              )}
-
-              {/* Terms checkbox (register mode only) */}
-              {mode === 'register' && (
-                <View style={styles.termsRow}>
-                  <PressableOpacity
-                    onPress={() => setTermsAccepted(!termsAccepted)}
-                    style={styles.checkbox}
-                    hitSlop={8}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: termsAccepted }}
-                    accessibilityLabel={t('auth.acceptTerms')}
-                  >
-                    {termsAccepted ? <View style={[styles.emptyCheckbox, { borderColor: colors.primary }]}><Check size={16} color={colors.primary} /></View> : <View style={[styles.emptyCheckbox, { borderColor: colors.border }]} />}
-                  </PressableOpacity>
-                  <Text style={[styles.termsText, { color: colors.mutedForeground }]}>
-                    {t('auth.acceptTerms')}{' '}
-                    <Text onPress={() => router.push('/terms')} style={{ color: colors.primary }}>{t('auth.termsLink')}</Text>
-                    {' '}{t('common.and')}{' '}
-                    <Text onPress={() => router.push('/privacy')} style={{ color: colors.primary }}>{t('auth.privacyLink')}</Text>
-                  </Text>
-                </View>
-              )}
-
-              {/* Error message */}
-              {errorMsg ? (
-                <View style={[styles.errorBanner, { backgroundColor: colors.destructive + '14' }]}>
-                  <Text style={[styles.errorText, { color: colors.destructive }]}>{errorMsg}</Text>
-                </View>
-              ) : null}
-
-              {/* Submit */}
+        {/* Password input — login and register */}
+        {mode !== 'forgot' && (
+          <>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground, marginTop: 18 }]}>
+              {t('auth.password').toUpperCase()}
+            </Text>
+            <View style={[styles.inputField, { borderColor: colors.border, borderWidth: 1 }]}>
+              <TextInput
+                style={[styles.inputText, { color: colors.foreground, flex: 1 }]}
+                value={password}
+                onChangeText={setPassword}
+                placeholder={t('auth.passwordPlaceholder')}
+                placeholderTextColor={colors.tertiaryForeground}
+                secureTextEntry={!showPassword}
+                autoComplete="password"
+                textContentType={mode === 'register' ? 'newPassword' : 'password'}
+                returnKeyType={mode === 'register' ? 'next' : 'go'}
+                onSubmitEditing={mode === 'login' ? handleSubmit : undefined}
+                accessibilityLabel={t('auth.password')}
+              />
               <PressableOpacity
-                onPress={handleSubmit}
-                disabled={loading || (mode === 'register' && !termsAccepted)}
-                style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: (loading || (mode === 'register' && !termsAccepted)) ? 0.5 : 1 }]}
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeBtn}
+                hitSlop={8}
                 accessibilityRole="button"
-                accessibilityLabel={mode === 'forgot' ? t('auth.sendResetLink') : mode === 'login' ? t('auth.login') : t('auth.register')}
+                accessibilityLabel={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
               >
-                {loading ? (
-                  <ActivityIndicator size="small" color={colors.background} />
+                {showPassword ? (
+                  <EyeOff size={18} color={colors.mutedForeground} />
                 ) : (
-                  <Text style={[styles.submitText, { color: colors.background }]}>
-                    {mode === 'forgot' ? t('auth.sendResetLink') : mode === 'login' ? t('auth.login') : t('auth.register')}
-                  </Text>
+                  <Eye size={18} color={colors.mutedForeground} />
                 )}
               </PressableOpacity>
-
-              {/* Back to login from forgot */}
-              {mode === 'forgot' && (
-                <PressableOpacity onPress={() => setMode('login')} style={{ alignSelf: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={[styles.linkText, { color: colors.primary }]}>{t('auth.backToLogin')}</Text>
-                </PressableOpacity>
-              )}
             </View>
+          </>
+        )}
+
+        {/* Password strength — register only */}
+        {mode === 'register' && (
+          <PasswordStrength password={password} colors={colors} />
+        )}
+
+        {/* Forgot password link — login only */}
+        {mode === 'login' && (
+          <PressableOpacity
+            onPress={() => setMode('forgot')}
+            accessibilityRole="link"
+            accessibilityLabel={t('auth.forgotPassword')}
+            style={styles.forgotBtn}
+          >
+            <Text style={[styles.forgotText, { color: colors.foreground }]}>{t('auth.forgotPassword')}</Text>
+          </PressableOpacity>
+        )}
+
+        {/* Terms — register mode */}
+        {mode === 'register' && (
+          <View style={styles.termsRow}>
+            <PressableOpacity
+              onPress={() => setTermsAccepted(!termsAccepted)}
+              style={styles.checkboxHit}
+              hitSlop={8}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: termsAccepted }}
+              accessibilityLabel={t('auth.acceptTerms')}
+            >
+              <View style={[styles.checkbox, { borderColor: termsAccepted ? colors.foreground : colors.border }]}>
+                {termsAccepted && <Check size={14} color={colors.foreground} />}
+              </View>
+            </PressableOpacity>
+            <Text style={[styles.termsText, { color: colors.mutedForeground }]}>
+              {t('auth.acceptTerms')}{' '}
+              <Text onPress={() => router.push('/terms')} style={[styles.termsLink, { color: colors.foreground }]}>{t('auth.termsLink')}</Text>
+              {' '}{t('common.and')}{' '}
+              <Text onPress={() => router.push('/privacy')} style={[styles.termsLink, { color: colors.foreground }]}>{t('auth.privacyLink')}</Text>
+            </Text>
+          </View>
+        )}
+
+        {/* Terms text for login (non-interactive, like mockup) */}
+        {mode === 'login' && (
+          <Text style={[styles.termsInline, { color: colors.mutedForeground }]}>
+            {t('auth.acceptTerms')}{' '}
+            <Text onPress={() => router.push('/terms')} style={[styles.termsLink, { color: colors.foreground }]}>{t('auth.termsLink')}</Text>
+            {' '}{t('common.and')}{' '}
+            <Text onPress={() => router.push('/privacy')} style={[styles.termsLink, { color: colors.foreground }]}>{t('auth.privacyLink')}</Text>.
+          </Text>
+        )}
+
+        {/* Error message */}
+        {errorMsg ? (
+          <View style={[styles.errorBanner, { backgroundColor: colors.destructive + '14' }]}>
+            <Text style={[styles.errorText, { color: colors.destructive }]}>{errorMsg}</Text>
+          </View>
+        ) : null}
+
+        {/* Primary CTA */}
+        <PressableOpacity
+          onPress={handleSubmit}
+          disabled={isSubmitDisabled}
+          style={[styles.primaryBtn, { backgroundColor: colors.foreground, opacity: isSubmitDisabled ? 0.5 : 1 }]}
+          accessibilityRole="button"
+          accessibilityLabel={submitLabel}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
+          ) : (
+            <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>
+              {submitLabel}
+            </Text>
+          )}
+        </PressableOpacity>
+
+        {/* Back to login — forgot mode */}
+        {mode === 'forgot' && (
+          <PressableOpacity
+            onPress={() => setMode('login')}
+            style={styles.backToLoginBtn}
+            accessibilityRole="link"
+            accessibilityLabel={t('auth.backToLogin')}
+          >
+            <Text style={[styles.backToLoginText, { color: colors.foreground }]}>{t('auth.backToLogin')}</Text>
+          </PressableOpacity>
+        )}
+
+        {/* "Tai" divider — login and register */}
+        {mode !== 'forgot' && (
+          <View style={styles.divider}>
+            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+            <Text style={[styles.dividerText, { color: colors.tertiaryForeground }]}>
+              {t('common.or').toUpperCase()}
+            </Text>
+            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+          </View>
+        )}
+
+        {/* Apple Sign In — iOS only */}
+        {mode !== 'forgot' && Platform.OS === 'ios' && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={
+              isDark
+                ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+            }
+            cornerRadius={12}
+            style={styles.appleBtn}
+            onPress={handleAppleSignIn}
+          />
+        )}
+
+        {/* Google OAuth */}
+        {mode !== 'forgot' && (
+          <PressableOpacity
+            onPress={handleGoogleOAuth}
+            style={[styles.socialBtn, { borderColor: colors.border }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('auth.signInWithGoogle')}
+          >
+            <GoogleLogo size={16} />
+            <Text style={[styles.socialBtnText, { color: colors.foreground }]}>
+              {t('auth.continueWithGoogle')}
+            </Text>
+          </PressableOpacity>
+        )}
+
+        {/* Spacer to push bottom link down */}
+        <View style={{ flex: 1, minHeight: 32 }} />
+
+        {/* Bottom toggle: "Uusi kayttaja? Luo tili" / "Onko tili? Kirjaudu" */}
+        {mode !== 'forgot' && (
+          <View style={[styles.bottomRow, { paddingBottom: insets.bottom + 16 }]}>
+            <Text style={[styles.bottomText, { color: colors.mutedForeground }]}>
+              {mode === 'login' ? t('auth.noAccount') : t('auth.hasAccount')}{' '}
+            </Text>
+            <PressableOpacity
+              onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+              style={styles.bottomLinkHit}
+              accessibilityRole="link"
+              accessibilityLabel={mode === 'login' ? t('auth.register') : t('auth.login')}
+            >
+              <Text style={[styles.bottomLink, { color: colors.foreground }]}>
+                {mode === 'login' ? t('auth.register') : t('auth.login')}
+              </Text>
+            </PressableOpacity>
+          </View>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { paddingHorizontal: 24, paddingBottom: 64 },
-  logoSection: { alignItems: 'center', gap: 12, marginBottom: 32 },
-  logoBigCircle: {
-    width: 96, height: 96, borderRadius: 48,
-    alignItems: 'center', justifyContent: 'center',
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: 24,
+    flexGrow: 1,
   },
-  appName: { fontSize: 18, lineHeight: 24, fontWeight: '700', letterSpacing: 1.7, fontFamily: fonts.heading },
-  tagline: { fontSize: 16, lineHeight: 22, textAlign: 'center', fontFamily: fonts.bodyMedium },
-  modeToggle: {
-    flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 16,
+
+  // Logo mark — 48x48 ink rounded square
+  logoMark: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 44,
   },
-  modeBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', minHeight: 44 },
-  modeText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
-  // AppleAuthenticationButton manages its own backgroundColor and borderRadius;
-  // we only set dimensions and margin.
-  appleBtn: { width: '100%', minHeight: 48, marginBottom: 8 },
-  googleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderWidth: 1, borderRadius: 16, paddingVertical: 16, minHeight: 48, marginBottom: 8,
+  logoText: {
+    fontFamily: fonts.heading,
+    fontSize: 26,
+    fontStyle: 'italic',
+    lineHeight: 30,
+    marginTop: -2,
   },
-  googleBtnText: { fontSize: 14, lineHeight: 20, fontWeight: '600', fontFamily: fonts.bodySemi },
-  divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+
+  // Headline — large serif-like
+  headline: {
+    fontFamily: fonts.heading,
+    fontSize: 36,
+    lineHeight: 38,
+    letterSpacing: -1.4,
+    marginBottom: 10,
+  },
+
+  // Subtitle
+  subtitle: {
+    fontFamily: fonts.body,
+    fontSize: 13.5,
+    lineHeight: 20,
+    marginBottom: 36,
+    maxWidth: 280,
+  },
+
+  // Section label — uppercase micro
+  sectionLabel: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 10.5,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+
+  // Input field — border container
+  inputField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    minHeight: 48,
+  },
+  inputText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 14.5,
+    letterSpacing: -0.1,
+    flex: 1,
+    paddingVertical: 14,
+  },
+
+  // Eye toggle inside password field
+  eyeBtn: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: -8,
+  },
+
+  // Forgot password
+  forgotBtn: {
+    alignSelf: 'flex-end',
+    minHeight: 44,
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  forgotText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    lineHeight: 18,
+    textDecorationLine: 'underline',
+  },
+
+  // Terms (inline for login)
+  termsInline: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 17,
+    marginTop: 14,
+    marginBottom: 8,
+  },
+
+  // Terms row (for register with checkbox)
+  termsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 12,
+  },
+  checkboxHit: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  termsText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 17,
+    flex: 1,
+    paddingTop: 12,
+  },
+  termsLink: {
+    textDecorationLine: 'underline',
+  },
+
+  // Error
+  errorBanner: {
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  errorText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+
+  // Primary CTA — pill
+  primaryBtn: {
+    borderRadius: 999,
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 50,
+    marginTop: 18,
+  },
+  primaryBtnText: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: -0.05,
+  },
+
+  // Back to login
+  backToLoginBtn: {
+    alignSelf: 'center',
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  backToLoginText: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 14,
+    lineHeight: 20,
+    textDecorationLine: 'underline',
+  },
+
+  // Divider — line / text / line
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 18,
+    marginBottom: 18,
+  },
   dividerLine: { flex: 1, height: 1 },
-  dividerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
-  forgotTitle: { fontSize: 20, lineHeight: 28, fontWeight: '700', fontFamily: fonts.heading },
-  forgotHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  form: { gap: 12 },
-  input: {
-    borderWidth: 0, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
-    fontSize: 14, lineHeight: 20, minHeight: 48, fontFamily: fonts.body,
+  dividerText: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 10.5,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
   },
-  eyeBtn: { position: 'absolute', right: 4, top: 4, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  forgotLink: { fontSize: 13, lineHeight: 18, fontWeight: '500', alignSelf: 'flex-end', fontFamily: fonts.bodyMedium },
-  submitBtn: {
-    borderRadius: 16, paddingVertical: 16, alignItems: 'center',
-    justifyContent: 'center', minHeight: 48, marginTop: 8,
+
+  // Apple button
+  appleBtn: {
+    width: '100%',
+    minHeight: 48,
+    marginBottom: 10,
   },
-  submitText: { fontSize: 16, lineHeight: 22, fontWeight: '600', fontFamily: fonts.bodySemi },
-  errorBanner: { borderRadius: 8, padding: 12, marginBottom: 4 },
-  errorText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlign: 'center' },
-  linkText: { fontSize: 14, lineHeight: 20, fontWeight: '500', fontFamily: fonts.bodySemi },
-  successBox: {
-    borderRadius: 16, padding: 24, alignItems: 'center', gap: 12,
+
+  // Social button — bordered
+  socialBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 13,
+    minHeight: 48,
+    marginBottom: 10,
   },
-  successText: { fontSize: 14, lineHeight: 20, fontWeight: '500', textAlign: 'center', fontFamily: fonts.bodyMedium },
-  termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 4 },
-  checkbox: { minWidth: 44, minHeight: 44, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
-  emptyCheckbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2 },
-  termsText: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
+  socialBtnText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13.5,
+    lineHeight: 20,
+  },
+
+  // Bottom toggle
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 16,
+  },
+  bottomText: {
+    fontFamily: fonts.body,
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
+  bottomLinkHit: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  bottomLink: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 12.5,
+    lineHeight: 18,
+    textDecorationLine: 'underline',
+  },
 })
 
 export default function LoginScreen() {

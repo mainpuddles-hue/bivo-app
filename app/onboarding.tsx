@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TextInput,
-  Pressable,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -17,8 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
-  ArrowRight,
-  ChevronRight,
+  ArrowLeft,
   MapPin,
   Check,
   CheckCircle,
@@ -29,6 +27,8 @@ import {
   Heart,
   BookOpen,
   CalendarDays,
+  Users,
+  MessageCircle,
 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Haptics from 'expo-haptics'
@@ -208,60 +208,111 @@ function OnboardingScreenInner() {
     }
   }, [supabase, selectedNeighborhood, selectedCity, referralInput, router, t, applyInviteCode])
 
-  // ── Dots indicator ──
-  const renderDots = () => (
-    <View style={s.dots}>
-      {Array.from({ length: TOTAL_PAGES }).map((_, i) => (
-        <View
-          key={i}
-          style={[
-            s.dot,
-            {
-              backgroundColor: i === currentPage ? colors.foreground : colors.border,
-              width: i === currentPage ? 24 : 8,
-              height: i === currentPage ? 10 : 8,
-              borderRadius: i === currentPage ? 5 : 4,
-            },
-          ]}
-        />
-      ))}
+  // ── Progress bars (mockup style: horizontal bars, active = INK, inactive = LINE) ──
+  const renderProgressBar = () => (
+    <View style={[s.progressRow, { paddingTop: insets.top + 12 }]}>
+      <View style={s.progressBarsContainer}>
+        {Array.from({ length: TOTAL_PAGES }).map((_, i) => (
+          <View
+            key={i}
+            style={[
+              s.progressBar,
+              {
+                backgroundColor: i <= currentPage ? colors.foreground : colors.border,
+              },
+            ]}
+          />
+        ))}
+      </View>
+      {currentPage < TOTAL_PAGES - 1 && (
+        <PressableOpacity
+          onPress={() => goToPage(TOTAL_PAGES - 1)}
+          hitSlop={12}
+          style={s.skipPressable}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.skip')}
+        >
+          <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>
+            {t('onboarding.skip')}
+          </Text>
+        </PressableOpacity>
+      )}
     </View>
   )
+
+  // ── Decorative circles pattern ──
+  const renderCircles = (variant: 'welcome' | 'features' | 'trust') => {
+    const circleColor = colors.border
+    const circleColorSoft = colors.muted
+    if (variant === 'welcome') {
+      return (
+        <View style={s.circlesContainer}>
+          <View style={[s.decorCircle, s.decorCircleLg, { borderColor: circleColor, top: -20, right: -40 }]} />
+          <View style={[s.decorCircle, s.decorCircleMd, { backgroundColor: circleColorSoft, top: 60, left: -30 }]} />
+          <View style={[s.decorCircle, s.decorCircleSm, { backgroundColor: circleColor, bottom: 80, right: 30 }]} />
+        </View>
+      )
+    }
+    if (variant === 'features') {
+      return (
+        <View style={s.circlesContainer}>
+          <View style={[s.decorCircle, s.decorCircleMd, { borderColor: circleColor, top: 10, right: -20 }]} />
+          <View style={[s.decorCircle, s.decorCircleSm, { backgroundColor: circleColorSoft, bottom: 120, left: 20 }]} />
+        </View>
+      )
+    }
+    return (
+      <View style={s.circlesContainer}>
+        <View style={[s.decorCircle, s.decorCircleLg, { borderColor: circleColor, bottom: 60, left: -50 }]} />
+        <View style={[s.decorCircle, s.decorCircleSm, { backgroundColor: circleColorSoft, top: 40, right: 10 }]} />
+      </View>
+    )
+  }
 
   // ── Slide 1: Welcome ──
   const renderWelcome = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
-      <View style={s.welcomeContent}>
-        <View style={[s.logoBigCircle, { backgroundColor: colors.primary }]}>
-          <TackBirdLogo size={56} color={colors.primaryForeground} />
+      {renderProgressBar()}
+
+      <View style={s.slideContent}>
+        {renderCircles('welcome')}
+
+        {/* Hero illustration area */}
+        <View style={[s.heroArea, { backgroundColor: colors.warmTint }]}>
+          <View style={[s.logoCircle, { backgroundColor: colors.foreground }]}>
+            <TackBirdLogo size={48} color={colors.primaryForeground} />
+          </View>
+          {/* Floating decorative avatars */}
+          <View style={s.floatingAvatars}>
+            <View style={[s.floatingDot, { backgroundColor: colors.foreground, top: 20, right: 24 }]} />
+            <View style={[s.floatingDot, s.floatingDotMd, { backgroundColor: colors.border, top: 50, right: 48 }]} />
+            <View style={[s.floatingDot, s.floatingDotSm, { backgroundColor: colors.mutedForeground, bottom: 30, left: 28 }]} />
+          </View>
         </View>
 
-        <Text style={[s.appName, { color: colors.primary, fontFamily: fonts.heading }]}>
-          TackBird
-        </Text>
-
-        <Text style={[s.tagline, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
-          {t('onboarding.welcome')}
-        </Text>
-
-        <Text style={[s.slogan, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-          {t('onboarding.welcomeSubtitle')}
-        </Text>
+        {/* Copy */}
+        <View style={s.copyArea}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+            {t('onboarding.welcome')}
+          </Text>
+          <Text style={[s.bodyText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {t('onboarding.welcomeSubtitle')}
+          </Text>
+        </View>
       </View>
 
-      <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
+      {/* CTA */}
+      <View style={[s.ctaArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={() => goToPage(1)}
-          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
+          style={[s.ctaButton, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('onboarding.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.ctaText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
           </Text>
-          <ArrowRight size={18} color={colors.background} />
         </PressableOpacity>
-        {renderDots()}
       </View>
     </View>
   )
@@ -269,64 +320,67 @@ function OnboardingScreenInner() {
   // ── Slide 2: How it works ──
   const renderHowItWorks = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
-      <View style={s.howItWorksContent}>
-        <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }]}>
-          {t('onboarding.howItWorks')}
-        </Text>
+      {renderProgressBar()}
 
-        <View style={s.featureList}>
-          <View style={s.featureRow}>
-            <View style={[s.featureIconCircle, { backgroundColor: `${colors.primary}20` }]}>
-              <Handshake size={28} color={colors.primary} />
+      <View style={s.slideContent}>
+        {renderCircles('features')}
+
+        {/* Hero illustration area */}
+        <View style={[s.heroArea, { backgroundColor: colors.warmTint }]}>
+          <View style={s.featureIconsRow}>
+            <View style={[s.featureIconBubble, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Handshake size={24} color={colors.foreground} />
             </View>
-            <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.askHelp')}
-            </Text>
+            <View style={[s.featureIconBubble, s.featureIconBubbleCenter, { backgroundColor: colors.foreground }]}>
+              <Users size={24} color={colors.primaryForeground} />
+            </View>
+            <View style={[s.featureIconBubble, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Gift size={24} color={colors.foreground} />
+            </View>
           </View>
+        </View>
 
-          <View style={s.featureRow}>
-            <View style={[s.featureIconCircle, { backgroundColor: `${CATEGORIES.tarjoan.color}20` }]}>
-              <Gift size={28} color={CATEGORIES.tarjoan.color} />
-            </View>
-            <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.offerServices')}
-            </Text>
-          </View>
+        {/* Copy */}
+        <View style={s.copyArea}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+            {t('onboarding.howItWorks')}
+          </Text>
 
-          <View style={s.featureRow}>
-            <View style={[s.featureIconCircle, { backgroundColor: `${CATEGORIES.ilmaista.color}20` }]}>
-              <Heart size={28} color={CATEGORIES.ilmaista.color} />
+          <View style={s.featureList}>
+            <View style={s.featureRow}>
+              <View style={[s.featureDot, { backgroundColor: colors.foreground }]} />
+              <Text style={[s.featureText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                {t('onboarding.askHelp')}
+              </Text>
             </View>
-            <Text style={[s.featureText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.shareFree')}
-            </Text>
+            <View style={s.featureRow}>
+              <View style={[s.featureDot, { backgroundColor: colors.foreground }]} />
+              <Text style={[s.featureText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                {t('onboarding.offerServices')}
+              </Text>
+            </View>
+            <View style={s.featureRow}>
+              <View style={[s.featureDot, { backgroundColor: colors.foreground }]} />
+              <Text style={[s.featureText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                {t('onboarding.shareFree')}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
 
-      <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
+      {/* CTA */}
+      <View style={[s.ctaArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={() => goToPage(2)}
-          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
+          style={[s.ctaButton, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('onboarding.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.ctaText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
           </Text>
-          <ChevronRight size={18} color={colors.background} />
         </PressableOpacity>
-        <PressableOpacity
-          onPress={() => goToPage(3)}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={t('onboarding.skip')}
-        >
-          <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-            {t('onboarding.skip')}
-          </Text>
-        </PressableOpacity>
-        {renderDots()}
       </View>
     </View>
   )
@@ -334,60 +388,66 @@ function OnboardingScreenInner() {
   // ── Slide 3: Trust & Safety ──
   const renderTrustSafety = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
-      <View style={s.trustContent}>
-        <View style={[s.trustIconCircle, { backgroundColor: `${colors.primary}15` }]}>
-          <Shield size={48} color={colors.primary} />
+      {renderProgressBar()}
+
+      <View style={s.slideContent}>
+        {renderCircles('trust')}
+
+        {/* Hero illustration area */}
+        <View style={[s.heroArea, { backgroundColor: colors.warmTint }]}>
+          <View style={[s.shieldCircle, { backgroundColor: colors.foreground }]}>
+            <Shield size={36} color={colors.primaryForeground} />
+          </View>
+          {/* floating check marks */}
+          <View style={[s.floatingCheck, { backgroundColor: colors.card, borderColor: colors.border, top: 28, right: 36 }]}>
+            <CheckCircle size={16} color={colors.foreground} />
+          </View>
+          <View style={[s.floatingCheck, { backgroundColor: colors.card, borderColor: colors.border, bottom: 32, left: 40 }]}>
+            <MessageCircle size={16} color={colors.foreground} />
+          </View>
         </View>
 
-        <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }]}>
-          {t('onboarding.trustSafety')}
-        </Text>
+        {/* Copy */}
+        <View style={s.copyArea}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+            {t('onboarding.trustSafety')}
+          </Text>
 
-        <View style={s.trustList}>
-          <View style={s.trustItem}>
-            <CheckCircle size={18} color={colors.primary} />
-            <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.verifiedProfiles')}
-            </Text>
-          </View>
-          <View style={s.trustItem}>
-            <CheckCircle size={18} color={colors.primary} />
-            <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.trustTiers')}
-            </Text>
-          </View>
-          <View style={s.trustItem}>
-            <CheckCircle size={18} color={colors.primary} />
-            <Text style={[s.trustItemText, { color: colors.foreground, fontFamily: fonts.body }]}>
-              {t('onboarding.safeMessaging')}
-            </Text>
+          <View style={s.trustList}>
+            <View style={s.trustItem}>
+              <CheckCircle size={16} color={colors.foreground} />
+              <Text style={[s.trustItemText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                {t('onboarding.verifiedProfiles')}
+              </Text>
+            </View>
+            <View style={s.trustItem}>
+              <CheckCircle size={16} color={colors.foreground} />
+              <Text style={[s.trustItemText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                {t('onboarding.trustTiers')}
+              </Text>
+            </View>
+            <View style={s.trustItem}>
+              <CheckCircle size={16} color={colors.foreground} />
+              <Text style={[s.trustItemText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                {t('onboarding.safeMessaging')}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
 
-      <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
+      {/* CTA */}
+      <View style={[s.ctaArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={() => goToPage(3)}
-          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
+          style={[s.ctaButton, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('onboarding.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.ctaText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
           </Text>
-          <ChevronRight size={18} color={colors.background} />
         </PressableOpacity>
-        <PressableOpacity
-          onPress={() => goToPage(3)}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={t('onboarding.skip')}
-        >
-          <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-            {t('onboarding.skip')}
-          </Text>
-        </PressableOpacity>
-        {renderDots()}
       </View>
     </View>
   )
@@ -405,14 +465,20 @@ function OnboardingScreenInner() {
 
   const renderPurpose = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
-      <View style={s.purposeContent}>
-        <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, textAlign: 'center' }]}>
-          {t('onboarding.purposeTitle')}
-        </Text>
-        <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, textAlign: 'center' }]}>
-          {t('onboarding.purposeSubtitle')}
-        </Text>
+      {renderProgressBar()}
 
+      <View style={s.slideContentPurpose}>
+        {/* Copy */}
+        <View style={s.copyAreaTop}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+            {t('onboarding.purposeTitle')}
+          </Text>
+          <Text style={[s.bodyText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {t('onboarding.purposeSubtitle')}
+          </Text>
+        </View>
+
+        {/* Purpose pills */}
         <View style={s.purposeGrid}>
           {PURPOSE_OPTIONS.map((opt) => {
             const isSelected = selectedPurposes.includes(opt.key)
@@ -431,9 +497,11 @@ function OnboardingScreenInner() {
                 }}
                 style={[
                   s.purposePill,
-                  isSelected
-                    ? { backgroundColor: colors.foreground }
-                    : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                  {
+                    backgroundColor: isSelected ? colors.foreground : colors.card,
+                    borderColor: isSelected ? colors.foreground : colors.border,
+                    borderWidth: 1,
+                  },
                 ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
@@ -441,27 +509,28 @@ function OnboardingScreenInner() {
               >
                 <IconComponent
                   size={20}
-                  color={isSelected ? colors.background : opt.color}
+                  color={isSelected ? colors.primaryForeground : colors.foreground}
                 />
                 <Text
                   style={[
                     s.purposePillText,
                     {
-                      color: isSelected ? colors.background : colors.foreground,
+                      color: isSelected ? colors.primaryForeground : colors.foreground,
                       fontFamily: isSelected ? fonts.bodySemi : fonts.body,
                     },
                   ]}
                 >
                   {label}
                 </Text>
-                {isSelected && <Check size={16} color={colors.background} />}
+                {isSelected && <Check size={16} color={colors.primaryForeground} />}
               </PressableOpacity>
             )
           })}
         </View>
       </View>
 
-      <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
+      {/* CTA */}
+      <View style={[s.ctaArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={async () => {
             if (selectedPurposes.length > 0) {
@@ -469,26 +538,14 @@ function OnboardingScreenInner() {
             }
             goToPage(4)
           }}
-          style={[s.primaryBtn, { backgroundColor: colors.foreground }]}
+          style={[s.ctaButton, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('common.next')}
         >
-          <Text style={[s.primaryBtnText, { color: colors.background, fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.ctaText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('common.next')}
           </Text>
-          <ChevronRight size={18} color={colors.background} />
         </PressableOpacity>
-        <PressableOpacity
-          onPress={() => goToPage(4)}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={t('onboarding.skip')}
-        >
-          <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-            {t('onboarding.skip')}
-          </Text>
-        </PressableOpacity>
-        {renderDots()}
       </View>
     </View>
   )
@@ -496,241 +553,258 @@ function OnboardingScreenInner() {
   // ── Slide 5: Choose Neighborhood ──
   const renderNeighborhood = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
-      {/* Back button so user can return to previous slides and change choices */}
-      <PressableOpacity onPress={() => goToPage(3)} style={s.backBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-        <ArrowRight size={18} color={colors.mutedForeground} style={{ transform: [{ rotate: '180deg' }] }} />
-        <Text style={[s.skipText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-          {t('common.back')}
+      {renderProgressBar()}
+
+      <View style={s.slideContentNeighborhood}>
+        {/* Back button */}
+        <PressableOpacity
+          onPress={() => goToPage(3)}
+          style={s.backBtn}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+        >
+          <ArrowLeft size={18} color={colors.mutedForeground} />
+          <Text style={[s.backBtnText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {t('common.back')}
+          </Text>
+        </PressableOpacity>
+
+        {/* Title */}
+        <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 20 }]}>
+          Helsinki
         </Text>
-      </PressableOpacity>
 
-      <Text style={[s.pageTitle, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 24 }]}>
-        Helsinki
-      </Text>
-
-      {/* City picker row — hidden until multi-city launch (only Helsinki supported) */}
-      {cities.length > 1 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cityRow}>
-          {(cities.length > 0 ? cities : Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name }))).map((city) => {
-            const isSelected = selectedCity === city.id
-            return (
-              <PressableOpacity
-                key={city.id}
-                onPress={() => { setSelectedCity(city.id); trackEvent('onboarding_city_selected' as any, { city: city.id }) }}
-                style={[
-                  s.cityChip,
-                  isSelected
-                    ? { backgroundColor: colors.foreground }
-                    : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
-                ]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={city.name}
-              >
-                <Text
+        {/* City picker row — hidden until multi-city launch (only Helsinki supported) */}
+        {cities.length > 1 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cityRow}>
+            {(cities.length > 0 ? cities : Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name }))).map((city) => {
+              const isSelected = selectedCity === city.id
+              return (
+                <PressableOpacity
+                  key={city.id}
+                  onPress={() => { setSelectedCity(city.id); trackEvent('onboarding_city_selected' as any, { city: city.id }) }}
                   style={[
-                    s.cityChipText,
+                    s.cityChip,
                     {
-                      color: isSelected ? colors.background : colors.foreground,
-                      fontFamily: isSelected ? fonts.bodySemi : fonts.body,
+                      backgroundColor: isSelected ? colors.foreground : colors.card,
+                      borderColor: isSelected ? colors.foreground : colors.border,
+                      borderWidth: 1,
                     },
                   ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected }}
+                  accessibilityLabel={city.name}
                 >
-                  {city.name}
-                </Text>
-              </PressableOpacity>
-            )
-          })}
-        </ScrollView>
-      )}
+                  <Text
+                    style={[
+                      s.cityChipText,
+                      {
+                        color: isSelected ? colors.primaryForeground : colors.foreground,
+                        fontFamily: isSelected ? fonts.bodySemi : fonts.body,
+                      },
+                    ]}
+                  >
+                    {city.name}
+                  </Text>
+                </PressableOpacity>
+              )
+            })}
+          </ScrollView>
+        )}
 
-      <Text style={[s.pageSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, marginTop: 8 }]}>
-        {t('onboarding.neighborhoodSubtitle')}
-      </Text>
+        <Text style={[s.neighborhoodSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+          {t('onboarding.neighborhoodSubtitle')}
+        </Text>
 
-      <Text style={{ fontSize: 14, fontFamily: fonts.body, color: colors.mutedForeground, textAlign: 'center', lineHeight: 20, paddingHorizontal: 32 }}>
-        {t('onboarding.neighborhoodExplainer')}
-      </Text>
+        <Text style={[s.neighborhoodExplainer, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+          {t('onboarding.neighborhoodExplainer')}
+        </Text>
 
-      {/* Search input for neighborhoods — reduces cognitive load when many neighborhoods */}
-      {dynamicNeighborhoods.length > 12 && (
-        <View style={s.neighborhoodSearchRow}>
-          <TextInput
-            value={neighborhoodSearch}
-            onChangeText={setNeighborhoodSearch}
-            placeholder={t('search.placeholder')}
-            placeholderTextColor={colors.mutedForeground}
-            style={[s.neighborhoodSearchInput, {
-              backgroundColor: colors.muted,
-              borderWidth: 0,
-              color: colors.foreground,
-              fontFamily: fonts.body,
-            }]}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-        </View>
-      )}
-
-      <ScrollView
-        contentContainerStyle={s.neighborhoodGrid}
-        showsVerticalScrollIndicator={false}
-        style={s.neighborhoodScroll}
-        nestedScrollEnabled
-        keyboardShouldPersistTaps="handled"
-      >
-        {neighborhoodsLoading ? (
-          <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 20 }} />
-        ) : dynamicNeighborhoods.length === 0 ? (
-          <View style={s.customNeighborhoodContainer}>
-            <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, marginBottom: 12 }]}>
-              {t('onboarding.noNeighborhoods')}
-            </Text>
+        {/* Search input for neighborhoods — reduces cognitive load when many neighborhoods */}
+        {dynamicNeighborhoods.length > 12 && (
+          <View style={s.neighborhoodSearchRow}>
             <TextInput
-              value={customNeighborhood}
-              onChangeText={(text) => {
-                setCustomNeighborhood(text)
-                setSelectedNeighborhood(text.trim() || null)
-              }}
-              placeholder={t('onboarding.typeNeighborhood')}
-              placeholderTextColor={colors.mutedForeground}
-              style={[s.neighborhoodSearchInput, {
+              value={neighborhoodSearch}
+              onChangeText={setNeighborhoodSearch}
+              placeholder={t('search.placeholder')}
+              placeholderTextColor={colors.tertiaryForeground}
+              style={[s.searchInput, {
                 backgroundColor: colors.muted,
-                borderWidth: customNeighborhood.trim() ? StyleSheet.hairlineWidth : 0,
-                borderColor: customNeighborhood.trim() ? colors.foreground : 'transparent',
                 color: colors.foreground,
                 fontFamily: fonts.body,
               }]}
               autoCorrect={false}
-              autoCapitalize="words"
-              accessibilityLabel={t('onboarding.typeNeighborhood')}
+              autoCapitalize="none"
             />
-            {customNeighborhood.trim() !== '' && (
-              <View style={s.customNeighborhoodConfirm}>
-                <MapPin size={14} color={colors.primary} />
-                <Text style={[s.neighborhoodText, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>
-                  {customNeighborhood.trim()}
-                </Text>
-              </View>
-            )}
           </View>
-        ) : filteredNeighborhoods.length === 0 ? (
-          <Text style={[s.neighborhoodText, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 24, paddingTop: 16 }]}>
-            {t('search.noResults')}
-          </Text>
-        ) : (
-          filteredNeighborhoods.map((nh) => {
-            const isSelected = selectedNeighborhood === nh
-            return (
-              <PressableOpacity
-                key={nh}
-                onPress={() => { setSelectedNeighborhood(nh); trackEvent('onboarding_neighborhood_selected' as any, { neighborhood: nh }) }}
-                style={[
-                  s.neighborhoodChip,
-                  isSelected
-                    ? { backgroundColor: colors.foreground }
-                    : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
-                ]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={nh}
-              >
-                {isSelected && <Check size={14} color={colors.background} />}
-                <MapPin size={14} color={isSelected ? colors.background : colors.mutedForeground} />
-                <Text
+        )}
+
+        <ScrollView
+          contentContainerStyle={s.neighborhoodGrid}
+          showsVerticalScrollIndicator={false}
+          style={s.neighborhoodScroll}
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+        >
+          {neighborhoodsLoading ? (
+            <ActivityIndicator size="small" color={colors.foreground} style={{ marginTop: 20 }} />
+          ) : dynamicNeighborhoods.length === 0 ? (
+            <View style={s.customNeighborhoodContainer}>
+              <Text style={[s.bodyTextSmall, { color: colors.mutedForeground, fontFamily: fonts.body, marginBottom: 12 }]}>
+                {t('onboarding.noNeighborhoods')}
+              </Text>
+              <TextInput
+                value={customNeighborhood}
+                onChangeText={(text) => {
+                  setCustomNeighborhood(text)
+                  setSelectedNeighborhood(text.trim() || null)
+                }}
+                placeholder={t('onboarding.typeNeighborhood')}
+                placeholderTextColor={colors.tertiaryForeground}
+                style={[s.searchInput, {
+                  backgroundColor: colors.muted,
+                  borderWidth: customNeighborhood.trim() ? 1 : 0,
+                  borderColor: customNeighborhood.trim() ? colors.foreground : 'transparent',
+                  color: colors.foreground,
+                  fontFamily: fonts.body,
+                }]}
+                autoCorrect={false}
+                autoCapitalize="words"
+                accessibilityLabel={t('onboarding.typeNeighborhood')}
+              />
+              {customNeighborhood.trim() !== '' && (
+                <View style={s.customNeighborhoodConfirm}>
+                  <MapPin size={14} color={colors.foreground} />
+                  <Text style={[s.bodyTextSmall, { color: colors.foreground, fontFamily: fonts.bodyMedium }]}>
+                    {customNeighborhood.trim()}
+                  </Text>
+                </View>
+              )}
+            </View>
+          ) : filteredNeighborhoods.length === 0 ? (
+            <Text style={[s.bodyTextSmall, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 20, paddingTop: 16 }]}>
+              {t('search.noResults')}
+            </Text>
+          ) : (
+            filteredNeighborhoods.map((nh) => {
+              const isSelected = selectedNeighborhood === nh
+              return (
+                <PressableOpacity
+                  key={nh}
+                  onPress={() => { setSelectedNeighborhood(nh); trackEvent('onboarding_neighborhood_selected' as any, { neighborhood: nh }) }}
                   style={[
-                    s.neighborhoodText,
+                    s.neighborhoodChip,
                     {
-                      color: isSelected ? colors.background : colors.foreground,
-                      fontFamily: fonts.bodyMedium,
+                      backgroundColor: isSelected ? colors.foreground : colors.card,
+                      borderColor: isSelected ? colors.foreground : colors.border,
+                      borderWidth: 1,
                     },
                   ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected }}
+                  accessibilityLabel={nh}
                 >
-                  {nh}
-                </Text>
-              </PressableOpacity>
-            )
-          })
-        )}
-      </ScrollView>
+                  {isSelected && <Check size={14} color={colors.primaryForeground} />}
+                  <MapPin size={14} color={isSelected ? colors.primaryForeground : colors.mutedForeground} />
+                  <Text
+                    style={[
+                      s.neighborhoodText,
+                      {
+                        color: isSelected ? colors.primaryForeground : colors.foreground,
+                        fontFamily: fonts.bodyMedium,
+                      },
+                    ]}
+                  >
+                    {nh}
+                  </Text>
+                </PressableOpacity>
+              )
+            })
+          )}
+        </ScrollView>
 
-      {/* Location verification status */}
-      {selectedNeighborhood && verificationStatus !== 'idle' && (
-        <View style={[s.verificationRow, {
-          backgroundColor: verificationStatus === 'verified' ? `${colors.success}15` :
-            verificationStatus === 'unverified' ? `${colors.pro}15` : colors.muted,
-        }]}>
-          {verificationStatus === 'checking' && (
-            <>
-              <ActivityIndicator size="small" color={colors.mutedForeground} />
-              <Text style={[s.verificationText, { color: colors.mutedForeground }]}>
-                {t('onboarding.verifyingLocation')}
-              </Text>
-            </>
+        {/* Location verification status */}
+        {selectedNeighborhood && verificationStatus !== 'idle' && (
+          <View style={[s.verificationRow, {
+            backgroundColor: verificationStatus === 'verified' ? `${colors.success}15` :
+              verificationStatus === 'unverified' ? `${colors.pro}15` : colors.muted,
+            borderColor: verificationStatus === 'verified' ? `${colors.success}30` :
+              verificationStatus === 'unverified' ? `${colors.pro}30` : colors.border,
+          }]}>
+            {verificationStatus === 'checking' && (
+              <>
+                <ActivityIndicator size="small" color={colors.mutedForeground} />
+                <Text style={[s.verificationText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                  {t('onboarding.verifyingLocation')}
+                </Text>
+              </>
+            )}
+            {verificationStatus === 'verified' && (
+              <>
+                <CheckCircle size={16} color={colors.success} />
+                <Text style={[s.verificationText, { color: colors.success, fontFamily: fonts.body }]}>
+                  {t('onboarding.locationVerified')}
+                </Text>
+              </>
+            )}
+            {verificationStatus === 'unverified' && (
+              <>
+                <AlertTriangle size={16} color={colors.pro} />
+                <Text style={[s.verificationText, { color: colors.pro, fontFamily: fonts.body }]}>
+                  {t('onboarding.locationNotVerified', { distance: distanceKm ? distanceKm.toFixed(1) : '?' })}
+                </Text>
+              </>
+            )}
+            {verificationStatus === 'error' && (
+              <>
+                <MapPin size={16} color={colors.mutedForeground} />
+                <Text style={[s.verificationText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                  {t('onboarding.locationCheckFailed')}
+                </Text>
+              </>
+            )}
+          </View>
+        )}
+
+        {/* Referral code input */}
+        <View style={s.referralInputRow}>
+          <TextInput
+            value={referralInput}
+            onChangeText={(text) => { setReferralInput(text); setReferralStatus('idle') }}
+            placeholder={t('referral.codeInput')}
+            placeholderTextColor={colors.tertiaryForeground}
+            style={[s.searchInput, {
+              backgroundColor: colors.muted,
+              borderWidth: referralStatus !== 'idle' ? 1 : 0,
+              borderColor: referralStatus === 'invalid' ? colors.destructive : referralStatus === 'applied' ? colors.success : 'transparent',
+              color: colors.foreground,
+              fontFamily: fonts.body,
+            }]}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={12}
+          />
+          {referralStatus === 'applied' && (
+            <Text style={[s.referralFeedback, { color: colors.success, fontFamily: fonts.body }]}>
+              {t('referral.codeApplied')}
+            </Text>
           )}
-          {verificationStatus === 'verified' && (
-            <>
-              <CheckCircle size={16} color={colors.success} />
-              <Text style={[s.verificationText, { color: colors.success }]}>
-                {t('onboarding.locationVerified')}
-              </Text>
-            </>
-          )}
-          {verificationStatus === 'unverified' && (
-            <>
-              <AlertTriangle size={16} color={colors.pro} />
-              <Text style={[s.verificationText, { color: colors.pro }]}>
-                {t('onboarding.locationNotVerified', { distance: distanceKm ? distanceKm.toFixed(1) : '?' })}
-              </Text>
-            </>
-          )}
-          {verificationStatus === 'error' && (
-            <>
-              <MapPin size={16} color={colors.mutedForeground} />
-              <Text style={[s.verificationText, { color: colors.mutedForeground }]}>
-                {t('onboarding.locationCheckFailed')}
-              </Text>
-            </>
+          {referralStatus === 'invalid' && (
+            <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
+              {t('referral.invalidCode')}
+            </Text>
           )}
         </View>
-      )}
-
-      {/* Referral code input */}
-      <View style={s.referralInputRow}>
-        <TextInput
-          value={referralInput}
-          onChangeText={(text) => { setReferralInput(text); setReferralStatus('idle') }}
-          placeholder={t('referral.codeInput')}
-          placeholderTextColor={colors.mutedForeground}
-          style={[s.referralInput, {
-            backgroundColor: colors.muted,
-            borderWidth: referralStatus !== 'idle' ? StyleSheet.hairlineWidth : 0,
-            borderColor: referralStatus === 'invalid' ? colors.destructive : referralStatus === 'applied' ? colors.success : 'transparent',
-            color: colors.foreground,
-            fontFamily: fonts.body,
-          }]}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          maxLength={12}
-        />
-        {referralStatus === 'applied' && (
-          <Text style={[s.referralFeedback, { color: colors.success, fontFamily: fonts.body }]}>
-            {t('referral.codeApplied')}
-          </Text>
-        )}
-        {referralStatus === 'invalid' && (
-          <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
-            {t('referral.invalidCode')}
-          </Text>
-        )}
       </View>
 
-      <View style={[s.bottomArea, { paddingBottom: insets.bottom + 24 }]}>
+      {/* CTA */}
+      <View style={[s.ctaArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={handleComplete}
           disabled={saving || !selectedNeighborhood}
           style={[
-            s.primaryBtn,
+            s.ctaButton,
             {
               backgroundColor: selectedNeighborhood ? colors.foreground : colors.muted,
               opacity: saving ? 0.6 : 1,
@@ -740,34 +814,30 @@ function OnboardingScreenInner() {
           accessibilityLabel={t('onboarding.start')}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={colors.background} />
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
             <>
               <Text
                 style={[
-                  s.primaryBtnText,
+                  s.ctaText,
                   {
-                    color: selectedNeighborhood ? colors.background : colors.mutedForeground,
+                    color: selectedNeighborhood ? colors.primaryForeground : colors.mutedForeground,
                     fontFamily: fonts.bodySemi,
                   },
                 ]}
               >
                 {t('onboarding.start')}
               </Text>
-              <Check
-                size={18}
-                color={selectedNeighborhood ? colors.background : colors.mutedForeground}
-              />
+              {selectedNeighborhood && <Check size={18} color={colors.primaryForeground} />}
             </>
           )}
         </PressableOpacity>
-        {renderDots()}
       </View>
     </View>
   )
 
   return (
-    <KeyboardAvoidingView style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={[s.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -798,164 +868,297 @@ const s = StyleSheet.create({
     flex: 1,
   },
 
-  // Welcome
-  welcomeContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    paddingHorizontal: 32,
-  },
-  logoBigCircle: {
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  appName: {
-    fontSize: 32,
-    letterSpacing: 1.7,
-    lineHeight: 42,
-  },
-  tagline: {
-    fontSize: 20,
-    textAlign: 'center',
-    lineHeight: 28,
-  },
-  slogan: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginTop: 4,
-  },
-
-  // Page titles
-  pageTitle: {
-    fontSize: 24,
-    letterSpacing: -0.3,
-    lineHeight: 32,
-    paddingTop: 24,
-  },
-  pageSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 8,
-    marginBottom: 16,
-  },
-
-  // How it works
-  howItWorksContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 32,
-    paddingHorizontal: 32,
-  },
-  featureList: {
-    gap: 24,
-    width: '100%',
-  },
-  featureRow: {
+  // ── Progress bar row (mockup: horizontal bars + skip link) ──
+  progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    paddingHorizontal: 20,
+    gap: 8,
   },
-  featureIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
+  progressBarsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 6,
+  },
+  progressBar: {
+    flex: 1,
+    height: 3,
+    borderRadius: 999,
+  },
+  skipPressable: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    minHeight: 44,
     justifyContent: 'center',
   },
-  featureText: {
-    fontSize: 16,
-    flex: 1,
-    lineHeight: 22,
+  skipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+    letterSpacing: 0.1,
   },
 
-  // Trust & Safety
-  trustContent: {
+  // ── Slide content (pages 1-3: hero + copy layout) ──
+  slideContent: {
     flex: 1,
+    paddingTop: 24,
+  },
+  slideContentPurpose: {
+    flex: 1,
+    paddingTop: 16,
+  },
+  slideContentNeighborhood: {
+    flex: 1,
+    paddingTop: 8,
+  },
+
+  // ── Decorative circles ──
+  circlesContainer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  decorCircle: {
+    position: 'absolute',
+    borderRadius: 999,
+  },
+  decorCircleLg: {
+    width: 160,
+    height: 160,
+    borderWidth: 1,
+    opacity: 0.5,
+  },
+  decorCircleMd: {
+    width: 80,
+    height: 80,
+    opacity: 0.3,
+  },
+  decorCircleSm: {
+    width: 32,
+    height: 32,
+    opacity: 0.25,
+  },
+
+  // ── Hero illustration area ──
+  heroArea: {
+    marginHorizontal: 20,
+    borderRadius: 28,
+    height: 280,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
-    paddingHorizontal: 32,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  trustIconCircle: {
+  logoCircle: {
     width: 96,
     height: 96,
     borderRadius: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  trustList: {
+  shieldCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Floating decorative dots
+  floatingAvatars: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  floatingDot: {
+    position: 'absolute',
+    width: 12,
+    height: 12,
+    borderRadius: 999,
+  },
+  floatingDotMd: {
+    width: 8,
+    height: 8,
+  },
+  floatingDotSm: {
+    width: 6,
+    height: 6,
+  },
+
+  // Floating check marks (trust slide)
+  floatingCheck: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+
+  // Feature icons row (how it works slide)
+  featureIconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 16,
-    width: '100%',
+  },
+  featureIconBubble: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  featureIconBubbleCenter: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 0,
+  },
+
+  // ── Copy area ──
+  copyArea: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    gap: 8,
+  },
+  copyAreaTop: {
+    paddingHorizontal: 24,
+    gap: 8,
+    marginBottom: 24,
+  },
+  headline: {
+    fontSize: 26,
+    fontWeight: '600',
+    letterSpacing: -0.6,
+    lineHeight: 30,
+  },
+  bodyText: {
+    fontSize: 13.5,
+    lineHeight: 21,
+    letterSpacing: 0,
+  },
+  bodyTextSmall: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  // ── Feature list (how it works) ──
+  featureList: {
+    gap: 12,
+    marginTop: 8,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  featureDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  featureText: {
+    fontSize: 14,
+    flex: 1,
+    lineHeight: 20,
+  },
+
+  // ── Trust list ──
+  trustList: {
+    gap: 14,
+    marginTop: 8,
   },
   trustItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: 10,
   },
   trustItemText: {
     fontSize: 14,
     flex: 1,
-    lineHeight: 22,
-  },
-
-  // Skip text
-  skipText: {
-    fontSize: 14,
     lineHeight: 20,
-    textAlign: 'center',
-    paddingVertical: 4,
   },
 
-  // Back button
+  // ── CTA area ──
+  ctaArea: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 999,
+    height: 54,
+    minHeight: 54,
+  },
+  ctaText: {
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+
+  // ── Back button ──
   backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 24,
-    paddingTop: 8,
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 4,
     alignSelf: 'flex-start',
+    minHeight: 44,
+  },
+  backBtnText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 
-  // City picker
+  // ── City picker ──
   cityRow: {
     flexDirection: 'row',
     gap: 8,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 8,
   },
   cityChip: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 20,
+    borderRadius: 999,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   cityChipText: {
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: fonts.body,
   },
 
-  // Neighborhood search
-  neighborhoodSearchRow: {
-    paddingHorizontal: 24,
-    marginBottom: 8,
-  },
-  neighborhoodSearchInput: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+  // ── Neighborhood ──
+  neighborhoodSubtitle: {
     fontSize: 14,
     lineHeight: 20,
+    paddingHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 4,
   },
-
-  // Neighborhood
+  neighborhoodExplainer: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    paddingHorizontal: 32,
+    marginBottom: 8,
+  },
+  neighborhoodSearchRow: {
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  searchInput: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 14,
+    lineHeight: 20,
+    minHeight: 48,
+  },
   neighborhoodScroll: {
     flex: 1,
   },
@@ -963,24 +1166,24 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
   },
   neighborhoodChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    minHeight: 44,
   },
   neighborhoodText: {
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: fonts.bodyMedium,
   },
   customNeighborhoodContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 16,
     width: '100%',
   },
@@ -991,37 +1194,29 @@ const s = StyleSheet.create({
     marginTop: 12,
   },
 
-  // Location verification
+  // ── Location verification ──
   verificationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 16,
+    borderWidth: 1,
     marginBottom: 8,
   },
   verificationText: {
     fontSize: 13,
-    fontFamily: fonts.body,
     lineHeight: 18,
     flex: 1,
   },
 
-  // Referral code input
+  // ── Referral code input ──
   referralInputRow: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     marginBottom: 8,
     gap: 4,
-  },
-  referralInput: {
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 14,
-    lineHeight: 20,
   },
   referralFeedback: {
     fontSize: 12,
@@ -1030,17 +1225,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 4,
   },
 
-  // Purpose
-  purposeContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 24,
-    paddingHorizontal: 24,
-  },
+  // ── Purpose ──
   purposeGrid: {
     gap: 10,
-    width: '100%',
+    paddingHorizontal: 24,
   },
   purposePill: {
     flexDirection: 'row',
@@ -1048,49 +1236,13 @@ const s = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderRadius: 20,
+    borderRadius: 999,
+    minHeight: 52,
   },
   purposePillText: {
     fontSize: 15,
     flex: 1,
     lineHeight: 20,
-  },
-
-  // Bottom area
-  bottomArea: {
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  primaryBtnWrapper: {
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  primaryBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderRadius: 24,
-    paddingVertical: 16,
-    minHeight: 48,
-  },
-  primaryBtnGradient: {
-    paddingHorizontal: 24,
-  },
-  primaryBtnText: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: '700',
-  },
-  dots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dot: {
-    height: 8,
-    borderRadius: 4,
   },
 })
 

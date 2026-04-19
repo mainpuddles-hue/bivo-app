@@ -9,7 +9,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
-import { ModalCloseButton, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { ModalCloseButton, KeyboardDoneAccessory, KEYBOARD_DONE_ID, PressableOpacity } from '@/components/ui'
 import * as Haptics from 'expo-haptics'
 import { ArrowLeft, Plus, MapPin } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -33,23 +33,21 @@ import type { ForumPost, ForumReply, ForumCategory } from '@/components/forum/Fo
 interface ForumCategoryFilterDef {
   key: ForumCategory | null
   labelKey: string
-  color: string
 }
 
 const FORUM_CATEGORIES: ForumCategoryFilterDef[] = [
-  { key: null, labelKey: 'forum.all', color: '' },
-  { key: 'vinkit', labelKey: 'forum.tips', color: '#2B8A62' },
-  { key: 'kysymykset', labelKey: 'forum.questions', color: '#3B7DD8' },
-  { key: 'tapahtumat', labelKey: 'forum.events', color: '#2B8A62' },
-  { key: 'uutiset', labelKey: 'forum.news', color: '#8E44AD' },
+  { key: null, labelKey: 'forum.all' },
+  { key: 'vinkit', labelKey: 'forum.tips' },
+  { key: 'kysymykset', labelKey: 'forum.questions' },
+  { key: 'tapahtumat', labelKey: 'forum.events' },
+  { key: 'uutiset', labelKey: 'forum.news' },
 ]
 
 // ── Skeleton ──
 function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
   const opacity = useShimmer()
   return (
-    <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-      <View style={[s.categoryBar, { backgroundColor: colors.muted }]} />
+    <View style={[s.card, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
       <View style={s.cardBody}>
         <View style={s.cardUserRow}>
           <Animated.View style={[s.skelAvatar, { backgroundColor: colors.muted, opacity }]} />
@@ -506,58 +504,65 @@ export default function ForumScreen() {
   return (
     <ScreenErrorBoundary screenName="Forum">
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+      {/* Header — circle back button + centered title */}
+      <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.background }]}>
         <View style={s.headerContent}>
-          <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></Pressable>
+          <PressableOpacity
+            onPress={() => router.back()}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            style={[s.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <ArrowLeft size={20} color={colors.foreground} />
+          </PressableOpacity>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
           <View style={s.headerSpacer} />
         </View>
       </View>
 
-      {/* Filters */}
+      {/* Filters — monochrome pills */}
       <View style={[s.filterBar, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setNeighborhoodFilter(prev => prev ? null : userNeighborhood) }}
-          style={[s.neighborhoodChip, neighborhoodFilter ? { backgroundColor: colors.foreground, borderColor: colors.foreground } : { backgroundColor: 'transparent', borderColor: colors.border }]}
+          style={[s.neighborhoodChip, neighborhoodFilter ? { backgroundColor: colors.foreground, borderColor: colors.foreground } : { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <MapPin size={12} color={neighborhoodFilter ? colors.background : colors.mutedForeground} />
-          <Text style={[s.neighborhoodChipText, { color: neighborhoodFilter ? colors.background : colors.mutedForeground }]}>{neighborhoodFilter ?? t('forum.allAreas')}</Text>
-        </Pressable>
+          <MapPin size={12} color={neighborhoodFilter ? colors.primaryForeground : colors.mutedForeground} />
+          <Text style={[s.neighborhoodChipText, { color: neighborhoodFilter ? colors.primaryForeground : colors.mutedForeground }]}>{neighborhoodFilter ?? t('forum.allAreas')}</Text>
+        </PressableOpacity>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryChips}>
           {FORUM_CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.key
-            const chipColor = cat.key ? cat.color : colors.primary
             return (
-              <Pressable key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setActiveCategory(cat.key) }}
-                style={[s.categoryChip, isActive ? { backgroundColor: colors.foreground } : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-                <Text style={[s.categoryChipText, { color: isActive ? colors.background : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
-              </Pressable>
+              <PressableOpacity key={cat.key ?? 'all'} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setActiveCategory(cat.key) }}
+                style={[s.categoryChip, isActive ? { backgroundColor: colors.foreground } : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+                <Text style={[s.categoryChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>{t(cat.labelKey)}</Text>
+              </PressableOpacity>
             )
           })}
         </ScrollView>
       </View>
 
-      {/* Sort chips */}
+      {/* Sort chips — monochrome pills */}
       <View style={[s.sortRow, { borderBottomColor: colors.border }]}>
         {(['newest', 'popular'] as const).map((opt) => {
           const isActive = sortBy === opt
           return (
-            <Pressable key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setSortBy(opt) }}
-              style={[s.sortChip, isActive ? { backgroundColor: colors.foreground } : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-              <Text style={[s.sortChipText, { color: isActive ? colors.background : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
+            <PressableOpacity key={opt} onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setSortBy(opt) }}
+              style={[s.sortChip, isActive ? { backgroundColor: colors.foreground } : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+              <Text style={[s.sortChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }, isActive && { fontFamily: fonts.bodySemi }]}>
                 {opt === 'newest' ? t('forum.sortNewest') : t('forum.sortPopular')}
               </Text>
-            </Pressable>
+            </PressableOpacity>
           )
         })}
       </View>
 
       {/* New posts banner */}
       {newPostsBanner && (
-        <Pressable onPress={() => { setNewPostsBanner(false); setPage(0); setLoading(true); fetchPosts(0) }} style={[s.newPostsBanner, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('forum.newPosts')}>
-          <Text style={[s.newPostsBannerText, { color: colors.background }]}>{t('forum.newPosts')}</Text>
-        </Pressable>
+        <PressableOpacity onPress={() => { setNewPostsBanner(false); setPage(0); setLoading(true); fetchPosts(0) }} style={[s.newPostsBanner, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('forum.newPosts')}>
+          <Text style={[s.newPostsBannerText, { color: colors.primaryForeground }]}>{t('forum.newPosts')}</Text>
+        </PressableOpacity>
       )}
 
       {/* Post list */}
@@ -568,7 +573,7 @@ export default function ForumScreen() {
         contentContainerStyle={s.list}
         ListHeaderComponent={<View style={s.listHeaderGap} />}
         ListEmptyComponent={EmptyComponent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.foreground} />}
         ItemSeparatorComponent={ForumSeparator}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
@@ -579,20 +584,20 @@ export default function ForumScreen() {
         ListFooterComponent={
           !loading && posts.length > 0 ? (
             <View style={{ height: 100, alignItems: 'center', paddingTop: 16 }}>
-              {loadingMore ? <ActivityIndicator size="small" color={colors.primary} /> : !hasMore ? <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('forum.noMorePosts')}</Text> : null}
+              {loadingMore ? <ActivityIndicator size="small" color={colors.foreground} /> : !hasMore ? <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('forum.noMorePosts')}</Text> : null}
             </View>
           ) : null
         }
       />
 
-      {/* FAB */}
+      {/* FAB — monochrome INK */}
       {tableExists && currentUserId && (
-        <Pressable onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setShowCreateModal(true) }}
+        <PressableOpacity onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} setShowCreateModal(true) }}
           style={[s.fab, { bottom: insets.bottom + 20, backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('forum.create')}>
-          <Plus size={24} color={colors.background} />
-        </Pressable>
+          <Plus size={24} color={colors.primaryForeground} />
+        </PressableOpacity>
       )}
 
       {/* Create Modal */}
@@ -615,15 +620,15 @@ export default function ForumScreen() {
           <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
             <ModalCloseButton onClose={() => setEditingPost(null)} />
             <Text style={[s.modalTitle, { color: colors.foreground }]}>{t('forum.editPostTitle')}</Text>
-            <Pressable onPress={handleSaveEdit} disabled={savingEdit} style={({ pressed }) => [s.publishBtn, { backgroundColor: colors.foreground, opacity: savingEdit ? 0.6 : pressed ? 0.7 : 1 }]}>
-              {savingEdit ? <ActivityIndicator size="small" color={colors.background} /> : <Text style={[s.publishBtnText, { color: colors.background }]}>{t('forum.saveEdit')}</Text>}
-            </Pressable>
+            <PressableOpacity onPress={handleSaveEdit} disabled={savingEdit} style={[s.publishBtn, { backgroundColor: colors.foreground, opacity: savingEdit ? 0.6 : 1 }]}>
+              {savingEdit ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[s.publishBtnText, { color: colors.primaryForeground }]}>{t('forum.saveEdit')}</Text>}
+            </PressableOpacity>
           </View>
           <View style={s.modalSection}>
-            <TextInput style={[s.titleInput, { color: colors.foreground, borderWidth: 0, backgroundColor: colors.muted }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
+            <TextInput style={[s.titleInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
           </View>
           <View style={[s.modalSection, { flex: 1 }]}>
-            <TextInput style={[s.contentInput, { color: colors.foreground, borderWidth: 0, backgroundColor: colors.muted }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
+            <TextInput style={[s.contentInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
           </View>
           <KeyboardDoneAccessory />
         </KeyboardAvoidingView>
@@ -668,40 +673,77 @@ export default function ForumScreen() {
 // ── Styles ──
 const s = StyleSheet.create({
   container: { flex: 1 },
-  header: { zIndex: 40, borderBottomWidth: StyleSheet.hairlineWidth },
-  headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 48, paddingHorizontal: 16 },
-  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 20, lineHeight: 28, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
-  headerSpacer: { width: 40 },
+
+  // Header — circle back + centered title
+  header: { zIndex: 40 },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  circleBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 17,
+    lineHeight: 24,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.2,
+    textAlign: 'center',
+  },
+  headerSpacer: { width: 36 },
+
+  // Filter bar — monochrome pills
   filterBar: { paddingHorizontal: 16, paddingVertical: 12, gap: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, alignSelf: 'flex-start', borderWidth: 1 },
   neighborhoodChipText: { fontSize: 12, lineHeight: 16, fontFamily: fonts.bodyMedium },
   categoryChips: { gap: 8, paddingRight: 4 },
   categoryChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   categoryChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
+
+  // Sort chips — monochrome
   sortRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   sortChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   sortChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
+
+  // New posts banner — INK bg
   newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 999, alignItems: 'center' },
   newPostsBannerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
+
+  // List
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   listHeaderGap: { height: 4 },
-  card: { borderRadius: 24, overflow: 'hidden', flexDirection: 'row' },
-  categoryBar: { width: 4 },
+
+  // Card skeleton — monochrome
+  card: { borderRadius: 16, overflow: 'hidden' },
   cardBody: { flex: 1, padding: 16, gap: 8 },
   cardUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   skelAvatar: { width: 32, height: 32, borderRadius: 16 },
   skelLine: { height: 10, borderRadius: 5 },
+
+  // FAB — monochrome INK
   fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+
+  // Empty state
   emptyState: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 12 },
   emptyTitle: { fontSize: 18, lineHeight: 24, fontFamily: fonts.headingSemi, letterSpacing: -0.2 },
   emptyHint: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20 },
+
+  // Modal — monochrome
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 56, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth },
   modalTitle: { fontSize: 16, lineHeight: 24, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, textAlign: 'center', paddingHorizontal: 8 },
   modalSection: { paddingHorizontal: 16, paddingTop: 16 },
   publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, minWidth: 80, alignItems: 'center' },
   publishBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
-  titleInput: { fontSize: 14, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
-  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
+  titleInput: { fontSize: 14, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
+  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
 })

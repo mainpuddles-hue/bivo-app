@@ -18,7 +18,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 import { fonts } from '@/lib/fonts'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
@@ -62,16 +62,19 @@ const STATUS_KEYS: Record<BookingStatus, string> = {
   in_progress: 'service.statusInProgress',
 }
 
-function getStatusColor(status: BookingStatus, colors: ReturnType<typeof useTheme>['colors']): string {
+function getStatusStyle(status: BookingStatus, colors: ReturnType<typeof useTheme>['colors']): { bg: string; text: string } {
   switch (status) {
-    case 'pending': return colors.pro
-    case 'confirmed': case 'paid': return colors.info
-    case 'active': case 'in_progress': return colors.primary
-    case 'completed': return colors.success
-    case 'cancelled': return colors.destructive
-    case 'disputed': return colors.pro
-    case 'refunded': return colors.mutedForeground
-    default: return colors.mutedForeground
+    case 'active': case 'in_progress':
+      return { bg: colors.foreground, text: colors.primaryForeground }
+    case 'completed':
+      return { bg: colors.muted, text: colors.foreground }
+    case 'cancelled': case 'disputed':
+      return { bg: `${colors.destructive}14`, text: colors.destructive }
+    case 'refunded':
+      return { bg: colors.muted, text: colors.mutedForeground }
+    case 'pending': case 'confirmed': case 'paid':
+    default:
+      return { bg: colors.muted, text: colors.mutedForeground }
   }
 }
 
@@ -276,33 +279,51 @@ function BookingDetailScreenInner() {
   const canStart = booking?.my_role === 'provider' && booking?.status === 'confirmed'
   const canReview = booking?.status === 'completed'
 
+  // Loading state
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <BackButton />
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <PressableOpacity
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <ArrowLeft size={20} color={colors.foreground} />
+          </PressableOpacity>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
-          <View style={{ flex: 1 }} />
+          <View style={styles.headerSpacer} />
         </View>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
+        <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
       </View>
     )
   }
 
+  // Not found state
   if (!booking) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <BackButton />
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <PressableOpacity
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <ArrowLeft size={20} color={colors.foreground} />
+          </PressableOpacity>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
-          <View style={{ flex: 1 }} />
+          <View style={styles.headerSpacer} />
         </View>
-        <Text style={[styles.notFound, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('booking.notFound')}</Text>
+        <Text style={[styles.notFound, { color: colors.mutedForeground }]}>{t('booking.notFound')}</Text>
       </View>
     )
   }
 
-  const statusColor = getStatusColor(booking.status, colors)
+  const statusStyle = getStatusStyle(booking.status, colors)
   const isService = booking.type === 'service'
   const basePrice = isService ? (booking.service_price ?? 0) : ((booking.daily_fee ?? 0) * (() => {
     if (!booking.start_date || !booking.end_date) return 0
@@ -313,18 +334,26 @@ function BookingDetailScreenInner() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
+      {/* Header — circle back button + centered title */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
+        </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
-        <View style={{ flex: 1 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 60 }]} showsVerticalScrollIndicator={false}>
-        {/* Post info card */}
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        {/* Hero post card */}
         <PressableOpacity
           onPress={() => booking.post?.id && router.push(`/post/${booking.post.id}` as any)}
-          style={[styles.postCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
+          style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }]}
           accessibilityRole="button"
           accessibilityLabel={booking.post?.title ?? t('booking.viewPost')}
         >
@@ -339,49 +368,48 @@ function BookingDetailScreenInner() {
             <Text style={[styles.postTitle, { color: colors.foreground }]} numberOfLines={2}>
               {booking.post?.title ?? t('rental.deletedPost')}
             </Text>
-            <Text style={{ fontSize: 12, color: isService ? colors.info : colors.primary, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
+            <Text style={[styles.postType, { color: colors.mutedForeground }]}>
               {isService ? t('service.services') : t('rental.booking')}
             </Text>
           </View>
         </PressableOpacity>
 
+        {/* Status badge */}
+        <View style={styles.statusRow}>
+          <View style={[styles.statusBadgeLarge, { backgroundColor: statusStyle.bg }]}>
+            <Text style={[styles.statusTextLarge, { color: statusStyle.text }]}>
+              {t(STATUS_KEYS[booking.status] ?? 'rental.statusPending')}
+            </Text>
+          </View>
+        </View>
+
         {/* Other party info */}
         {booking.other_user && (
           <PressableOpacity
             onPress={() => router.push(`/profile/${booking.other_user!.id}` as any)}
-            style={[styles.userCard, { backgroundColor: 'transparent', borderColor: colors.border }]}
+            style={[styles.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel={booking.other_user!.name}
           >
             <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={44} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>{booking.other_user.name ?? t('common.user')}</Text>
-              <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 16 }}>{t(`booking.otherParty`)}</Text>
+              <Text style={[styles.userRole, { color: colors.mutedForeground }]}>{t(`booking.otherParty`)}</Text>
             </View>
           </PressableOpacity>
         )}
 
-        {/* Status badge */}
-        <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-          <View style={[styles.statusBadgeLarge, { backgroundColor: colors.muted }]}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: statusColor, marginRight: 6 }} />
-            <Text style={[styles.statusTextLarge, { color: colors.mutedForeground }]}>
-              {t(STATUS_KEYS[booking.status] ?? 'rental.statusPending')}
-            </Text>
-          </View>
-        </View>
-
         {/* Status timeline */}
         {currentStepIndex >= 0 && (
-          <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.statusTimeline')}</Text>
+          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.statusTimeline')}</Text>
             <View style={styles.timeline}>
               {steps.map((step, i) => {
                 const isCompleted = i <= currentStepIndex
                 const isCurrent = i === currentStepIndex
                 const isFuture = i > currentStepIndex
-                const dotColor = isCompleted ? colors.success : isCurrent ? colors.primary : colors.muted
-                const textColor = isCompleted ? colors.foreground : isFuture ? colors.mutedForeground : colors.foreground
+                const dotColor = isCompleted ? colors.foreground : colors.muted
+                const textColor = isCompleted ? colors.foreground : colors.mutedForeground
 
                 return (
                   <View key={step} style={styles.timelineStep}>
@@ -389,15 +417,15 @@ function BookingDetailScreenInner() {
                       <View style={[
                         styles.timelineDot,
                         { backgroundColor: dotColor },
-                        isCurrent && { borderWidth: 3, borderColor: `${colors.primary}40` },
+                        isCurrent && { borderWidth: 3, borderColor: colors.border },
                       ]}>
                         {isCompleted && !isCurrent && <Check size={10} color={colors.primaryForeground} />}
                       </View>
                       {i < steps.length - 1 && (
-                        <View style={[styles.timelineLine, { backgroundColor: isCompleted ? colors.success : colors.muted }]} />
+                        <View style={[styles.timelineLine, { backgroundColor: isCompleted ? colors.foreground : colors.muted }]} />
                       )}
                     </View>
-                    <Text style={[styles.timelineLabel, { color: textColor, fontWeight: isCurrent ? '700' : '400' }]}>
+                    <Text style={[styles.timelineLabel, { color: textColor, fontFamily: isCurrent ? fonts.bodySemi : fonts.body }]}>
                       {t(STATUS_KEYS[step] ?? step)}
                     </Text>
                   </View>
@@ -409,11 +437,11 @@ function BookingDetailScreenInner() {
 
         {/* Dates section (rentals) */}
         {booking.start_date && booking.end_date && (
-          <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.dates')}</Text>
+          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.dates')}</Text>
             <View style={styles.dateRow}>
               <Calendar size={16} color={colors.mutedForeground} />
-              <Text style={{ fontSize: 14, color: colors.foreground, fontFamily: fonts.bodyMedium, lineHeight: 20 }}>
+              <Text style={[styles.dateValue, { color: colors.foreground }]}>
                 {formatDateRange(booking.start_date, booking.end_date, locale)}
               </Text>
             </View>
@@ -421,8 +449,8 @@ function BookingDetailScreenInner() {
         )}
 
         {/* Price breakdown */}
-        <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.priceBreakdown')}</Text>
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.priceBreakdown')}</Text>
           <View style={styles.priceRow}>
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>
               {isService ? t('service.servicePrice') : t('rental.rentalFee')}
@@ -435,7 +463,7 @@ function BookingDetailScreenInner() {
           </View>
           <View style={[styles.priceRow, styles.priceTotalRow, { borderTopColor: colors.border }]}>
             <Text style={[styles.priceTotalLabel, { color: colors.foreground }]}>{t('booking.total')}</Text>
-            <Text style={[styles.priceTotalValue, { color: isService ? colors.info : colors.primary }]}>
+            <Text style={[styles.priceTotalValue, { color: colors.foreground }]}>
               {formatPrice(booking.total_amount, locale)}
             </Text>
           </View>
@@ -443,9 +471,9 @@ function BookingDetailScreenInner() {
 
         {/* Notes (service bookings) */}
         {booking.notes && (
-          <View style={[styles.section, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t('booking.notes')}</Text>
-            <Text style={{ fontSize: 14, color: colors.foreground, lineHeight: 20, fontFamily: fonts.body }}>{booking.notes}</Text>
+          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.notes')}</Text>
+            <Text style={[styles.notesText, { color: colors.foreground }]}>{booking.notes}</Text>
           </View>
         )}
 
@@ -455,7 +483,7 @@ function BookingDetailScreenInner() {
             <PressableOpacity
               onPress={handleConfirm}
               disabled={actionLoading}
-              style={[styles.actionBtn, { backgroundColor: colors.success }]}
+              style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
               accessibilityLabel={t('rental.confirmBooking')}
               accessibilityRole="button"
             >
@@ -468,7 +496,7 @@ function BookingDetailScreenInner() {
             <PressableOpacity
               onPress={handleStartWork}
               disabled={actionLoading}
-              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+              style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
               accessibilityLabel={t('service.startWork')}
               accessibilityRole="button"
             >
@@ -479,7 +507,7 @@ function BookingDetailScreenInner() {
             <PressableOpacity
               onPress={handleComplete}
               disabled={actionLoading}
-              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+              style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
               accessibilityLabel={booking.type === 'rental' ? t('rental.returnItem') : t('service.markDone')}
               accessibilityRole="button"
             >
@@ -494,18 +522,18 @@ function BookingDetailScreenInner() {
             <PressableOpacity
               onPress={handleCancel}
               disabled={actionLoading}
-              style={[styles.actionBtn, { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
+              style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
               accessibilityLabel={t('rental.cancelBooking')}
               accessibilityRole="button"
             >
-              <XCircle size={16} color={colors.destructive} />
-              <Text style={[styles.actionBtnText, { color: colors.destructive }]}>{t('rental.cancelBooking')}</Text>
+              <XCircle size={16} color={colors.mutedForeground} />
+              <Text style={[styles.actionBtnText, { color: colors.mutedForeground }]}>{t('rental.cancelBooking')}</Text>
             </PressableOpacity>
           )}
           {canReview && (
             <PressableOpacity
               onPress={handleLeaveReview}
-              style={[styles.actionBtn, { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }]}
+              style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
               accessibilityLabel={t('rental.leaveReview')}
               accessibilityRole="button"
             >
@@ -513,69 +541,121 @@ function BookingDetailScreenInner() {
               <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
             </PressableOpacity>
           )}
-
-          {/* Send message button */}
-          {booking.other_user && (
-            <PressableOpacity
-              onPress={handleSendMessage}
-              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-              accessibilityLabel={t('booking.sendMessage')}
-              accessibilityRole="button"
-            >
-              <MessageCircle size={16} color={colors.primaryForeground} />
-              <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('booking.sendMessage')}</Text>
-            </PressableOpacity>
-          )}
         </View>
       </ScrollView>
+
+      {/* Sticky CTA at bottom — Send message */}
+      {booking.other_user && (
+        <View style={[styles.stickyBottom, { paddingBottom: insets.bottom + 12, backgroundColor: colors.background, borderTopColor: colors.border }]}>
+          <PressableOpacity
+            onPress={handleSendMessage}
+            style={[styles.stickyCta, { backgroundColor: colors.foreground }]}
+            accessibilityLabel={t('booking.sendMessage')}
+            accessibilityRole="button"
+          >
+            <MessageCircle size={18} color={colors.primaryForeground} />
+            <Text style={[styles.stickyCtaText, { color: colors.primaryForeground }]}>{t('booking.sendMessage')}</Text>
+          </PressableOpacity>
+        </View>
+      )}
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  // Header — circle back + centered title
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 12,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  circleBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 17,
+    letterSpacing: -0.2,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  headerSpacer: { width: 36 },
+
   scrollContent: { padding: 16, gap: 12 },
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 104, lineHeight: 22 },
 
-  // Post card
+  // Post card — hero preview
   postCard: {
-    flexDirection: 'row', padding: 12, gap: 12, borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    padding: 12,
+    gap: 12,
+    borderRadius: 16,
+    borderWidth: 1,
   },
   postImage: { width: 72, height: 72, borderRadius: 16 },
   postImageFb: { alignItems: 'center', justifyContent: 'center' },
   postInfo: { flex: 1, gap: 4, justifyContent: 'center' },
-  postTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.bodySemi },
+  postTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi },
+  postType: { fontSize: 12, lineHeight: 16, fontFamily: fonts.bodyMedium },
+
+  // Status badge row
+  statusRow: {
+    paddingVertical: 4,
+  },
+  statusBadgeLarge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  statusTextLarge: {
+    fontSize: 10.5,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
 
   // User card
   userCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
-    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
   },
-  userName: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
+  userName: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
+  userRole: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
 
-  // Section card
+  // Section card — monochrome
   section: {
-    padding: 16, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, gap: 12,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 12,
   },
-  sectionTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
+  sectionLabel: {
+    fontSize: 10.5,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
 
-  // Status badge
-  statusBadgeLarge: {
-    alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 24,
-    flexDirection: 'row', alignItems: 'center',
-  },
-  statusTextLarge: {
-    fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5,
-    fontFamily: fonts.bodySemi, lineHeight: 16,
-  },
-
-  // Timeline
+  // Timeline — monochrome
   timeline: { gap: 0, marginTop: 4 },
   timelineStep: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, minHeight: 36 },
   timelineDotCol: { alignItems: 'center', width: 20 },
@@ -587,22 +667,62 @@ const styles = StyleSheet.create({
 
   // Date row
   dateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dateValue: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
 
   // Price breakdown
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   priceLabel: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   priceValue: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  priceTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, marginTop: 4 },
-  priceTotalLabel: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
-  priceTotalValue: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 24 },
+  priceTotalRow: { borderTopWidth: 1, paddingTop: 10, marginTop: 4 },
+  priceTotalLabel: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
+  priceTotalValue: { fontSize: 18, fontFamily: fonts.headingSemi, lineHeight: 24 },
+
+  // Notes
+  notesText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
 
   // Actions
   actionsContainer: { gap: 8, marginTop: 8 },
   actionBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 24, minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 999,
+    minHeight: 48,
+  },
+  actionBtnPrimary: {
+    // INK bg — set inline
+  },
+  actionBtnOutline: {
+    borderWidth: 1,
   },
   actionBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+
+  // Sticky CTA at bottom
+  stickyBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  stickyCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 999,
+    minHeight: 52,
+  },
+  stickyCtaText: {
+    fontSize: 15,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 22,
+  },
 })
 
 export default function BookingDetailScreen() {
