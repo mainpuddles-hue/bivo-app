@@ -346,9 +346,9 @@ function LoginScreenInner() {
       : t('auth.register')
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#FFFFFF' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        style={[styles.scroll, { backgroundColor: '#FFFFFF' }]}
+        style={[styles.scroll, { backgroundColor: colors.background }]}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

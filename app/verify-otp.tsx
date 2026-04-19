@@ -251,7 +251,7 @@ export default function VerifyOtpScreen() {
   return (
     <ScreenErrorBoundary screenName="VerifyOtp">
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={[styles.container, { backgroundColor: '#FFFFFF', paddingTop: insets.top }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         {/* Bar header with circle back button */}
         <View style={styles.header}>
           <PressableOpacity

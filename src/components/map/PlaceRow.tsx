@@ -76,11 +76,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 10,
     overflow: 'hidden',
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 2,
   },
   placeInfo: {
     flex: 1,
@@ -107,11 +102,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     gap: 8,
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 2,
   },
   showAllPlacesText: {
     fontSize: 14,

@@ -26,7 +26,7 @@ function ScreenErrorFallbackUI({ error, onRetry }: { error: Error | null; onRetr
 
   return (
     <View style={styles.wrapper}>
-      <View style={[styles.card, { backgroundColor: colors.card, shadowColor: '#1A1D1F' }]}>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.iconRow}>
           <AlertCircle size={22} color={colors.destructive} />
           <Text style={[styles.title, { color: colors.foreground }]}>{t('screenError.title')}</Text>
@@ -104,14 +104,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     width: '100%',
     maxWidth: 360,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
     gap: 12,
   },
   iconRow: {

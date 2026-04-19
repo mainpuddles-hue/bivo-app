@@ -1028,7 +1028,7 @@ const contextStyles = StyleSheet.create({
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     marginHorizontal: 16, marginVertical: 8, padding: 10,
-    borderRadius: 18, borderWidth: 1,
+    borderRadius: 20, borderWidth: 1,
   },
   image: { width: 46, height: 46, borderRadius: 12 },
   info: { flex: 1, minWidth: 0, gap: 2 },

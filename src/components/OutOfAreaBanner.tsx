@@ -53,11 +53,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     borderWidth: 1,
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
   },
   textWrap: {
     flex: 1,
