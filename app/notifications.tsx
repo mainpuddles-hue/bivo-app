@@ -365,7 +365,7 @@ function NotificationsScreenInner() {
               key={f.key}
               onPress={() => setActiveFilter(f.key)}
               accessibilityRole="button"
-              accessibilityLabel={count > 0 ? `${t(f.label)} (${count} uutta)` : t(f.label)}
+              accessibilityLabel={count > 0 ? `${t(f.label)} (${count})` : t(f.label)}
               accessibilityState={{ selected: isActive }}
               style={[
                 styles.filterChip,

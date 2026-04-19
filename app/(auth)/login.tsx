@@ -404,7 +404,7 @@ function LoginScreenInner() {
             <Text style={[styles.sectionLabel, { color: colors.mutedForeground, marginTop: 18 }]}>
               {t('auth.name').toUpperCase()}
             </Text>
-            <View style={[styles.inputField, { borderColor: colors.border, borderWidth: 1 }]}>
+            <View style={[styles.inputField, { borderColor: colors.border, borderWidth: 1, backgroundColor: colors.card }]}>
               <TextInput
                 style={[styles.inputText, { color: colors.foreground }]}
                 value={name}

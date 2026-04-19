@@ -340,7 +340,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {/* Pro crown */}
             {isPro && (
               <View style={[styles.proBadgeOnImage, { backgroundColor: colors.foreground }]}>
-                <Crown size={14} color={colors.foreground} />
+                <Crown size={14} color={colors.primaryForeground} />
               </View>
             )}
           </View>

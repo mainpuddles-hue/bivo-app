@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, Dimensions } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, useWindowDimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -451,7 +451,7 @@ function PostDetailScreenInner() {
     const diffDays = Math.ceil(diffMs / 86400000)
     if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: colors.foreground }
     return null
-  }, [post?.expires_at, t])
+  }, [post?.expires_at, t, colors.destructive, colors.foreground])
 
   const isAuthor = userId !== null && post?.user_id === userId
 
@@ -867,7 +867,7 @@ function PostDetailScreenInner() {
 
   const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
 
-  const screenWidth = Dimensions.get('window').width
+  const { width: screenWidth } = useWindowDimensions()
 
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -878,7 +878,7 @@ function PostDetailScreenInner() {
         </PressableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <PressableOpacity onPress={toggleSave} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>
-            <Heart size={16} color={isSaved ? colors.destructive : colors.foreground} fill={isSaved ? colors.destructive : 'transparent'} />
+            <Bookmark size={16} color={isSaved ? colors.foreground : colors.foreground} fill={isSaved ? colors.foreground : 'transparent'} />
           </PressableOpacity>
           {isAuthor ? (
             <PressableOpacity onPress={handleMorePress} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}>

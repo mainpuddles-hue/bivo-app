@@ -25,10 +25,15 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
   const isTable = isTableEvent(event)
   const TableCategoryIcon = isTable ? getTableCategoryIcon(event.category) : null
 
-  const formattedDate = useMemo(() => new Date(event.event_date).toLocaleDateString(
-    locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US',
-    { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
-  ), [event.event_date, locale])
+  const formattedDate = useMemo(() => {
+    if (!event.event_date) return ''
+    const d = new Date(event.event_date)
+    if (isNaN(d.getTime())) return ''
+    return d.toLocaleDateString(
+      locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US',
+      { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
+    )
+  }, [event.event_date, locale])
 
   const participantCount = event.participant_count ?? 0
   const spotsText = event.max_participants

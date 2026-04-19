@@ -282,7 +282,7 @@ function SearchEmptyState({ query, colors, isDark, t, onSelectCategory }: Search
       <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
         {query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}
       </Text>
-      <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{'Ei hakutuloksia — kokeile eri hakusanaa tai laajenna hakualuetta'}</Text>
+      <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
       <View style={s.emptyCategoryRow}>
         {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).map(([type, cat]) => {
           const CatIcon = CATEGORY_ICON_MAP[cat.icon]

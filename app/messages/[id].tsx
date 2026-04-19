@@ -21,6 +21,7 @@ import { ReportModal } from '@/components/ReportModal'
 import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { getImageUrl } from '@/lib/imageUtils'
+import { getCachedUserId } from '@/lib/authCache'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
@@ -93,10 +94,15 @@ function ConversationScreenInner() {
       setLoading(true)
       setNotFound(false)
 
-      const { data: { user } } = await supabase.auth.getUser()
+      let uid = await getCachedUserId()
       if (cancelled) return
-      if (!user) { setLoading(false); setNotFound(true); return }
-      setUserId(user.id)
+      if (!uid) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (cancelled) return
+        if (!user) { setLoading(false); setNotFound(true); return }
+        uid = user.id
+      }
+      setUserId(uid)
 
       const { data: conv } = await supabase.from('conversations').select('*').eq('id', id).maybeSingle()
       if (cancelled) return
@@ -107,13 +113,13 @@ function ConversationScreenInner() {
       }
 
       // Verify current user is a participant in this conversation
-      if ((conv as any).user1_id !== user.id && (conv as any).user2_id !== user.id) {
+      if ((conv as any).user1_id !== uid && (conv as any).user2_id !== uid) {
         setNotFound(true)
         setLoading(false)
         return
       }
 
-      const otherId = (conv as any).user1_id === user.id ? (conv as any).user2_id : (conv as any).user1_id
+      const otherId = (conv as any).user1_id === uid ? (conv as any).user2_id : (conv as any).user1_id
       const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).maybeSingle()
       if (cancelled) return
       if (profile) {
@@ -173,7 +179,7 @@ function ConversationScreenInner() {
       if (!cancelled) {
         const { error: markReadError } = await (supabase.from('messages') as any).update({ is_read: true })
           .eq('conversation_id', id)
-          .neq('sender_id', user.id)
+          .neq('sender_id', uid)
           .eq('is_read', false)
         if (markReadError && __DEV__) console.warn('[conversation] mark-as-read failed:', markReadError.message)
       }
@@ -698,15 +704,8 @@ function ConversationScreenInner() {
         </PressableOpacity>
         <PressableOpacity onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
           <Text style={[s.headerName, { color: colors.foreground }]} numberOfLines={1}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
-          {otherTyping ? (
+          {otherTyping && (
             <Text style={[s.headerSub, { color: colors.foreground }]}>{t('messages.typing')}</Text>
-          ) : (
-            <View style={s.onlineRow}>
-              <View style={[s.onlineDot, { backgroundColor: colors.foreground }]} />
-              <Text style={[s.onlineText, { color: colors.mutedForeground }]}>
-                {t('messages.onlineNow') ?? 'Paikalla nyt'}
-              </Text>
-            </View>
           )}
         </PressableOpacity>
         {otherUser && (
@@ -717,7 +716,7 @@ function ConversationScreenInner() {
             accessibilityRole="button"
             accessibilityLabel={t('report.title')}
           >
-            <Phone size={14} color={colors.foreground} strokeWidth={2} />
+            <Flag size={14} color={colors.foreground} strokeWidth={2} />
           </PressableOpacity>
         )}
       </View>
