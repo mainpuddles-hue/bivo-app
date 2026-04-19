@@ -6,9 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import { clearBlockedCache } from '@/lib/blockedUsers'
 import {
-  ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
-  Flag, ShieldBan, Crown, PenLine, ShieldCheck, Clock, CalendarDays, CheckCircle2,
-  Phone, Globe, Building2, Camera, BadgeCheck,
+  MapPin, MessageCircle, UserPlus, UserMinus,
+  Crown, PenLine, Clock,
+  Phone, Globe, Building2, Camera, BadgeCheck, MoreHorizontal, ChevronLeft,
 } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
@@ -19,7 +19,7 @@ import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { PublicProfileSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 import { PostCard } from '@/components/PostCard'
 import { ReviewModal } from '@/components/ReviewModal'
 import { ReportModal } from '@/components/ReportModal'
@@ -320,44 +320,164 @@ export default function PublicProfileScreen() {
     setShowReportModal(true)
   }, [currentUserId, router])
 
+  const handleOptions = useCallback(() => {
+    Alert.alert(
+      profile?.name ?? '',
+      undefined,
+      [
+        ...(currentUserId && currentUserId !== userId ? [
+          { text: isBlocked ? (t('post.unblock') ?? 'Unblock') : t('post.block'), style: 'destructive' as const, onPress: handleBlock },
+          { text: t('post.report'), style: 'destructive' as const, onPress: handleReport },
+        ] : []),
+        { text: t('common.cancel'), style: 'cancel' as const },
+      ],
+    )
+  }, [profile, currentUserId, userId, isBlocked, t, handleBlock, handleReport])
+
+  // --- Monochrome bar header (mockup 27) ---
+  const renderBar = (title: string) => (
+    <View style={[s.bar, { paddingTop: insets.top + 8 }]}>
+      <Pressable
+        onPress={() => router.back()}
+        hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.back')}
+        style={({ pressed }) => [s.barCircle, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+      >
+        <ChevronLeft size={16} color={colors.foreground} strokeWidth={2.2} />
+      </Pressable>
+      <View style={s.barCenter}>
+        <Text style={[s.barTitle, { color: colors.foreground }]} numberOfLines={1}>{title}</Text>
+      </View>
+      {currentUserId && currentUserId !== userId ? (
+        <Pressable
+          onPress={handleOptions}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('post.report')}
+          style={({ pressed }) => [s.barCircle, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+        >
+          <MoreHorizontal size={16} color={colors.foreground} strokeWidth={2.2} />
+        </Pressable>
+      ) : (
+        <View style={s.barCirclePlaceholder} />
+      )}
+    </View>
+  )
+
+  // --- Loading state ---
   if (loading) {
     return (
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <BackButton />
-        </View>
+        {renderBar(t('profile.title'))}
         <PublicProfileSkeleton />
       </View>
       </ScreenErrorBoundary>
     )
   }
 
+  // --- Profile hidden state ---
   if (profileHidden) {
     return (
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <BackButton />
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
-        </View>
+        {renderBar(t('profile.title'))}
         <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.profileHidden') ?? 'Profiili ei ole julkinen'}</Text>
       </View>
       </ScreenErrorBoundary>
     )
   }
 
+  // --- Not found state ---
   if (!profile) {
     return (
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <BackButton />
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
-        </View>
+        {renderBar(t('profile.title'))}
         <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.notFound')}</Text>
       </View>
       </ScreenErrorBoundary>
+    )
+  }
+
+  // --- Review refresher (shared between personal + business) ---
+  const refreshReviews = () => {
+    setHasExistingReview(true)
+    supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
+      .eq('reviewed_id', userId)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) {
+          const revsList = data as unknown as Review[]
+          setReviews(revsList)
+          setTotalReviewCount(revsList.length)
+          const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / revsList.length : 0
+          setAvgRating(Math.round(avg * 10) / 10)
+          const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          for (const r of revsList as any[]) {
+            const star = Math.min(5, Math.max(1, Math.round(r.rating)))
+            dist[star] = (dist[star] ?? 0) + 1
+          }
+          setRatingDistribution(dist)
+        }
+      })
+  }
+
+  // --- Review card renderer ---
+  const renderReviewCard = (rev: Review) => (
+    <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={s.reviewHeader}>
+        <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={28} />
+        <View style={{ flex: 1 }}>
+          <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
+        </View>
+        <StarRating rating={rev.rating} size={11} />
+      </View>
+      {rev.comment && (
+        <Text style={[s.reviewComment, { color: colors.foreground }]}>{rev.comment}</Text>
+      )}
+    </View>
+  )
+
+  // --- Listing card renderer (2-column grid) ---
+  const renderListingGrid = () => {
+    if (posts.length === 0) {
+      return <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPosts')}</Text>
+    }
+    // Show in 2-column grid for first 4, then full-width PostCard for the rest
+    const gridPosts = posts.slice(0, 4)
+    const remainingPosts = posts.slice(4)
+    return (
+      <>
+        <View style={s.listingGrid}>
+          {gridPosts.map((post) => (
+            <Pressable
+              key={post.id}
+              onPress={() => router.push(`/post/${post.id}`)}
+              style={({ pressed }) => [s.listingGridCard, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+              accessibilityRole="button"
+            >
+              {post.image_url ? (
+                <Image
+                  source={{ uri: post.image_url }}
+                  style={s.listingGridImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+              ) : (
+                <View style={[s.listingGridImage, { backgroundColor: colors.muted }]} />
+              )}
+              <Text style={[s.listingGridTitle, { color: colors.foreground }]} numberOfLines={1}>{post.title}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {remainingPosts.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </>
     )
   }
 
@@ -380,15 +500,9 @@ export default function PublicProfileScreen() {
     return (
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <BackButton />
-          <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>
-            {profile.business_name || profile.name}
-          </Text>
-          <View style={{ flex: 1 }} />
-        </View>
+        {renderBar(profile.business_name || profile.name)}
 
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProfile() }} tintColor={colors.primary} />}>
+        <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProfile() }} tintColor={colors.foreground} />}>
           {/* 1. Hero: Business Images Carousel */}
           {businessImages.length > 0 ? (
             <View style={bs.heroWrapper}>
@@ -427,9 +541,9 @@ export default function PublicProfileScreen() {
           )}
 
           {/* 2. Business Info Card */}
-          <View style={[bs.infoCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+          <View style={[bs.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={bs.infoCardHeader}>
-              <Avatar url={profile.avatar_url} name={profile.business_name || profile.name} size={56} borderColor={colors.primary} borderWidth={2} />
+              <Avatar url={profile.avatar_url} name={profile.business_name || profile.name} size={56} borderColor={colors.card} borderWidth={2} />
               <View style={bs.infoCardHeaderText}>
                 <Text style={[bs.businessName, { color: colors.foreground }]} numberOfLines={2}>
                   {profile.business_name || profile.name}
@@ -482,72 +596,74 @@ export default function PublicProfileScreen() {
             {/* Neighborhood */}
             {profile.naapurusto && (
               <View style={bs.nhRow}>
-                <MapPin size={14} color={colors.primary} />
-                <Text style={[bs.nhText, { color: colors.primary }]}>{profile.naapurusto}</Text>
+                <MapPin size={14} color={colors.mutedForeground} />
+                <Text style={[bs.nhText, { color: colors.mutedForeground }]}>{profile.naapurusto}</Text>
               </View>
             )}
           </View>
 
-          {/* Action buttons */}
-          <View style={s.actions}>
-            <PressableOpacity onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? 'transparent' : colors.foreground, borderWidth: isFollowing ? StyleSheet.hairlineWidth : 0, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
+          {/* Action buttons — mockup 27 style */}
+          <View style={s.actionRow}>
+            <Pressable
+              onPress={handleMessage}
+              disabled={creatingConversation}
+              style={({ pressed }) => [s.messageBtn, { backgroundColor: colors.foreground, opacity: creatingConversation ? 0.5 : pressed ? 0.85 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.sendMessage')}
+            >
+              <MessageCircle size={16} color={colors.primaryForeground} />
+              <Text style={[s.messageBtnText, { color: colors.primaryForeground }]}>{t('profile.sendMessage')}</Text>
+            </Pressable>
+            <Pressable
+              onPress={handleFollow}
+              style={({ pressed }) => [s.followBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}
+            >
               {isFollowing ? (
                 <UserMinus size={16} color={colors.foreground} />
               ) : (
-                <UserPlus size={16} color={colors.background} />
+                <UserPlus size={16} color={colors.foreground} />
               )}
-              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.background }]}>
+              <Text style={[s.followBtnText, { color: colors.foreground }]}>
                 {isFollowing ? t('profile.unfollow') : t('profile.follow')}
               </Text>
-            </PressableOpacity>
-            <Pressable onPress={handleMessage} disabled={creatingConversation} style={({ pressed }) => [s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : pressed ? 0.7 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
-              <MessageCircle size={16} color={colors.foreground} />
-              <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
             </Pressable>
           </View>
 
           {/* Write Review button */}
           {currentUserId && hasTransaction && !hasExistingReview && (
-            <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-              <PenLine size={16} color={colors.pro} />
+            <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
+              <PenLine size={16} color={colors.foreground} />
               <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
             </PressableOpacity>
           )}
 
-          {/* Stats row */}
-          <View style={[s.statsRow, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-            <View style={s.stat}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount > 0 ? followerCount : '\u2013'}</Text>
-              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
-            </View>
-            <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-            <View style={s.stat}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{postCount > 0 ? postCount : '\u2013'}</Text>
-              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
-            </View>
-            <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-            <View style={s.stat}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating ?? '\u2013'}</Text>
-              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
-            </View>
-            <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-            <View style={s.stat}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{completedTransactions > 0 ? completedTransactions : '\u2013'}</Text>
-              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.completedTransactions')}</Text>
-            </View>
+          {/* Stats row — 3-column cards (mockup 27) */}
+          <View style={s.statsGrid}>
+            {([
+              [avgRating ?? '\u2013', t('profile.avgRating')],
+              [postCount > 0 ? postCount : '\u2013', t('profile.posts')],
+              [followerCount > 0 ? followerCount : '\u2013', t('profile.followers')],
+            ] as const).map(([num, label], i) => (
+              <View key={i} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[s.statNum, { color: colors.foreground }]}>{num}</Text>
+                <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
+              </View>
+            ))}
           </View>
 
           {/* 3. Location Card */}
           {(profile.business_lat != null && profile.business_lng != null) && (
-            <View style={[bs.locationCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+            <View style={[bs.locationCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={bs.locationCardHeader}>
-                <MapPin size={18} color={colors.primary} />
+                <MapPin size={18} color={colors.foreground} />
                 <Text style={[bs.locationCardTitle, { color: colors.foreground }]}>
                   {t('business.location')}
                 </Text>
               </View>
               {profile.naapurusto && (
-                <Text style={[bs.locationAddress, { color: colors.foreground }]}>
+                <Text style={[bs.locationAddress, { color: colors.mutedForeground }]}>
                   {profile.naapurusto}
                 </Text>
               )}
@@ -558,8 +674,8 @@ export default function PublicProfileScreen() {
                   Linking.openURL(url).catch(() => {})
                 }}
               >
-                <MapPin size={16} color={colors.background} />
-                <Text style={[bs.mapButtonText, { color: colors.background }]}>
+                <MapPin size={16} color={colors.primaryForeground} />
+                <Text style={[bs.mapButtonText, { color: colors.primaryForeground }]}>
                   {t('business.showOnMap')}
                 </Text>
               </PressableOpacity>
@@ -568,7 +684,7 @@ export default function PublicProfileScreen() {
 
           {/* 4. Contact Card */}
           {hasContactInfo && (
-            <View style={[bs.contactCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+            <View style={[bs.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[bs.contactCardTitle, { color: colors.foreground }]}>
                 {t('business.contactInfo')}
               </Text>
@@ -644,13 +760,10 @@ export default function PublicProfileScreen() {
             </View>
           )}
 
-          {/* 5. Ilmoitukset — Business posts */}
-          <View style={bs.sectionHeader}>
-            <Text style={[bs.sectionTitle, { color: colors.foreground }]}>
-              {t('profile.listings')}
-            </Text>
-            <Text style={[bs.sectionCount, { color: colors.mutedForeground }]}>
-              {postCount}
+          {/* 5. Listings section */}
+          <View style={s.sectionRow}>
+            <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+              {t('profile.listings').toUpperCase()} {'\u00B7'} {postCount}
             </Text>
           </View>
           <View style={s.tabContent}>
@@ -663,114 +776,29 @@ export default function PublicProfileScreen() {
             )}
           </View>
 
-          {/* 6. Reviews */}
-          <View style={bs.sectionHeader}>
-            <Text style={[bs.sectionTitle, { color: colors.foreground }]}>
-              {t('profile.reviews')}
-            </Text>
-            <Text style={[bs.sectionCount, { color: colors.mutedForeground }]}>
-              {totalReviewCount}
+          {/* 6. Reviews section */}
+          <View style={s.sectionRow}>
+            <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+              {t('profile.reviews').toUpperCase()} {'\u00B7'} {totalReviewCount}
             </Text>
           </View>
-
-          {/* Rating Summary Card (same as non-business) */}
-          {totalReviewCount > 0 && (
-            <View style={[s.ratingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-              <View style={s.ratingOverview}>
-                <View style={s.ratingStarsCol}>
-                  <StarRating rating={Math.round(avgRating ?? 0)} size={18} />
-                  <Text style={[s.ratingBigNum, { color: colors.foreground }]}>
-                    {avgRating ?? 0} / 5
-                  </Text>
-                </View>
-              </View>
-              <View style={s.ratingBars}>
-                {[5, 4, 3, 2, 1].map(star => {
-                  const count = ratingDistribution[star] ?? 0
-                  const maxCount = Math.max(...Object.values(ratingDistribution), 1)
-                  const pct = count / maxCount
-                  return (
-                    <View key={star} style={s.ratingBarRow}>
-                      <Text style={[s.ratingBarLabel, { color: colors.mutedForeground }]}>{star}{'\u2605'}</Text>
-                      <View style={[s.ratingBarTrack, { backgroundColor: colors.muted }]}>
-                        <View style={[s.ratingBarFill, { width: `${pct * 100}%`, backgroundColor: colors.pro }]} />
-                      </View>
-                      <Text style={[s.ratingBarCount, { color: colors.mutedForeground }]}>{count}</Text>
-                    </View>
-                  )
-                })}
-              </View>
-            </View>
-          )}
 
           <View style={s.tabContent}>
             {reviews.length === 0 ? (
               <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
             ) : (
-              reviews.map((rev) => (
-                <View key={rev.id} style={[s.reviewCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-                  <View style={s.reviewHeader}>
-                    <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
-                      <StarRating rating={rev.rating} size={12} />
-                    </View>
-                    <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
-                  </View>
-                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]}>{rev.comment}</Text>}
-                </View>
-              ))
+              reviews.map(renderReviewCard)
             )}
           </View>
-
-          {/* Block / Report */}
-          {currentUserId && currentUserId !== userId && (
-            <View style={s.dangerActions}>
-              <PressableOpacity onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-                <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
-                <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
-                  {isBlocked ? t('post.unblock') : t('post.block')}
-                </Text>
-              </PressableOpacity>
-              <PressableOpacity onPress={handleReport} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-                <Flag size={18} color={colors.mutedForeground} />
-                <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
-              </PressableOpacity>
-            </View>
-          )}
         </ScrollView>
 
-        {/* Review Modal */}
         <ReviewModal
           visible={showReviewModal}
           onClose={() => setShowReviewModal(false)}
           reviewedUserId={userId!}
-          onReviewSubmitted={() => {
-            setHasExistingReview(true)
-            supabase
-              .from('reviews')
-              .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
-              .eq('reviewed_id', userId)
-              .order('created_at', { ascending: false })
-              .then(({ data }) => {
-                if (data) {
-                  const revsList = data as unknown as Review[]
-                  setReviews(revsList)
-                  setTotalReviewCount(revsList.length)
-                  const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / revsList.length : 0
-                  setAvgRating(Math.round(avg * 10) / 10)
-                  const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-                  for (const r of revsList as any[]) {
-                    const star = Math.min(5, Math.max(1, Math.round(r.rating)))
-                    dist[star] = (dist[star] ?? 0) + 1
-                  }
-                  setRatingDistribution(dist)
-                }
-              })
-          }}
+          onReviewSubmitted={refreshReviews}
         />
 
-        {/* Report Modal */}
         <ReportModal
           visible={showReportModal}
           onClose={() => setShowReportModal(false)}
@@ -782,189 +810,159 @@ export default function PublicProfileScreen() {
     )
   }
 
-  // === PERSONAL PROFILE LAYOUT (existing) ===
+  // === PERSONAL PROFILE LAYOUT (Mockup 27 — Naapurin profiili) ===
+  const joinYear = profile.created_at ? new Date(profile.created_at).getFullYear() : ''
+  const isVerified = badges.some(b => (b.badge_type as string) === 'verified' || (b.badge_type as string) === 'suomifi')
+  const metaParts: string[] = []
+  if (profile.naapurusto) metaParts.push(profile.naapurusto)
+  if (joinYear) metaParts.push(`${t('profile.memberSince')} ${joinYear}`)
+  if (isVerified) metaParts.push(t('profile.verified'))
+
   return (
     <ScreenErrorBoundary screenName="PublicProfile">
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
-        <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
-        <View style={{ flex: 1 }} />
-      </View>
+      {renderBar(profile.name)}
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProfile() }} tintColor={colors.primary} />}>
-        {/* Hero */}
+      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProfile() }} tintColor={colors.foreground} />}>
+        {/* Hero — centered avatar + name (mockup 27) */}
         <View style={s.hero}>
-          <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : undefined} borderWidth={profile.is_pro ? 3 : undefined} />
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
-            {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
+          <View style={[s.avatarRing, { borderColor: colors.card }]}>
+            <Avatar url={profile.avatar_url} name={profile.name} size={88} borderColor={colors.card} borderWidth={3} />
           </View>
-          {profile.naapurusto && (
-            <View style={s.nhRow}>
-              <MapPin size={14} color={colors.primary} />
-              <Text style={[s.nhText, { color: colors.primary }]}>{profile.naapurusto}</Text>
-            </View>
-          )}
+          <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
+          <Text style={[s.profileMeta, { color: colors.mutedForeground }]} numberOfLines={2}>
+            {metaParts.join(' \u00B7 ')}
+          </Text>
 
-          {profile.bio ? (
-            <Text style={[s.bio, { color: colors.mutedForeground }]}>{profile.bio}</Text>
-          ) : null}
-
-          {/* Badges */}
-          {badges.length > 0 && (
-            <View style={s.badgesRow}>
-              {badges.map((b) => {
-                const cfg = BADGE_ICONS[b.badge_type]
-                if (!cfg) return null
-                const Icon = cfg.icon
-                return (
-                  <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: colors.muted }]}>
-                    <Icon size={12} color={colors.mutedForeground} />
-                    <Text style={[s.badgeText, { color: colors.mutedForeground }]}>{t(`badges.${b.badge_type}`)}</Text>
-                  </View>
-                )
-              })}
-            </View>
-          )}
-
-          {profile.is_pro && (
-            <View style={[s.proBadge, { backgroundColor: colors.muted }]}>
-              <Crown size={14} color={colors.mutedForeground} />
-              <Text style={[s.proText, { color: colors.mutedForeground }]}>Pro</Text>
-            </View>
-          )}
-
-          {/* Action buttons */}
-          <View style={s.actions}>
-            <PressableOpacity onPress={handleFollow} style={[s.followBtn, { backgroundColor: isFollowing ? 'transparent' : colors.foreground, borderWidth: isFollowing ? StyleSheet.hairlineWidth : 0, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}>
-              {isFollowing ? (
-                <UserMinus size={16} color={colors.foreground} />
-              ) : (
-                <UserPlus size={16} color={colors.background} />
-              )}
-              <Text style={[s.followBtnText, { color: isFollowing ? colors.foreground : colors.background }]}>
-                {isFollowing ? t('profile.unfollow') : t('profile.follow')}
+          {/* Star rating row */}
+          {avgRating !== null && (
+            <View style={s.ratingRow}>
+              <StarRating rating={Math.round(avgRating)} size={14} />
+              <Text style={[s.ratingCount, { color: colors.mutedForeground }]}>
+                ({totalReviewCount})
               </Text>
-            </PressableOpacity>
-            <Pressable onPress={handleMessage} disabled={creatingConversation} style={({ pressed }) => [s.messageBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: creatingConversation ? 0.5 : pressed ? 0.7 : 1 }]} accessibilityRole="button" accessibilityLabel={t('profile.sendMessage')}>
-              <MessageCircle size={16} color={colors.foreground} />
-              <Text style={[s.messageBtnText, { color: colors.foreground }]}>{t('profile.sendMessage')}</Text>
-            </Pressable>
-          </View>
-
-          {/* Write Review button — only if user has had a transaction and hasn't reviewed yet */}
-          {currentUserId && hasTransaction && !hasExistingReview && (
-            <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: 'transparent', borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
-              <PenLine size={16} color={colors.pro} />
-              <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
-            </PressableOpacity>
+            </View>
           )}
-        </View>
 
-        {/* Stats 4-column — hide zeros, show dashes */}
-        <View style={[s.statsRow, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-          <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount > 0 ? followerCount : '\u2013'}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
-          </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount > 0 ? postCount : '\u2013'}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
-          </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating ?? '\u2013'}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
-          </View>
-        </View>
-
-        {/* Rating Summary Card */}
-        {totalReviewCount > 0 && (
-          <View style={[s.ratingCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-            <Text style={[s.ratingCardTitle, { color: colors.foreground }]}>
-              {t('profile.ratingsSummary')} ({totalReviewCount} {t('profile.reviewCount')})
-            </Text>
-            <View style={s.ratingOverview}>
-              <View style={s.ratingStarsCol}>
-                <StarRating rating={Math.round(avgRating ?? 0)} size={18} />
-                <Text style={[s.ratingBigNum, { color: colors.foreground }]}>
-                  {avgRating ?? 0} / 5
-                </Text>
+          {/* Trust badge + Pro badge row */}
+          <View style={s.badgesRow}>
+            {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
+            {profile.is_pro && (
+              <View style={[s.badgeChip, { backgroundColor: colors.muted }]}>
+                <Crown size={12} color={colors.mutedForeground} />
+                <Text style={[s.badgeText, { color: colors.mutedForeground }]}>Pro</Text>
               </View>
-            </View>
-            <View style={s.ratingBars}>
-              {[5, 4, 3, 2, 1].map(star => {
-                const count = ratingDistribution[star] ?? 0
-                const maxCount = Math.max(...Object.values(ratingDistribution), 1)
-                const pct = count / maxCount
-                return (
-                  <View key={star} style={s.ratingBarRow}>
-                    <Text style={[s.ratingBarLabel, { color: colors.mutedForeground }]}>{star}\u2605</Text>
-                    <View style={[s.ratingBarTrack, { backgroundColor: colors.muted }]}>
-                      <View style={[s.ratingBarFill, { width: `${pct * 100}%`, backgroundColor: colors.pro }]} />
-                    </View>
-                    <Text style={[s.ratingBarCount, { color: colors.mutedForeground }]}>{count}</Text>
-                  </View>
-                )
-              })}
-            </View>
+            )}
+            {badges.map((b) => {
+              const cfg = BADGE_ICONS[b.badge_type]
+              if (!cfg) return null
+              const Icon = cfg.icon
+              return (
+                <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: colors.muted }]}>
+                  <Icon size={12} color={colors.mutedForeground} />
+                  <Text style={[s.badgeText, { color: colors.mutedForeground }]}>{t(`badges.${b.badge_type}`)}</Text>
+                </View>
+              )
+            })}
           </View>
+        </View>
+
+        {/* Stats row — 3-column cards (mockup 27) */}
+        <View style={s.statsGrid}>
+          {([
+            [postCount > 0 ? postCount : '\u2013', t('profile.posts')],
+            [totalReviewCount > 0 ? totalReviewCount : '\u2013', t('profile.reviews')],
+            [followerCount > 0 ? followerCount : '\u2013', t('profile.followers')],
+          ] as const).map(([num, label], i) => (
+            <View key={i} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[s.statNum, { color: colors.foreground }]}>{num}</Text>
+              <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Action buttons — Viesti full-width + Seuraa (mockup 27) */}
+        <View style={s.actionRow}>
+          <Pressable
+            onPress={handleMessage}
+            disabled={creatingConversation}
+            style={({ pressed }) => [s.messageBtn, { backgroundColor: colors.foreground, opacity: creatingConversation ? 0.5 : pressed ? 0.85 : 1 }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.sendMessage')}
+          >
+            <MessageCircle size={16} color={colors.primaryForeground} />
+            <Text style={[s.messageBtnText, { color: colors.primaryForeground }]}>{t('profile.sendMessage')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={handleFollow}
+            style={({ pressed }) => [s.followBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+            accessibilityRole="button"
+            accessibilityLabel={isFollowing ? t('profile.unfollow') : t('profile.follow')}
+          >
+            {isFollowing ? (
+              <UserMinus size={16} color={colors.foreground} />
+            ) : (
+              <UserPlus size={16} color={colors.foreground} />
+            )}
+            <Text style={[s.followBtnText, { color: colors.foreground }]}>
+              {isFollowing ? t('profile.unfollow') : t('profile.follow')}
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Write Review button */}
+        {currentUserId && hasTransaction && !hasExistingReview && (
+          <PressableOpacity onPress={() => setShowReviewModal(true)} style={[s.reviewBtn, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('profile.writeReview')}>
+            <PenLine size={16} color={colors.foreground} />
+            <Text style={[s.reviewBtnText, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
+          </PressableOpacity>
         )}
 
-        {/* Verification Badges / Trust Info */}
-        <View style={[s.verificationCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-          {badges.some(b => (b.badge_type as string) === 'verified' || (b.badge_type as string) === 'suomifi') && (
-            <View style={s.verifyRow}>
-              <ShieldCheck size={16} color={colors.primary} />
-              <Text style={[s.verifyText, { color: colors.foreground }]}>{t('profile.verified')}</Text>
-            </View>
-          )}
-          {(profile as any)?.response_rate != null && (
-            <View style={s.verifyRow}>
-              <Clock size={16} color={colors.primary} />
-              <Text style={[s.verifyText, { color: colors.foreground }]}>
-                {t('profile.responseRate')}: {(profile as any).response_rate}%
-              </Text>
-            </View>
-          )}
-          <View style={s.verifyRow}>
-            <CalendarDays size={16} color={colors.primary} />
-            <Text style={[s.verifyText, { color: colors.foreground }]}>
-              {t('profile.memberSince')} {profile.created_at ? new Date(profile.created_at).getFullYear() : ''}
+        {/* Bio */}
+        {profile.bio ? (
+          <Text style={[s.bio, { color: colors.foreground }]}>{profile.bio}</Text>
+        ) : null}
+
+        {/* Pill tabs — Ilmoitukset / Arviot (mockup 27) */}
+        <View style={s.pillTabRow}>
+          <Pressable
+            onPress={() => setActiveTab('posts')}
+            style={({ pressed }) => [
+              s.pillTab,
+              activeTab === 'posts'
+                ? { backgroundColor: colors.foreground }
+                : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+              pressed && { opacity: 0.7 },
+            ]}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'posts' }}
+          >
+            <Text style={[s.pillTabText, { color: activeTab === 'posts' ? colors.primaryForeground : colors.foreground }]}>
+              {t('profile.posts')}
             </Text>
-          </View>
-          {completedTransactions > 0 && (
-            <View style={s.verifyRow}>
-              <CheckCircle2 size={16} color={colors.primary} />
-              <Text style={[s.verifyText, { color: colors.foreground }]}>
-                {completedTransactions} {t('profile.completedTransactions')}
-              </Text>
-            </View>
-          )}
+          </Pressable>
+          <Pressable
+            onPress={() => setActiveTab('reviews')}
+            style={({ pressed }) => [
+              s.pillTab,
+              activeTab === 'reviews'
+                ? { backgroundColor: colors.foreground }
+                : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+              pressed && { opacity: 0.7 },
+            ]}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'reviews' }}
+          >
+            <Text style={[s.pillTabText, { color: activeTab === 'reviews' ? colors.primaryForeground : colors.foreground }]}>
+              {t('profile.reviews')}
+            </Text>
+          </Pressable>
         </View>
 
-        {/* Tabs */}
-        <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.foreground }]]}>
-            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.foreground : colors.mutedForeground }]}>{t('profile.posts')}</Text>
-          </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('reviews')} style={[s.tab, activeTab === 'reviews' && [s.tabActive, { borderBottomColor: colors.foreground }]]}>
-            <Text style={[s.tabText, { color: activeTab === 'reviews' ? colors.foreground : colors.mutedForeground }]}>{t('profile.reviews')}</Text>
-          </PressableOpacity>
-        </View>
-
-        {/* Posts tab */}
+        {/* Posts tab — listing grid (mockup 27) */}
         {activeTab === 'posts' && (
           <View style={s.tabContent}>
-            {posts.length === 0 ? (
-              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPosts')}</Text>
-            ) : (
-              posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))
-            )}
+            {renderListingGrid()}
           </View>
         )}
 
@@ -974,36 +972,8 @@ export default function PublicProfileScreen() {
             {reviews.length === 0 ? (
               <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
             ) : (
-              reviews.map((rev) => (
-                <View key={rev.id} style={[s.reviewCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-                  <View style={s.reviewHeader}>
-                    <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
-                      <StarRating rating={rev.rating} size={12} />
-                    </View>
-                    <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
-                  </View>
-                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]}>{rev.comment}</Text>}
-                </View>
-              ))
+              reviews.map(renderReviewCard)
             )}
-          </View>
-        )}
-
-        {/* Block / Report */}
-        {currentUserId && currentUserId !== userId && (
-          <View style={s.dangerActions}>
-            <PressableOpacity onPress={handleBlock} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-              <ShieldBan size={18} color={isBlocked ? colors.destructive : colors.mutedForeground} />
-              <Text style={[s.dangerBtnText, { color: isBlocked ? colors.destructive : colors.mutedForeground }]}>
-                {isBlocked ? t('post.unblock') : t('post.block')}
-              </Text>
-            </PressableOpacity>
-            <PressableOpacity onPress={handleReport} style={[s.dangerBtn, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-              <Flag size={18} color={colors.mutedForeground} />
-              <Text style={[s.dangerBtnText, { color: colors.mutedForeground }]}>{t('post.report')}</Text>
-            </PressableOpacity>
           </View>
         )}
       </ScrollView>
@@ -1013,30 +983,7 @@ export default function PublicProfileScreen() {
         visible={showReviewModal}
         onClose={() => setShowReviewModal(false)}
         reviewedUserId={userId!}
-        onReviewSubmitted={() => {
-          setHasExistingReview(true)
-          // Refresh reviews list
-          supabase
-            .from('reviews')
-            .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
-            .eq('reviewed_id', userId)
-            .order('created_at', { ascending: false })
-            .then(({ data }) => {
-              if (data) {
-                const revsList = data as unknown as Review[]
-                setReviews(revsList)
-                setTotalReviewCount(revsList.length)
-                const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / revsList.length : 0
-                setAvgRating(Math.round(avg * 10) / 10)
-                const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-                for (const r of revsList as any[]) {
-                  const star = Math.min(5, Math.max(1, Math.round(r.rating)))
-                  dist[star] = (dist[star] ?? 0) + 1
-                }
-                setRatingDistribution(dist)
-              }
-            })
-        }}
+        onReviewSubmitted={refreshReviews}
       />
 
       {/* Report Modal */}
@@ -1051,79 +998,322 @@ export default function PublicProfileScreen() {
   )
 }
 
+// ═══════════════════════════════════════════════
+// Styles — Helsinki Monochrome (mockup 27)
+// ═══════════════════════════════════════════════
 const s = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+
+  // ── Bar header (mockup 27) ──
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 12,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, maxWidth: 250, lineHeight: 28 },
-  content: { padding: 16, gap: 16, paddingBottom: 100 },
-  hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
-  profileName: { fontSize: 20, fontFamily: fonts.headingSemi, lineHeight: 28 },
-  nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nhText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
-  badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
-  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
-  badgeText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
-  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16 },
-  proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  actions: { flexDirection: 'row', gap: 12, marginTop: 8, width: '100%', paddingHorizontal: 16 },
-  followBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 24,
+  barCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 44,
+    minHeight: 44,
   },
-  followBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  barCirclePlaceholder: {
+    width: 36,
+    height: 36,
+  },
+  barCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  barTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
+    lineHeight: 20,
+  },
+
+  // ── Scroll content ──
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 100,
+  },
+
+  // ── Hero (centered) ──
+  hero: {
+    alignItems: 'center',
+    paddingTop: 4,
+    paddingBottom: 18,
+    gap: 4,
+  },
+  avatarRing: {
+    borderRadius: 999,
+    borderWidth: 3,
+    marginBottom: 12,
+    // Subtle shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  profileName: {
+    fontSize: 21,
+    fontWeight: '600',
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.4,
+    lineHeight: 28,
+  },
+  profileMeta: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginTop: 3,
+  },
+
+  // ── Rating row ──
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  ratingCount: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+
+  // ── Badges row ──
+  badgesRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  badgeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 14,
+  },
+
+  // ── Stats 3-column cards (mockup 27) ──
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  statNum: {
+    fontSize: 22,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.6,
+    lineHeight: 26,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginTop: 5,
+  },
+
+  // ── Action buttons (mockup 27) ──
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
   messageBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 999,
+    minHeight: 48,
   },
-  messageBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  statsRow: { flexDirection: 'row', borderRadius: 16, padding: 16, borderWidth: StyleSheet.hairlineWidth },
-  stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statNum: { fontSize: 20, fontFamily: fonts.heading, lineHeight: 26 },
-  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textTransform: 'uppercase', letterSpacing: 0.3 },
-  statDiv: { width: 1, alignSelf: 'stretch' as const },
-  tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
-  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', minHeight: 44 },
-  tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  tabContent: { gap: 12 },
-  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24, fontFamily: fonts.body, lineHeight: 20 },
-  reviewCard: { borderRadius: 16, padding: 16, gap: 8 },
-  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  reviewName: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  reviewTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-  reviewComment: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  dangerActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
-  dangerBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, padding: 16, borderRadius: 16,
+  messageBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
   },
-  dangerBtnText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  followBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    minHeight: 48,
+  },
+  followBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
   reviewBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth, width: '100%', paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    marginBottom: 14,
+    minHeight: 48,
   },
-  reviewBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body, lineHeight: 22 },
-  // Rating summary card
-  ratingCard: { borderRadius: 16, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
-  ratingCardTitle: { fontSize: 14, fontFamily: fonts.headingSemi, lineHeight: 22 },
-  ratingOverview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  ratingStarsCol: { alignItems: 'center', gap: 4 },
-  ratingBigNum: { fontSize: 16, fontFamily: fonts.heading, lineHeight: 22 },
-  ratingBars: { gap: 6 },
-  ratingBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ratingBarLabel: { fontSize: 12, width: 24, textAlign: 'right', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  ratingBarTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
-  ratingBarFill: { height: 8, borderRadius: 4 },
-  ratingBarCount: { fontSize: 12, width: 20, fontFamily: fonts.body, lineHeight: 16 },
-  // Verification card
-  verificationCard: { borderRadius: 16, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
-  verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  verifyText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  reviewBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+
+  // ── Bio ──
+  bio: {
+    fontSize: 13.5,
+    lineHeight: 20,
+    fontFamily: fonts.body,
+    marginBottom: 14,
+  },
+
+  // ── Section header ──
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+  },
+  sectionLabel: {
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+
+  // ── Pill tabs (mockup 27) ──
+  pillTabRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  pillTab: {
+    paddingHorizontal: 20,
+    paddingVertical: 9,
+    borderRadius: 999,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pillTabText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+
+  // ── Tab content ──
+  tabContent: {
+    gap: 10,
+    marginBottom: 14,
+  },
+  emptyText: {
+    fontSize: 14,
+    textAlign: 'center',
+    paddingVertical: 24,
+    fontFamily: fonts.body,
+    lineHeight: 20,
+  },
+
+  // ── Listing grid (2-column, mockup 27) ──
+  listingGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  listingGridCard: {
+    width: '48%' as any,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
+    minHeight: 44,
+  },
+  listingGridImage: {
+    height: 90,
+    width: '100%',
+  },
+  listingGridTitle: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+
+  // ── Review card (mockup 27) ──
+  reviewCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    gap: 8,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  reviewName: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+  reviewComment: {
+    fontSize: 12.5,
+    lineHeight: 19,
+    fontFamily: fonts.body,
+  },
+
+  // ── Not found ──
+  notFound: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 100,
+    fontFamily: fonts.body,
+    lineHeight: 22,
+  },
 })
 
 // === Business profile styles ===
@@ -1178,7 +1368,9 @@ const bs = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     gap: 12,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
+    marginTop: 14,
+    marginBottom: 14,
   },
   infoCardHeader: {
     flexDirection: 'row',
@@ -1269,7 +1461,8 @@ const bs = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     gap: 12,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
+    marginBottom: 14,
   },
   locationCardHeader: {
     flexDirection: 'row',
@@ -1293,8 +1486,9 @@ const bs = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     marginTop: 4,
+    minHeight: 48,
   },
   mapButtonText: {
     fontSize: 14,
@@ -1307,7 +1501,8 @@ const bs = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     gap: 12,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
+    marginBottom: 14,
   },
   contactCardTitle: {
     fontSize: 16,
@@ -1318,6 +1513,7 @@ const bs = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    minHeight: 44,
   },
   contactIconWrap: {
     width: 36,
@@ -1360,24 +1556,5 @@ const bs = StyleSheet.create({
     fontSize: 13,
     fontFamily: fonts.body,
     lineHeight: 18,
-  },
-
-  // Section headers
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    letterSpacing: -0.2,
-    fontFamily: fonts.headingSemi,
-    lineHeight: 24,
-  },
-  sectionCount: {
-    fontSize: 14,
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 20,
   },
 })
