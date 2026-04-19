@@ -1,14 +1,14 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, Dimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
-  Send, Flag, Clock,
+  Send, Flag, Clock, ChevronRight,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
   ShoppingBag, Star, Shield,
 } from 'lucide-react-native'
@@ -85,6 +85,9 @@ function PostDetailScreenInner() {
   // Image gallery state
   const [galleryVisible, setGalleryVisible] = useState(false)
   const [galleryInitialIndex, setGalleryInitialIndex] = useState(0)
+
+  // Description expand/collapse
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false)
 
   // Reply state for threaded comments
   const [replyToComment, setReplyToComment] = useState<PostComment | null>(null)
@@ -808,8 +811,11 @@ function PostDetailScreenInner() {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
+        {/* Minimal back button overlay for loading state */}
+        <View style={[styles.heroNav, { top: insets.top + 12 }]}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+            <ArrowLeft size={18} color={colors.foreground} />
+          </PressableOpacity>
         </View>
         <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56 }]}>
           <PostDetailSkeleton />
@@ -821,8 +827,10 @@ function PostDetailScreenInner() {
   if (loadError) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
+        <View style={[styles.heroNav, { top: insets.top + 12 }]}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+            <ArrowLeft size={18} color={colors.foreground} />
+          </PressableOpacity>
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
           <Text style={[styles.notFound, { color: colors.mutedForeground, marginBottom: 16 }]}>{loadError}</Text>
@@ -837,8 +845,10 @@ function PostDetailScreenInner() {
   if (!post) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
+        <View style={[styles.heroNav, { top: insets.top + 12 }]}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+            <ArrowLeft size={18} color={colors.foreground} />
+          </PressableOpacity>
         </View>
         <Text style={[styles.notFound, { color: colors.mutedForeground }]}>{t('post.notFound')}</Text>
       </View>
@@ -857,24 +867,34 @@ function PostDetailScreenInner() {
 
   const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
 
+  const screenWidth = Dimensions.get('window').width
+
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: 'transparent', borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}><ArrowLeft size={24} color={colors.foreground} /></PressableOpacity>
-        <View style={{ flex: 1 }} />
-        <PressableOpacity onPress={toggleSave} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}><Bookmark size={22} color={isSaved ? colors.primary : colors.mutedForeground} fill={isSaved ? colors.primary : 'transparent'} /></PressableOpacity>
-        <PressableOpacity onPress={handleShare} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('common.share')}><Share2 size={22} color={colors.mutedForeground} /></PressableOpacity>
-        {isAuthor ? (
-          <PressableOpacity onPress={handleMorePress} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}><MoreHorizontal size={22} color={colors.mutedForeground} /></PressableOpacity>
-        ) : userId ? (
-          <PressableOpacity onPress={handleReport} hitSlop={8} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel={t('post.report')}><Flag size={22} color={colors.mutedForeground} /></PressableOpacity>
-        ) : null}
+      {/* Hero nav overlay — back + heart circles on top of photo */}
+      <View style={[styles.heroNav, { top: insets.top + 12 }]} pointerEvents="box-none">
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <ArrowLeft size={18} color={colors.foreground} />
+        </PressableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <PressableOpacity onPress={toggleSave} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>
+            <Heart size={16} color={isSaved ? colors.destructive : colors.foreground} fill={isSaved ? colors.destructive : 'transparent'} />
+          </PressableOpacity>
+          {isAuthor ? (
+            <PressableOpacity onPress={handleMorePress} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}>
+              <MoreHorizontal size={18} color={colors.foreground} />
+            </PressableOpacity>
+          ) : userId ? (
+            <PressableOpacity onPress={handleReport} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('post.report')}>
+              <Flag size={16} color={colors.foreground} />
+            </PressableOpacity>
+          ) : null}
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 64 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.primary} />}>
-        {/* Image gallery — tap to open fullscreen */}
-        {allImages.length > 0 && (
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.primary} />}>
+        {/* Full-bleed hero photo — 260px height */}
+        {allImages.length > 0 ? (
           allImages.length === 1 ? (
             <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
               <Image source={{ uri: allImagesMedium[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" />
@@ -885,15 +905,20 @@ function PostDetailScreenInner() {
               keyExtractor={(item, i) => `${item}-${i}`}
               renderItem={({ item, index }) => (
                 <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
-                  <Image source={{ uri: getImageUrl(item, 'medium')! }} style={styles.heroImage} contentFit="cover" cachePolicy="memory-disk" />
+                  <Image source={{ uri: getImageUrl(item, 'medium')! }} style={[styles.heroImage, { width: screenWidth }]} contentFit="cover" cachePolicy="memory-disk" />
                 </PressableOpacity>
               )}
               showsHorizontalScrollIndicator={false}
             />
           )
+        ) : (
+          <View style={[styles.heroImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+            {category && <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: category.color }} />}
+          </View>
         )}
 
-        <View style={styles.body}>
+        {/* Body card — overlaps bottom of photo */}
+        <View style={[styles.bodyCard, { backgroundColor: colors.background }]}>
           {/* Closed/inactive banner */}
           {!post.is_active && (
             <View style={[styles.closedBanner, { backgroundColor: `${colors.destructive}15` }]}>
@@ -902,54 +927,53 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {category && (
-            <View style={styles.categoryRow}>
-              <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
-              <Text style={[styles.categoryLabel, { color: colors.mutedForeground }]}>
-                {t(category.label)}
-              </Text>
+          {/* Title + rating row */}
+          <View style={styles.titleRatingRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.title, { color: colors.foreground }]}>{post.title}</Text>
+            </View>
+            {authorRating && (
+              <View style={styles.ratingBlock}>
+                <View style={styles.ratingInline}>
+                  <Star size={12} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
+                  <Text style={[styles.ratingValue, { color: colors.foreground }]}>{authorRating.avg}</Text>
+                </View>
+                <Text style={[styles.ratingCount, { color: colors.mutedForeground }]}>
+                  {authorRating.count} {t('post.reviews') ?? 'arvostelua'}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Location row with pin icon in ink circle */}
+          {post.location && (
+            <View style={styles.locationRow}>
+              <View style={[styles.locationPinCircle, { backgroundColor: colors.foreground }]}>
+                <MapPin size={9} color={colors.background} />
+              </View>
+              <Text style={[styles.locationText, { color: colors.mutedForeground }]}>{post.location}</Text>
             </View>
           )}
 
-          {expirationInfo && (
-            <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
-              <Clock size={12} color={expirationInfo.color} />
-              <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
-            </View>
-          )}
+          {/* Category + expiration badges */}
+          <View style={styles.badgeRow}>
+            {category && (
+              <View style={styles.categoryRow}>
+                <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
+                <Text style={[styles.categoryLabel, { color: colors.mutedForeground }]}>
+                  {t(category.label)}
+                </Text>
+              </View>
+            )}
+            {expirationInfo && (
+              <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
+                <Clock size={12} color={expirationInfo.color} />
+                <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
+              </View>
+            )}
+          </View>
 
-          <Text style={[styles.title, { color: colors.foreground }]}>{post.title}</Text>
-
-          {/* Author action buttons */}
-          {isAuthor && (
-            <View style={styles.authorActionsRow}>
-              <PressableOpacity onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
-                <Pencil size={14} color={colors.primary} />
-                <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.edit')}</Text>
-              </PressableOpacity>
-              {post.is_active ? (
-                <PressableOpacity onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
-                  <XCircle size={14} color={colors.mutedForeground} />
-                  <Text style={[styles.authorActionText, { color: colors.mutedForeground }]}>{t('post.markClosed')}</Text>
-                </PressableOpacity>
-              ) : (
-                <PressableOpacity onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
-                  <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.reopen')}</Text>
-                </PressableOpacity>
-              )}
-              <PressableOpacity onPress={handleDelete} style={[styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
-                <Trash2 size={14} color={colors.destructive} />
-                <Text style={[styles.authorActionText, { color: colors.destructive }]}>{t('post.delete')}</Text>
-              </PressableOpacity>
-            </View>
-          )}
-
-          {post.is_pro_listing && (
-            <View style={[styles.proBadge, { backgroundColor: `${colors.pro}20` }]}>
-              <Crown size={14} color={colors.pro} /><Text style={[styles.proText, { color: colors.pro }]}>Pro</Text>
-            </View>
-          )}
-
+          {/* Pricing */}
           {post.daily_fee !== null && (
             <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>
           )}
@@ -983,6 +1007,77 @@ function PostDetailScreenInner() {
             </Text>
           )}
 
+          {post.is_pro_listing && (
+            <View style={[styles.proBadge, { backgroundColor: `${colors.pro}20` }]}>
+              <Crown size={14} color={colors.pro} /><Text style={[styles.proText, { color: colors.pro }]}>Pro</Text>
+            </View>
+          )}
+
+          {/* Description — 13px muted with "Lue lisaa" toggle */}
+          {post.description ? (
+            <View style={styles.descriptionBlock}>
+              <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={descriptionExpanded ? undefined : 3}>
+                {post.description}
+              </Text>
+              {post.description.length > 120 && (
+                <PressableOpacity onPress={() => setDescriptionExpanded(!descriptionExpanded)} hitSlop={8} accessibilityRole="button" accessibilityLabel={descriptionExpanded ? (t('common.showLess') ?? 'Show less') : (t('common.readMore') ?? 'Read more')}>
+                  <Text style={[styles.readMoreLink, { color: colors.foreground }]}>
+                    {descriptionExpanded ? (t('common.showLess') ?? 'N\u00e4yt\u00e4 v\u00e4hemm\u00e4n') : (t('common.readMore') ?? 'Lue lis\u00e4\u00e4')}
+                  </Text>
+                </PressableOpacity>
+              )}
+            </View>
+          ) : null}
+
+          {post.event_date && (<Text style={[styles.eventDate, { color: colors.primary }]}>{formatEventDate(post.event_date, locale)}</Text>)}
+
+          {post.type === 'tapahtuma' && (
+            <PressableOpacity
+              onPress={() => router.push('/community-events' as any)}
+              style={styles.communityEventsLink}
+              accessibilityRole="link"
+              accessibilityLabel={t('post.browseCommunityEvents')}
+            >
+              <Calendar size={14} color={colors.primary} />
+              <Text style={[styles.communityEventsLinkText, { color: colors.primary }]}>{t('post.browseCommunityEvents')}</Text>
+            </PressableOpacity>
+          )}
+
+          {/* Safety tip for item exchange posts */}
+          {isItemExchange && (
+            <View style={styles.safetyTip}>
+              <Shield size={14} color={colors.mutedForeground} strokeWidth={1.8} />
+              <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, flex: 1, lineHeight: 16 }}>
+                {t('post.safetyTip') || 'Tapaa julkisella paikalla. \u00c4l\u00e4 jaa henkil\u00f6kohtaisia tietoja ennen tapaamista.'}
+              </Text>
+            </View>
+          )}
+
+          {/* Author action buttons */}
+          {isAuthor && (
+            <View style={styles.authorActionsRow}>
+              <PressableOpacity onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
+                <Pencil size={14} color={colors.primary} />
+                <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.edit')}</Text>
+              </PressableOpacity>
+              {post.is_active ? (
+                <PressableOpacity onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
+                  <XCircle size={14} color={colors.mutedForeground} />
+                  <Text style={[styles.authorActionText, { color: colors.mutedForeground }]}>{t('post.markClosed')}</Text>
+                </PressableOpacity>
+              ) : (
+                <PressableOpacity onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
+                  <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.reopen')}</Text>
+                </PressableOpacity>
+              )}
+              <PressableOpacity onPress={handleDelete} style={[styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
+                <Trash2 size={14} color={colors.destructive} />
+                <Text style={[styles.authorActionText, { color: colors.destructive }]}>{t('post.delete')}</Text>
+              </PressableOpacity>
+            </View>
+          )}
+
+          {/* Booking / service CTA buttons */}
           {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee !== null && !isAuthor && (
             <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
@@ -997,43 +1092,7 @@ function PostDetailScreenInner() {
             </PressableOpacity>
           )}
 
-          {post.event_date && (<Text style={[styles.eventDate, { color: colors.primary }]}>{formatEventDate(post.event_date, locale)}</Text>)}
-
-          {post.description ? (
-            <Text style={[styles.description, { color: colors.foreground }]}>{post.description}</Text>
-          ) : null}
-
-
-          {post.type === 'tapahtuma' && (
-            <PressableOpacity
-              onPress={() => router.push('/community-events' as any)}
-              style={styles.communityEventsLink}
-              accessibilityRole="link"
-              accessibilityLabel={t('post.browseCommunityEvents')}
-            >
-              <Calendar size={14} color={colors.primary} />
-              <Text style={[styles.communityEventsLinkText, { color: colors.primary }]}>{t('post.browseCommunityEvents')}</Text>
-            </PressableOpacity>
-          )}
-
-          {post.location && (
-            <View style={styles.locationRow}>
-              <MapPin size={16} color={colors.mutedForeground} />
-              <Text style={[styles.locationText, { color: colors.mutedForeground }]}>{post.location}</Text>
-            </View>
-          )}
-
-          {/* Safety tip for item exchange posts */}
-          {isItemExchange && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12 }}>
-              <Shield size={14} color={colors.mutedForeground} strokeWidth={1.8} />
-              <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, flex: 1, lineHeight: 16 }}>
-                {t('post.safetyTip') || 'Tapaa julkisella paikalla. Älä jaa henkilökohtaisia tietoja ennen tapaamista.'}
-              </Text>
-            </View>
-          )}
-
-          {/* Action row — hairline top border, Threads-style thin icons */}
+          {/* Action row */}
           <View style={[styles.actionRow, { borderTopColor: colors.border }]}>
             <PressableOpacity onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
               <Heart size={20} strokeWidth={1.8} color={isLiked ? colors.destructive : colors.foreground} fill={isLiked ? colors.destructive : 'transparent'} />
@@ -1062,7 +1121,7 @@ function PostDetailScreenInner() {
             </PressableOpacity>
           </View>
 
-          {/* Author card — Threads-style, no colored bg */}
+          {/* Author card */}
           <View style={[styles.authorCard, { borderTopColor: colors.border }]}>
             <PressableOpacity onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow} accessibilityRole="button" accessibilityLabel={user?.name ?? t('common.user')}>
               <Avatar url={user?.avatar_url} name={user?.name} size={44} />
@@ -1085,17 +1144,6 @@ function PostDetailScreenInner() {
                     </>
                   )}
                 </View>
-                {authorRating && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                    <Star size={12} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
-                    <Text style={{ fontSize: 13, color: colors.foreground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
-                      {authorRating.avg}
-                    </Text>
-                    <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body }}>
-                      ({authorRating.count})
-                    </Text>
-                  </View>
-                )}
               </View>
               {!isAuthor && (
                 <View style={[styles.followBtn, { borderColor: colors.foreground }]}>
@@ -1105,24 +1153,44 @@ function PostDetailScreenInner() {
             </PressableOpacity>
           </View>
 
-          {/* Related posts */}
+          {/* Related posts — "Muita lahella" section */}
           {relatedPosts.length > 0 && (
             <View style={[styles.relatedSection, { borderTopColor: colors.border }]}>
-              <Text style={[styles.relatedTitle, { color: colors.foreground }]}>{t('post.relatedListings')}</Text>
+              <View style={styles.relatedHeader}>
+                <Text style={[styles.relatedTitle, { color: colors.foreground }]}>{t('post.relatedListings')}</Text>
+                <Text style={[styles.relatedShowAll, { color: colors.foreground }]}>{t('common.showAll') ?? 'N\u00e4yt\u00e4 kaikki'}</Text>
+              </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.relatedScroll}>
                 {relatedPosts.map((rp) => {
                   const rpCat = CATEGORIES[rp.type as PostType]
                   return (
-                    <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                      {rp.image_url ? (<Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />) : (
-                        <View style={[styles.relatedImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-                          {rpCat && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: rpCat.color, marginBottom: 4 }} />}
-                          <Text style={{ fontSize: 14, fontFamily: fonts.heading, color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
+                    <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                      <View style={styles.relatedImageWrap}>
+                        {rp.image_url ? (
+                          <Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />
+                        ) : (
+                          <View style={[styles.relatedImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                            {rpCat && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: rpCat.color, marginBottom: 4 }} />}
+                            <Text style={{ fontSize: 14, fontFamily: fonts.heading, color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
+                          </View>
+                        )}
+                        <View style={[styles.relatedHeartCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}>
+                          <Heart size={14} color={colors.foreground} />
                         </View>
-                      )}
+                      </View>
                       <View style={styles.relatedCardBody}>
-                        <Text style={[styles.relatedCardTitle, { color: colors.foreground }]} numberOfLines={2}>{rp.title}</Text>
-                        {rp.location && (<View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><MapPin size={10} color={colors.mutedForeground} /><Text style={[styles.relatedCardLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{rp.location}</Text></View>)}
+                        <Text style={[styles.relatedCardTitle, { color: colors.foreground }]} numberOfLines={1}>{rp.title}</Text>
+                        {rp.location && (
+                          <Text style={[styles.relatedCardLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{rp.location}</Text>
+                        )}
+                        <View style={styles.relatedCardFooter}>
+                          <View style={styles.ratingInline}>
+                            <Star size={10} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
+                          </View>
+                          <View style={[styles.relatedCardArrow, { backgroundColor: colors.foreground }]}>
+                            <ChevronRight size={11} color={colors.background} />
+                          </View>
+                        </View>
                       </View>
                     </PressableOpacity>
                   )
@@ -1417,11 +1485,15 @@ function PostDetailScreenInner() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
-  headerBtn: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 100 },
-  heroImage: { width: '100%', aspectRatio: 4 / 3 },
-  body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 16 },
+  // Full-bleed hero photo — 260px fixed height
+  heroImage: { width: '100%', height: 260 },
+  // Body card — overlaps bottom of photo per mockup 02
+  bodyCard: {
+    marginTop: -22, borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    paddingTop: 22, paddingHorizontal: 20, paddingBottom: 16,
+    position: 'relative', zIndex: 2, gap: 14,
+  },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
   closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
@@ -1435,16 +1507,17 @@ const styles = StyleSheet.create({
 
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
   expirationText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  title: { fontSize: 24, fontFamily: fonts.heading, lineHeight: 32, letterSpacing: -0.5 },
+  title: { fontSize: 22, fontFamily: fonts.heading, lineHeight: 28, letterSpacing: -0.4 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  description: { fontSize: 16, fontFamily: fonts.body, lineHeight: 24 },
+  description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 20 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  locationText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  locationPinCircle: { width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  locationText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
 
   // Action row — hairline top border, Threads-style thin icons
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
@@ -1496,14 +1569,37 @@ const styles = StyleSheet.create({
   modalTextArea: { minHeight: 120 },
   saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 999, marginTop: 16, minHeight: 48 },
   saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 24 },
+  // Title + rating row
+  titleRatingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  ratingBlock: { alignItems: 'flex-end', gap: 2, marginLeft: 8 },
+  ratingInline: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  ratingValue: { fontSize: 13, fontFamily: fonts.heading, lineHeight: 18 },
+  ratingCount: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textDecorationLine: 'underline' },
+
+  // Badge row
+  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+
+  // Description block
+  descriptionBlock: { marginTop: 14, marginBottom: 4 },
+  readMoreLink: { fontSize: 13, fontFamily: fonts.bodyMedium, textDecorationLine: 'underline', marginTop: 4, lineHeight: 18 },
+
+  // Safety tip
+  safetyTip: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 8, paddingVertical: 8 },
+
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  relatedTitle: { fontSize: 15, fontFamily: fonts.heading, lineHeight: 20 },
-  relatedScroll: { gap: 8 },
-  relatedCard: { width: 160, borderRadius: 20, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
-  relatedImage: { width: 160, height: 100 },
-  relatedCardBody: { padding: 8, gap: 4 },
-  relatedCardTitle: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+  relatedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  relatedTitle: { fontSize: 17, fontFamily: fonts.heading, lineHeight: 22 },
+  relatedShowAll: { fontSize: 12, fontFamily: fonts.bodyMedium, textDecorationLine: 'underline', lineHeight: 16 },
+  relatedScroll: { gap: 12 },
+  relatedCard: { width: 176, borderRadius: 20, overflow: 'hidden', borderWidth: 1 },
+  relatedImageWrap: { aspectRatio: 1 / 0.82, position: 'relative' },
+  relatedImage: { width: '100%', height: '100%' },
+  relatedCardBody: { padding: 10, gap: 4 },
+  relatedCardTitle: { fontSize: 14, fontFamily: fonts.heading, lineHeight: 18 },
   relatedCardLocation: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },
+  relatedCardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  relatedCardArrow: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  relatedHeartCircle: { position: 'absolute', top: 8, right: 8, width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
   bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 999, alignSelf: 'flex-start' },
   bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 24 },
@@ -1523,6 +1619,8 @@ const styles = StyleSheet.create({
   confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 16 },
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999, minHeight: 48 },
+  heroNav: { position: 'absolute', left: 16, right: 16, zIndex: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  heroCircle: { width: 38, height: 38, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
 })
 
 const ctaStyles = StyleSheet.create({
