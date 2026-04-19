@@ -35,9 +35,9 @@ export function MapFilters({
   onTimeFilterChange,
 }: MapFiltersProps) {
   return (
-    <View style={[styles.filterOverlay, { borderWidth: 1, borderColor: colors.border, backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}>
+    <View style={styles.filterOverlay}>
       {neighborhoodLoading && (
-        <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 4 }} />
+        <ActivityIndicator size="small" color={colors.foreground} style={{ marginRight: 4 }} />
       )}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollContent}>
         {(activeFilter === 'posts' || activeFilter === 'events' || activeFilter === 'places') ? (
@@ -45,8 +45,8 @@ export function MapFilters({
             {/* Back to main filters */}
             <Pressable
               style={[styles.filterPill, {
-                backgroundColor: activeFilter === 'posts' ? LAYER_COLORS.post : activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place,
-                borderColor: 'transparent',
+                backgroundColor: colors.foreground,
+                borderColor: colors.foreground,
               }]}
               hitSlop={8}
               onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
@@ -63,8 +63,10 @@ export function MapFilters({
                 key={tf.key}
                 style={[
                   styles.filterPill,
-                  { borderColor: timeFilter === tf.key ? LAYER_COLORS.event : colors.border },
-                  timeFilter === tf.key && { backgroundColor: LAYER_COLORS.event },
+                  {
+                    borderColor: timeFilter === tf.key ? colors.foreground : colors.border,
+                    backgroundColor: timeFilter === tf.key ? colors.foreground : colors.card,
+                  },
                 ]}
                 hitSlop={8}
                 onPress={() => { try { Haptics.selectionAsync() } catch {} onTimeFilterChange(timeFilter === tf.key ? 'all' : tf.key) }}
@@ -85,8 +87,10 @@ export function MapFilters({
                     key={sc.key ?? '__all__'}
                     style={[
                       styles.filterPill,
-                      { borderColor: isActive ? sc.color : colors.border },
-                      isActive && { backgroundColor: sc.color },
+                      {
+                        borderColor: isActive ? colors.foreground : colors.border,
+                        backgroundColor: isActive ? colors.foreground : colors.card,
+                      },
                     ]}
                     hitSlop={8}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
@@ -99,7 +103,6 @@ export function MapFilters({
               })
             ) : (
               (activeFilter === 'events' ? EVENT_SUBCATS : PLACE_SUBCATS).map(sc => {
-                const layerColor = activeFilter === 'events' ? LAYER_COLORS.event : LAYER_COLORS.place
                 const isActive = subCategory === sc.key
                 const prefix = activeFilter === 'events' ? 'event' : 'place'
                 const count = sc.key ? (subCounts.get(`${prefix}:${sc.key}`) ?? 0) : (activeFilter === 'events' ? counts.events : counts.places)
@@ -108,8 +111,10 @@ export function MapFilters({
                     key={sc.key ?? '__all__'}
                     style={[
                       styles.filterPill,
-                      { borderColor: isActive ? layerColor : colors.border },
-                      isActive && { backgroundColor: layerColor },
+                      {
+                        borderColor: isActive ? colors.foreground : colors.border,
+                        backgroundColor: isActive ? colors.foreground : colors.card,
+                      },
                     ]}
                     hitSlop={8}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
@@ -125,10 +130,10 @@ export function MapFilters({
         ) : (
           /* Main layer filters */
           ([
-            { key: 'all' as FilterKey, label: t('events.filterAll'), color: colors.primary, hasSubFilter: false },
-            { key: 'posts' as FilterKey, label: t('map.layerPosts'), color: LAYER_COLORS.post, hasSubFilter: true },
-            { key: 'events' as FilterKey, label: t('map.layerEvents'), color: LAYER_COLORS.event, hasSubFilter: true },
-            { key: 'places' as FilterKey, label: t('map.layerPlaces'), color: LAYER_COLORS.place, hasSubFilter: true },
+            { key: 'all' as FilterKey, label: t('events.filterAll'), hasSubFilter: false },
+            { key: 'posts' as FilterKey, label: t('map.layerPosts'), hasSubFilter: true },
+            { key: 'events' as FilterKey, label: t('map.layerEvents'), hasSubFilter: true },
+            { key: 'places' as FilterKey, label: t('map.layerPlaces'), hasSubFilter: true },
           ]).map(f => {
             const isActive = activeFilter === f.key
             return (
@@ -136,8 +141,10 @@ export function MapFilters({
                 key={f.key}
                 style={[
                   styles.filterPill,
-                  { borderColor: isActive ? f.color : colors.border },
-                  isActive && { backgroundColor: f.color },
+                  {
+                    borderColor: isActive ? colors.foreground : colors.border,
+                    backgroundColor: isActive ? colors.foreground : colors.card,
+                  },
                 ]}
                 hitSlop={8}
                 onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange(f.key); onSubCategoryChange(null); onTimeFilterChange('all') }}
@@ -156,21 +163,10 @@ export function MapFilters({
 
 const styles = StyleSheet.create({
   filterOverlay: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    right: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 8,
+    paddingHorizontal: 0,
     paddingVertical: 8,
-    zIndex: 10,
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 2,
   },
   filterScrollContent: {
     flexDirection: 'row',
@@ -179,11 +175,16 @@ const styles = StyleSheet.create({
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
+    gap: 6,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
   },
   filterPillText: {
     fontSize: 12,

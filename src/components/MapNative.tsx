@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View, Text, Pressable, SectionList,
   StyleSheet, ActivityIndicator, RefreshControl, TextInput,
+  Dimensions, Animated as RNAnimated,
   type SectionListData,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -9,7 +10,7 @@ import { useRouter } from 'expo-router'
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps'
 import * as Haptics from 'expo-haptics'
 import {
-  ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X, Building2,
+  ChevronDown, ChevronUp, MapPin, Search, Crosshair, ArrowLeft, Plus, X, Building2, List,
 } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import { PressableOpacity } from '@/components/ui'
@@ -40,9 +41,15 @@ import {
   DARK_MAP_STYLE,
 } from './map/useMapData'
 
-// ══════════════════════════════════════════════════════════════
+const { height: SCREEN_HEIGHT } = Dimensions.get('window')
+
+// Bottom sheet snap points
+const SHEET_COLLAPSED = 200
+const SHEET_EXPANDED = SCREEN_HEIGHT * 0.65
+
+// ==============================================================
 // Main component
-// ══════════════════════════════════════════════════════════════
+// ==============================================================
 
 export default function MapScreen() {
   const { colors, isDark } = useTheme()
@@ -51,6 +58,11 @@ export default function MapScreen() {
   const router = useRouter()
   const mapRef = useRef<MapView | null>(null)
   const sectionListRef = useRef<SectionList<ListItem, Section> | null>(null)
+
+  // View toggle: 'map' (default) vs 'list'
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
+  // Bottom sheet expanded state
+  const [sheetExpanded, setSheetExpanded] = useState(false)
 
   const {
     loading, refreshing, loadingMore, mapExpanded, setMapExpanded,
@@ -68,7 +80,7 @@ export default function MapScreen() {
     handleCenterOnUser, openDirections,
   } = useMapData(t, locale)
 
-  // ── Business markers ──
+  // -- Business markers --
   const supabase = useSupabase()
   const [businesses, setBusinesses] = useState<any[]>([])
   const [showBusinesses, setShowBusinesses] = useState(true)
@@ -89,21 +101,20 @@ export default function MapScreen() {
           setBusinesses(data)
         }
       } catch {
-        // Silently ignore — businesses are a non-critical layer
+        // Silently ignore -- businesses are a non-critical layer
       }
     })()
     return () => { cancelled = true }
   }, [supabase])
 
-  // ── Out-of-area detection ──
-  // Helsinki default bounds (same as MapWeb fallback)
+  // -- Out-of-area detection --
   const HKI_BOUNDS = useMemo(() => ({ south: 60.14, north: 60.27, west: 24.83, east: 25.20 }), [])
   const isOutOfArea = useMemo(() => {
     if (!userLocation) return false
     return !isInCityBounds(userLocation.latitude, userLocation.longitude, HKI_BOUNDS)
   }, [userLocation, HKI_BOUNDS])
 
-  // ── Clustering ──
+  // -- Clustering --
   const [zoomLevel, setZoomLevel] = useState(14)
 
   const clusteredMarkers = useMemo(() => {
@@ -120,12 +131,11 @@ export default function MapScreen() {
   }, [renderedMarkers, zoomLevel])
 
   const handleRegionChange = useCallback((region: { latitudeDelta: number; longitudeDelta: number }) => {
-    // Approximate zoom level from latitudeDelta
     const zoom = region.latitudeDelta > 0 ? Math.round(Math.log2(360 / region.latitudeDelta)) : 14
     setZoomLevel(zoom)
   }, [])
 
-  // ── Animate map on item navigate (wraps hook handler) ──
+  // -- Animate map on item navigate --
   const onItemPress = useCallback((item: ListItem) => {
     handleListItemNavigate(item)
     if (!item.id.startsWith('__empty_')) {
@@ -137,7 +147,7 @@ export default function MapScreen() {
     }
   }, [handleListItemNavigate])
 
-  // ── Animate map when center changes ──
+  // -- Animate map when center changes --
   useEffect(() => {
     const delta = DENSE_NEIGHBORHOODS.has(selectedNeighborhood) ? 0.012 : 0.022
     mapRef.current?.animateToRegion({
@@ -147,12 +157,13 @@ export default function MapScreen() {
     }, 500)
   }, [center, selectedNeighborhood])
 
-  // ── Render helpers ──
+  // -- Render helpers --
 
   const renderSectionHeader = useCallback(({ section }: { section: SectionListData<ListItem, Section> }) => {
     const sectionColor = (section as Section).color
     return (
-      <View style={[styles.sectionHeader, { backgroundColor: colors.background, borderBottomColor: colors.border, borderLeftWidth: 4, borderLeftColor: sectionColor ?? colors.border }]}>
+      <View style={[styles.sectionHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <View style={[styles.sectionColorDot, { backgroundColor: sectionColor ?? colors.border }]} />
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
           {section.title}
         </Text>
@@ -191,300 +202,515 @@ export default function MapScreen() {
 
   const keyExtractor = useCallback((item: ListItem) => item.id, [])
 
-  // ══════════════════════════════════════════════════════════════
+  // Count of items to show in bottom sheet header
+  const itemCount = filteredItems.filter(i => !i.id.startsWith('__empty_') && !i.id.startsWith('__show_all_')).length
+
+  // ==============================================================
   // JSX
-  // ══════════════════════════════════════════════════════════════
+  // ==============================================================
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* ── Top Bar ── */}
-      <View style={[styles.topBar, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.topBarIcon} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
-        <Pressable
-          style={[styles.neighborhoodButton, { borderColor: colors.border }]}
-          onPress={() => setNeighborhoodModalVisible(true)}
-        >
-          <MapPin size={14} color={colors.primary} />
-          <Text style={[styles.neighborhoodText, { color: colors.foreground }]} numberOfLines={1}>
-            {displayNeighborhood}
-          </Text>
-          <ChevronDown size={14} color={colors.mutedForeground} />
-        </Pressable>
-        <Pressable onPress={() => { if (showSearch) { setShowSearch(false); setSearchQuery('') } else { setShowSearch(true) } }} style={styles.topBarIcon} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.search')}>
-          <Search size={20} color={showSearch ? colors.primary : colors.mutedForeground} />
-        </Pressable>
-      </View>
+      {/* -- Full-screen Map -- */}
+      {viewMode === 'map' && (
+        <View style={styles.mapFull}>
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            provider={PROVIDER_DEFAULT}
+            initialRegion={{
+              ...center,
+              latitudeDelta: 0.015,
+              longitudeDelta: 0.015,
+            }}
+            customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
+            showsUserLocation
+            showsMyLocationButton={false}
+            showsCompass={false}
+            pitchEnabled={false}
+            rotateEnabled={false}
+            onRegionChangeComplete={handleRegionChange}
+          >
+            {clusteredMarkers.map(item => {
+              if (isCluster(item)) {
+                return (
+                  <Marker
+                    key={item.id}
+                    coordinate={{ latitude: item.latitude, longitude: item.longitude }}
+                    tracksViewChanges={false}
+                    onPress={() => {
+                      mapRef.current?.animateToRegion({
+                        latitude: item.latitude,
+                        longitude: item.longitude,
+                        latitudeDelta: 0.008,
+                        longitudeDelta: 0.008,
+                      }, 400)
+                    }}
+                  >
+                    <View style={[styles.clusterMarker, { backgroundColor: colors.foreground }]}>
+                      <Text style={[styles.clusterText, { color: colors.primaryForeground }]}>{item.count}</Text>
+                    </View>
+                  </Marker>
+                )
+              }
+              const m = item
+              return (
+                <Marker
+                  key={m.id}
+                  coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+                  pinColor={colors.foreground}
+                  title={m.title}
+                  description={m.description}
+                  tracksViewChanges={false}
+                  onPress={() => {
+                    const listItem = filteredItems.find(fi => fi.id === m.id)
+                    if (listItem?.kind === 'post') {
+                      const postData = listItem.sourceData as import('@/lib/types').Post
+                      router.push(`/post/${postData.id}` as any)
+                      return
+                    }
+                    handleMarkerPress({ key: m.id, latitude: m.latitude, longitude: m.longitude, pinColor: m.pinColor ?? '', title: m.title ?? '', description: m.description ?? '' })
+                  }}
+                />
+              )
+            })}
+            {FEATURES.BUSINESS_ACCOUNT && showBusinesses && businesses.map(biz => (
+              <Marker
+                key={`biz-${biz.id}`}
+                coordinate={{ latitude: biz.business_lat, longitude: biz.business_lng }}
+                tracksViewChanges={false}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+                  setSelectedBusiness(biz)
+                }}
+              >
+                <View style={[styles.businessMarker, { backgroundColor: colors.foreground }]}>
+                  <Building2 size={14} color={colors.primaryForeground} />
+                </View>
+              </Marker>
+            ))}
+          </MapView>
 
-      {/* ── Search Bar ── */}
-      {showSearch && (
-        <>
-        <View style={[styles.searchBar, { backgroundColor: colors.muted, borderBottomColor: colors.border }]}>
-          <Search size={16} color={colors.mutedForeground} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.foreground }]}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={t('map.searchPlaceholder')}
-            placeholderTextColor={colors.mutedForeground}
-            autoFocus
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-              <X size={16} color={colors.mutedForeground} />
-            </Pressable>
+          {(loading || neighborhoodLoading) && (
+            <View style={[styles.mapLoadingBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <ActivityIndicator size="small" color={colors.foreground} />
+            </View>
           )}
         </View>
-        {searchQuery.trim().length > 0 && (
-          <Text style={[styles.searchCount, { color: colors.mutedForeground }]}>
-            {filteredItems.length} {t('map.items')}
-          </Text>
-        )}
+      )}
+
+      {/* -- Overlaid controls (map mode) -- */}
+      {viewMode === 'map' && (
+        <>
+          {/* Back button - circle, top-left */}
+          <Pressable
+            onPress={() => router.back()}
+            style={[styles.backButton, { top: insets.top + 12, backgroundColor: colors.card, borderColor: colors.border }]}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+          >
+            <ArrowLeft size={18} color={colors.foreground} />
+          </Pressable>
+
+          {/* Search bar overlay - pill shape */}
+          <View style={[styles.searchOverlay, { top: insets.top + 12 }]}>
+            <Pressable
+              style={[styles.searchBarPill, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => {
+                if (!showSearch) {
+                  setShowSearch(true)
+                }
+              }}
+            >
+              <Search size={16} color={colors.mutedForeground} />
+              {showSearch ? (
+                <TextInput
+                  style={[styles.searchInput, { color: colors.foreground }]}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder={t('map.searchPlaceholder')}
+                  placeholderTextColor={colors.tertiaryForeground}
+                  autoFocus
+                />
+              ) : (
+                <Pressable
+                  onPress={() => setNeighborhoodModalVisible(true)}
+                  style={styles.searchTextWrap}
+                >
+                  <Text style={[styles.searchBarText, { color: colors.foreground }]} numberOfLines={1}>
+                    {displayNeighborhood}
+                  </Text>
+                </Pressable>
+              )}
+              {showSearch && searchQuery.length > 0 && (
+                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                  <X size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+              {showSearch && (
+                <Pressable onPress={() => { setShowSearch(false); setSearchQuery('') }} hitSlop={8}>
+                  <X size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </Pressable>
+          </View>
+
+          {/* GPS button - circle, right side */}
+          <Pressable
+            onPress={async () => {
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+              const loc = await handleCenterOnUser()
+              if (loc) {
+                mapRef.current?.animateToRegion({ ...loc, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 500)
+              }
+            }}
+            style={[
+              styles.gpsButton,
+              {
+                top: insets.top + 68,
+                backgroundColor: userLocation ? colors.foreground : colors.card,
+                borderColor: userLocation ? colors.foreground : colors.border,
+              },
+            ]}
+          >
+            <Crosshair size={18} color={userLocation ? colors.primaryForeground : colors.foreground} />
+          </Pressable>
+
+          {/* Filter chips overlay - below search */}
+          <View style={[styles.filterChipsOverlay, { top: insets.top + 68 }]}>
+            <MapFilters
+              activeFilter={activeFilter}
+              subCategory={subCategory}
+              timeFilter={timeFilter}
+              counts={counts}
+              subCounts={subCounts}
+              colors={colors}
+              isDark={isDark}
+              t={t}
+              neighborhoodLoading={neighborhoodLoading}
+              onFilterChange={setActiveFilter}
+              onSubCategoryChange={setSubCategory}
+              onTimeFilterChange={setTimeFilter}
+            />
+          </View>
+
+          {/* Business toggle chip */}
+          {FEATURES.BUSINESS_ACCOUNT && (
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+                setShowBusinesses(prev => !prev)
+                if (selectedBusiness && showBusinesses) setSelectedBusiness(null)
+              }}
+              style={[
+                styles.businessToggle,
+                {
+                  top: insets.top + 120,
+                  backgroundColor: showBusinesses ? colors.foreground : colors.card,
+                  borderColor: showBusinesses ? colors.foreground : colors.border,
+                },
+              ]}
+            >
+              <Building2 size={14} color={showBusinesses ? colors.primaryForeground : colors.mutedForeground} />
+              <Text style={[styles.businessToggleText, { color: showBusinesses ? colors.primaryForeground : colors.mutedForeground }]}>
+                {t('map.businesses')}
+              </Text>
+            </Pressable>
+          )}
+
+          {/* Out of area banner */}
+          <OutOfAreaBanner visible={isOutOfArea} cityName="Helsinki" />
         </>
       )}
 
-      {/* ── Out of Area Banner ── */}
-      <OutOfAreaBanner visible={isOutOfArea} cityName="Helsinki" />
-
-      {/* ── Mini Map ── */}
-      <View style={[styles.mapContainer, mapExpanded && { height: 400 }]}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          provider={PROVIDER_DEFAULT}
-          initialRegion={{
-            ...center,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.015,
-          }}
-          customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
-          showsUserLocation
-          showsMyLocationButton={false}
-          showsCompass={false}
-          pitchEnabled={false}
-          rotateEnabled={false}
-          onRegionChangeComplete={handleRegionChange}
-        >
-          {clusteredMarkers.map(item => {
-            if (isCluster(item)) {
-              return (
-                <Marker
-                  key={item.id}
-                  coordinate={{ latitude: item.latitude, longitude: item.longitude }}
-                  tracksViewChanges={false}
-                  onPress={() => {
-                    // Zoom in on cluster
-                    mapRef.current?.animateToRegion({
-                      latitude: item.latitude,
-                      longitude: item.longitude,
-                      latitudeDelta: 0.008,
-                      longitudeDelta: 0.008,
-                    }, 400)
-                  }}
-                >
-                  <View style={[styles.clusterMarker, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.clusterText}>{item.count}</Text>
-                  </View>
-                </Marker>
-              )
-            }
-            const m = item
-            return (
-              <Marker
-                key={m.id}
-                coordinate={{ latitude: m.latitude, longitude: m.longitude }}
-                pinColor={m.pinColor}
-                title={m.title}
-                description={m.description}
-                tracksViewChanges={false}
-                onPress={() => {
-                  // For post markers, navigate directly to post detail
-                  const listItem = filteredItems.find(fi => fi.id === m.id)
-                  if (listItem?.kind === 'post') {
-                    const postData = listItem.sourceData as import('@/lib/types').Post
-                    router.push(`/post/${postData.id}` as any)
-                    return
-                  }
-                  handleMarkerPress({ key: m.id, latitude: m.latitude, longitude: m.longitude, pinColor: m.pinColor ?? '', title: m.title ?? '', description: m.description ?? '' })
-                }}
-              />
-            )
-          })}
-          {FEATURES.BUSINESS_ACCOUNT && showBusinesses && businesses.map(biz => (
-            <Marker
-              key={`biz-${biz.id}`}
-              coordinate={{ latitude: biz.business_lat, longitude: biz.business_lng }}
-              tracksViewChanges={false}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
-                setSelectedBusiness(biz)
-              }}
-            >
-              <View style={[styles.businessMarker, { backgroundColor: colors.primary }]}>
-                <Building2 size={14} color={colors.primaryForeground} />
-              </View>
-            </Marker>
-          ))}
-        </MapView>
-        {(loading || neighborhoodLoading) && (
-          <View style={[styles.mapOverlay, { backgroundColor: `${colors.background}D9` }]}>
-            <ActivityIndicator size="small" color={colors.primary} />
-          </View>
-        )}
-        <Pressable
-          onPress={() => setMapExpanded(prev => !prev)}
-          style={[styles.mapToggleBtn, { backgroundColor: colors.muted, top: 8 }]}
-        >
-          {mapExpanded ? <ChevronUp size={18} color={colors.foreground} /> : <ChevronDown size={18} color={colors.foreground} />}
-        </Pressable>
-        <Pressable
-          onPress={async () => {
-            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-            const loc = await handleCenterOnUser()
-            if (loc) {
-              mapRef.current?.animateToRegion({ ...loc, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 500)
-            }
-          }}
-          style={[
-            styles.gpsButton,
-            {
-              backgroundColor: userLocation ? colors.foreground : colors.muted,
-            },
-          ]}
-        >
-          <Crosshair size={20} color={userLocation ? colors.background : colors.foreground} />
-        </Pressable>
-
-        {/* ── Business toggle chip ── */}
-        {FEATURES.BUSINESS_ACCOUNT && (
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
-            setShowBusinesses(prev => !prev)
-            if (selectedBusiness && showBusinesses) setSelectedBusiness(null)
-          }}
-          style={[
-            styles.businessToggle,
-            {
-              backgroundColor: showBusinesses ? colors.foreground : 'transparent',
-              borderColor: showBusinesses ? colors.foreground : colors.border,
-            },
-          ]}
-        >
-          <Building2 size={14} color={showBusinesses ? colors.background : colors.mutedForeground} />
-          <Text style={[styles.businessToggleText, { color: showBusinesses ? colors.background : colors.mutedForeground }]}>
-            {t('map.businesses')}
-          </Text>
-        </Pressable>
-        )}
-
-        {/* ── Filter Pills ── */}
-        <MapFilters
-          activeFilter={activeFilter}
-          subCategory={subCategory}
-          timeFilter={timeFilter}
-          counts={counts}
-          subCounts={subCounts}
-          colors={colors}
-          isDark={isDark}
-          t={t}
-          neighborhoodLoading={neighborhoodLoading}
-          onFilterChange={setActiveFilter}
-          onSubCategoryChange={setSubCategory}
-          onTimeFilterChange={setTimeFilter}
-        />
+      {/* -- List/Map Toggle pill -- */}
+      <View style={[styles.viewToggleWrap, { bottom: viewMode === 'map' ? (sheetExpanded ? SHEET_EXPANDED + 16 : SHEET_COLLAPSED + 16) : insets.bottom + 16 }]}>
+        <View style={[styles.viewTogglePill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+              setViewMode('list')
+            }}
+            style={[
+              styles.viewToggleBtn,
+              viewMode === 'list' && { backgroundColor: colors.foreground },
+            ]}
+          >
+            <List size={14} color={viewMode === 'list' ? colors.primaryForeground : colors.foreground} />
+            <Text style={[styles.viewToggleLabel, { color: viewMode === 'list' ? colors.primaryForeground : colors.foreground }]}>
+              {t('map.listView') || 'Listaa'}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+              setViewMode('map')
+            }}
+            style={[
+              styles.viewToggleBtn,
+              viewMode === 'map' && { backgroundColor: colors.foreground },
+            ]}
+          >
+            <MapPin size={14} color={viewMode === 'map' ? colors.primaryForeground : colors.foreground} />
+            <Text style={[styles.viewToggleLabel, { color: viewMode === 'map' ? colors.primaryForeground : colors.foreground }]}>
+              {t('map.mapView') || 'Kartta'}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
-      {/* ── Section List ── */}
-      {loading && sections.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            {t('map.loadingMap')}
-          </Text>
-        </View>
-      ) : sections.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <PinIllustration size={80} />
-          {searchQuery.trim() ? (
-            <>
-              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                {t('map.noSearchResults')} '{searchQuery}'
+      {/* -- Bottom Sheet (map mode) -- */}
+      {viewMode === 'map' && (
+        <View style={[
+          styles.bottomSheet,
+          {
+            height: sheetExpanded ? SHEET_EXPANDED : SHEET_COLLAPSED,
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          },
+        ]}>
+          {/* Drag handle */}
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+              setSheetExpanded(prev => !prev)
+            }}
+            style={styles.sheetHandleArea}
+          >
+            <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
+          </Pressable>
+
+          {/* Sheet header */}
+          <View style={styles.sheetHeader}>
+            <View>
+              <Text style={[styles.sheetHeaderLabel, { color: colors.mutedForeground }]}>
+                {t('map.inAreaNow') || 'Alueella nyt'}
               </Text>
-              <Pressable onPress={() => setSearchQuery('')} style={[styles.emptyActionBtn, { borderColor: colors.accent }]}>
-                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('map.clearSearch')}</Text>
-              </Pressable>
-            </>
-          ) : activeFilter !== 'all' ? (
-            <>
-              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                {t('map.noContentInArea')} {displayNeighborhood}
-              </Text>
-              <Pressable onPress={() => setActiveFilter('all')} style={[styles.emptyActionBtn, { borderColor: colors.accent }]}>
-                <Text style={{ color: colors.accent, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('map.showAll')}</Text>
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                {t('map.noContentInArea')} {displayNeighborhood}
-              </Text>
-              <Pressable
-                onPress={() => router.push('/(tabs)/create')}
-                style={[styles.emptyCreateBtn, { backgroundColor: colors.foreground }]}
-              >
-                <Plus size={16} color={colors.background} />
-                <Text style={[styles.emptyCreateBtnText, { color: colors.background }]}>{t('map.createFirstPost')}</Text>
-              </Pressable>
-              <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
-                <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 16 }}>{t('map.tryAnotherArea')}</Text>
-              </Pressable>
-            </>
-          )}
-        </View>
-      ) : (
-        <SectionList
-          ref={sectionListRef}
-          sections={sections}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          stickySectionHeadersEnabled
-          contentContainerStyle={{ paddingBottom: insets.bottom + 80, paddingTop: 4 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleFullRefresh} tintColor={colors.primary} />}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.3}
-          ListEmptyComponent={
-            <View style={styles.emptyList}>
-              <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-                {searchQuery ? t('map.noResults') : t('map.noResultsFilterHint')}
-              </Text>
-              <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
-                {searchQuery ? t('map.noSearchResults') : t('map.noResultsFilterHint')}
+              <Text style={[styles.sheetHeaderTitle, { color: colors.foreground }]}>
+                {itemCount} {t('map.items')}
               </Text>
             </View>
-          }
-          ListFooterComponent={
-            (activeFilter === 'all' || activeFilter === 'events') && hasMore ? (
-              <View style={styles.loadMoreFooter}>
-                {loadingMore ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <PressableOpacity onPress={handleLoadMore} style={[styles.loadMoreBtn, { borderColor: colors.border }]}>
-                    <Text style={[styles.loadMoreText, { color: colors.primary }]}>
-                      {t('map.loadMoreEvents')} ({totalEvents} {t('map.totalEvents')})
-                    </Text>
-                  </PressableOpacity>
-                )}
-              </View>
-            ) : null
-          }
-        />
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+                setViewMode('list')
+              }}
+            >
+              <Text style={[styles.sheetHeaderAction, { color: colors.foreground }]}>
+                {t('map.listView') || 'Listaksi'}
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Sheet content - preview cards */}
+          {loading && filteredItems.length === 0 ? (
+            <View style={styles.sheetLoading}>
+              <ActivityIndicator size="small" color={colors.foreground} />
+            </View>
+          ) : (
+            <SectionList
+              ref={sectionListRef}
+              sections={sections}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              renderSectionHeader={renderSectionHeader}
+              stickySectionHeadersEnabled={false}
+              contentContainerStyle={{ paddingBottom: 24, paddingTop: 4 }}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleFullRefresh} tintColor={colors.foreground} />}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.3}
+              ListEmptyComponent={
+                <View style={styles.sheetEmpty}>
+                  <PinIllustration size={48} />
+                  <Text style={[styles.sheetEmptyText, { color: colors.mutedForeground }]}>
+                    {searchQuery ? t('map.noSearchResults') : t('map.noContentInArea')}
+                  </Text>
+                </View>
+              }
+              ListFooterComponent={
+                (activeFilter === 'all' || activeFilter === 'events') && hasMore ? (
+                  <View style={styles.loadMoreFooter}>
+                    {loadingMore ? (
+                      <ActivityIndicator size="small" color={colors.foreground} />
+                    ) : (
+                      <PressableOpacity onPress={handleLoadMore} style={[styles.loadMoreBtn, { borderColor: colors.border }]}>
+                        <Text style={[styles.loadMoreText, { color: colors.foreground }]}>
+                          {t('map.loadMoreEvents')} ({totalEvents} {t('map.totalEvents')})
+                        </Text>
+                      </PressableOpacity>
+                    )}
+                  </View>
+                ) : null
+              }
+            />
+          )}
+        </View>
       )}
 
-      {/* ── Detail Sheet ── */}
+      {/* -- Full List view -- */}
+      {viewMode === 'list' && (
+        <View style={[styles.listFull, { backgroundColor: colors.background }]}>
+          {/* List header */}
+          <View style={[styles.listHeader, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+            <Pressable
+              onPress={() => router.back()}
+              style={[styles.listBackBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.back')}
+            >
+              <ArrowLeft size={18} color={colors.foreground} />
+            </Pressable>
+            <Pressable
+              style={[styles.listNeighborhoodBtn, { borderColor: colors.border }]}
+              onPress={() => setNeighborhoodModalVisible(true)}
+            >
+              <MapPin size={14} color={colors.foreground} />
+              <Text style={[styles.listNeighborhoodText, { color: colors.foreground }]} numberOfLines={1}>
+                {displayNeighborhood}
+              </Text>
+              <ChevronDown size={14} color={colors.mutedForeground} />
+            </Pressable>
+            <Pressable
+              onPress={() => { if (showSearch) { setShowSearch(false); setSearchQuery('') } else { setShowSearch(true) } }}
+              style={[styles.listSearchBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.search')}
+            >
+              <Search size={18} color={showSearch ? colors.foreground : colors.mutedForeground} />
+            </Pressable>
+          </View>
+
+          {/* Search bar in list mode */}
+          {showSearch && (
+            <View style={[styles.listSearchBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              <Search size={16} color={colors.mutedForeground} />
+              <TextInput
+                style={[styles.listSearchInput, { color: colors.foreground }]}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t('map.searchPlaceholder')}
+                placeholderTextColor={colors.tertiaryForeground}
+                autoFocus
+              />
+              {searchQuery.length > 0 && (
+                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                  <X size={16} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {/* Filter pills in list mode */}
+          <View style={[styles.listFilterWrap, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+            <MapFilters
+              activeFilter={activeFilter}
+              subCategory={subCategory}
+              timeFilter={timeFilter}
+              counts={counts}
+              subCounts={subCounts}
+              colors={colors}
+              isDark={isDark}
+              t={t}
+              neighborhoodLoading={neighborhoodLoading}
+              onFilterChange={setActiveFilter}
+              onSubCategoryChange={setSubCategory}
+              onTimeFilterChange={setTimeFilter}
+            />
+          </View>
+
+          {/* Section list */}
+          {loading && sections.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <ActivityIndicator size="large" color={colors.foreground} />
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                {t('map.loadingMap')}
+              </Text>
+            </View>
+          ) : sections.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <PinIllustration size={80} />
+              {searchQuery.trim() ? (
+                <>
+                  <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                    {t('map.noSearchResults')} &apos;{searchQuery}&apos;
+                  </Text>
+                  <Pressable onPress={() => setSearchQuery('')} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
+                    <Text style={{ color: colors.foreground, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('map.clearSearch')}</Text>
+                  </Pressable>
+                </>
+              ) : activeFilter !== 'all' ? (
+                <>
+                  <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                    {t('map.noContentInArea')} {displayNeighborhood}
+                  </Text>
+                  <Pressable onPress={() => setActiveFilter('all')} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
+                    <Text style={{ color: colors.foreground, fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('map.showAll')}</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                    {t('map.noContentInArea')} {displayNeighborhood}
+                  </Text>
+                  <Pressable
+                    onPress={() => router.push('/(tabs)/create')}
+                    style={[styles.emptyCreateBtn, { backgroundColor: colors.foreground }]}
+                  >
+                    <Plus size={16} color={colors.primaryForeground} />
+                    <Text style={[styles.emptyCreateBtnText, { color: colors.primaryForeground }]}>{t('map.createFirstPost')}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => setNeighborhoodModalVisible(true)} style={[styles.emptyActionBtn, { borderColor: colors.border }]}>
+                    <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: fonts.body, lineHeight: 16 }}>{t('map.tryAnotherArea')}</Text>
+                  </Pressable>
+                </>
+              )}
+            </View>
+          ) : (
+            <SectionList
+              sections={sections}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              renderSectionHeader={renderSectionHeader}
+              stickySectionHeadersEnabled
+              contentContainerStyle={{ paddingBottom: insets.bottom + 80, paddingTop: 4 }}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleFullRefresh} tintColor={colors.foreground} />}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.3}
+              ListEmptyComponent={
+                <View style={styles.emptyList}>
+                  <MapPin size={32} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+                  <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+                    {searchQuery ? t('map.noResults') : t('map.noResultsFilterHint')}
+                  </Text>
+                  <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
+                    {searchQuery ? t('map.noSearchResults') : t('map.noResultsFilterHint')}
+                  </Text>
+                </View>
+              }
+              ListFooterComponent={
+                (activeFilter === 'all' || activeFilter === 'events') && hasMore ? (
+                  <View style={styles.loadMoreFooter}>
+                    {loadingMore ? (
+                      <ActivityIndicator size="small" color={colors.foreground} />
+                    ) : (
+                      <PressableOpacity onPress={handleLoadMore} style={[styles.loadMoreBtn, { borderColor: colors.border }]}>
+                        <Text style={[styles.loadMoreText, { color: colors.foreground }]}>
+                          {t('map.loadMoreEvents')} ({totalEvents} {t('map.totalEvents')})
+                        </Text>
+                      </PressableOpacity>
+                    )}
+                  </View>
+                ) : null
+              }
+            />
+          )}
+        </View>
+      )}
+
+      {/* -- Detail Sheet -- */}
       <DetailModal
         item={selectedItem}
         colors={colors}
@@ -494,15 +720,15 @@ export default function MapScreen() {
         onClose={() => setSelectedItem(null)}
       />
 
-      {/* ── Business Preview Card ── */}
+      {/* -- Business Preview Card -- */}
       {FEATURES.BUSINESS_ACCOUNT && selectedBusiness && (
-        <View style={[styles.businessCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
+        <View style={[styles.businessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Pressable
             onPress={() => setSelectedBusiness(null)}
-            style={styles.businessCardClose}
+            style={[styles.businessCardClose, { backgroundColor: colors.background }]}
             hitSlop={8}
           >
-            <X size={16} color={colors.mutedForeground} />
+            <X size={14} color={colors.mutedForeground} />
           </Pressable>
           <View style={styles.businessCardRow}>
             <Image
@@ -545,12 +771,12 @@ export default function MapScreen() {
             }}
             style={[styles.businessCardButton, { backgroundColor: colors.foreground }]}
           >
-            <Text style={[styles.businessCardButtonText, { color: colors.background }]}>{t('map.showProfile')}</Text>
+            <Text style={[styles.businessCardButtonText, { color: colors.primaryForeground }]}>{t('map.showProfile')}</Text>
           </Pressable>
         </View>
       )}
 
-      {/* ── Neighborhood Modal ── */}
+      {/* -- Neighborhood Modal -- */}
       <NeighborhoodModal
         visible={neighborhoodModalVisible}
         selected={selectedNeighborhood}
@@ -567,89 +793,443 @@ export default function MapScreen() {
   )
 }
 
-// ══════════════════════════════════════════════════════════════
+// ==============================================================
 // Styles
-// ══════════════════════════════════════════════════════════════
+// ==============================================================
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  topBar: {
+
+  // -- Full-screen map --
+  mapFull: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  map: {
+    flex: 1,
+  },
+  mapLoadingBadge: {
+    position: 'absolute',
+    top: 120,
+    alignSelf: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+
+  // -- Overlaid controls --
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+
+  searchOverlay: {
+    position: 'absolute',
+    left: 62,
+    right: 62,
+    zIndex: 10,
+  },
+  searchBarPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    gap: 8,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  searchBarText: {
+    fontSize: 13,
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: -0.1,
+    lineHeight: 18,
+  },
+  searchTextWrap: {
+    flex: 1,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: fonts.body,
+    lineHeight: 18,
+    paddingVertical: 0,
+  },
+
+  gpsButton: {
+    position: 'absolute',
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+
+  filterChipsOverlay: {
+    position: 'absolute',
+    left: 16,
+    right: 56,
+    zIndex: 9,
+  },
+
+  businessToggle: {
+    position: 'absolute',
+    left: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    zIndex: 9,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  businessToggleText: {
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+  },
+
+  // -- View toggle pill --
+  viewToggleWrap: {
+    position: 'absolute',
+    alignSelf: 'center',
+    zIndex: 15,
+  },
+  viewTogglePill: {
+    flexDirection: 'row',
+    borderRadius: 999,
+    borderWidth: 1,
+    padding: 3,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  viewToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+  },
+  viewToggleLabel: {
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+  },
+
+  // -- Bottom sheet --
+  bottomSheet: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderTopWidth: 1,
+    zIndex: 12,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  sheetHandleArea: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 999,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  sheetHeaderLabel: {
+    fontSize: 11,
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  sheetHeaderTitle: {
+    fontSize: 17,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.3,
+    lineHeight: 22,
+    marginTop: 2,
+  },
+  sheetHeaderAction: {
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+    textDecorationLine: 'underline',
+  },
+  sheetLoading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetEmpty: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    gap: 8,
+  },
+  sheetEmptyText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+    lineHeight: 18,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+  },
+
+  // -- Cluster markers (INK colored) --
+  clusterMarker: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  clusterText: {
+    fontSize: 13,
+    fontWeight: '700',
+    fontFamily: fonts.headingSemi,
+    lineHeight: 16,
+  },
+
+  // -- Business markers --
+  businessMarker: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+
+  // -- Business card --
+  businessCard: {
+    position: 'absolute',
+    bottom: 220,
+    left: 12,
+    right: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    zIndex: 20,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  businessCardClose: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  businessCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  businessCardImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+  },
+  businessCardInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  businessCardName: {
+    fontSize: 15,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.15,
+    lineHeight: 20,
+  },
+  businessCategoryBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  businessCategoryText: {
+    fontSize: 11,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 14,
+  },
+  businessCardAddress: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  businessCardButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 999,
+  },
+  businessCardButtonText: {
+    fontSize: 14,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 20,
+  },
+
+  // -- List mode --
+  listFull: {
+    flex: 1,
+  },
+  listHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 12,
+    gap: 10,
   },
-  topBarIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  listBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  neighborhoodButton: {
+  listNeighborhoodBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
   },
-  neighborhoodText: {
+  listNeighborhoodText: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
-    letterSpacing: -0.16,
-    lineHeight: 20,
+    letterSpacing: -0.14,
+    lineHeight: 18,
   },
-  mapContainer: {
-    height: MAP_HEIGHT,
-    position: 'relative',
-  },
-  map: {
-    flex: 1,
-  },
-  mapOverlay: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    borderRadius: 16,
-    padding: 8,
-  },
-  gpsButton: {
-    position: 'absolute',
-    bottom: 8,
-    right: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  listSearchBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 11,
   },
+  listSearchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  listSearchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: fonts.body,
+    lineHeight: 20,
+    paddingVertical: 4,
+  },
+  listFilterWrap: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+
+  // -- Section headers --
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
+    gap: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  sectionColorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontFamily: fonts.headingSemi,
+    flex: 1,
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    lineHeight: 18,
+    letterSpacing: 0.8,
+    lineHeight: 16,
   },
   sectionCountBadge: {
     minWidth: 24,
-    height: 22,
-    borderRadius: 16,
+    height: 20,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
@@ -659,27 +1239,22 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
     lineHeight: 13,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+
+  // -- Empty states --
+  emptyCard: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
+  emptyCardText: {
+    padding: 16,
+    fontStyle: 'italic',
     fontFamily: fonts.body,
+    fontSize: 14,
     lineHeight: 20,
-    paddingVertical: 4,
-  },
-  searchCount: {
-    fontSize: 11,
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 14,
-    paddingHorizontal: 16,
-    paddingBottom: 4,
+    textAlign: 'center',
   },
   emptyList: {
     alignItems: 'center',
@@ -716,7 +1291,7 @@ const styles = StyleSheet.create({
   emptyActionBtn: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 24,
+    borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
     marginTop: 4,
   },
@@ -726,7 +1301,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 24,
+    borderRadius: 999,
     marginTop: 8,
   },
   emptyCreateBtnText: {
@@ -734,16 +1309,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
-  mapToggleBtn: {
-    position: 'absolute',
-    right: 8,
-    zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
+  // -- Load more --
   loadMoreFooter: {
     paddingVertical: 16,
     alignItems: 'center',
@@ -751,149 +1318,12 @@ const styles = StyleSheet.create({
   loadMoreBtn: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 20,
+    borderRadius: 999,
     borderWidth: 1,
   },
   loadMoreText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
-  },
-  emptyCard: {
-    marginHorizontal: 12,
-    marginVertical: 4,
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-  emptyCardText: {
-    padding: 16,
-    fontStyle: 'italic',
-    fontFamily: fonts.body,
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-  clusterMarker: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  clusterText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
-    fontFamily: fonts.headingSemi,
-    lineHeight: 16,
-  },
-  businessMarker: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    shadowColor: '#1A1D1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  businessToggle: {
-    position: 'absolute',
-    bottom: 8,
-    left: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 24,
-    borderWidth: StyleSheet.hairlineWidth,
-    zIndex: 11,
-  },
-  businessToggleText: {
-    fontSize: 12,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
-  },
-  businessCard: {
-    position: 'absolute',
-    bottom: 90,
-    left: 12,
-    right: 12,
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
-    zIndex: 20,
-  },
-  businessCardClose: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1,
-    width: 24,
-    height: 24,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  businessCardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  businessCardImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
-    // backgroundColor set inline via colors.muted for dark mode support
-  },
-  businessCardInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  businessCardName: {
-    fontSize: 16,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.16,
-    lineHeight: 20,
-  },
-  businessCategoryBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  businessCategoryText: {
-    fontSize: 11,
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 14,
-  },
-  businessCardAddress: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-  },
-  businessCardButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  businessCardButtonText: {
-    fontSize: 14,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 20,
   },
 })

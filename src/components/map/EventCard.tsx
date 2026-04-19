@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { PressableOpacity } from '@/components/ui'
-import { MapPin } from 'lucide-react-native'
+import { Calendar, MapPin } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import type { CityEvent } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
@@ -40,57 +40,56 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
       accessibilityRole="button"
       accessibilityLabel={[item.title, dateStr].filter(Boolean).join(', ')}
     >
-      {/* Full-width image with date overlay */}
+      {/* Image left (borderRadius 10) */}
       {imageUrl ? (
-        <View style={styles.eventImageWrapper}>
-          <Image source={{ uri: imageUrl }} style={styles.eventImage} contentFit="cover" />
-          {dateStr && (
-            <View style={styles.eventImageGradient}>
-              <Text style={styles.eventDateOverlayText}>{dateStr}</Text>
-            </View>
-          )}
-        </View>
+        <Image source={{ uri: imageUrl }} style={styles.eventImage} contentFit="cover" />
       ) : (
-        <View style={[styles.eventImagePlaceholder, { backgroundColor: `${item.color}12` }]}>
-          <MapPin size={24} color={item.color} />
-          {dateStr && (
-            <View style={styles.eventImageGradient}>
-              <Text style={styles.eventDateOverlayText}>{dateStr}</Text>
-            </View>
-          )}
+        <View style={[styles.eventImagePlaceholder, { backgroundColor: colors.muted }]}>
+          <Calendar size={20} color={colors.mutedForeground} />
         </View>
       )}
 
-      {/* Title + subtitle + badges */}
+      {/* Details right */}
       <View style={styles.eventContent}>
         <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
+
+        {/* Date */}
+        {dateStr && (
+          <Text style={[styles.dateText, { color: colors.mutedForeground }]} numberOfLines={1}>
+            {dateStr}
+          </Text>
+        )}
+
+        {/* Location / subtitle */}
         {item.subtitle ? (
           <Text style={[styles.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
         ) : null}
-        <View style={styles.cardBadgeRow}>
+
+        {/* Badges row */}
+        <View style={styles.badgeRow}>
           {isLinkedEvents && (
-            <View style={[styles.badge, { backgroundColor: '#8E44AD18' }]}>
-              <Text style={[styles.badgeText, { color: '#8E44AD' }]}>Helsinki</Text>
+            <View style={[styles.badge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.badgeText, { color: colors.mutedForeground }]}>Helsinki</Text>
             </View>
           )}
           {isTicketmaster && (
-            <View style={[styles.badge, { backgroundColor: '#E91E6318' }]}>
-              <Text style={[styles.badgeText, { color: '#E91E63' }]}>{t('map.ticketEvent')}</Text>
+            <View style={[styles.badge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.badgeText, { color: colors.mutedForeground }]}>{t('map.ticketEvent')}</Text>
             </View>
           )}
           {isCommunityEvent && (
-            <View style={[styles.badge, { backgroundColor: '#2B8A6218' }]}>
-              <Text style={[styles.badgeText, { color: '#2B8A62' }]}>{t('map.communityEvent')}</Text>
+            <View style={[styles.badge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.badgeText, { color: colors.mutedForeground }]}>{t('map.communityEvent')}</Text>
             </View>
           )}
           {isFree && (
-            <View style={[styles.badge, { backgroundColor: '#2B8A6218' }]}>
+            <View style={[styles.badge, { backgroundColor: '#2B8A6212' }]}>
               <Text style={[styles.badgeText, { color: '#2B8A62' }]}>{t('events.free')}</Text>
             </View>
           )}
           {price && !isFree && (
-            <View style={[styles.badge, { backgroundColor: '#E8A05018' }]}>
-              <Text style={[styles.badgeText, { color: '#E8A050' }]}>{price}</Text>
+            <View style={[styles.badge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.badgeText, { color: colors.mutedForeground }]}>{price}</Text>
             </View>
           )}
           <Text style={[styles.distance, { color: colors.mutedForeground }]}>
@@ -106,89 +105,73 @@ const styles = StyleSheet.create({
   eventCard: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
+    flexDirection: 'row',
+    padding: 10,
+    gap: 12,
     shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 2,
   },
-  eventImageWrapper: {
-    width: '100%',
-    height: 140,
-    position: 'relative',
-  },
   eventImage: {
-    width: '100%',
-    height: 140,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    width: 72,
+    height: 72,
+    borderRadius: 10,
   },
   eventImagePlaceholder: {
-    width: '100%',
-    height: 140,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    width: 72,
+    height: 72,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-  },
-  eventImageGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    paddingTop: 24,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  eventDateOverlayText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 16,
   },
   eventContent: {
-    padding: 16,
-    gap: 8,
+    flex: 1,
+    gap: 3,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: fonts.headingSemi,
-    letterSpacing: -0.16,
-    lineHeight: 20,
+    letterSpacing: -0.14,
+    lineHeight: 18,
+  },
+  dateText: {
+    fontSize: 11,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 14,
   },
   meta: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 16,
-    flex: 1,
+    lineHeight: 14,
   },
-  cardBadgeRow: {
+  badgeRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
     alignItems: 'center',
     marginTop: 2,
   },
   badge: {
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 16,
+    paddingVertical: 2,
+    borderRadius: 999,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: fonts.bodyMedium,
     lineHeight: 14,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
   distance: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 16,
+    lineHeight: 14,
   },
 })

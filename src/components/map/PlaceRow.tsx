@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { PressableOpacity } from '@/components/ui'
-import { ChevronDown } from 'lucide-react-native'
+import { ChevronDown, Navigation } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import type { LocalPlace } from '@/lib/types'
 import type { ListItem, ThemeColors } from './types'
@@ -23,46 +23,41 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
         style={[styles.showAllPlacesBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         onPress={() => onShowAllPlaces?.()}
       >
-        <Text style={[styles.showAllPlacesText, { color: colors.primary }]}>{item.title}</Text>
-        <ChevronDown size={16} color={colors.primary} />
+        <Text style={[styles.showAllPlacesText, { color: colors.foreground }]}>{item.title}</Text>
+        <ChevronDown size={16} color={colors.foreground} />
       </PressableOpacity>
     )
   }
 
   const placeData = item.sourceData as LocalPlace
   const placeCategory = t(`map.place.${placeData.category}`) ?? ''
-  // Category-specific color for left border accent
-  const placeCatColor = placeData.category === 'restaurant' || placeData.category === 'fast_food' ? '#C75B3A'
-    : placeData.category === 'cafe' ? '#E8A050'
-    : placeData.category === 'bar' || placeData.category === 'pub' ? '#7C5CBF'
-    : placeData.category === 'culture' || placeData.category === 'library' ? '#3B7DD8'
-    : placeData.category === 'sport' ? '#2B8A62'
-    : placeData.category === 'health' ? '#C75B3A'
-    : LAYER_COLORS.place
 
   return (
     <PressableOpacity
       style={[styles.placeRow, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
     >
-      <View style={[styles.placeColorBar, { backgroundColor: placeCatColor }]} />
-      <Text style={[styles.placeTitle, { color: colors.foreground }]} numberOfLines={1}>{item.title}</Text>
-      {placeCategory ? (
-        <View style={[styles.placeCatBadge, { backgroundColor: `${placeCatColor}15` }]}>
-          <Text style={[styles.placeCatText, { color: placeCatColor }]}>{placeCategory}</Text>
+      <View style={styles.placeInfo}>
+        <Text style={[styles.placeTitle, { color: colors.foreground }]} numberOfLines={1}>{item.title}</Text>
+        <View style={styles.placeMeta}>
+          {placeCategory ? (
+            <View style={[styles.placeCatBadge, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.placeCatText, { color: colors.mutedForeground }]}>{placeCategory}</Text>
+            </View>
+          ) : null}
+          <Text style={[styles.placeDistance, { color: colors.mutedForeground }]}>
+            {formatDistance(item.distance)}
+          </Text>
         </View>
-      ) : null}
-      <Text style={[styles.placeDistance, { color: colors.mutedForeground }]}>
-        {formatDistance(item.distance)}
-      </Text>
+      </View>
       <Pressable
         onPress={() => {
           onDirections(item.latitude, item.longitude)
         }}
         hitSlop={8}
-        style={styles.placeDirectionsBtn}
+        style={[styles.placeDirectionsBtn, { backgroundColor: colors.muted }]}
       >
-        <Text style={[styles.placeDirectionsText, { color: colors.accent }]}>{t('map.directions')}</Text>
+        <Navigation size={14} color={colors.foreground} />
       </Pressable>
     </PressableOpacity>
   )
@@ -72,36 +67,40 @@ const styles = StyleSheet.create({
   placeRow: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingLeft: 14,
+    paddingRight: 10,
     paddingVertical: 12,
-    minHeight: 52,
-    gap: 8,
+    gap: 10,
     overflow: 'hidden',
     shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 2,
   },
-  placeColorBar: {
-    width: 3,
-    flex: 0.7,
-    borderRadius: 2,
+  placeInfo: {
+    flex: 1,
+    gap: 4,
   },
   placeTitle: {
     fontSize: 14,
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 21,
-    flex: 1,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.14,
+    lineHeight: 18,
+  },
+  placeMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   showAllPlacesBtn: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 20,
+    borderRadius: 999,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -110,7 +109,7 @@ const styles = StyleSheet.create({
     gap: 8,
     shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 2,
   },
@@ -121,26 +120,26 @@ const styles = StyleSheet.create({
   },
   placeCatBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 16,
+    paddingVertical: 2,
+    borderRadius: 999,
   },
   placeCatText: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: fonts.bodyMedium,
     lineHeight: 14,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
   placeDistance: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 16,
+    lineHeight: 14,
   },
   placeDirectionsBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-  },
-  placeDirectionsText: {
-    fontSize: 12,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

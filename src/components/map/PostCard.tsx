@@ -32,65 +32,51 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
       style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
     >
-      {/* Category color bar on left edge */}
-      <View style={[styles.postColorBar, { backgroundColor: catColor }]} />
+      {/* Image left (borderRadius 10) */}
+      {imageUrl ? (
+        <Image source={{ uri: getImageUrl(imageUrl, 'thumbnail')! }} style={styles.cardImage} contentFit="cover" />
+      ) : (
+        <View style={[styles.cardImagePlaceholder, { backgroundColor: colors.muted }]}>
+          <MapPin size={18} color={colors.mutedForeground} />
+        </View>
+      )}
 
-      <View style={styles.postBody}>
-        {/* Image or placeholder */}
-        {imageUrl ? (
-          <Image source={{ uri: getImageUrl(imageUrl, 'thumbnail')! }} style={styles.cardImage} contentFit="cover" />
-        ) : (
-          <View style={[styles.cardImagePlaceholder, { backgroundColor: `${item.color}15` }]}>
-            <MapPin size={18} color={item.color} />
+      {/* Details right */}
+      <View style={styles.cardContent}>
+        {/* Title */}
+        <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
+
+        {/* Category badge */}
+        {cat && (
+          <View style={[styles.badge, { backgroundColor: `${catColor}12`, borderColor: `${catColor}20`, borderWidth: 1 }]}>
+            <Text style={[styles.badgeText, { color: catColor }]}>{t(cat.label)}</Text>
           </View>
         )}
 
-        {/* Content */}
-        <View style={styles.cardContent}>
-          {/* Title row with avatar */}
-          <View style={styles.postTitleRow}>
-            {avatarUrl ? (
-              <Image source={{ uri: getImageUrl(avatarUrl, 'thumbnail')! }} style={styles.postAvatar} contentFit="cover" />
-            ) : (
-              <View style={[styles.postAvatarPlaceholder, { backgroundColor: `${item.color}20` }]}>
-                <Text style={[styles.postAvatarInitial, { color: item.color }]}>
-                  {(userName || '?')[0].toUpperCase()}
-                </Text>
-              </View>
-            )}
-            <Text style={[styles.title, { color: colors.foreground, flex: 1 }]} numberOfLines={2}>{item.title}</Text>
-          </View>
-
-          {/* Category / type badge */}
-          <View style={styles.cardBadgeRow}>
-            {cat && (
-              <View style={[styles.badge, { backgroundColor: `${catColor}18` }]}>
-                <Text style={[styles.badgeText, { color: catColor }]}>{t(cat.label)}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Meta row */}
-          {item.subtitle ? (
-            <Text style={[styles.meta, { color: colors.mutedForeground }]} numberOfLines={1}>{item.subtitle}</Text>
+        {/* Meta row: user + distance + time */}
+        <View style={styles.metaRow}>
+          {avatarUrl ? (
+            <Image source={{ uri: getImageUrl(avatarUrl, 'thumbnail')! }} style={styles.metaAvatar} contentFit="cover" />
+          ) : userName ? (
+            <View style={[styles.metaAvatarPlaceholder, { backgroundColor: colors.muted }]}>
+              <Text style={[styles.metaAvatarInitial, { color: colors.mutedForeground }]}>
+                {userName[0].toUpperCase()}
+              </Text>
+            </View>
           ) : null}
-
-          {/* Bottom row: distance + user + time */}
-          <View style={styles.bottomRow}>
-            <Text style={[styles.distance, { color: colors.mutedForeground }]}>
-              {formatDistance(item.distance)}
+          {userName && (
+            <Text style={[styles.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
+              {userName}
             </Text>
-            {userName && (
-              <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-                {userName}
-              </Text>
-            )}
-            {item.sortDate && (
-              <Text style={[styles.distance, { color: colors.mutedForeground }]}>
-                {formatTimeAgo(item.sortDate, t, locale)}
-              </Text>
-            )}
-          </View>
+          )}
+          <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
+            {formatDistance(item.distance)}
+          </Text>
+          {item.sortDate && (
+            <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
+              {formatTimeAgo(item.sortDate, t, locale)}
+            </Text>
+          )}
         </View>
       </View>
     </PressableOpacity>
@@ -101,106 +87,80 @@ const styles = StyleSheet.create({
   postCard: {
     marginHorizontal: 12,
     marginVertical: 4,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
     flexDirection: 'row',
+    padding: 10,
+    gap: 12,
     shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 2,
   },
-  postColorBar: {
-    width: 4,
-  },
-  postBody: {
-    flex: 1,
-    flexDirection: 'row',
-    padding: 16,
-    gap: 12,
-  },
   cardImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    width: 72,
+    height: 72,
+    borderRadius: 10,
   },
   cardImagePlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    width: 72,
+    height: 72,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardContent: {
     flex: 1,
     gap: 4,
+    justifyContent: 'center',
   },
-  postTitleRow: {
+  title: {
+    fontSize: 14,
+    fontFamily: fonts.headingSemi,
+    letterSpacing: -0.14,
+    lineHeight: 18,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 14,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    marginTop: 2,
   },
-  postAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  metaAvatar: {
+    width: 16,
+    height: 16,
+    borderRadius: 999,
   },
-  postAvatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  metaAvatarPlaceholder: {
+    width: 16,
+    height: 16,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  postAvatarInitial: {
-    fontSize: 14,
-    fontFamily: fonts.headingSemi,
-    lineHeight: 21,
+  metaAvatarInitial: {
+    fontSize: 8,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 12,
   },
-  title: {
-    fontSize: 16,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.16,
-    lineHeight: 20,
-  },
-  cardBadgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    alignItems: 'center',
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 16,
-  },
-  badgeText: {
+  metaText: {
     fontSize: 11,
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.body,
     lineHeight: 14,
-  },
-  meta: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-    flex: 1,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
-  },
-  distance: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-  },
-  userName: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-    flex: 1,
   },
 })
