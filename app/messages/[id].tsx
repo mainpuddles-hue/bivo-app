@@ -587,10 +587,10 @@ function ConversationScreenInner() {
                   onPress={() => { try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch(() => {}) } catch {} }}
                   style={[s.linkPreview, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
                 >
-                  <ExternalLink size={14} color={colors.primary} />
+                  <ExternalLink size={14} color={colors.foreground} />
                   <View style={{ flex: 1 }}>
                     <Text style={[s.linkDomain, { color: colors.foreground }]} numberOfLines={1}>{getDomain(url)}</Text>
-                    <Text style={[s.linkAction, { color: colors.primary }]}>{t('messages.openLink')}</Text>
+                    <Text style={[s.linkAction, { color: colors.foreground }]}>{t('messages.openLink')}</Text>
                   </View>
                 </PressableOpacity>
               )
@@ -605,7 +605,7 @@ function ConversationScreenInner() {
                     style={[
                       s.reactionBadge,
                       { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border },
-                      r.userReacted && { borderColor: colors.primary, backgroundColor: isDark ? `${colors.primary}22` : `${colors.primary}15` },
+                      r.userReacted && { borderColor: colors.foreground, backgroundColor: isDark ? `${colors.foreground}22` : `${colors.foreground}15` },
                     ]}
                   >
                     <Text style={s.reactionEmoji}>{r.emoji}</Text>
@@ -663,7 +663,7 @@ function ConversationScreenInner() {
           </Text>
           <PressableOpacity
             onPress={() => router.replace('/(tabs)/messages' as any)}
-            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
+            style={{ backgroundColor: colors.foreground, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
             accessibilityRole="button"
             accessibilityLabel={t('errors.backToMessages') ?? 'Back to messages'}
           >
@@ -699,7 +699,7 @@ function ConversationScreenInner() {
         <PressableOpacity onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
           <Text style={[s.headerName, { color: colors.foreground }]} numberOfLines={1}>{otherUser?.name ?? t('messages.unknownUser')}</Text>
           {otherTyping ? (
-            <Text style={[s.headerSub, { color: colors.primary }]}>{t('messages.typing')}</Text>
+            <Text style={[s.headerSub, { color: colors.foreground }]}>{t('messages.typing')}</Text>
           ) : (
             <View style={s.onlineRow}>
               <View style={[s.onlineDot, { backgroundColor: colors.foreground }]} />
@@ -767,7 +767,7 @@ function ConversationScreenInner() {
             )}
             {hasOlder ? (
               <PressableOpacity onPress={loadOlder} style={[s.loadOlderBtn, { borderColor: colors.border }]}>
-                <Text style={[s.loadOlderText, { color: colors.primary }]}>
+                <Text style={[s.loadOlderText, { color: colors.foreground }]}>
                   {loadingOlder ? t('common.loading') : t('conversation.loadOlder')}
                 </Text>
               </PressableOpacity>

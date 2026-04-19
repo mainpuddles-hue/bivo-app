@@ -68,8 +68,8 @@ export function NeighborhoodModal({
           }]}
           onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onGPSSelect() }}
         >
-          <Navigation size={18} color={colors.primary} />
-          <Text style={[styles.neighborhoodRowText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
+          <Navigation size={18} color={colors.foreground} />
+          <Text style={[styles.neighborhoodRowText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
             {t('map.myLocation')}
           </Text>
         </Pressable>
@@ -96,7 +96,7 @@ export function NeighborhoodModal({
               <Text style={[
                 styles.neighborhoodRowText,
                 { color: colors.foreground },
-                selected === item && { color: colors.primary, fontFamily: fonts.bodySemi },
+                selected === item && { color: colors.foreground, fontFamily: fonts.bodySemi },
               ]}>
                 {item}
               </Text>

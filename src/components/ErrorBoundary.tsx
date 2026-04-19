@@ -47,7 +47,7 @@ function ErrorFallbackUI({ error, onRetry }: { error: Error | null; onRetry: () 
         onPress={onRetry}
         style={({ pressed }) => [
           styles.retryBtn,
-          { backgroundColor: colors.primary, shadowColor: colors.primary },
+          { backgroundColor: colors.foreground, shadowColor: colors.foreground },
           pressed && styles.retryBtnPressed,
         ]}
         accessibilityRole="button"

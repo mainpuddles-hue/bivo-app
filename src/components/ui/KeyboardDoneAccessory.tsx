@@ -41,7 +41,7 @@ export function KeyboardDoneAccessory() {
           accessibilityRole="button"
           accessibilityLabel={t('common.done') ?? 'Done'}
         >
-          <Text style={[styles.btnText, { color: colors.primary }]}>
+          <Text style={[styles.btnText, { color: colors.foreground }]}>
             {t('common.done') ?? 'Done'}
           </Text>
         </PressableOpacity>

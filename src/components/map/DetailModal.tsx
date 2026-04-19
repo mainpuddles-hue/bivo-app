@@ -114,7 +114,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           {/* Location */}
           {locName ? (
             <View style={styles.detailRow}>
-              <MapPin size={14} color={colors.primary} />
+              <MapPin size={14} color={colors.foreground} />
               <Text style={[styles.detailLabel, { color: colors.foreground }]}>{locName}</Text>
             </View>
           ) : null}
@@ -152,7 +152,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
                 )}
                 {pl.phone && (
                   <Pressable onPress={() => Linking.openURL(`tel:${pl.phone}`).catch(() => {})}>
-                    <Text style={[styles.detailLabel, { color: colors.primary }]}>{pl.phone}</Text>
+                    <Text style={[styles.detailLabel, { color: colors.foreground }]}>{pl.phone}</Text>
                   </Pressable>
                 )}
               </View>
@@ -209,12 +209,12 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
           )}
           <Pressable
             onPress={openDirections}
-            style={[styles.detailActionBtn, { backgroundColor: colors.accent }]}
+            style={[styles.detailActionBtn, { backgroundColor: colors.foreground }]}
             accessibilityRole="button"
             accessibilityLabel={t('map.directions')}
           >
-            <Navigation size={16} color={colors.accentForeground} />
-            <Text style={[styles.detailActionText, { color: colors.accentForeground }]}>{t('map.directions')}</Text>
+            <Navigation size={16} color={colors.primaryForeground} />
+            <Text style={[styles.detailActionText, { color: colors.primaryForeground }]}>{t('map.directions')}</Text>
           </Pressable>
           <Pressable
             onPress={handleShare}

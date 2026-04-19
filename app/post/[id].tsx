@@ -447,9 +447,9 @@ function PostDetailScreenInner() {
     if (diffMs <= 0) return { label: t('postCard.expired'), color: colors.destructive }
     const diffHours = diffMs / 3600000
     if (diffHours < 24) return { label: t('postCard.expiresToday'), color: colors.destructive }
-    if (diffHours < 48) return { label: t('postCard.expiresTomorrow'), color: colors.pro }
+    if (diffHours < 48) return { label: t('postCard.expiresTomorrow'), color: colors.foreground }
     const diffDays = Math.ceil(diffMs / 86400000)
-    if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: colors.pro }
+    if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: colors.foreground }
     return null
   }, [post?.expires_at, t])
 
@@ -834,7 +834,7 @@ function PostDetailScreenInner() {
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
           <Text style={[styles.notFound, { color: colors.mutedForeground, marginBottom: 16 }]}>{loadError}</Text>
-          <PressableOpacity onPress={() => loadPost()} style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.primary, borderRadius: 999 }} accessibilityRole="button" accessibilityLabel={t('common.retry')}>
+          <PressableOpacity onPress={() => loadPost()} style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.foreground, borderRadius: 999 }} accessibilityRole="button" accessibilityLabel={t('common.retry')}>
             <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodyMedium, fontSize: 15 }}>{t('common.retry')}</Text>
           </PressableOpacity>
         </View>
@@ -892,7 +892,7 @@ function PostDetailScreenInner() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.primary} />}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.foreground} />}>
         {/* Full-bleed hero photo — 260px height */}
         {allImages.length > 0 ? (
           allImages.length === 1 ? (
@@ -1008,8 +1008,8 @@ function PostDetailScreenInner() {
           )}
 
           {post.is_pro_listing && (
-            <View style={[styles.proBadge, { backgroundColor: `${colors.pro}20` }]}>
-              <Crown size={14} color={colors.pro} /><Text style={[styles.proText, { color: colors.pro }]}>Pro</Text>
+            <View style={[styles.proBadge, { backgroundColor: `${colors.foreground}20` }]}>
+              <Crown size={14} color={colors.foreground} /><Text style={[styles.proText, { color: colors.foreground }]}>Pro</Text>
             </View>
           )}
 
@@ -1029,7 +1029,7 @@ function PostDetailScreenInner() {
             </View>
           ) : null}
 
-          {post.event_date && (<Text style={[styles.eventDate, { color: colors.primary }]}>{formatEventDate(post.event_date, locale)}</Text>)}
+          {post.event_date && (<Text style={[styles.eventDate, { color: colors.foreground }]}>{formatEventDate(post.event_date, locale)}</Text>)}
 
           {post.type === 'tapahtuma' && (
             <PressableOpacity
@@ -1038,8 +1038,8 @@ function PostDetailScreenInner() {
               accessibilityRole="link"
               accessibilityLabel={t('post.browseCommunityEvents')}
             >
-              <Calendar size={14} color={colors.primary} />
-              <Text style={[styles.communityEventsLinkText, { color: colors.primary }]}>{t('post.browseCommunityEvents')}</Text>
+              <Calendar size={14} color={colors.foreground} />
+              <Text style={[styles.communityEventsLinkText, { color: colors.foreground }]}>{t('post.browseCommunityEvents')}</Text>
             </PressableOpacity>
           )}
 
@@ -1056,9 +1056,9 @@ function PostDetailScreenInner() {
           {/* Author action buttons */}
           {isAuthor && (
             <View style={styles.authorActionsRow}>
-              <PressableOpacity onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
-                <Pencil size={14} color={colors.primary} />
-                <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.edit')}</Text>
+              <PressableOpacity onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.foreground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
+                <Pencil size={14} color={colors.foreground} />
+                <Text style={[styles.authorActionText, { color: colors.foreground }]}>{t('post.edit')}</Text>
               </PressableOpacity>
               {post.is_active ? (
                 <PressableOpacity onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
@@ -1066,8 +1066,8 @@ function PostDetailScreenInner() {
                   <Text style={[styles.authorActionText, { color: colors.mutedForeground }]}>{t('post.markClosed')}</Text>
                 </PressableOpacity>
               ) : (
-                <PressableOpacity onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.primary}15` }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
-                  <Text style={[styles.authorActionText, { color: colors.primary }]}>{t('post.reopen')}</Text>
+                <PressableOpacity onPress={handleReopen} style={[styles.authorActionBtn, { backgroundColor: `${colors.foreground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.reopen')}>
+                  <Text style={[styles.authorActionText, { color: colors.foreground }]}>{t('post.reopen')}</Text>
                 </PressableOpacity>
               )}
               <PressableOpacity onPress={handleDelete} style={[styles.authorActionBtn, { backgroundColor: `${colors.destructive}15` }]} accessibilityRole="button" accessibilityLabel={t('post.delete')}>
@@ -1079,14 +1079,14 @@ function PostDetailScreenInner() {
 
           {/* Booking / service CTA buttons */}
           {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee !== null && !isAuthor && (
-            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
+            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
             </PressableOpacity>
           )}
 
           {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price !== null && post.service_price > 0 && !post.tags?.includes('tarjoan_item') && !isAuthor && (
-            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.primary }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
+            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
               <ShoppingBag size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>
             </PressableOpacity>
@@ -1213,8 +1213,8 @@ function PostDetailScreenInner() {
                   {renderCommentItem(c, false)}
                   {replies.length > 0 && (
                     <PressableOpacity onPress={() => toggleReplies(c.id)} style={styles.showRepliesBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}>
-                      {isExpanded ? <ChevronUp size={14} color={colors.primary} /> : <ChevronDown size={14} color={colors.primary} />}
-                      <Text style={[styles.showRepliesText, { color: colors.primary }]}>
+                      {isExpanded ? <ChevronUp size={14} color={colors.foreground} /> : <ChevronDown size={14} color={colors.foreground} />}
+                      <Text style={[styles.showRepliesText, { color: colors.foreground }]}>
                         {isExpanded ? t('post.hideReplies') : t('post.showReplies', { count: replies.length })}
                       </Text>
                     </PressableOpacity>
@@ -1249,7 +1249,7 @@ function PostDetailScreenInner() {
             <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} accessibilityLabel={t('post.locationLabel')} />
-            <PressableOpacity onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.primary }]}>
+            <PressableOpacity onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.foreground }]}>
               {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('post.saveChanges')}</Text>}
             </PressableOpacity>
           </View>
@@ -1268,8 +1268,8 @@ function PostDetailScreenInner() {
               </View>
               {/* Step indicator — reduces cognitive load on multi-step flow */}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: colors.primary }} />
-                <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: bookingDays > 0 ? colors.primary : colors.muted }} />
+                <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: colors.foreground }} />
+                <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: bookingDays > 0 ? colors.foreground : colors.muted }} />
               </View>
               <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
               {post?.daily_fee !== null && (<Text style={[styles.bookingFee, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
@@ -1286,14 +1286,14 @@ function PostDetailScreenInner() {
                   <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('rental.pricingBreakdown')}</Text>
                   <View style={styles.pricingRow}><Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{formatPrice(post.daily_fee, locale)} x {bookingDays} {t('rental.daysAbbr')}</Text><Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(rentalFee, locale)}</Text></View>
                   <View style={styles.pricingRow}><Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('rental.serviceFee')} ({t('rental.serviceFeeNote')})</Text><Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(serviceFee, locale)}</Text></View>
-                  <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}><Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text><Text style={[styles.bookingTotalPrice, { color: colors.primary }]}>{formatPrice(bookingTotal, locale)}</Text></View>
+                  <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}><Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text><Text style={[styles.bookingTotalPrice, { color: colors.foreground }]}>{formatPrice(bookingTotal, locale)}</Text></View>
                 </View>
               )}
               {bookingDays > 0 && (<Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>{t('rental.confirmationNote')}</Text>)}
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
               <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
               <PressableOpacity onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
-                style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }]}>
+                style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.foreground, marginTop: 16, marginBottom: 8 }]}>
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
               </PressableOpacity>
             </ScrollView>
@@ -1356,7 +1356,7 @@ function PostDetailScreenInner() {
                 </View>
                 <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}>
                   <Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text>
-                  <Text style={[styles.bookingTotalPrice, { color: category?.color ?? colors.primary }]}>{formatPrice(svcTotal, locale)}</Text>
+                  <Text style={[styles.bookingTotalPrice, { color: category?.color ?? colors.foreground }]}>{formatPrice(svcTotal, locale)}</Text>
                 </View>
               </View>
             )}
@@ -1370,7 +1370,7 @@ function PostDetailScreenInner() {
             <PressableOpacity
               onPress={handlePayForService}
               disabled={sendingService || paymentLoading}
-              style={[styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : (category?.color ?? colors.primary), marginTop: 16, marginBottom: 8 }]}
+              style={[styles.payBookBtn, { backgroundColor: sendingService || paymentLoading ? colors.muted : (category?.color ?? colors.foreground), marginTop: 16, marginBottom: 8 }]}
             >
               {sendingService || paymentLoading ? (
                 <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -1394,9 +1394,9 @@ function PostDetailScreenInner() {
           paddingBottom: insets.bottom + 8,
         }]}>
           {replyToComment && (
-            <View style={[ctaStyles.replyIndicator, { backgroundColor: `${colors.primary}10`, borderColor: colors.primary }]}>
-              <Reply size={12} color={colors.primary} />
-              <Text style={[ctaStyles.replyIndicatorText, { color: colors.primary }]} numberOfLines={1}>
+            <View style={[ctaStyles.replyIndicator, { backgroundColor: `${colors.foreground}10`, borderColor: colors.foreground }]}>
+              <Reply size={12} color={colors.foreground} />
+              <Text style={[ctaStyles.replyIndicatorText, { color: colors.foreground }]} numberOfLines={1}>
                 {t('post.replyingTo', { name: replyToComment.user?.name ?? t('common.user') })}
               </Text>
               <PressableOpacity onPress={() => setReplyToComment(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><X size={14} color={colors.mutedForeground} /></PressableOpacity>
@@ -1452,7 +1452,7 @@ function PostDetailScreenInner() {
               <ModalCloseButton onClose={() => setShowLikersModal(false)} />
             </View>
             {loadingLikers ? (
-              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
+              <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 40 }} />
             ) : (
               <FlatList
                 data={likers}

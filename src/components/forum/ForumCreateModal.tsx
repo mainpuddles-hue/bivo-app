@@ -81,7 +81,7 @@ function ForumCreateModalInner({
           <Pressable
             onPress={handlePublish}
             disabled={publishing}
-            style={[styles.publishBtn, { backgroundColor: colors.primary, opacity: publishing ? 0.6 : 1 }]}
+            style={[styles.publishBtn, { backgroundColor: colors.foreground, opacity: publishing ? 0.6 : 1 }]}
           >
             {publishing ? (
               <ActivityIndicator size="small" color={colors.primaryForeground} />

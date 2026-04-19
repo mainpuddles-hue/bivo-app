@@ -728,9 +728,9 @@ function OnboardingScreenInner() {
         {selectedNeighborhood && verificationStatus !== 'idle' && (
           <View style={[s.verificationRow, {
             backgroundColor: verificationStatus === 'verified' ? `${colors.success}15` :
-              verificationStatus === 'unverified' ? `${colors.pro}15` : colors.muted,
+              verificationStatus === 'unverified' ? `${colors.foreground}15` : colors.muted,
             borderColor: verificationStatus === 'verified' ? `${colors.success}30` :
-              verificationStatus === 'unverified' ? `${colors.pro}30` : colors.border,
+              verificationStatus === 'unverified' ? `${colors.foreground}30` : colors.border,
           }]}>
             {verificationStatus === 'checking' && (
               <>
@@ -750,8 +750,8 @@ function OnboardingScreenInner() {
             )}
             {verificationStatus === 'unverified' && (
               <>
-                <AlertTriangle size={16} color={colors.pro} />
-                <Text style={[s.verificationText, { color: colors.pro, fontFamily: fonts.body }]}>
+                <AlertTriangle size={16} color={colors.foreground} />
+                <Text style={[s.verificationText, { color: colors.foreground, fontFamily: fonts.body }]}>
                   {t('onboarding.locationNotVerified', { distance: distanceKm ? distanceKm.toFixed(1) : '?' })}
                 </Text>
               </>

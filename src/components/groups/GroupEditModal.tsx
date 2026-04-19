@@ -106,7 +106,7 @@ function GroupEditModalInner({
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <Pressable
                 onPress={() => setEditIsPublic(true)}
-                style={[styles.toggleChip, { backgroundColor: editIsPublic ? colors.primary : colors.muted }]}
+                style={[styles.toggleChip, { backgroundColor: editIsPublic ? colors.foreground : colors.muted }]}
               >
                 <Text style={{ color: editIsPublic ? colors.primaryForeground : colors.mutedForeground, fontSize: 13, fontFamily: fonts.bodySemi }}>
                   {t('groups.public')}
@@ -114,7 +114,7 @@ function GroupEditModalInner({
               </Pressable>
               <Pressable
                 onPress={() => setEditIsPublic(false)}
-                style={[styles.toggleChip, { backgroundColor: !editIsPublic ? colors.primary : colors.muted }]}
+                style={[styles.toggleChip, { backgroundColor: !editIsPublic ? colors.foreground : colors.muted }]}
               >
                 <Text style={{ color: !editIsPublic ? colors.primaryForeground : colors.mutedForeground, fontSize: 13, fontFamily: fonts.bodySemi }}>
                   {t('groups.private')}
@@ -125,7 +125,7 @@ function GroupEditModalInner({
             <Pressable
               onPress={handleSave}
               disabled={saving || !editName.trim()}
-              style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: (saving || !editName.trim()) ? 0.6 : 1 }]}
+              style={[styles.saveBtn, { backgroundColor: colors.foreground, opacity: (saving || !editName.trim()) ? 0.6 : 1 }]}
             >
               {saving ? (
                 <ActivityIndicator size="small" color={colors.primaryForeground} />

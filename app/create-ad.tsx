@@ -430,7 +430,7 @@ export default function CreateAdScreen() {
             </Text>
           </View>
           {profile?.is_pro && (
-            <Text style={[styles.proDiscount, { color: colors.pro, fontFamily: fonts.bodySemi }]}>
+            <Text style={[styles.proDiscount, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
               Pro -20%
             </Text>
           )}

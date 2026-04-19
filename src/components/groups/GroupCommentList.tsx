@@ -40,7 +40,7 @@ function GroupCommentListInner({
   return (
     <View style={[styles.commentsSection, { borderTopColor: colors.border }]}>
       {loading ? (
-        <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 8 }} />
+        <ActivityIndicator size="small" color={colors.foreground} style={{ marginVertical: 8 }} />
       ) : (
         comments.map((c) => (
           <View key={c.id} style={styles.commentRow}>
@@ -88,9 +88,9 @@ function GroupCommentListInner({
           disabled={sendingComment || !commentText.trim()}
         >
           {sendingComment ? (
-            <ActivityIndicator size="small" color={colors.primary} />
+            <ActivityIndicator size="small" color={colors.foreground} />
           ) : (
-            <Send size={18} color={colors.primary} strokeWidth={1.8} />
+            <Send size={18} color={colors.foreground} strokeWidth={1.8} />
           )}
         </Pressable>
       </View>

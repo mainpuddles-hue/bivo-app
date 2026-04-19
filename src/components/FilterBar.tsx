@@ -70,7 +70,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
       <FilterChip
         key="all"
         label={t('feed.filterAll')}
-        color={colors.primary}
+        color={colors.foreground}
         isActive={activeFilter === null}
         foregroundColor={colors.primaryForeground}
         onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(null) }}

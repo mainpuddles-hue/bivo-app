@@ -873,16 +873,16 @@ export default function SettingsScreen() {
         {FEATURES.PRO_SUBSCRIPTION && (
           <Group colors={colors}>
             <Row
-              icon={<Crown size={16} color={colors.pro} strokeWidth={1.8} />}
+              icon={<Crown size={16} color={colors.foreground} strokeWidth={1.8} />}
               label="TackBird Pro"
               onPress={() => router.push('/pro')}
               colors={colors}
               isDark={isDark}
             >
               {profile?.is_pro ? (
-                <Text style={[s.proBadgeText, { color: colors.pro }]}>{t('profile.proActive')}</Text>
+                <Text style={[s.proBadgeText, { color: colors.foreground }]}>{t('profile.proActive')}</Text>
               ) : (
-                <View style={[s.proUpgradeChip, { backgroundColor: colors.pro }]}>
+                <View style={[s.proUpgradeChip, { backgroundColor: colors.foreground }]}>
                   <Text style={[s.proUpgradeText, { color: colors.foreground }]}>
                     4,99 {'\u20AC'}{t('pro.perMonth')}
                   </Text>
@@ -995,10 +995,10 @@ export default function SettingsScreen() {
                     <Text style={[s.pwFeedback, { color: colors.destructive }]}>{t('settings.passwordTooShort')}</Text>
                   )}
                   {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
-                    <Text style={[s.pwFeedback, { color: colors.pro }]}>{t('settings.passwordNeedsUppercase')}</Text>
+                    <Text style={[s.pwFeedback, { color: colors.foreground }]}>{t('settings.passwordNeedsUppercase')}</Text>
                   )}
                   {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
-                    <Text style={[s.pwFeedback, { color: colors.pro }]}>{t('settings.passwordNeedsNumber')}</Text>
+                    <Text style={[s.pwFeedback, { color: colors.foreground }]}>{t('settings.passwordNeedsNumber')}</Text>
                   )}
                   {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
                     <Text style={[s.pwFeedback, { color: colors.success }]}>{t('settings.passwordStrong')}</Text>

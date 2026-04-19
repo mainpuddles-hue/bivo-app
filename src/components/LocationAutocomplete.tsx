@@ -131,7 +131,7 @@ export function LocationAutocomplete({
           onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
           onBlur={() => { if (!selectingRef.current) setTimeout(() => setShowSuggestions(false), 250) }}
         />
-        {loading && <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />}
+        {loading && <ActivityIndicator size="small" color={colors.foreground} style={styles.loader} />}
       </View>
 
       {showSuggestions && suggestions.length > 0 && (
@@ -144,7 +144,7 @@ export function LocationAutocomplete({
                 styles.suggestion,
                 { borderBottomColor: colors.border },
                 i === suggestions.length - 1 && { borderBottomWidth: 0 },
-                pressed && { backgroundColor: `${colors.primary}14` },
+                pressed && { backgroundColor: `${colors.foreground}14` },
               ]}
             >
               <MapPin size={14} color={colors.mutedForeground} />

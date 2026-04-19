@@ -70,7 +70,7 @@ function ForumPostCardInner({
 }: ForumPostCardProps) {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
-  const catColor = CATEGORY_COLORS[post.category] || colors.primary
+  const catColor = CATEGORY_COLORS[post.category] || colors.foreground
   const user = post.user
 
   const getCategoryLabel = (category: string) => {
@@ -140,18 +140,18 @@ function ForumPostCardInner({
         <View style={styles.cardActions}>
           <Pressable
             onPress={(e) => { e.stopPropagation?.(); onUpvote(post) }}
-            style={[styles.actionBtn, isVoted && { backgroundColor: `${colors.primary}14` }]}
+            style={[styles.actionBtn, isVoted && { backgroundColor: `${colors.foreground}14` }]}
             hitSlop={8}
           >
             <ChevronUp
               size={16}
-              color={isVoted ? colors.primary : colors.mutedForeground}
+              color={isVoted ? colors.foreground : colors.mutedForeground}
               strokeWidth={isVoted ? 2.5 : 1.8}
             />
             {(post.upvote_count > 0 || isVoted) && (
               <Text style={[
                 styles.actionText,
-                { color: isVoted ? colors.primary : colors.mutedForeground },
+                { color: isVoted ? colors.foreground : colors.mutedForeground },
                 isVoted && { fontFamily: fonts.bodySemi },
               ]}>
                 {post.upvote_count}
@@ -171,7 +171,7 @@ function ForumPostCardInner({
                 style={styles.actionBtn}
                 hitSlop={8}
               >
-                <Pencil size={14} color={colors.primary} strokeWidth={1.8} />
+                <Pencil size={14} color={colors.foreground} strokeWidth={1.8} />
               </Pressable>
               <Pressable
                 onPress={(e) => { e.stopPropagation?.(); onDelete(post.id) }}

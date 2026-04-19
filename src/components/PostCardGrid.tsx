@@ -232,7 +232,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
               {post.title}
             </Text>
             {(post.daily_fee != null || (post.service_price != null && post.service_price > 0)) && (
-              <Text style={[styles.price, { color: colors.primary }]}>
+              <Text style={[styles.price, { color: colors.foreground }]}>
                 {post.daily_fee != null
                   ? t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })
                   : formatPrice(post.service_price, locale)}

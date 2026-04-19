@@ -46,7 +46,7 @@ function ScreenErrorFallbackUI({ error, onRetry }: { error: Error | null; onRetr
           onPress={onRetry}
           style={({ pressed }) => [
             styles.retryBtn,
-            { backgroundColor: colors.primary },
+            { backgroundColor: colors.foreground },
             pressed && styles.retryBtnPressed,
           ]}
           accessibilityRole="button"

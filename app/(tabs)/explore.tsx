@@ -555,7 +555,7 @@ function ExploreScreenInner() {
         contentContainerStyle={[s.scrollContent, { paddingBottom: insets.bottom + 96 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.foreground} />
         }
       >
         {/* ── Map sub-tab ── */}

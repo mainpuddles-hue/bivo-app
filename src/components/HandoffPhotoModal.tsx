@@ -122,7 +122,7 @@ export function HandoffPhotoModal({
 
         {/* Instructions */}
         <View style={styles.instructions}>
-          <Camera size={32} color={colors.primary} />
+          <Camera size={32} color={colors.foreground} />
           <Text style={[styles.instructionTitle, { color: colors.foreground }]}>{title}</Text>
           <Text style={[styles.instructionHint, { color: colors.mutedForeground }]}>
             {t('rental.photoRequired')}
@@ -166,7 +166,7 @@ export function HandoffPhotoModal({
             disabled={uploading || photos.length < MIN_PHOTOS}
             style={[
               styles.submitBtn,
-              { backgroundColor: photos.length >= MIN_PHOTOS ? colors.primary : colors.muted },
+              { backgroundColor: photos.length >= MIN_PHOTOS ? colors.foreground : colors.muted },
             ]}
           >
             {uploading ? (

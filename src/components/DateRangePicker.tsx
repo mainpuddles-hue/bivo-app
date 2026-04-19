@@ -196,11 +196,11 @@ export default function DateRangePicker({
           } else if (isDisabled) {
             textColor = colors.mutedForeground
           } else if (isSelected) {
-            bgColor = colors.primary
+            bgColor = colors.foreground
             textColor = colors.primaryForeground
           } else if (isInRange) {
-            bgColor = isDark ? `${colors.primary}30` : `${colors.primary}18`
-            textColor = colors.primary
+            bgColor = isDark ? `${colors.foreground}30` : `${colors.foreground}18`
+            textColor = colors.foreground
           }
 
           // Range background strip
@@ -215,7 +215,7 @@ export default function DateRangePicker({
             }
           }
 
-          const rangeBg = isDark ? `${colors.primary}20` : `${colors.primary}10`
+          const rangeBg = isDark ? `${colors.foreground}20` : `${colors.foreground}10`
 
           return (
             <Pressable

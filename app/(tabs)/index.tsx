@@ -168,7 +168,7 @@ function FeedScreenInner() {
     <View style={{ gap: 8 }}>
       {/* Missed posts — only when returning after 24h+ */}
       {showMissedBanner && missedCount > 0 && (
-        <View style={[styles.missedBanner, { backgroundColor: colors.primary }]}>
+        <View style={[styles.missedBanner, { backgroundColor: colors.foreground }]}>
           <Text style={[styles.missedBannerText, { color: colors.primaryForeground }]}>
             {t('feed.missedPosts', { count: missedCount })}
           </Text>
@@ -186,11 +186,11 @@ function FeedScreenInner() {
           onPress={feed.handleRefresh}
           accessibilityRole="button"
           accessibilityLabel={t('feed.newPosts')}
-          style={[styles.newBanner, { backgroundColor: isDark ? `${colors.primary}1F` : `${colors.primary}14`, borderWidth: 1, borderColor: `${colors.primary}33` }]}
+          style={[styles.newBanner, { backgroundColor: isDark ? `${colors.foreground}1F` : `${colors.foreground}14`, borderWidth: 1, borderColor: `${colors.foreground}33` }]}
         >
-          <Sparkles size={14} color={colors.primary} />
-          <Text style={[styles.newBannerText, { color: colors.primary }]}>{t('feed.newPosts')}</Text>
-          <RefreshCw size={14} color={colors.primary} style={{ opacity: 0.7 }} />
+          <Sparkles size={14} color={colors.foreground} />
+          <Text style={[styles.newBannerText, { color: colors.foreground }]}>{t('feed.newPosts')}</Text>
+          <RefreshCw size={14} color={colors.foreground} style={{ opacity: 0.7 }} />
         </PressableOpacity>
       )}
 
@@ -229,7 +229,7 @@ function FeedScreenInner() {
         <Text style={[styles.coldStartHint, { color: colors.mutedForeground }]}>
           {t('map.beFirstInArea', { area: feed.userNeighborhood ?? 'Helsinki' })}
         </Text>
-        <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[styles.coldStartBtn, { backgroundColor: colors.primary }]}>
+        <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[styles.coldStartBtn, { backgroundColor: colors.foreground }]}>
           <Plus size={16} color={colors.primaryForeground} />
           <Text style={[styles.coldStartBtnText, { color: colors.primaryForeground }]}>{t('events.heroCreateCTA')}</Text>
         </PressableOpacity>
@@ -327,7 +327,7 @@ function FeedScreenInner() {
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
-        refreshControl={<RefreshControl refreshing={feed.refreshing} onRefresh={feed.handleRefresh} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={feed.refreshing} onRefresh={feed.handleRefresh} tintColor={colors.foreground} />}
         onEndReached={feed.handleLoadMore}
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}

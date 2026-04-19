@@ -42,7 +42,7 @@ function getStatusColor(status: PaymentStatus, colors: ReturnType<typeof useThem
   switch (status) {
     case 'paid': return colors.success
     case 'refunded': return colors.info
-    case 'pending': return colors.pro
+    case 'pending': return colors.foreground
     case 'failed': return colors.destructive
     default: return colors.mutedForeground
   }

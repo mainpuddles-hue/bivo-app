@@ -19,7 +19,7 @@ export function OutOfAreaBanner({ visible, cityName }: OutOfAreaBannerProps) {
 
   return (
     <View style={[styles.banner, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <MapPin size={20} color={colors.pro} />
+      <MapPin size={20} color={colors.foreground} />
       <View style={styles.textWrap}>
         <Text style={[styles.title, { color: colors.foreground }]}>
           {t('map.outOfArea')}
@@ -33,10 +33,10 @@ export function OutOfAreaBanner({ visible, cityName }: OutOfAreaBannerProps) {
         hitSlop={8}
         style={styles.changeBtn}
       >
-        <Text style={[styles.changeBtnText, { color: colors.primary }]}>
+        <Text style={[styles.changeBtnText, { color: colors.foreground }]}>
           {t('map.changeCity')}
         </Text>
-        <ChevronRight size={16} color={colors.primary} />
+        <ChevronRight size={16} color={colors.foreground} />
       </Pressable>
     </View>
   )

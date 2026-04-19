@@ -54,7 +54,7 @@ export const DiscoverySection = memo(function DiscoverySection({
     return (
       <View style={{ gap: 12 }}>
         <View style={[styles.sectionHeader, { paddingHorizontal: 4 }]}>
-          <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />
+          <View style={[styles.sectionBar, { backgroundColor: colors.foreground }]} />
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{placesSectionTitle}</Text>
         </View>
         <HorizontalSkeleton colors={colors} width={56} height={56} />
@@ -71,7 +71,7 @@ export const DiscoverySection = memo(function DiscoverySection({
     <View style={{ gap: 12 }}>
       {/* Section header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 4 }}>
-        <View style={[styles.sectionBar, { backgroundColor: colors.primary }]} />
+        <View style={[styles.sectionBar, { backgroundColor: colors.foreground }]} />
         <Text style={[styles.sectionTitle, { color: colors.foreground, marginLeft: 12 }]}>{placesSectionTitle}</Text>
         <View style={{ flex: 1 }} />
         <Pressable
@@ -79,10 +79,10 @@ export const DiscoverySection = memo(function DiscoverySection({
           hitSlop={8}
           style={styles.showAllBtn}
         >
-          <Text style={[styles.showAllText, { color: colors.primary }]}>
+          <Text style={[styles.showAllText, { color: colors.foreground }]}>
             {t('nav.map') || 'Kartta'}
           </Text>
-          <ChevronRight size={14} color={colors.primary} />
+          <ChevronRight size={14} color={colors.foreground} />
         </Pressable>
       </View>
 
@@ -119,7 +119,7 @@ export const DiscoverySection = memo(function DiscoverySection({
             <View style={[styles.placeCircle, { backgroundColor: colors.muted }]}>
               <Text style={[styles.placeCircleText, { color: colors.mutedForeground }]}>+{nearbyPlaces.length - 6}</Text>
             </View>
-            <Text style={[styles.placeCompactName, { color: colors.primary }]} numberOfLines={1}>
+            <Text style={[styles.placeCompactName, { color: colors.foreground }]} numberOfLines={1}>
               {t('feed.showAll')}
             </Text>
           </Pressable>

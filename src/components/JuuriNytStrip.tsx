@@ -96,7 +96,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
 
               {/* Category + countdown row */}
               <View style={styles.topRow}>
-                {CatIcon && <CatIcon size={12} color={category?.color ?? colors.primary} />}
+                {CatIcon && <CatIcon size={12} color={category?.color ?? colors.foreground} />}
                 <View style={[styles.countdownBadge, { backgroundColor: colors.muted }]}>
                   <Clock size={10} color={urgencyColor} />
                   <Text style={[styles.countdownText, { color: urgencyColor }]}>{label}</Text>

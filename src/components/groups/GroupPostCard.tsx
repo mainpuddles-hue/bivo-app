@@ -117,7 +117,7 @@ function GroupPostCardInner({
                   hitSlop={8}
                   style={{ padding: 4 }}
                 >
-                  <Pencil size={16} color={colors.primary} strokeWidth={1.8} />
+                  <Pencil size={16} color={colors.foreground} strokeWidth={1.8} />
                 </Pressable>
                 <Pressable
                   onPress={() => onDelete(post.id)}
@@ -158,7 +158,7 @@ function GroupPostCardInner({
               <Pressable
                 onPress={onSaveEdit}
                 disabled={savingPostEdit || !editPostContent.trim()}
-                style={[styles.saveBtn, { backgroundColor: colors.primary, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.6 : 1, paddingVertical: 8 }]}
+                style={[styles.saveBtn, { backgroundColor: colors.foreground, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.6 : 1, paddingVertical: 8 }]}
               >
                 {savingPostEdit ? (
                   <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -209,10 +209,10 @@ function GroupPostCardInner({
           <PressableOpacity style={styles.actionBtn} onPress={() => onToggleComments(post.id)}>
             <MessageCircle
               size={18}
-              color={isExpanded ? colors.primary : colors.mutedForeground}
+              color={isExpanded ? colors.foreground : colors.mutedForeground}
               strokeWidth={1.8}
             />
-            <Text style={[styles.actionText, { color: isExpanded ? colors.primary : colors.mutedForeground }]}>
+            <Text style={[styles.actionText, { color: isExpanded ? colors.foreground : colors.mutedForeground }]}>
               {post.comment_count || 0}
             </Text>
           </PressableOpacity>

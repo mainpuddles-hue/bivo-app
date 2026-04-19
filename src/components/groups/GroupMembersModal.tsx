@@ -60,7 +60,7 @@ function GroupMembersModalInner({
           </View>
 
           {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+            <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 20 }} />
           ) : (
             <FlatList
               data={members}
@@ -72,11 +72,11 @@ function GroupMembersModalInner({
                     {item.user?.name || t('common.user')}
                   </Text>
                   <View style={[styles.roleBadge, {
-                    backgroundColor: item.role === 'admin' ? colors.primary + '20' : colors.muted,
+                    backgroundColor: item.role === 'admin' ? colors.foreground + '20' : colors.muted,
                   }]}>
-                    {item.role === 'admin' && <Shield size={12} color={colors.primary} strokeWidth={1.8} />}
+                    {item.role === 'admin' && <Shield size={12} color={colors.foreground} strokeWidth={1.8} />}
                     <Text style={[styles.roleText, {
-                      color: item.role === 'admin' ? colors.primary : colors.mutedForeground,
+                      color: item.role === 'admin' ? colors.foreground : colors.mutedForeground,
                     }]}>
                       {item.role === 'admin' ? t('groups.admin') : t('groups.member')}
                     </Text>

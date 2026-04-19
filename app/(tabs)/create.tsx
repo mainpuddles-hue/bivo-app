@@ -799,10 +799,10 @@ export default function CreateScreen() {
 
               {/* Pro upsell */}
               {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
-                <Pressable onPress={() => router.push('/pro')} style={({ pressed }) => [mk.proBanner, { backgroundColor: `${colors.pro}12` }, pressed && { opacity: 0.7 }]}>
-                  <Crown size={16} color={colors.pro} />
-                  <Text style={[mk.proBannerText, { color: colors.pro }]}>{t('pro.createBanner')}</Text>
-                  <ChevronRight size={14} color={colors.pro} />
+                <Pressable onPress={() => router.push('/pro')} style={({ pressed }) => [mk.proBanner, { backgroundColor: `${colors.foreground}12` }, pressed && { opacity: 0.7 }]}>
+                  <Crown size={16} color={colors.foreground} />
+                  <Text style={[mk.proBannerText, { color: colors.foreground }]}>{t('pro.createBanner')}</Text>
+                  <ChevronRight size={14} color={colors.foreground} />
                 </Pressable>
               )}
 
@@ -880,7 +880,7 @@ export default function CreateScreen() {
                 {touchedTitle && !title.trim() && (
                   <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body, paddingTop: 4 }} accessibilityRole="alert">{t('create.titleRequired')}</Text>
                 )}
-                <Text style={[mk.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
+                <Text style={[mk.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.foreground : colors.mutedForeground }]}>{title.length}/100</Text>
               </View>
 
               {/* Description */}
@@ -897,7 +897,7 @@ export default function CreateScreen() {
                 {touchedDescription && !description.trim() && (
                   <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body, paddingTop: 4 }} accessibilityRole="alert">{t('create.description')} *</Text>
                 )}
-                <Text style={[mk.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.pro : colors.mutedForeground }]}>{description.length}/2000</Text>
+                <Text style={[mk.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.foreground : colors.mutedForeground }]}>{description.length}/2000</Text>
               </View>
 
               {/* 2-column: Sijainti + Ajankohta */}

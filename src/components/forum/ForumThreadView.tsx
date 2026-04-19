@@ -57,7 +57,7 @@ function ForumThreadViewInner({
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
 
-  const getCategoryColor = (category: string) => CATEGORY_COLORS[category] || colors.primary
+  const getCategoryColor = (category: string) => CATEGORY_COLORS[category] || colors.foreground
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
@@ -100,17 +100,17 @@ function ForumThreadViewInner({
         </Text>
         <Pressable
           onPress={() => onUpvoteReply(item)}
-          style={[styles.actionBtn, isVoted && { backgroundColor: `${colors.primary}14` }]}
+          style={[styles.actionBtn, isVoted && { backgroundColor: `${colors.foreground}14` }]}
           hitSlop={8}
         >
           <ChevronUp
             size={14}
-            color={isVoted ? colors.primary : colors.mutedForeground}
+            color={isVoted ? colors.foreground : colors.mutedForeground}
             strokeWidth={isVoted ? 2.5 : 1.8}
           />
           <Text style={[
             styles.actionText,
-            { color: isVoted ? colors.primary : colors.mutedForeground },
+            { color: isVoted ? colors.foreground : colors.mutedForeground },
             isVoted && { fontFamily: fonts.bodySemi },
           ]}>
             {item.upvote_count}
@@ -193,18 +193,18 @@ function ForumThreadViewInner({
                 onPress={() => onUpvotePost(post)}
                 style={[
                   styles.detailActionBtn,
-                  isPostVoted && { backgroundColor: `${colors.primary}14` },
+                  isPostVoted && { backgroundColor: `${colors.foreground}14` },
                 ]}
                 hitSlop={8}
               >
                 <ChevronUp
                   size={18}
-                  color={isPostVoted ? colors.primary : colors.mutedForeground}
+                  color={isPostVoted ? colors.foreground : colors.mutedForeground}
                   strokeWidth={isPostVoted ? 2.5 : 1.8}
                 />
                 <Text style={[
                   styles.detailActionText,
-                  { color: isPostVoted ? colors.primary : colors.mutedForeground },
+                  { color: isPostVoted ? colors.foreground : colors.mutedForeground },
                 ]}>
                   {post.upvote_count} {t('forum.upvote')}
                 </Text>
@@ -223,7 +223,7 @@ function ForumThreadViewInner({
             {/* Replies header with sort toggle */}
             {onToggleReplySort && replies.length > 1 && (
               <PressableOpacity onPress={onToggleReplySort} style={styles.sortToggle} hitSlop={8}>
-                <Text style={[styles.sortToggleText, { color: colors.primary }]}>
+                <Text style={[styles.sortToggleText, { color: colors.foreground }]}>
                   {replySortNewest ? t('forum.newestFirst') : t('forum.oldestFirst')}
                 </Text>
               </PressableOpacity>
@@ -255,7 +255,7 @@ function ForumThreadViewInner({
           style={[
             styles.sendBtn,
             {
-              backgroundColor: replyText.trim() ? colors.primary : colors.muted,
+              backgroundColor: replyText.trim() ? colors.foreground : colors.muted,
               opacity: sendingReply ? 0.6 : 1,
             },
           ]}

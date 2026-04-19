@@ -227,7 +227,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
               {t('search.filters')}
             </Text>
             {activeCount > 0 && (
-              <View style={[styles.headerBadge, { backgroundColor: colors.primary }]}>
+              <View style={[styles.headerBadge, { backgroundColor: colors.foreground }]}>
                 <Text style={[styles.headerBadgeText, { color: colors.primaryForeground }]}>
                   {activeCount}
                 </Text>
@@ -251,7 +251,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           {/* ── Price Range ── */}
           {renderSectionHeader(
             'price',
-            <DollarSign size={16} color={colors.primary} />,
+            <DollarSign size={16} color={colors.foreground} />,
             t('search.priceRange')
           )}
           {expandedSections.price && (
@@ -307,7 +307,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           {/* ── Date Range ── */}
           {renderSectionHeader(
             'date',
-            <Calendar size={16} color={colors.primary} />,
+            <Calendar size={16} color={colors.foreground} />,
             t('search.dateRange')
           )}
           {expandedSections.date && (
@@ -366,7 +366,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           {/* ── Distance ── */}
           {renderSectionHeader(
             'distance',
-            <Navigation size={16} color={colors.primary} />,
+            <Navigation size={16} color={colors.foreground} />,
             t('search.distance')
           )}
           {expandedSections.distance && (
@@ -392,7 +392,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                           {
                             backgroundColor:
                               idx <= distanceIndex
-                                ? colors.primary
+                                ? colors.foreground
                                 : isDark
                                   ? colors.card
                                   : colors.muted,
@@ -423,7 +423,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           {/* ── Neighborhoods ── */}
           {renderSectionHeader(
             'neighborhoods',
-            <MapPin size={16} color={colors.primary} />,
+            <MapPin size={16} color={colors.foreground} />,
             t('search.neighborhoods')
           )}
           {expandedSections.neighborhoods && (
@@ -438,7 +438,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                       style={[
                         styles.nhChip,
                         selected
-                          ? { backgroundColor: colors.primary }
+                          ? { backgroundColor: colors.foreground }
                           : {
                               backgroundColor: isDark ? colors.card : colors.muted,
                               borderColor: colors.border,
@@ -467,7 +467,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           {/* ── Sort By ── */}
           {renderSectionHeader(
             'sort',
-            <ChevronDown size={16} color={colors.primary} />,
+            <ChevronDown size={16} color={colors.foreground} />,
             t('search.sortLabel')
           )}
           {expandedSections.sort && (
@@ -482,9 +482,9 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                       styles.sortOption,
                       {
                         backgroundColor: selected
-                          ? `${colors.primary}15`
+                          ? `${colors.foreground}15`
                           : 'transparent',
-                        borderColor: selected ? colors.primary : colors.border,
+                        borderColor: selected ? colors.foreground : colors.border,
                       },
                     ]}
                   >
@@ -492,8 +492,8 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                       style={[
                         styles.sortRadio,
                         {
-                          borderColor: selected ? colors.primary : colors.border,
-                          backgroundColor: selected ? colors.primary : 'transparent',
+                          borderColor: selected ? colors.foreground : colors.border,
+                          backgroundColor: selected ? colors.foreground : 'transparent',
                         },
                       ]}
                     >
@@ -502,7 +502,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
                     <Text
                       style={[
                         styles.sortText,
-                        { color: selected ? colors.primary : colors.foreground },
+                        { color: selected ? colors.foreground : colors.foreground },
                       ]}
                     >
                       {t(opt.labelKey)}
@@ -535,7 +535,7 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
           </PressableOpacity>
           <PressableOpacity
             onPress={handleApply}
-            style={[styles.footerBtn, styles.footerBtnPrimary, { backgroundColor: colors.primary }]}
+            style={[styles.footerBtn, styles.footerBtnPrimary, { backgroundColor: colors.foreground }]}
           >
             <Text style={[styles.footerBtnText, { color: colors.primaryForeground }]}>
               {t('search.apply')}

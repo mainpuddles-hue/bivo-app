@@ -146,7 +146,7 @@ function DiscoveryView({
                   onPress={() => loadSavedSearch(saved)}
                   style={s.historyBtn}
                 >
-                  <SearchIcon size={14} color={colors.primary} />
+                  <SearchIcon size={14} color={colors.foreground} />
                   <View style={{ flex: 1 }}>
                     <Text style={[s.historyText, { color: colors.foreground, fontFamily: fonts.body }]}>{saved.query}</Text>
                     {savedFilterCount > 0 && (
@@ -204,7 +204,7 @@ function DiscoveryView({
       {demandInsights.length > 0 && (
         <View style={s.section}>
           <View style={s.sectionHeader}>
-            <TrendingUp size={16} color={colors.primary} />
+            <TrendingUp size={16} color={colors.foreground} />
             <Text style={[s.sectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>{t('search.demandInsightsTitle')}</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
@@ -276,7 +276,7 @@ interface SearchEmptyStateProps {
 function SearchEmptyState({ query, colors, isDark, t, onSelectCategory }: SearchEmptyStateProps) {
   return (
     <View style={s.empty}>
-      <View style={[s.emptyIconCircle, { backgroundColor: colors.primary + '10' }]}>
+      <View style={[s.emptyIconCircle, { backgroundColor: colors.foreground + '10' }]}>
         <BoardIllustration size={52} />
       </View>
       <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
@@ -1272,7 +1272,7 @@ function SearchScreenInner() {
               {suggestion.type === 'history' ? (
                 <Clock size={14} color={colors.mutedForeground} />
               ) : (
-                <TrendingUp size={14} color={colors.primary} />
+                <TrendingUp size={14} color={colors.foreground} />
               )}
               <Text style={[s.suggestionText, { color: colors.foreground, fontFamily: fonts.body }]} numberOfLines={1}>
                 {suggestion.text}
@@ -1347,8 +1347,8 @@ function SearchScreenInner() {
               accessibilityRole="button"
               accessibilityLabel={item.title}
             >
-              <View style={[s.searchEventIcon, { backgroundColor: `${colors.primary}15` }]}>
-                <CalendarDays size={20} color={colors.primary} />
+              <View style={[s.searchEventIcon, { backgroundColor: `${colors.foreground}15` }]}>
+                <CalendarDays size={20} color={colors.foreground} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.title}</Text>
@@ -1391,8 +1391,8 @@ function SearchScreenInner() {
               accessibilityRole="button"
               accessibilityLabel={item.name}
             >
-              <View style={[s.searchEventIcon, { backgroundColor: `${colors.primary}15` }]}>
-                <Users size={20} color={colors.primary} />
+              <View style={[s.searchEventIcon, { backgroundColor: `${colors.foreground}15` }]}>
+                <Users size={20} color={colors.foreground} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.name}</Text>

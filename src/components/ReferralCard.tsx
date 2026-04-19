@@ -93,8 +93,8 @@ export function ReferralCard({ userId }: ReferralCardProps) {
     <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {/* Header */}
       <View style={s.headerRow}>
-        <View style={[s.iconCircle, { backgroundColor: `${colors.primary}${isDark ? '30' : '15'}` }]}>
-          <Gift size={20} color={colors.primary} />
+        <View style={[s.iconCircle, { backgroundColor: `${colors.foreground}${isDark ? '30' : '15'}` }]}>
+          <Gift size={20} color={colors.foreground} />
         </View>
         <Text style={[s.title, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
           {t('referral.title')}
@@ -114,19 +114,19 @@ export function ReferralCard({ userId }: ReferralCardProps) {
         <View style={s.codeActions}>
           <PressableOpacity
             onPress={handleCopy}
-            style={[s.codeBtn, { backgroundColor: copied ? `${colors.success}20` : `${colors.primary}15` }]}
+            style={[s.codeBtn, { backgroundColor: copied ? `${colors.success}20` : `${colors.foreground}15` }]}
           >
             {copied ? (
               <Check size={16} color={colors.success} />
             ) : (
-              <Copy size={16} color={colors.primary} />
+              <Copy size={16} color={colors.foreground} />
             )}
           </PressableOpacity>
           <PressableOpacity
             onPress={handleShare}
-            style={[s.codeBtn, { backgroundColor: colors.primary + '15' }]}
+            style={[s.codeBtn, { backgroundColor: colors.foreground + '15' }]}
           >
-            <Share2 size={16} color={colors.primary} />
+            <Share2 size={16} color={colors.foreground} />
           </PressableOpacity>
         </View>
       </View>
@@ -160,7 +160,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
             style={[
               s.progressFill,
               {
-                backgroundColor: colors.primary,
+                backgroundColor: colors.foreground,
                 width: `${Math.round(progress * 100)}%` as any,
               },
             ]}
@@ -173,7 +173,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
         {REFERRAL_TIERS.map((tier) => {
           const achieved = inviteCount >= tier.invites
           const TierIcon = TIER_ICONS[tier.invites] ?? Gift
-          const tierColor = TIER_COLORS[tier.invites] ?? colors.primary
+          const tierColor = TIER_COLORS[tier.invites] ?? colors.foreground
 
           return (
             <View

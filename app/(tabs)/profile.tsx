@@ -355,12 +355,12 @@ export default function ProfileScreen() {
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <View style={s.emptyLogin}>
-          <View style={[s.emptyIconCircle, { backgroundColor: colors.primary + '14' }]}>
-            <LogIn size={36} color={colors.primary} strokeWidth={1.6} />
+          <View style={[s.emptyIconCircle, { backgroundColor: colors.foreground + '14' }]}>
+            <LogIn size={36} color={colors.foreground} strokeWidth={1.6} />
           </View>
           <Text style={[s.emptyLoginTitle, { color: colors.foreground }]}>{t('profile.loginRequired')}</Text>
           <Text style={[s.emptyLoginHint, { color: colors.mutedForeground }]}>{t('profile.loginHint')}</Text>
-          <PressableOpacity onPress={() => router.push('/(auth)/login')} style={[s.loginBtn, { backgroundColor: colors.primary }]}>
+          <PressableOpacity onPress={() => router.push('/(auth)/login')} style={[s.loginBtn, { backgroundColor: colors.foreground }]}>
             <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('auth.login')}</Text>
           </PressableOpacity>
         </View>
@@ -370,9 +370,9 @@ export default function ProfileScreen() {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'post': return <FileText size={16} color={colors.primary} />
+      case 'post': return <FileText size={16} color={colors.foreground} />
       case 'event': return <CalendarDays size={16} color={colors.success} />
-      case 'review_given': case 'review_received': return <Star size={16} color={colors.pro} />
+      case 'review_given': case 'review_received': return <Star size={16} color={colors.foreground} />
       default: return <FileText size={16} color={colors.mutedForeground} />
     }
   }
@@ -402,7 +402,7 @@ export default function ProfileScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefreshHandler}
-            tintColor={colors.primary}
+            tintColor={colors.foreground}
           />
         }
       >
@@ -416,8 +416,8 @@ export default function ProfileScreen() {
         {/* Hero — mockup 08: centered avatar + name + location */}
         <View style={s.hero}>
           <PressableOpacity onPress={handleAvatarUpload} accessibilityLabel={`${profile.name} — ${t('profile.avatarUpdated')}`} accessibilityRole="button" style={s.avatarWrap}>
-            <Avatar url={profile.avatar_url} name={profile.name} size={104} borderColor={profile.is_pro ? colors.pro : colors.border} borderWidth={1} />
-            <View style={[s.cameraBtn, { backgroundColor: colors.primary }]} accessibilityElementsHidden>
+            <Avatar url={profile.avatar_url} name={profile.name} size={104} borderColor={profile.is_pro ? colors.foreground : colors.border} borderWidth={1} />
+            <View style={[s.cameraBtn, { backgroundColor: colors.foreground }]} accessibilityElementsHidden>
               <Camera size={12} color={colors.primaryForeground} />
             </View>
           </PressableOpacity>
@@ -427,15 +427,15 @@ export default function ProfileScreen() {
               <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
               {!trust.loading && <TrustBadge level={trust.level} size="small" />}
               {profile.is_pro && (
-                <View style={[s.inlineBadge, { backgroundColor: `${colors.pro}20` }]}>
-                  <Crown size={10} color={colors.pro} fill={colors.pro} />
-                  <Text style={[s.inlineBadgeText, { color: colors.pro }]}>Pro</Text>
+                <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}20` }]}>
+                  <Crown size={10} color={colors.foreground} fill={colors.foreground} />
+                  <Text style={[s.inlineBadgeText, { color: colors.foreground }]}>Pro</Text>
                 </View>
               )}
               {profile.is_business && (
-                <View style={[s.inlineBadge, { backgroundColor: `${colors.primary}15` }]}>
-                  <Building2 size={10} color={colors.primary} />
-                  <Text style={[s.inlineBadgeText, { color: colors.primary }]}>{profile.business_name ?? t('business.verified')}</Text>
+                <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}15` }]}>
+                  <Building2 size={10} color={colors.foreground} />
+                  <Text style={[s.inlineBadgeText, { color: colors.foreground }]}>{profile.business_name ?? t('business.verified')}</Text>
                 </View>
               )}
             </View>
@@ -463,7 +463,7 @@ export default function ProfileScreen() {
               </Text>
               <View style={s.bioActions}>
                 <PressableOpacity onPress={() => { setEditingBio(false); setBioText(profile?.bio ?? '') }}><X size={20} color={colors.mutedForeground} /></PressableOpacity>
-                <PressableOpacity onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.primary }]}>
+                <PressableOpacity onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.foreground }]}>
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>{t('common.save')}</Text>
                 </PressableOpacity>
               </View>
@@ -476,7 +476,7 @@ export default function ProfileScreen() {
               <Pencil size={12} color={colors.mutedForeground} style={{ marginTop: 2 }} />
             </PressableOpacity>
           ) : (
-            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { backgroundColor: `${colors.primary}10`, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'center' }]} accessibilityLabel={t('profile.clickToAddBio')} accessibilityRole="button">
+            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { backgroundColor: `${colors.foreground}10`, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'center' }]} accessibilityLabel={t('profile.clickToAddBio')} accessibilityRole="button">
               <Text style={[s.bio, { color: colors.mutedForeground }]}>{t('profile.clickToAddBio')}</Text>
             </PressableOpacity>
           )}
@@ -539,26 +539,26 @@ export default function ProfileScreen() {
             </View>
           </PressableOpacity>
           {FEATURES.PRO_SUBSCRIPTION && !profile.is_pro && (
-            <PressableOpacity onPress={() => router.push('/pro')} style={[s.menuRow, { backgroundColor: `${colors.pro}08`, borderColor: `${colors.pro}30` }]} accessibilityRole="button">
+            <PressableOpacity onPress={() => router.push('/pro')} style={[s.menuRow, { backgroundColor: `${colors.foreground}08`, borderColor: `${colors.foreground}30` }]} accessibilityRole="button">
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Crown size={14} color={colors.pro} />
-                <Text style={[s.menuRowLabel, { color: colors.pro }]}>{t('pro.upgradeToPro')}</Text>
+                <Crown size={14} color={colors.foreground} />
+                <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('pro.upgradeToPro')}</Text>
               </View>
-              <ChevronRight size={10} color={colors.pro} strokeWidth={2.5} />
+              <ChevronRight size={10} color={colors.foreground} strokeWidth={2.5} />
             </PressableOpacity>
           )}
         </View>
 
         {/* Tabs */}
         <View style={[s.tabRow, { borderBottomColor: colors.border }]} accessibilityRole="tablist">
-          <PressableOpacity onPress={() => setActiveTab('overview')} style={[s.tab, activeTab === 'overview' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityLabel={t('profile.overview')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'overview' }}>
-            <Text style={[s.tabText, { color: activeTab === 'overview' ? colors.primary : colors.mutedForeground }]}>{t('profile.overview')}</Text>
+          <PressableOpacity onPress={() => setActiveTab('overview')} style={[s.tab, activeTab === 'overview' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityLabel={t('profile.overview')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'overview' }}>
+            <Text style={[s.tabText, { color: activeTab === 'overview' ? colors.foreground : colors.mutedForeground }]}>{t('profile.overview')}</Text>
           </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityLabel={t('profile.myPosts')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'posts' }}>
-            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground }]}>{t('profile.myPosts')}</Text>
+          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityLabel={t('profile.myPosts')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'posts' }}>
+            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.foreground : colors.mutedForeground }]}>{t('profile.myPosts')}</Text>
           </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('activity')} style={[s.tab, activeTab === 'activity' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityLabel={t('profile.activity')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'activity' }}>
-            <Text style={[s.tabText, { color: activeTab === 'activity' ? colors.primary : colors.mutedForeground }]}>{t('profile.activity')}</Text>
+          <PressableOpacity onPress={() => setActiveTab('activity')} style={[s.tab, activeTab === 'activity' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityLabel={t('profile.activity')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'activity' }}>
+            <Text style={[s.tabText, { color: activeTab === 'activity' ? colors.foreground : colors.mutedForeground }]}>{t('profile.activity')}</Text>
           </PressableOpacity>
         </View>
 
@@ -614,7 +614,7 @@ export default function ProfileScreen() {
                 <PressableOpacity
                   key={f.key}
                   onPress={() => setPostFilter(f.key)}
-                  style={[s.postFilterChip, postFilter === f.key ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
+                  style={[s.postFilterChip, postFilter === f.key ? { backgroundColor: colors.foreground } : { backgroundColor: isDark ? colors.card : colors.muted }]}
                 >
                   <Text style={[s.postFilterText, { color: postFilter === f.key ? colors.primaryForeground : colors.mutedForeground }]}>{f.label}</Text>
                 </PressableOpacity>
@@ -627,19 +627,19 @@ export default function ProfileScreen() {
               </View>
             ) : filteredPosts.length === 0 ? (
               <View style={s.emptyActivity}>
-                <View style={[s.emptyPostsIconCircle, { backgroundColor: colors.primary + '10' }]}>
-                  <FileText size={48} color={colors.primary} strokeWidth={1.6} />
+                <View style={[s.emptyPostsIconCircle, { backgroundColor: colors.foreground + '10' }]}>
+                  <FileText size={48} color={colors.foreground} strokeWidth={1.6} />
                 </View>
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
-                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, marginTop: 8 }]}>
+                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.foreground, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, marginTop: 8 }]}>
                   <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('profile.createFirst')}</Text>
                 </PressableOpacity>
               </View>
             ) : (
               filteredPosts.map((post) => {
                 const status = getPostStatus(post)
-                const statusColor = status === 'active' ? (colors.success ?? colors.primary)
-                  : status === 'expired' ? colors.pro
+                const statusColor = status === 'active' ? (colors.success ?? colors.foreground)
+                  : status === 'expired' ? colors.foreground
                   : colors.mutedForeground
                 const statusLabel = status === 'active' ? t('profile.active')
                   : status === 'expired' ? t('profile.expired')
@@ -661,8 +661,8 @@ export default function ProfileScreen() {
                         </View>
                       </View>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <View style={[s.myPostTypeBadge, { backgroundColor: `${colors.primary}14` }]}>
-                          <Text style={[s.myPostTypeText, { color: colors.primary }]}>{post.type}</Text>
+                        <View style={[s.myPostTypeBadge, { backgroundColor: `${colors.foreground}14` }]}>
+                          <Text style={[s.myPostTypeText, { color: colors.foreground }]}>{post.type}</Text>
                         </View>
                         <Text style={[s.myPostDate, { color: colors.mutedForeground }]}>
                           {post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''}
@@ -678,9 +678,9 @@ export default function ProfileScreen() {
                     {/* 2b: Action buttons */}
                     <View style={s.myPostActions}>
                       {status === 'expired' && (
-                        <PressableOpacity onPress={() => handleReactivatePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.primary}14` }]} hitSlop={8}>
-                          <RotateCcw size={13} color={colors.primary} />
-                          <Text style={[s.myPostActionText, { color: colors.primary }]}>{t('profile.reactivate')}</Text>
+                        <PressableOpacity onPress={() => handleReactivatePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.foreground}14` }]} hitSlop={8}>
+                          <RotateCcw size={13} color={colors.foreground} />
+                          <Text style={[s.myPostActionText, { color: colors.foreground }]}>{t('profile.reactivate')}</Text>
                         </PressableOpacity>
                       )}
                       {status === 'active' && (
@@ -711,15 +711,15 @@ export default function ProfileScreen() {
               </View>
             ) : (
               activity.map((item) => (
-                <View key={item.id} style={[s.activityItem, { borderLeftColor: colors.primary }]}>
-                  <View style={[s.activityDot, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+                <View key={item.id} style={[s.activityItem, { borderLeftColor: colors.foreground }]}>
+                  <View style={[s.activityDot, { backgroundColor: colors.card, borderColor: colors.foreground }]}>
                     {getActivityIcon(item.type)}
                   </View>
                   <View style={s.activityContent}>
                     <Text style={[s.activityTitle, { color: colors.foreground }]}>{item.title}</Text>
                     <View style={s.activityMeta}>
                       <Text style={[s.activityTime, { color: colors.mutedForeground }]}>{formatTimeAgo(item.date, t, locale)}</Text>
-                      {item.meta && <Text style={[s.activityMetaBadge, { color: colors.pro }]}>{item.meta}</Text>}
+                      {item.meta && <Text style={[s.activityMetaBadge, { color: colors.foreground }]}>{item.meta}</Text>}
                     </View>
                   </View>
                 </View>

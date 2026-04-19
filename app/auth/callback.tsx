@@ -194,7 +194,7 @@ function AuthCallbackScreenInner() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
+      <View style={[styles.logoCircle, { backgroundColor: colors.foreground }]}>
         <TackBirdLogo size={32} color={colors.primaryForeground} />
       </View>
       {error ? (
@@ -206,14 +206,14 @@ function AuthCallbackScreenInner() {
             accessibilityRole="button"
             style={{ minHeight: 44, justifyContent: 'center' }}
           >
-            <Text style={[styles.backLink, { color: colors.primary }]}>
+            <Text style={[styles.backLink, { color: colors.foreground }]}>
               {t('auth.backToLogin')}
             </Text>
           </Pressable>
         </View>
       ) : (
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.foreground} />
           <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
             {t('common.loading')}
           </Text>

@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ShieldAlert, RotateCcw, Home } from 'lucide-react-native'
+import { X, RotateCcw, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -16,8 +16,8 @@ function VerificationErrorScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       <View style={styles.content}>
-        <View style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
-          <ShieldAlert size={56} color={colors.destructive} />
+        <View style={[styles.iconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <X size={48} color={colors.destructive} strokeWidth={2.5} />
         </View>
 
         <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.errorTitle')}</Text>
@@ -42,13 +42,13 @@ function VerificationErrorScreenInner() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 64 },
-  iconCircle: { width: 104, height: 104, borderRadius: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  iconCircle: { width: 96, height: 96, borderRadius: 48, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
   actions: { width: '100%', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 24 },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
-  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth },
+  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999, borderWidth: StyleSheet.hairlineWidth },
   secondaryBtnText: { fontSize: 16, fontFamily: fonts.bodyMedium },
 })
 

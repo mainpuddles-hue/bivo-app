@@ -2,12 +2,11 @@ import { useEffect, useRef } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ShieldCheck, Home, BookOpen } from 'lucide-react-native'
+import { Check, Home, BookOpen, ShieldCheck } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { TRUST_TIERS } from '@/lib/constants'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 function VerificationSuccessScreenInner() {
@@ -32,14 +31,12 @@ function VerificationSuccessScreenInner() {
     ]).start()
   }, [scaleAnim, fadeAnim, reduceMotion])
 
-  const tier2Color = TRUST_TIERS[2].color
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
       <View style={styles.content}>
-        {/* Animated shield */}
-        <Animated.View style={[styles.iconCircle, { backgroundColor: colors.muted, transform: [{ scale: scaleAnim }] }]}>
-          <ShieldCheck size={56} color={tier2Color} />
+        {/* Animated checkmark */}
+        <Animated.View style={[styles.iconCircle, { backgroundColor: colors.card, borderColor: colors.border, transform: [{ scale: scaleAnim }] }]}>
+          <Check size={48} color={colors.foreground} strokeWidth={2.5} />
         </Animated.View>
 
         <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.successTitle')}</Text>
@@ -84,7 +81,7 @@ function VerificationSuccessScreenInner() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 64 },
-  iconCircle: { width: 104, height: 104, borderRadius: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  iconCircle: { width: 96, height: 96, borderRadius: 48, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
   unlockedCard: { width: '100%', borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 16, marginBottom: 32 },
@@ -95,7 +92,7 @@ const styles = StyleSheet.create({
   featureName: { fontSize: 14, fontFamily: fonts.bodySemi },
   featureDesc: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   actions: { width: '100%', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 24 },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },
 })
 

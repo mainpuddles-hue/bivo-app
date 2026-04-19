@@ -19,11 +19,11 @@ export function DepositInfo({ depositAmount, locale = 'fi' }: DepositInfoProps) 
   const { t } = useI18n()
 
   return (
-    <View style={[styles.container, { backgroundColor: `${colors.pro}12` }]}>
+    <View style={[styles.container, { backgroundColor: `${colors.foreground}12` }]}>
       <View style={styles.headerRow}>
-        <Shield size={16} color={colors.pro} />
-        <Text style={[styles.label, { color: colors.pro }]}>{t('rental.depositHold')}</Text>
-        <Text style={[styles.amount, { color: colors.pro }]}>{formatPrice(depositAmount, locale)}</Text>
+        <Shield size={16} color={colors.foreground} />
+        <Text style={[styles.label, { color: colors.foreground }]}>{t('rental.depositHold')}</Text>
+        <Text style={[styles.amount, { color: colors.foreground }]}>{formatPrice(depositAmount, locale)}</Text>
       </View>
       <View style={styles.noteRow}>
         <Info size={12} color={colors.mutedForeground} />

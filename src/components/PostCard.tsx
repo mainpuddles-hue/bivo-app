@@ -218,14 +218,14 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         styles.card,
         { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
         isUrgentPost && { borderLeftWidth: 3, borderLeftColor: colors.destructive },
-        !isUrgentPost && isPro && { borderLeftWidth: 3, borderLeftColor: colors.pro },
+        !isUrgentPost && isPro && { borderLeftWidth: 3, borderLeftColor: colors.foreground },
         isExpired && { opacity: 0.55 },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
       {/* Pro banner — only when no image (crown badge handles image cards) */}
       {isPro && !hasImage && (
-        <View style={[styles.proBanner, { backgroundColor: colors.pro, shadowColor: colors.pro }]}>
+        <View style={[styles.proBanner, { backgroundColor: colors.foreground, shadowColor: colors.foreground }]}>
           <Crown size={12} color={colors.primaryForeground} />
           <Text style={[styles.proBannerText, { color: colors.primaryForeground }]}>Pro</Text>
         </View>
@@ -238,8 +238,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           <View style={styles.topRowLeft}>
             {isAnonymous ? (
               <View style={styles.topRowUserInfo}>
-                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: `${colors.primary}14`, borderColor: `${colors.primary}20` }]}>
-                  <User size={16} color={colors.primary} style={{ opacity: 0.6 }} />
+                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: `${colors.foreground}14`, borderColor: `${colors.foreground}20` }]}>
+                  <User size={16} color={colors.foreground} style={{ opacity: 0.6 }} />
                 </View>
                 <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {t('postCard.anonymousNeighbor')}
@@ -261,7 +261,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                   {user?.avatar_url ? (
                     <Image source={{ uri: getImageUrl(user.avatar_url, 'thumbnail')! }} style={[
                       styles.avatar,
-                      { borderColor: isPro ? `${colors.pro}80` : `${colors.border}66` }
+                      { borderColor: isPro ? `${colors.foreground}80` : `${colors.border}66` }
                     ]} contentFit="cover" cachePolicy="memory-disk" recyclingKey={user.avatar_url} />
                   ) : (
                     <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
@@ -270,7 +270,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                       </Text>
                     </View>
                   )}
-                  {isPro && <View style={[styles.statusDot, { backgroundColor: colors.pro, borderColor: colors.card }]} />}
+                  {isPro && <View style={[styles.statusDot, { backgroundColor: colors.foreground, borderColor: colors.card }]} />}
                 </View>
                 <View style={styles.userNameBlock}>
                   <View style={styles.userNameRow}>
@@ -278,13 +278,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                       {user?.name ?? t('postCard.anonymousUser')}
                     </Text>
                     {isPro && (
-                      <View style={[styles.proMicroBadge, { backgroundColor: `${colors.pro}18` }]}>
-                        <Crown size={10} color={colors.pro} />
+                      <View style={[styles.proMicroBadge, { backgroundColor: `${colors.foreground}18` }]}>
+                        <Crown size={10} color={colors.foreground} />
                       </View>
                     )}
                     {user?.is_business && (
-                      <View style={[styles.businessMicroBadge, { backgroundColor: `${colors.primary}18` }]}>
-                        <Building2 size={10} color={colors.primary} />
+                      <View style={[styles.businessMicroBadge, { backgroundColor: `${colors.foreground}18` }]}>
+                        <Building2 size={10} color={colors.foreground} />
                       </View>
                     )}
                   </View>
@@ -339,7 +339,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             )}
             {/* Pro crown */}
             {isPro && (
-              <View style={[styles.proBadgeOnImage, { backgroundColor: colors.pro }]}>
+              <View style={[styles.proBadgeOnImage, { backgroundColor: colors.foreground }]}>
                 <Crown size={14} color={colors.foreground} />
               </View>
             )}
@@ -535,7 +535,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             style={({ pressed }) => [styles.actionItem, savingRef.current && { opacity: 0.5 }, pressed && { opacity: 0.7 }]}
           >
             {saved ? (
-              <BookmarkCheck size={16} color={colors.primary} fill={colors.primary} />
+              <BookmarkCheck size={16} color={colors.foreground} fill={colors.foreground} />
             ) : (
               <Bookmark size={16} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
             )}
@@ -546,8 +546,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             <>
               <View style={{ flex: 1 }} />
               <View style={styles.distanceRow}>
-                <MapPin size={12} color={colors.primary} />
-                <Text style={[styles.distanceText, { color: colors.primary }]}>{distanceText}</Text>
+                <MapPin size={12} color={colors.foreground} />
+                <Text style={[styles.distanceText, { color: colors.foreground }]}>{distanceText}</Text>
               </View>
             </>
           )}

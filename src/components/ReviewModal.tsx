@@ -132,7 +132,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
 
           {success ? (
             <View style={s.successContainer}>
-              <Star size={48} color={colors.pro} fill={colors.pro} />
+              <Star size={48} color={colors.foreground} fill={colors.foreground} />
               <Text style={[s.successText, { color: colors.foreground }]}>{t('profile.reviewSubmitted')}</Text>
             </View>
           ) : (
@@ -162,7 +162,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
               <Pressable
                 onPress={handleSubmit}
                 disabled={loading || rating === 0}
-                style={[s.submitBtn, { backgroundColor: colors.primary, opacity: loading || rating === 0 ? 0.6 : 1 }]}
+                style={[s.submitBtn, { backgroundColor: colors.foreground, opacity: loading || rating === 0 ? 0.6 : 1 }]}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color={colors.primaryForeground} />

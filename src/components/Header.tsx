@@ -76,7 +76,7 @@ export function Header() {
         <View style={styles.centerBlock}>
           {onlineCount >= 3 && (
             <View style={styles.onlineRow}>
-              <View style={[styles.onlineDot, { backgroundColor: colors.primary }]} />
+              <View style={[styles.onlineDot, { backgroundColor: colors.success }]} />
               <Text style={[styles.onlineText, { color: colors.mutedForeground }]}>
                 {onlineCount}
               </Text>
@@ -92,11 +92,11 @@ export function Header() {
           <PressableOpacity accessibilityLabel={unreadCount > 0 ? `${t('nav.notifications')} (${unreadCount})` : t('nav.notifications')} accessibilityRole="button" onPress={() => router.push('/notifications')} style={styles.iconButton} hitSlop={8}>
             <Bell
               size={22}
-              color={unreadCount > 0 ? colors.primary : colors.foreground}
+              color={unreadCount > 0 ? colors.foreground : colors.foreground}
               strokeWidth={unreadCount > 0 ? 2.2 : 1.8}
             />
             {unreadCount > 0 && (
-              <View style={[styles.badge, { backgroundColor: colors.primary }]} importantForAccessibility="no-hide-descendants">
+              <View style={[styles.badge, { backgroundColor: colors.foreground }]} importantForAccessibility="no-hide-descendants">
                 <Text style={[styles.badgeText, { color: colors.primaryForeground }]}>
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Text>
