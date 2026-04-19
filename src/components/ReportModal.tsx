@@ -253,7 +253,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
   },
   input: {
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 12,

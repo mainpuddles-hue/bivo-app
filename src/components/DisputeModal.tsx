@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   reasonText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   input: {
-    borderWidth: 1, borderRadius: 12, padding: 16,
+    borderWidth: 1, borderRadius: 20, padding: 16,
     fontSize: 14, fontFamily: fonts.body, minHeight: 100,
     textAlignVertical: 'top',
   },

@@ -1056,7 +1056,7 @@ const s = StyleSheet.create({
     borderWidth: 3,
     marginBottom: 12,
     // Subtle shadow
-    shadowColor: '#000',
+    shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,

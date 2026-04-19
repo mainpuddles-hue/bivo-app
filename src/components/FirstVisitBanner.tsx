@@ -115,7 +115,7 @@ export function FirstVisitBanner({ neighborhood }: FirstVisitBannerProps) {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16,
     paddingVertical: 14,

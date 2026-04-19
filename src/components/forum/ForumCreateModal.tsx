@@ -200,12 +200,12 @@ const styles = StyleSheet.create({
     fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17,
   },
   titleInput: {
-    fontSize: 16, fontFamily: fonts.headingSemi, borderRadius: 12,
+    fontSize: 16, fontFamily: fonts.headingSemi, borderRadius: 20,
     borderWidth: 1, paddingHorizontal: 16, paddingVertical: 12,
     letterSpacing: -0.16,
   },
   contentInput: {
-    flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 12,
+    flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20,
     borderWidth: 1, paddingHorizontal: 16, paddingVertical: 12,
     lineHeight: 20, minHeight: 160,
   },
