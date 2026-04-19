@@ -217,7 +217,7 @@ function SavedScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* ── Bar header: circle back + centered title ── */}
-      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 16 }]}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
@@ -243,13 +243,9 @@ function SavedScreenInner() {
         <View style={s.headerSpacer} />
       </View>
 
-      {/* ── Filter tabs: pill chips ── */}
+      {/* ── Segment control (Helsinki Monochrome) ── */}
       <View style={s.tabBarWrap}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={s.tabBar}
-        >
+        <View style={[s.segmentContainer, { backgroundColor: colors.muted }]}>
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key
             return (
@@ -257,18 +253,24 @@ function SavedScreenInner() {
                 key={tab.key}
                 onPress={() => setActiveTab(tab.key)}
                 style={[
-                  s.tabPill,
-                  isActive
-                    ? { backgroundColor: colors.foreground }
-                    : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+                  s.segmentTab,
+                  isActive && [s.segmentTabActive, {
+                    backgroundColor: colors.card,
+                    // Subtle shadow for active segment
+                    shadowColor: '#1A1D1F',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 3,
+                    elevation: 2,
+                  }],
                 ]}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
               >
                 <Text
                   style={[
-                    s.tabPillText,
-                    { color: isActive ? colors.primaryForeground : colors.foreground },
+                    s.segmentTabText,
+                    { color: isActive ? colors.foreground : colors.mutedForeground },
                   ]}
                 >
                   {tab.label}
@@ -276,8 +278,8 @@ function SavedScreenInner() {
                 {tab.count > 0 && (
                   <Text
                     style={[
-                      s.tabPillCount,
-                      { color: isActive ? colors.primaryForeground : colors.tertiaryForeground },
+                      s.segmentTabCount,
+                      { color: isActive ? colors.foreground : colors.tertiaryForeground },
                     ]}
                   >
                     {tab.count}
@@ -286,7 +288,7 @@ function SavedScreenInner() {
               </Pressable>
             )
           })}
-        </ScrollView>
+        </View>
       </View>
 
       {/* ── Content ── */}
@@ -494,7 +496,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.15,
@@ -504,30 +506,35 @@ const s = StyleSheet.create({
     height: 36,
   },
 
-  /* ── Tab pills ── */
+  /* ── Segment control ── */
   tabBarWrap: {
+    paddingHorizontal: 16,
     paddingBottom: 14,
   },
-  tabBar: {
+  segmentContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 8,
+    borderRadius: 12,
+    padding: 3,
   },
-  tabPill: {
+  segmentTab: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    justifyContent: 'center',
     paddingVertical: 8,
-    borderRadius: 999,
+    borderRadius: 9,
     gap: 5,
-    minHeight: 44,
+    minHeight: 40,
   },
-  tabPillText: {
+  segmentTabActive: {
+    // bg + shadow set inline
+  },
+  segmentTabText: {
     fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
-  tabPillCount: {
+  segmentTabCount: {
     fontSize: 11,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,

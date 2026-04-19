@@ -812,7 +812,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Minimal back button overlay for loading state */}
-        <View style={[styles.heroNav, { top: insets.top + 12 }]}>
+        <View style={[styles.heroNav, { top: insets.top + 16 }]}>
           <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
@@ -827,7 +827,7 @@ function PostDetailScreenInner() {
   if (loadError) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.heroNav, { top: insets.top + 12 }]}>
+        <View style={[styles.heroNav, { top: insets.top + 16 }]}>
           <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
@@ -845,7 +845,7 @@ function PostDetailScreenInner() {
   if (!post) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.heroNav, { top: insets.top + 12 }]}>
+        <View style={[styles.heroNav, { top: insets.top + 16 }]}>
           <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
@@ -872,7 +872,7 @@ function PostDetailScreenInner() {
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Hero nav overlay — back + heart circles on top of photo */}
-      <View style={[styles.heroNav, { top: insets.top + 12 }]} pointerEvents="box-none">
+      <View style={[styles.heroNav, { top: insets.top + 16 }]} pointerEvents="box-none">
         <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
@@ -1588,7 +1588,7 @@ const styles = StyleSheet.create({
 
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
   relatedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  relatedTitle: { fontSize: 17, fontFamily: fonts.heading, lineHeight: 22 },
+  relatedTitle: { fontSize: 16, fontFamily: fonts.heading, lineHeight: 22, letterSpacing: -0.15 },
   relatedShowAll: { fontSize: 12, fontFamily: fonts.bodyMedium, textDecorationLine: 'underline', lineHeight: 16 },
   relatedScroll: { gap: 12 },
   relatedCard: { width: 176, borderRadius: 20, overflow: 'hidden', borderWidth: 1 },
@@ -1620,7 +1620,7 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999, minHeight: 48 },
   heroNav: { position: 'absolute', left: 16, right: 16, zIndex: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  heroCircle: { width: 38, height: 38, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  heroCircle: { width: 38, height: 38, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 0 },
 })
 
 const ctaStyles = StyleSheet.create({
@@ -1628,7 +1628,12 @@ const ctaStyles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     flexDirection: 'column', gap: 8,
     paddingHorizontal: 16, paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    // Shadow for floating CTA (only floating elements get shadow)
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 8,
   },
   replyIndicator: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -1647,9 +1652,10 @@ const ctaStyles = StyleSheet.create({
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   messageBtn: {
     alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999,
+    paddingVertical: 14, paddingHorizontal: 16, borderRadius: 999,
+    height: 56,
   },
-  messageBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+  messageBtnText: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
 })
 
 export default function PostDetailScreen() {

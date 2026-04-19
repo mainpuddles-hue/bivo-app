@@ -336,7 +336,7 @@ export default function PublicProfileScreen() {
 
   // --- Monochrome bar header (mockup 27) ---
   const renderBar = (title: string) => (
-    <View style={[s.bar, { paddingTop: insets.top + 8 }]}>
+    <View style={[s.bar, { paddingTop: insets.top + 16 }]}>
       <Pressable
         onPress={() => router.back()}
         hitSlop={12}
@@ -1031,7 +1031,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   barTitle: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.15,
@@ -1154,9 +1154,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 999,
-    minHeight: 48,
+    minHeight: 44,
   },
   messageBtnText: {
     fontSize: 13,
@@ -1170,10 +1171,11 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 999,
     borderWidth: 1,
-    minHeight: 48,
+    minHeight: 44,
   },
   followBtnText: {
     fontSize: 13,

@@ -1176,7 +1176,7 @@ function SearchScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Top search area — no bar header, direct search */}
-      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 16 }]}>
         <View style={[s.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <SearchIcon size={18} color={colors.mutedForeground} />
           <TextInput
@@ -1236,7 +1236,7 @@ function SearchScreenInner() {
                 accessibilityRole="button"
                 accessibilityLabel={`${t('common.remove')} ${chip.label}`}
               >
-                <X size={12} color={colors.card} />
+                <X size={9} color={colors.card} />
               </PressableOpacity>
             </View>
           ))}
@@ -1492,7 +1492,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    height: 48,
   },
   searchInput: {
     flex: 1,
