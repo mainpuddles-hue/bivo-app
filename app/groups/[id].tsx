@@ -46,7 +46,7 @@ interface GroupInfo {
 function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
   const opacity = useShimmer()
   return (
-    <View style={[ps.postCard, { backgroundColor: colors.card }]}>
+    <View style={[ps.postCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
       <View style={ps.postUserRow}>
         <Animated.View style={[ps.skelAvatar, { backgroundColor: colors.muted, opacity }]} />
         <View style={{ flex: 1, gap: 4 }}>
@@ -531,7 +531,7 @@ export default function GroupDetailScreen() {
     ])
   }, [id, supabase, posts, t, router])
 
-  const catColor = CATEGORY_COLORS[group?.category ?? 'general'] || colors.primary
+  const catColor = CATEGORY_COLORS[group?.category ?? 'general'] || colors.foreground
 
   // ── Coming soon ──
   if (!loading && !tableExists) {
@@ -539,11 +539,11 @@ export default function GroupDetailScreen() {
       <ScreenErrorBoundary screenName="GroupDetail">
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
-            <ArrowLeft size={24} color={colors.foreground} strokeWidth={1.8} />
+          <PressableOpacity onPress={() => router.back()} style={[ps.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8}>
+            <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
           <Text style={[ps.headerTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
-          <View style={ps.headerBtn} />
+          <View style={{ width: 36 }} />
         </View>
         <View style={ps.emptyContainer}>
           <Users size={48} color={colors.mutedForeground} strokeWidth={1.3} />
@@ -560,11 +560,11 @@ export default function GroupDetailScreen() {
       <ScreenErrorBoundary screenName="GroupDetail">
       <View style={[ps.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[ps.header, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
-            <ArrowLeft size={24} color={colors.foreground} strokeWidth={1.8} />
+          <PressableOpacity onPress={() => router.back()} style={[ps.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8}>
+            <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
           <Text style={[ps.headerTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
-          <View style={ps.headerBtn} />
+          <View style={{ width: 36 }} />
         </View>
         <View style={ps.emptyContainer}>
           <Users size={48} color={colors.mutedForeground} strokeWidth={1.3} />
@@ -618,29 +618,29 @@ export default function GroupDetailScreen() {
     if (!group) return null
     const categoryLabelKey = `groups.${group.category}` as string
     return (
-      <View style={[ps.infoCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+      <View style={[ps.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[ps.groupName, { color: colors.foreground }]}>{group.name}</Text>
         {group.description && <Text style={[ps.groupDesc, { color: colors.mutedForeground }]}>{group.description}</Text>}
         <View style={ps.badgeRow}>
-          <View style={[ps.badge, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+          <View style={[ps.badge, { backgroundColor: colors.muted }]}>
             <Text style={[ps.badgeText, { color: colors.mutedForeground }]}>{t(categoryLabelKey)}</Text>
           </View>
           {group.neighborhood && (
-            <View style={[ps.badge, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+            <View style={[ps.badge, { backgroundColor: colors.muted }]}>
               <Text style={[ps.badgeText, { color: colors.mutedForeground }]}>{group.neighborhood}</Text>
             </View>
           )}
         </View>
         <View style={ps.infoActions}>
           <PressableOpacity style={ps.membersBtn} onPress={() => { setShowMembers(true); fetchMembers() }}>
-            <Users size={16} color={colors.primary} strokeWidth={1.8} />
-            <Text style={[ps.membersBtnText, { color: colors.primary }]}>
+            <Users size={16} color={colors.foreground} strokeWidth={1.8} />
+            <Text style={[ps.membersBtnText, { color: colors.foreground }]}>
               {group.member_count <= 1 ? t('groups.inviteMembers') : `${group.member_count} ${t('groups.members')}`}
             </Text>
           </PressableOpacity>
           <PressableOpacity
             style={[ps.joinLeaveBtn, isMember
-              ? { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth }
+              ? { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: 1 }
               : { backgroundColor: colors.foreground, borderWidth: 0 }]}
             onPress={handleJoinLeave}
           >
@@ -664,8 +664,8 @@ export default function GroupDetailScreen() {
     >
       {/* Header */}
       <View style={[ps.header, { borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} style={ps.headerBtn} hitSlop={8}>
-          <ArrowLeft size={24} color={colors.foreground} strokeWidth={1.8} />
+        <PressableOpacity onPress={() => router.back()} style={[ps.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8}>
+          <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <View style={ps.headerCenter}>
           <Text style={[ps.headerTitle, { color: colors.foreground }]} numberOfLines={1}>{group?.name || t('groups.title')}</Text>
@@ -674,10 +674,10 @@ export default function GroupDetailScreen() {
           </Text>}
         </View>
         {isAdmin ? (
-          <PressableOpacity style={ps.headerBtn} hitSlop={8} onPress={() => setShowEditModal(true)}>
-            <Pencil size={20} color={colors.mutedForeground} strokeWidth={1.8} />
+          <PressableOpacity style={[ps.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8} onPress={() => setShowEditModal(true)}>
+            <Pencil size={16} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
-        ) : <View style={ps.headerBtn} />}
+        ) : <View style={{ width: 36 }} />}
       </View>
 
       {/* Search bar */}
@@ -699,8 +699,8 @@ export default function GroupDetailScreen() {
 
       {newPostsBanner && (
         <PressableOpacity onPress={() => { setNewPostsBanner(false); setLoading(true); fetchPosts() }}
-          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary }}>
-          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.primaryForeground }}>{t('groups.newPostsBanner')}</Text>
+          style={{ marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 999, alignItems: 'center', backgroundColor: colors.foreground }}>
+          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.background }}>{t('groups.newPostsBanner')}</Text>
         </PressableOpacity>
       )}
 
@@ -720,7 +720,7 @@ export default function GroupDetailScreen() {
               <Text style={[ps.emptySectionSub, { color: colors.mutedForeground }]}>{t('groups.startConversation')}</Text>
             </View>
           }
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.foreground} />}
         />
       )}
 
@@ -736,8 +736,8 @@ export default function GroupDetailScreen() {
           <View style={ps.postInputRow}>
             <PressableOpacity onPress={handlePickImage} style={ps.imageBtn} hitSlop={8}><ImagePlus size={20} color={colors.mutedForeground} strokeWidth={1.8} /></PressableOpacity>
             <TextInput style={[ps.postInput, { color: colors.foreground, backgroundColor: colors.muted }]} placeholder={t('groups.writePost')} placeholderTextColor={colors.mutedForeground} value={postText} onChangeText={setPostText} multiline maxLength={2000} textAlignVertical="top" inputAccessoryViewID={KEYBOARD_DONE_ID} />
-            <PressableOpacity style={[ps.sendBtn, { backgroundColor: (postText.trim() || postImage) ? colors.accent : colors.muted }]} onPress={handleSendPost} disabled={sending || (!postText.trim() && !postImage)}>
-              {sending ? <ActivityIndicator size="small" color={colors.accentForeground} /> : <Send size={18} color={(postText.trim() || postImage) ? colors.accentForeground : colors.mutedForeground} strokeWidth={1.8} />}
+            <PressableOpacity style={[ps.sendBtn, { backgroundColor: (postText.trim() || postImage) ? colors.foreground : colors.muted }]} onPress={handleSendPost} disabled={sending || (!postText.trim() && !postImage)}>
+              {sending ? <ActivityIndicator size="small" color={colors.background} /> : <Send size={18} color={(postText.trim() || postImage) ? colors.background : colors.mutedForeground} strokeWidth={1.8} />}
             </PressableOpacity>
           </View>
         </View>
@@ -784,33 +784,33 @@ export default function GroupDetailScreen() {
 const ps = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  headerBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  circleBack: { width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
+  headerTitle: { fontSize: 17, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   headerSub: { fontSize: 11, fontFamily: fonts.body, marginTop: -1 },
   loadingContainer: { padding: 16 },
   listContent: { padding: 16 },
-  infoCard: { borderRadius: 16, padding: 16, marginBottom: 16 },
+  infoCard: { borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1 },
   groupName: { fontSize: 20, fontFamily: fonts.heading, marginBottom: 4 },
   groupDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 12 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  badge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
+  badge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999 },
   badgeText: { fontSize: 12, fontFamily: fonts.bodyMedium },
   infoActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   membersBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   membersBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
-  joinLeaveBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  joinLeaveBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   joinLeaveBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
   postCard: { borderRadius: 16, marginBottom: 12, overflow: 'hidden', flexDirection: 'row' },
   postUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   postInputBar: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, paddingHorizontal: 12 },
   imagePreviewRow: { marginBottom: 8 },
-  imagePreview: { width: 80, height: 80, borderRadius: 16 },
+  imagePreview: { width: 80, height: 80, borderRadius: 14 },
   removeImageBtn: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   postInputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   imageBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  postInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12, maxHeight: 100 },
-  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  postInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 12, maxHeight: 100 },
+  sendBtn: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   emptyText: { fontSize: 16, fontFamily: fonts.bodyMedium, textAlign: 'center' },
   emptySection: { alignItems: 'center', justifyContent: 'center', padding: 32, gap: 8, marginTop: 16 },

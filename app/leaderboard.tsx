@@ -29,7 +29,7 @@ function LeaderboardRowSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={[s.row, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+    <View style={[s.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <Animated.View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.muted, opacity }} />
       <Animated.View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.muted, opacity }} />
       <View style={s.info}>
@@ -214,8 +214,12 @@ export default function LeaderboardScreen() {
         accessibilityLabel={`#${rank} ${item.name ?? t('common.user')}, ${item.total_points} ${t('profile.points')}`}
         style={[
           s.row,
-          { backgroundColor: 'transparent', borderColor: isCurrentUser ? colors.foreground : colors.border },
-          isTop3 && { borderLeftWidth: 3, borderLeftColor: medalColor },
+          {
+            backgroundColor: colors.card,
+            borderColor: isCurrentUser ? colors.foreground : colors.border,
+            borderWidth: isCurrentUser ? 1.5 : 1,
+          },
+          isTop3 && s.rowTop3,
         ]}
       >
         {/* Rank */}
@@ -228,9 +232,9 @@ export default function LeaderboardScreen() {
         </View>
 
         {/* Avatar + Info */}
-        <Avatar url={item.avatar_url} name={item.name} size={40} />
+        <Avatar url={item.avatar_url} name={item.name} size={isTop3 ? 48 : 40} />
         <View style={s.info}>
-          <Text style={[s.name, { color: colors.foreground }]} numberOfLines={1}>
+          <Text style={[s.name, { color: colors.foreground }, isTop3 && s.nameTop3]} numberOfLines={1}>
             {item.name ?? t('common.user')}
             {isCurrentUser ? ` (${t('common.you') ?? 'sin\u00e4'})` : ''}
           </Text>
@@ -243,8 +247,8 @@ export default function LeaderboardScreen() {
 
         {/* Points */}
         <View style={s.pointsWrap}>
-          <Zap size={14} color={colors.pro} fill={colors.pro} />
-          <Text style={[s.points, { color: colors.pro }]}>{item.total_points}</Text>
+          <Zap size={14} color={colors.foreground} fill={colors.foreground} />
+          <Text style={[s.points, { color: colors.foreground }]}>{item.total_points}</Text>
         </View>
       </PressableOpacity>
     )
@@ -257,12 +261,14 @@ export default function LeaderboardScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
+        <PressableOpacity onPress={() => router.back()} style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
+        </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 36 }} />
       </View>
 
-      {/* Filter chips */}
+      {/* Filter pills */}
       <View style={s.filterRow}>
         <PressableOpacity
           onPress={() => setFilter('all')}
@@ -273,7 +279,7 @@ export default function LeaderboardScreen() {
             s.filterChip,
             filter === 'all'
               ? { backgroundColor: colors.foreground }
-              : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+              : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
           ]}
         >
           <Text style={[s.filterText, { color: filter === 'all' ? colors.background : colors.foreground }]}>
@@ -290,7 +296,7 @@ export default function LeaderboardScreen() {
               s.filterChip,
               filter === 'neighborhood'
                 ? { backgroundColor: colors.foreground }
-                : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
             ]}
           >
             <Text style={[s.filterText, { color: filter === 'neighborhood' ? colors.background : colors.foreground }]}>
@@ -305,10 +311,10 @@ export default function LeaderboardScreen() {
 
       {/* Pro upsell banner */}
       {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
-        <PressableOpacity onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-          <Crown size={16} color={colors.pro} />
-          <Text style={[s.proBannerText, { color: colors.pro }]}>{t('pro.leaderboardBanner')}</Text>
-          <ChevronRight size={14} color={colors.pro} />
+        <PressableOpacity onPress={() => router.push('/pro')} style={[s.proBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Crown size={16} color={colors.foreground} />
+          <Text style={[s.proBannerText, { color: colors.foreground }]}>{t('pro.leaderboardBanner')}</Text>
+          <ChevronRight size={14} color={colors.mutedForeground} />
         </PressableOpacity>
       )}
 
@@ -326,7 +332,7 @@ export default function LeaderboardScreen() {
           maxToRenderPerBatch={10}
           windowSize={5}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.foreground} />
           }
           ListEmptyComponent={
             <View style={s.emptyWrap}>
@@ -338,13 +344,13 @@ export default function LeaderboardScreen() {
           }
           ListFooterComponent={
             currentUserId && !isCurrentUserInTop10 && currentUserRank != null && currentUserPoints > 0 ? (
-              <View style={[s.yourRankCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
+              <View style={[s.yourRankCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Text style={[s.yourRankLabel, { color: colors.mutedForeground }]}>{t('leaderboard.yourRank')}</Text>
                 <View style={s.yourRankRow}>
                   <Text style={[s.yourRankNum, { color: colors.foreground }]}>#{currentUserRank}</Text>
                   <View style={s.pointsWrap}>
-                    <Zap size={14} color={colors.pro} fill={colors.pro} />
-                    <Text style={[s.points, { color: colors.pro }]}>{currentUserPoints}</Text>
+                    <Zap size={14} color={colors.foreground} fill={colors.foreground} />
+                    <Text style={[s.points, { color: colors.foreground }]}>{currentUserPoints}</Text>
                   </View>
                 </View>
               </View>
@@ -367,11 +373,19 @@ const s = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
+  circleBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 17,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
-    lineHeight: 28,
+    lineHeight: 22,
   },
   filterRow: {
     flexDirection: 'row',
@@ -383,7 +397,7 @@ const s = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 24,
+    borderRadius: 999,
   },
   filterText: {
     fontSize: 14,
@@ -391,12 +405,14 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
   monthLabel: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 14,
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   proBanner: {
     flexDirection: 'row',
@@ -407,6 +423,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
     padding: 12,
     borderRadius: 16,
+    borderWidth: 1,
   },
   proBannerText: {
     flex: 1,
@@ -425,7 +442,10 @@ const s = StyleSheet.create({
     gap: 12,
     padding: 16,
     borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
+  },
+  rowTop3: {
+    paddingVertical: 18,
   },
   rankCircle: {
     width: 32,
@@ -447,6 +467,10 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
+  },
+  nameTop3: {
+    fontSize: 15,
+    fontFamily: fonts.headingSemi,
   },
   neighborhood: {
     fontSize: 12,
@@ -481,9 +505,11 @@ const s = StyleSheet.create({
     gap: 8,
   },
   yourRankLabel: {
-    fontSize: 13,
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 16,
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   yourRankRow: {
     flexDirection: 'row',

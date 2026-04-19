@@ -120,12 +120,12 @@ function EventChatScreenInner() {
       if (result.canceled || !result.assets?.[0]) return
 
       const asset = result.assets[0]
-      // Strip query-string and normalize extension (e.g. "jpg?t=123" → "jpg")
+      // Strip query-string and normalize extension (e.g. "jpg?t=123" -> "jpg")
       const rawExt = (asset.uri.split('.').pop() ?? 'jpg').split(/[?#]/)[0].toLowerCase()
       const ext = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(rawExt) ? rawExt : 'jpg'
       const fileName = `event-chat/${conversationId}/${Date.now()}.${ext}`
 
-      // Use arrayBuffer pattern (matches profile.tsx avatar upload — FormData is
+      // Use arrayBuffer pattern (matches profile.tsx avatar upload -- FormData is
       // broken on newer @supabase/supabase-js + React Native)
       const response = await fetch(asset.uri)
       const blob = await response.blob()
@@ -151,46 +151,72 @@ function EventChatScreenInner() {
     }
   }, [conversationId, supabase, sendMessage])
 
+  // Day separator component
+  const renderDaySeparator = useCallback((dateStr: string) => {
+    const d = new Date(dateStr)
+    const label = d.toLocaleDateString(
+      locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US',
+      { weekday: 'short', day: 'numeric', month: 'short' },
+    )
+    return (
+      <View style={s.daySeparator}>
+        <View style={[s.daySeparatorLine, { backgroundColor: colors.border }]} />
+        <Text style={[s.daySeparatorText, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+          {label}
+        </Text>
+        <View style={[s.daySeparatorLine, { backgroundColor: colors.border }]} />
+      </View>
+    )
+  }, [colors, locale])
+
   // Render message
-  const renderMessage = useCallback(({ item }: { item: any }) => {
+  const renderMessage = useCallback(({ item, index }: { item: any; index: number }) => {
     const isOwn = item.sender_id === userId
     const senderName = item.sender?.name ?? t('messages.unknownUser')
 
+    // Check if we should show a day separator
+    const currentDay = new Date(item.created_at).toDateString()
+    const nextItem = messages[index + 1] // inverted list, so next = older
+    const showDaySep = !nextItem || new Date(nextItem.created_at).toDateString() !== currentDay
+
     return (
-      <View style={[s.msgRow, isOwn && s.msgRowOwn]}>
-        {!isOwn && (
-          <Avatar url={item.sender?.avatar_url ?? null} name={senderName} size={32} />
-        )}
-        <View style={[
-          s.bubble,
-          isOwn
-            ? { backgroundColor: colors.foreground, borderBottomRightRadius: 4 }
-            : { backgroundColor: colors.muted, borderBottomLeftRadius: 4 },
-        ]}>
+      <View>
+        {showDaySep && renderDaySeparator(item.created_at)}
+        <View style={[s.msgRow, isOwn && s.msgRowOwn]}>
           {!isOwn && (
-            <Text style={[s.senderName, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
-              {senderName}
-            </Text>
+            <Avatar url={item.sender?.avatar_url ?? null} name={senderName} size={32} />
           )}
-          {item.image_url && (
-            <Image
-              source={{ uri: item.image_url }}
-              style={s.msgImage}
-              contentFit="cover"
-            />
-          )}
-          {item.content ? (
-            <Text style={[s.msgText, { color: isOwn ? colors.background : colors.foreground, fontFamily: fonts.body }]}>
-              {item.content}
+          <View style={[
+            s.bubble,
+            isOwn
+              ? [s.bubbleOwn, { backgroundColor: colors.foreground }]
+              : [s.bubbleTheirs, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }],
+          ]}>
+            {!isOwn && (
+              <Text style={[s.senderName, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+                {senderName}
+              </Text>
+            )}
+            {item.image_url && (
+              <Image
+                source={{ uri: item.image_url }}
+                style={s.msgImage}
+                contentFit="cover"
+              />
+            )}
+            {item.content ? (
+              <Text style={[s.msgText, { color: isOwn ? colors.primaryForeground : colors.foreground, fontFamily: fonts.body }]}>
+                {item.content}
+              </Text>
+            ) : null}
+            <Text style={[s.msgTime, { color: isOwn ? `${colors.primaryForeground}99` : colors.mutedForeground }]}>
+              {formatTimeAgo(item.created_at, t, locale)}
             </Text>
-          ) : null}
-          <Text style={[s.msgTime, { color: isOwn ? `${colors.background}99` : colors.mutedForeground }]}>
-            {formatTimeAgo(item.created_at, t, locale)}
-          </Text>
+          </View>
         </View>
       </View>
     )
-  }, [userId, colors, t, locale])
+  }, [userId, colors, t, locale, messages, renderDaySeparator])
 
   const keyExtractor = useCallback((item: any) => item.id, [])
 
@@ -210,8 +236,12 @@ function EventChatScreenInner() {
     >
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 4, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12} style={s.backBtn}>
-          <ArrowLeft size={24} color={colors.foreground} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
         </Pressable>
 
         <Pressable
@@ -229,7 +259,7 @@ function EventChatScreenInner() {
           </View>
         </Pressable>
 
-        <View style={{ width: 44 }} />
+        <View style={{ width: 36 }} />
       </View>
 
       {/* Event info bar */}
@@ -238,8 +268,8 @@ function EventChatScreenInner() {
           style={[s.eventBar, { backgroundColor: 'transparent', borderBottomColor: colors.border }]}
           onPress={() => router.push(`/event/${eventInfo.id}` as any)}
         >
-          <CalendarDays size={14} color={colors.primary} />
-          <Text style={[s.eventBarText, { color: colors.primary, fontFamily: fonts.bodySemi }]} numberOfLines={1}>
+          <CalendarDays size={14} color={colors.foreground} />
+          <Text style={[s.eventBarText, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={1}>
             {eventInfo.title}
           </Text>
           <Text style={[s.eventBarDate, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
@@ -254,7 +284,7 @@ function EventChatScreenInner() {
       {/* Messages */}
       {loading ? (
         <View style={s.center}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.foreground} />
         </View>
       ) : messages.length === 0 ? (
         <View style={s.center}>
@@ -287,9 +317,10 @@ function EventChatScreenInner() {
 
         <TextInput
           style={[s.input, {
-            backgroundColor: colors.muted,
+            backgroundColor: colors.card,
             color: colors.foreground,
             fontFamily: fonts.body,
+            borderColor: colors.border,
           }]}
           placeholder={t('eventChat.placeholder')}
           placeholderTextColor={colors.mutedForeground}
@@ -306,7 +337,7 @@ function EventChatScreenInner() {
           hitSlop={8}
           style={[s.sendBtn, { backgroundColor: input.trim() ? colors.foreground : colors.muted }]}
         >
-          <Send size={18} color={input.trim() ? colors.background : colors.mutedForeground} />
+          <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />
         </Pressable>
       </View>
       <KeyboardDoneAccessory />
@@ -324,9 +355,11 @@ const s = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  backBtn: {
-    width: 44,
-    height: 44,
+  circleBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -376,6 +409,24 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
 
+  // Day separator
+  daySeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 16,
+  },
+  daySeparatorLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+  },
+  daySeparatorText: {
+    fontSize: 11,
+    lineHeight: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
   // Messages
   msgRow: {
     flexDirection: 'row',
@@ -388,10 +439,21 @@ const s = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   bubble: {
-    borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
     maxWidth: '100%',
+  },
+  bubbleOwn: {
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 6,
+  },
+  bubbleTheirs: {
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 18,
   },
   senderName: {
     fontSize: 11,
@@ -433,7 +495,8 @@ const s = StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: 999,
+    borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,

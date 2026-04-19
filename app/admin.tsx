@@ -15,7 +15,6 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton } from '@/components/ui'
 import { formatTimeAgo } from '@/lib/format'
 
 type Tab = 'flags' | 'users' | 'stats'
@@ -51,7 +50,7 @@ interface Stats {
 }
 
 function AdminScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -157,9 +156,7 @@ function AdminScreenInner() {
     setSearchingUsers(false)
   }, [userSearch, supabase])
 
-  // Actions. Supabase mutations return { error } instead of throwing, so
-  // the previous try/catch-only pattern silently showed "success" on RLS
-  // failures.
+  // Actions
   const hidePost = useCallback(async (postId: string, flagId: string) => {
     const [postRes, flagRes] = await Promise.all([
       (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId),
@@ -199,7 +196,7 @@ function AdminScreenInner() {
   if (loading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
+        <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
       </View>
     )
   }
@@ -208,9 +205,15 @@ function AdminScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.header, { borderBottomColor: colors.border }]}>
-          <BackButton />
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <ArrowLeft size={20} color={colors.foreground} />
+          </Pressable>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('admin.accessDenied')}</Text>
-          <View style={{ width: 24 }} />
+          <View style={{ width: 36 }} />
         </View>
         <View style={s.emptyContainer}>
           <Shield size={48} color={colors.mutedForeground} />
@@ -230,15 +233,18 @@ function AdminScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <BackButton />
-        <View style={s.headerCenter}>
-          <Shield size={18} color={colors.destructive} />
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('admin.title')}</Text>
-        </View>
-        <View style={{ width: 24 }} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
+        </Pressable>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('admin.title')}</Text>
+        <View style={{ width: 36 }} />
       </View>
 
-      {/* Tab chips */}
+      {/* Tab chips -- monochrome */}
       <View style={s.tabs}>
         {TAB_CONFIG.map(({ key, label, icon: Icon }) => (
           <PressableOpacity
@@ -250,8 +256,8 @@ function AdminScreenInner() {
             style={[
               s.tab,
               {
-                backgroundColor: activeTab === key ? colors.primary : colors.muted,
-                borderColor: activeTab === key ? colors.primary : colors.border,
+                backgroundColor: activeTab === key ? colors.foreground : colors.card,
+                borderColor: activeTab === key ? colors.foreground : colors.border,
               },
             ]}
           >
@@ -271,36 +277,36 @@ function AdminScreenInner() {
           style={s.content}
           contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
           keyboardShouldPersistTaps="handled"
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.foreground} />}
         >
           {/* FLAGS TAB */}
           {activeTab === 'flags' && (
             <>
               {flags.length === 0 ? (
                 <View style={s.emptyContainer}>
-                  <Check size={40} color={colors.accent} />
+                  <Check size={40} color={colors.mutedForeground} />
                   <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('admin.noFlags')}</Text>
                 </View>
               ) : (
                 flags.map(flag => (
                   <View key={flag.id} style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={s.flagHeader}>
-                      <View style={[s.flagBadge, { backgroundColor: flagColor(flag.flag_type, colors) }]}>
+                      <View style={[s.flagBadge, { backgroundColor: colors.foreground }]}>
                         <AlertTriangle size={12} color={colors.primaryForeground} />
                         <Text style={[s.flagBadgeText, { color: colors.primaryForeground }]}>
                           {t(`admin.${flag.flag_type}` as any) || flag.flag_type}
                         </Text>
                       </View>
                       {flag.reviewed && (
-                        <View style={[s.reviewedBadge, { backgroundColor: colors.accent + '20' }]}>
-                          <Check size={12} color={colors.accent} />
-                          <Text style={[s.reviewedText, { color: colors.accent }]}>{t('admin.reviewed')}</Text>
+                        <View style={[s.reviewedBadge, { backgroundColor: colors.muted }]}>
+                          <Check size={12} color={colors.foreground} />
+                          <Text style={[s.reviewedText, { color: colors.foreground }]}>{t('admin.reviewed')}</Text>
                         </View>
                       )}
                       {flag.auto_hidden && (
-                        <View style={[s.reviewedBadge, { backgroundColor: colors.destructive + '20' }]}>
-                          <EyeOff size={12} color={colors.destructive} />
-                          <Text style={[s.reviewedText, { color: colors.destructive }]}>{t('admin.autoHidden')}</Text>
+                        <View style={[s.reviewedBadge, { backgroundColor: colors.muted }]}>
+                          <EyeOff size={12} color={colors.mutedForeground} />
+                          <Text style={[s.reviewedText, { color: colors.mutedForeground }]}>{t('admin.autoHidden')}</Text>
                         </View>
                       )}
                     </View>
@@ -324,32 +330,32 @@ function AdminScreenInner() {
                         {flag.post_id && (
                           <PressableOpacity
                             onPress={() => hidePost(flag.post_id!, flag.id)}
-                            style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
+                            style={[s.actionBtn, { backgroundColor: colors.foreground }]}
                             accessibilityLabel={t('admin.hidePost')}
                             accessibilityRole="button"
                           >
-                            <EyeOff size={14} color={colors.destructive} />
-                            <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.hidePost')}</Text>
+                            <EyeOff size={14} color={colors.primaryForeground} />
+                            <Text style={[s.actionText, { color: colors.primaryForeground }]}>{t('admin.hidePost')}</Text>
                           </PressableOpacity>
                         )}
                         <PressableOpacity
                           onPress={() => allowPost(flag.id)}
-                          style={[s.actionBtn, { backgroundColor: colors.accent + '15' }]}
+                          style={[s.actionBtn, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}
                           accessibilityLabel={t('admin.allowPost')}
                           accessibilityRole="button"
                         >
-                          <Check size={14} color={colors.accent} />
-                          <Text style={[s.actionText, { color: colors.accent }]}>{t('admin.allowPost')}</Text>
+                          <Check size={14} color={colors.foreground} />
+                          <Text style={[s.actionText, { color: colors.foreground }]}>{t('admin.allowPost')}</Text>
                         </PressableOpacity>
                         {flag.post?.user_id && (
                           <PressableOpacity
                             onPress={() => toggleBan(flag.post!.user_id, false)}
-                            style={[s.actionBtn, { backgroundColor: colors.destructive + '15' }]}
+                            style={[s.actionBtn, { backgroundColor: colors.foreground }]}
                             accessibilityLabel={t('admin.banUser')}
                             accessibilityRole="button"
                           >
-                            <Ban size={14} color={colors.destructive} />
-                            <Text style={[s.actionText, { color: colors.destructive }]}>{t('admin.banUser')}</Text>
+                            <Ban size={14} color={colors.primaryForeground} />
+                            <Text style={[s.actionText, { color: colors.primaryForeground }]}>{t('admin.banUser')}</Text>
                           </PressableOpacity>
                         )}
                       </View>
@@ -374,7 +380,7 @@ function AdminScreenInner() {
                   onSubmitEditing={searchUsers}
                   returnKeyType="search"
                 />
-                {searchingUsers && <ActivityIndicator size="small" color={colors.primary} />}
+                {searchingUsers && <ActivityIndicator size="small" color={colors.foreground} />}
               </View>
 
               {users.map(user => (
@@ -385,8 +391,8 @@ function AdminScreenInner() {
                       <View style={s.userNameRow}>
                         <Text style={[s.userName, { color: colors.foreground }]}>{user.name}</Text>
                         {user.is_banned && (
-                          <View style={[s.bannedBadge, { backgroundColor: colors.destructive + '20' }]}>
-                            <Text style={[s.bannedText, { color: colors.destructive }]}>{t('admin.banned')}</Text>
+                          <View style={[s.bannedBadge, { backgroundColor: colors.muted }]}>
+                            <Text style={[s.bannedText, { color: colors.foreground }]}>{t('admin.banned')}</Text>
                           </View>
                         )}
                       </View>
@@ -398,15 +404,15 @@ function AdminScreenInner() {
                       onPress={() => toggleBan(user.id, !!user.is_banned)}
                       style={[
                         s.banBtn,
-                        { backgroundColor: user.is_banned ? colors.accent + '15' : colors.destructive + '15' },
+                        { backgroundColor: user.is_banned ? colors.card : colors.foreground, borderWidth: user.is_banned ? 1 : 0, borderColor: colors.border },
                       ]}
                       accessibilityLabel={user.is_banned ? t('admin.unbanUser') : t('admin.banUser')}
                       accessibilityRole="button"
                     >
                       {user.is_banned ? (
-                        <Check size={16} color={colors.accent} />
+                        <Check size={16} color={colors.foreground} />
                       ) : (
-                        <Ban size={16} color={colors.destructive} />
+                        <Ban size={16} color={colors.primaryForeground} />
                       )}
                     </PressableOpacity>
                   </View>
@@ -419,14 +425,14 @@ function AdminScreenInner() {
           {activeTab === 'stats' && (
             <View style={s.statsGrid}>
               {([
-                { label: t('admin.totalUsers'), value: stats.totalUsers, color: colors.primary },
-                { label: t('admin.activeToday'), value: stats.activeToday, color: colors.accent },
-                { label: t('admin.postsThisWeek'), value: stats.postsThisWeek, color: colors.info },
-                { label: t('admin.bookingsThisWeek'), value: stats.bookingsThisWeek, color: colors.pro },
-                { label: t('admin.unreviewedFlags'), value: stats.unreviewedFlags, color: colors.destructive },
+                { label: t('admin.totalUsers'), value: stats.totalUsers },
+                { label: t('admin.activeToday'), value: stats.activeToday },
+                { label: t('admin.postsThisWeek'), value: stats.postsThisWeek },
+                { label: t('admin.bookingsThisWeek'), value: stats.bookingsThisWeek },
+                { label: t('admin.unreviewedFlags'), value: stats.unreviewedFlags },
               ] as const).map((stat, i) => (
                 <View key={i} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <Text style={[s.statValue, { color: stat.color }]}>{stat.value}</Text>
+                  <Text style={[s.statValue, { color: colors.foreground }]}>{stat.value}</Text>
                   <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{stat.label}</Text>
                 </View>
               ))}
@@ -436,15 +442,6 @@ function AdminScreenInner() {
       </KeyboardAvoidingView>
     </View>
   )
-}
-
-function flagColor(type: string, colors: any): string {
-  switch (type) {
-    case 'spam': return colors.pro
-    case 'inappropriate': return colors.destructive
-    case 'scam': return colors.destructive
-    default: return colors.mutedForeground
-  }
 }
 
 const s = StyleSheet.create({
@@ -459,16 +456,21 @@ const s = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerCenter: {
-    flexDirection: 'row',
+  circleBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 20,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
     lineHeight: 28,
+    textAlign: 'center',
+    flex: 1,
   },
   tabs: {
     flexDirection: 'row',

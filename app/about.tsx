@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, Linking } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, ExternalLink, FileText, Lock, HelpCircle } from 'lucide-react-native'
@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 
 function AboutScreenInner() {
   const { colors } = useTheme()
@@ -19,16 +19,25 @@ function AboutScreenInner() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('about.title')}</Text>
+      {/* Bar header */}
+      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={18} color={colors.foreground} />
+        </PressableOpacity>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>Tietoa</Text>
+        <View style={s.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
         {/* Logo & name */}
         <View style={s.logoSection}>
-          <View style={[s.logoPlaceholder, { backgroundColor: colors.primary }]}>
-            <Text style={[s.logoText, { color: colors.primaryForeground }]}>TB</Text>
+          <View style={[s.logoPlaceholder, { backgroundColor: colors.foreground }]}>
+            <Text style={[s.logoText, { color: colors.background }]}>TB</Text>
           </View>
           <Text style={[s.appName, { color: colors.foreground }]}>TackBird</Text>
           <Text style={[s.versionText, { color: colors.mutedForeground }]}>v{appVersion}</Text>
@@ -36,12 +45,13 @@ function AboutScreenInner() {
         </View>
 
         {/* Description */}
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.description, { color: colors.foreground }]}>{t('about.description')}</Text>
         </View>
 
         {/* Links */}
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>LINKIT</Text>
+        <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <PressableOpacity onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
             <FileText size={18} color={colors.mutedForeground} />
             <Text style={[s.linkText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
@@ -62,20 +72,21 @@ function AboutScreenInner() {
         </View>
 
         {/* Website */}
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <PressableOpacity
             onPress={() => Linking.openURL('https://tackbird.com').catch(() => {})}
             style={s.linkRow}
             accessibilityLabel="tackbird.com"
             accessibilityRole="link"
           >
-            <ExternalLink size={18} color={colors.primary} />
-            <Text style={[s.linkText, { color: colors.primary }]}>tackbird.com</Text>
+            <ExternalLink size={18} color={colors.foreground} />
+            <Text style={[s.linkText, { color: colors.foreground }]}>tackbird.com</Text>
           </PressableOpacity>
         </View>
 
         {/* Credits */}
-        <View style={[s.card, { backgroundColor: colors.card }]}>
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>TEKIJ{'\u00c4'}T</Text>
+        <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.creditsTitle, { color: colors.foreground }]}>{t('about.credits')}</Text>
           <Text style={[s.creditsText, { color: colors.mutedForeground }]}>{t('about.creditsContent')}</Text>
         </View>
@@ -91,24 +102,60 @@ function AboutScreenInner() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 14,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
-  content: { padding: 16, gap: 16, paddingBottom: 40 },
-  logoSection: { alignItems: 'center', paddingVertical: 24, gap: 8 },
+  circleBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.1,
+  },
+  headerSpacer: { width: 36 },
+  content: { padding: 16, gap: 12, paddingBottom: 40 },
+  logoSection: { alignItems: 'center', paddingVertical: 24, gap: 6 },
   logoPlaceholder: {
-    width: 80, height: 80, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
+    width: 72,
+    height: 72,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  logoText: { fontSize: 32, fontFamily: fonts.heading },
-  appName: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.5 },
-  versionText: { fontSize: 14, fontFamily: fonts.body },
-  tagline: { fontSize: 14, fontFamily: fonts.body, marginTop: 4 },
-  card: { borderRadius: 16, overflow: 'hidden' },
+  logoText: { fontSize: 28, fontFamily: fonts.heading },
+  appName: { fontSize: 22, fontFamily: fonts.heading, letterSpacing: -0.5 },
+  versionText: { fontSize: 13, fontFamily: fonts.body },
+  tagline: { fontSize: 14, fontFamily: fonts.body, marginTop: 2 },
+  sectionLabel: {
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: 8,
+    marginBottom: 4,
+    paddingHorizontal: 4,
+  },
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
   description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22, padding: 16 },
   linkRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
   },
   linkText: { fontSize: 14, fontFamily: fonts.bodyMedium, flex: 1 },
   divider: { height: StyleSheet.hairlineWidth },

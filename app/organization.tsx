@@ -12,7 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
 
@@ -31,13 +31,13 @@ interface AdStats {
 }
 
 export default function OrganizationScreen() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
 
-  // Feature flag gate — redirect if Business accounts are disabled
+  // Feature flag gate -- redirect if Business accounts are disabled
   useEffect(() => {
     if (!FEATURES.BUSINESS_ACCOUNT) {
       router.replace('/(tabs)')
@@ -287,12 +287,18 @@ export default function OrganizationScreen() {
       <ScreenErrorBoundary screenName="Organization">
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-          <BackButton />
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            style={[styles.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <ArrowLeft size={20} color={colors.foreground} />
+          </Pressable>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.dashboard')}</Text>
-          <View style={{ width: 24 }} />
+          <View style={{ width: 36 }} />
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.foreground} />
         </View>
       </View>
       </ScreenErrorBoundary>
@@ -304,14 +310,20 @@ export default function OrganizationScreen() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={[styles.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={20} color={colors.foreground} />
+        </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('business.dashboard')}</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-        {/* Business info — flat with hairline */}
-        <View style={[styles.businessCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        {/* Business info card */}
+        <View style={[styles.businessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.businessName, { color: colors.foreground }]}>
             {profile?.business_name ?? profile?.name}
           </Text>
@@ -322,7 +334,7 @@ export default function OrganizationScreen() {
           )}
           {/* Dot + label status */}
           <View style={[styles.statusDotRow, { marginTop: 8 }]}>
-            <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
+            <View style={[styles.statusDot, { backgroundColor: colors.foreground }]} />
             <Text style={[styles.statusText, { color: colors.mutedForeground }]}>{t('business.active')}</Text>
           </View>
         </View>
@@ -331,13 +343,13 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.profileImages')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageScroll}>
             {businessImages.map((uri, i) => (
               <View key={`${uri}-${i}`} style={styles.imageThumbWrap}>
                 <Image source={{ uri }} style={styles.imageThumb} contentFit="cover" cachePolicy="memory-disk" />
                 <PressableOpacity
-                  style={[styles.imageDeleteBtn, { backgroundColor: colors.destructive }]}
+                  style={[styles.imageDeleteBtn, { backgroundColor: colors.foreground }]}
                   onPress={() => removeImage(i)}
                   hitSlop={8}
                   accessibilityRole="button"
@@ -349,18 +361,18 @@ export default function OrganizationScreen() {
             ))}
             {businessImages.length < MAX_IMAGES && (
               <PressableOpacity
-                style={[styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.muted }]}
+                style={[styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.background }]}
                 onPress={pickImage}
                 disabled={uploading}
                 accessibilityRole="button"
                 accessibilityLabel={t('business.addPhoto')}
               >
                 {uploading ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
+                  <ActivityIndicator size="small" color={colors.foreground} />
                 ) : (
                   <>
-                    <Camera size={22} color={colors.primary} />
-                    <Text style={[styles.addImageText, { color: colors.primary }]}>{t('business.addPhoto')}</Text>
+                    <Camera size={22} color={colors.mutedForeground} />
+                    <Text style={[styles.addImageText, { color: colors.mutedForeground }]}>{t('business.addPhoto')}</Text>
                   </>
                 )}
               </PressableOpacity>
@@ -375,9 +387,9 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.description')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <TextInput
-            style={[styles.textArea, { color: colors.foreground, borderColor: colors.border }]}
+            style={[styles.textArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
             value={businessDescription}
             onChangeText={setBusinessDescription}
             placeholder={t('business.descriptionPlaceholder')}
@@ -396,9 +408,9 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.address')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <TextInput
-            style={[styles.input, { color: colors.foreground, borderColor: colors.border }]}
+            style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
             value={businessAddress}
             onChangeText={setBusinessAddress}
             placeholder={t('business.addressPlaceholder')}
@@ -406,21 +418,21 @@ export default function OrganizationScreen() {
             maxLength={200}
           />
           <PressableOpacity
-            style={[styles.geocodeBtn, { backgroundColor: `${colors.primary}18` }]}
+            style={[styles.geocodeBtn, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
             onPress={geocodeAddress}
             disabled={geocoding || !businessAddress.trim()}
           >
             {geocoding ? (
-              <ActivityIndicator size="small" color={colors.primary} />
+              <ActivityIndicator size="small" color={colors.foreground} />
             ) : (
               <>
-                <Navigation size={16} color={colors.primary} />
-                <Text style={[styles.geocodeBtnText, { color: colors.primary }]}>{t('business.geocode')}</Text>
+                <Navigation size={16} color={colors.foreground} />
+                <Text style={[styles.geocodeBtnText, { color: colors.foreground }]}>{t('business.geocode')}</Text>
               </>
             )}
           </PressableOpacity>
           {businessLat != null && businessLng != null && (
-            <Text style={[styles.coordsText, { color: colors.success }]}>
+            <Text style={[styles.coordsText, { color: colors.mutedForeground }]}>
               {businessLat.toFixed(5)}, {businessLng.toFixed(5)}
             </Text>
           )}
@@ -430,11 +442,11 @@ export default function OrganizationScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
           {t('business.contactInfo')}
         </Text>
-        <View style={[styles.editorCard, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View style={[styles.editorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.contactRow}>
             <Phone size={16} color={colors.mutedForeground} />
             <TextInput
-              style={[styles.contactInput, { color: colors.foreground, borderColor: colors.border }]}
+              style={[styles.contactInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
               value={businessPhone}
               onChangeText={setBusinessPhone}
               placeholder={t('business.phonePlaceholder')}
@@ -448,7 +460,7 @@ export default function OrganizationScreen() {
           <View style={styles.contactRow}>
             <Globe size={16} color={colors.mutedForeground} />
             <TextInput
-              style={[styles.contactInput, { color: colors.foreground, borderColor: colors.border }]}
+              style={[styles.contactInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
               value={businessWebsite}
               onChangeText={setBusinessWebsite}
               placeholder={t('business.websitePlaceholder')}
@@ -472,11 +484,11 @@ export default function OrganizationScreen() {
           accessibilityState={{ disabled: saving }}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={colors.background} />
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
             <>
-              <Save size={18} color={colors.background} />
-              <Text style={[styles.saveBtnText, { color: colors.background }]}>
+              <Save size={18} color={colors.primaryForeground} />
+              <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>
                 {t('business.saveAll')}
               </Text>
             </>
@@ -484,26 +496,26 @@ export default function OrganizationScreen() {
         </PressableOpacity>
 
         {/* Map presence toggle */}
-        <View style={[styles.toggleCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-          <MapPin size={18} color={colors.primary} />
+        <View style={[styles.toggleCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <MapPin size={18} color={colors.foreground} />
           <Text style={[styles.toggleText, { color: colors.foreground }]}>{t('business.mapPresence')}</Text>
           <Switch
             value={mapPresence}
             onValueChange={toggleMapPresence}
-            trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
-            thumbColor={mapPresence ? colors.primary : colors.mutedForeground}
+            trackColor={{ false: colors.muted, true: `${colors.foreground}66` }}
+            thumbColor={mapPresence ? colors.foreground : colors.mutedForeground}
           />
         </View>
 
-        {/* Create ad button — solid foreground */}
+        {/* Create ad button -- INK bg primary */}
         <PressableOpacity
           onPress={() => router.push('/create-ad')}
           style={[styles.createAdBtn, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={t('ads.create')}
         >
-          <Plus size={18} color={colors.background} />
-          <Text style={[styles.createAdText, { color: colors.background }]}>
+          <Plus size={18} color={colors.primaryForeground} />
+          <Text style={[styles.createAdText, { color: colors.primaryForeground }]}>
             {t('ads.create')}
           </Text>
         </PressableOpacity>
@@ -518,13 +530,13 @@ export default function OrganizationScreen() {
             {ads.map(ad => {
               const isActive = ad.status === 'active' && new Date(ad.end_date) > new Date()
               return (
-                <View key={ad.id} style={[styles.adCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+                <View key={ad.id} style={[styles.adCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={styles.adHeader}>
                     <Text style={[styles.adTitle, { color: colors.foreground }]} numberOfLines={1}>
                       {ad.title}
                     </Text>
                     <View style={styles.statusDotRow}>
-                      <View style={[styles.statusDot, { backgroundColor: isActive ? colors.primary : colors.mutedForeground }]} />
+                      <View style={[styles.statusDot, { backgroundColor: isActive ? colors.foreground : colors.mutedForeground }]} />
                       <Text style={[styles.adStatusText, { color: colors.mutedForeground }]}>
                         {isActive ? t('ads.active') : t('ads.ended')}
                       </Text>
@@ -549,7 +561,7 @@ export default function OrganizationScreen() {
                     </View>
                     <View style={styles.statItem}>
                       <BarChart3 size={14} color={colors.mutedForeground} />
-                      <Text style={[styles.statValue, { color: colors.foreground }]}>{getCtr(ad.impressions, ad.clicks)}</Text>
+                      <Text style={[styles.statValue, { color: colors.foreground }]}>{ad.impressions > 0 ? getCtr(ad.impressions, ad.clicks) : '0%'}</Text>
                       <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t('ads.ctr')}</Text>
                     </View>
                   </View>
@@ -579,9 +591,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  circleBack: {
+    width: 36, height: 36, borderRadius: 999,
+    borderWidth: 1, alignItems: 'center', justifyContent: 'center',
+  },
+  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28, textAlign: 'center', flex: 1 },
   content: { padding: 16, gap: 12, paddingBottom: 60 },
-  businessCard: { borderRadius: 16, padding: 16, gap: 6 },
+  businessCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 6 },
   businessName: { fontSize: 20, fontFamily: fonts.headingSemi },
   vatId: { fontSize: 13, fontFamily: fonts.body },
   statusDotRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
@@ -589,7 +605,7 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 12, fontFamily: fonts.body },
   toggleCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderRadius: 16, padding: 16,
+    borderRadius: 16, borderWidth: 1, padding: 16,
   },
   toggleText: { fontSize: 14, flex: 1, fontFamily: fonts.bodyMedium },
   createAdBtn: {
@@ -602,7 +618,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
     fontFamily: fonts.bodySemi, lineHeight: 16,
   },
-  adCard: { borderRadius: 16, padding: 16, gap: 8 },
+  adCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 8 },
   adHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   adTitle: { fontSize: 14, flex: 1, fontFamily: fonts.bodySemi },
   adStatus: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
@@ -617,40 +633,40 @@ const styles = StyleSheet.create({
   emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
 
   // Profile editor styles
-  editorCard: { borderRadius: 16, padding: 16, gap: 12 },
+  editorCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
   imageScroll: { gap: 12, paddingVertical: 4 },
   imageThumbWrap: { position: 'relative' },
-  imageThumb: { width: 90, height: 90, borderRadius: 16 },
+  imageThumb: { width: 90, height: 90, borderRadius: 14 },
   imageDeleteBtn: {
     position: 'absolute', top: -6, right: -6,
     width: 22, height: 22, borderRadius: 11,
     alignItems: 'center', justifyContent: 'center',
   },
   addImageBtn: {
-    width: 90, height: 90, borderRadius: 16, borderWidth: 1.5, borderStyle: 'dashed',
+    width: 90, height: 90, borderRadius: 14, borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   addImageText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
   imageHint: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
   textArea: {
-    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 14, borderWidth: 1,
     paddingHorizontal: 16, paddingVertical: 12, fontSize: 14,
     minHeight: 100, lineHeight: 22, fontFamily: fonts.body,
   },
   charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
   input: {
-    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 14, borderWidth: 1,
     paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body,
   },
   geocodeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: 16,
+    gap: 8, paddingVertical: 12, borderRadius: 14,
   },
   geocodeBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   coordsText: { fontSize: 12, fontFamily: fonts.body },
   contactRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   contactInput: {
-    flex: 1, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
+    flex: 1, borderRadius: 14, borderWidth: 1,
     paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body,
   },
   saveBtn: {

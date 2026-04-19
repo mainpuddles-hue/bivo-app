@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, StyleSheet, Linking, Alert } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, Linking, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, ChevronDown, ChevronUp, Mail, ExternalLink } from 'lucide-react-native'
@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 
 interface FAQItem {
   question: string
@@ -81,9 +81,18 @@ function HelpScreenInner() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('help.title')}</Text>
+      {/* Bar header */}
+      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={18} color={colors.foreground} />
+        </PressableOpacity>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>Tuki</Text>
+        <View style={s.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
@@ -91,8 +100,8 @@ function HelpScreenInner() {
 
         {FAQ_CATEGORIES.map((category, ci) => (
           <View key={ci}>
-            <Text style={[s.categoryTitle, { color: colors.mutedForeground }]}>{t(category.titleKey)}</Text>
-            <View style={[s.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+            <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t(category.titleKey)}</Text>
+            <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {category.items.map((item, qi) => {
                 const key = `${ci}-${qi}`
                 const isExpanded = expandedItems.has(key)
@@ -102,8 +111,8 @@ function HelpScreenInner() {
                     <PressableOpacity onPress={() => toggleItem(key)} style={s.faqRow} accessibilityRole="button">
                       <Text style={[s.faqQuestion, { color: colors.foreground }]}>{t(item.questionKey)}</Text>
                       {isExpanded
-                        ? <ChevronUp size={18} color={colors.mutedForeground} />
-                        : <ChevronDown size={18} color={colors.mutedForeground} />
+                        ? <ChevronUp size={16} color={colors.mutedForeground} />
+                        : <ChevronDown size={16} color={colors.mutedForeground} />
                       }
                     </PressableOpacity>
                     {isExpanded && (
@@ -119,7 +128,8 @@ function HelpScreenInner() {
         ))}
 
         {/* Contact support */}
-        <View style={[s.card, { backgroundColor: colors.card, marginTop: 16 }]}>
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>YHTEYDENOTTO</Text>
+        <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
           <PressableOpacity
@@ -134,15 +144,15 @@ function HelpScreenInner() {
         </View>
 
         {/* Links to terms and privacy */}
-        <View style={[s.card, { backgroundColor: colors.card, marginTop: 12 }]}>
+        <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <PressableOpacity onPress={() => router.push('/terms')} style={s.linkRow} accessibilityLabel={t('settings.terms')} accessibilityRole="button">
-            <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.terms')}</Text>
-            <ExternalLink size={14} color={colors.primary} />
+            <Text style={[s.linkText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
+            <ExternalLink size={14} color={colors.mutedForeground} />
           </PressableOpacity>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
           <PressableOpacity onPress={() => router.push('/privacy')} style={s.linkRow} accessibilityLabel={t('settings.privacy')} accessibilityRole="button">
-            <Text style={[s.linkText, { color: colors.primary }]}>{t('settings.privacy')}</Text>
-            <ExternalLink size={14} color={colors.primary} />
+            <Text style={[s.linkText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
+            <ExternalLink size={14} color={colors.mutedForeground} />
           </PressableOpacity>
         </View>
       </ScrollView>
@@ -153,31 +163,71 @@ function HelpScreenInner() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 14,
   },
-  headerTitle: { fontSize: 20, fontFamily: fonts.headingSemi, letterSpacing: -0.3, lineHeight: 28 },
+  circleBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.1,
+  },
+  headerSpacer: { width: 36 },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 8 },
-  categoryTitle: { fontSize: 11, fontFamily: fonts.bodySemi, marginTop: 16, marginBottom: 8, paddingHorizontal: 4, color: undefined, textTransform: 'uppercase', letterSpacing: 0.5 },
-  card: { borderRadius: 16, overflow: 'hidden' },
+  sectionLabel: {
+    fontSize: 10.5,
+    fontFamily: fonts.bodySemi,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: 20,
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
   divider: { height: StyleSheet.hairlineWidth },
   faqRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     padding: 16,
   },
   faqQuestion: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodyMedium, flex: 1 },
   faqAnswer: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 },
   answerText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
-  contactTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
+  contactTitle: { fontSize: 15, lineHeight: 22, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
   contactDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   contactBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, borderRadius: 24, minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 12,
+    borderRadius: 999,
+    minHeight: 48,
   },
   contactBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
   linkRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
   },
   linkText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodyMedium },

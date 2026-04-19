@@ -313,7 +313,7 @@ export default function GroupsScreen() {
       <PressableOpacity
         key={group.id}
         style={[s.groupCard, {
-          backgroundColor: 'transparent',
+          backgroundColor: colors.card,
           borderColor: colors.border,
         }]}
         onPress={() => router.push(`/groups/${group.id}`)}
@@ -330,11 +330,11 @@ export default function GroupsScreen() {
             {group.name}
           </Text>
           <View style={s.groupMeta}>
-            <Text style={[s.groupMetaText, { color: group.member_count <= 1 ? colors.primary : colors.mutedForeground }]}>
+            <Text style={[s.groupMetaText, { color: colors.mutedForeground }]}>
               {group.member_count <= 1 ? t('groups.inviteMembers') : `${group.member_count} ${t('groups.members')}`}
             </Text>
             {(group.new_post_count ?? 0) > 0 && (
-              <Text style={[s.groupMetaText, { color: colors.accent }]}>
+              <Text style={[s.groupMetaText, { color: colors.mutedForeground }]}>
                 {' '}{group.new_post_count} {t('groups.newPosts')}
               </Text>
             )}
@@ -368,8 +368,8 @@ export default function GroupsScreen() {
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         {/* Header */}
         <View style={[s.header, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
+          <PressableOpacity onPress={() => router.back()} style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+            <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
             {t('groups.title')}
@@ -392,20 +392,20 @@ export default function GroupsScreen() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
+        <PressableOpacity onPress={() => router.back()} style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>
           {t('groups.title')}
         </Text>
-        <PressableOpacity onPress={() => setShowSearch(!showSearch)} style={s.headerBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.search')}>
-          <Search size={20} color={colors.mutedForeground} strokeWidth={1.8} />
+        <PressableOpacity onPress={() => setShowSearch(!showSearch)} style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.search')}>
+          <Search size={18} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
       </View>
 
       {/* Search bar */}
       {showSearch && (
-        <View style={[s.searchBar, { backgroundColor: colors.muted, borderBottomColor: colors.border }]}>
+        <View style={[s.searchBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <Search size={16} color={colors.mutedForeground} strokeWidth={1.8} />
           <TextInput
             style={[s.searchInput, { color: colors.foreground }]}
@@ -442,7 +442,7 @@ export default function GroupsScreen() {
             contentContainerStyle={[s.scrollContainer, { paddingBottom: insets.bottom + 80 }]}
             keyboardShouldPersistTaps="handled"
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.foreground} />
             }
           >
             {/* My groups */}
@@ -450,7 +450,7 @@ export default function GroupsScreen() {
               {t('groups.myGroups')}
             </Text>
             {filteredMyGroups.length === 0 ? (
-              <View style={[s.emptySection, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+              <View style={[s.emptySection, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Users size={28} color={colors.mutedForeground} strokeWidth={1.6} />
                 <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
                   {t('groups.noGroups')}
@@ -468,7 +468,7 @@ export default function GroupsScreen() {
               {t('groups.suggested')}
             </Text>
             {filteredSuggested.length === 0 ? (
-              <View style={[s.emptySection, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+              <View style={[s.emptySection, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Text style={[s.emptySectionText, { color: colors.mutedForeground }]}>
                   {t('groups.noSuggested')}
                 </Text>
@@ -582,7 +582,7 @@ export default function GroupsScreen() {
               <View style={s.toggleRow}>
                 <View style={s.toggleInfo}>
                   {newIsPublic
-                    ? <Globe size={18} color={colors.primary} strokeWidth={1.8} />
+                    ? <Globe size={18} color={colors.foreground} strokeWidth={1.8} />
                     : <Lock size={18} color={colors.mutedForeground} strokeWidth={1.8} />
                   }
                   <Text style={[s.toggleLabel, { color: colors.foreground }]}>
@@ -592,7 +592,7 @@ export default function GroupsScreen() {
                 <Switch
                   value={newIsPublic}
                   onValueChange={setNewIsPublic}
-                  trackColor={{ false: colors.muted, true: colors.primary }}
+                  trackColor={{ false: colors.muted, true: colors.foreground }}
                   thumbColor={Platform.OS === 'android' ? colors.card : undefined}
                 />
               </View>
@@ -643,7 +643,7 @@ export default function GroupsScreen() {
                   }}
                 >
                   <Text style={[s.neighborhoodText, {
-                    color: newNeighborhood === item ? colors.primary : colors.foreground,
+                    color: newNeighborhood === item ? colors.foreground : colors.foreground,
                   }]}>
                     {item}
                   </Text>
@@ -665,21 +665,25 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 48,
+    height: 52,
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerBack: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
+  circleBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
   },
   headerTitle: {
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 17,
+    lineHeight: 22,
     fontFamily: fonts.headingSemi,
     letterSpacing: -0.3,
   },
-  headerRight: { width: 40 },
+  headerRight: { width: 36 },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -698,12 +702,12 @@ const s = StyleSheet.create({
   scrollContent: { flex: 1 },
   scrollContainer: { paddingHorizontal: 16, paddingTop: 16 },
   sectionTitle: {
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 10.5,
+    lineHeight: 14,
     fontFamily: fonts.bodySemi,
     marginBottom: 12,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   groupCard: {
     flexDirection: 'row',
@@ -712,7 +716,7 @@ const s = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 8,
     gap: 12,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
   },
   groupAvatar: {
     width: 44,
@@ -747,7 +751,7 @@ const s = StyleSheet.create({
   joinButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 24,
+    borderRadius: 999,
   },
   joinButtonText: {
     fontSize: 13,
@@ -773,6 +777,7 @@ const s = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 8,
     gap: 8,
+    borderWidth: 1,
   },
   emptySectionText: {
     fontSize: 14,
@@ -791,7 +796,7 @@ const s = StyleSheet.create({
     right: 20,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -833,7 +838,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
     fontFamily: fonts.body,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
@@ -842,7 +847,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
     fontFamily: fonts.body,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 16,
     minHeight: 80,
@@ -856,7 +861,7 @@ const s = StyleSheet.create({
   chip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
     borderWidth: 1,
   },
   chipText: {
@@ -895,7 +900,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 24,
+    borderRadius: 999,
     marginTop: 20,
     marginBottom: 20,
     minHeight: 48,
@@ -908,7 +913,7 @@ const s = StyleSheet.create({
   neighborhoodItem: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 14,
   },
   neighborhoodText: {
     fontSize: 14,

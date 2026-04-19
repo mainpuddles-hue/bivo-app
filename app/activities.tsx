@@ -158,7 +158,7 @@ function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hook
   return (
     <View style={{ gap: 12 }}>
       {Array.from({ length: 4 }).map((_, i) => (
-        <View key={i} style={[st.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+        <View key={i} style={[st.card, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
           <View style={st.cardTop}>
             <Animated.View style={[{ width: 44, height: 44, borderRadius: 16, backgroundColor: colors.muted }, { opacity }]} />
             <View style={st.cardContent}>
@@ -409,15 +409,14 @@ function ActivitiesScreenInner() {
 
   // ── Render Activity Card ──
   const renderActivity = useCallback(({ item }: { item: Activity }) => {
-    const catColor = CATEGORY_COLOR_MAP[item.category] ?? colors.mutedForeground
     const CatIcon = CATEGORY_ICON_MAP[item.category] ?? Grid2x2
     const isFull = item.max_members ? (item.member_count ?? 0) >= item.max_members : false
 
     return (
-      <View style={[st.card, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+      <View style={[st.card, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
         <View style={st.cardTop}>
           <View style={[st.iconBox, { backgroundColor: colors.muted }]}>
-            <CatIcon size={20} color={catColor} />
+            <CatIcon size={20} color={colors.foreground} />
           </View>
           <View style={st.cardContent}>
             <Text style={[st.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
@@ -452,18 +451,11 @@ function ActivitiesScreenInner() {
                 style={st.creatorRow}
               >
                 <Avatar url={item.creator.avatar_url} name={item.creator.name} size={18} />
-                <Text style={[st.metaText, { color: colors.primary }]} numberOfLines={1}>
+                <Text style={[st.metaText, { color: colors.foreground }]} numberOfLines={1}>
                   {item.creator.name}
                 </Text>
               </PressableOpacity>
             )}
-          </View>
-          {/* Category dot + label */}
-          <View style={st.categoryBadge}>
-            <View style={[st.categoryDot, { backgroundColor: catColor }]} />
-            <Text style={[st.categoryBadgeText, { color: colors.mutedForeground }]}>
-              {t(CATEGORIES.find(c => c.key === item.category)?.labelKey ?? 'activity.categoryOther')}
-            </Text>
           </View>
         </View>
 
@@ -478,7 +470,7 @@ function ActivitiesScreenInner() {
               style={[
                 st.joinBtn,
                 item.is_member
-                  ? { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }
+                  ? { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }
                   : { backgroundColor: colors.foreground },
               ]}
             >
@@ -500,8 +492,8 @@ function ActivitiesScreenInner() {
     <View style={[st.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* ── Header ── */}
       <View style={[st.header, { borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={st.backBtn} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={24} color={colors.foreground} />
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[st.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <Text style={[st.headerTitle, { color: colors.foreground }]}>
           {t('activities.title')}
@@ -511,7 +503,7 @@ function ActivitiesScreenInner() {
             if (!userId) { router.push('/(auth)/login'); return }
             setShowCreateModal(true)
           }}
-          style={[st.addBtn, { backgroundColor: colors.foreground }]}
+          style={[st.circleBack, { backgroundColor: colors.foreground, borderColor: colors.foreground }]}
         >
           <Plus size={18} color={colors.background} strokeWidth={2.5} />
         </PressableOpacity>
@@ -534,7 +526,7 @@ function ActivitiesScreenInner() {
                 st.filterChip,
                 isActive
                   ? { backgroundColor: colors.foreground }
-                  : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                  : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
               ]}
             >
               <Text style={[
@@ -563,7 +555,7 @@ function ActivitiesScreenInner() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => { setRefreshing(true); fetchActivities() }}
-              tintColor={colors.primary}
+              tintColor={colors.foreground}
             />
           }
           ItemSeparatorComponent={ActivityItemSeparator}
@@ -680,11 +672,11 @@ function ActivitiesScreenInner() {
                           st.catChip,
                           isSelected
                             ? { backgroundColor: colors.foreground }
-                            : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                            : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
                         ]}
                       >
-                        <cat.Icon size={14} color={isSelected ? colors.background : cat.color} />
-                        <Text style={[st.catChipText, { color: isSelected ? colors.background : cat.color }]}>
+                        <cat.Icon size={14} color={isSelected ? colors.background : colors.foreground} />
+                        <Text style={[st.catChipText, { color: isSelected ? colors.background : colors.foreground }]}>
                           {t(cat.labelKey)}
                         </Text>
                       </PressableOpacity>
@@ -707,7 +699,7 @@ function ActivitiesScreenInner() {
                           st.schedChip,
                           isSelected
                             ? { backgroundColor: colors.foreground }
-                            : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                            : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
                         ]}
                       >
                         <Text style={[st.schedChipText, { color: isSelected ? colors.background : colors.mutedForeground }]}>
@@ -734,7 +726,7 @@ function ActivitiesScreenInner() {
                             st.dayChip,
                             isSelected
                               ? { backgroundColor: colors.foreground }
-                              : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                              : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
                           ]}
                         >
                           <Text style={[st.dayChipText, { color: isSelected ? colors.background : colors.mutedForeground }]}>
@@ -825,25 +817,24 @@ const st = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 12,
   },
-  backBtn: { padding: 2, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    letterSpacing: -0.3,
-    fontFamily: fonts.headingSemi,
-    lineHeight: 28,
-  },
-  addBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  circleBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 17,
+    letterSpacing: -0.3,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 22,
   },
 
   // Filters
@@ -856,7 +847,7 @@ const st = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
   },
   filterChipText: {
     fontSize: 13,
@@ -888,7 +879,7 @@ const st = StyleSheet.create({
   iconBox: {
     width: 44,
     height: 44,
-    borderRadius: 16,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -928,21 +919,6 @@ const st = StyleSheet.create({
     gap: 8,
     marginTop: 2,
   },
-  categoryBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  categoryDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  categoryBadgeText: {
-    fontSize: 11,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-  },
   cardBottom: {
     flexDirection: 'row',
     paddingHorizontal: 12,
@@ -956,7 +932,7 @@ const st = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 24,
+    borderRadius: 999,
     minWidth: 90,
     justifyContent: 'center',
   },
@@ -991,7 +967,7 @@ const st = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     marginTop: 8,
   },
   emptyBtnText: {
@@ -1006,7 +982,7 @@ const st = StyleSheet.create({
     right: 20,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1043,7 +1019,7 @@ const st = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,
@@ -1052,7 +1028,7 @@ const st = StyleSheet.create({
   },
   textArea: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,
@@ -1071,7 +1047,7 @@ const st = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   catChipText: {
     fontSize: 13,
@@ -1081,7 +1057,7 @@ const st = StyleSheet.create({
   schedChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   schedChipText: {
     fontSize: 13,
@@ -1096,7 +1072,7 @@ const st = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   dayChipText: {
     fontSize: 12,
@@ -1109,7 +1085,7 @@ const st = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 999,
     marginTop: 8,
     minHeight: 48,
   },
