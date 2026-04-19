@@ -1,10 +1,11 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2 } from 'lucide-react-native'
+import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check } from 'lucide-react-native'
+import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
@@ -22,7 +23,7 @@ import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 import { useReferral, type ApplyResult } from '@/hooks/useReferral'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
@@ -43,6 +44,128 @@ const LOCATION_ACCURACY_OPTIONS: { key: LocationAccuracy; label: string; desc: s
   { key: 'area', label: 'settings.locationArea', desc: 'settings.locationAreaDesc' },
   { key: 'city', label: 'settings.locationCity', desc: 'settings.locationCityDesc' },
 ]
+
+// Danger red for logout row per mockup 22
+const DANGER_COLOR = '#A03030'
+
+// ── Mockup 22 primitives ──
+
+/** Section label above a group — uppercase, small, muted */
+function SectionLabel({ children, colors }: { children: ReactNode; colors: any }) {
+  return (
+    <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{children}</Text>
+  )
+}
+
+/** Grouped card container with surface bg, rounded corners, border */
+function Group({ label, children, colors }: { label?: string; children: ReactNode; colors: any }) {
+  const items = Array.isArray(children) ? children.filter(Boolean) : children ? [children] : []
+  return (
+    <View style={s.groupWrapper}>
+      {label ? <SectionLabel colors={colors}>{label}</SectionLabel> : null}
+      <View style={[s.groupContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {items.map((child, i) => (
+          <View key={i}>
+            {child}
+            {i < items.length - 1 && (
+              <View style={[s.groupDivider, { backgroundColor: colors.border }]} />
+            )}
+          </View>
+        ))}
+      </View>
+    </View>
+  )
+}
+
+/** Single row inside a Group */
+function Row({
+  icon,
+  iconBg,
+  label,
+  meta,
+  value,
+  danger,
+  dangerColor,
+  chevron = true,
+  switchValue,
+  onSwitchChange,
+  onPress,
+  colors,
+  isDark,
+  disabled,
+  accessibilityLabel,
+  accessibilityRole,
+  children,
+}: {
+  icon?: ReactNode
+  iconBg?: string
+  label: string
+  meta?: string
+  value?: string | null
+  danger?: boolean
+  dangerColor?: string
+  chevron?: boolean
+  switchValue?: boolean
+  onSwitchChange?: (val: boolean) => void
+  onPress?: () => void
+  colors: any
+  isDark?: boolean
+  disabled?: boolean
+  accessibilityLabel?: string
+  accessibilityRole?: 'button' | 'radio' | 'switch'
+  children?: ReactNode
+}) {
+  const textColor = danger ? (dangerColor ?? colors.destructive) : colors.foreground
+  const bgColor = iconBg ?? colors.background
+
+  const content = (
+    <View style={s.rowInner}>
+      {icon && (
+        <View style={[s.rowIconCircle, { backgroundColor: bgColor }]}>
+          {icon}
+        </View>
+      )}
+      <View style={s.rowTextContainer}>
+        <Text style={[s.rowLabel, { color: textColor }]}>
+          {label}
+        </Text>
+        {meta ? <Text style={[s.rowMeta, { color: colors.mutedForeground }]}>{meta}</Text> : null}
+      </View>
+      {value ? <Text style={[s.rowValue, { color: colors.mutedForeground }]}>{value}</Text> : null}
+      {switchValue !== undefined && onSwitchChange && (
+        <Switch
+          value={switchValue}
+          onValueChange={onSwitchChange}
+          trackColor={{ false: colors.border, true: colors.foreground }}
+          thumbColor="#FFFFFF"
+          disabled={disabled}
+          style={s.switchStyle}
+          accessibilityLabel={accessibilityLabel ?? label}
+        />
+      )}
+      {children}
+      {chevron && switchValue === undefined && !value && !children && (
+        <ChevronRight size={14} color={colors.tertiaryForeground} />
+      )}
+    </View>
+  )
+
+  if (onPress && switchValue === undefined) {
+    return (
+      <PressableOpacity
+        onPress={onPress}
+        disabled={disabled}
+        accessibilityRole={accessibilityRole ?? 'button'}
+        accessibilityLabel={accessibilityLabel ?? label}
+        style={s.rowPressable}
+      >
+        {content}
+      </PressableOpacity>
+    )
+  }
+
+  return <View style={s.rowPressable}>{content}</View>
+}
 
 export default function SettingsScreen() {
   const { colors, isDark, theme, setTheme: setAppTheme } = useTheme()
@@ -547,419 +670,362 @@ export default function SettingsScreen() {
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0'
 
+  // Joined year for profile card subtitle
+  const joinedYear = accountCreatedAt ? new Date(accountCreatedAt).getFullYear().toString() : null
+
+  // Warm tint for logout icon bg per mockup 22
+  const warmTintBg = isDark ? 'rgba(240,238,233,0.08)' : '#F0EEE9'
+
+  // Verification count for display
+  const verificationCount = [emailVerified, !!profile?.naapurusto, !!profile?.avatar_url].filter(Boolean).length
+
   return (
     <ScreenErrorBoundary screenName="Settings">
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('settings.title')}</Text>
-        <View style={{ flex: 1 }} />
-        {dirty && (
-          <Pressable onPress={handleSave} disabled={saving} style={({ pressed }) => [s.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : pressed ? 0.7 : 1 }]}>
-            {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Save size={16} color={colors.primaryForeground} />}
-            <Text style={[s.saveBtnText, { color: colors.primaryForeground }]}>{t('common.save')}</Text>
-          </Pressable>
-        )}
+      {/* ── Header Bar (mockup 22) ── */}
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[s.headerBackCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ChevronLeft size={15} color={colors.foreground} strokeWidth={2.2} />
+        </PressableOpacity>
+        <View style={s.headerCenter}>
+          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('settings.title')}</Text>
+        </View>
+        <View style={s.headerRightSpacer}>
+          {dirty && (
+            <PressableOpacity onPress={handleSave} disabled={saving} style={[s.headerSaveBtn, { backgroundColor: colors.foreground }]}>
+              {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Save size={14} color={colors.primaryForeground} />}
+            </PressableOpacity>
+          )}
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
-        {/* ── Section: Account ── */}
-        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-          {t('settings.sectionAccount')}
-        </Text>
-
-        {/* Email verification status */}
-        {userEmail && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.email')}</Text>
-            <View style={s.card}>
-              <View style={[s.row, { borderBottomColor: colors.border }]}>
-                <Mail size={18} color={colors.mutedForeground} />
-                <Text style={[s.rowText, { color: colors.foreground }]} numberOfLines={1}>{userEmail}</Text>
-                {emailVerified ? (
-                  <View style={s.verifiedBadge}>
-                    <CheckCircle size={14} color={colors.success} />
-                    <Text style={[s.verifiedText, { color: colors.success }]}>{t('settings.emailVerified')}</Text>
-                  </View>
-                ) : (
-                  <View style={s.verifiedBadge}>
-                    <AlertCircle size={14} color={colors.pro} />
-                    <Text style={[s.verifiedText, { color: colors.pro }]}>{t('settings.emailUnverified')}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </>
-        )}
-
-        {/* Display name */}
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 40 }} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
+        {/* ── Profile Card ── */}
         {profile && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.displayName') ?? 'Nimi'}</Text>
-            <View style={s.card}>
-              {editingName ? (
-                <View style={{ padding: 16, gap: 12 }}>
-                  <TextInput
-                    style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
-                    value={nameText}
-                    onChangeText={setNameText}
-                    placeholder={t('profile.name') ?? 'Nimi'}
-                    placeholderTextColor={colors.mutedForeground}
-                    maxLength={50}
-                    autoFocus
-                    accessibilityLabel={t('settings.displayName')}
-                  />
-                  <Text style={{ fontSize: 11, color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>
-                    {nameText.length}/50
-                  </Text>
-                  <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <PressableOpacity onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 999, backgroundColor: colors.muted }}>
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>{t('common.cancel')}</Text>
-                    </PressableOpacity>
-                    <PressableOpacity
-                      onPress={handleSaveName}
-                      disabled={savingName || !nameText.trim()}
-                      style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 999, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
-                    >
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
-                        {savingName ? '...' : t('common.save')}
-                      </Text>
-                    </PressableOpacity>
-                  </View>
+          <View style={s.profileCardWrapper}>
+            <PressableOpacity
+              onPress={() => router.push('/(tabs)/profile')}
+              style={[s.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              accessibilityRole="button"
+              accessibilityLabel={profile.name ?? t('settings.displayName')}
+            >
+              <View style={[s.profileAvatarOuter, { borderColor: colors.border }]}>
+                <View style={[s.profileAvatar, { borderColor: colors.card }]}>
+                  {profile.avatar_url ? (
+                    <Image source={{ uri: profile.avatar_url }} style={s.profileAvatarImage} contentFit="cover" />
+                  ) : (
+                    <View style={[s.profileAvatarFallback, { backgroundColor: colors.muted }]}>
+                      <User size={24} color={colors.mutedForeground} />
+                    </View>
+                  )}
                 </View>
-              ) : (
-                <PressableOpacity onPress={() => setEditingName(true)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.displayName')}>
-                  <User size={18} color={colors.mutedForeground} />
-                  <Text style={[s.rowText, { color: colors.foreground }]}>{profile.name}</Text>
-                  <Pencil size={14} color={colors.mutedForeground} />
-                </PressableOpacity>
-              )}
-            </View>
-          </>
-        )}
-
-        {/* Account info */}
-        {accountCreatedAt && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.accountInfo') ?? 'Tilin tiedot'}</Text>
-            <View style={s.card}>
-              <View style={[s.row, { borderBottomColor: colors.border }]}>
-                <CalendarDays size={18} color={colors.mutedForeground} />
-                <Text style={[s.rowText, { color: colors.foreground }]}>
-                  {t('settings.memberSince') ?? 'Jäsen alkaen'}: {new Date(accountCreatedAt).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </View>
+              <View style={s.profileInfo}>
+                <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>
+                  {profile.name ?? t('settings.displayName')}
                 </Text>
-              </View>
-            </View>
-          </>
-        )}
-
-        {/* ── Section: Appearance ── */}
-        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-          {t('settings.sectionAppearance')}
-        </Text>
-
-        {/* Language */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.language')}</Text>
-        <View style={s.card}>
-          {(['fi', 'en', 'sv'] as Locale[]).map((l) => (
-            <PressableOpacity key={l} onPress={() => setLocale(l)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: locale === l }} accessibilityLabel={langLabel(l)}>
-              <Globe size={18} color={colors.mutedForeground} />
-              <Text style={[s.rowText, { color: colors.foreground }]}>{langLabel(l)}</Text>
-              <View style={[locale === l ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </PressableOpacity>
-          ))}
-        </View>
-
-        {/* Theme */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.theme')}</Text>
-        <View style={s.card}>
-          {THEME_OPTIONS.map(({ key, label, icon: Icon }) => (
-            <PressableOpacity key={key} onPress={() => { setAppTheme(key as 'system' | 'light' | 'dark') }} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: theme === key }} accessibilityLabel={t(label)}>
-              <Icon size={18} color={colors.mutedForeground} />
-              <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
-              <View style={[theme === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </PressableOpacity>
-          ))}
-        </View>
-
-        {/* City — hidden until multi-city launch (only Helsinki supported) */}
-        {availableCities.length > 1 && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.city')}</Text>
-            <View style={s.card}>
-              {showCityPicker ? (
-                <>
-                  {availableCities.map((city) => (
-                    <PressableOpacity
-                      key={city.id}
-                      onPress={async () => {
-                        if (city.id === userCityId) { setShowCityPicker(false); return }
-                        if (profile) {
-                          try {
-                            const { error } = await (supabase.from('profiles') as any).update({ city_id: city.id, naapurusto: null }).eq('id', profile.id)
-                            if (error) throw error
-                            setUserCityId(city.id)
-                            setUserCityName(city.name)
-                            setShowCityPicker(false)
-                            setProfile(prev => prev ? { ...prev, naapurusto: null as any } : null)
-                            // After changing city, neighborhood is reset — prompt user to pick a new one
-                            Alert.alert(
-                              t('settings.cityChanged') ?? city.name,
-                              t('settings.pickNewNeighborhood') ?? t('onboarding.neighborhoodSubtitle'),
-                              [{
-                                text: t('common.ok') ?? 'OK',
-                                onPress: () => setShowNeighborhoodPicker(true),
-                              }]
-                            )
-                          } catch {
-                            Alert.alert(t('common.error'), t('settings.saveFailed'))
-                          }
-                        } else {
-                          setUserCityId(city.id)
-                          setUserCityName(city.name)
-                          setShowCityPicker(false)
-                        }
-                      }}
-                      style={[s.row, { borderBottomColor: colors.border }]}
-                    >
-                      <MapPin size={18} color={city.id === userCityId ? colors.primary : colors.mutedForeground} />
-                      <Text style={[s.rowText, { color: colors.foreground }]}>{city.name}</Text>
-                      <View style={[city.id === userCityId ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-                    </PressableOpacity>
-                  ))}
-                </>
-              ) : (
-                <PressableOpacity onPress={() => setShowCityPicker(true)} style={[s.row, { borderBottomColor: colors.border }]}>
-                  <MapPin size={18} color={colors.primary} />
-                  <Text style={[s.rowText, { color: colors.foreground }]}>{userCityName}</Text>
-                  <ChevronRight size={16} color={colors.mutedForeground} />
-                </PressableOpacity>
-              )}
-            </View>
-          </>
-        )}
-
-        {/* Neighborhood — allows user to change neighborhood after onboarding */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('onboarding.chooseNeighborhood')}</Text>
-        <View style={s.card}>
-          <PressableOpacity onPress={() => setShowNeighborhoodPicker(true)} style={[s.row, { borderBottomColor: colors.border }]}>
-            <MapPin size={18} color={colors.primary} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>
-              {profile?.naapurusto ?? userCityName}
-            </Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-        </View>
-
-        {/* Profile Visibility */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.profileVisibility')}</Text>
-        <View style={s.card}>
-          {VISIBILITY_OPTIONS.map(({ key, label }) => (
-            <PressableOpacity key={key} onPress={() => markDirty(setVisibility)(key)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: visibility === key }} accessibilityLabel={t(label)}>
-              <Eye size={18} color={colors.mutedForeground} />
-              <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
-              <View style={[visibility === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </PressableOpacity>
-          ))}
-        </View>
-
-        {/* ── Section: Privacy ── */}
-        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-          {t('settings.sectionPrivacy')}
-        </Text>
-
-        {/* Location Accuracy */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.locationAccuracy')}</Text>
-        <View style={s.card}>
-          {LOCATION_ACCURACY_OPTIONS.map(({ key, label, desc }) => (
-            <PressableOpacity key={key} onPress={() => markDirty(setLocationAccuracy)(key)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="radio" accessibilityState={{ checked: locationAccuracy === key }} accessibilityLabel={t(label)}>
-              <MapPin size={18} color={colors.mutedForeground} />
-              <View style={{ flex: 1 }}>
-                <Text style={[s.rowText, { color: colors.foreground, flex: undefined }]}>{t(label)}</Text>
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>{t(desc)}</Text>
-              </View>
-              <View style={[locationAccuracy === key ? [s.radio, { backgroundColor: colors.primary }] : [s.radioEmpty, { borderColor: colors.border }]]} />
-            </PressableOpacity>
-          ))}
-        </View>
-
-        {/* ── Section: Notifications ── */}
-        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-          {t('settings.sectionNotifications')}
-        </Text>
-
-        {/* Notifications — granular preferences */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.notifSection')}</Text>
-        <View style={s.card}>
-          {notifPrefs.loading ? (
-            <View style={[s.toggleRow, { borderBottomColor: colors.border }]}>
-              <ActivityIndicator size="small" color={colors.primary} />
-              <Text style={[s.rowText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
-            </View>
-          ) : (
-            ([
-              { type: 'nearby_posts' as NotificationType, label: 'settings.notifNearbyPosts', Icon: MapPin },
-              { type: 'events' as NotificationType, label: 'settings.notifEvents', Icon: CalendarDays },
-              { type: 'messages' as NotificationType, label: 'settings.notifMessagesGranular', Icon: MessageCircle },
-              { type: 'likes' as NotificationType, label: 'settings.notifLikes', Icon: Heart },
-              { type: 'comments' as NotificationType, label: 'settings.notifComments', Icon: MessageSquare },
-              { type: 'follows' as NotificationType, label: 'settings.notifFollows', Icon: UserPlus },
-              { type: 'nappaa' as NotificationType, label: 'settings.notifNappaa', Icon: Zap },
-            ]).map(({ type, label, Icon }) => (
-              <View key={type} style={[s.toggleRow, { borderBottomColor: colors.border }]}>
-                <Icon size={18} color={notifPrefs.preferences[type] ? colors.primary : colors.mutedForeground} />
-                <Text style={[s.rowText, { color: colors.foreground }]}>{t(label)}</Text>
-                <Switch
-                  value={notifPrefs.preferences[type]}
-                  onValueChange={(val) => { notifPrefs.updatePreference(type, val) }}
-                  trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
-                  thumbColor={notifPrefs.preferences[type] ? colors.primary : colors.mutedForeground}
-                  accessibilityLabel={t(label)}
-                />
-              </View>
-            ))
-          )}
-          {push.isSupported && (
-            <View style={[s.toggleRow, { borderBottomColor: colors.border }]}>
-              <Bell size={18} color={push.isSubscribed ? colors.primary : colors.mutedForeground} />
-              <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.pushNotifications')}</Text>
-              <Switch
-                value={push.isSubscribed}
-                onValueChange={(val) => val ? push.subscribe() : push.unsubscribe()}
-                disabled={push.isLoading}
-                trackColor={{ false: colors.muted, true: `${colors.primary}66` }}
-                thumbColor={push.isSubscribed ? colors.primary : colors.mutedForeground}
-                accessibilityLabel={t('settings.pushNotifications')}
-              />
-            </View>
-          )}
-        </View>
-
-        {/* Pro */}
-        {FEATURES.PRO_SUBSCRIPTION && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.proSubscription')}</Text>
-            <View style={s.card}>
-              <PressableOpacity onPress={() => router.push('/pro')} style={[s.row, { borderBottomColor: colors.border }]}>
-                <Crown size={18} color={colors.pro} />
-                <Text style={[s.rowText, { color: colors.foreground }]}>TackBird Pro</Text>
-                {profile?.is_pro ? (
-                  <Text style={[s.proBadge, { color: colors.pro }]}>{t('profile.proActive')}</Text>
-                ) : (
-                  <PressableOpacity onPress={() => router.push('/pro')} style={[s.upgradeBtn, { backgroundColor: colors.pro }]}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
-                      4,99 {'\u20AC'}{t('pro.perMonth')}
+                <Text style={[s.profileSubtitle, { color: colors.mutedForeground }]} numberOfLines={1}>
+                  {profile.naapurusto ?? userCityName}
+                  {joinedYear ? ` \u00B7 ${t('profile.joined') ?? 'liittyi'} ${joinedYear}` : ''}
+                </Text>
+                {emailVerified && (
+                  <View style={s.profileVerifiedRow}>
+                    <Check size={10} color={colors.foreground} strokeWidth={2.5} />
+                    <Text style={[s.profileVerifiedText, { color: colors.foreground }]}>
+                      {t('settings.emailVerified') ?? 'Vahvistettu'}
                     </Text>
-                  </PressableOpacity>
+                  </View>
                 )}
-              </PressableOpacity>
-              {profile?.is_pro && profile?.pro_expires_at && (
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, paddingHorizontal: 16, paddingBottom: 12, fontFamily: fonts.body, lineHeight: 16 }}>
-                  {t('pro.renewsOn', { date: new Date(profile.pro_expires_at).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB') })}
-                </Text>
+              </View>
+              <ChevronRight size={14} color={colors.tertiaryForeground} />
+            </PressableOpacity>
+          </View>
+        )}
+
+        {/* ── Section: Tili (Account) ── */}
+        <Group label={t('settings.sectionAccount')} colors={colors}>
+          <Row
+            icon={<User size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('profile.title') ?? 'Profiili'}
+            onPress={() => {
+              if (editingName) return
+              setEditingName(true)
+            }}
+            colors={colors}
+            isDark={isDark}
+          />
+          <Row
+            icon={<Shield size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.security') ?? 'Vahvistus'}
+            value={`${verificationCount} / 3`}
+            onPress={() => {}}
+            colors={colors}
+            isDark={isDark}
+          />
+          {FEATURES.PAYMENTS && (
+            <Row
+              icon={<CreditCard size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={t('payment.settings') ?? 'Maksutavat'}
+              onPress={() => router.push('/payment-settings' as any)}
+              colors={colors}
+              isDark={isDark}
+            />
+          )}
+        </Group>
+
+        {/* ── Section: Sovellus (App) ── */}
+        <Group label={t('settings.sectionAppearance') ?? 'Sovellus'} colors={colors}>
+          <Row
+            icon={<Bell size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.notifSection') ?? 'Ilmoitukset'}
+            switchValue={push.isSupported ? push.isSubscribed : true}
+            onSwitchChange={push.isSupported ? (val) => val ? push.subscribe() : push.unsubscribe() : undefined}
+            disabled={push.isLoading}
+            colors={colors}
+            isDark={isDark}
+          />
+          <Row
+            icon={<MapPin size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('onboarding.chooseNeighborhood') ?? 'Sijainti'}
+            value={`${profile?.naapurusto ?? userCityName}`}
+            onPress={() => setShowNeighborhoodPicker(true)}
+            colors={colors}
+            isDark={isDark}
+          />
+          <Row
+            icon={<Moon size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.themeDark') ?? 'Tumma tila'}
+            switchValue={isDark}
+            onSwitchChange={(val) => setAppTheme(val ? 'dark' : 'light')}
+            colors={colors}
+            isDark={isDark}
+          />
+          <Row
+            icon={<Globe size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.language') ?? 'Kieli'}
+            value={langLabel(locale) ?? locale}
+            onPress={() => {
+              const locales: Locale[] = ['fi', 'en', 'sv']
+              const currentIdx = locales.indexOf(locale)
+              const nextLocale = locales[(currentIdx + 1) % locales.length]
+              setLocale(nextLocale)
+            }}
+            colors={colors}
+            isDark={isDark}
+          />
+        </Group>
+
+        {/* ── Section: Yksityisyys (Privacy) ── */}
+        <Group label={t('settings.sectionPrivacy') ?? 'Yksityisyys'} colors={colors}>
+          <Row
+            icon={<Lock size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.profileVisibility') ?? 'Kuka n\u00E4kee'}
+            value={t(VISIBILITY_OPTIONS.find(v => v.key === visibility)?.label ?? '') ?? visibility}
+            onPress={() => {
+              const keys = VISIBILITY_OPTIONS.map(v => v.key)
+              const idx = keys.indexOf(visibility)
+              const next = keys[(idx + 1) % keys.length]
+              markDirty(setVisibility)(next)
+            }}
+            colors={colors}
+            isDark={isDark}
+          />
+          <Row
+            icon={<Shield size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.privacy') ?? 'Tietosuoja'}
+            onPress={() => router.push('/privacy')}
+            colors={colors}
+            isDark={isDark}
+          />
+        </Group>
+
+        {/* ── Section: Tuki (Support) ── */}
+        <Group label={t('settings.sectionAbout') ?? 'Tuki'} colors={colors}>
+          <Row
+            icon={<HelpCircle size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('help.title') ?? 'Ohje'}
+            onPress={() => router.push('/help' as any)}
+            colors={colors}
+            isDark={isDark}
+          />
+          <Row
+            icon={<Mail size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.feedback') ?? 'Ota yhteytt\u00E4'}
+            onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})}
+            colors={colors}
+            isDark={isDark}
+          />
+          <Row
+            icon={<FileText size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('settings.terms') ?? 'Lakitekstit'}
+            onPress={() => router.push('/terms')}
+            colors={colors}
+            isDark={isDark}
+          />
+        </Group>
+
+        {/* ── Pro subscription ── */}
+        {FEATURES.PRO_SUBSCRIPTION && (
+          <Group colors={colors}>
+            <Row
+              icon={<Crown size={16} color={colors.pro} strokeWidth={1.8} />}
+              label="TackBird Pro"
+              onPress={() => router.push('/pro')}
+              colors={colors}
+              isDark={isDark}
+            >
+              {profile?.is_pro ? (
+                <Text style={[s.proBadgeText, { color: colors.pro }]}>{t('profile.proActive')}</Text>
+              ) : (
+                <View style={[s.proUpgradeChip, { backgroundColor: colors.pro }]}>
+                  <Text style={[s.proUpgradeText, { color: colors.foreground }]}>
+                    4,99 {'\u20AC'}{t('pro.perMonth')}
+                  </Text>
+                </View>
               )}
-            </View>
-          </>
+            </Row>
+          </Group>
         )}
 
-        {/* Business account */}
+        {/* ── Business account ── */}
         {FEATURES.BUSINESS_ACCOUNT && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('business.upgrade')}</Text>
-            <View style={s.card}>
-              <PressableOpacity
-                onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
-                style={[s.row, { borderBottomColor: colors.border }]}
-              >
-                <Building2 size={18} color={colors.primary} />
-                <Text style={[s.rowText, { color: colors.foreground }]}>
-                  {profile?.is_business ? t('business.dashboard') : t('business.upgradeCTA')}
-                </Text>
-                {profile?.is_business ? (
-                  <Text style={[s.proBadge, { color: colors.success }]}>{t('business.active')}</Text>
-                ) : (
-                  <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 16 }}>{t('business.monthlyPrice')}</Text>
-                )}
-              </PressableOpacity>
-            </View>
-          </>
+          <Group colors={colors}>
+            <Row
+              icon={<Building2 size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={profile?.is_business ? (t('business.dashboard') ?? 'Yritystili') : (t('business.upgradeCTA') ?? 'Yritystili')}
+              onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
+              colors={colors}
+              isDark={isDark}
+            >
+              {profile?.is_business ? (
+                <Text style={[s.proBadgeText, { color: colors.success }]}>{t('business.active')}</Text>
+              ) : (
+                <Text style={[s.rowValue, { color: colors.mutedForeground }]}>{t('business.monthlyPrice')}</Text>
+              )}
+            </Row>
+          </Group>
         )}
 
-        {/* Security */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.security')}</Text>
-        <View style={s.card}>
-          <View style={{ padding: 16, gap: 12 }}>
-            <Text style={[s.rowText, { color: colors.foreground, fontWeight: '600' }]}>{t('settings.changePassword')}</Text>
-            {isOAuthUser ? (
-              <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body, lineHeight: 18 }}>
-                {t('settings.passwordManagedByOAuth', { provider: (oauthProvider ?? 'OAuth').charAt(0).toUpperCase() + (oauthProvider ?? 'OAuth').slice(1) })}
-              </Text>
-            ) : (
-              <>
-                {!isPasswordRecovery && (
-                  <TextInput
-                    style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
-                    value={currentPw}
-                    onChangeText={setCurrentPw}
-                    placeholder={t('settings.currentPasswordPlaceholder')}
-                    placeholderTextColor={colors.mutedForeground}
-                    secureTextEntry
-                    textContentType="password"
-                    returnKeyType="next"
-                    accessibilityLabel={t('auth.password')}
-                  />
-                )}
+        {/* ── Saved items ── */}
+        <Group colors={colors}>
+          <Row
+            icon={<Bookmark size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={t('saved.title') ?? 'Tallennetut'}
+            onPress={() => router.push('/saved')}
+            colors={colors}
+            isDark={isDark}
+          />
+        </Group>
+
+        {/* ── Data export ── */}
+        <Group colors={colors}>
+          <Row
+            icon={exporting ? undefined : <Download size={16} color={colors.foreground} strokeWidth={1.8} />}
+            label={exporting ? (t('settings.exportLoading') ?? 'Ladataan...') : (t('settings.export') ?? 'Lataa tietosi')}
+            meta={exporting && exportProgress ? exportProgress : undefined}
+            onPress={exporting ? undefined : handleExport}
+            disabled={exporting}
+            colors={colors}
+            isDark={isDark}
+          >
+            {exporting && <ActivityIndicator size="small" color={colors.foreground} />}
+          </Row>
+        </Group>
+
+        {/* ── Admin panel ── */}
+        {(profile as any)?.is_admin && (
+          <Group colors={colors}>
+            <Row
+              icon={<Shield size={16} color={colors.destructive} strokeWidth={1.8} />}
+              label={t('admin.title') ?? 'Admin'}
+              onPress={() => router.push('/admin' as any)}
+              colors={colors}
+              isDark={isDark}
+            />
+          </Group>
+        )}
+
+        {/* ── Security section (expanded inline) ── */}
+        <Group label={t('settings.security') ?? 'Turvallisuus'} colors={colors}>
+          {isOAuthUser ? (
+            <Row
+              icon={<Lock size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={t('settings.changePassword') ?? 'Vaihda salasana'}
+              meta={t('settings.passwordManagedByOAuth', { provider: (oauthProvider ?? 'OAuth').charAt(0).toUpperCase() + (oauthProvider ?? 'OAuth').slice(1) }) ?? undefined}
+              chevron={false}
+              colors={colors}
+              isDark={isDark}
+            />
+          ) : (
+            <View style={s.securityBlock}>
+              <Text style={[s.securityTitle, { color: colors.foreground }]}>{t('settings.changePassword')}</Text>
+              {!isPasswordRecovery && (
                 <TextInput
-                  style={[s.input, { backgroundColor: colors.muted, color: colors.foreground }]}
-                  value={newPw}
-                  onChangeText={setNewPw}
-                  placeholder={t('settings.newPasswordPlaceholder')}
+                  style={[s.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+                  value={currentPw}
+                  onChangeText={setCurrentPw}
+                  placeholder={t('settings.currentPasswordPlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
                   secureTextEntry
-                  textContentType="newPassword"
-                  returnKeyType="done"
-                  accessibilityLabel={t('auth.newPassword')}
+                  textContentType="password"
+                  returnKeyType="next"
+                  accessibilityLabel={t('auth.password')}
                 />
-                {/* Inline password strength feedback (error prevention) */}
-                {newPw.length > 0 && (
-                  <View style={{ gap: 2, marginTop: 2 }}>
-                    {newPw.length < 8 && (
-                      <Text style={{ fontSize: 11, color: colors.destructive, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordTooShort')}</Text>
-                    )}
-                    {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
-                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordNeedsUppercase')}</Text>
-                    )}
-                    {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
-                      <Text style={{ fontSize: 11, color: colors.pro, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordNeedsNumber')}</Text>
-                    )}
-                    {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
-                      <Text style={{ fontSize: 11, color: colors.success, fontFamily: fonts.body, lineHeight: 16 }}>{t('settings.passwordStrong')}</Text>
-                    )}
-                  </View>
-                )}
-                <PressableOpacity
-                  onPress={handleChangePassword}
-                  disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
-                  style={[s.changePwBtn, { backgroundColor: colors.primary, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
-                >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
-                    {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
-                  </Text>
-                </PressableOpacity>
-              </>
-            )}
-          </View>
-        </View>
+              )}
+              <TextInput
+                style={[s.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+                value={newPw}
+                onChangeText={setNewPw}
+                placeholder={t('settings.newPasswordPlaceholder')}
+                placeholderTextColor={colors.mutedForeground}
+                secureTextEntry
+                textContentType="newPassword"
+                returnKeyType="done"
+                accessibilityLabel={t('auth.newPassword')}
+              />
+              {/* Inline password strength feedback */}
+              {newPw.length > 0 && (
+                <View style={{ gap: 2 }}>
+                  {newPw.length < 8 && (
+                    <Text style={[s.pwFeedback, { color: colors.destructive }]}>{t('settings.passwordTooShort')}</Text>
+                  )}
+                  {newPw.length >= 8 && !/[A-Z]/.test(newPw) && (
+                    <Text style={[s.pwFeedback, { color: colors.pro }]}>{t('settings.passwordNeedsUppercase')}</Text>
+                  )}
+                  {newPw.length >= 8 && !/[0-9]/.test(newPw) && (
+                    <Text style={[s.pwFeedback, { color: colors.pro }]}>{t('settings.passwordNeedsNumber')}</Text>
+                  )}
+                  {newPw.length >= 8 && /[A-Z]/.test(newPw) && /[0-9]/.test(newPw) && (
+                    <Text style={[s.pwFeedback, { color: colors.success }]}>{t('settings.passwordStrong')}</Text>
+                  )}
+                </View>
+              )}
+              <PressableOpacity
+                onPress={handleChangePassword}
+                disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
+                style={[s.changePwBtn, { backgroundColor: colors.foreground, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
+              >
+                <Text style={[s.changePwBtnText, { color: colors.primaryForeground }]}>
+                  {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
+                </Text>
+              </PressableOpacity>
+            </View>
+          )}
+        </Group>
 
-        {/* Referral code — only show if user hasn't used one yet */}
+        {/* ── Referral code ── */}
         {!referral.invitedBy && !referral.loading && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('referral.applyCodeTitle')}</Text>
-            <View style={[s.card, { padding: 16, gap: 12 }]}>
-              <Text style={{ fontSize: 13, lineHeight: 18, color: colors.mutedForeground, fontFamily: fonts.body }}>
+          <Group label={t('referral.applyCodeTitle') ?? 'Kutsukoodi'} colors={colors}>
+            <View style={s.referralBlock}>
+              <Text style={[s.referralDesc, { color: colors.mutedForeground }]}>
                 {t('referral.applyCodeDesc')}
               </Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
+              <View style={s.referralRow}>
                 <TextInput
                   value={referralInput}
                   onChangeText={(text) => { setReferralInput(text.toUpperCase()); setReferralStatus('idle') }}
@@ -970,7 +1036,6 @@ export default function SettingsScreen() {
                     backgroundColor: colors.muted,
                     color: colors.foreground,
                     borderColor: referralStatus === 'success' ? colors.success : referralStatus === 'invalid' || referralStatus === 'self' || referralStatus === 'error' ? colors.destructive : colors.border,
-                    fontFamily: fonts.body,
                     letterSpacing: 2,
                   }]}
                   autoCapitalize="characters"
@@ -986,160 +1051,105 @@ export default function SettingsScreen() {
                     setReferralStatus(result)
                   }}
                   disabled={referralInput.trim().length < 4 || referralStatus === 'loading'}
-                  style={[s.changePwBtn, {
-                    backgroundColor: colors.primary,
-                    paddingHorizontal: 20,
+                  style={[s.referralSubmitBtn, {
+                    backgroundColor: colors.foreground,
                     opacity: referralInput.trim().length < 4 || referralStatus === 'loading' ? 0.5 : 1,
                   }]}
                 >
                   {referralStatus === 'loading' ? (
                     <ActivityIndicator size="small" color={colors.primaryForeground} />
                   ) : (
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>
+                    <Text style={[s.referralSubmitText, { color: colors.primaryForeground }]}>
                       {t('referral.applyCodeSubmit')}
                     </Text>
                   )}
                 </PressableOpacity>
               </View>
               {referralStatus === 'success' && (
-                <Text style={{ fontSize: 12, color: colors.success, fontFamily: fonts.body }}>{t('referral.applyCodeSuccess')}</Text>
+                <Text style={[s.referralFeedback, { color: colors.success }]}>{t('referral.applyCodeSuccess')}</Text>
               )}
               {referralStatus === 'already_referred' && (
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>{t('referral.applyCodeAlreadyReferred')}</Text>
+                <Text style={[s.referralFeedback, { color: colors.mutedForeground }]}>{t('referral.applyCodeAlreadyReferred')}</Text>
               )}
               {referralStatus === 'invalid' && (
-                <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body }}>{t('referral.applyCodeNotFound')}</Text>
+                <Text style={[s.referralFeedback, { color: colors.destructive }]}>{t('referral.applyCodeNotFound')}</Text>
               )}
               {referralStatus === 'self' && (
-                <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body }}>{t('referral.applyCodeSelfReferral')}</Text>
+                <Text style={[s.referralFeedback, { color: colors.destructive }]}>{t('referral.applyCodeSelfReferral')}</Text>
               )}
               {referralStatus === 'error' && (
-                <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body }}>{t('referral.applyCodeError')}</Text>
+                <Text style={[s.referralFeedback, { color: colors.destructive }]}>{t('referral.applyCodeError')}</Text>
               )}
             </View>
-          </>
+          </Group>
         )}
 
-        {/* Saved items */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('saved.title')}</Text>
-        <View style={s.card}>
-          <PressableOpacity onPress={() => router.push('/saved')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('saved.title')}>
-            <Bookmark size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('saved.title')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-        </View>
-
-        {/* Payment Settings */}
-        {FEATURES.PAYMENTS && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('payment.settings')}</Text>
-            <View style={s.card}>
-              <PressableOpacity onPress={() => router.push('/payment-settings' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('payment.settings')}>
-                <CreditCard size={18} color={colors.mutedForeground} />
-                <Text style={[s.rowText, { color: colors.foreground }]}>{t('payment.settings')}</Text>
-                <ChevronRight size={16} color={colors.mutedForeground} />
-              </PressableOpacity>
-              <PressableOpacity onPress={() => router.push('/payment-history' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.paymentHistory')}>
-                <CreditCard size={18} color={colors.mutedForeground} />
-                <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.paymentHistory')}</Text>
-                <ChevronRight size={16} color={colors.mutedForeground} />
-              </PressableOpacity>
+        {/* ── Name editing modal inline ── */}
+        {editingName && profile && (
+          <Group label={t('settings.displayName') ?? 'Nimi'} colors={colors}>
+            <View style={s.nameEditBlock}>
+              <TextInput
+                style={[s.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+                value={nameText}
+                onChangeText={setNameText}
+                placeholder={t('profile.name') ?? 'Nimi'}
+                placeholderTextColor={colors.mutedForeground}
+                maxLength={50}
+                autoFocus
+                accessibilityLabel={t('settings.displayName')}
+              />
+              <Text style={[s.nameCharCount, { color: nameText.length >= 45 ? colors.destructive : colors.mutedForeground }]}>
+                {nameText.length}/50
+              </Text>
+              <View style={s.nameActions}>
+                <PressableOpacity onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={[s.nameActionBtn, { backgroundColor: colors.muted }]}>
+                  <Text style={[s.nameActionText, { color: colors.foreground }]}>{t('common.cancel')}</Text>
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={handleSaveName}
+                  disabled={savingName || !nameText.trim()}
+                  style={[s.nameActionBtn, { backgroundColor: colors.foreground, opacity: savingName || !nameText.trim() ? 0.5 : 1 }]}
+                >
+                  <Text style={[s.nameActionText, { color: colors.primaryForeground }]}>
+                    {savingName ? '...' : t('common.save')}
+                  </Text>
+                </PressableOpacity>
+              </View>
             </View>
-          </>
+          </Group>
         )}
 
-        {/* Data export */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
-        <View style={s.card}>
-          <PressableOpacity onPress={handleExport} disabled={exporting} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.export')}>
-            {exporting ? <ActivityIndicator size="small" color={colors.primary} /> : <Download size={18} color={colors.mutedForeground} />}
-            <View style={{ flex: 1 }}>
-              <Text style={[s.rowText, { color: colors.foreground }]}>{exporting ? t('settings.exportLoading') : t('settings.export')}</Text>
-              {exporting && exportProgress ? (
-                <Text style={{ fontSize: 12, color: colors.mutedForeground, marginTop: 2, fontFamily: fonts.body, lineHeight: 16 }}>{exportProgress}</Text>
-              ) : null}
-            </View>
-            {!exporting && <ChevronRight size={16} color={colors.mutedForeground} />}
-          </PressableOpacity>
-        </View>
+        {/* ── Danger: Delete account ── */}
+        <Group colors={colors}>
+          <Row
+            icon={<Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />}
+            iconBg={warmTintBg}
+            label={t('settings.deletePermanently') ?? 'Poista tili'}
+            danger
+            chevron={false}
+            onPress={handleDeleteAccount}
+            colors={colors}
+            isDark={isDark}
+          />
+        </Group>
 
-        {/* Blocked users */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.blockedUsers')}</Text>
-        <View style={s.card}>
-          <PressableOpacity onPress={() => router.push('/blocked')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.blockedUsers')}>
-            <ShieldBan size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.blockedUsers')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-        </View>
+        {/* ── Logout ── */}
+        <Group colors={colors}>
+          <Row
+            icon={<LogOut size={16} color={DANGER_COLOR} strokeWidth={1.8} />}
+            iconBg={warmTintBg}
+            label={t('settings.logout')}
+            danger
+            dangerColor={DANGER_COLOR}
+            chevron={false}
+            onPress={handleLogout}
+            colors={colors}
+            isDark={isDark}
+          />
+        </Group>
 
-        {/* ── Section: About ── */}
-        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-          {t('settings.sectionAbout')}
-        </Text>
-
-        {/* About & info links */}
-        <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.about')}</Text>
-        <View style={s.card}>
-          <PressableOpacity onPress={() => router.push('/about' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('about.title')}>
-            <Info size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('about.title')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/help' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('help.title')}>
-            <HelpCircle size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('help.title')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/privacy')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.privacy')}>
-            <Lock size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.privacy')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/terms')} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.terms')}>
-            <FileText size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.terms')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-          <PressableOpacity onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}>
-            <Bug size={18} color={colors.mutedForeground} />
-            <Text style={[s.rowText, { color: colors.foreground }]}>{t('settings.feedback') ?? 'Palaute / Ilmoita virhe'}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} />
-          </PressableOpacity>
-        </View>
-
-        {/* Admin panel — only visible for admins */}
-        {(profile as any)?.is_admin && (
-          <>
-            <Text style={[s.section, { color: colors.mutedForeground }]}>{t('admin.title')}</Text>
-            <View style={s.card}>
-              <PressableOpacity onPress={() => router.push('/admin' as any)} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('admin.title')}>
-                <Shield size={18} color={colors.destructive} />
-                <Text style={[s.rowText, { color: colors.foreground }]}>{t('admin.title')}</Text>
-                <ChevronRight size={16} color={colors.mutedForeground} />
-              </PressableOpacity>
-            </View>
-          </>
-        )}
-
-        {/* Danger zone */}
-        <Text style={[s.section, { color: colors.destructive }]}>{t('settings.deleteAccount')}</Text>
-        <View style={s.card}>
-          <PressableOpacity onPress={handleDeleteAccount} style={[s.row, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.deleteAccount')}>
-            <Trash2 size={18} color={colors.destructive} />
-            <Text style={[s.rowText, { color: colors.destructive }]}>{t('settings.deletePermanently')}</Text>
-          </PressableOpacity>
-        </View>
-
-        {/* Logout */}
-        <PressableOpacity onPress={handleLogout} style={[s.logoutBtn, { borderBottomColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('settings.logout')}>
-          <LogOut size={18} color={colors.destructive} />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.destructive, fontFamily: fonts.bodySemi, lineHeight: 20 }}>{t('settings.logout')}</Text>
-        </PressableOpacity>
-
-        {/* App version */}
-        <Text style={[s.versionText, { color: colors.mutedForeground }]}>
+        {/* ── Version text ── */}
+        <Text style={[s.versionText, { color: colors.tertiaryForeground }]}>
           TackBird v{appVersion}
         </Text>
       </ScrollView>
@@ -1206,39 +1216,303 @@ export default function SettingsScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
+
+  // ── Header (mockup 22) ──
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 12,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, lineHeight: 28, fontFamily: fonts.headingSemi },
-  saveBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, minHeight: 44,
+  headerBackCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
-  content: { padding: 16, gap: 12, paddingBottom: 100 },
-  section: { fontSize: 11, lineHeight: 16, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4, fontFamily: fonts.bodySemi },
-  card: { overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  rowText: { fontSize: 14, lineHeight: 20, flex: 1, fontFamily: fonts.body },
-  radio: { width: 18, height: 18, borderRadius: 9 },
-  radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
-  proBadge: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
-  upgradeBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999 },
-  input: { borderRadius: 20, paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, lineHeight: 20, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
-  changePwBtn: { borderRadius: 999, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
-  logoutBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, padding: 16, marginTop: 16, borderBottomWidth: StyleSheet.hairlineWidth,
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
   },
-  verifiedBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.15,
   },
-  verifiedText: { fontSize: 12, lineHeight: 16, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  headerRightSpacer: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerSaveBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ── Profile card ──
+  profileCardWrapper: {
+    paddingHorizontal: 16,
+    paddingBottom: 18,
+  },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+  },
+  profileAvatarOuter: {
+    width: 60,
+    height: 60,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    borderWidth: 2,
+    overflow: 'hidden',
+  },
+  profileAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 999,
+  },
+  profileAvatarFallback: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 15.5,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.15,
+  },
+  profileSubtitle: {
+    fontSize: 11.5,
+    fontFamily: fonts.body,
+    marginTop: 2,
+  },
+  profileVerifiedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+  },
+  profileVerifiedText: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+
+  // ── Group (mockup 22) ──
+  groupWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 14,
+  },
+  sectionLabel: {
+    fontSize: 10.5,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+  },
+  groupContainer: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  groupDivider: {
+    height: 1,
+    marginLeft: 60,
+  },
+
+  // ── Row (mockup 22) ──
+  rowPressable: {},
+  rowInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  rowIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowTextContainer: {
+    flex: 1,
+  },
+  rowLabel: {
+    fontSize: 13.5,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: -0.05,
+  },
+  rowMeta: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    marginTop: 2,
+  },
+  rowValue: {
+    fontSize: 12.5,
+    fontFamily: fonts.body,
+  },
+  switchStyle: {
+    transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }],
+  },
+  inlineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  // ── Pro ──
+  proBadgeText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  proUpgradeChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  proUpgradeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+
+  // ── Security block ──
+  securityBlock: {
+    padding: 16,
+    gap: 12,
+  },
+  securityTitle: {
+    fontSize: 13.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  input: {
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 14,
+    lineHeight: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    fontFamily: fonts.body,
+  },
+  pwFeedback: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  changePwBtn: {
+    borderRadius: 999,
+    paddingVertical: 14,
+    alignItems: 'center',
+    minHeight: 48,
+  },
+  changePwBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+
+  // ── Referral ──
+  referralBlock: {
+    padding: 16,
+    gap: 12,
+  },
+  referralDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: fonts.body,
+  },
+  referralRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  referralSubmitBtn: {
+    borderRadius: 999,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  referralSubmitText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  referralFeedback: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+
+  // ── Name editing ──
+  nameEditBlock: {
+    padding: 16,
+    gap: 12,
+  },
+  nameCharCount: {
+    fontSize: 11,
+    textAlign: 'right',
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  nameActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  nameActionBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 999,
+  },
+  nameActionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+
+  // ── Version ──
   versionText: {
-    fontSize: 12, lineHeight: 16, textAlign: 'center', marginTop: 24, marginBottom: 8, fontFamily: fonts.body,
+    fontSize: 11,
+    textAlign: 'center',
+    paddingTop: 18,
+    paddingBottom: 8,
+    fontFamily: fonts.body,
   },
+
+  // ── Delete modal ──
   deleteBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -1312,7 +1586,6 @@ const s = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: '600',
-    // color set via inline style with colors.primaryForeground
     fontFamily: fonts.bodySemi,
   },
 })

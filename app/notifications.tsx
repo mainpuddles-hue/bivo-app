@@ -6,14 +6,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { Image } from 'expo-image'
-import { CheckCheck, Bell, ChevronDown, ChevronUp, LogIn, X, RefreshCw } from 'lucide-react-native'
+import { Bell, ArrowLeft, LogIn, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { EmptyState } from '@/components/EmptyState'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity } from '@/components/ui'
+import { PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
@@ -23,10 +23,9 @@ import { prioritizeNotifications, type PrioritizedNotification } from '@/lib/not
 
 const ALL_FILTERS = [
   { key: 'all', label: 'common.all' },
+  { key: 'rentals', label: 'notifications.prefRentals' },
   { key: 'messages', label: 'nav.messages' },
   { key: 'reviews', label: 'profile.reviews' },
-  { key: 'rentals', label: 'notifications.prefRentals' },
-  { key: 'system', label: 'settings.notifications' },
 ] as const
 
 // Hide rental filter when lending feature is disabled
@@ -128,19 +127,32 @@ function getInitial(item: PrioritizedNotification): string {
   return '?'
 }
 
+/** Check if notification type has action buttons */
+function hasActionButtons(type: string): boolean {
+  return type === 'rental_request' || type === 'new_follower'
+}
+
 function NotificationSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={styles.notifRow}>
-      <Animated.View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.muted, opacity }} />
-      <View style={styles.notifContent}>
-        <Animated.View style={{ width: '80%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
-        <Animated.View style={{ width: '60%', height: 11, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 4 }} />
+    <View style={skeletonStyles.row}>
+      <Animated.View style={[skeletonStyles.avatar, { backgroundColor: colors.muted, opacity }]} />
+      <View style={skeletonStyles.content}>
+        <Animated.View style={[skeletonStyles.titleLine, { backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skeletonStyles.bodyLine, { backgroundColor: colors.muted, opacity }]} />
       </View>
     </View>
   )
 }
+
+const skeletonStyles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
+  avatar: { width: 40, height: 40, borderRadius: 20 },
+  content: { flex: 1, gap: 6, paddingTop: 2 },
+  titleLine: { width: '80%', height: 14, borderRadius: 6 },
+  bodyLine: { width: '60%', height: 11, borderRadius: 6 },
+})
 
 function NotificationsScreenInner() {
   const { colors, isDark } = useTheme()
@@ -157,6 +169,8 @@ function NotificationsScreenInner() {
   // Expanded groups state — tracks which grouped notifications are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [fetchError, setFetchError] = useState(false)
+
+  const warmTint = isDark ? 'rgba(240,238,233,0.08)' : '#F0EEE9'
 
   const fetchNotifications = useCallback(async () => {
     setFetchError(false)
@@ -300,22 +314,49 @@ function NotificationsScreenInner() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('nav.notifications')}</Text>
-        <View style={{ flex: 1 }} />
-        {/* Mark all as read button */}
-        {unreadCount > 0 && (
-          <PressableOpacity onPress={markAllRead} hitSlop={8} style={styles.markAllReadBtn} accessibilityRole="button" accessibilityLabel={t('notifications.markAllRead')}>
-            <CheckCheck size={16} color={colors.mutedForeground} />
-            <Text style={[styles.markAllReadText, { color: colors.mutedForeground }]}>{t('notifications.markAllRead')}</Text>
+      {/* Header — Bar pattern: centered title, left circle back, right "Merkitse" text */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        {/* Left: circle back button */}
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={[styles.headerBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ArrowLeft size={18} color={colors.foreground} />
+        </PressableOpacity>
+
+        {/* Center: title */}
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+          {t('nav.notifications')}
+        </Text>
+
+        {/* Right: "Merkitse" text */}
+        {unreadCount > 0 ? (
+          <PressableOpacity
+            onPress={markAllRead}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('notifications.markAllRead')}
+            style={styles.headerRightBtn}
+          >
+            <Text style={[styles.headerRightText, { color: colors.foreground }]}>
+              {t('notifications.markAllRead')}
+            </Text>
           </PressableOpacity>
+        ) : (
+          <View style={styles.headerRightBtn} />
         )}
       </View>
 
-      {/* Filter chips — Threads style: active=solid fg, inactive=transparent+hairline */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} contentContainerStyle={styles.filterRow}>
+      {/* Filter chips row */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterScrollView}
+        contentContainerStyle={styles.filterRow}
+      >
         {FILTERS.map((f) => {
           const isActive = activeFilter === f.key
           const count = unreadByFilter[f.key] ?? 0
@@ -329,13 +370,15 @@ function NotificationsScreenInner() {
               style={[
                 styles.filterChip,
                 isActive
-                  ? { backgroundColor: colors.foreground, borderColor: colors.foreground }
-                  : { backgroundColor: 'transparent', borderColor: colors.border },
+                  ? { backgroundColor: colors.foreground, borderWidth: 0 }
+                  : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
               ]}
             >
               <Text style={[
                 styles.filterText,
-                { color: isActive ? colors.background : colors.foreground },
+                isActive
+                  ? { color: colors.background, fontFamily: fonts.bodySemi }
+                  : { color: colors.foreground, fontFamily: fonts.bodyMedium },
               ]}>
                 {t(f.label)}
               </Text>
@@ -345,149 +388,198 @@ function NotificationsScreenInner() {
       </ScrollView>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity
+          onPress={() => { setRefreshing(true); fetchNotifications() }}
+          style={[styles.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+        >
           <RefreshCw size={14} color={colors.destructive} />
-          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+          <Text style={[styles.errorText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
         </PressableOpacity>
       )}
 
       {/* Notification list */}
       {loading ? (
-        <View style={{ paddingTop: 8, gap: 0 }}>
+        <View style={styles.skeletonContainer}>
           {[0, 1, 2, 3, 4, 5].map(i => <NotificationSkeleton key={i} />)}
         </View>
       ) : (
-      <SectionList
-        sections={sections}
-        keyExtractor={item => item.id}
-        stickySectionHeadersEnabled
-        contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchNotifications() }} tintColor={colors.primary} />}
-        renderSectionHeader={({ section }) => (
-          <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{section.title}</Text>
-          </View>
-        )}
-        renderItem={({ item }) => {
-          const isGroupedMulti = item.isGrouped && item.groupCount && item.groupCount > 1
-          const groupKey = `${item.type}:${item.link_id ?? item.id}`
-          const isExpanded = expandedGroups.has(groupKey)
-          const ChevronIcon = isExpanded ? ChevronUp : ChevronDown
-          const initial = getInitial(item)
-
-          return (
-            <View>
-              <PressableOpacity
-                onPress={() => handleTap(item)}
-                onLongPress={() => handleLongPress(item)}
-                delayLongPress={500}
-                accessibilityRole="button"
-                accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
-                accessibilityState={{ selected: !item.is_read }}
-                accessibilityHint={t('notifications.deleteNotification')}
-                style={[
-                  styles.notifRow,
-                  !item.is_read && { backgroundColor: isDark ? `${colors.primary}0D` : `${colors.primary}08` },
-                ]}
-              >
-                {/* Avatar — 36px, no colored background */}
-                <View style={styles.notifAvatar}>
-                  {item.from_user?.avatar_url ? (
-                    <Image source={{ uri: item.from_user.avatar_url }} style={styles.avatar} contentFit="cover" cachePolicy="memory-disk" />
-                  ) : (
-                    <View style={[styles.avatar, styles.avatarFb, { backgroundColor: colors.muted }]}>
-                      <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>{initial}</Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Text content */}
-                <View style={styles.notifContent}>
-                  <View style={styles.notifTitleRow}>
-                    <Text
-                      style={[styles.notifTitle, { color: colors.foreground }, !item.is_read && styles.notifTitleUnread]}
-                      numberOfLines={2}
-                    >
-                      {getGroupedTitle(item, t)}
-                    </Text>
-                    {/* Time on right */}
-                    <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
-                      {formatTimeAgo(item.created_at, t, locale)}
-                    </Text>
-                  </View>
-
-                  {item.body && (
-                    <Text style={[styles.notifBody, { color: colors.mutedForeground }]} numberOfLines={2}>
-                      {item.body}
-                    </Text>
-                  )}
-
-                  {/* Group expand chevron */}
-                  {isGroupedMulti && (
-                    <PressableOpacity
-                      onPress={() => toggleGroup(groupKey)}
-                      hitSlop={12}
-                      style={styles.groupExpandBtn}
-                    >
-                      <Text style={[styles.groupBadgeText, { color: colors.mutedForeground }]}>{item.groupCount}</Text>
-                      <ChevronIcon size={12} color={colors.mutedForeground} />
-                    </PressableOpacity>
-                  )}
-                </View>
-
-                {/* Dismiss X — low-opacity, always visible */}
-                <PressableOpacity
-                  onPress={() => handleLongPress(item)}
-                  style={styles.notifDeleteBtn}
-                  hitSlop={8}
-                  accessibilityLabel={t('common.delete')}
-                  accessibilityRole="button"
-                >
-                  <X size={14} color={colors.mutedForeground} style={{ opacity: 0.35 }} />
-                </PressableOpacity>
-              </PressableOpacity>
-
-              {/* Hairline separator */}
-              <View style={[styles.separator, { backgroundColor: colors.border }]} />
-
-              {/* Expanded group — show individual notification names */}
-              {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (
-                <View style={[styles.expandedGroup, { backgroundColor: isDark ? `${colors.card}80` : `${colors.muted}80` }]}>
-                  {item.groupNames.map((name, idx) => (
-                    <View key={`${item.id}-${idx}`} style={styles.expandedItem}>
-                      <View style={[styles.expandedDot, { backgroundColor: colors.mutedForeground }]} />
-                      <Text style={[styles.expandedName, { color: colors.foreground }]} numberOfLines={1}>{name}</Text>
-                      <Text style={[styles.expandedAction, { color: colors.mutedForeground }]}>
-                        {item.type === 'post_like' ? t('notifications.likedYourPost') : item.title}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
+        <SectionList
+          sections={sections}
+          keyExtractor={item => item.id}
+          stickySectionHeadersEnabled={false}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => { setRefreshing(true); fetchNotifications() }}
+              tintColor={colors.foreground}
+            />
+          }
+          renderSectionHeader={({ section }) => (
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+                {section.title}
+              </Text>
             </View>
-          )
-        }}
-        ListEmptyComponent={
-          !loading ? (
-            !isLoggedIn ? (
-              <EmptyState
-                icon={<LogIn size={36} color={colors.primary} />}
-                title={t('notifications.loginRequired')}
-                description={t('notifications.loginHint')}
-                actionLabel={t('auth.login')}
-                onAction={() => router.push('/(auth)/login')}
-              />
-            ) : (
-              <EmptyState
-                icon={<Bell size={36} color={colors.primary} />}
-                title={t('notifications.empty')}
-                description={t('notifications.emptyHint')}
-              />
+          )}
+          renderItem={({ item, index, section }) => {
+            const isGroupedMulti = item.isGrouped && item.groupCount && item.groupCount > 1
+            const groupKey = `${item.type}:${item.link_id ?? item.id}`
+            const isExpanded = expandedGroups.has(groupKey)
+            const initial = getInitial(item)
+            const isLast = index === section.data.length - 1
+            const isFirst = index === 0
+            const isSystem = !item.from_user
+            const showActions = hasActionButtons(item.type) && !item.is_read
+
+            return (
+              <View>
+                {/* Grouped container card: first item gets top radius, last gets bottom */}
+                <View style={[
+                  styles.rowCard,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    marginHorizontal: 16,
+                  },
+                  isFirst && { borderTopLeftRadius: 16, borderTopRightRadius: 16, borderTopWidth: 1 },
+                  isLast && { borderBottomLeftRadius: 16, borderBottomRightRadius: 16, borderBottomWidth: 1 },
+                  !isFirst && { borderTopWidth: 0 },
+                  !isLast && { borderBottomWidth: 0 },
+                  { borderLeftWidth: 1, borderRightWidth: 1 },
+                ]}>
+                  <PressableOpacity
+                    onPress={() => handleTap(item)}
+                    onLongPress={() => handleLongPress(item)}
+                    delayLongPress={500}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
+                    accessibilityState={{ selected: !item.is_read }}
+                    accessibilityHint={t('notifications.deleteNotification')}
+                    style={[
+                      styles.notifRow,
+                      !item.is_read && { backgroundColor: warmTint },
+                      isFirst && { borderTopLeftRadius: 16, borderTopRightRadius: 16 },
+                      isLast && { borderBottomLeftRadius: 16, borderBottomRightRadius: 16 },
+                    ]}
+                  >
+                    {/* Avatar — 40px */}
+                    {isSystem ? (
+                      <View style={[styles.avatarSystem, { backgroundColor: colors.foreground }]}>
+                        <Bell size={18} color={colors.background} />
+                      </View>
+                    ) : item.from_user?.avatar_url ? (
+                      <Image
+                        source={{ uri: item.from_user.avatar_url }}
+                        style={styles.avatar}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                      />
+                    ) : (
+                      <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted }]}>
+                        <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>{initial}</Text>
+                      </View>
+                    )}
+
+                    {/* Text content */}
+                    <View style={styles.notifContent}>
+                      <Text
+                        style={[
+                          styles.notifTitle,
+                          { color: colors.foreground },
+                          !item.is_read && styles.notifTitleBold,
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {getGroupedTitle(item, t)}
+                      </Text>
+
+                      {item.body && (
+                        <Text
+                          style={[styles.notifBody, { color: colors.foreground }]}
+                          numberOfLines={2}
+                        >
+                          {item.body}
+                        </Text>
+                      )}
+
+                      <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
+                        {formatTimeAgo(item.created_at, t, locale)}
+                      </Text>
+
+                      {/* Action buttons for actionable notifications */}
+                      {showActions && (
+                        <View style={styles.actionRow}>
+                          <PressableOpacity
+                            onPress={() => handleTap(item)}
+                            style={[styles.actionPrimary, { backgroundColor: colors.foreground }]}
+                          >
+                            <Text style={[styles.actionPrimaryText, { color: colors.background }]}>
+                              {item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
+                            </Text>
+                          </PressableOpacity>
+                          <PressableOpacity
+                            onPress={() => handleLongPress(item)}
+                            style={[styles.actionSecondary, { backgroundColor: colors.card, borderColor: colors.border }]}
+                          >
+                            <Text style={[styles.actionSecondaryText, { color: colors.foreground }]}>
+                              {t('common.decline')}
+                            </Text>
+                          </PressableOpacity>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Unread dot */}
+                    {!item.is_read && (
+                      <View style={[styles.unreadDot, { backgroundColor: colors.foreground }]} />
+                    )}
+                  </PressableOpacity>
+
+                  {/* Divider between rows (not after last) */}
+                  {!isLast && (
+                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                  )}
+                </View>
+
+                {/* Expanded group — show individual notification names */}
+                {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (
+                  <View style={[styles.expandedGroup, { backgroundColor: isDark ? `${colors.card}80` : `${colors.muted}80` }]}>
+                    {item.groupNames.map((name, idx) => (
+                      <View key={`${item.id}-${idx}`} style={styles.expandedItem}>
+                        <View style={[styles.expandedDot, { backgroundColor: colors.mutedForeground }]} />
+                        <Text style={[styles.expandedName, { color: colors.foreground }]} numberOfLines={1}>{name}</Text>
+                        <Text style={[styles.expandedAction, { color: colors.mutedForeground }]}>
+                          {item.type === 'post_like' ? t('notifications.likedYourPost') : item.title}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
             )
-          ) : null
-        }
-        showsVerticalScrollIndicator={false}
-      />
+          }}
+          ListEmptyComponent={
+            !loading ? (
+              !isLoggedIn ? (
+                <EmptyState
+                  icon={<LogIn size={36} color={colors.foreground} />}
+                  title={t('notifications.loginRequired')}
+                  description={t('notifications.loginHint')}
+                  actionLabel={t('auth.login')}
+                  onAction={() => router.push('/(auth)/login')}
+                />
+              ) : (
+                <EmptyState
+                  icon={<Bell size={36} color={colors.foreground} />}
+                  title={t('notifications.empty')}
+                  description={t('notifications.emptyHint')}
+                />
+              )
+            ) : null
+          }
+          showsVerticalScrollIndicator={false}
+        />
       )}
     </View>
   )
@@ -502,48 +594,232 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+  },
+
+  // --- Header: Bar pattern ---
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
-  markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  markAllReadText: { fontSize: 12, fontFamily: fonts.bodyMedium },
-  filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
+  headerBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 20,
+  },
+  headerRightBtn: {
+    minWidth: 36,
+    alignItems: 'flex-end',
+  },
+  headerRightText: {
+    fontSize: 11.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+  },
+
+  // --- Filter chips ---
+  filterScrollView: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+  },
   filterChip: {
-    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    minHeight: 44, justifyContent: 'center', alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
   },
-  filterText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
-  sectionHeader: { paddingHorizontal: 16, paddingVertical: 6 },
-  sectionTitle: { fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
+  filterText: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+
+  // --- Section headers ---
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    paddingTop: 16,
+  },
+  sectionTitle: {
+    fontSize: 10.5,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    fontFamily: fonts.bodySemi,
+  },
+
+  // --- Row card container ---
+  rowCard: {
+    overflow: 'hidden',
+  },
+
+  // --- Notification row ---
   notifRow: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  notifAvatar: {},
-  avatar: { width: 36, height: 36, borderRadius: 18 },
-  avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { fontSize: 15, fontFamily: fonts.bodySemi },
-  notifContent: { flex: 1, gap: 4 },
-  notifTitleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  notifTitle: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, flex: 1 },
-  notifTitleUnread: { fontFamily: fonts.bodySemi },
-  notifBody: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
-  notifTime: { fontSize: 11, lineHeight: 20, fontFamily: fonts.body, flexShrink: 0 },
-  notifDeleteBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
-  groupExpandBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2,
-    alignSelf: 'flex-start', minHeight: 44, minWidth: 44,
+
+  // --- Avatar ---
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
-  groupBadgeText: { fontSize: 11, fontFamily: fonts.bodySemi },
-  separator: { height: StyleSheet.hairlineWidth, marginLeft: 64 },
-  // Expanded group styles
-  expandedGroup: { marginLeft: 64, marginRight: 16, borderRadius: 20, paddingVertical: 4, marginBottom: 4 },
-  expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  expandedDot: { width: 4, height: 4, borderRadius: 2 },
-  expandedName: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
-  expandedAction: { fontSize: 12, fontFamily: fonts.body, flex: 1 },
+  avatarFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarSystem: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontSize: 16,
+    fontFamily: fonts.bodySemi,
+  },
+
+  // --- Content ---
+  notifContent: {
+    flex: 1,
+    gap: 2,
+  },
+  notifTitle: {
+    fontSize: 13.5,
+    lineHeight: 19,
+    fontFamily: fonts.body,
+  },
+  notifTitleBold: {
+    fontFamily: fonts.bodySemi,
+  },
+  notifBody: {
+    fontSize: 13.5,
+    lineHeight: 19,
+    fontFamily: fonts.body,
+  },
+  notifTime: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: fonts.body,
+    marginTop: 2,
+  },
+
+  // --- Unread dot ---
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    flexShrink: 0,
+    marginTop: 6,
+  },
+
+  // --- Action buttons ---
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  actionPrimary: {
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  actionPrimaryText: {
+    fontSize: 11.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+  },
+  actionSecondary: {
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderWidth: 1,
+  },
+  actionSecondaryText: {
+    fontSize: 11.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+  },
+
+  // --- Divider ---
+  divider: {
+    height: 1,
+    marginLeft: 68, // 16 padding + 40 avatar + 12 gap = 68
+  },
+
+  // --- Error banner ---
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    margin: 16,
+    padding: 12,
+    borderRadius: 20,
+  },
+  errorText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
+  },
+
+  // --- Skeleton ---
+  skeletonContainer: {
+    paddingTop: 8,
+  },
+
+  // --- List ---
+  listContent: {
+    paddingBottom: 100,
+  },
+
+  // --- Expanded group ---
+  expandedGroup: {
+    marginLeft: 68,
+    marginRight: 16,
+    borderRadius: 20,
+    paddingVertical: 4,
+    marginBottom: 4,
+  },
+  expandedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  expandedDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  expandedName: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
+  },
+  expandedAction: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    flex: 1,
+  },
 })

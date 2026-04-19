@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
-  Pressable, Linking,
+  Pressable, Linking, ActionSheetIOS, Alert, Platform,
 } from 'react-native'
 import { Image } from 'expo-image'
 import { hapticMedium } from '@/lib/haptics'
@@ -13,8 +13,9 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import {
   Map, CalendarDays, MapPin, ChevronRight, Globe,
   Store, Coffee, BookOpen, Dumbbell, Heart, UtensilsCrossed,
-  Users, MessageCircle, Plus,
+  Users, MessageCircle, Plus, Search, SlidersHorizontal,
 } from 'lucide-react-native'
+import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -23,6 +24,7 @@ import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { formatEventDateShort } from '@/lib/format'
 import * as Location from 'expo-location'
+import * as Haptics from 'expo-haptics'
 import type { CityEvent, LocalPlace } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
 import { haversineKm, isInCityBounds } from '@/lib/geo'
@@ -434,40 +436,115 @@ function ExploreScreenInner() {
     }
   }, [])
 
+  // ── Filter action sheet (sort picker for active tab) ──
+  const handleFilterAction = useCallback(() => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    if (activeTab === 'events') {
+      const labels = eventSortOptions.map(o => t(o.labelKey) ?? o.key)
+      labels.push(t('common.cancel') ?? 'Cancel')
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
+          (idx) => { if (idx < eventSortOptions.length) setEventSort(eventSortOptions[idx].key) },
+        )
+      } else {
+        Alert.alert(t('feed.sort') ?? 'Sort', '', eventSortOptions.map(o => ({
+          text: (t(o.labelKey) ?? o.key) + (eventSort === o.key ? ' \u2713' : ''),
+          onPress: () => setEventSort(o.key),
+        })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
+      }
+    } else if (activeTab === 'places') {
+      const labels = placeSortOptions.map(o => t(o.labelKey) ?? o.key)
+      labels.push(t('common.cancel') ?? 'Cancel')
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
+          (idx) => { if (idx < placeSortOptions.length) setPlaceSort(placeSortOptions[idx].key) },
+        )
+      } else {
+        Alert.alert(t('feed.sort') ?? 'Sort', '', placeSortOptions.map(o => ({
+          text: (t(o.labelKey) ?? o.key) + (placeSort === o.key ? ' \u2713' : ''),
+          onPress: () => setPlaceSort(o.key),
+        })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
+      }
+    }
+  }, [activeTab, eventSort, placeSort, eventSortOptions, placeSortOptions, t])
+
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Tab chips — paddingTop includes safe area since shared Header was removed */}
-      <View style={[s.chipRow, { paddingTop: insets.top + 8 }]}>
-        {tabs.map(({ key, labelKey, Icon }) => {
-          const isActive = activeTab === key
-          return (
-            <Pressable
-              key={key}
-              onPress={() => setActiveTab(key)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              accessibilityLabel={`${t(labelKey)}${tabCounts[key] > 0 ? `, ${tabCounts[key]}` : ''}`}
-              style={[
-                s.chip,
-                isActive
-                  ? { backgroundColor: colors.foreground }
-                  : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
-              ]}
+      {/* ── Sticky header — Helsinki Monochrome (matches feed 05) ── */}
+      <View style={[s.headerWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: insets.top }]}>
+        {/* Eyebrow + title + action circles */}
+        <View style={s.headerRow}>
+          <View style={s.headerLeft}>
+            <Text style={[s.locationEyebrow, { color: colors.mutedForeground }]}>
+              {t('explore.discoverLabel') ?? 'TUTUSTU ALUEESEEN'}
+            </Text>
+            <Text style={[s.screenTitle, { color: colors.foreground }]}>
+              {t('explore.title') ?? 'Tutustu'}
+            </Text>
+          </View>
+          <View style={s.headerActions}>
+            <PressableOpacity
+              onPress={() => router.push('/search')}
+              style={[s.iconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+              accessibilityLabel={t('common.search')}
+              accessibilityRole="button"
             >
-              <Icon size={16} color={isActive ? colors.background : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
-              <Text style={[s.chipText, { color: isActive ? colors.background : colors.mutedForeground }]}>
-                {t(labelKey)}
-              </Text>
-              {tabCounts[key] > 0 && (
-                <View style={[s.chipCount, { backgroundColor: isActive ? 'rgba(255,255,255,0.18)' : `${colors.foreground}12` }]}>
-                  <Text style={[s.chipCountText, { color: isActive ? colors.background : colors.foreground }]}>
-                    {tabCounts[key]}
-                  </Text>
-                </View>
-              )}
-            </Pressable>
-          )
-        })}
+              <Search size={16} color={colors.mutedForeground} strokeWidth={2} />
+            </PressableOpacity>
+            <PressableOpacity
+              onPress={handleFilterAction}
+              style={[s.iconCircleDark, { backgroundColor: colors.foreground }]}
+              accessibilityLabel={t('feed.sort') ?? 'Sort'}
+              accessibilityRole="button"
+            >
+              <SlidersHorizontal size={16} color={colors.background} strokeWidth={2} />
+            </PressableOpacity>
+          </View>
+        </View>
+
+        {/* Tab chips row */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={s.tabScrollRow}
+          contentContainerStyle={{ gap: 8, alignItems: 'center', paddingHorizontal: 16 }}
+        >
+          {tabs.map(({ key, labelKey, Icon }) => {
+            const isActive = activeTab === key
+            return (
+              <PressableOpacity
+                key={key}
+                onPress={() => {
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+                  setActiveTab(key)
+                }}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={`${t(labelKey)}${tabCounts[key] > 0 ? `, ${tabCounts[key]}` : ''}`}
+                style={[
+                  s.tabChip,
+                  isActive
+                    ? { backgroundColor: colors.foreground }
+                    : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                ]}
+              >
+                <Icon size={14} color={isActive ? colors.background : colors.mutedForeground} strokeWidth={isActive ? 2.2 : 1.6} />
+                <Text style={[s.tabChipText, { color: isActive ? colors.background : colors.mutedForeground }]}>
+                  {t(labelKey)}
+                </Text>
+                {tabCounts[key] > 0 && (
+                  <View style={[s.tabChipCount, { backgroundColor: isActive ? 'rgba(255,255,255,0.18)' : `${colors.foreground}0F` }]}>
+                    <Text style={[s.tabChipCountText, { color: isActive ? colors.background : colors.foreground }]}>
+                      {tabCounts[key]}
+                    </Text>
+                  </View>
+                )}
+              </PressableOpacity>
+            )
+          })}
+        </ScrollView>
       </View>
 
       {/* ── Out of Area Banner ── */}
@@ -485,11 +562,11 @@ function ExploreScreenInner() {
         {activeTab === 'map' && (
           <>
             {/* Map teaser card */}
-            <Pressable
+            <PressableOpacity
               onPress={() => router.push('/map')}
               accessibilityRole="button"
               accessibilityLabel={t('explore.openMap')}
-              style={[s.mapTeaser, { backgroundColor: colors.muted, borderWidth: 0 }]}
+              style={[s.mapTeaser, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
               <View style={s.mapTeaserContent}>
                 <Map size={28} color={colors.foreground} strokeWidth={1.6} />
@@ -501,14 +578,14 @@ function ExploreScreenInner() {
                 </Text>
               </View>
               <ChevronRight size={20} color={colors.mutedForeground} strokeWidth={1.6} />
-            </Pressable>
+            </PressableOpacity>
 
             {/* Summary stats */}
             {!loading && (
               <View style={s.summaryRow}>
                 {cityEvents.length > 0 && (
-                  <Pressable
-                    style={[s.summaryCard, { backgroundColor: colors.muted, borderWidth: 0 }]}
+                  <PressableOpacity
+                    style={[s.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                     onPress={() => setActiveTab('events')}
                     accessibilityRole="button"
                     accessibilityLabel={t('explore.eventsThisWeek', { count: eventsThisWeek })}
@@ -518,12 +595,12 @@ function ExploreScreenInner() {
                       {t('explore.eventsThisWeek', { count: eventsThisWeek })}
                     </Text>
                     <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                  </Pressable>
+                  </PressableOpacity>
                 )}
 
                 {places.length > 0 && (
-                  <Pressable
-                    style={[s.summaryCard, { backgroundColor: colors.muted, borderWidth: 0 }]}
+                  <PressableOpacity
+                    style={[s.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                     onPress={() => setActiveTab('places')}
                     accessibilityRole="button"
                     accessibilityLabel={t('explore.placesNearby', { count: placesCount })}
@@ -533,24 +610,24 @@ function ExploreScreenInner() {
                       {t('explore.placesNearby', { count: placesCount })}
                     </Text>
                     <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                  </Pressable>
+                  </PressableOpacity>
                 )}
               </View>
             )}
 
             {/* Community Events carousel */}
-            <View style={s.communitySection}>
-              <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>{t('events.communityEventsTitle').toUpperCase()}</Text>
-                <Pressable
+            <View style={s.sectionWrap}>
+              <View style={s.sectionHeaderRow}>
+                <Text style={[s.sectionHeading, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
+                <PressableOpacity
                   onPress={() => router.push('/community-events' as any)}
                   accessibilityRole="link"
                   accessibilityLabel={`${t('events.communityEventsTitle')} — ${t('events.showAllEvents')}`}
                   style={s.seeAllLink}
+                  hitSlop={8}
                 >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('events.showAllEvents')}</Text>
-                  <ChevronRight size={12} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('events.showAllEvents') ?? 'Nayta kaikki'}</Text>
+                </PressableOpacity>
               </View>
 
               {communityEventPreviews.length > 0 ? (
@@ -567,19 +644,19 @@ function ExploreScreenInner() {
                       : `${pCount}`
 
                     return (
-                      <Pressable
+                      <PressableOpacity
                         key={evt.id}
                         onPress={() => router.push(`/event/${evt.id}` as any)}
                         accessibilityRole="button"
                         accessibilityLabel={`${evt.title}, ${formatEventDateShort(evt.event_date, locale)}`}
-                        style={[s.ceCard, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+                        style={[s.ceCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                       >
                         {evt.image_url ? (
                           <View style={s.ceImageWrap}>
                             <Image source={{ uri: evt.image_url }} style={s.ceImage} contentFit="cover" cachePolicy="memory-disk" />
                           </View>
                         ) : (
-                          <View style={[s.ceImagePlaceholder, { backgroundColor: colors.muted }]}>
+                          <View style={[s.ceImagePlaceholder, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
                             <CalendarDays size={24} color={colors.mutedForeground} strokeWidth={1.6} />
                           </View>
                         )}
@@ -591,16 +668,16 @@ function ExploreScreenInner() {
                             <Text style={[s.ceCardMetaText, { color: colors.mutedForeground }]}>{pLabel}</Text>
                           </View>
                         </View>
-                      </Pressable>
+                      </PressableOpacity>
                     )
                   })}
                 </ScrollView>
               ) : (
-                <Pressable
+                <PressableOpacity
                   onPress={() => router.push('/create-event' as any)}
                   accessibilityRole="button"
                   accessibilityLabel={t('events.createFirstEvent')}
-                  style={[s.communityCard, { backgroundColor: colors.muted, borderTopWidth: 0 }]}
+                  style={[s.communityCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
                   <Plus size={20} color={colors.mutedForeground} strokeWidth={1.6} />
                   <View style={s.cardFlex}>
@@ -608,113 +685,123 @@ function ExploreScreenInner() {
                     <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('events.createFirstEvent')}</Text>
                   </View>
                   <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
+                </PressableOpacity>
               )}
             </View>
 
             {/* Community: Groups */}
-            <View style={s.communitySection}>
-              <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>{t('groups.title').toUpperCase()}</Text>
-                <Pressable
+            <View style={s.sectionWrap}>
+              <View style={s.sectionHeaderRow}>
+                <Text style={[s.sectionHeading, { color: colors.foreground }]}>{t('groups.title')}</Text>
+                <PressableOpacity
                   onPress={() => router.push('/groups' as any)}
                   accessibilityRole="link"
                   accessibilityLabel={`${t('groups.title')} — ${t('feed.showAll')}`}
                   style={s.seeAllLink}
+                  hitSlop={8}
                 >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll')}</Text>
-                  <ChevronRight size={12} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Nayta kaikki'}</Text>
+                </PressableOpacity>
               </View>
-              {groups.length > 0 ? (
-                groups.map((g, idx) => (
-                  <Pressable
-                    key={g.id}
-                    onPress={() => router.push(`/groups/${g.id}` as any)}
+              <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {groups.length > 0 ? (
+                  groups.map((g, idx) => (
+                    <PressableOpacity
+                      key={g.id}
+                      onPress={() => router.push(`/groups/${g.id}` as any)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${g.name}, ${g.member_count} ${t('groups.members')}`}
+                      style={[
+                        s.listRow,
+                        idx < groups.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+                      ]}
+                    >
+                      <View style={[s.groupDot, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
+                        <Text style={[s.groupDotText, { color: colors.foreground }]}>{(g.name || '?').charAt(0)}</Text>
+                      </View>
+                      <View style={s.cardFlex}>
+                        <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{g.name}</Text>
+                        <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{g.member_count} {t('groups.members')}</Text>
+                      </View>
+                      <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
+                    </PressableOpacity>
+                  ))
+                ) : (
+                  <PressableOpacity
+                    onPress={() => router.push('/groups' as any)}
                     accessibilityRole="button"
-                    accessibilityLabel={`${g.name}, ${g.member_count} ${t('groups.members')}`}
-                    style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
+                    accessibilityLabel={`${t('groups.title')} — ${t('groups.joinOrCreate')}`}
+                    style={s.listRow}
                   >
-                    <View style={[s.groupDot, { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-                      <Text style={[s.groupDotText, { color: colors.foreground }]}>{(g.name || '?').charAt(0)}</Text>
-                    </View>
+                    <Users size={20} color={colors.mutedForeground} strokeWidth={1.6} />
                     <View style={s.cardFlex}>
-                      <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{g.name}</Text>
-                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{g.member_count} {t('groups.members')}</Text>
+                      <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
+                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
                     </View>
-                    <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                  </Pressable>
-                ))
-              ) : (
-                <Pressable
-                  onPress={() => router.push('/groups' as any)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t('groups.title')} — ${t('groups.joinOrCreate')}`}
-                  style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
-                >
-                  <Users size={20} color={colors.mutedForeground} strokeWidth={1.6} />
-                  <View style={s.cardFlex}>
-                    <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
-                    <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
-                  </View>
-                  <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
-              )}
+                    <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+                  </PressableOpacity>
+                )}
+              </View>
             </View>
 
             {/* Community: Forum */}
-            <View style={s.communitySection}>
-              <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.mutedForeground }]}>{t('forum.title').toUpperCase()}</Text>
-                <Pressable
+            <View style={s.sectionWrap}>
+              <View style={s.sectionHeaderRow}>
+                <Text style={[s.sectionHeading, { color: colors.foreground }]}>{t('forum.title')}</Text>
+                <PressableOpacity
                   onPress={() => router.push('/forum' as any)}
                   accessibilityRole="link"
                   accessibilityLabel={`${t('forum.title')} — ${t('feed.showAll')}`}
                   style={s.seeAllLink}
+                  hitSlop={8}
                 >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll')}</Text>
-                  <ChevronRight size={12} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Nayta kaikki'}</Text>
+                </PressableOpacity>
               </View>
-              {forumPosts.length > 0 ? (
-                forumPosts.map((p, idx) => (
-                  <Pressable
-                    key={p.id}
-                    onPress={() => router.push(`/forum?thread=${p.id}` as any)}
+              <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {forumPosts.length > 0 ? (
+                  forumPosts.map((p, idx) => (
+                    <PressableOpacity
+                      key={p.id}
+                      onPress={() => router.push(`/forum?thread=${p.id}` as any)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${p.title}, ${p.comment_count} ${t('forum.replies')}`}
+                      style={[
+                        s.listRow,
+                        idx < forumPosts.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+                      ]}
+                    >
+                      <MessageCircle size={18} color={colors.mutedForeground} strokeWidth={1.6} />
+                      <View style={s.cardFlex}>
+                        <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{p.title}</Text>
+                        <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.comment_count} {t('forum.replies')}</Text>
+                      </View>
+                      <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
+                    </PressableOpacity>
+                  ))
+                ) : (
+                  <PressableOpacity
+                    onPress={() => router.push('/forum' as any)}
                     accessibilityRole="button"
-                    accessibilityLabel={`${p.title}, ${p.comment_count} ${t('forum.replies')}`}
-                    style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
+                    accessibilityLabel={`${t('forum.title')} — ${t('forum.startDiscussion')}`}
+                    style={s.listRow}
                   >
-                    <MessageCircle size={18} color={colors.mutedForeground} strokeWidth={1.6} />
+                    <MessageCircle size={20} color={colors.mutedForeground} strokeWidth={1.6} />
                     <View style={s.cardFlex}>
-                      <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{p.title}</Text>
-                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.comment_count} {t('forum.replies')}</Text>
+                      <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
+                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
                     </View>
-                    <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                  </Pressable>
-                ))
-              ) : (
-                <Pressable
-                  onPress={() => router.push('/forum' as any)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t('forum.title')} — ${t('forum.startDiscussion')}`}
-                  style={[s.communityCard, { backgroundColor: 'transparent', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
-                >
-                  <MessageCircle size={20} color={colors.mutedForeground} strokeWidth={1.6} />
-                  <View style={s.cardFlex}>
-                    <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
-                    <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
-                  </View>
-                  <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                </Pressable>
-              )}
+                    <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+                  </PressableOpacity>
+                )}
+              </View>
             </View>
 
             {loading && <SectionSkeleton count={2} />}
 
             {/* Error state */}
             {fetchError && !loading && cityEvents.length === 0 && places.length === 0 && (
-              <Pressable
+              <PressableOpacity
                 onPress={handleRefresh}
                 accessibilityRole="button"
                 accessibilityLabel={t('feed.loadError')}
@@ -723,7 +810,7 @@ function ExploreScreenInner() {
                 <Text style={[s.errorRowText, { color: colors.destructive }]}>
                   {t('feed.loadError')}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )}
           </>
         )}
@@ -735,13 +822,13 @@ function ExploreScreenInner() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={s.filterRow}
+              contentContainerStyle={s.filterChipRow}
               style={s.filterScrollWrap}
             >
               {eventSortOptions.map(opt => {
                 const active = eventSort === opt.key
                 return (
-                  <Pressable
+                  <PressableOpacity
                     key={opt.key}
                     onPress={() => setEventSort(opt.key)}
                     accessibilityRole="button"
@@ -750,21 +837,21 @@ function ExploreScreenInner() {
                       s.filterChip,
                       active
                         ? { backgroundColor: colors.foreground }
-                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                        : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                     ]}
                   >
                     <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )
               })}
-              <Text style={[s.filterSeparator, { color: colors.border }]}>|</Text>
+              <View style={[s.filterSeparator, { backgroundColor: colors.border }]} />
               {eventCategoryOptions.map(opt => {
                 const isAll = opt.key === ''
                 const active = isAll ? eventCategories.length === 0 : eventCategories.includes(opt.key)
                 return (
-                  <Pressable
+                  <PressableOpacity
                     key={opt.key || '_all'}
                     onPress={() => toggleEventCategory(opt.key)}
                     accessibilityRole="button"
@@ -773,13 +860,13 @@ function ExploreScreenInner() {
                       s.filterChip,
                       active
                         ? { backgroundColor: colors.foreground }
-                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                        : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                     ]}
                   >
                     <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )
               })}
             </ScrollView>
@@ -787,27 +874,30 @@ function ExploreScreenInner() {
             {loading ? (
               <SectionSkeleton count={5} />
             ) : allEvents.length === 0 ? (
-              <View style={[s.emptyState, { backgroundColor: 'transparent' }]}>
+              <View style={s.emptyState}>
                 <CalendarDays size={40} color={colors.mutedForeground} strokeWidth={1.3} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noEvents')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noEventsHint')}</Text>
-                <Pressable
+                <PressableOpacity
                   onPress={handleRefresh}
                   accessibilityRole="button"
                   accessibilityLabel={t('common.retry')}
-                  style={[s.emptyCta, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+                  style={[s.emptyCta, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
                   <Text style={[s.emptyCtaText, { color: colors.foreground }]}>{t('common.retry')}</Text>
-                </Pressable>
+                </PressableOpacity>
               </View>
             ) : (
-              <View style={s.cardList}>
+              <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 {allEvents.map((event, idx) => (
-                  <Pressable
+                  <PressableOpacity
                     key={event.id}
                     accessibilityRole="button"
                     accessibilityLabel={`${event.title}, ${formatEventDateShort(event.date, locale)}${event.location ? `, ${event.location}` : ''}${event.isFree ? `, ${t('events.free')}` : ''}`}
-                    style={[s.card, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
+                    style={[
+                      s.listRow,
+                      idx < allEvents.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+                    ]}
                     onPress={() => {
                       trackEventClick(event.id, event.category).then(() =>
                         getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))))
@@ -819,29 +909,27 @@ function ExploreScreenInner() {
                       }
                     }}
                   >
-                    <View style={s.cardRow}>
-                      <View style={s.eventIconBox}>
-                        <CalendarDays size={18} color={colors.mutedForeground} strokeWidth={1.6} />
-                      </View>
-                      <View style={s.cardContent}>
-                        <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
-                          {event.title}
-                        </Text>
-                        <Text style={[s.cardDateText, { color: colors.mutedForeground }]}>
-                          {formatEventDateShort(event.date, locale)}
-                          {event.location ? ` \u00B7 ${event.location}` : ''}
-                        </Text>
-                        {event.isFree && (
-                          <View style={[s.freeBadge, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
-                            <Text style={[s.freeBadgeText, { color: colors.mutedForeground }]}>
-                              {t('events.free')}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                      <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+                    <View style={[s.eventIconBox, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
+                      <CalendarDays size={16} color={colors.mutedForeground} strokeWidth={1.6} />
                     </View>
-                  </Pressable>
+                    <View style={s.cardContent}>
+                      <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
+                        {event.title}
+                      </Text>
+                      <Text style={[s.cardDateText, { color: colors.mutedForeground }]}>
+                        {formatEventDateShort(event.date, locale)}
+                        {event.location ? ` \u00B7 ${event.location}` : ''}
+                      </Text>
+                      {event.isFree && (
+                        <View style={[s.freeBadge, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
+                          <Text style={[s.freeBadgeText, { color: colors.mutedForeground }]}>
+                            {t('events.free')}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+                  </PressableOpacity>
                 ))}
               </View>
             )}
@@ -855,13 +943,13 @@ function ExploreScreenInner() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={s.filterRow}
+              contentContainerStyle={s.filterChipRow}
               style={s.filterScrollWrap}
             >
               {placeSortOptions.map(opt => {
                 const active = placeSort === opt.key
                 return (
-                  <Pressable
+                  <PressableOpacity
                     key={opt.key}
                     onPress={() => setPlaceSort(opt.key)}
                     accessibilityRole="button"
@@ -870,21 +958,21 @@ function ExploreScreenInner() {
                       s.filterChip,
                       active
                         ? { backgroundColor: colors.foreground }
-                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                        : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                     ]}
                   >
                     <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )
               })}
-              <Text style={[s.filterSeparator, { color: colors.border }]}>|</Text>
+              <View style={[s.filterSeparator, { backgroundColor: colors.border }]} />
               {placeCategoryOptions.map(opt => {
                 const isAll = opt.key === ''
                 const active = isAll ? placeCategories.length === 0 : placeCategories.includes(opt.key)
                 return (
-                  <Pressable
+                  <PressableOpacity
                     key={opt.key || '_all'}
                     onPress={() => togglePlaceCategory(opt.key)}
                     accessibilityRole="button"
@@ -893,13 +981,13 @@ function ExploreScreenInner() {
                       s.filterChip,
                       active
                         ? { backgroundColor: colors.foreground }
-                        : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                        : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                     ]}
                   >
                     <Text style={[s.filterChipText, { color: active ? colors.background : colors.mutedForeground }]}>
                       {t(opt.labelKey)}
                     </Text>
-                  </Pressable>
+                  </PressableOpacity>
                 )
               })}
             </ScrollView>
@@ -907,21 +995,21 @@ function ExploreScreenInner() {
             {loading ? (
               <SectionSkeleton count={5} />
             ) : sortedPlaces.length === 0 ? (
-              <View style={[s.emptyState, { backgroundColor: 'transparent' }]}>
+              <View style={s.emptyState}>
                 <MapPin size={40} color={colors.mutedForeground} strokeWidth={1.3} />
                 <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('explore.noPlaces')}</Text>
                 <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('explore.noPlacesHint')}</Text>
-                <Pressable
+                <PressableOpacity
                   onPress={handleRefresh}
                   accessibilityRole="button"
                   accessibilityLabel={t('common.retry')}
-                  style={[s.emptyCta, { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+                  style={[s.emptyCta, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
                   <Text style={[s.emptyCtaText, { color: colors.foreground }]}>{t('common.retry')}</Text>
-                </Pressable>
+                </PressableOpacity>
               </View>
             ) : (
-              <View style={s.cardList}>
+              <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 {sortedPlaces.map((place, idx) => {
                   const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other')
                   const dist = '_distance' in place
@@ -929,28 +1017,29 @@ function ExploreScreenInner() {
                     : null
 
                   return (
-                    <Pressable
+                    <PressableOpacity
                       key={place.id}
                       accessibilityRole="button"
                       accessibilityLabel={`${place.name}, ${catLabel}${dist ? `, ${dist}` : ''}`}
-                      style={[s.card, { backgroundColor: 'transparent', borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
+                      style={[
+                        s.listRow,
+                        idx < sortedPlaces.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+                      ]}
                       onPress={() => openPlaceInMaps(place)}
                     >
-                      <View style={s.cardRow}>
-                        <View style={s.placeIconBox}>
-                          <PlaceCategoryIcon category={place.category} size={18} color={colors.mutedForeground} />
-                        </View>
-                        <View style={s.cardContent}>
-                          <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
-                            {place.name}
-                          </Text>
-                          <Text style={[s.cardMeta, { color: colors.mutedForeground }]}>
-                            {catLabel}{dist ? ` \u00B7 ${dist}` : ''}
-                          </Text>
-                        </View>
-                        <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+                      <View style={[s.placeIconBox, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
+                        <PlaceCategoryIcon category={place.category} size={16} color={colors.mutedForeground} />
                       </View>
-                    </Pressable>
+                      <View style={s.cardContent}>
+                        <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
+                          {place.name}
+                        </Text>
+                        <Text style={[s.cardMeta, { color: colors.mutedForeground }]}>
+                          {catLabel}{dist ? ` \u00B7 ${dist}` : ''}
+                        </Text>
+                      </View>
+                      <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+                    </PressableOpacity>
                   )
                 })}
               </View>
@@ -962,84 +1051,138 @@ function ExploreScreenInner() {
   )
 }
 
-// ── Styles ──
+// ── Styles — Helsinki Monochrome ──
 const s = StyleSheet.create({
   container: { flex: 1 },
-  chipRow: {
+
+  // ── Header (matches feed 05 pattern) ──
+  headerWrapper: {
+    paddingBottom: 12,
+    gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    zIndex: 10,
+  },
+  headerRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 12,
   },
-  chip: {
+  headerLeft: { flex: 1, gap: 2 },
+  locationEyebrow: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  screenTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.5,
+    lineHeight: 30,
+  },
+  headerActions: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  iconCircleDark: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ── Tab chips (inside header) ──
+  tabScrollRow: { paddingBottom: 0 },
+  tabChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
+    gap: 6,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
   },
-  chipText: {
-    fontSize: 14,
+  tabChipText: {
+    fontSize: 13,
     fontWeight: '600',
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 20,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
   },
-  chipCount: {
-    paddingHorizontal: 8,
+  tabChipCount: {
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: 999,
     minWidth: 20,
     alignItems: 'center' as const,
   },
-  chipCountText: {
+  tabChipCountText: {
     fontSize: 11,
     fontWeight: '700' as const,
     fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+    lineHeight: 14,
   },
-  // Filter chip rows
-  filterRow: {
+
+  // ── Filter chips (events/places sub-tabs) ──
+  filterChipRow: {
     flexDirection: 'row',
     gap: 8,
     paddingVertical: 4,
+    paddingHorizontal: 0,
   },
   filterScrollWrap: {
-    marginBottom: 8,
+    marginBottom: 12,
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
   },
   filterChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
   },
   filterChipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   filterSeparator: {
-    fontSize: 14,
-    lineHeight: 28,
-    paddingHorizontal: 4,
+    width: 1,
+    height: 20,
     alignSelf: 'center',
-    opacity: 0.4,
+    opacity: 0.5,
+    marginHorizontal: 4,
   },
 
+  // ── Scroll content ──
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 20,
   },
 
-  // Map teaser
+  // ── Map teaser ──
   mapTeaser: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 20,
     gap: 16,
+    borderWidth: 1,
   },
   mapTeaserContent: {
     flex: 1,
@@ -1058,18 +1201,19 @@ const s = StyleSheet.create({
     fontFamily: fonts.body,
   },
 
-  // Summary
+  // ── Summary cards ──
   summaryRow: {
-    gap: 8,
+    gap: 10,
     marginTop: 16,
   },
   summaryCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    borderRadius: 16,
+    gap: 10,
+    borderRadius: 18,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    borderWidth: 1,
   },
   summaryText: {
     fontSize: 14,
@@ -1079,23 +1223,56 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Cards
-  cardList: {
-    gap: 0,
+  // ── Section wrapper (community events, groups, forum) ──
+  sectionWrap: {
+    gap: 10,
+    marginTop: 24,
   },
-  card: {
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 2,
+  },
+  sectionHeading: {
+    fontSize: 17,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.2,
+    lineHeight: 22,
+  },
+  seeAllLink: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  seeAllText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+    lineHeight: 18,
+    textDecorationLine: 'underline',
+  },
+
+  // ── Section card container (groups list, forum list, event list, place list) ──
+  sectionCardContainer: {
+    borderRadius: 18,
+    borderWidth: 1,
     overflow: 'hidden',
   },
-  cardRow: {
+
+  // ── List row (inside card container) ──
+  listRow: {
     flexDirection: 'row',
-    paddingHorizontal: 4,
-    paddingVertical: 14,
-    gap: 12,
     alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
+
+  // ── Card content (event/place rows) ──
   cardContent: {
     flex: 1,
-    gap: 4,
+    gap: 3,
   },
   cardFlex: {
     flex: 1,
@@ -1118,28 +1295,28 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // Event icon box
+  // ── Icon boxes (event/place) ──
   eventIconBox: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // Place icon box
   placeIconBox: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // Free badge
+  // ── Free badge ──
   freeBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: 999,
     marginTop: 4,
   },
   freeBadgeText: {
@@ -1149,7 +1326,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
 
-  // Empty state
+  // ── Empty state ──
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -1173,8 +1350,9 @@ const s = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     minHeight: 44,
+    borderWidth: 1,
   },
   emptyCtaText: {
     fontSize: 14,
@@ -1183,35 +1361,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Community section
-  communitySection: {
-    gap: 8,
-    marginTop: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-  },
-  seeAllLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    minHeight: 44,
-    paddingHorizontal: 8,
-  },
-  seeAllText: {
-    fontSize: 11,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontFamily: fonts.bodySemi,
-    letterSpacing: 0.5,
-    lineHeight: 16,
-  },
+  // ── Group dot ──
   groupDot: {
     width: 36,
     height: 36,
@@ -1225,12 +1375,16 @@ const s = StyleSheet.create({
     fontFamily: fonts.headingSemi,
     lineHeight: 20,
   },
+
+  // ── Community card (fallback: create event CTA) ──
   communityCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 4,
+    paddingHorizontal: 16,
     paddingVertical: 14,
+    borderRadius: 18,
+    borderWidth: 1,
   },
   communityCardTitle: {
     fontSize: 14,
@@ -1242,11 +1396,13 @@ const s = StyleSheet.create({
     fontFamily: fonts.body,
     lineHeight: 16,
   },
+
+  // ── Error row ──
   errorRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 8,
-    borderRadius: 16,
+    borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginTop: 16,
@@ -1258,7 +1414,7 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // Community events carousel
+  // ── Community events carousel ──
   ceCarousel: {
     marginHorizontal: -16,
   },
@@ -1268,8 +1424,9 @@ const s = StyleSheet.create({
   },
   ceCard: {
     width: 200,
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: 'hidden',
+    borderWidth: 1,
   },
   ceImageWrap: {
     width: 200,

@@ -35,12 +35,6 @@ interface EventChatItem {
 
 const PINNED_KEY = 'pinned_conversations'
 
-function MessageItemSeparator() {
-  const { colors } = useTheme()
-  return <View style={[separatorStyle, { backgroundColor: colors.border }]} />
-}
-const separatorStyle = { height: StyleSheet.hairlineWidth, marginLeft: 72 } as const
-
 export default function MessagesScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -52,6 +46,7 @@ export default function MessagesScreen() {
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchExpanded, setSearchExpanded] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const [pinnedIds, setPinnedIds] = useState<string[]>([])
   const [eventChats, setEventChats] = useState<EventChatItem[]>([])
@@ -400,67 +395,104 @@ export default function MessagesScreen() {
     return Date.now() - new Date(lastActive).getTime() < 5 * 60 * 1000
   }
 
+  const totalUnread = useMemo(() => {
+    return conversations.reduce((sum, c) => sum + (c.unread_count ?? 0), 0)
+  }, [conversations])
+
   return (
     <ScreenErrorBoundary screenName="Messages">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
-        <PressableOpacity
-          onPress={() => setShowArchived(!showArchived)}
-          hitSlop={8}
-          style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
-          accessibilityRole="button"
-          accessibilityLabel={showArchived ? t('messages.showActive') ?? 'Show active conversations' : t('messages.archive') ?? 'Show archived conversations'}
-          accessibilityState={{ selected: showArchived }}
-        >
-          <Archive size={20} color={showArchived ? colors.primary : colors.mutedForeground} />
-        </PressableOpacity>
+      {/* ── Header: Helsinki Monochrome (eyebrow + title + action circles) ── */}
+      <View style={[styles.header, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
+        <View style={styles.headerLeft}>
+          <Text style={[styles.locationEyebrow, { color: colors.mutedForeground }]}>
+            {showArchived
+              ? (t('messages.archive') ?? 'Arkisto').toUpperCase()
+              : totalUnread > 0
+                ? `${totalUnread} ${(t('messages.unread') ?? 'lukematon').toUpperCase()}`
+                : (t('messages.directMessages') ?? 'Viestit').toUpperCase()}
+          </Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+            {t('messages.title')}
+          </Text>
+        </View>
+        <View style={styles.headerActions}>
+          <PressableOpacity
+            onPress={() => setSearchExpanded(!searchExpanded)}
+            style={[styles.iconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+            accessibilityLabel={t('common.search')}
+            accessibilityRole="button"
+          >
+            <Search size={16} color={colors.mutedForeground} strokeWidth={2} />
+          </PressableOpacity>
+          <PressableOpacity
+            onPress={() => setShowArchived(!showArchived)}
+            style={[
+              styles.iconCircle,
+              showArchived
+                ? { backgroundColor: colors.foreground, borderColor: colors.foreground }
+                : { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={showArchived ? t('messages.showActive') ?? 'Show active conversations' : t('messages.archive') ?? 'Show archived conversations'}
+            accessibilityState={{ selected: showArchived }}
+          >
+            <Archive size={16} color={showArchived ? colors.background : colors.mutedForeground} strokeWidth={2} />
+          </PressableOpacity>
+        </View>
       </View>
 
-      {/* Search */}
-      <View style={[styles.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Search size={16} color={colors.mutedForeground} />
-        <TextInput
-          style={[styles.searchInput, { color: colors.foreground }]}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder={t('common.search')}
-          placeholderTextColor={colors.mutedForeground}
-          returnKeyType="search"
-          autoCapitalize="none"
-          autoCorrect={false}
-          accessibilityLabel={t('messages.searchConversations') ?? 'Search conversations'}
-          accessibilityRole="search"
-        />
-        {searchQuery.length > 0 && (
+      {/* ── Expandable search bar ── */}
+      {searchExpanded && (
+        <View style={[styles.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Search size={16} color={colors.mutedForeground} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.foreground }]}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder={t('common.search')}
+            placeholderTextColor={colors.mutedForeground}
+            returnKeyType="search"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoFocus
+            accessibilityLabel={t('messages.searchConversations') ?? 'Search conversations'}
+            accessibilityRole="search"
+          />
           <PressableOpacity
-            onPress={() => setSearchQuery('')}
+            onPress={() => { setSearchQuery(''); setSearchExpanded(false) }}
             hitSlop={8}
-            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+            style={styles.searchCloseBtn}
             accessibilityLabel={t('common.clear') ?? 'Clear search'}
             accessibilityRole="button"
           >
             <X size={16} color={colors.mutedForeground} />
           </PressableOpacity>
-        )}
-      </View>
+        </View>
+      )}
 
+      {/* ── Fetch error banner ── */}
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchConversations() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity
+          onPress={() => { setRefreshing(true); fetchConversations() }}
+          style={[styles.errorBanner, { backgroundColor: `${colors.destructive}10`, borderColor: `${colors.destructive}30` }]}
+          accessibilityRole="button"
+        >
           <RefreshCw size={14} color={colors.destructive} />
-          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+          <Text style={[styles.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
         </PressableOpacity>
       )}
 
+      {/* ── Conversation list ── */}
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 96 }]}
         keyboardShouldPersistTaps="handled"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefreshHandler} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefreshHandler} tintColor={colors.foreground} />}
         ListHeaderComponent={eventChats.length > 0 && !showArchived ? (
           <View style={styles.eventChatsSection}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
               {t('messages.eventChats')}
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.eventChatsScroll}>
@@ -480,10 +512,10 @@ export default function MessagesScreen() {
                     accessibilityLabel={ec.event_title}
                   >
                     <View style={styles.eventChatTop}>
-                      <EventChatIcon size={22} color={ecColor} />
+                      <EventChatIcon size={20} color={ecColor} />
                       {ec.unread_count > 0 && (
-                        <View style={[styles.eventChatBadge, { backgroundColor: colors.destructive }]}>
-                          <Text style={[styles.eventChatBadgeText, { color: colors.primaryForeground }]}>
+                        <View style={[styles.eventChatBadge, { backgroundColor: colors.foreground }]}>
+                          <Text style={[styles.eventChatBadgeText, { color: colors.background }]}>
                             {ec.unread_count > 9 ? '9+' : ec.unread_count}
                           </Text>
                         </View>
@@ -507,7 +539,6 @@ export default function MessagesScreen() {
                 )
               })}
             </ScrollView>
-            <View style={[styles.sectionDivider, { backgroundColor: colors.border }]} />
           </View>
         ) : null}
         renderItem={({ item }) => {
@@ -519,7 +550,7 @@ export default function MessagesScreen() {
           const isImageMsg = lastMsg?.image_url && !lastMsg?.content
           const isPinned = pinnedIds.includes(item.id)
 
-          // Apple Mail-style swipe actions: trailing → archive, action button reveals on drag
+          // Apple Mail-style swipe actions: trailing -> archive, action button reveals on drag
           const renderRightActions = (_: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
             const scale = dragX.interpolate({
               inputRange: [-80, 0],
@@ -529,12 +560,12 @@ export default function MessagesScreen() {
             return (
               <PressableOpacity
                 onPress={() => { hapticMedium(); handleArchive(item.id) }}
-                style={[styles.swipeActionRight, { backgroundColor: showArchived ? colors.primary : colors.mutedForeground }]}
+                style={[styles.swipeActionRight, { backgroundColor: showArchived ? colors.foreground : colors.mutedForeground }]}
                 accessibilityRole="button"
                 accessibilityLabel={showArchived ? t('messages.unarchive') ?? 'Unarchive' : t('messages.archive') ?? 'Archive'}
               >
                 <Animated.View style={{ transform: [{ scale }] }}>
-                  <Archive size={22} color={colors.primaryForeground} strokeWidth={2} />
+                  <Archive size={22} color={colors.background} strokeWidth={2} />
                 </Animated.View>
               </PressableOpacity>
             )
@@ -550,27 +581,37 @@ export default function MessagesScreen() {
             <PressableOpacity
               onPress={() => router.push(`/messages/${item.id}`)}
               onLongPress={() => handleTogglePin(item.id)}
-              style={[styles.convRow, { backgroundColor: colors.background }]}
+              style={[styles.convRow, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
               accessibilityLabel={`${other?.name ?? t('messages.unknownUser')}${unread > 0 ? `, ${unread} ${t('messages.unread') ?? 'unread'}` : ''}${isPinned ? `, ${t('messages.pinned') ?? 'pinned'}` : ''}`}
               accessibilityHint={t('messages.longPressToPinHint') ?? 'Long press to pin or unpin'}
             >
+              {/* Avatar with online dot */}
               <View style={styles.avatarWrap}>
-                <Avatar url={other?.avatar_url} name={other?.name} size={44} />
-                {online && <View style={[styles.onlineDot, { borderColor: colors.background, backgroundColor: colors.success }]} accessibilityLabel={t('messages.online')} />}
+                <Avatar url={other?.avatar_url} name={other?.name} size={48} />
+                {online && <View style={[styles.onlineDot, { borderColor: colors.card, backgroundColor: colors.success }]} accessibilityLabel={t('messages.online')} />}
               </View>
+
+              {/* Name + preview */}
               <View style={styles.convContent}>
                 <View style={styles.convNameRow}>
-                  {isPinned && <Pin size={12} color={colors.mutedForeground} />}
-                  <Text style={[styles.convName, { color: colors.foreground }]} numberOfLines={1}>
+                  {isPinned && <Pin size={11} color={colors.mutedForeground} />}
+                  <Text
+                    style={[
+                      styles.convName,
+                      { color: colors.foreground },
+                      unread > 0 && styles.convNameUnread,
+                    ]}
+                    numberOfLines={1}
+                  >
                     {other?.name ?? t('messages.unknownUser')}
                   </Text>
                 </View>
                 <View style={styles.previewRow}>
-                  {isMySent && lastMsg?.is_read && <CheckCheck size={13} color={colors.mutedForeground} />}
+                  {isMySent && lastMsg?.is_read && <CheckCheck size={12} color={colors.mutedForeground} />}
                   {isImageMsg ? (
                     <View style={styles.imgPreview}>
-                      <ImageIcon size={12} color={colors.mutedForeground} />
+                      <ImageIcon size={11} color={colors.mutedForeground} />
                       <Text style={[styles.convPreview, { color: colors.mutedForeground }]}>{t('messages.imageMessage')}</Text>
                     </View>
                   ) : (
@@ -580,74 +621,81 @@ export default function MessagesScreen() {
                   )}
                 </View>
               </View>
+
+              {/* Right side: time + unread badge + more button */}
               <View style={styles.convRight}>
                 {item.updated_at && (
                   <Text style={[styles.convTime, { color: colors.mutedForeground }]}>
                     {formatTimeAgo(item.updated_at, t, locale)}
                   </Text>
                 )}
-                <View style={styles.convRightBottom}>
-                  {unread > 0 && (
-                    <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
-                  )}
-                  <PressableOpacity
-                    onPress={(e) => {
-                      e?.stopPropagation?.()
-                      const pinLabel = isPinned ? (t('messages.unpinConversation') ?? 'Unpin') : (t('messages.pinConversation') ?? 'Pin')
-                      const archiveLabel = showArchived ? (t('messages.unarchive') ?? 'Unarchive') : (t('messages.archive') ?? 'Archive')
-                      const cancelLabel = t('common.cancel') ?? 'Cancel'
-                      if (Platform.OS === 'ios') {
-                        ActionSheetIOS.showActionSheetWithOptions(
-                          { options: [pinLabel, archiveLabel, cancelLabel], cancelButtonIndex: 2 },
-                          (idx) => {
-                            if (idx === 0) handleTogglePin(item.id)
-                            if (idx === 1) { hapticMedium(); handleArchive(item.id) }
-                          },
-                        )
-                      } else {
-                        Alert.alert(t('common.more') ?? 'More', '', [
-                          { text: pinLabel, onPress: () => handleTogglePin(item.id) },
-                          { text: archiveLabel, onPress: () => { hapticMedium(); handleArchive(item.id) } },
-                          { text: cancelLabel, style: 'cancel' },
-                        ])
-                      }
-                    }}
-                    style={styles.moreBtn}
-                    hitSlop={8}
-                    accessibilityLabel={t('common.more') ?? 'More'}
-                  >
-                    <MoreHorizontal size={16} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
-                  </PressableOpacity>
-                </View>
+                {unread > 0 && (
+                  <View style={[styles.unreadBadge, { backgroundColor: colors.foreground }]}>
+                    <Text style={[styles.unreadBadgeText, { color: colors.background }]}>
+                      {unread > 99 ? '99+' : unread}
+                    </Text>
+                  </View>
+                )}
+                <PressableOpacity
+                  onPress={(e) => {
+                    e?.stopPropagation?.()
+                    const pinLabel = isPinned ? (t('messages.unpinConversation') ?? 'Unpin') : (t('messages.pinConversation') ?? 'Pin')
+                    const archiveLabel = showArchived ? (t('messages.unarchive') ?? 'Unarchive') : (t('messages.archive') ?? 'Archive')
+                    const cancelLabel = t('common.cancel') ?? 'Cancel'
+                    if (Platform.OS === 'ios') {
+                      ActionSheetIOS.showActionSheetWithOptions(
+                        { options: [pinLabel, archiveLabel, cancelLabel], cancelButtonIndex: 2 },
+                        (idx) => {
+                          if (idx === 0) handleTogglePin(item.id)
+                          if (idx === 1) { hapticMedium(); handleArchive(item.id) }
+                        },
+                      )
+                    } else {
+                      Alert.alert(t('common.more') ?? 'More', '', [
+                        { text: pinLabel, onPress: () => handleTogglePin(item.id) },
+                        { text: archiveLabel, onPress: () => { hapticMedium(); handleArchive(item.id) } },
+                        { text: cancelLabel, style: 'cancel' },
+                      ])
+                    }
+                  }}
+                  style={styles.moreBtn}
+                  hitSlop={8}
+                  accessibilityLabel={t('common.more') ?? 'More'}
+                >
+                  <MoreHorizontal size={16} color={colors.mutedForeground} style={{ opacity: 0.4 }} />
+                </PressableOpacity>
               </View>
             </PressableOpacity>
             </Swipeable>
           )
         }}
-        ItemSeparatorComponent={MessageItemSeparator}
         ListEmptyComponent={
           loading ? (
             <MessageListSkeleton />
           ) : !userId ? (
+            /* ── Login required empty state ── */
             <View style={styles.empty}>
-              <LogIn size={48} color={colors.primary} />
+              <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.foreground}08` }]}>
+                <LogIn size={48} color={colors.foreground} strokeWidth={1.5} />
+              </View>
               <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
                 {t('messages.loginRequired')}
               </Text>
               <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.loginHint')}</Text>
               <PressableOpacity
                 onPress={() => router.push('/(auth)/login')}
-                style={[styles.loginBtn, { backgroundColor: colors.primary }]}
+                style={[styles.ctaBtn, { backgroundColor: colors.foreground }]}
                 accessibilityRole="button"
                 accessibilityLabel={t('auth.login')}
               >
-                <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{t('auth.login')}</Text>
+                <Text style={[styles.ctaBtnText, { color: colors.background }]}>{t('auth.login')}</Text>
               </PressableOpacity>
             </View>
           ) : (
+            /* ── No conversations empty state ── */
             <View style={styles.empty}>
-              <View style={[styles.emptyIconCircle, { backgroundColor: colors.primary + '10' }]}>
-                <MessageCircle size={52} color={colors.primary} />
+              <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.foreground}08` }]}>
+                <MessageCircle size={48} color={colors.foreground} strokeWidth={1.5} />
               </View>
               <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
                 {showArchived ? t('messages.noArchivedConversations') : t('messages.noConversations')}
@@ -657,10 +705,10 @@ export default function MessagesScreen() {
                   <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.emptyHint')}</Text>
                   <PressableOpacity
                     onPress={() => router.push('/search')}
-                    style={[styles.loginBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+                    style={[styles.ctaBtn, { backgroundColor: colors.foreground }]}
                     accessibilityRole="button"
                   >
-                    <Text style={[styles.loginBtnText, { color: colors.primaryForeground }]}>{t('messages.startConversation')}</Text>
+                    <Text style={[styles.ctaBtnText, { color: colors.background }]}>{t('messages.startConversation')}</Text>
                   </PressableOpacity>
                 </>
               )}
@@ -673,11 +721,12 @@ export default function MessagesScreen() {
         maxToRenderPerBatch={10}
         windowSize={5}
       />
-      {/* New message FAB — navigates to search to find a user to message */}
+
+      {/* ── New message FAB ── */}
       {userId && (
         <PressableOpacity
           onPress={() => router.push('/search')}
-          style={[styles.newMessageFab, { bottom: insets.bottom + 80, backgroundColor: colors.foreground }]}
+          style={[styles.fab, { bottom: insets.bottom + 80, backgroundColor: colors.foreground }]}
           accessibilityLabel={t('messages.newMessage')}
           accessibilityRole="button"
         >
@@ -691,88 +740,307 @@ export default function MessagesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  // ── Header (Helsinki Monochrome: eyebrow + title + action circles) ──
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 14,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, lineHeight: 28, fontFamily: fonts.headingSemi },
+  headerLeft: { flex: 1, gap: 2 },
+  locationEyebrow: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.5,
+    lineHeight: 30,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 4,
+  },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+
+  // ── Search bar (expandable, full width, pill shape) ──
   searchBar: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginVertical: 8, borderWidth: 1,
-    borderRadius: 20, paddingHorizontal: 16, height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    height: 46,
   },
-  searchInput: { flex: 1, fontSize: 14, lineHeight: 20, fontFamily: fonts.body, paddingVertical: 0 },
-  list: {},
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: fonts.body,
+    paddingVertical: 0,
+  },
+  searchCloseBtn: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ── Error banner ──
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  errorBannerText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
+    lineHeight: 18,
+  },
+
+  // ── List ──
+  list: { paddingTop: 8, paddingHorizontal: 16 },
+
+  // ── Conversation row (card-based: SURFACE bg, borderRadius 18, 1px LINE border) ──
   convRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 12,
-    minHeight: 68,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 8,
   },
   swipeActionRight: {
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,
+    borderRadius: 18,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   avatarWrap: { position: 'relative' },
-  avatar: { width: 48, height: 48, borderRadius: 24 },
   onlineDot: {
-    position: 'absolute', bottom: 0, right: 0,
-    width: 14, height: 14, borderRadius: 7,
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     borderWidth: 2,
   },
   convContent: { flex: 1, gap: 4 },
-  convNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  convName: { fontSize: 15, fontWeight: '700', lineHeight: 20, fontFamily: fonts.bodySemi, flex: 1 },
-  previewRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  imgPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  convPreview: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
-  convRight: { alignItems: 'flex-end', gap: 4, minWidth: 56 },
-  convRightBottom: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  moreBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  convTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
-  empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
-  emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  emptyTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.headingSemi },
-  emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
-  loginBtn: { marginTop: 8, borderRadius: 999, paddingVertical: 16, paddingHorizontal: 32, alignItems: 'center', minHeight: 48 },
-  loginBtnText: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.bodySemi },
-  // Event chats section
-  eventChatsSection: { paddingTop: 8 },
-  sectionTitle: {
-    fontSize: 14, fontWeight: '700', lineHeight: 20,
-    fontFamily: fonts.bodySemi, paddingHorizontal: 16, marginBottom: 8,
+  convNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
-  eventChatsScroll: { paddingHorizontal: 12, gap: 12 },
+  convName: {
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
+  },
+  convNameUnread: {
+    fontWeight: '700',
+  },
+  previewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  imgPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  convPreview: {
+    fontSize: 12.5,
+    flex: 1,
+    lineHeight: 17,
+    fontFamily: fonts.body,
+  },
+  convRight: {
+    alignItems: 'flex-end',
+    gap: 6,
+    minWidth: 36,
+  },
+  convTime: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontFamily: fonts.body,
+  },
+  moreBtn: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unreadBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  unreadBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    lineHeight: 12,
+    fontFamily: fonts.bodySemi,
+  },
+
+  // ── Empty states ──
+  empty: {
+    alignItems: 'center',
+    paddingTop: 80,
+    paddingHorizontal: 32,
+    gap: 10,
+  },
+  emptyIconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    lineHeight: 24,
+    fontFamily: fonts.heading,
+    letterSpacing: -0.2,
+  },
+  emptyHint: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontFamily: fonts.body,
+  },
+  ctaBtn: {
+    marginTop: 12,
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    minHeight: 48,
+  },
+  ctaBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 22,
+    fontFamily: fonts.bodySemi,
+  },
+
+  // ── Event chats section ──
+  eventChatsSection: {
+    paddingTop: 4,
+    paddingBottom: 8,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    lineHeight: 14,
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
+  eventChatsScroll: {
+    gap: 10,
+  },
   eventChatCard: {
-    width: 140, borderRadius: 20, borderWidth: 1,
-    padding: 12, gap: 4,
+    width: 136,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 12,
+    gap: 4,
     minHeight: 80,
   },
   eventChatTop: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   eventChatBadge: {
-    minWidth: 18, height: 18, borderRadius: 9,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
   eventChatBadgeText: {
-    fontSize: 10, fontWeight: '700', lineHeight: 12,
+    fontSize: 10,
+    fontWeight: '700',
+    lineHeight: 12,
     fontFamily: fonts.bodySemi,
-    // color set via inline style with colors.primaryForeground
   },
   eventChatTitle: {
-    fontSize: 13, fontWeight: '600', lineHeight: 18, fontFamily: fonts.bodySemi,
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+    fontFamily: fonts.bodySemi,
   },
-  eventChatMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  eventChatMetaText: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
-  eventChatPreview: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
-  sectionDivider: { height: StyleSheet.hairlineWidth, marginTop: 12, marginHorizontal: 16 },
-  newMessageFab: {
-    position: 'absolute', right: 20,
-    width: 52, height: 52, borderRadius: 26,
-    alignItems: 'center', justifyContent: 'center',
+  eventChatMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
-  unreadDot: {
-    width: 8, height: 8, borderRadius: 4,
+  eventChatMetaText: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontFamily: fonts.body,
+  },
+  eventChatPreview: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontFamily: fonts.body,
+  },
+
+  // ── FAB ──
+  fab: {
+    position: 'absolute',
+    right: 20,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
 })

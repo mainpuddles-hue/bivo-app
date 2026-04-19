@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle } from 'lucide-react-native'
+import { ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle, ImagePlus } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
@@ -149,7 +149,6 @@ export default function CreateScreen() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [showTrustGate, setShowTrustGate] = useState(false)
-  const [step, setStep] = useState<'category' | 'form'>('category')
   const [selectedType, setSelectedType] = useState<PostType | null>(null)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -201,7 +200,6 @@ export default function CreateScreen() {
       // Respect feature flags — don't allow disabled categories via deep link
       if (params.type === 'lainaa' && !FEATURES.LENDING) return
       setSelectedType(params.type as PostType)
-      setStep('form')
     }
   }, [params.type])
 
@@ -234,10 +232,10 @@ export default function CreateScreen() {
 
   // Smart default: auto-populate location from user's neighborhood
   useEffect(() => {
-    if (userNeighborhood && !location && step === 'form') {
+    if (userNeighborhood && !location && selectedType) {
       setLocation(userNeighborhood)
     }
-  }, [userNeighborhood, step]) // Only runs when entering form step
+  }, [userNeighborhood, selectedType]) // Only runs when a category is selected
 
   // Auto-expand details for categories that have required detail fields
   useEffect(() => {
@@ -254,9 +252,9 @@ export default function CreateScreen() {
     }
   }, [selectedType, selectedTags])
 
-  // Discard confirmation when going back with unsaved content (error prevention)
+  // Discard confirmation when closing with unsaved content
   const hasUnsavedContent = title.trim().length > 0 || description.trim().length > 0 || images.length > 0
-  const handleBackToCategory = useCallback(() => {
+  const handleClose = useCallback(() => {
     if (hasUnsavedContent) {
       Alert.alert(
         t('create.discardTitle'),
@@ -285,15 +283,16 @@ export default function CreateScreen() {
               setIsUrgent(false)
               setLatitude(null)
               setLongitude(null)
-              setStep('category')
+              setSelectedType(null)
+              router.back()
             },
           },
         ],
       )
     } else {
-      setStep('category')
+      router.back()
     }
-  }, [hasUnsavedContent, t])
+  }, [hasUnsavedContent, t, router])
 
   const handleCategorySelect = (type: PostType) => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -306,7 +305,6 @@ export default function CreateScreen() {
     setSelectedTags([])
     setTarjoanType('service')
     setItemCondition(null)
-    setStep('form')
   }
 
   const launchPicker = useCallback(async (useCamera: boolean) => {
@@ -778,7 +776,7 @@ export default function CreateScreen() {
       setIsUrgent(false)
       setLatitude(null)
       setLongitude(null)
-      setStep('category')
+      setSelectedType(null)
 
       // Haptic celebration on successful post creation
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
@@ -808,104 +806,169 @@ export default function CreateScreen() {
     }
   }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages])
 
-  // ── Category selection step ──
-  if (step === 'category') {
-    return (
-      <ScreenErrorBoundary screenName="Create">
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('create.selectCategory')}</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.categoryGrid}>
-          {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
-            if (type === 'lainaa' && !FEATURES.LENDING) return false
-            return true
-          }).map(([type, cat]) => {
-            const Icon = CATEGORY_ICON_MAP[cat.icon]
-            const isLocked = type === 'lainaa' && !trust.permissions.canLainaa
-            const isFullWidth = type === 'tapahtuma'
-            return (
-              <Pressable
-                key={type}
-                onPress={() => handleCategorySelect(type)}
-                accessibilityRole="button"
-                accessibilityLabel={`${t(cat.label)}${isLocked ? `, ${t('trust.requiresTier2Short')}` : ''}`}
-                accessibilityState={{ disabled: isLocked }}
-                style={({ pressed }) => [
-                  styles.categoryCard,
-                  isFullWidth && styles.categoryCardFullWidth,
-                  { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, borderRadius: 24 },
-                  pressed && { backgroundColor: colors.muted },
-                  isLocked && { opacity: 0.5 },
-                ]}
-              >
-                <View style={styles.categoryCardInner} importantForAccessibility="no-hide-descendants">
-                  <View style={styles.categoryIconLarge}>
-                    {Icon && <Icon size={32} color={cat.color} strokeWidth={1.8} />}
-                    {isLocked && (
-                      <View style={styles.lockOverlay}>
-                        <Lock size={14} color={colors.foreground} />
-                      </View>
-                    )}
-                  </View>
-                  <Text style={[styles.categoryName, { color: colors.foreground }]}>{t(cat.label)}</Text>
-                  <Text style={[styles.categorySub, { color: colors.mutedForeground }]} numberOfLines={1}>
-                    {isLocked ? t('trust.requiresTier2Short') : t(cat.subtitle)}
-                  </Text>
-                </View>
-              </Pressable>
-            )
-          })}
-        </ScrollView>
-
-        <TrustGateModal
-          visible={showTrustGate}
-          onClose={() => setShowTrustGate(false)}
-          requiredLevel={2}
-          currentLevel={trust.level}
-          featureName={t('categories.lainaa')}
-          onVerifyPress={identity.startVerification}
-        />
-
-        {FEATURES.IDENTITY_VERIFICATION && (
-          <VerificationModal
-            visible={identity.showModal}
-            onClose={() => identity.setShowModal(false)}
-            onConfirm={identity.confirmVerification}
-            loading={identity.loading}
-            error={identity.error}
-            isSuccess={identity.status === 'success'}
-          />
-        )}
-      </View>
-      </ScreenErrorBoundary>
-    )
-  }
-
-  // ── Form step ──
+  // ── Derive available tags ──
   const cat = selectedType ? CATEGORIES[selectedType] : null
   const availableTags = selectedType === 'tarjoan'
     ? (tarjoanType === 'item' ? TARJOAN_ITEM_TAGS : TARJOAN_SERVICE_TAGS)
     : selectedType ? (POST_TAGS[selectedType] ?? []) : []
 
+  // ── Category entries for pills ──
+  const categoryEntries = (Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
+    if (type === 'lainaa' && !FEATURES.LENDING) return false
+    return true
+  })
+
   return (
     <ScreenErrorBoundary screenName="Create">
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
-          <Pressable onPress={handleBackToCategory} hitSlop={12} style={({ pressed }) => [{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-            <ArrowLeft size={24} color={colors.foreground} />
+        {/* ── Header: close circle | centered title | Luonnos link ── */}
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <Pressable
+            onPress={handleClose}
+            hitSlop={12}
+            style={({ pressed }) => [
+              styles.headerCloseBtn,
+              { backgroundColor: colors.card, borderColor: colors.border },
+              pressed && { opacity: 0.7 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close') ?? 'Sulje'}
+          >
+            <X size={16} color={colors.foreground} strokeWidth={2.2} />
           </Pressable>
-          {cat && (
-            <View style={[styles.headerBadge, { backgroundColor: isDark ? cat.bgDark : cat.bgLight }]}>
-              {CATEGORY_ICON_MAP[cat.icon] && React.createElement(CATEGORY_ICON_MAP[cat.icon], { size: 14, color: cat.color })}
-              <Text style={[styles.headerBadgeText, { color: cat.color }]}>{t(cat.label)}</Text>
-            </View>
-          )}
+
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+            {t('create.newPost') ?? 'Uusi ilmoitus'}
+          </Text>
+
+          <PressableOpacity
+            onPress={() => {
+              // Draft save placeholder — save to AsyncStorage
+              if (hasUnsavedContent && selectedType) {
+                const draft = { type: selectedType, title, description, images, location }
+                AsyncStorage.setItem('tackbird_draft_post', JSON.stringify(draft)).catch(() => {})
+                try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+                Alert.alert(t('create.draftSaved') ?? 'Luonnos tallennettu')
+              }
+            }}
+            style={styles.headerDraftLink}
+          >
+            <Text style={[styles.headerDraftText, { color: colors.mutedForeground }]}>
+              {t('create.draft') ?? 'Luonnos'}
+            </Text>
+          </PressableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {/* Pro upsell banner */}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* ── Category pills ── */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+              {t('create.iAm') ?? 'MINA...'}
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.pillRow}
+            >
+              {categoryEntries.map(([type, catDef]) => {
+                const isActive = selectedType === type
+                const isLocked = type === 'lainaa' && !trust.permissions.canLainaa
+                return (
+                  <Pressable
+                    key={type}
+                    onPress={() => handleCategorySelect(type)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t(catDef.label)}${isLocked ? `, ${t('trust.requiresTier2Short')}` : ''}`}
+                    accessibilityState={{ selected: isActive, disabled: isLocked }}
+                    style={({ pressed }) => [
+                      styles.pill,
+                      isActive
+                        ? { backgroundColor: colors.foreground }
+                        : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                      isLocked && { opacity: 0.45 },
+                      pressed && !isActive && { backgroundColor: colors.muted },
+                    ]}
+                  >
+                    {isLocked && <Lock size={12} color={isActive ? colors.background : colors.foreground} />}
+                    <Text
+                      style={[
+                        styles.pillText,
+                        isActive
+                          ? { color: colors.background, fontFamily: fonts.bodySemi }
+                          : { color: colors.foreground, fontFamily: fonts.bodyMedium },
+                      ]}
+                    >
+                      {t(catDef.label)}
+                    </Text>
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+          </View>
+
+          {/* ── Photo uploader ── */}
+          <View style={styles.section}>
+            {images.length === 0 ? (
+              <Pressable
+                onPress={pickImage}
+                style={({ pressed }) => [
+                  styles.photoUploader,
+                  { borderColor: colors.border, backgroundColor: colors.card },
+                  pressed && { opacity: 0.8 },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={t('create.addImage')}
+              >
+                <View style={[styles.photoIconCircle, { backgroundColor: colors.background }]}>
+                  <ImagePlus size={22} color={colors.foreground} strokeWidth={1.6} />
+                </View>
+                <Text style={[styles.photoMainText, { color: colors.foreground }]}>
+                  {t('create.addImage')}
+                </Text>
+                <Text style={[styles.photoSubText, { color: colors.mutedForeground }]}>
+                  {t('create.imageHint') ?? 'JPG, PNG tai WEBP, max 10 MB'}
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={styles.imageGrid}>
+                {images.map((uri, idx) => (
+                  <View key={uri} style={styles.imageThumb}>
+                    <Image source={{ uri }} style={styles.imageThumbImg} contentFit="cover" cachePolicy="memory-disk" />
+                    <PressableOpacity onPress={() => removeImage(idx)} style={styles.imageRemoveBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.remove') ?? 'Remove'}>
+                      <X size={12} color="#FFFFFF" />
+                    </PressableOpacity>
+                    {idx === 0 && (
+                      <View style={[styles.mainImageBadge, { backgroundColor: colors.foreground }]}>
+                        <Text style={[styles.mainImageBadgeText, { color: colors.background }]}>{t('create.mainImage')}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+                {images.length < 5 && (
+                  <Pressable
+                    onPress={pickImage}
+                    style={({ pressed }) => [
+                      styles.addMoreImgBtn,
+                      { borderColor: colors.border, backgroundColor: colors.card },
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Camera size={20} color={colors.mutedForeground} />
+                    <Text style={[styles.addMoreImgText, { color: colors.mutedForeground }]}>
+                      {`${images.length}/5`}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* ── Pro upsell banner ── */}
           {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
             <Pressable onPress={() => router.push('/pro')} style={({ pressed }) => [styles.proBanner, { backgroundColor: `${colors.pro}12` }, pressed && { opacity: 0.7 }]}>
               <Crown size={16} color={colors.pro} />
@@ -914,37 +977,13 @@ export default function CreateScreen() {
             </Pressable>
           )}
 
-          {/* Images */}
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.foreground }]}>{t('create.images')}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageRow}>
-              {images.map((uri, idx) => (
-                <View key={uri} style={styles.imageThumb}>
-                  <Image source={{ uri }} style={styles.imageThumbImg} contentFit="cover" cachePolicy="memory-disk" />
-                  <PressableOpacity onPress={() => removeImage(idx)} style={styles.imageRemoveBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.remove') ?? 'Remove'}>
-                    <X size={12} color={colors.primaryForeground} />
-                  </PressableOpacity>
-                  {idx === 0 && (
-                    <View style={[styles.mainImageBadge, { backgroundColor: colors.primary }]}>
-                      <Text style={[styles.mainImageBadgeText, { color: colors.primaryForeground }]}>{t('create.mainImage')}</Text>
-                    </View>
-                  )}
-                </View>
-              ))}
-              {images.length < 5 && (
-                <Pressable onPress={pickImage} style={({ pressed }) => [styles.addImageBtn, { borderColor: colors.border, backgroundColor: colors.muted }, pressed && { opacity: 0.7 }]}>
-                  <Camera size={24} color={colors.mutedForeground} />
-                  <Text style={[styles.addImageText, { color: colors.mutedForeground }]}>{images.length === 0 ? t('create.addImage') : `${images.length}/5`}</Text>
-                </Pressable>
-              )}
-            </ScrollView>
-          </View>
-
-          {/* Tarjoan sub-type selector: Palvelu / Tavara */}
+          {/* ── Tarjoan sub-type selector ── */}
           {selectedType === 'tarjoan' && (
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.foreground }]}>{t('create.tarjoanTypeHint')}</Text>
-              <View style={styles.tagGrid}>
+            <View style={styles.section}>
+              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                {(t('create.tarjoanTypeHint') ?? 'TYYPPI').toUpperCase()}
+              </Text>
+              <View style={styles.twoColRow}>
                 <PressableOpacity
                   onPress={() => {
                     setTarjoanType('service')
@@ -955,12 +994,12 @@ export default function CreateScreen() {
                   style={[
                     styles.tarjoanTypeChip,
                     tarjoanType === 'service'
-                      ? { backgroundColor: cat?.color ?? colors.primary }
-                      : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                      ? { backgroundColor: colors.foreground }
+                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                   ]}
                 >
-                  {tarjoanType === 'service' && <Check size={14} color={colors.primaryForeground} />}
-                  <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'service' ? colors.primaryForeground : colors.foreground }]}>
+                  {tarjoanType === 'service' && <Check size={14} color={colors.background} />}
+                  <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'service' ? colors.background : colors.foreground }]}>
                     {t('create.tarjoanService')}
                   </Text>
                 </PressableOpacity>
@@ -973,12 +1012,12 @@ export default function CreateScreen() {
                   style={[
                     styles.tarjoanTypeChip,
                     tarjoanType === 'item'
-                      ? { backgroundColor: cat?.color ?? colors.primary }
-                      : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                      ? { backgroundColor: colors.foreground }
+                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                   ]}
                 >
-                  {tarjoanType === 'item' && <Check size={14} color={colors.primaryForeground} />}
-                  <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'item' ? colors.primaryForeground : colors.foreground }]}>
+                  {tarjoanType === 'item' && <Check size={14} color={colors.background} />}
+                  <Text style={[styles.tarjoanTypeText, { color: tarjoanType === 'item' ? colors.background : colors.foreground }]}>
                     {t('create.tarjoanItem')}
                   </Text>
                 </PressableOpacity>
@@ -986,50 +1025,56 @@ export default function CreateScreen() {
             </View>
           )}
 
-          {/* Title */}
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.foreground }]}>{t('post.titleLabel')} *</Text>
+          {/* ── Title field ── */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+              {(t('post.titleLabel') ?? 'OTSIKKO').toUpperCase()} *
+            </Text>
             <TextInput
               ref={titleInputRef}
               style={[
                 styles.input,
-                { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 },
-                touchedTitle && !title.trim() && { borderColor: colors.destructive, borderWidth: 1.5 },
+                { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border },
+                touchedTitle && !title.trim() && { borderColor: colors.destructive },
               ]}
               value={title}
               onChangeText={setTitle}
               onBlur={() => setTouchedTitle(true)}
               placeholder={t('post.titleLabel')}
-              placeholderTextColor={colors.mutedForeground}
+              placeholderTextColor={colors.tertiaryForeground}
               maxLength={100}
               returnKeyType="next"
               autoCapitalize="sentences"
               accessibilityLabel={t('post.titleLabel')}
             />
             {touchedTitle && !title.trim() && (
-              <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body, paddingTop: 4 }} accessibilityRole="alert">
+              <Text style={[styles.fieldError, { color: colors.destructive }]} accessibilityRole="alert">
                 {t('create.titleRequired')}
               </Text>
             )}
-            <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>{title.length}/100</Text>
+            <Text style={[styles.charCount, { color: title.length >= 90 ? colors.destructive : title.length >= 70 ? colors.pro : colors.mutedForeground }]}>
+              {title.length}/100
+            </Text>
           </View>
 
-          {/* Description */}
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.foreground }]}>{t('post.descriptionLabel')} *</Text>
+          {/* ── Description field ── */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+              {(t('post.descriptionLabel') ?? 'KUVAUS').toUpperCase()} *
+            </Text>
             <TextInput
               ref={descriptionInputRef}
               style={[
                 styles.input,
                 styles.textArea,
-                { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 },
-                touchedDescription && !description.trim() && { borderColor: colors.destructive, borderWidth: 1.5 },
+                { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border },
+                touchedDescription && !description.trim() && { borderColor: colors.destructive },
               ]}
               value={description}
               onChangeText={setDescription}
               onBlur={() => setTouchedDescription(true)}
               placeholder={t('post.descriptionLabel')}
-              placeholderTextColor={colors.mutedForeground}
+              placeholderTextColor={colors.tertiaryForeground}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -1038,66 +1083,117 @@ export default function CreateScreen() {
               inputAccessoryViewID={KEYBOARD_DONE_ID}
             />
             {touchedDescription && !description.trim() && (
-              <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body, paddingTop: 4 }} accessibilityRole="alert">
+              <Text style={[styles.fieldError, { color: colors.destructive }]} accessibilityRole="alert">
                 {t('create.description')} *
               </Text>
             )}
-            <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.pro : colors.mutedForeground }]}>{description.length}/2000</Text>
+            <Text style={[styles.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.pro : colors.mutedForeground }]}>
+              {description.length}/2000
+            </Text>
           </View>
 
-          {/* Details toggle */}
+          {/* ── Two-column: Location + Event Date ── */}
+          <View style={styles.twoColRow}>
+            {/* Location */}
+            <View style={styles.twoColField}>
+              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                {(t('post.locationLabel') ?? 'SIJAINTI').toUpperCase()}
+              </Text>
+              <LocationAutocomplete
+                value={location}
+                onChangeText={(text) => { setLocation(text); if (!text.trim()) { setLatitude(null); setLongitude(null) } }}
+                onSelect={({ name, lat, lng }) => { setLocation(name); setLatitude(lat); setLongitude(lng) }}
+                placeholder={t('post.locationLabel')}
+                style={styles.twoColInput}
+              />
+            </View>
+
+            {/* Date — show event date for tapahtuma, or expiration selector */}
+            <View style={styles.twoColField}>
+              {selectedType === 'tapahtuma' ? (
+                <>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('post.eventDate') ?? 'PAIVAMAARA').toUpperCase()} *
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border },
+                    ]}
+                    value={eventDate}
+                    onChangeText={setEventDate}
+                    placeholder={(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()}
+                    placeholderTextColor={colors.tertiaryForeground}
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('create.expiration') ?? 'VOIMASSAOLO').toUpperCase()}
+                  </Text>
+                  <View style={[
+                    styles.input,
+                    styles.expirationPicker,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                  ]}>
+                    <Text style={[styles.inputText, { color: colors.foreground }]}>
+                      {expirationDays === 0
+                        ? t('create.noExpiration')
+                        : `${expirationDays} ${t('common.daysShort')}`}
+                    </Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+
+          {/* ── Map picker button (if location is entered) ── */}
+          {location.trim().length > 0 && (
+            <View style={styles.section}>
+              <PressableOpacity
+                onPress={handleOpenMapPicker}
+                style={[styles.mapPickerBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+              >
+                <MapPin size={16} color={colors.foreground} />
+                <Text style={[styles.mapPickerBtnText, { color: colors.foreground }]}>{t('locationPicker.pickFromMap')}</Text>
+              </PressableOpacity>
+              {latitude !== null && longitude !== null && (
+                <Text style={[styles.coordsText, { color: colors.mutedForeground }]}>
+                  {latitude.toFixed(5)}, {longitude.toFixed(5)}
+                </Text>
+              )}
+            </View>
+          )}
+
+          {/* ── Details toggle ── */}
           <PressableOpacity
             onPress={() => setShowDetails(p => !p)}
             style={[styles.detailsToggle, { borderColor: colors.border }]}
           >
-            <Text style={[styles.detailsToggleText, { color: colors.primary }]}>
+            <Text style={[styles.detailsToggleText, { color: colors.foreground }]}>
               {showDetails ? t('create.hideDetails') : t('create.showDetails')}
             </Text>
             {showDetails ? (
-              <ChevronUp size={16} color={colors.primary} />
+              <ChevronUp size={16} color={colors.foreground} />
             ) : (
-              <ChevronDown size={16} color={colors.primary} />
+              <ChevronDown size={16} color={colors.foreground} />
             )}
           </PressableOpacity>
 
           {showDetails && (
             <>
-              {/* Location */}
-              <View style={styles.field}>
-                <Text style={[styles.label, { color: colors.foreground }]}>{t('post.locationLabel')}</Text>
-                <View style={styles.locationRow}>
-                  <LocationAutocomplete
-                    value={location}
-                    onChangeText={(text) => { setLocation(text); if (!text.trim()) { setLatitude(null); setLongitude(null) } }}
-                    onSelect={({ name, lat, lng }) => { setLocation(name); setLatitude(lat); setLongitude(lng) }}
-                    placeholder={t('post.locationLabel')}
-                    style={styles.locationInput}
-                  />
-                  <PressableOpacity
-                    onPress={handleOpenMapPicker}
-                    style={[styles.mapPickerBtn, { backgroundColor: colors.primary }]}
-                  >
-                    <MapPin size={16} color={colors.primaryForeground} />
-                    <Text style={[styles.mapPickerBtnText, { color: colors.primaryForeground }]}>{t('locationPicker.pickFromMap')}</Text>
-                  </PressableOpacity>
-                </View>
-                {latitude !== null && longitude !== null && (
-                  <Text style={[styles.coordsText, { color: colors.mutedForeground }]}>
-                    {latitude.toFixed(5)}, {longitude.toFixed(5)}
-                  </Text>
-                )}
-              </View>
-
               {/* Daily fee for lainaa */}
               {selectedType === 'lainaa' && (
-                <View style={styles.field}>
-                  <Text style={[styles.label, { color: colors.foreground }]}>{t('rental.dailyFee')} *</Text>
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('rental.dailyFee') ?? 'PAIVAVUOKRA').toUpperCase()} *
+                  </Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
                     value={dailyFee}
                     onChangeText={setDailyFee}
-                    placeholder="0.00 €"
-                    placeholderTextColor={colors.mutedForeground}
+                    placeholder="0.00 \u20AC"
+                    placeholderTextColor={colors.tertiaryForeground}
                     keyboardType="decimal-pad"
                   />
                 </View>
@@ -1105,45 +1201,51 @@ export default function CreateScreen() {
 
               {/* Service price for tarjoan (service sub-type) */}
               {selectedType === 'tarjoan' && tarjoanType === 'service' && (
-                <View style={styles.field}>
-                  <Text style={[styles.label, { color: colors.foreground }]}>{t('service.price')}</Text>
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('service.price') ?? 'HINTA').toUpperCase()}
+                  </Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
                     value={servicePrice}
                     onChangeText={setServicePrice}
                     placeholder={t('service.pricePlaceholder')}
-                    placeholderTextColor={colors.mutedForeground}
+                    placeholderTextColor={colors.tertiaryForeground}
                     keyboardType="decimal-pad"
                   />
-                  <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{t('service.priceHint')}</Text>
+                  <Text style={[styles.fieldHint, { color: colors.mutedForeground }]}>{t('service.priceHint')}</Text>
                   {!trust.permissions.canOfferPaidServices && servicePrice ? (
-                    <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.requiresVerification')}</Text>
+                    <Text style={[styles.fieldHint, { color: colors.destructive }]}>{t('service.requiresVerification')}</Text>
                   ) : trust.permissions.maxServicePrice !== null && servicePrice && parseFloat(servicePrice) > trust.permissions.maxServicePrice ? (
-                    <Text style={[styles.charCount, { color: colors.destructive }]}>{t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice })}</Text>
+                    <Text style={[styles.fieldHint, { color: colors.destructive }]}>{t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice })}</Text>
                   ) : null}
                 </View>
               )}
 
               {/* Item price for tarjoan (item sub-type) */}
               {selectedType === 'tarjoan' && tarjoanType === 'item' && (
-                <View style={styles.field}>
-                  <Text style={[styles.label, { color: colors.foreground }]}>{t('create.itemPrice')}</Text>
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('create.itemPrice') ?? 'HINTA').toUpperCase()}
+                  </Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
                     value={servicePrice}
                     onChangeText={setServicePrice}
-                    placeholder="0.00 €"
-                    placeholderTextColor={colors.mutedForeground}
+                    placeholder="0.00 \u20AC"
+                    placeholderTextColor={colors.tertiaryForeground}
                     keyboardType="decimal-pad"
                   />
-                  <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{t('create.itemPriceHint')}</Text>
+                  <Text style={[styles.fieldHint, { color: colors.mutedForeground }]}>{t('create.itemPriceHint')}</Text>
                 </View>
               )}
 
               {/* Condition selector for tarjoan items */}
               {selectedType === 'tarjoan' && tarjoanType === 'item' && (
-                <View style={styles.field}>
-                  <Text style={[styles.label, { color: colors.foreground }]}>{t('create.condition')}</Text>
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('create.condition') ?? 'KUNTO').toUpperCase()}
+                  </Text>
                   <View style={styles.tagGrid}>
                     {CONDITION_OPTIONS.map((opt) => {
                       const isSelected = itemCondition === opt.id
@@ -1154,12 +1256,12 @@ export default function CreateScreen() {
                           style={[
                             styles.tagChip,
                             isSelected
-                              ? { backgroundColor: cat?.color ?? colors.primary }
-                              : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                              ? { backgroundColor: colors.foreground }
+                              : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                           ]}
                         >
-                          {isSelected && <Check size={12} color={colors.primaryForeground} />}
-                          <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
+                          {isSelected && <Check size={12} color={colors.background} />}
+                          <Text style={[styles.tagText, { color: isSelected ? colors.background : colors.foreground }]}>
                             {t(opt.label)}
                           </Text>
                         </PressableOpacity>
@@ -1169,61 +1271,49 @@ export default function CreateScreen() {
                 </View>
               )}
 
-              {/* Event date for tapahtuma */}
-              {selectedType === 'tapahtuma' && (
-                <View style={styles.field}>
-                  <Text style={[styles.label, { color: colors.foreground }]}>{t('post.eventDate')} *</Text>
-                  <TextInput
-                    style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
-                    value={eventDate}
-                    onChangeText={setEventDate}
-                    placeholder={(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()}
-                    placeholderTextColor={colors.mutedForeground}
-                  />
-                </View>
-              )}
-
               {/* Event start/end time + max capacity for tapahtuma */}
               {selectedType === 'tapahtuma' && (
                 <>
-                  <View style={styles.field}>
-                    <Text style={[styles.label, { color: colors.foreground }]}>
-                      <Clock size={14} color={colors.mutedForeground} /> {t('create.eventStartTime')}
-                    </Text>
-                    <TextInput
-                      style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
-                      value={eventStartTime}
-                      onChangeText={setEventStartTime}
-                      placeholder={t('create.eventStartTimePlaceholder')}
-                      placeholderTextColor={colors.mutedForeground}
-                      keyboardType="numbers-and-punctuation"
-                      maxLength={5}
-                    />
+                  <View style={styles.twoColRow}>
+                    <View style={styles.twoColField}>
+                      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                        {(t('create.eventStartTime') ?? 'ALKAA').toUpperCase()}
+                      </Text>
+                      <TextInput
+                        style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                        value={eventStartTime}
+                        onChangeText={setEventStartTime}
+                        placeholder={t('create.eventStartTimePlaceholder')}
+                        placeholderTextColor={colors.tertiaryForeground}
+                        keyboardType="numbers-and-punctuation"
+                        maxLength={5}
+                      />
+                    </View>
+                    <View style={styles.twoColField}>
+                      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                        {(t('create.eventEndTime') ?? 'PAATTYY').toUpperCase()}
+                      </Text>
+                      <TextInput
+                        style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                        value={eventEndTime}
+                        onChangeText={setEventEndTime}
+                        placeholder={t('create.eventEndTimePlaceholder')}
+                        placeholderTextColor={colors.tertiaryForeground}
+                        keyboardType="numbers-and-punctuation"
+                        maxLength={5}
+                      />
+                    </View>
                   </View>
-                  <View style={styles.field}>
-                    <Text style={[styles.label, { color: colors.foreground }]}>
-                      <Clock size={14} color={colors.mutedForeground} /> {t('create.eventEndTime')}
+                  <View style={styles.section}>
+                    <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                      {(t('create.eventMaxCapacity') ?? 'MAX OSALLISTUJAT').toUpperCase()}
                     </Text>
                     <TextInput
-                      style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
-                      value={eventEndTime}
-                      onChangeText={setEventEndTime}
-                      placeholder={t('create.eventEndTimePlaceholder')}
-                      placeholderTextColor={colors.mutedForeground}
-                      keyboardType="numbers-and-punctuation"
-                      maxLength={5}
-                    />
-                  </View>
-                  <View style={styles.field}>
-                    <Text style={[styles.label, { color: colors.foreground }]}>
-                      <Users size={14} color={colors.mutedForeground} /> {t('create.eventMaxCapacity')}
-                    </Text>
-                    <TextInput
-                      style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
+                      style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
                       value={eventMaxCapacity}
                       onChangeText={setEventMaxCapacity}
                       placeholder={t('create.eventMaxCapacityPlaceholder')}
-                      placeholderTextColor={colors.mutedForeground}
+                      placeholderTextColor={colors.tertiaryForeground}
                       keyboardType="number-pad"
                     />
                   </View>
@@ -1232,8 +1322,10 @@ export default function CreateScreen() {
 
               {/* Tags */}
               {availableTags.length > 0 && (
-                <View style={styles.field}>
-                  <Text style={[styles.label, { color: colors.foreground }]}>{t('create.tags')} ({selectedTags.length}/3)</Text>
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('create.tags') ?? 'TAGIT').toUpperCase()} ({selectedTags.length}/3)
+                  </Text>
                   <View style={styles.tagGrid}>
                     {availableTags.map((tag) => {
                       const isSelected = selectedTags.includes(tag.id)
@@ -1247,12 +1339,12 @@ export default function CreateScreen() {
                           style={[
                             styles.tagChip,
                             isSelected
-                              ? { backgroundColor: cat?.color ?? colors.primary }
-                              : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+                              ? { backgroundColor: colors.foreground }
+                              : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
                           ]}
                         >
-                          {isSelected && <Check size={12} color={colors.primaryForeground} />}
-                          <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
+                          {isSelected && <Check size={12} color={colors.background} />}
+                          <Text style={[styles.tagText, { color: isSelected ? colors.background : colors.foreground }]}>
                             {t(tag.label)}
                           </Text>
                         </PressableOpacity>
@@ -1260,8 +1352,8 @@ export default function CreateScreen() {
                     })}
                   </View>
                   {autoTags.length > 0 && selectedTags.length === 0 && (
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingTop: 4 }}>
-                      <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, width: '100%' }}>
+                    <View style={styles.autoTagRow}>
+                      <Text style={[styles.autoTagLabel, { color: colors.mutedForeground }]}>
                         {t('create.suggestedTags') ?? 'Ehdotetut:'}
                       </Text>
                       {autoTags.map(tag => (
@@ -1269,10 +1361,10 @@ export default function CreateScreen() {
                           key={tag}
                           onPress={() => setSelectedTags(prev => prev.includes(tag) ? prev : [...prev, tag])}
                           accessibilityRole="button"
-                          accessibilityLabel={`${t('create.addTag') ?? 'Lisää'} ${t(`tags.${tag}`) ?? tag}`}
-                          style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: `${colors.primary}15` }}
+                          accessibilityLabel={`${t('create.addTag') ?? 'Lisaa'} ${t(`tags.${tag}`) ?? tag}`}
+                          style={[styles.autoTagChip, { backgroundColor: `${colors.foreground}10` }]}
                         >
-                          <Text style={{ fontSize: 12, color: colors.primary, fontFamily: fonts.body }}>+ {t(`tags.${tag}`) ?? tag}</Text>
+                          <Text style={[styles.autoTagText, { color: colors.foreground }]}>+ {t(`tags.${tag}`) ?? tag}</Text>
                         </PressableOpacity>
                       ))}
                     </View>
@@ -1280,67 +1372,69 @@ export default function CreateScreen() {
                 </View>
               )}
 
-              {/* Expiration */}
-              <View style={styles.field}>
-                <Text style={[styles.label, { color: colors.foreground }]}>
-                  <Clock size={14} color={colors.mutedForeground} /> {t('create.expiration')}
-                </Text>
-                <View style={styles.tagGrid}>
-                  {EXPIRATION_OPTIONS.map((opt) => {
-                    const isSelected = expirationDays === opt.days
-                    return (
-                      <PressableOpacity
-                        key={opt.days}
-                        onPress={() => setExpirationDays(opt.days)}
-                        style={[
-                          styles.tagChip,
-                          isSelected
-                            ? { backgroundColor: colors.primary }
-                            : { backgroundColor: colors.muted, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
-                        ]}
-                      >
-                        <Text style={[styles.tagText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
-                          {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}
-                        </Text>
-                      </PressableOpacity>
-                    )
-                  })}
+              {/* Expiration (full selector — only when not tapahtuma) */}
+              {selectedType !== 'tapahtuma' && (
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                    {(t('create.expiration') ?? 'VOIMASSAOLO').toUpperCase()}
+                  </Text>
+                  <View style={styles.tagGrid}>
+                    {EXPIRATION_OPTIONS.map((opt) => {
+                      const isSelected = expirationDays === opt.days
+                      return (
+                        <PressableOpacity
+                          key={opt.days}
+                          onPress={() => setExpirationDays(opt.days)}
+                          style={[
+                            styles.tagChip,
+                            isSelected
+                              ? { backgroundColor: colors.foreground }
+                              : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                          ]}
+                        >
+                          <Text style={[styles.tagText, { color: isSelected ? colors.background : colors.foreground }]}>
+                            {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}
+                          </Text>
+                        </PressableOpacity>
+                      )
+                    })}
+                  </View>
                 </View>
-              </View>
+              )}
 
               {/* Anonymous posting */}
-              <View style={styles.anonymousRow}>
-                <View style={styles.anonymousInfo}>
+              <View style={[styles.toggleRow, { borderColor: colors.border }]}>
+                <View style={styles.toggleInfo}>
                   <EyeOff size={16} color={colors.mutedForeground} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('create.anonymous')}</Text>
-                    <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('create.anonymousHint')}</Text>
+                    <Text style={[styles.toggleLabel, { color: colors.foreground }]}>{t('create.anonymous')}</Text>
+                    <Text style={[styles.toggleHint, { color: colors.mutedForeground }]}>{t('create.anonymousHint')}</Text>
                   </View>
                 </View>
                 <Switch
                   value={isAnonymous}
                   onValueChange={setIsAnonymous}
-                  trackColor={{ false: colors.muted, true: colors.primary }}
-                  thumbColor={colors.primaryForeground}
+                  trackColor={{ false: colors.muted, true: colors.foreground }}
+                  thumbColor={colors.background}
                 />
               </View>
 
               {/* Juuri nyt — urgency toggle */}
               {selectedType !== 'tapahtuma' && (
                 <View style={styles.urgencySection}>
-                  <View style={[styles.anonymousRow, { borderColor: isUrgent ? colors.destructive : colors.border }]}>
-                    <View style={styles.anonymousInfo}>
+                  <View style={[styles.toggleRow, { borderColor: isUrgent ? colors.destructive : colors.border }]}>
+                    <View style={styles.toggleInfo}>
                       <Zap size={16} color={isUrgent ? colors.destructive : colors.mutedForeground} fill={isUrgent ? colors.destructive : 'transparent'} />
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.label, { color: colors.foreground, marginBottom: 0 }]}>{t('urgency.toggle')}</Text>
-                        <Text style={[styles.anonymousHint, { color: colors.mutedForeground }]}>{t('urgency.toggleHint')}</Text>
+                        <Text style={[styles.toggleLabel, { color: colors.foreground }]}>{t('urgency.toggle')}</Text>
+                        <Text style={[styles.toggleHint, { color: colors.mutedForeground }]}>{t('urgency.toggleHint')}</Text>
                       </View>
                     </View>
                     <Switch
                       value={isUrgent}
                       onValueChange={setIsUrgent}
                       trackColor={{ false: colors.muted, true: colors.destructive }}
-                      thumbColor={colors.primaryForeground}
+                      thumbColor={colors.background}
                     />
                   </View>
                   {isUrgent && (
@@ -1367,25 +1461,37 @@ export default function CreateScreen() {
             </>
           )}
 
-          {/* Submit */}
+          {/* Bottom spacer for sticky button */}
+          <View style={{ height: 90 }} />
+        </ScrollView>
+
+        {/* ── Sticky publish button ── */}
+        <View style={[styles.stickyBottom, { paddingBottom: insets.bottom + 12 }]}>
           <PressableOpacity
             onPress={handleSubmit}
-            disabled={submitting}
-            style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: submitting ? 0.6 : 1 }]}
+            disabled={submitting || !selectedType}
+            style={[
+              styles.publishBtn,
+              {
+                backgroundColor: colors.foreground,
+                opacity: submitting || !selectedType ? 0.45 : 1,
+                shadowColor: colors.foreground,
+              },
+            ]}
             accessibilityRole="button"
             accessibilityLabel={t('create.publish')}
-            accessibilityState={{ disabled: submitting }}
+            accessibilityState={{ disabled: submitting || !selectedType }}
           >
             {submitting ? (
               <View style={styles.submitLoading}>
                 <ActivityIndicator size="small" color={colors.background} />
-                <Text style={[styles.submitText, { color: colors.background }]}>{uploadStatus || t('create.publishing')}</Text>
+                <Text style={[styles.publishText, { color: colors.background }]}>{uploadStatus || t('create.publishing')}</Text>
               </View>
             ) : (
-              <Text style={[styles.submitText, { color: colors.background }]}>{t('create.publish')}</Text>
+              <Text style={[styles.publishText, { color: colors.background }]}>{t('create.publish')}</Text>
             )}
           </PressableOpacity>
-        </ScrollView>
+        </View>
 
         {/* Success celebration overlay */}
         <Modal
@@ -1393,7 +1499,6 @@ export default function CreateScreen() {
           transparent
           animationType="fade"
           onRequestClose={() => {
-            // Dismiss without navigating to the post — just close and reset
             if (successTimeoutRef.current) {
               clearTimeout(successTimeoutRef.current)
               successTimeoutRef.current = null
@@ -1406,7 +1511,6 @@ export default function CreateScreen() {
           <Pressable
             style={styles.successOverlay}
             onPress={() => {
-              // Backdrop press — dismiss without navigating, reset to prevent re-submit
               if (successTimeoutRef.current) {
                 clearTimeout(successTimeoutRef.current)
                 successTimeoutRef.current = null
@@ -1428,7 +1532,6 @@ export default function CreateScreen() {
               )}
               <PressableOpacity
                 onPress={async () => {
-                  // Cancel the auto-navigation timeout so it doesn't fire during/after sharing
                   if (successTimeoutRef.current) {
                     clearTimeout(successTimeoutRef.current)
                     successTimeoutRef.current = null
@@ -1439,7 +1542,6 @@ export default function CreateScreen() {
                     } catch (_) {
                       // User cancelled or share failed — navigate anyway
                     }
-                    // Navigate after share sheet is dismissed
                     setShowSuccess(false)
                     router.replace(`/post/${successPostId}`)
                   }
@@ -1486,9 +1588,9 @@ export default function CreateScreen() {
                 {/* Simple coordinate input as native fallback */}
                 <View style={styles.coordInputRow}>
                   <TextInput
-                    style={[styles.coordInput, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
+                    style={[styles.coordInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
                     placeholder="Lat (60.17)"
-                    placeholderTextColor={colors.mutedForeground}
+                    placeholderTextColor={colors.tertiaryForeground}
                     keyboardType="decimal-pad"
                     value={tempMapCoords?.lat?.toString() ?? ''}
                     onChangeText={(text) => {
@@ -1497,9 +1599,9 @@ export default function CreateScreen() {
                     }}
                   />
                   <TextInput
-                    style={[styles.coordInput, { backgroundColor: colors.muted, color: colors.foreground, borderWidth: 0 }]}
+                    style={[styles.coordInput, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
                     placeholder="Lng (24.94)"
-                    placeholderTextColor={colors.mutedForeground}
+                    placeholderTextColor={colors.tertiaryForeground}
                     keyboardType="decimal-pad"
                     value={tempMapCoords?.lng?.toString() ?? ''}
                     onChangeText={(text) => {
@@ -1514,7 +1616,7 @@ export default function CreateScreen() {
             {/* Selected coordinates display */}
             {tempMapCoords && (
               <View style={[styles.coordsDisplay, { backgroundColor: colors.card }]}>
-                <MapPin size={16} color={colors.primary} />
+                <MapPin size={16} color={colors.foreground} />
                 <Text style={[styles.coordsDisplayText, { color: colors.foreground }]}>
                   {tempMapCoords.lat.toFixed(5)}, {tempMapCoords.lng.toFixed(5)}
                 </Text>
@@ -1528,16 +1630,36 @@ export default function CreateScreen() {
                 disabled={!tempMapCoords}
                 style={[
                   styles.confirmBtn,
-                  { backgroundColor: tempMapCoords ? colors.primary : colors.muted },
+                  { backgroundColor: tempMapCoords ? colors.foreground : colors.muted },
                 ]}
               >
-                <Text style={[styles.confirmBtnText, { color: tempMapCoords ? colors.primaryForeground : colors.mutedForeground }]}>
+                <Text style={[styles.confirmBtnText, { color: tempMapCoords ? colors.background : colors.mutedForeground }]}>
                   {t('locationPicker.confirm')}
                 </Text>
               </PressableOpacity>
             </View>
           </View>
         </Modal>
+
+        <TrustGateModal
+          visible={showTrustGate}
+          onClose={() => setShowTrustGate(false)}
+          requiredLevel={2}
+          currentLevel={trust.level}
+          featureName={t('categories.lainaa')}
+          onVerifyPress={identity.startVerification}
+        />
+
+        {FEATURES.IDENTITY_VERIFICATION && (
+          <VerificationModal
+            visible={identity.showModal}
+            onClose={() => identity.setShowModal(false)}
+            onConfirm={identity.confirmVerification}
+            loading={identity.loading}
+            error={identity.error}
+            isSuccess={identity.status === 'success'}
+          />
+        )}
       </View>
       <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
@@ -1635,177 +1757,532 @@ function LeafletMapPicker({ coords, onCoordsChange, colors }: {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  // ── Header ──
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  headerBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999,
-  },
-  headerBadgeText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', fontFamily: fonts.bodyMedium },
-  categoryGrid: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 12,
-    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32,
-  },
-  categoryCard: {
-    width: '47%' as any,
-    borderRadius: 24,
-  },
-  categoryCardFullWidth: {
-    width: '100%' as any,
-  },
-  categoryCardInner: {
-    padding: 16, gap: 8,
-    alignItems: 'center', minHeight: 130,
+  headerCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 24,
   },
-  categoryIconLarge: {
-    width: 56, height: 56, borderRadius: 28,
-    alignItems: 'center', justifyContent: 'center',
+  headerTitle: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    textAlign: 'center',
+  },
+  headerDraftLink: {
+    paddingHorizontal: 4,
+    paddingVertical: 6,
+  },
+  headerDraftText: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    textDecorationLine: 'underline',
+  },
+
+  // ── Scroll content ──
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 32,
+  },
+
+  // ── Section spacing + labels ──
+  section: {
+    marginBottom: 20,
+    gap: 8,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+
+  // ── Category pills ──
+  pillRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 4,
+    paddingRight: 16,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    minHeight: 40,
+  },
+  pillText: {
+    fontSize: 13,
+  },
+
+  // ── Photo uploader ──
+  photoUploader: {
+    aspectRatio: 1.25,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  photoIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 4,
   },
-  lockOverlay: {
-    position: 'absolute', top: -4, right: -4,
-    width: 22, height: 22, borderRadius: 11,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center', justifyContent: 'center',
+  photoMainText: {
+    fontSize: 13.5,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
-  urgencySection: { gap: 8 },
-  urgencyOptions: { flexDirection: 'row', gap: 12 },
-  urgencyOption: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 999, borderWidth: 1.5, minHeight: 44,
+  photoSubText: {
+    fontSize: 11,
+    fontFamily: fonts.body,
   },
-  urgencyOptionText: { fontSize: 14, fontWeight: '700' },
-  categoryName: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20, textAlign: 'center' },
-  categorySub: { fontSize: 13, fontFamily: fonts.body, lineHeight: 16, textAlign: 'center' },
-  form: { padding: 16, gap: 20, paddingBottom: 100 },
-  field: { gap: 8 },
-  label: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium },
-  input: {
-    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 16,
-    fontSize: 14, minHeight: 48, fontFamily: fonts.body,
+
+  // ── Image grid (when images exist) ──
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  textArea: { minHeight: 120 },
-  charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
-  imageRow: { flexDirection: 'row', gap: 8 },
-  imageThumb: { width: 80, height: 80, borderRadius: 14, overflow: 'hidden', position: 'relative' },
-  imageThumbImg: { width: '100%', height: '100%' },
+  imageThumb: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  imageThumbImg: {
+    width: '100%',
+    height: '100%',
+  },
   imageRemoveBtn: {
-    position: 'absolute', top: 0, right: 0,
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center',
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   mainImageBadge: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    paddingVertical: 2, alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 2,
+    alignItems: 'center',
   },
-  mainImageBadgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
-  addImageBtn: {
-    width: 80, height: 80, borderRadius: 14, borderWidth: 1.5, borderStyle: 'dashed',
-    alignItems: 'center', justifyContent: 'center', gap: 4,
+  mainImageBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
-  addImageText: { fontSize: 11, fontFamily: fonts.body },
-  tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  addMoreImgBtn: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  addMoreImgText: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+  },
+
+  // ── Form inputs ──
+  input: {
+    height: 50,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    fontSize: 14.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  inputText: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  textArea: {
+    height: undefined,
+    minHeight: 90,
+    paddingVertical: 14,
+    fontSize: 13.5,
+    fontWeight: '400',
+    fontFamily: fonts.body,
+    lineHeight: 20,
+    textAlignVertical: 'top',
+  },
+  fieldError: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    paddingTop: 2,
+  },
+  fieldHint: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    marginTop: 2,
+  },
+  charCount: {
+    fontSize: 11,
+    textAlign: 'right',
+    fontFamily: fonts.body,
+  },
+
+  // ── Two-column layout ──
+  twoColRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  twoColField: {
+    flex: 1,
+    gap: 8,
+  },
+  twoColInput: {
+    flex: 1,
+  },
+  expirationPicker: {
+    justifyContent: 'center',
+  },
+
+  // ── Tags ──
+  tagGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   tagChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 999, minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    minHeight: 40,
   },
-  tagText: { fontSize: 13, fontFamily: fonts.body },
+  tagText: {
+    fontSize: 13,
+    fontFamily: fonts.bodyMedium,
+  },
+  autoTagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingTop: 4,
+  },
+  autoTagLabel: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    width: '100%',
+  },
+  autoTagChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  autoTagText: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+
+  // ── Details toggle ──
   detailsToggle: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth, minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    minHeight: 48,
+    marginBottom: 20,
   },
-  detailsToggleText: { fontSize: 14, fontFamily: fonts.bodySemi },
-  submitBtn: {
-    borderRadius: 999, paddingVertical: 16, alignItems: 'center',
-    justifyContent: 'center', height: 54, marginTop: 8,
+  detailsToggleText: {
+    fontSize: 14,
+    fontFamily: fonts.bodySemi,
   },
-  submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
-  submitLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
-  // Anonymous toggle
-  anonymousRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 12, paddingHorizontal: 4, gap: 12,
+  // ── Toggle rows (anonymous / urgency) ──
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    gap: 12,
+    marginBottom: 12,
   },
-  anonymousInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  anonymousHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 15, marginTop: 2 },
+  toggleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  toggleLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodyMedium,
+  },
+  toggleHint: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 15,
+    marginTop: 2,
+  },
 
-  // Pro banner
+  // ── Urgency ──
+  urgencySection: { gap: 8, marginBottom: 12 },
+  urgencyOptions: { flexDirection: 'row', gap: 12 },
+  urgencyOption: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    minHeight: 44,
+  },
+  urgencyOptionText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
+
+  // ── Sticky publish button ──
+  stickyBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  publishBtn: {
+    borderRadius: 999,
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  publishText: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  submitLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  // ── Pro banner ──
   proBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    padding: 12, borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    borderRadius: 20,
+    marginBottom: 20,
   },
-  proBannerText: { flex: 1, fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+  proBannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
 
-  // Success celebration overlay
+  // ── Map picker ──
+  mapPickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  mapPickerBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  coordsText: {
+    fontSize: 11,
+    marginTop: 2,
+    fontFamily: fonts.body,
+  },
+
+  // ── Tarjoan sub-type ──
+  tarjoanTypeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 999,
+    minHeight: 44,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  tarjoanTypeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+
+  // ── Success overlay ──
   successOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center', justifyContent: 'center', padding: 32,
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
   },
   successCard: {
-    borderRadius: 28, padding: 32, alignItems: 'center', gap: 12,
-    width: '100%', maxWidth: 300,
+    borderRadius: 28,
+    padding: 32,
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+    maxWidth: 300,
   },
   successIconCircle: {
-    width: 64, height: 64, borderRadius: 32,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 4,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
-  successTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, textAlign: 'center' },
-  successSubtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
-  shareBtn: { borderRadius: 999, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
-  shareBtnText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
-
-  // Location picker
-  locationRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
-  locationInput: { flex: 1 },
-  mapPickerBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 12, borderRadius: 999, minHeight: 48,
+  successTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: fonts.headingSemi,
+    textAlign: 'center',
   },
-  mapPickerBtnText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
-  coordsText: { fontSize: 11, marginTop: 2, fontFamily: fonts.body },
+  successSubtitle: {
+    fontSize: 14,
+    fontFamily: fonts.body,
+    textAlign: 'center',
+  },
+  shareBtn: {
+    borderRadius: 999,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  shareBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
+  },
 
-  // Map modal
+  // ── Map modal ──
   modalContainer: { flex: 1 },
   modalHeader: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
-  modalFooter: { paddingHorizontal: 16, paddingVertical: 12 },
-  confirmBtn: {
-    borderRadius: 999, paddingVertical: 16, alignItems: 'center',
-    justifyContent: 'center', minHeight: 48,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: fonts.headingSemi,
   },
-  confirmBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
+  modalFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  confirmBtn: {
+    borderRadius: 999,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  confirmBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
   coordsDisplay: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginVertical: 8, paddingHorizontal: 16, paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 20,
   },
-  coordsDisplayText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.body },
+  coordsDisplayText: {
+    fontSize: 13,
+    fontWeight: '500',
+    fontFamily: fonts.body,
+  },
   mapFallback: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 32,
   },
-  mapFallbackText: { fontSize: 16, fontWeight: '600', textAlign: 'center', fontFamily: fonts.headingSemi },
-  mapFallbackHint: { fontSize: 13, textAlign: 'center', fontFamily: fonts.body },
-  coordInputRow: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
+  mapFallbackText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    fontFamily: fonts.headingSemi,
+  },
+  mapFallbackHint: {
+    fontSize: 13,
+    textAlign: 'center',
+    fontFamily: fonts.body,
+  },
+  coordInputRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+    marginTop: 16,
+  },
   coordInput: {
-    flex: 1, borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12,
-    fontSize: 14, textAlign: 'center', fontFamily: fonts.body,
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 14,
+    textAlign: 'center',
+    fontFamily: fonts.body,
   },
-
-  // Tarjoan sub-type selector
-  tarjoanTypeChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999, minHeight: 44,
-    flex: 1, justifyContent: 'center',
-  },
-  tarjoanTypeText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 })

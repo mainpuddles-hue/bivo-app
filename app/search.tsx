@@ -2,17 +2,18 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { View, Text, TextInput, FlatList, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
+import { Image } from 'expo-image'
 import { PressableOpacity } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { ArrowLeft, Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, Star, Trash2, Heart, CalendarDays, Users } from 'lucide-react-native'
+import { Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, ChevronDown, Star, Trash2, Heart, CalendarDays, Users, Plus } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SearchSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { resolveLocale } from '@/lib/format'
+import { resolveLocale, formatPrice } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { POST_SELECT, CATEGORIES } from '@/lib/constants'
@@ -36,9 +37,6 @@ const HISTORY_KEY = 'tackbird-search-history'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
 const MAX_HISTORY = 5
 
-const SearchSeparator16 = () => <View style={{ height: 16 }} />
-const SearchSeparator8 = () => <View style={{ height: 8 }} />
-
 type TimeFilter = 'all' | 'today' | 'week' | 'month'
 
 interface SavedSearch {
@@ -60,6 +58,16 @@ function boundingBox(lat: number, lng: number, km: number) {
     minLng: lng - lngDelta,
     maxLng: lng + lngDelta,
   }
+}
+
+/**
+ * Get the first available image URL for a post.
+ */
+function getPostImageUrl(post: Post): string | null {
+  if (post.images && post.images.length > 0) {
+    return post.images[0].image_url
+  }
+  return post.image_url ?? null
 }
 
 // ── Extracted components (stable identity across renders) ──
@@ -296,6 +304,65 @@ function SearchEmptyState({ query, colors, isDark, t, onSelectCategory }: Search
   )
 }
 
+// ── Active filter chip labels ──
+
+function getActiveFilterLabels(
+  filters: SearchFilterValues,
+  activeFilter: PostType | null,
+  timeFilter: TimeFilter,
+  t: ReturnType<typeof useI18n>['t'],
+): { key: string; label: string }[] {
+  const chips: { key: string; label: string }[] = []
+
+  if (activeFilter) {
+    const cat = CATEGORIES[activeFilter]
+    if (cat) chips.push({ key: 'category', label: t(cat.label) })
+  }
+
+  if (timeFilter === 'today') chips.push({ key: 'time', label: t('search.timeToday') })
+  else if (timeFilter === 'week') chips.push({ key: 'time', label: t('search.timeWeek') })
+
+  if (filters.minPrice || filters.maxPrice) {
+    const min = filters.minPrice || '0'
+    const max = filters.maxPrice || '...'
+    chips.push({ key: 'price', label: `${min}–${max} €` })
+  }
+
+  if (filters.neighborhoods.length > 0) {
+    chips.push({ key: 'neighborhoods', label: `${filters.neighborhoods.length} ${t('search.neighborhoods').toLowerCase()}` })
+  }
+
+  if (filters.sortBy !== 'newest') {
+    const sortLabels: Record<SortOption, string> = {
+      newest: t('search.sortNewest'),
+      closest: t('search.sortClosest'),
+      most_liked: t('search.sortMostLiked'),
+      price_asc: t('search.sortPriceLow'),
+      price_desc: t('search.sortPriceHigh'),
+    }
+    chips.push({ key: 'sort', label: sortLabels[filters.sortBy] ?? filters.sortBy })
+  }
+
+  if (filters.distanceKm < 50 && filters.userLat != null) {
+    chips.push({ key: 'distance', label: t('search.distanceKm', { km: filters.distanceKm }) })
+  }
+
+  return chips
+}
+
+// ── Sort label for results header ──
+
+function getSortLabel(filters: SearchFilterValues, t: ReturnType<typeof useI18n>['t']): string {
+  switch (filters.sortBy) {
+    case 'newest': return t('search.sortNewest')
+    case 'closest': return t('search.sortNearest')
+    case 'most_liked': return t('search.sortPopular')
+    case 'price_asc': return t('search.sortPriceLow')
+    case 'price_desc': return t('search.sortPriceHigh')
+    default: return t('search.sortNewest')
+  }
+}
+
 function SearchScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -324,6 +391,8 @@ function SearchScreenInner() {
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  // "Samankaltaista" — semantic-only matches for the similar section
+  const [similarPosts, setSimilarPosts] = useState<Post[]>([])
 
   // Search suggestions (trending + personal history)
   const searchSuggestions = useSearchSuggestions()
@@ -340,6 +409,12 @@ function SearchScreenInner() {
   const abortRef = useRef<AbortController | null>(null)
 
   const filterCount = useMemo(() => countActiveFilters(filters), [filters])
+
+  // Active filter chip labels
+  const activeChips = useMemo(
+    () => getActiveFilterLabels(filters, activeFilter, timeFilter, t),
+    [filters, activeFilter, timeFilter, t],
+  )
 
   // Load trending posts
   useEffect(() => {
@@ -684,7 +759,12 @@ function SearchScreenInner() {
       // Sort by hybrid score descending
       uniquePosts.sort((a, b) => (b._hybridScore ?? 0) - (a._hybridScore ?? 0))
 
-      setResults(uniquePosts)
+      // Separate: main results = text matches (or high-score), similar = semantic-only
+      const mainResults = uniquePosts.filter(p => textResultIds.has(p.id))
+      const similar = uniquePosts.filter(p => !textResultIds.has(p.id))
+
+      setResults(mainResults.length > 0 ? mainResults : uniquePosts)
+      setSimilarPosts(similar)
       setDbResultCount((posts ?? []).length)
       setHasMore((posts ?? []).length >= 20)
 
@@ -757,6 +837,7 @@ function SearchScreenInner() {
     if (!text.trim()) {
       setSearched(false)
       setResults([])
+      setSimilarPosts([])
       setDbResultCount(0)
       setUserResults([])
       return
@@ -861,27 +942,242 @@ function SearchScreenInner() {
     executeSearch(h)
   }, [executeSearch])
 
-  // Time filter options
-  const TIME_FILTERS: { key: TimeFilter; label: string }[] = [
-    { key: 'all', label: t('search.timeAll') },
-    { key: 'today', label: t('search.timeToday') },
-    { key: 'week', label: t('search.timeWeek') },
-  ]
+  // Remove a specific active filter chip
+  const removeActiveChip = useCallback((chipKey: string) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    if (chipKey === 'category') {
+      setActiveFilter(null)
+      if (searched && query.trim()) {
+        setResults([])
+        setLoading(true)
+        setTimeout(() => executeSearch(undefined, undefined, null), 0)
+      }
+    } else if (chipKey === 'time') {
+      setTimeFilter('all')
+      if (searched && query.trim()) {
+        setResults([])
+        setLoading(true)
+        setTimeout(() => executeSearch(undefined, undefined, undefined, 'all'), 0)
+      }
+    } else if (chipKey === 'price') {
+      const newFilters = { ...filters, minPrice: '', maxPrice: '' }
+      setFilters(newFilters)
+      if (searched && query.trim()) {
+        setResults([])
+        setLoading(true)
+        setTimeout(() => executeSearch(undefined, newFilters), 0)
+      }
+    } else if (chipKey === 'neighborhoods') {
+      const newFilters = { ...filters, neighborhoods: [] }
+      setFilters(newFilters)
+      if (searched && query.trim()) {
+        setResults([])
+        setLoading(true)
+        setTimeout(() => executeSearch(undefined, newFilters), 0)
+      }
+    } else if (chipKey === 'sort') {
+      const newFilters = { ...filters, sortBy: 'newest' as SortOption }
+      setFilters(newFilters)
+      if (searched && query.trim()) {
+        setResults([])
+        setLoading(true)
+        setTimeout(() => executeSearch(undefined, newFilters), 0)
+      }
+    } else if (chipKey === 'distance') {
+      const newFilters = { ...filters, distanceKm: 50 }
+      setFilters(newFilters)
+      if (searched && query.trim()) {
+        setResults([])
+        setLoading(true)
+        setTimeout(() => executeSearch(undefined, newFilters), 0)
+      }
+    }
+  }, [searched, query, executeSearch, filters])
 
-  // Sort filter options for chips
-  const SORT_CHIPS: { key: SortOption; label: string }[] = [
-    { key: 'newest', label: t('search.sortNewest') },
-    { key: 'closest', label: t('search.sortNearest') },
-  ]
+  // Get the post price display
+  const getPostPrice = useCallback((post: Post): string | null => {
+    if (post.daily_fee != null && post.daily_fee > 0) return formatPrice(post.daily_fee, locale)
+    if (post.service_price != null && post.service_price > 0) return formatPrice(post.service_price, locale)
+    if (post.type === 'ilmaista') return 'Ilmainen'
+    return null
+  }, [locale])
+
+  // Get poster name
+  const getPostPoster = useCallback((post: Post): string => {
+    return post.user?.name ?? ''
+  }, [])
+
+  // Get distance string
+  const getPostDistance = useCallback((post: Post): string | null => {
+    if (filters.userLat == null || filters.userLng == null) return null
+    if (post.latitude == null || post.longitude == null) return null
+    const km = haversineKm(filters.userLat, filters.userLng, post.latitude, post.longitude)
+    if (km < 1) return `${Math.round(km * 1000)} m`
+    return `${km.toFixed(1)} km`
+  }, [filters.userLat, filters.userLng])
+
+  // ── Render result row for the compact results list ──
+  const renderResultRow = useCallback((post: Post, isLast: boolean) => {
+    const imageUrl = getPostImageUrl(post)
+    const poster = getPostPoster(post)
+    const distance = getPostDistance(post)
+    const price = getPostPrice(post)
+    const metaParts = [poster, distance].filter(Boolean).join(' \u00B7 ')
+
+    return (
+      <PressableOpacity
+        key={post.id}
+        onPress={() => router.push(`/post/${post.id}` as any)}
+        style={[
+          s.resultRow,
+          !isLast && { borderBottomWidth: 1, borderBottomColor: colors.border },
+        ]}
+        accessibilityRole="button"
+        accessibilityLabel={post.title}
+      >
+        {imageUrl ? (
+          <Image
+            source={{ uri: imageUrl }}
+            style={s.resultImage}
+            contentFit="cover"
+            transition={200}
+          />
+        ) : (
+          <View style={[s.resultImage, s.resultImagePlaceholder, { backgroundColor: colors.muted }]}>
+            <SearchIcon size={20} color={colors.mutedForeground} />
+          </View>
+        )}
+        <View style={s.resultInfo}>
+          <Text style={[s.resultTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={1}>
+            {post.title}
+          </Text>
+          {metaParts.length > 0 && (
+            <Text style={[s.resultMeta, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={1}>
+              {metaParts}
+            </Text>
+          )}
+          {price && (
+            <Text style={[s.resultPrice, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
+              {price}
+            </Text>
+          )}
+        </View>
+      </PressableOpacity>
+    )
+  }, [colors, router, getPostPoster, getPostDistance, getPostPrice])
+
+  // ── Render "Samankaltaista" similar card ──
+  const renderSimilarCard = useCallback((post: Post) => {
+    const imageUrl = getPostImageUrl(post)
+    return (
+      <PressableOpacity
+        key={post.id}
+        onPress={() => router.push(`/post/${post.id}` as any)}
+        style={[s.similarCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        accessibilityRole="button"
+        accessibilityLabel={post.title}
+      >
+        {imageUrl ? (
+          <Image
+            source={{ uri: imageUrl }}
+            style={s.similarImage}
+            contentFit="cover"
+            transition={200}
+          />
+        ) : (
+          <View style={[s.similarImage, { backgroundColor: colors.muted }]}>
+            <SearchIcon size={18} color={colors.mutedForeground} />
+          </View>
+        )}
+        <View style={s.similarTitleWrap}>
+          <Text style={[s.similarTitle, { color: colors.foreground, fontFamily: fonts.bodyMedium }]} numberOfLines={2}>
+            {post.title}
+          </Text>
+        </View>
+      </PressableOpacity>
+    )
+  }, [colors, router])
+
+  // ── Results content renderer for FlatList ──
+  const renderPostResults = useCallback(() => {
+    if (results.length === 0) {
+      return (
+        <SearchEmptyState
+          query={query}
+          colors={colors}
+          isDark={isDark}
+          t={t}
+          onSelectCategory={(type, label) => {
+            setActiveFilter(type)
+            setQuery(label)
+            executeSearch(label, undefined, type)
+          }}
+        />
+      )
+    }
+
+    return (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+      >
+        {/* Results section header */}
+        <View style={s.resultsHeader}>
+          <Text style={[s.resultsCount, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {t('search.resultCount', { count: results.length })}
+          </Text>
+          <PressableOpacity
+            onPress={() => setFiltersVisible(true)}
+            style={s.sortButton}
+            accessibilityRole="button"
+            accessibilityLabel={t('search.sortLabel')}
+          >
+            <Text style={[s.sortLabel, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
+              {getSortLabel(filters, t)}
+            </Text>
+            <ChevronDown size={14} color={colors.foreground} />
+          </PressableOpacity>
+        </View>
+
+        {/* Results container */}
+        <View style={[s.resultsContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {results.map((post, idx) => renderResultRow(post, idx === results.length - 1))}
+        </View>
+
+        {/* Load more */}
+        {loadingMore && (
+          <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} />
+        )}
+        {hasMore && !loadingMore && (
+          <PressableOpacity onPress={loadMore} style={s.loadMoreBtn}>
+            <Text style={[s.loadMoreText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
+              {t('search.loadMore')}
+            </Text>
+          </PressableOpacity>
+        )}
+
+        {/* "Samankaltaista" section */}
+        {similarPosts.length > 0 && (
+          <View style={s.similarSection}>
+            <Text style={[s.similarSectionLabel, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+              {t('search.semanticMatch').toUpperCase()}
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.similarScroll}>
+              {similarPosts.map(renderSimilarCard)}
+            </ScrollView>
+          </View>
+        )}
+      </ScrollView>
+    )
+  }, [results, similarPosts, query, colors, isDark, t, filters, renderResultRow, renderSimilarCard, loadMore, loadingMore, hasMore, executeSearch])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header with search */}
-      <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.back')} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <ArrowLeft size={24} color={colors.foreground} />
-        </PressableOpacity>
-        <View style={[s.searchBar, { backgroundColor: colors.muted, borderColor: 'transparent' }]}>
+      {/* Top search area — no bar header, direct search */}
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+        <View style={[s.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <SearchIcon size={18} color={colors.mutedForeground} />
           <TextInput
             style={[s.searchInput, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -897,21 +1193,67 @@ function SearchScreenInner() {
             accessibilityRole="search"
           />
           {query.length > 0 && (
-            <PressableOpacity onPress={() => { setQuery(''); setResults([]); setDbResultCount(0); setUserResults([]); setSearched(false) }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
+            <PressableOpacity
+              onPress={() => {
+                setQuery('')
+                setResults([])
+                setSimilarPosts([])
+                setDbResultCount(0)
+                setUserResults([])
+                setSearched(false)
+              }}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.clear')}
+            >
               <X size={18} color={colors.mutedForeground} />
             </PressableOpacity>
           )}
         </View>
-        {/* Filter button */}
-        <PressableOpacity onPress={() => setFiltersVisible(true)} hitSlop={8} style={s.filterButton} accessibilityRole="button" accessibilityLabel={t('search.filters')}>
-          <SlidersHorizontal size={20} color={filterCount > 0 ? colors.primary : colors.mutedForeground} />
-          {filterCount > 0 && (
-            <View style={[s.filterBadge, { backgroundColor: colors.primary }]}>
-              <Text style={[s.filterBadgeText, { color: colors.primaryForeground }]}>{filterCount}</Text>
-            </View>
-          )}
+        {/* Filter button — 44x44, INK bg, white icon */}
+        <PressableOpacity
+          onPress={() => setFiltersVisible(true)}
+          hitSlop={8}
+          style={[s.filterButton, { backgroundColor: colors.foreground }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('search.filters')}
+        >
+          <SlidersHorizontal size={20} color={colors.card} />
         </PressableOpacity>
       </View>
+
+      {/* Active filter chips */}
+      {searched && activeChips.length > 0 && (
+        <View style={s.activeChipsRow}>
+          {activeChips.map(chip => (
+            <View key={chip.key} style={[s.activeChip, { backgroundColor: colors.foreground }]}>
+              <Text style={[s.activeChipText, { color: colors.card, fontFamily: fonts.bodySemi }]}>
+                {chip.label}
+              </Text>
+              <PressableOpacity
+                onPress={() => removeActiveChip(chip.key)}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('common.remove')} ${chip.label}`}
+              >
+                <X size={12} color={colors.card} />
+              </PressableOpacity>
+            </View>
+          ))}
+          {/* "+ Lisaa" chip */}
+          <PressableOpacity
+            onPress={() => setFiltersVisible(true)}
+            style={[s.addFilterChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.more')}
+          >
+            <Plus size={12} color={colors.foreground} />
+            <Text style={[s.addFilterText, { color: colors.foreground, fontFamily: fonts.bodyMedium }]}>
+              {t('common.more')}
+            </Text>
+          </PressableOpacity>
+        </View>
+      )}
 
       {/* Search suggestions dropdown */}
       {showSuggestions && !searched && suggestions.length > 0 && (
@@ -943,143 +1285,26 @@ function SearchScreenInner() {
         </View>
       )}
 
-      {/* Save search + active filter indicator */}
-      {searched && filterCount > 0 && (
-        <View style={[s.activeFilterBar, { backgroundColor: `${colors.primary}10`, borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => setFiltersVisible(true)} style={s.activeFilterInfo}>
-            <SlidersHorizontal size={14} color={colors.primary} />
-            <Text style={[s.activeFilterText, { color: colors.primary, fontFamily: fonts.bodySemi }]}>
-              {t('search.activeFilters', { count: filterCount })}
-            </Text>
-          </PressableOpacity>
-          <PressableOpacity onPress={saveCurrentSearch} hitSlop={8} style={s.saveSearchBtn}>
-            <Star size={14} color={colors.primary} />
-            <Text style={[s.saveSearchText, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>{t('search.saveThisSearch')}</Text>
-          </PressableOpacity>
-        </View>
-      )}
-
-      {/* Filter chips: Category + Time + Sort */}
-      {searched && (
-        <View style={s.chipSections}>
-          {/* Category chips */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
-            <PressableOpacity
-              onPress={() => handleCategoryFilter(null)}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.all')}
-              accessibilityState={{ selected: !activeFilter }}
-              style={[s.filterChip, !activeFilter ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
-            >
-              <Text style={[s.filterText, { color: !activeFilter ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t('common.all')}</Text>
-            </PressableOpacity>
-            {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
-              if (type === 'lainaa' && !FEATURES.LENDING) return false
-                return true
-            }).map(([type, cat]) => (
-              <PressableOpacity
-                key={type}
-                onPress={() => handleCategoryFilter(type)}
-                accessibilityRole="button"
-                accessibilityLabel={t(cat.label)}
-                accessibilityState={{ selected: activeFilter === type }}
-                style={[s.filterChip, activeFilter === type ? { backgroundColor: cat.color } : { backgroundColor: isDark ? colors.card : colors.muted }]}
-              >
-                <Text style={[s.filterText, { color: activeFilter === type ? colors.primaryForeground : colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>{t(cat.label)}</Text>
-              </PressableOpacity>
-            ))}
-          </ScrollView>
-
-          {/* Time + Sort chips */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.filterRow}>
-            {TIME_FILTERS.map(tf => (
-              <PressableOpacity
-                key={tf.key}
-                onPress={() => handleTimeFilter(tf.key)}
-                style={[
-                  s.filterChip,
-                  s.filterChipOutline,
-                  timeFilter === tf.key
-                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                    : { backgroundColor: 'transparent', borderColor: colors.border },
-                ]}
-              >
-                <Text style={[
-                  s.filterText,
-                  { fontFamily: fonts.bodyMedium },
-                  timeFilter === tf.key
-                    ? { color: colors.primaryForeground }
-                    : { color: colors.mutedForeground },
-                ]}>{tf.label}</Text>
-              </PressableOpacity>
-            ))}
-            <View style={[s.chipDivider, { backgroundColor: colors.border }]} />
-            {SORT_CHIPS.map(sc => (
-              <PressableOpacity
-                key={sc.key}
-                onPress={() => {
-                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-                  const newFilters = { ...filters, sortBy: sc.key }
-                  setFilters(newFilters)
-                  if (searched && query.trim()) {
-                    setResults([])
-                    setDbResultCount(0)
-                    setLoading(true)
-                    setTimeout(() => executeSearch(undefined, newFilters), 0)
-                  }
-                }}
-                style={[
-                  s.filterChip,
-                  s.filterChipOutline,
-                  filters.sortBy === sc.key
-                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                    : { backgroundColor: 'transparent', borderColor: colors.border },
-                ]}
-              >
-                <Text style={[
-                  s.filterText,
-                  { fontFamily: fonts.bodyMedium },
-                  filters.sortBy === sc.key
-                    ? { color: colors.primaryForeground }
-                    : { color: colors.mutedForeground },
-                ]}>{sc.label}</Text>
-              </PressableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-      {/* Inline quick-filters removed — all filtering via header SearchFilters modal */}
-
-      {/* Result count */}
-      {searched && !loading && results.length > 0 && activeTab === 'posts' && (
-        <View style={s.resultCountRow}>
-          <Text style={[s.resultCountText, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>
-            {t('search.resultCount', { count: results.length })}
-          </Text>
-        </View>
-      )}
-
-      {/* Results tabs */}
+      {/* Results tabs — kept for multi-type search */}
       {searched && !loading && (
         <View style={[s.tabRow, { borderBottomColor: colors.border }]}>
-          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('places.posts')} accessibilityState={{ selected: activeTab === 'posts' }}>
-            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityRole="tab" accessibilityLabel={t('places.posts')} accessibilityState={{ selected: activeTab === 'posts' }}>
+            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.foreground : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('places.posts')} ({results.length})
             </Text>
           </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('common.user')} accessibilityState={{ selected: activeTab === 'users' }}>
-            <Text style={[s.tabText, { color: activeTab === 'users' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+          <PressableOpacity onPress={() => setActiveTab('users')} style={[s.tab, activeTab === 'users' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityRole="tab" accessibilityLabel={t('common.user')} accessibilityState={{ selected: activeTab === 'users' }}>
+            <Text style={[s.tabText, { color: activeTab === 'users' ? colors.foreground : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('common.user')} ({userResults.length})
             </Text>
           </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabEvents')} accessibilityState={{ selected: activeTab === 'events' }}>
-            <Text style={[s.tabText, { color: activeTab === 'events' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+          <PressableOpacity onPress={() => setActiveTab('events')} style={[s.tab, activeTab === 'events' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabEvents')} accessibilityState={{ selected: activeTab === 'events' }}>
+            <Text style={[s.tabText, { color: activeTab === 'events' ? colors.foreground : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('search.tabEvents')} ({eventResults.length})
             </Text>
           </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.primary }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
-            <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.primary : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
+          <PressableOpacity onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
+            <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.foreground : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('search.tabGroups')} ({groupResults.length})
             </Text>
           </PressableOpacity>
@@ -1109,32 +1334,7 @@ function SearchScreenInner() {
       ) : loading ? (
         <SearchSkeleton />
       ) : activeTab === 'posts' ? (
-        <FlatList
-          data={results}
-          keyExtractor={item => item.id}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
-            <View>
-              {(item as any)._semanticMatch && (
-                <Text style={[s.semanticLabel, { color: colors.primary, fontFamily: fonts.bodyMedium }]}>
-                  {t('search.semanticMatch')}
-                </Text>
-              )}
-              <PostCard post={item} />
-            </View>
-          )}
-          contentContainerStyle={s.list}
-          ItemSeparatorComponent={SearchSeparator16}
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.3}
-          ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} /> : null}
-          ListEmptyComponent={<SearchEmptyState query={query} colors={colors} isDark={isDark} t={t} onSelectCategory={(type, label) => { setActiveFilter(type); setQuery(label); executeSearch(label, undefined, type) }} />}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={true}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-        />
+        renderPostResults()
       ) : activeTab === 'events' ? (
         <FlatList
           data={eventResults}
@@ -1167,7 +1367,7 @@ function SearchScreenInner() {
               <ChevronRight size={16} color={colors.mutedForeground} />
             </PressableOpacity>
           )}
-          ItemSeparatorComponent={SearchSeparator8}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
@@ -1209,7 +1409,7 @@ function SearchScreenInner() {
               <ChevronRight size={16} color={colors.mutedForeground} />
             </PressableOpacity>
           )}
-          ItemSeparatorComponent={SearchSeparator8}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
@@ -1240,7 +1440,7 @@ function SearchScreenInner() {
               </View>
             </PressableOpacity>
           )}
-          ItemSeparatorComponent={SearchSeparator8}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
@@ -1275,43 +1475,201 @@ export default function SearchScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
+
+  // ── Top search area ──
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
   searchBar: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderWidth: 0, borderRadius: 20, paddingHorizontal: 16, height: 48,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
   },
-  searchInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
-  filterButton: { position: 'relative', padding: 4 },
-  filterBadge: {
-    position: 'absolute', top: -2, right: -4,
-    minWidth: 16, height: 16, borderRadius: 8,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: fonts.body,
+    lineHeight: 20,
+    padding: 0,
+    margin: 0,
   },
-  filterBadgeText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  activeFilterBar: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  filterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  activeFilterInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activeFilterText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  saveSearchBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  saveSearchText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  chipSections: { gap: 0 },
-  filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  filterChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44, justifyContent: 'center' as const },
-  filterChipOutline: { borderWidth: 1 },
-  filterText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  chipDivider: { width: 1, height: 24, alignSelf: 'center', marginHorizontal: 8, borderRadius: 1 },
+
+  // ── Active filter chips ──
+  activeChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 7,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  activeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  activeChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+    lineHeight: 16,
+  },
+  addFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  addFilterText: {
+    fontSize: 11,
+    fontWeight: '500',
+    lineHeight: 16,
+  },
+
+  // ── Results section header ──
+  resultsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+  },
+  resultsCount: {
+    fontSize: 10.5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    lineHeight: 16,
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  sortLabel: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    lineHeight: 16,
+  },
+
+  // ── Results container ──
+  resultsContainer: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+  },
+  resultRow: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 12,
+  },
+  resultImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+  },
+  resultImagePlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 2,
+  },
+  resultTitle: {
+    fontSize: 13.5,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  resultMeta: {
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  resultPrice: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    lineHeight: 16,
+    marginTop: 2,
+  },
+
+  // ── Load more ──
+  loadMoreBtn: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  loadMoreText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+
+  // ── "Samankaltaista" section ──
+  similarSection: {
+    marginTop: 24,
+    gap: 10,
+  },
+  similarSectionLabel: {
+    fontSize: 10.5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    lineHeight: 16,
+  },
+  similarScroll: {
+    gap: 10,
+    paddingRight: 16,
+  },
+  similarCard: {
+    width: 130,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  similarImage: {
+    width: '100%',
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  similarTitleWrap: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  similarTitle: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    lineHeight: 16,
+  },
+
+  // ── Tabs ──
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
   tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  tabText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+
+  // ── Lists ──
   list: { padding: 16, paddingBottom: 100 },
   discovery: { padding: 16, gap: 24, paddingBottom: 100 },
+
+  // ── Discovery sections ──
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sectionTitle: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.5 },
@@ -1337,6 +1695,8 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   categoryCardText: { fontSize: 14, flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
+
+  // ── Empty state ──
   empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
   emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
@@ -1344,12 +1704,14 @@ const s = StyleSheet.create({
   emptyCategoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 4 },
   emptyCategoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, borderWidth: 1 },
   emptyCategoryChipText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+
+  // ── User / event / group cards ──
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth },
   searchEventIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   userName: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   userNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-  resultCountRow: { paddingHorizontal: 16, paddingVertical: 8 },
-  resultCountText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
+
+  // ── Trending ──
   trendingList: { gap: 0 },
   trendingCard: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -1359,7 +1721,8 @@ const s = StyleSheet.create({
   trendingCat: { fontSize: 11, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   trendingLikeCount: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  semanticLabel: { fontSize: 11, marginBottom: 4, paddingLeft: 2, fontFamily: fonts.bodyMedium, lineHeight: 16 },
+
+  // ── Suggestions ──
   suggestionsContainer: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 4,
@@ -1370,6 +1733,8 @@ const s = StyleSheet.create({
   },
   suggestionText: { flex: 1, fontSize: 14, lineHeight: 20 },
   suggestionBadge: { fontSize: 11, lineHeight: 16 },
+
+  // ── Demand chips ──
   demandChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999,
