@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Camera, X, Megaphone, ExternalLink } from 'lucide-react-native'
+import { X, Camera, Megaphone } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
@@ -15,7 +15,7 @@ import { fonts } from '@/lib/fonts'
 import { formatPrice as formatPriceUtil } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { BackButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -257,18 +257,25 @@ export default function CreateAdScreen() {
   return (
     <ScreenErrorBoundary screenName="CreateAd">
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <BackButton />
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('ads.create')}</Text>
-        <View style={{ width: 24 }} />
+      {/* Header — circle close + centered title */}
+      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border, backgroundColor: colors.background }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          style={[styles.closeButton, { backgroundColor: colors.muted }]}
+          accessibilityLabel={t('common.back')}
+          accessibilityRole="button"
+        >
+          <X size={18} color={colors.foreground} />
+        </PressableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{t('ads.create')}</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {/* Title */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('create.title')} *</Text>
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{(t('create.title') + ' *').toUpperCase()}</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border, fontFamily: fonts.body }]}
           value={title}
           onChangeText={setTitle}
           placeholder={t('ads.titlePlaceholder')}
@@ -277,9 +284,9 @@ export default function CreateAdScreen() {
         />
 
         {/* Description */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('create.description')}</Text>
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('create.description').toUpperCase()}</Text>
         <TextInput
-          style={[styles.input, styles.textArea, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, styles.textArea, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border, fontFamily: fonts.body }]}
           value={description}
           onChangeText={setDescription}
           placeholder={t('ads.descriptionPlaceholder')}
@@ -289,26 +296,26 @@ export default function CreateAdScreen() {
           inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
 
-        {/* Image */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('create.addPhotos')}</Text>
+        {/* Photo uploader */}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('create.addPhotos').toUpperCase()}</Text>
         {imageUri ? (
           <View style={styles.imagePreview}>
             <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" cachePolicy="memory-disk" />
-            <PressableOpacity onPress={() => setImageUri(null)} style={[styles.removeImage, { backgroundColor: colors.destructive }]} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
+            <PressableOpacity onPress={() => setImageUri(null)} style={[styles.removeImage, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
               <X size={14} color={colors.primaryForeground} />
             </PressableOpacity>
           </View>
         ) : (
           <PressableOpacity onPress={handlePickImage} style={[styles.imagePicker, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Camera size={24} color={colors.mutedForeground} />
-            <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>{t('create.addPhotos')}</Text>
+            <Camera size={28} color={colors.mutedForeground} />
+            <Text style={[styles.imagePickerText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('create.addPhotos')}</Text>
           </PressableOpacity>
         )}
 
         {/* Link URL */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.linkUrl')}</Text>
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('ads.linkUrl').toUpperCase()}</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }]}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border, fontFamily: fonts.body }]}
           value={linkUrl}
           onChangeText={setLinkUrl}
           placeholder="https://..."
@@ -318,7 +325,7 @@ export default function CreateAdScreen() {
         />
 
         {/* CTA text */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.ctaText')}</Text>
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('ads.ctaText').toUpperCase()}</Text>
         <View style={styles.ctaRow}>
           {CTA_OPTIONS.map(opt => (
             <PressableOpacity
@@ -327,8 +334,8 @@ export default function CreateAdScreen() {
               style={[
                 styles.ctaChip,
                 {
-                  backgroundColor: ctaKey === opt.key ? colors.primary : colors.card,
-                  borderColor: ctaKey === opt.key ? colors.primary : colors.border,
+                  backgroundColor: ctaKey === opt.key ? colors.foreground : colors.card,
+                  borderColor: ctaKey === opt.key ? colors.foreground : colors.border,
                 },
               ]}
               accessibilityRole="button"
@@ -337,7 +344,10 @@ export default function CreateAdScreen() {
               <Text
                 style={[
                   styles.ctaChipText,
-                  { color: ctaKey === opt.key ? colors.primaryForeground : colors.foreground },
+                  {
+                    color: ctaKey === opt.key ? colors.primaryForeground : colors.foreground,
+                    fontFamily: ctaKey === opt.key ? fonts.bodySemi : fonts.body,
+                  },
                 ]}
               >
                 {getCtaLabel(opt, locale)}
@@ -347,22 +357,22 @@ export default function CreateAdScreen() {
         </View>
 
         {/* Target neighborhood */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.targetNeighborhood')}</Text>
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('ads.targetNeighborhood').toUpperCase()}</Text>
         <PressableOpacity
           onPress={() => setShowNeighborhoods(!showNeighborhoods)}
-          style={[styles.input, styles.pickerBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+          style={[styles.input, styles.pickerBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <Text style={{ color: targetNeighborhood ? colors.foreground : colors.mutedForeground, fontSize: 14, fontFamily: fonts.body }}>
             {targetNeighborhood ?? t('ads.allAreas')}
           </Text>
         </PressableOpacity>
         {showNeighborhoods && (
-          <View style={[styles.neighborhoodList, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+          <View style={[styles.neighborhoodList, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <PressableOpacity
               onPress={() => { setTargetNeighborhood(null); setShowNeighborhoods(false) }}
               style={[styles.neighborhoodItem, { borderBottomColor: colors.border }]}
             >
-              <Text style={[styles.neighborhoodText, { color: !targetNeighborhood ? colors.primary : colors.foreground }]}>
+              <Text style={[styles.neighborhoodText, { color: !targetNeighborhood ? colors.foreground : colors.mutedForeground, fontFamily: !targetNeighborhood ? fonts.bodySemi : fonts.body }]}>
                 {t('ads.allAreas')}
               </Text>
             </PressableOpacity>
@@ -372,7 +382,7 @@ export default function CreateAdScreen() {
                 onPress={() => { setTargetNeighborhood(n); setShowNeighborhoods(false) }}
                 style={[styles.neighborhoodItem, { borderBottomColor: colors.border }]}
               >
-                <Text style={[styles.neighborhoodText, { color: targetNeighborhood === n ? colors.primary : colors.foreground }]}>
+                <Text style={[styles.neighborhoodText, { color: targetNeighborhood === n ? colors.foreground : colors.mutedForeground, fontFamily: targetNeighborhood === n ? fonts.bodySemi : fonts.body }]}>
                   {n}
                 </Text>
               </PressableOpacity>
@@ -381,7 +391,7 @@ export default function CreateAdScreen() {
         )}
 
         {/* Duration */}
-        <Text style={[styles.label, { color: colors.foreground }]}>{t('ads.duration')}</Text>
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('ads.duration').toUpperCase()}</Text>
         <View style={styles.durationRow}>
           {DURATION_OPTIONS.map(opt => (
             <PressableOpacity
@@ -390,18 +400,19 @@ export default function CreateAdScreen() {
               style={[
                 styles.durationCard,
                 {
-                  backgroundColor: 'transparent',
+                  backgroundColor: colors.card,
                   borderColor: duration === opt.days ? colors.foreground : colors.border,
+                  borderWidth: duration === opt.days ? 1.5 : 1,
                 },
               ]}
             >
-              <Text style={[styles.durationDays, { color: colors.foreground }]}>
+              <Text style={[styles.durationDays, { color: colors.foreground, fontFamily: fonts.heading }]}>
                 {opt.label}
               </Text>
-              <Text style={[styles.durationLabel, { color: colors.mutedForeground }]}>
+              <Text style={[styles.durationLabel, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
                 {t('common.daysShort')}
               </Text>
-              <Text style={[styles.durationPrice, { color: colors.mutedForeground }]}>
+              <Text style={[styles.durationPrice, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
                 {formatPrice(opt.days * pricePerDay)}
               </Text>
             </PressableOpacity>
@@ -409,17 +420,17 @@ export default function CreateAdScreen() {
         </View>
 
         {/* Price summary */}
-        <View style={[styles.priceCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+        <View style={[styles.priceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.priceRow}>
-            <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>
+            <Text style={[styles.priceLabel, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
               {duration} {t('common.daysShort')} x {formatPrice(pricePerDay)}/{t('common.daysShort')}
             </Text>
-            <Text style={[styles.priceValue, { color: colors.foreground }]}>
+            <Text style={[styles.priceValue, { color: colors.foreground, fontFamily: fonts.heading }]}>
               {formatPrice(totalPrice)}
             </Text>
           </View>
           {profile?.is_pro && (
-            <Text style={[styles.proDiscount, { color: colors.pro }]}>
+            <Text style={[styles.proDiscount, { color: colors.pro, fontFamily: fonts.bodySemi }]}>
               Pro -20%
             </Text>
           )}
@@ -427,32 +438,34 @@ export default function CreateAdScreen() {
 
         {/* iOS disclaimer — ad campaigns are B2B transactions via Stripe */}
         {Platform.OS === 'ios' && (
-          <Text style={[styles.iosDisclaimer, { color: colors.mutedForeground }]}>
+          <Text style={[styles.iosDisclaimer, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {t('ads.iosPaymentNote')}
           </Text>
         )}
+      </ScrollView>
 
-        {/* Submit — solid foreground */}
+      {/* Sticky CTA */}
+      <View style={[styles.stickyFooter, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <PressableOpacity
           onPress={handleSubmit}
           disabled={submitting || !title.trim()}
-          style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: submitting || !title.trim() ? 0.6 : 1 }]}
+          style={[styles.submitBtn, { backgroundColor: colors.foreground, opacity: submitting || !title.trim() ? 0.4 : 1 }]}
           accessibilityRole="button"
           accessibilityLabel={t('ads.publishAd')}
           accessibilityState={{ disabled: submitting || !title.trim() }}
         >
           {submitting ? (
-            <ActivityIndicator size="small" color={colors.background} />
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
             <>
-              <Megaphone size={18} color={colors.background} />
-              <Text style={[styles.submitText, { color: colors.background }]}>
+              <Megaphone size={18} color={colors.primaryForeground} />
+              <Text style={[styles.submitText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
                 {t('ads.publishAd')} — {formatPrice(totalPrice)}
               </Text>
             </>
           )}
         </PressableOpacity>
-      </ScrollView>
+      </View>
       <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
     </ScreenErrorBoundary>
@@ -462,64 +475,136 @@ export default function CreateAdScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
-  content: { padding: 16, gap: 8, paddingBottom: 64 },
-  label: { fontSize: 13, marginTop: 8, fontFamily: fonts.bodySemi },
+  closeButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: -0.1,
+  },
+  headerSpacer: {
+    width: 36,
+  },
+  content: { padding: 16, gap: 4 },
+  sectionLabel: {
+    fontSize: 10.5,
+    lineHeight: 14,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 16,
+    marginBottom: 8,
+  },
   input: {
-    borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    height: 50,
+    fontSize: 14,
+    justifyContent: 'center',
   },
-  textArea: { minHeight: 100, textAlignVertical: 'top' },
+  textArea: {
+    minHeight: 100,
+    height: undefined,
+    paddingTop: 14,
+    paddingBottom: 14,
+    textAlignVertical: 'top',
+  },
   imagePicker: {
-    borderRadius: 16, borderWidth: 1, borderStyle: 'dashed',
-    height: 120, alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    aspectRatio: 1.25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-  imagePickerText: { fontSize: 13, fontFamily: fonts.body },
-  imagePreview: { borderRadius: 16, overflow: 'hidden', position: 'relative' },
-  previewImage: { width: '100%', height: 160, borderRadius: 16 },
+  imagePickerText: { fontSize: 13 },
+  imagePreview: { borderRadius: 22, overflow: 'hidden', position: 'relative' },
+  previewImage: { width: '100%', height: 200, borderRadius: 22 },
   removeImage: {
-    position: 'absolute', top: 8, right: 8,
-    width: 28, height: 28, borderRadius: 14,
-    alignItems: 'center', justifyContent: 'center',
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   ctaChip: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
   },
-  ctaChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
+  ctaChipText: { fontSize: 13 },
   pickerBtn: { justifyContent: 'center' },
   neighborhoodList: {
-    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
-    maxHeight: 200, overflow: 'hidden',
+    borderRadius: 16,
+    borderWidth: 1,
+    maxHeight: 200,
+    overflow: 'hidden',
   },
   neighborhoodItem: {
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  neighborhoodText: { fontSize: 14, fontFamily: fonts.body },
+  neighborhoodText: { fontSize: 14 },
   durationRow: { flexDirection: 'row', gap: 12 },
   durationCard: {
-    flex: 1, borderRadius: 16, borderWidth: 1.5,
-    padding: 16, alignItems: 'center', gap: 4,
+    flex: 1,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    gap: 4,
   },
-  durationDays: { fontSize: 24, fontFamily: fonts.heading },
-  durationLabel: { fontSize: 12, fontFamily: fonts.body },
-  durationPrice: { fontSize: 13, marginTop: 4, fontFamily: fonts.bodySemi },
+  durationDays: { fontSize: 24 },
+  durationLabel: { fontSize: 12 },
+  durationPrice: { fontSize: 13, marginTop: 4 },
   priceCard: {
-    borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
-    padding: 16, gap: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    gap: 4,
+    marginTop: 8,
   },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  priceLabel: { fontSize: 14, fontFamily: fonts.body },
-  priceValue: { fontSize: 18, fontFamily: fonts.heading },
-  proDiscount: { fontSize: 12, fontFamily: fonts.bodySemi },
-  submitBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 16, borderRadius: 16, marginTop: 8, minHeight: 48,
+  priceLabel: { fontSize: 14 },
+  priceValue: { fontSize: 18 },
+  proDiscount: { fontSize: 12 },
+  stickyFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
-  submitText: { fontSize: 16, fontFamily: fonts.bodySemi },
-  iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8, fontFamily: fonts.body },
+  submitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 54,
+    borderRadius: 999,
+  },
+  submitText: { fontSize: 16, fontWeight: '600' },
+  iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8 },
 })

@@ -6,7 +6,6 @@ import {
   Text,
   TextInput,
   ScrollView,
-  Pressable,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -16,7 +15,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, Camera, X, Calendar, Clock, MapPin, Users, Check } from 'lucide-react-native'
+import { X, Camera, Calendar, Clock, Users, Check } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
@@ -33,13 +32,13 @@ import type { CommunityEvent } from '@/lib/types'
 
 type EventCategory = CommunityEvent['category']
 
-const EVENT_CATEGORIES: { key: EventCategory; labelKey: string; color: string }[] = [
-  { key: 'social', labelKey: 'events.catSocial', color: '#7C5CBF' },
-  { key: 'sports', labelKey: 'events.catSports', color: '#2B8A62' },
-  { key: 'culture', labelKey: 'events.catCulture', color: '#3B7DD8' },
-  { key: 'nature', labelKey: 'events.catNature', color: '#2B8A62' },
-  { key: 'kids', labelKey: 'events.catKids', color: '#E8A050' },
-  { key: 'other', labelKey: 'events.catOther', color: '#6B7280' },
+const EVENT_CATEGORIES: { key: EventCategory; labelKey: string }[] = [
+  { key: 'social', labelKey: 'events.catSocial' },
+  { key: 'sports', labelKey: 'events.catSports' },
+  { key: 'culture', labelKey: 'events.catCulture' },
+  { key: 'nature', labelKey: 'events.catNature' },
+  { key: 'kids', labelKey: 'events.catKids' },
+  { key: 'other', labelKey: 'events.catOther' },
 ]
 
 export default function CreateEventScreen() {
@@ -352,7 +351,7 @@ function CreateEventScreenInner() {
       style={[styles.flex, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* Header */}
+      {/* Header — circle close + centered title */}
       <View
         style={[
           styles.header,
@@ -365,14 +364,14 @@ function CreateEventScreenInner() {
       >
         <PressableOpacity
           onPress={() => router.back()}
-          style={styles.backButton}
+          style={[styles.closeButton, { backgroundColor: colors.muted }]}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
-          <ArrowLeft size={24} color={colors.foreground} />
+          <X size={18} color={colors.foreground} />
         </PressableOpacity>
         <Text
-          style={[styles.headerTitle, { color: colors.foreground, fontFamily: fonts.heading }]}
+          style={[styles.headerTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]}
           accessibilityRole="header"
         >
           {edit ? (t('events.editEvent') ?? t('events.createEvent')) : t('events.createEvent')}
@@ -382,22 +381,22 @@ function CreateEventScreenInner() {
 
       {editLoading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.foreground} />
         </View>
       ) : (
       <ScrollView
         style={styles.flex}
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Image Picker */}
+        {/* Photo uploader — dashed border */}
         <PressableOpacity
           onPress={pickImage}
           style={[
             styles.imagePicker,
             {
-              backgroundColor: colors.muted,
+              backgroundColor: colors.card,
               borderColor: colors.border,
             },
           ]}
@@ -413,17 +412,17 @@ function CreateEventScreenInner() {
               />
               <PressableOpacity
                 onPress={removeImage}
-                style={[styles.removeImageButton, { backgroundColor: colors.destructive }]}
+                style={[styles.removeImageButton, { backgroundColor: colors.foreground }]}
                 hitSlop={8}
                 accessibilityLabel={t('common.remove')}
                 accessibilityRole="button"
               >
-                <X size={16} color={colors.primaryForeground} />
+                <X size={14} color={colors.primaryForeground} />
               </PressableOpacity>
             </View>
           ) : (
             <View style={styles.imagePickerContent}>
-              <Camera size={32} color={colors.mutedForeground} />
+              <Camera size={28} color={colors.mutedForeground} />
               <Text style={[styles.imagePickerText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
                 {t('events.imageAlt')}
               </Text>
@@ -432,14 +431,14 @@ function CreateEventScreenInner() {
         </PressableOpacity>
 
         {/* Title */}
-        <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('events.eventTitle')} *
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {(t('events.eventTitle') + ' *').toUpperCase()}
         </Text>
         <TextInput
           style={[
             styles.input,
             {
-              backgroundColor: colors.muted,
+              backgroundColor: colors.card,
               color: colors.foreground,
               borderColor: colors.border,
               fontFamily: fonts.body,
@@ -454,15 +453,15 @@ function CreateEventScreenInner() {
         />
 
         {/* Description */}
-        <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('events.eventDescription')}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('events.eventDescription').toUpperCase()}
         </Text>
         <TextInput
           style={[
             styles.input,
             styles.multilineInput,
             {
-              backgroundColor: colors.muted,
+              backgroundColor: colors.card,
               color: colors.foreground,
               borderColor: colors.border,
               fontFamily: fonts.body,
@@ -486,10 +485,10 @@ function CreateEventScreenInner() {
         {/* Date + Time row */}
         <View style={styles.row}>
           <View style={styles.rowHalf}>
-            <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-              {t('events.eventDate')} *
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+              {(t('events.eventDate') + ' *').toUpperCase()}
             </Text>
-            <View style={[styles.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+            <View style={[styles.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Calendar size={18} color={colors.mutedForeground} />
               <TextInput
                 style={[styles.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -504,10 +503,10 @@ function CreateEventScreenInner() {
             </View>
           </View>
           <View style={styles.rowHalf}>
-            <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-              {t('events.eventTime')}
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+              {t('events.eventTime').toUpperCase()}
             </Text>
-            <View style={[styles.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+            <View style={[styles.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Clock size={18} color={colors.mutedForeground} />
               <TextInput
                 style={[styles.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -524,8 +523,8 @@ function CreateEventScreenInner() {
         </View>
 
         {/* Location */}
-        <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('events.location')}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('events.location').toUpperCase()}
         </Text>
         <LocationAutocomplete
           value={locationName}
@@ -537,8 +536,8 @@ function CreateEventScreenInner() {
         />
 
         {/* Category */}
-        <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('events.category')}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('events.category').toUpperCase()}
         </Text>
         <View style={styles.chipContainer}>
           {EVENT_CATEGORIES.map((cat) => {
@@ -553,8 +552,8 @@ function CreateEventScreenInner() {
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: selected ? cat.color : colors.muted,
-                    borderColor: selected ? cat.color : colors.border,
+                    backgroundColor: selected ? colors.foreground : colors.card,
+                    borderColor: selected ? colors.foreground : colors.border,
                   },
                 ]}
                 accessibilityLabel={t(cat.labelKey)}
@@ -579,10 +578,10 @@ function CreateEventScreenInner() {
         </View>
 
         {/* Max participants */}
-        <Text style={[styles.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('events.maxParticipants')}
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('events.maxParticipants').toUpperCase()}
         </Text>
-        <View style={[styles.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+        <View style={[styles.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Users size={18} color={colors.mutedForeground} />
           <TextInput
             style={[styles.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -597,7 +596,7 @@ function CreateEventScreenInner() {
         </View>
 
         {/* Approval toggle */}
-        <View style={[styles.toggleRow, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+        <View style={[styles.toggleRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.toggleTextContainer}>
             <Text style={[styles.toggleLabel, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
               {t('events.approvalRequired')}
@@ -609,43 +608,47 @@ function CreateEventScreenInner() {
           <Switch
             value={approvalRequired}
             onValueChange={setApprovalRequired}
-            trackColor={{ false: colors.border, true: colors.primary }}
-            thumbColor={Platform.OS === 'android' ? (approvalRequired ? colors.primary : colors.muted) : undefined}
+            trackColor={{ false: colors.border, true: colors.foreground }}
+            thumbColor={Platform.OS === 'android' ? (approvalRequired ? colors.primaryForeground : colors.muted) : undefined}
             accessibilityLabel={t('events.approvalRequired')}
           />
         </View>
-
-        {/* Submit button — solid foreground */}
-        <PressableOpacity
-          onPress={handleSubmit}
-          disabled={!canSubmit}
-          style={[
-            styles.submitButton,
-            {
-              backgroundColor: canSubmit ? colors.foreground : colors.muted,
-            },
-          ]}
-          accessibilityLabel={t('events.publish')}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canSubmit }}
-        >
-          {submitting ? (
-            <ActivityIndicator size="small" color={colors.background} />
-          ) : (
-            <Text
-              style={[
-                styles.submitButtonText,
-                {
-                  color: canSubmit ? colors.background : colors.mutedForeground,
-                  fontFamily: fonts.headingSemi,
-                },
-              ]}
-            >
-              {edit ? (t('common.save') ?? t('events.publish')) : t('events.publish')}
-            </Text>
-          )}
-        </PressableOpacity>
       </ScrollView>
+      )}
+
+      {/* Sticky CTA */}
+      {!editLoading && (
+        <View style={[styles.stickyFooter, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background, borderTopColor: colors.border }]}>
+          <PressableOpacity
+            onPress={handleSubmit}
+            disabled={!canSubmit}
+            style={[
+              styles.submitButton,
+              {
+                backgroundColor: canSubmit ? colors.foreground : colors.muted,
+              },
+            ]}
+            accessibilityLabel={t('events.publish')}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canSubmit }}
+          >
+            {submitting ? (
+              <ActivityIndicator size="small" color={colors.primaryForeground} />
+            ) : (
+              <Text
+                style={[
+                  styles.submitButtonText,
+                  {
+                    color: canSubmit ? colors.primaryForeground : colors.mutedForeground,
+                    fontFamily: fonts.bodySemi,
+                  },
+                ]}
+              >
+                {edit ? (t('common.save') ?? t('events.publish')) : t('events.publish')}
+              </Text>
+            )}
+          </PressableOpacity>
+        </View>
       )}
       <KeyboardDoneAccessory />
     </KeyboardAvoidingView>
@@ -663,23 +666,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  backButton: {
-    width: 44,
-    height: 44,
+  closeButton: {
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
+    borderRadius: 999,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 14,
+    fontWeight: '600',
     textAlign: 'center',
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.3,
+    letterSpacing: -0.1,
   },
   headerSpacer: {
-    width: 40,
+    width: 36,
   },
   content: {
     padding: 16,
@@ -687,9 +689,9 @@ const styles = StyleSheet.create({
   },
   imagePicker: {
     width: '100%',
-    height: 180,
-    borderRadius: 16,
-    borderWidth: 1,
+    aspectRatio: 1.25,
+    borderRadius: 22,
+    borderWidth: 1.5,
     borderStyle: 'dashed',
     overflow: 'hidden',
     marginBottom: 16,
@@ -704,11 +706,11 @@ const styles = StyleSheet.create({
   },
   removeImageButton: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 16,
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -719,27 +721,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   imagePickerText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  label: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  sectionLabel: {
+    fontSize: 10.5,
+    lineHeight: 14,
     fontWeight: '600',
-    marginTop: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 16,
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    height: 50,
     fontSize: 14,
     lineHeight: 20,
+    justifyContent: 'center',
   },
   multilineInput: {
     minHeight: 100,
-    paddingTop: 12,
+    height: undefined,
+    paddingTop: 14,
+    paddingBottom: 14,
   },
   charCount: {
     fontSize: 12,
@@ -759,14 +766,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 16,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
+    height: 50,
     gap: 8,
   },
   inputInner: {
     flex: 1,
-    paddingVertical: 16,
     fontSize: 14,
     lineHeight: 20,
+    height: 50,
   },
   chipContainer: {
     flexDirection: 'row',
@@ -778,7 +786,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
     borderWidth: 1,
   },
   chipIcon: {
@@ -794,8 +802,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 14,
+    height: 56,
     marginTop: 12,
   },
   toggleTextContainer: {
@@ -807,21 +815,28 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   toggleDescription: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
     marginTop: 2,
   },
+  stickyFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   submitButton: {
-    borderRadius: 16,
-    paddingVertical: 16,
+    borderRadius: 999,
+    height: 54,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
-    minHeight: 48,
   },
   submitButtonText: {
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: fonts.bodySemi,
+    fontWeight: '600',
   },
 })

@@ -2,12 +2,12 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useEffect } from 'react'
 import {
-  View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator,
+  View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator,
   KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, MapPin, Check, Coffee, UtensilsCrossed, Footprints, Trophy, Handshake } from 'lucide-react-native'
+import { X, MapPin, Check, Coffee, UtensilsCrossed, Footprints, Trophy, Handshake } from 'lucide-react-native'
 import type { LucideIcon } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
@@ -17,15 +17,16 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { createEventChat } from '@/lib/eventChatHelpers'
+import { PressableOpacity } from '@/components/ui'
 import { TABLE_CATEGORIES } from '@/lib/constants'
 import type { TableCategory } from '@/lib/types'
 
-const CATEGORY_OPTIONS: { key: TableCategory; labelKey: string; icon: LucideIcon; color: string }[] = [
-  { key: 'coffee', labelKey: 'tables.catCoffee', icon: Coffee, color: '#8B5E3C' },
-  { key: 'lunch', labelKey: 'tables.catLunch', icon: UtensilsCrossed, color: '#E8A050' },
-  { key: 'walk', labelKey: 'tables.catWalk', icon: Footprints, color: '#2B8A62' },
-  { key: 'sports', labelKey: 'tables.catSports', icon: Trophy, color: '#3B7DD8' },
-  { key: 'hangout', labelKey: 'tables.catHangout', icon: Handshake, color: '#7C5CBF' },
+const CATEGORY_OPTIONS: { key: TableCategory; labelKey: string; icon: LucideIcon }[] = [
+  { key: 'coffee', labelKey: 'tables.catCoffee', icon: Coffee },
+  { key: 'lunch', labelKey: 'tables.catLunch', icon: UtensilsCrossed },
+  { key: 'walk', labelKey: 'tables.catWalk', icon: Footprints },
+  { key: 'sports', labelKey: 'tables.catSports', icon: Trophy },
+  { key: 'hangout', labelKey: 'tables.catHangout', icon: Handshake },
 ]
 
 const DURATION_OPTIONS = [
@@ -147,32 +148,37 @@ function CreateTableScreenInner() {
       style={[s.flex, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* Header */}
+      {/* Header — circle close + centered title */}
       <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={s.backButton} accessibilityLabel={t('common.back')} accessibilityRole="button">
-          <ArrowLeft size={24} color={colors.foreground} />
-        </Pressable>
-        <Text style={[s.headerTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+        <PressableOpacity
+          onPress={() => router.back()}
+          style={[s.closeButton, { backgroundColor: colors.muted }]}
+          accessibilityLabel={t('common.back')}
+          accessibilityRole="button"
+        >
+          <X size={18} color={colors.foreground} />
+        </PressableOpacity>
+        <Text style={[s.headerTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
           {t('tables.create')}
         </Text>
-        <View style={{ width: 44 }} />
+        <View style={s.headerSpacer} />
       </View>
 
       <ScrollView
         style={s.flex}
-        contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 24 }]}
+        contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 100 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* Category */}
-        <Text style={[s.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('tables.category')}
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('tables.category').toUpperCase()}
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow}>
           {CATEGORY_OPTIONS.map(cat => {
             const selected = category === cat.key
             return (
-              <Pressable
+              <PressableOpacity
                 key={cat.key}
                 onPress={() => {
                   setCategory(cat.key)
@@ -181,32 +187,32 @@ function CreateTableScreenInner() {
                 style={[
                   s.categoryChip,
                   {
-                    backgroundColor: selected ? cat.color : colors.muted,
-                    borderColor: selected ? cat.color : colors.border,
+                    backgroundColor: selected ? colors.foreground : colors.card,
+                    borderColor: selected ? colors.foreground : colors.border,
                   },
                 ]}
                 accessibilityLabel={t(cat.labelKey)}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
               >
-                <cat.icon size={18} color={selected ? colors.primaryForeground : cat.color} />
+                <cat.icon size={18} color={selected ? colors.primaryForeground : colors.mutedForeground} />
                 <Text style={[s.categoryLabel, {
                   color: selected ? colors.primaryForeground : colors.foreground,
                   fontFamily: selected ? fonts.bodySemi : fonts.body,
                 }]}>
                   {t(cat.labelKey)}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )
           })}
         </ScrollView>
 
         {/* Title */}
-        <Text style={[s.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('tables.whatToDo')} *
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+          {(t('tables.whatToDo') + ' *').toUpperCase()}
         </Text>
         <TextInput
-          style={[s.input, { backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border, fontFamily: fonts.body }]}
+          style={[s.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border, fontFamily: fonts.body }]}
           value={title}
           onChangeText={setTitle}
           placeholder={t('tables.whatPlaceholder')}
@@ -216,10 +222,10 @@ function CreateTableScreenInner() {
         />
 
         {/* Location */}
-        <Text style={[s.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('tables.where')}
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('tables.where').toUpperCase()}
         </Text>
-        <View style={[s.inputWithIcon, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+        <View style={[s.inputWithIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <MapPin size={18} color={colors.mutedForeground} />
           <TextInput
             style={[s.inputInner, { color: colors.foreground, fontFamily: fonts.body }]}
@@ -233,14 +239,14 @@ function CreateTableScreenInner() {
         </View>
 
         {/* Duration */}
-        <Text style={[s.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('tables.duration')}
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('tables.duration').toUpperCase()}
         </Text>
         <View style={s.segmentRow}>
           {DURATION_OPTIONS.map(opt => {
             const selected = durationMinutes === opt.minutes
             return (
-              <Pressable
+              <PressableOpacity
                 key={opt.minutes}
                 onPress={() => {
                   setDurationMinutes(opt.minutes)
@@ -249,31 +255,34 @@ function CreateTableScreenInner() {
                 style={[
                   s.segmentBtn,
                   {
-                    backgroundColor: selected ? colors.primary : colors.muted,
-                    borderColor: selected ? colors.primary : colors.border,
+                    backgroundColor: selected ? colors.foreground : colors.card,
+                    borderColor: selected ? colors.foreground : colors.border,
                   },
                 ]}
                 accessibilityLabel={t(opt.labelKey)}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
               >
-                <Text style={[s.segmentText, { color: selected ? colors.primaryForeground : colors.foreground, fontFamily: selected ? fonts.bodySemi : fonts.body }]}>
+                <Text style={[s.segmentText, {
+                  color: selected ? colors.primaryForeground : colors.foreground,
+                  fontFamily: selected ? fonts.bodySemi : fonts.body,
+                }]}>
                   {t(opt.labelKey)}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )
           })}
         </View>
 
         {/* Max people */}
-        <Text style={[s.label, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
-          {t('tables.maxParticipants')}
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+          {t('tables.maxParticipants').toUpperCase()}
         </Text>
         <View style={s.segmentRow}>
           {MAX_PEOPLE_OPTIONS.map(n => {
             const selected = maxParticipants === n
             return (
-              <Pressable
+              <PressableOpacity
                 key={n}
                 onPress={() => {
                   setMaxParticipants(n)
@@ -282,24 +291,29 @@ function CreateTableScreenInner() {
                 style={[
                   s.segmentBtn,
                   {
-                    backgroundColor: selected ? colors.primary : colors.muted,
-                    borderColor: selected ? colors.primary : colors.border,
+                    backgroundColor: selected ? colors.foreground : colors.card,
+                    borderColor: selected ? colors.foreground : colors.border,
                   },
                 ]}
                 accessibilityLabel={`${n}`}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
               >
-                <Text style={[s.segmentText, { color: selected ? colors.primaryForeground : colors.foreground, fontFamily: selected ? fonts.bodySemi : fonts.body }]}>
+                <Text style={[s.segmentText, {
+                  color: selected ? colors.primaryForeground : colors.foreground,
+                  fontFamily: selected ? fonts.bodySemi : fonts.body,
+                }]}>
                   {n}
                 </Text>
-              </Pressable>
+              </PressableOpacity>
             )
           })}
         </View>
+      </ScrollView>
 
-        {/* Submit — solid foreground */}
-        <Pressable
+      {/* Sticky CTA */}
+      <View style={[s.stickyFooter, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background, borderTopColor: colors.border }]}>
+        <PressableOpacity
           onPress={handleSubmit}
           disabled={!canSubmit}
           style={[s.submitButton, { backgroundColor: canSubmit ? colors.foreground : colors.muted }]}
@@ -308,14 +322,17 @@ function CreateTableScreenInner() {
           accessibilityState={{ disabled: !canSubmit }}
         >
           {submitting ? (
-            <ActivityIndicator size="small" color={colors.background} />
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
-            <Text style={[s.submitText, { color: canSubmit ? colors.background : colors.mutedForeground, fontFamily: fonts.headingSemi }]}>
+            <Text style={[s.submitText, {
+              color: canSubmit ? colors.primaryForeground : colors.mutedForeground,
+              fontFamily: fonts.bodySemi,
+            }]}>
               {t('tables.create')}
             </Text>
           )}
-        </Pressable>
-      </ScrollView>
+        </PressableOpacity>
+      </View>
     </KeyboardAvoidingView>
   )
 }
@@ -329,55 +346,62 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  backButton: {
-    width: 44,
-    height: 44,
+  closeButton: {
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
+    borderRadius: 999,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 14,
+    fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: -0.3,
+    letterSpacing: -0.1,
+  },
+  headerSpacer: {
+    width: 36,
   },
   content: {
     padding: 16,
     gap: 4,
   },
-  label: {
-    fontSize: 13,
-    lineHeight: 18,
+  sectionLabel: {
+    fontSize: 10.5,
+    lineHeight: 14,
     fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
     marginTop: 16,
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    height: 50,
+    fontSize: 14,
     lineHeight: 20,
+    justifyContent: 'center',
   },
   inputWithIcon: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 16,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
+    height: 50,
     gap: 8,
   },
   inputInner: {
     flex: 1,
-    paddingVertical: 14,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
+    height: 50,
   },
   chipRow: {
-    gap: 12,
+    gap: 10,
     paddingVertical: 4,
   },
   categoryChip: {
@@ -386,7 +410,7 @@ const s = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 999,
     borderWidth: 1,
   },
   categoryLabel: {
@@ -401,24 +425,32 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
   },
   segmentText: {
     fontSize: 14,
     lineHeight: 20,
   },
+  stickyFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   submitButton: {
-    borderRadius: 14,
-    paddingVertical: 16,
+    borderRadius: 999,
+    height: 54,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 32,
-    minHeight: 52,
   },
   submitText: {
     fontSize: 16,
     lineHeight: 22,
+    fontWeight: '600',
   },
 })
 
