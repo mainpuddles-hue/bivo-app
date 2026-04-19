@@ -91,7 +91,7 @@ function HelpScreenInner() {
         >
           <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>Tuki</Text>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('help.title')}</Text>
         <View style={s.headerSpacer} />
       </View>
 

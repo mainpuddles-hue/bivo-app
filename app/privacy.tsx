@@ -26,7 +26,7 @@ function PrivacyScreenInner() {
         >
           <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>Tietosuoja</Text>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('privacy.title')}</Text>
         <View style={s.headerSpacer} />
       </View>
 
