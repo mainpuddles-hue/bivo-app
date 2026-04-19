@@ -11,13 +11,12 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { ModalCloseButton, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import * as Haptics from 'expo-haptics'
-import { ArrowLeft, Plus, MapPin, X } from 'lucide-react-native'
+import { ArrowLeft, Plus, MapPin } from 'lucide-react-native'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { usePoints } from '@/hooks/usePoints'
 import { mutateWithErrorAlert } from '@/lib/supabaseMutation'
 import { syncCounter } from '@/lib/syncCounter'
 import { fonts } from '@/lib/fonts'
@@ -39,7 +38,7 @@ interface ForumCategoryFilterDef {
 
 const FORUM_CATEGORIES: ForumCategoryFilterDef[] = [
   { key: null, labelKey: 'forum.all', color: '' },
-  { key: 'vinkit', labelKey: 'forum.tips', color: '#4CAF6A' },
+  { key: 'vinkit', labelKey: 'forum.tips', color: '#2B8A62' },
   { key: 'kysymykset', labelKey: 'forum.questions', color: '#3B7DD8' },
   { key: 'tapahtumat', labelKey: 'forum.events', color: '#2B8A62' },
   { key: 'uutiset', labelKey: 'forum.news', color: '#8E44AD' },
@@ -76,12 +75,11 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
 //
 // 3. THREAD BOOKMARKS: Allow users to bookmark/save forum threads for later.
 //    Currently only posts (marketplace) can be saved, not forum discussions.
-const ForumSeparator = () => <View style={{ height: 10 }} />
+const ForumSeparator = () => <View style={{ height: 12 }} />
 
 export default function ForumScreen() {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
-  const { awardPoints } = usePoints()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { thread } = useLocalSearchParams<{ thread?: string }>()
@@ -354,7 +352,6 @@ export default function ForumScreen() {
       setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
       // (count is already synced inside syncCounter; no second update needed)
       if (data) {
-        if (currentUserId && data) awardPoints(currentUserId, 'reply_created', (data as any).id).catch(() => {})
         if (selectedPost.user_id !== currentUserId) {
           await (supabase.from('notifications') as any).insert({
             user_id: selectedPost.user_id, from_user_id: currentUserId, type: 'forum_reply',
@@ -374,7 +371,7 @@ export default function ForumScreen() {
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('forum.replyError')) }
     finally { setSendingReply(false) }
-  }, [currentUserId, selectedPost, replyText, supabase, t, awardPoints])
+  }, [currentUserId, selectedPost, replyText, supabase, t])
 
   // ── Delete post ──
   const handleDeletePost = useCallback(async (postId: string) => {
@@ -467,13 +464,12 @@ export default function ForumScreen() {
       if (error) throw error
       if (data) {
         setPosts(prev => [data as unknown as ForumPost, ...prev])
-        awardPoints(currentUserId, 'post_created', (data as any).id).catch(() => {})
       }
       setNewTitle(''); setNewContent(''); setNewCategory(null); setShowCreateModal(false)
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
     } catch { Alert.alert(t('common.error'), t('forum.publishError')) }
     finally { setPublishing(false) }
-  }, [currentUserId, userNeighborhood, supabase, t, awardPoints])
+  }, [currentUserId, userNeighborhood, supabase, t])
 
   // ── Render post card ──
   const handleUserPress = useCallback((userId: string) => {
@@ -678,19 +674,19 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 20, lineHeight: 28, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
   headerSpacer: { width: 40 },
   filterBar: { paddingHorizontal: 16, paddingVertical: 12, gap: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, alignSelf: 'flex-start', borderWidth: 1 },
+  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, alignSelf: 'flex-start', borderWidth: 1 },
   neighborhoodChipText: { fontSize: 12, lineHeight: 16, fontFamily: fonts.bodyMedium },
   categoryChips: { gap: 8, paddingRight: 4 },
-  categoryChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  categoryChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   categoryChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
   sortRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
-  sortChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  sortChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   sortChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
-  newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 16, alignItems: 'center' },
+  newPostsBanner: { marginHorizontal: 16, marginTop: 8, paddingVertical: 12, borderRadius: 999, alignItems: 'center' },
   newPostsBannerText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodySemi },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
   listHeaderGap: { height: 4 },
-  card: { borderRadius: 16, overflow: 'hidden', flexDirection: 'row' },
+  card: { borderRadius: 24, overflow: 'hidden', flexDirection: 'row' },
   categoryBar: { width: 4 },
   cardBody: { flex: 1, padding: 16, gap: 8 },
   cardUserRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -698,14 +694,14 @@ const s = StyleSheet.create({
   skelLine: { height: 10, borderRadius: 5 },
   fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
   emptyState: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 32, gap: 12 },
-  emptyTitle: { fontSize: 18, lineHeight: 24, fontFamily: fonts.headingSemi, letterSpacing: -0.18 },
+  emptyTitle: { fontSize: 18, lineHeight: 24, fontFamily: fonts.headingSemi, letterSpacing: -0.2 },
   emptyHint: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20 },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 56, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  modalTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, textAlign: 'center', paddingHorizontal: 8 },
-  modalSection: { paddingHorizontal: 16, paddingTop: 14 },
-  publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, minWidth: 80, alignItems: 'center' },
+  modalTitle: { fontSize: 16, lineHeight: 24, fontFamily: fonts.headingSemi, letterSpacing: -0.16, flex: 1, textAlign: 'center', paddingHorizontal: 8 },
+  modalSection: { paddingHorizontal: 16, paddingTop: 16 },
+  publishBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, minWidth: 80, alignItems: 'center' },
   publishBtnText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodySemi },
-  titleInput: { fontSize: 14, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
-  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
+  titleInput: { fontSize: 14, lineHeight: 20, fontFamily: fonts.headingSemi, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, letterSpacing: -0.16 },
+  contentInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, lineHeight: 20, minHeight: 160 },
 })

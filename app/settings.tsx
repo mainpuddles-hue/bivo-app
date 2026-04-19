@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2 } from 'lucide-react-native'
+import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2 } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
@@ -613,13 +613,13 @@ export default function SettingsScreen() {
                     {nameText.length}/50
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <PressableOpacity onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 8, backgroundColor: colors.muted }}>
+                    <PressableOpacity onPress={() => { setEditingName(false); setNameText(profile.name ?? '') }} style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 999, backgroundColor: colors.muted }}>
                       <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>{t('common.cancel')}</Text>
                     </PressableOpacity>
                     <PressableOpacity
                       onPress={handleSaveName}
                       disabled={savingName || !nameText.trim()}
-                      style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 8, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
+                      style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 999, backgroundColor: colors.primary, opacity: savingName || !nameText.trim() ? 0.5 : 1 }}
                     >
                       <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
                         {savingName ? '...' : t('common.save')}
@@ -1049,11 +1049,6 @@ export default function SettingsScreen() {
           </>
         )}
 
-        {/* ── Section: Danger zone ── */}
-        <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.destructive, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-          {t('settings.sectionDanger')}
-        </Text>
-
         {/* Data export */}
         <Text style={[s.section, { color: colors.mutedForeground }]}>{t('settings.export')}</Text>
         <View style={s.card}>
@@ -1195,9 +1190,9 @@ export default function SettingsScreen() {
                 style={[s.deleteConfirmBtn, { backgroundColor: colors.destructive, opacity: deleteConfirmText.toUpperCase() !== (t('settings.deleteConfirmWord') ?? '').toUpperCase() || deletingAccount ? 0.5 : 1 }]}
               >
                 {deletingAccount ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
-                  <Text style={s.deleteConfirmText}>{t('settings.deletePermanently')}</Text>
+                  <Text style={[s.deleteConfirmText, { color: colors.primaryForeground }]}>{t('settings.deletePermanently')}</Text>
                 )}
               </PressableOpacity>
             </View>
@@ -1218,7 +1213,7 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 20, letterSpacing: -0.3, lineHeight: 28, fontFamily: fonts.headingSemi },
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, minHeight: 44,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, minHeight: 44,
   },
   saveBtnText: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   content: { padding: 16, gap: 12, paddingBottom: 100 },
@@ -1230,9 +1225,9 @@ const s = StyleSheet.create({
   radio: { width: 18, height: 18, borderRadius: 9 },
   radioEmpty: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
   proBadge: { fontSize: 13, lineHeight: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
-  upgradeBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  input: { borderRadius: 8, paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, lineHeight: 20, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
-  changePwBtn: { borderRadius: 8, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
+  upgradeBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999 },
+  input: { borderRadius: 20, paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, lineHeight: 20, borderWidth: StyleSheet.hairlineWidth, fontFamily: fonts.body },
+  changePwBtn: { borderRadius: 999, paddingVertical: 16, alignItems: 'center', minHeight: 48 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, padding: 16, marginTop: 16, borderBottomWidth: StyleSheet.hairlineWidth,
@@ -1254,7 +1249,7 @@ const s = StyleSheet.create({
   deleteCard: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 16,
+    borderRadius: 28,
     padding: 20,
     gap: 12,
   },
@@ -1282,7 +1277,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   deleteInput: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -1297,7 +1292,7 @@ const s = StyleSheet.create({
   },
   deleteCancelBtn: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 999,
     paddingVertical: 12,
     alignItems: 'center',
   },
@@ -1309,7 +1304,7 @@ const s = StyleSheet.create({
   },
   deleteConfirmBtn: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 999,
     paddingVertical: 12,
     alignItems: 'center',
   },
@@ -1317,7 +1312,7 @@ const s = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: '600',
-    color: '#FFFFFF',
+    // color set via inline style with colors.primaryForeground
     fontFamily: fonts.bodySemi,
   },
 })

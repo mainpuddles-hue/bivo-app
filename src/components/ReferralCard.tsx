@@ -23,7 +23,7 @@ const TIER_ICONS: Record<number, React.ComponentType<any>> = {
 }
 
 const TIER_COLORS: Record<number, string> = {
-  1: '#10B981',
+  1: '#2D7A4F',
   3: '#3B82F6',
   5: '#F59E0B',
   10: '#8E44AD',
@@ -217,7 +217,7 @@ export function ReferralCard({ userId }: ReferralCardProps) {
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -243,7 +243,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
   },
   codeLeft: {
@@ -309,7 +309,7 @@ const s = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
   },
   tierIconCircle: {

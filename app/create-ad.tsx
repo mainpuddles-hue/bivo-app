@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 8, paddingBottom: 64 },
-  label: { fontSize: 13, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
+  label: { fontSize: 13, marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   ctaChip: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
-  ctaChipText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  ctaChipText: { fontSize: 13, fontFamily: fonts.bodyMedium },
   pickerBtn: { justifyContent: 'center' },
   neighborhoodList: {
     borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
@@ -503,23 +503,23 @@ const styles = StyleSheet.create({
   durationRow: { flexDirection: 'row', gap: 12 },
   durationCard: {
     flex: 1, borderRadius: 16, borderWidth: 1.5,
-    padding: 16, alignItems: 'center', gap: 2,
+    padding: 16, alignItems: 'center', gap: 4,
   },
-  durationDays: { fontSize: 24, fontWeight: '800', fontFamily: fonts.heading },
+  durationDays: { fontSize: 24, fontFamily: fonts.heading },
   durationLabel: { fontSize: 12, fontFamily: fonts.body },
-  durationPrice: { fontSize: 13, fontWeight: '600', marginTop: 4, fontFamily: fonts.bodySemi },
+  durationPrice: { fontSize: 13, marginTop: 4, fontFamily: fonts.bodySemi },
   priceCard: {
     borderRadius: 16, borderWidth: StyleSheet.hairlineWidth,
     padding: 16, gap: 4,
   },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   priceLabel: { fontSize: 14, fontFamily: fonts.body },
-  priceValue: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading },
-  proDiscount: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
+  priceValue: { fontSize: 18, fontFamily: fonts.heading },
+  proDiscount: { fontSize: 12, fontFamily: fonts.bodySemi },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 16, marginTop: 8, minHeight: 48,
   },
-  submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
+  submitText: { fontSize: 16, fontFamily: fonts.bodySemi },
   iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8, fontFamily: fonts.body },
 })

@@ -12,8 +12,8 @@ import type { CityEvent } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
 
 const CITY_EVENT_COLORS: Record<string, string> = {
-  culture: '#8E44AD', music: '#E91E63', sport: '#27AE60', family: '#FF9800',
-  food: '#E74C3C', nature: '#4CAF50', education: '#2196F3', theatre: '#9C27B0',
+  culture: '#8E44AD', music: '#E91E63', sport: '#2B8A62', family: '#FF9800',
+  food: '#E74C3C', nature: '#2B8A62', education: '#2196F3', theatre: '#9C27B0',
   exhibition: '#795548', festival: '#FF5722', market: '#FF9800', other: '#607D8B',
 }
 
@@ -26,7 +26,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
   const { locale } = useI18n()
   const router = useRouter()
 
-  const catColor = CITY_EVENT_COLORS[event.category] || '#607D8B'
+  const catColor = CITY_EVENT_COLORS[event.category] || colors.mutedForeground
   const [imageError, setImageError] = useState(false)
 
   return (
@@ -74,9 +74,9 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
 
 const styles = StyleSheet.create({
   todayEventCard: {
-    flexDirection: 'row', alignItems: 'center', borderRadius: 16,
+    flexDirection: 'row', alignItems: 'center', borderRadius: 20,
     overflow: 'hidden', gap: 12, paddingRight: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
   todayEventImage: { width: 56, height: 56 },

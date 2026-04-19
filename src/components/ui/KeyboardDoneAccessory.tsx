@@ -30,7 +30,7 @@ export function KeyboardDoneAccessory() {
       <View style={[
         styles.bar,
         {
-          backgroundColor: isDark ? colors.card : '#F5F5F7',
+          backgroundColor: isDark ? colors.card : colors.muted,
           borderTopColor: colors.border,
         },
       ]}>

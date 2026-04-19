@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { Image } from 'expo-image'
-import { CheckCheck, Bell, MessageCircle, Star, Package, UserPlus, CalendarDays, ChevronDown, ChevronUp, LogIn, X, RefreshCw } from 'lucide-react-native'
+import { CheckCheck, Bell, ChevronDown, ChevronUp, LogIn, X, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -345,7 +345,7 @@ function NotificationsScreenInner() {
       </ScrollView>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 12, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchNotifications() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20, backgroundColor: `${colors.destructive}10` }}>
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
         </PressableOpacity>
@@ -507,18 +507,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
+  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
   markAllReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  markAllReadText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  markAllReadText: { fontSize: 12, fontFamily: fonts.bodyMedium },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
   filterChip: {
-    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
+    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    minHeight: 32, justifyContent: 'center', alignItems: 'center',
+    minHeight: 44, justifyContent: 'center', alignItems: 'center',
   },
-  filterText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 18 },
+  filterText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
   sectionHeader: { paddingHorizontal: 16, paddingVertical: 6 },
-  sectionTitle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
+  sectionTitle: { fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
   notifRow: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     paddingHorizontal: 16, paddingVertical: 14,
@@ -526,24 +526,24 @@ const styles = StyleSheet.create({
   notifAvatar: {},
   avatar: { width: 36, height: 36, borderRadius: 18 },
   avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
-  notifContent: { flex: 1, gap: 3 },
+  avatarInitial: { fontSize: 15, fontFamily: fonts.bodySemi },
+  notifContent: { flex: 1, gap: 4 },
   notifTitleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  notifTitle: { fontSize: 14, fontWeight: '400', lineHeight: 19, fontFamily: fonts.body, flex: 1 },
-  notifTitleUnread: { fontWeight: '600' },
-  notifBody: { fontSize: 13, lineHeight: 17, fontFamily: fonts.body },
-  notifTime: { fontSize: 11, lineHeight: 19, fontFamily: fonts.body, flexShrink: 0 },
+  notifTitle: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, flex: 1 },
+  notifTitleUnread: { fontFamily: fonts.bodySemi },
+  notifBody: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
+  notifTime: { fontSize: 11, lineHeight: 20, fontFamily: fonts.body, flexShrink: 0 },
   notifDeleteBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   groupExpandBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2,
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-start', minHeight: 44, minWidth: 44,
   },
-  groupBadgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  groupBadgeText: { fontSize: 11, fontFamily: fonts.bodySemi },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: 64 },
   // Expanded group styles
-  expandedGroup: { marginLeft: 64, marginRight: 16, borderRadius: 12, paddingVertical: 4, marginBottom: 4 },
+  expandedGroup: { marginLeft: 64, marginRight: 16, borderRadius: 20, paddingVertical: 4, marginBottom: 4 },
   expandedItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  expandedDot: { width: 5, height: 5, borderRadius: 2.5 },
-  expandedName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, flex: 1 },
+  expandedDot: { width: 4, height: 4, borderRadius: 2 },
+  expandedName: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
   expandedAction: { fontSize: 12, fontFamily: fonts.body, flex: 1 },
 })

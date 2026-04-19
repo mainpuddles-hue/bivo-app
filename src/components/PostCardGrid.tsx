@@ -1,26 +1,20 @@
 /**
- * PostCardGrid — 2-col Threads-style feed card.
+ * PostCardGrid — 2-col Pinterest-style feed card.
  *
- * Layout (Threads pattern, top-to-bottom):
- *   1. Header: avatar + name + time + ⋯ menu
- *   2. Content: title, description, image (if any)
- *   3. Actions: ♥ count · 💬 count · 🔖 save
+ * Layout (Helsinki Monochrome mockup 05):
+ *   - image-hero: photo fills top, frosted-glass category pill overlaid,
+ *     title + mini avatar + meta below
+ *   - event: ink background, inverted text, calendar + category, attendee hint
+ *   - text: warm tint background (#F0EEE9), uppercase category, large title, mini avatar + meta
  *
- * Palette: pure black canvas, hairline borders only, single emerald accent.
- * Typography as primary visual (weight 800 on titles). No shadows.
- *
- * Variants (adaptive density):
- * - image-hero: photo → title → actions (shorter meta)
- * - event: compact date pill → title → description → actions
- * - text-rich: 6 lines of description (no image)
- * - text-compact: 3 lines of description (short posts)
+ * No Threads-style header. Photo-first, content-dense, Pinterest masonry.
  */
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
+import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { Heart, MessageCircle, MapPin, Calendar, Clock, User, MoreHorizontal, BadgeCheck } from 'lucide-react-native'
+import { Heart, Calendar, Clock, User } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
@@ -30,18 +24,15 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatPrice, formatEventDateShort } from '@/lib/format'
 import { isHumanAction } from '@/lib/abuseDetection'
 import { getImageUrl } from '@/lib/imageUtils'
-import { categoryCardShadow } from '@/lib/shadows'
 import type { Post, PostType } from '@/lib/types'
 
-type CardVariant = 'image-hero' | 'event' | 'text-rich' | 'text-compact'
+type CardVariant = 'image-hero' | 'event' | 'text'
 
 export function getCardVariant(post: Post, hasImageOverride?: boolean): CardVariant {
   const hasImage = hasImageOverride ?? !!post.image_url
   if (post.type === 'tapahtuma') return 'event'
   if (hasImage) return 'image-hero'
-  const descLen = (post.description ?? '').length
-  if (descLen > 150) return 'text-rich'
-  return 'text-compact'
+  return 'text'
 }
 
 interface PostCardGridProps {
@@ -50,6 +41,10 @@ interface PostCardGridProps {
   onInteraction?: (postId: string, type: 'view' | 'click' | 'like' | 'save' | 'message' | 'skip' | 'hide') => void
   index?: number
 }
+
+// Warm tint for text-only cards (from mockup)
+const WARM_TINT = '#F0EEE9'
+const WARM_TINT_DARK = '#2A2825'
 
 export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0 }: PostCardGridProps) {
   const { colors, isDark } = useTheme()
@@ -64,6 +59,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const likingRef = useRef(false)
   const likeAnim = useRef(new Animated.Value(1)).current
 
+  // Sync state when post prop changes (e.g., feed refresh)
   useEffect(() => {
     if (!likingRef.current) {
       if (post.is_liked !== undefined) setLiked(post.is_liked)
@@ -80,22 +76,9 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const user = post.user
   const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : (user?.name ?? '')
   const timeAgo = post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''
-  const isVerified = !isAnonymous && (post.user?.user_badges?.some((b: any) => b.badge_type === 'verified') ?? false)
 
-  // Entrance animation
-  const entranceAnim = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    if (reduceMotion) { entranceAnim.setValue(1); return }
-    const delay = Math.min(index * 30, 150)
-    const timer = setTimeout(() => {
-      try {
-        Animated.spring(entranceAnim, { toValue: 1, friction: 8, tension: 100, useNativeDriver: true }).start()
-      } catch {}
-    }, delay)
-    return () => clearTimeout(timer)
-  }, [entranceAnim, reduceMotion, index])
-  const entranceOpacity = entranceAnim
-  const entranceTranslateY = entranceAnim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] })
+  // Vary image height for masonry feel — alternate tall/short based on index
+  const imageHeight = (index % 3 === 0) ? 180 : (index % 3 === 1) ? 140 : 110
 
   const a11yLabel = useMemo(() => {
     const parts: string[] = []
@@ -145,138 +128,106 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     } finally { likingRef.current = false }
   }
 
-  // ── Threads-style header: Avatar + Name + Time + ⋯ ──
-  const Header = (
-    <View style={styles.header}>
+  // ── Mini avatar + meta footer (shared across variants) ──
+  const MetaFooter = (metaColor: string) => (
+    <View style={styles.metaRow}>
       {user?.avatar_url && !isAnonymous ? (
         <Image
           source={{ uri: getImageUrl(user.avatar_url, 'thumbnail')! }}
-          style={styles.avatar}
+          style={styles.miniAvatar}
           contentFit="cover"
           cachePolicy="memory-disk"
           recyclingKey={user.avatar_url}
         />
       ) : (
-        <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted }]}>
-          {isAnonymous ? (
-            <User size={14} color={colors.mutedForeground} />
-          ) : (
-            <Text style={[styles.avatarInitial, { color: colors.foreground }]}>
-              {(authorName || '?').charAt(0).toUpperCase()}
-            </Text>
-          )}
+        <View style={[styles.miniAvatar, styles.miniAvatarFallback, { backgroundColor: `${metaColor}20` }]}>
+          <User size={8} color={metaColor} />
         </View>
       )}
-      <View style={styles.headerNameBlock}>
-        <View style={styles.authorNameRow}>
-          <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>
-            {authorName}
-          </Text>
-          {isVerified && <BadgeCheck size={12} color={colors.primary} strokeWidth={2.5} />}
-        </View>
-        {timeAgo && (
-          <Text style={[styles.timeText, { color: colors.mutedForeground }]} numberOfLines={1}>
-            {timeAgo}
-          </Text>
-        )}
-      </View>
-      <View importantForAccessibility="no-hide-descendants">
-        <MoreHorizontal size={14} color={colors.mutedForeground} strokeWidth={2} />
-      </View>
+      <Text style={[styles.metaText, { color: metaColor }]} numberOfLines={1}>
+        {authorName}{post.location ? ` · ${post.location}` : ''}
+      </Text>
     </View>
   )
 
-  // ── Threads-style category label: tiny dot + muted uppercase text ──
-  const CategoryLabel = category ? (
-    <View style={styles.categoryRow} accessible={false}>
-      <View style={[styles.categoryDot, { backgroundColor: category.color }]} accessible={false} importantForAccessibility="no" />
-      <Text style={[styles.categoryText, { color: colors.mutedForeground }]} numberOfLines={1}>
-        {t(category.label)}
-      </Text>
-    </View>
-  ) : null
-
-  // ── Threads-style action row: heart + comment (no save for now, keep minimal) ──
-  const ActionRow = (
-    <View style={styles.actions}>
+  // ── Like pill (overlaid on image cards, inline on others) ──
+  const LikePill = (overlaid: boolean) => {
+    if (!overlaid && likeCount === 0 && !liked) return null
+    return (
       <Pressable
         onPress={(e) => { e?.stopPropagation?.(); handleLike() }}
         hitSlop={8}
         accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
         accessibilityState={{ selected: liked }}
-        style={styles.action}
+        style={({ pressed }) => [
+          overlaid ? styles.likePillOverlaid : styles.likePillInline,
+          pressed && { opacity: 0.7 },
+        ]}
       >
         <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
           <Heart
-            size={15}
-            color={liked ? colors.destructive : colors.foreground}
-            fill={liked ? colors.destructive : 'transparent'}
-            strokeWidth={1.8}
+            size={10}
+            color={overlaid ? '#fff' : (liked ? colors.destructive : colors.mutedForeground)}
+            fill={liked ? (overlaid ? '#fff' : colors.destructive) : 'transparent'}
+            strokeWidth={2}
           />
         </Animated.View>
         {likeCount > 0 && (
-          <Text style={[styles.actionText, { color: liked ? colors.destructive : colors.mutedForeground }]}>
+          <Text style={[styles.likePillText, { color: overlaid ? '#fff' : (liked ? colors.destructive : colors.mutedForeground) }]}>
             {likeCount}
           </Text>
         )}
       </Pressable>
-      <View
-        style={styles.action}
-        accessible
-        accessibilityLabel={`${post.comment_count ?? 0} ${t('post.comments')}`}
-        importantForAccessibility="yes"
-      >
-        <MessageCircle size={15} color={colors.foreground} strokeWidth={1.8} />
-        {(post.comment_count ?? 0) > 0 && (
-          <Text style={[styles.actionText, { color: colors.mutedForeground }]} accessible={false}>
-            {post.comment_count}
-          </Text>
-        )}
-      </View>
-    </View>
-  )
+    )
+  }
 
-  // Card shell — filled card with category-tinted shadow for depth
-  const cardStyle = [
-    styles.card,
-    {
-      backgroundColor: colors.card,
-      borderColor: colors.border,
-    },
-    category && categoryCardShadow(category.color, isDark),
-    isExpired && { opacity: 0.55 },
-  ]
+  const pressedStyle = { opacity: 0.92, transform: [{ scale: 0.98 }] as const }
 
-  // ─── image-hero ───
+  // ─── image-hero: photo-first Pinterest card ───
   if (variant === 'image-hero') {
     return (
-      <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
+      <View style={{ flex: 1 }}>
         <Pressable
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
+          style={({ pressed }) => [
+            styles.card,
+            { backgroundColor: colors.card, borderColor: colors.border },
+            isExpired && { opacity: 0.55 },
+            pressed && pressedStyle,
+          ]}
         >
-          <View style={styles.content}>
-            {Header}
-            <View style={styles.imageWrap}>
-              <Image
-                source={{ uri: getImageUrl(post.image_url, 'medium')! }}
-                style={styles.image}
-                contentFit="cover"
-                transition={250}
-                onError={() => setImgError(true)}
-                cachePolicy="memory-disk"
-                recyclingKey={post.image_url!}
-                accessibilityLabel={post.title}
-              />
-              {isUrgent && (
-                <View style={styles.urgentPill}>
-                  <Clock size={9} color="#fff" strokeWidth={2.5} />
-                  <Text style={styles.urgentText}>{t('postCard.urgent')}</Text>
-                </View>
-              )}
-            </View>
+          {/* Photo with overlaid badges */}
+          <View style={[styles.imageWrap, { height: imageHeight, backgroundColor: colors.muted }]}>
+            <Image
+              source={{ uri: getImageUrl(post.image_url, 'medium')! }}
+              style={styles.image}
+              contentFit="cover"
+              transition={250}
+              onError={() => setImgError(true)}
+              cachePolicy="memory-disk"
+              recyclingKey={post.image_url!}
+              accessibilityLabel={post.title}
+            />
+            {/* Category pill — frosted glass, top-left */}
+            {category && (
+              <View style={styles.categoryPill}>
+                <Text style={styles.categoryPillText}>{t(category.label)}</Text>
+              </View>
+            )}
+            {/* Urgent pill — top-right */}
+            {isUrgent && (
+              <View style={[styles.urgentPill, { backgroundColor: colors.destructive }]}>
+                <Clock size={9} color="#fff" strokeWidth={2.5} />
+                <Text style={styles.urgentText}>{t('postCard.urgent')}</Text>
+              </View>
+            )}
+            {/* Like count pill — top-right (if not urgent) */}
+            {!isUrgent && likeCount > 0 && LikePill(true)}
+          </View>
+          {/* Content below image */}
+          <View style={styles.imageCardContent}>
             <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
               {post.title}
             </Text>
@@ -287,285 +238,263 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
                   : formatPrice(post.service_price, locale)}
               </Text>
             )}
-            {CategoryLabel}
-            {ActionRow}
+            {MetaFooter(colors.mutedForeground)}
           </View>
         </Pressable>
-      </Animated.View>
+      </View>
     )
   }
 
-  // ─── event ───
+  // ─── event: ink background, inverted text ───
   if (variant === 'event') {
     return (
-      <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
+      <View style={{ flex: 1 }}>
         <Pressable
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
+          style={({ pressed }) => [
+            styles.card,
+            styles.eventCard,
+            { backgroundColor: colors.foreground },
+            isExpired && { opacity: 0.55 },
+            pressed && pressedStyle,
+          ]}
         >
-          <View style={styles.content}>
-            {Header}
-            <View style={styles.eventDateRow}>
-              <Calendar size={12} color={category?.color ?? colors.primary} strokeWidth={2} />
-              <Text style={[styles.eventDateText, { color: category?.color ?? colors.primary }]} numberOfLines={1}>
-                {post.event_date ? formatEventDateShort(post.event_date, locale) : t('events.eventPending')}
+          <View style={styles.eventContent}>
+            {/* Calendar + category */}
+            <View style={styles.eventCategoryRow}>
+              <Calendar size={11} color={isDark ? colors.mutedForeground : '#B8BCC0'} strokeWidth={2} />
+              <Text style={[styles.eventCategoryText, { color: isDark ? colors.mutedForeground : '#B8BCC0' }]}>
+                {t(category?.label ?? 'categories.tapahtuma')}
               </Text>
             </View>
-            <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
+            {/* Title */}
+            <Text style={[styles.eventTitle, { color: colors.background }]} numberOfLines={2}>
               {post.title}
             </Text>
-            {post.description && (
-              <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={2}>
-                {post.description}
-              </Text>
-            )}
-            {post.location && (
-              <View style={styles.locationRow}>
-                <MapPin size={10} color={colors.mutedForeground} strokeWidth={2} />
-                <Text style={[styles.meta, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {post.location}
-                </Text>
-              </View>
-            )}
-            {CategoryLabel}
-            {ActionRow}
+            {/* Date + location */}
+            <Text style={[styles.eventMeta, { color: isDark ? colors.mutedForeground : '#B8BCC0' }]} numberOfLines={1}>
+              {post.location ? `${post.location} · ` : ''}
+              {post.event_date ? formatEventDateShort(post.event_date, locale) : t('events.eventPending')}
+            </Text>
           </View>
         </Pressable>
-      </Animated.View>
+      </View>
     )
   }
 
-  // ─── text-rich ───
-  if (variant === 'text-rich') {
-    return (
-      <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
-        <Pressable
-          onPress={handlePress}
-          accessibilityRole="button"
-          accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
-        >
-          <View style={styles.content}>
-            {Header}
-            <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
-              {post.title}
-            </Text>
-            {post.description && (
-              <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={6}>
-                {post.description}
-              </Text>
-            )}
-            {CategoryLabel}
-            {ActionRow}
-          </View>
-        </Pressable>
-      </Animated.View>
-    )
-  }
-
-  // ─── text-compact ───
+  // ─── text: warm tint background, no image ───
   return (
-    <Animated.View style={{ flex: 1, opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
+    <View style={{ flex: 1 }}>
       <Pressable
         onPress={handlePress}
         accessibilityRole="button"
         accessibilityLabel={a11yLabel}
-        style={({ pressed }) => [cardStyle, pressed && { opacity: 0.92, transform: [{ scale: 0.98 }] }]}
+        style={({ pressed }) => [
+          styles.card,
+          { backgroundColor: isDark ? WARM_TINT_DARK : WARM_TINT, borderColor: colors.border },
+          isExpired && { opacity: 0.55 },
+          pressed && pressedStyle,
+        ]}
       >
-        <View style={styles.content}>
-          {Header}
-          <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
-            {post.title}
-          </Text>
-          {post.description && (
-            <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={3}>
-              {post.description}
+        <View style={styles.textContent}>
+          {/* Category label — uppercase, muted */}
+          {category && (
+            <Text style={[styles.textCategoryLabel, { color: colors.mutedForeground }]}>
+              {t(category.label)}
             </Text>
           )}
-          {CategoryLabel}
-          {ActionRow}
+          {/* Title — larger for text-only cards */}
+          <Text style={[styles.textTitle, { color: colors.foreground }]} numberOfLines={3}>
+            {post.title}
+          </Text>
+          {/* Meta footer */}
+          {MetaFooter(colors.mutedForeground)}
         </View>
       </Pressable>
-    </Animated.View>
+    </View>
   )
 })
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 10,
+    borderRadius: 18,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
   },
-  content: {
-    padding: 12,
-    gap: 8,
-  },
 
-  // ── Threads header ──
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  avatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-  },
-  avatarFallback: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    fontSize: 12,
-    fontWeight: '700',
-    fontFamily: fonts.bodySemi,
-  },
-  headerNameBlock: {
-    flex: 1,
-    minWidth: 0,
-  },
-  authorNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  authorName: {
-    fontSize: 12,
-    fontWeight: '700',
-    fontFamily: fonts.bodySemi,
-    letterSpacing: -0.1,
-    lineHeight: 15,
-  },
-  timeText: {
-    fontSize: 10,
-    fontFamily: fonts.body,
-    lineHeight: 13,
-    marginTop: 1,
-  },
-
-  // ── Image ──
+  // ── Image hero card ──
   imageWrap: {
     position: 'relative',
-    aspectRatio: 1,
-    borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#0A0A0C',
   },
   image: {
     width: '100%',
     height: '100%',
   },
+  categoryPill: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    ...Platform.select({
+      ios: { },
+      default: { },
+    }),
+  },
+  categoryPillText: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: '#1A1D1F',
+  },
   urgentPill: {
     position: 'absolute',
-    top: 6,
-    left: 6,
+    top: 8,
+    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
   urgentText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#fff',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
+  },
+  imageCardContent: {
+    padding: 10,
+    paddingTop: 10,
+    gap: 6,
   },
 
-  // ── Event date ──
-  eventDateRow: {
+  // ── Like pills ──
+  likePillOverlaid: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,0,0,0.55)',
   },
-  eventDateText: {
-    fontSize: 11,
-    fontWeight: '700',
+  likePillInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    minHeight: 44,
+    minWidth: 44,
+    paddingHorizontal: 2,
+  },
+  likePillText: {
+    fontSize: 10,
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
   },
 
   // ── Typography ──
   title: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 13,
+    fontWeight: '600',
     fontFamily: fonts.heading,
-    letterSpacing: -0.3,
+    letterSpacing: -0.1,
+    lineHeight: 16,
+  },
+  price: {
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 15,
+  },
+
+  // ── Mini avatar + meta (shared) ──
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  miniAvatar: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  miniAvatarFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  metaText: {
+    fontSize: 10.5,
+    fontFamily: fonts.body,
+    lineHeight: 13,
+    flex: 1,
+  },
+
+  // ── Event card (ink bg, inverted) ──
+  eventCard: {
+    borderWidth: 0,
+  },
+  eventContent: {
+    padding: 14,
+    gap: 8,
+  },
+  eventCategoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  eventCategoryText: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  eventTitle: {
+    fontSize: 15.5,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.25,
     lineHeight: 19,
   },
-  description: {
-    fontSize: 13,
-    lineHeight: 17,
-    fontFamily: fonts.body,
-  },
-  meta: {
+  eventMeta: {
     fontSize: 11,
     fontFamily: fonts.body,
     lineHeight: 14,
   },
-  price: {
-    fontSize: 14,
-    fontWeight: '700',
-    fontFamily: fonts.bodySemi,
-    lineHeight: 17,
-  },
 
-  // ── Category label (muted, Threads-style dot) ──
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  // ── Text card (warm tint bg) ──
+  textContent: {
+    padding: 14,
+    gap: 6,
   },
-  categoryDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  categoryText: {
-    fontSize: 10,
+  textCategoryLabel: {
+    fontSize: 9.5,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.3,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    lineHeight: 12,
+    marginBottom: 2,
   },
-
-  // ── Location ──
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-
-  // ── Action row — 36pt minimum for touch accessibility ──
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginTop: 4,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(128,128,128,0.12)',
-  },
-  action: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    minHeight: 36,
-    paddingHorizontal: 2,
-  },
-  actionText: {
-    fontSize: 12,
+  textTitle: {
+    fontSize: 15.5,
     fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-    lineHeight: 15,
+    fontFamily: fonts.heading,
+    letterSpacing: -0.25,
+    lineHeight: 19,
   },
 })

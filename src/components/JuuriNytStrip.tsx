@@ -23,11 +23,11 @@ function getTimeLeft(expiresAt: string): { label: string; isUrgent: boolean } {
   return { label: `${minutes}min`, isUrgent: minutes < 30 }
 }
 
-function getUrgencyColor(expiresAt: string): string {
+function getUrgencyColor(expiresAt: string, colors: { destructive: string; pro: string; secondary: string }): string {
   const diff = new Date(expiresAt).getTime() - Date.now()
-  if (diff <= 1800000) return '#EF4444'   // < 30min: red
-  if (diff <= 3600000) return '#F59E0B'   // < 1h: amber
-  return '#E8A050'                         // > 1h: orange
+  if (diff <= 1800000) return colors.destructive   // < 30min: red
+  if (diff <= 3600000) return colors.pro            // < 1h: amber
+  return colors.secondary                           // > 1h: orange
 }
 
 function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
@@ -74,7 +74,7 @@ function JuuriNytStripInner({ posts }: JuuriNytStripProps) {
       >
         {urgentPosts.map(post => {
           const { label, isUrgent } = getTimeLeft(post.expires_at!)
-          const urgencyColor = getUrgencyColor(post.expires_at!)
+          const urgencyColor = getUrgencyColor(post.expires_at!, colors)
           const category = CATEGORIES[post.type as PostType]
           const CatIcon = category ? CATEGORY_ICON_MAP[category.icon] : null
 

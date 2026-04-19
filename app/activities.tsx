@@ -65,7 +65,7 @@ const CATEGORIES: CategoryDef[] = [
   { key: 'social', labelKey: 'activity.categorySocial', color: '#8B5CF6', Icon: Users },
   { key: 'hobby', labelKey: 'activity.categoryHobby', color: '#F59E0B', Icon: Palette },
   { key: 'childcare', labelKey: 'activity.categoryChildcare', color: '#EC4899', Icon: Baby },
-  { key: 'neighborhood', labelKey: 'activity.categoryNeighborhood', color: '#10B981', Icon: Home },
+  { key: 'neighborhood', labelKey: 'activity.categoryNeighborhood', color: '#2D7A4F', Icon: Home },
   { key: 'creative', labelKey: 'activity.categoryCreative', color: '#6366F1', Icon: Sparkles },
   { key: 'health', labelKey: 'activity.categoryHealth', color: '#14B8A6', Icon: HeartPulse },
   { key: 'other', labelKey: 'activity.categoryOther', color: '#6B7280', Icon: Grid2x2 },
@@ -409,7 +409,7 @@ function ActivitiesScreenInner() {
 
   // ── Render Activity Card ──
   const renderActivity = useCallback(({ item }: { item: Activity }) => {
-    const catColor = CATEGORY_COLOR_MAP[item.category] ?? '#6B7280'
+    const catColor = CATEGORY_COLOR_MAP[item.category] ?? colors.mutedForeground
     const CatIcon = CATEGORY_ICON_MAP[item.category] ?? Grid2x2
     const isFull = item.max_members ? (item.member_count ?? 0) >= item.max_members : false
 

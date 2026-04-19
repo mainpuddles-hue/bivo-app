@@ -182,7 +182,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
               accessibilityLabel={t('map.viewPost')}
             >
               <ExternalLink size={16} color={colors.primaryForeground} />
-              <Text style={styles.detailActionText}>{t('map.viewPost')}</Text>
+              <Text style={[styles.detailActionText, { color: colors.primaryForeground }]}>{t('map.viewPost')}</Text>
             </Pressable>
           )}
           {item.kind === 'city_event' && (item.sourceData as CityEvent).info_url && (
@@ -193,7 +193,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
               accessibilityLabel={t('map.moreInfo')}
             >
               <ExternalLink size={16} color={colors.primaryForeground} />
-              <Text style={styles.detailActionText}>{t('map.moreInfo')}</Text>
+              <Text style={[styles.detailActionText, { color: colors.primaryForeground }]}>{t('map.moreInfo')}</Text>
             </Pressable>
           )}
           {item.kind === 'place' && (item.sourceData as LocalPlace).website && (
@@ -204,7 +204,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
               accessibilityLabel={t('map.website')}
             >
               <ExternalLink size={16} color={colors.primaryForeground} />
-              <Text style={styles.detailActionText}>{t('map.website')}</Text>
+              <Text style={[styles.detailActionText, { color: colors.primaryForeground }]}>{t('map.website')}</Text>
             </Pressable>
           )}
           <Pressable
@@ -302,8 +302,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
+    borderRadius: 20,
+    shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 3,
@@ -313,6 +313,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: fonts.bodySemi,
     lineHeight: 21,
-    color: '#FFF',
+    // color set via inline style with colors.primaryForeground or colors.accentForeground
   },
 })

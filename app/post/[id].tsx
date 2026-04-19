@@ -8,7 +8,7 @@ import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
-  Send, Flag, Clock, TrendingUp,
+  Send, Flag, Clock,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
   ShoppingBag, Star, Shield,
 } from 'lucide-react-native'
@@ -32,7 +32,6 @@ import { TrustBadge } from '@/components/TrustBadge'
 import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
-import { CATEGORY_ICON_MAP } from '@/lib/categoryIcons'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PostDetailSkeleton } from '@/components/SkeletonLoaders'
 import { isValidUUID } from '@/lib/validation'
@@ -40,8 +39,6 @@ import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
-import { useBoosts } from '@/hooks/useBoosts'
-import { BoostBadge } from '@/components/BoostBadge'
 import { ModalCloseButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType, PostComment } from '@/lib/types'
@@ -454,43 +451,6 @@ function PostDetailScreenInner() {
   }, [post?.expires_at, t])
 
   const isAuthor = userId !== null && post?.user_id === userId
-  const boosts = useBoosts(userId)
-  const [boosting, setBoosting] = useState(false)
-
-  // Check if the current post has an active boost
-  const isPostBoosted = post?.is_boosted || boosts.activeBoosts.some(b => b.post_id === id)
-
-  const handleBoostPost = useCallback(async () => {
-    if (!id || !userId || boosting) return
-    if (boosts.balance <= 0) {
-      Alert.alert(t('boost.title'), t('boost.noBalance'), [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('boost.buyBoosts'), onPress: () => router.push('/boosts') },
-      ])
-      return
-    }
-    setBoosting(true)
-    try {
-      const success = await boosts.useBoostOnPost(id)
-      if (success) {
-        setPost(prev => prev ? { ...prev, is_boosted: true } : prev)
-        toast.show({ message: t('boost.boostSuccess'), type: 'success' })
-      }
-    } finally {
-      setBoosting(false)
-    }
-  }, [id, userId, boosting, boosts, t, router])
-
-  // Get remaining boost time for display
-  const activeBoostForPost = boosts.activeBoosts.find(b => b.post_id === id)
-  const boostRemainingText = activeBoostForPost ? (() => {
-    const remaining = new Date(activeBoostForPost.boost_end).getTime() - Date.now()
-    if (remaining <= 0) return null
-    const hours = Math.floor(remaining / 3600000)
-    if (hours < 24) return `${hours}h`
-    const days = Math.floor(hours / 24)
-    return `${days}d ${hours % 24}h`
-  })() : null
 
   const handleDelete = useCallback(() => {
     if (!post) return
@@ -866,7 +826,7 @@ function PostDetailScreenInner() {
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
           <Text style={[styles.notFound, { color: colors.mutedForeground, marginBottom: 16 }]}>{loadError}</Text>
-          <PressableOpacity onPress={() => loadPost()} style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.primary, borderRadius: 8 }} accessibilityRole="button" accessibilityLabel={t('common.retry')}>
+          <PressableOpacity onPress={() => loadPost()} style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.primary, borderRadius: 999 }} accessibilityRole="button" accessibilityLabel={t('common.retry')}>
             <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodyMedium, fontSize: 15 }}>{t('common.retry')}</Text>
           </PressableOpacity>
         </View>
@@ -984,24 +944,6 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {/* Boost badge / button — gated behind FEATURES.BOOSTS */}
-          {FEATURES.BOOSTS && isAuthor && !isPostBoosted && post.is_active && (
-            <PressableOpacity
-              onPress={handleBoostPost}
-              disabled={boosting}
-              style={[styles.boostBtn, { backgroundColor: `${colors.accent}15`, borderColor: `${colors.accent}40` }]}
-              accessibilityRole="button"
-              accessibilityLabel={t('boost.boostThis')}
-            >
-              <TrendingUp size={14} color={colors.accent} />
-              <Text style={[styles.boostBtnText, { color: colors.accent }]}>{t('boost.boostThis')}</Text>
-              {boosting && <ActivityIndicator size="small" color={colors.accent} style={{ marginLeft: 4 }} />}
-            </PressableOpacity>
-          )}
-          {FEATURES.BOOSTS && isPostBoosted && (
-            <BoostBadge subtitle={boostRemainingText ? t('boost.boostEndsIn', { time: boostRemainingText }) : undefined} />
-          )}
-
           {post.is_pro_listing && (
             <View style={[styles.proBadge, { backgroundColor: `${colors.pro}20` }]}>
               <Crown size={14} color={colors.pro} /><Text style={[styles.proText, { color: colors.pro }]}>Pro</Text>
@@ -1022,8 +964,8 @@ function PostDetailScreenInner() {
 
           {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
-              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 16, backgroundColor: colors.purpleMuted }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.purple, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
+              <View style={{ paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, backgroundColor: colors.purpleMuted }}>
+                <Text style={{ fontSize: 12, color: colors.purple, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                   {(() => {
                     const condTag = post.tags?.find((tag: string) => tag.startsWith('condition_'))
                     if (!condTag) return ''
@@ -1036,7 +978,7 @@ function PostDetailScreenInner() {
           )}
 
           {priceContext && (post.daily_fee !== null || post.service_price !== null) && (
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 15, fontFamily: fonts.body }}>
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 16, fontFamily: fonts.body }}>
               {t('post.priceContext', { min: priceContext.min, max: priceContext.max })}
             </Text>
           )}
@@ -1083,7 +1025,7 @@ function PostDetailScreenInner() {
 
           {/* Safety tip for item exchange posts */}
           {isItemExchange && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12 }}>
               <Shield size={14} color={colors.mutedForeground} strokeWidth={1.8} />
               <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, flex: 1, lineHeight: 16 }}>
                 {t('post.safetyTip') || 'Tapaa julkisella paikalla. Älä jaa henkilökohtaisia tietoja ennen tapaamista.'}
@@ -1146,7 +1088,7 @@ function PostDetailScreenInner() {
                 {authorRating && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                     <Star size={12} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground, fontFamily: fonts.bodySemi }}>
+                    <Text style={{ fontSize: 13, color: colors.foreground, fontFamily: fonts.bodySemi, lineHeight: 18 }}>
                       {authorRating.avg}
                     </Text>
                     <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body }}>
@@ -1175,12 +1117,12 @@ function PostDetailScreenInner() {
                       {rp.image_url ? (<Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />) : (
                         <View style={[styles.relatedImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
                           {rpCat && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: rpCat.color, marginBottom: 4 }} />}
-                          <Text style={{ fontSize: 14, fontWeight: '700', color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
+                          <Text style={{ fontSize: 14, fontFamily: fonts.heading, color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
                         </View>
                       )}
                       <View style={styles.relatedCardBody}>
                         <Text style={[styles.relatedCardTitle, { color: colors.foreground }]} numberOfLines={2}>{rp.title}</Text>
-                        {rp.location && (<View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><MapPin size={10} color={colors.mutedForeground} /><Text style={[styles.relatedCardLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{rp.location}</Text></View>)}
+                        {rp.location && (<View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><MapPin size={10} color={colors.mutedForeground} /><Text style={[styles.relatedCardLocation, { color: colors.mutedForeground }]} numberOfLines={1}>{rp.location}</Text></View>)}
                       </View>
                     </PressableOpacity>
                   )
@@ -1281,7 +1223,7 @@ function PostDetailScreenInner() {
               )}
               {bookingDays > 0 && (<Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>{t('rental.confirmationNote')}</Text>)}
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
-              <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
+              <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
               <PressableOpacity onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
                 style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.primary, marginTop: 16, marginBottom: 8 }]}>
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
@@ -1351,11 +1293,11 @@ function PostDetailScreenInner() {
               </View>
             )}
 
-            <Text style={{ fontSize: 12, fontFamily: fonts.body, color: colors.mutedForeground, lineHeight: 17, marginTop: 4 }}>{t('service.escrowNote')}</Text>
+            <Text style={{ fontSize: 12, fontFamily: fonts.body, color: colors.mutedForeground, lineHeight: 16, marginTop: 4 }}>{t('service.escrowNote')}</Text>
 
             {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
 
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 15, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
+            <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
 
             <PressableOpacity
               onPress={handlePayForService}
@@ -1480,28 +1422,26 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 100 },
   heroImage: { width: '100%', aspectRatio: 4 / 3 },
   body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 16 },
-  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16 },
+  closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
   closedBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   authorActionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
-  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 36 },
+  authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, minHeight: 44 },
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 
   // Category — Threads-style dot + muted uppercase label
   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
-  categoryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600', letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 12 },
+  categoryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 12 },
 
-  expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
-  expirationText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  title: { fontSize: 24, fontFamily: fonts.heading, lineHeight: 30, letterSpacing: -0.5, fontWeight: '800' },
-  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, alignSelf: 'flex-start' },
+  expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
+  expirationText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16 },
+  title: { fontSize: 24, fontFamily: fonts.heading, lineHeight: 32, letterSpacing: -0.5 },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  boostBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, borderWidth: 1, alignSelf: 'flex-start' },
-  boostBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   description: { fontSize: 16, fontFamily: fonts.body, lineHeight: 24 },
-  communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
+  communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   locationText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
@@ -1516,73 +1456,73 @@ const styles = StyleSheet.create({
   authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   authorCardInfo: { flex: 1, gap: 4 },
   authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'nowrap' },
-  authorName: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '700', lineHeight: 20, flexShrink: 1 },
+  authorName: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20, flexShrink: 1 },
   authorMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   authorMetaDivider: { fontSize: 13, lineHeight: 18 },
   authorTimeAgo: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   authorLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   authorNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-  followBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, backgroundColor: 'transparent' },
+  followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, borderWidth: StyleSheet.hairlineWidth, backgroundColor: 'transparent' },
   followBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
 
-  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100, lineHeight: 22 },
+  notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100, lineHeight: 24 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  commentTitle: { fontSize: 15, fontFamily: fonts.headingSemi, fontWeight: '700', lineHeight: 20 },
+  commentTitle: { fontSize: 15, fontFamily: fonts.heading, lineHeight: 20 },
   commentRow: { flexDirection: 'row', gap: 12, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   commentAvatar: { width: 36, height: 36, borderRadius: 18 },
   commentBody: { flex: 1, gap: 4 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  commentName: { fontSize: 13, fontFamily: fonts.bodySemi, fontWeight: '700', lineHeight: 18, flex: 1 },
+  commentName: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18, flex: 1 },
   commentTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   commentContent: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
-  replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, minHeight: 32, paddingVertical: 4 },
+  replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, minHeight: 44, paddingVertical: 8 },
   replyBtnText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   replyRow: { marginLeft: 48 },
   replyLine: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, borderRadius: 1 },
   replyAvatar: { width: 28, height: 28, borderRadius: 14 },
   showRepliesBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 58, marginTop: 4 },
   showRepliesText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, borderWidth: 1 },
+  replyIndicator: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
   replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
+  commentInput: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8 },
   commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36, lineHeight: 20 },
   commentSendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 8, maxHeight: '85%' },
+  modalContent: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, gap: 8, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi, lineHeight: 24 },
   modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8, lineHeight: 18 },
-  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body, minHeight: 44, marginTop: 4, lineHeight: 20 },
+  modalInput: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: fonts.body, minHeight: 44, marginTop: 4, lineHeight: 20 },
   modalTextArea: { minHeight: 120 },
-  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 16, marginTop: 16, minHeight: 48 },
-  saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
+  saveBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 999, marginTop: 16, minHeight: 48 },
+  saveBtnText: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 24 },
   relatedSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  relatedTitle: { fontSize: 15, fontFamily: fonts.headingSemi, fontWeight: '700', lineHeight: 20 },
+  relatedTitle: { fontSize: 15, fontFamily: fonts.heading, lineHeight: 20 },
   relatedScroll: { gap: 8 },
-  relatedCard: { width: 160, borderRadius: 12, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
+  relatedCard: { width: 160, borderRadius: 20, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
   relatedImage: { width: 160, height: 100 },
   relatedCardBody: { padding: 8, gap: 4 },
-  relatedCardTitle: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 17 },
+  relatedCardTitle: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   relatedCardLocation: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },
-  bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 16, alignSelf: 'flex-start' },
+  bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 999, alignSelf: 'flex-start' },
   bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
+  bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 24 },
   bookingFee: { fontSize: 14, fontFamily: fonts.heading, lineHeight: 20 },
   bookingTotalPrice: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
-  datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 16, marginTop: 12 },
+  datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 20, marginTop: 12 },
   datesSummaryItem: { flex: 1, gap: 2 },
   datesSummaryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3 },
   datesSummaryValue: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 16, padding: 16, marginTop: 12, gap: 8 },
+  pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 20, padding: 16, marginTop: 12, gap: 8 },
   pricingTitle: { fontSize: 14, fontFamily: fonts.headingSemi, marginBottom: 4, lineHeight: 20 },
   pricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   pricingLabel: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   pricingValue: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
   pricingTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, marginTop: 4 },
   pricingTotalLabel: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 17 },
+  confirmNote: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 16 },
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
-  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16, minHeight: 48 },
+  payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999, minHeight: 48 },
 })
 
 const ctaStyles = StyleSheet.create({
@@ -1594,7 +1534,7 @@ const ctaStyles = StyleSheet.create({
   },
   replyIndicator: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
   replyIndicatorText: { flex: 1, fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   inputRow: {
@@ -1602,16 +1542,16 @@ const ctaStyles = StyleSheet.create({
   },
   commentInput: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8,
+    borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8,
   },
-  commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 34, lineHeight: 20 },
-  charCount: { fontSize: 10, fontFamily: fonts.body, lineHeight: 14 },
-  sendBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 36, lineHeight: 20 },
+  charCount: { fontSize: 10, fontFamily: fonts.body, lineHeight: 16 },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   messageBtn: {
     alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 9, paddingHorizontal: 14, borderRadius: 20,
+    paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999,
   },
-  messageBtnText: { fontSize: 13, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 18 },
+  messageBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
 })
 
 export default function PostDetailScreen() {

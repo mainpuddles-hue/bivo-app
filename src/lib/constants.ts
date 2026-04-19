@@ -103,7 +103,7 @@ export const TRUST_TIERS = {
   3: {
     level: 3 as const,
     nameKey: 'trust.tier3',
-    color: '#10B981',
+    color: '#2D7A4F',
     icon: 'ShieldPlus' as const,
     permissions: {
       canLainaa: true,
@@ -156,7 +156,7 @@ export const LENDING_FORFEIT_DAYS = 7 // Full deposit forfeited after 7 days
 
 // Centralized forum category colors — used by ForumPostCard and ForumCreateModal
 export const FORUM_CATEGORY_COLORS: Record<string, string> = {
-  vinkit: '#4CAF6A',
+  vinkit: '#2B8A62',
   kysymykset: '#3B7DD8',
   tapahtumat: '#2B8A62',
   uutiset: '#8E44AD',
@@ -167,30 +167,30 @@ export const EVENT_CATEGORY_COLORS: Record<string, string> = {
   social: '#7C5CBF',
   sports: '#2B8A62',
   culture: '#3B7DD8',
-  nature: '#4CAF6A',
+  nature: '#2B8A62',
   kids: '#E8A050',
   other: '#6B7280',
 } as const
 
 // Centralized group category colors — used by groups list and group detail
 export const GROUP_CATEGORY_COLORS: Record<string, string> = {
-  general: '#2D6B5E',
-  sports: '#27AE60',
+  general: '#1A1D1F',
+  sports: '#2B8A62',
   kids: '#FF9800',
   pets: '#E8A050',
-  garden: '#4CAF6A',
+  garden: '#2B8A62',
   food: '#E74C3C',
   culture: '#8E44AD',
   other: '#607D8B',
 } as const
 
-// Quick event ("Pöytä") categories
+// Quick event ("Pöytä") categories — icon names map to Lucide React Native components
 export const TABLE_CATEGORIES = {
-  coffee: { emoji: '☕', color: '#8B5E3C', bgLight: '#FDF5F0', bgDark: '#2A1E15', label: 'tables.catCoffee' },
-  lunch: { emoji: '🍽️', color: '#E8A050', bgLight: '#FFF5E8', bgDark: '#2D2010', label: 'tables.catLunch' },
-  walk: { emoji: '🚶', color: '#4CAF6A', bgLight: '#E8F7EF', bgDark: '#102D1A', label: 'tables.catWalk' },
-  sports: { emoji: '⚽', color: '#3B7DD8', bgLight: '#EBF2FE', bgDark: '#101A2D', label: 'tables.catSports' },
-  hangout: { emoji: '🤝', color: '#7C5CBF', bgLight: '#F4EFFF', bgDark: '#1A1525', label: 'tables.catHangout' },
+  coffee: { icon: 'Coffee' as const, color: '#8B5E3C', bgLight: '#FDF5F0', bgDark: '#2A1E15', label: 'tables.catCoffee' },
+  lunch: { icon: 'UtensilsCrossed' as const, color: '#E8A050', bgLight: '#FFF5E8', bgDark: '#2D2010', label: 'tables.catLunch' },
+  walk: { icon: 'Footprints' as const, color: '#2B8A62', bgLight: '#E8F7EF', bgDark: '#102D1A', label: 'tables.catWalk' },
+  sports: { icon: 'Trophy' as const, color: '#3B7DD8', bgLight: '#EBF2FE', bgDark: '#101A2D', label: 'tables.catSports' },
+  hangout: { icon: 'Handshake' as const, color: '#7C5CBF', bgLight: '#F4EFFF', bgDark: '#1A1525', label: 'tables.catHangout' },
 } as const
 
 export const EVENT_CHAT_PAGE_SIZE = 30

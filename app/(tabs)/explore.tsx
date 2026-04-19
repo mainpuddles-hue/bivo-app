@@ -11,7 +11,7 @@ import { SectionSkeleton } from '@/components/SkeletonLoaders'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import {
-  Map, CalendarDays, MapPin, ChevronRight, Navigation, Globe,
+  Map, CalendarDays, MapPin, ChevronRight, Globe,
   Store, Coffee, BookOpen, Dumbbell, Heart, UtensilsCrossed,
   Users, MessageCircle, Plus,
 } from 'lucide-react-native'
@@ -119,19 +119,6 @@ function ExploreScreenInner() {
   const [groups, setGroups] = useState<Array<{ id: string; name: string; category: string; member_count: number }>>([])
   const [forumPosts, setForumPosts] = useState<Array<{ id: string; title: string; category: string; comment_count: number; created_at: string }>>([])
   const [communityEventPreviews, setCommunityEventPreviews] = useState<CommunityEventPreview[]>([])
-
-  // ── Semantic colors derived from theme ──
-  const groupColors: Record<string, string> = useMemo(() => ({
-    general: colors.primary, sports: colors.success, kids: colors.pro, pets: colors.pro,
-    garden: colors.accent, food: colors.destructive, culture: colors.info, other: colors.mutedForeground,
-  }), [colors])
-
-  const placeCatColors: Record<string, string> = useMemo(() => ({
-    restaurant: colors.destructive, fast_food: colors.destructive, cafe: colors.pro,
-    bar: colors.info, pub: colors.info, culture: colors.info, library: colors.info,
-    sport: colors.success, health: colors.destructive, shop: colors.pro,
-    hotel: colors.info, service: colors.mutedForeground, other: colors.mutedForeground,
-  }), [colors])
 
   // ── Fetch location ──
   const fetchLocation = useCallback(async () => {
@@ -449,10 +436,8 @@ function ExploreScreenInner() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Tab bar already shows "Tutustu" — no redundant header needed */}
-
-      {/* Tab chips */}
-      <View style={s.chipRow}>
+      {/* Tab chips — paddingTop includes safe area since shared Header was removed */}
+      <View style={[s.chipRow, { paddingTop: insets.top + 8 }]}>
         {tabs.map(({ key, labelKey, Icon }) => {
           const isActive = activeTab === key
           return (
@@ -576,10 +561,6 @@ function ExploreScreenInner() {
                   style={s.ceCarousel}
                 >
                   {communityEventPreviews.map(evt => {
-                    const catColor = ({
-                      social: '#8B5CF6', sports: '#EF4444', culture: '#F59E0B',
-                      nature: '#10B981', kids: '#EC4899', other: '#6B7280',
-                    } as Record<string, string>)[evt.category] ?? '#6B7280'
                     const pCount = evt.participant_count ?? 0
                     const pLabel = evt.max_participants
                       ? `${pCount}/${evt.max_participants}`
@@ -984,14 +965,6 @@ function ExploreScreenInner() {
 // ── Styles ──
 const s = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  headerTitle: {
-    fontSize: 20, fontWeight: '700', letterSpacing: -0.3,
-    fontFamily: fonts.headingSemi, lineHeight: 28,
-  },
   chipRow: {
     flexDirection: 'row',
     gap: 8,

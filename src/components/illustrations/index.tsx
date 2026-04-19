@@ -1,11 +1,11 @@
 import Svg, { Path, Circle, Rect } from 'react-native-svg'
 import { useTheme } from '@/hooks/useTheme'
 
-// Legacy color constants — used only by PinIllustration and CityMapIllustration
-const PRIMARY = '#2D6B5E'
-const ACCENT = '#4CAF6A'
-const MUTED_GREEN = '#3A8B6E'
-const LIGHT_GREEN = '#A8D5BA'
+// Helsinki Monochrome — ink palette for illustrations
+const PRIMARY = '#1A1D1F'
+const ACCENT = '#6B7075'
+const MUTED_GREEN = '#9AA0A6'
+const LIGHT_GREEN = '#E8EAEC'
 
 /**
  * PinIllustration — A teardrop map pin in primary green with a white center dot.

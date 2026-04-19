@@ -605,7 +605,7 @@ const s = StyleSheet.create({
     right: 16,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   categoryBadgeText: {
     fontSize: 12,
@@ -633,7 +633,7 @@ const s = StyleSheet.create({
     marginHorizontal: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   endedBannerText: {
     fontSize: 13,
@@ -712,7 +712,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   actionButton: {
-    borderRadius: 24,
+    borderRadius: 999,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
@@ -732,7 +732,7 @@ const s = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 20,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   creatorInfo: {
     flex: 1,
@@ -747,7 +747,7 @@ const s = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 999,
   },
   organizerBadgeText: {
     fontSize: 12,
@@ -764,7 +764,7 @@ const s = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 12,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
     minHeight: 48,
   },
@@ -783,7 +783,7 @@ const s = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 12,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 999,
     minHeight: 48,
   },
   messageCreatorText: {
@@ -802,7 +802,7 @@ const s = StyleSheet.create({
   creatorActionBtn: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 16,
+    borderRadius: 999,
     paddingVertical: 12,
     alignItems: 'center',
   },

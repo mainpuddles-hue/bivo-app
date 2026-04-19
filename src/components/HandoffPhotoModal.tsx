@@ -138,8 +138,11 @@ export function HandoffPhotoModal({
               <PressableOpacity
                 onPress={() => removePhoto(i)}
                 style={[styles.removeBtn, { backgroundColor: colors.destructive }]}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.remove') ?? 'Remove'}
               >
-                <X size={14} color="#FFFFFF" />
+                <X size={14} color={colors.primaryForeground} />
               </PressableOpacity>
             </View>
           ))}

@@ -1,16 +1,16 @@
 /**
- * TackBird Helsinki Dusk typography
+ * TackBird Helsinki Monochrome typography
  *
- * Bricolage Grotesque — headings, brand
- * Instrument Sans — body text, UI
+ * Instrument Sans — single family for all text.
+ * No secondary heading font.
  *
  * Usage: fontFamily: fonts.heading or fonts.body
  */
 export const fonts = {
-  // Headings (Bricolage Grotesque)
-  heading: 'BricolageGrotesque_700Bold',
-  headingSemi: 'BricolageGrotesque_600SemiBold',
-  headingMedium: 'BricolageGrotesque_500Medium',
+  // Headings (Instrument Sans — same family, heavier weight)
+  heading: 'InstrumentSans_600SemiBold',
+  headingSemi: 'InstrumentSans_600SemiBold',
+  headingMedium: 'InstrumentSans_500Medium',
 
   // Body (Instrument Sans)
   body: 'InstrumentSans_400Regular',

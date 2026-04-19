@@ -1,7 +1,7 @@
 import { FEATURES } from '@/lib/featureFlags'
 
 export const LAYER_COLORS = {
-  post: '#2D6B5E',
+  post: '#1A1D1F',
   event: '#8E44AD',
   place: '#78716C',
 } as const

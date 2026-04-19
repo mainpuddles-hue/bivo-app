@@ -11,7 +11,7 @@ import type { LocalPlace } from '@/lib/types'
 const PLACE_COLORS: Record<string, string> = {
   restaurant: '#E74C3C', cafe: '#8B5E3C', bar: '#F39C12', pub: '#D4A017',
   fast_food: '#FF6B35', shop: '#9B59B6', library: '#3498DB', health: '#E91E63',
-  sport: '#27AE60', culture: '#8E44AD', hotel: '#2980B9', attraction: '#F1C40F',
+  sport: '#2B8A62', culture: '#8E44AD', hotel: '#2980B9', attraction: '#F1C40F',
   service: '#607D8B', other: '#95A5A6',
 }
 
@@ -93,7 +93,7 @@ export const DiscoverySection = memo(function DiscoverySection({
         contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingBottom: 2 }}
       >
         {nearbyPlaces.slice(0, 6).map((place) => {
-          const catColor = PLACE_COLORS[place.category] || '#95A5A6'
+          const catColor = PLACE_COLORS[place.category] || colors.mutedForeground
           const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other') || place.category
           const firstLetter = catLabel.charAt(0).toUpperCase()
           return (

@@ -1,5 +1,16 @@
 import type { CityEvent, CommunityEvent, TableCategory } from './types'
 import { TABLE_CATEGORIES } from './constants'
+import { Coffee, UtensilsCrossed, Footprints, Trophy, Handshake, Pin } from 'lucide-react-native'
+import type { LucideIcon } from 'lucide-react-native'
+
+/** Map from icon name to Lucide component */
+const TABLE_ICON_MAP: Record<string, LucideIcon> = {
+  Coffee,
+  UtensilsCrossed,
+  Footprints,
+  Trophy,
+  Handshake,
+}
 
 export function getCityEventName(event: CityEvent, locale: string): string {
   if (locale === 'en' && event.name_en) return event.name_en
@@ -24,9 +35,10 @@ export function isExpiredEvent(event: CommunityEvent): boolean {
   return endDate < new Date()
 }
 
-/** Get table category emoji */
-export function getTableCategoryEmoji(category: string): string {
-  return TABLE_CATEGORIES[category as TableCategory]?.emoji ?? '📌'
+/** Get table category Lucide icon component */
+export function getTableCategoryIcon(category: string): LucideIcon {
+  const iconName = TABLE_CATEGORIES[category as TableCategory]?.icon
+  return (iconName ? TABLE_ICON_MAP[iconName] : undefined) ?? Pin
 }
 
 /** Get table category color */

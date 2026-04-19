@@ -47,7 +47,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.successTitle')}</Text>
             <Text style={[styles.description, { color: colors.mutedForeground }]}>{t('verification.successMessage')}</Text>
             <PressableOpacity onPress={onClose} style={[styles.primaryBtn, { backgroundColor: colors.success }]}>
-              <Text style={styles.primaryBtnText}>{t('verification.backToApp')}</Text>
+              <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('verification.backToApp')}</Text>
             </PressableOpacity>
           </Pressable>
         </Pressable>
@@ -65,9 +65,9 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
 
           {/* Provider header — adapts to identity adapter branding */}
           <View style={[styles.suomifiHeader, { backgroundColor: brandColor }]}>
-            <BrandIcon size={24} color="#FFFFFF" />
-            <Text style={styles.suomifiTitle}>{brandTitle}</Text>
-            <Text style={styles.suomifiSubtitle}>{t('verification.startButton')}</Text>
+            <BrandIcon size={24} color={colors.primaryForeground} />
+            <Text style={[styles.suomifiTitle, { color: colors.primaryForeground }]}>{brandTitle}</Text>
+            <Text style={[styles.suomifiSubtitle, { color: colors.primaryForeground, opacity: 0.8 }]}>{t('verification.startButton')}</Text>
           </View>
 
           <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.modalTitle')}</Text>
@@ -123,11 +123,11 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
             style={[styles.primaryBtn, { backgroundColor: loading ? colors.muted : brandColor }]}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={colors.primaryForeground} />
             ) : (
               <>
-                <BrandIcon size={18} color="#FFFFFF" />
-                <Text style={styles.primaryBtnText}>{t('verification.startButton')}</Text>
+                <BrandIcon size={18} color={colors.primaryForeground} />
+                <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>{t('verification.startButton')}</Text>
               </>
             )}
           </PressableOpacity>
@@ -176,13 +176,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: fonts.heading,
     lineHeight: 28,
-    color: '#FFFFFF',
+    // color set via inline style with colors.primaryForeground
     letterSpacing: 0.5,
   },
   suomifiSubtitle: {
     fontSize: 13,
     lineHeight: 17,
-    color: 'rgba(255,255,255,0.8)',
+    // color + opacity set via inline style with colors.primaryForeground
     fontFamily: fonts.body,
   },
   title: {
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 23,
-    color: '#FFFFFF',
+    // color set via inline style with colors.primaryForeground
   },
   cancelBtn: {
     marginHorizontal: 20,

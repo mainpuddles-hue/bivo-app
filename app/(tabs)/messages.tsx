@@ -7,7 +7,7 @@ import { hapticMedium, withHapticRefresh } from '@/lib/haptics'
 import { Swipeable } from 'react-native-gesture-handler'
 import { PressableOpacity } from '@/components/ui'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, CalendarDays, Users, PenSquare, MoreHorizontal, RefreshCw, ArrowLeftRight } from 'lucide-react-native'
+import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, Users, PenSquare, MoreHorizontal, RefreshCw } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
 import { Avatar } from '@/components/Avatar'
@@ -18,7 +18,7 @@ import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { isValidUUID } from '@/lib/validation'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { getTableCategoryEmoji } from '@/lib/eventHelpers'
+import { getTableCategoryIcon, getTableCategoryColor } from '@/lib/eventHelpers'
 import type { Conversation } from '@/lib/types'
 
 interface EventChatItem {
@@ -56,20 +56,8 @@ export default function MessagesScreen() {
   const [pinnedIds, setPinnedIds] = useState<string[]>([])
   const [eventChats, setEventChats] = useState<EventChatItem[]>([])
   const [fetchError, setFetchError] = useState(false)
-  const [showSwipeHint, setShowSwipeHint] = useState(false)
   const mountedRef = useRef(true)
   useEffect(() => { return () => { mountedRef.current = false } }, [])
-
-  useEffect(() => {
-    AsyncStorage.getItem('messages_swipe_hint_dismissed').then(v => {
-      if (v !== 'true') setShowSwipeHint(true)
-    })
-  }, [])
-
-  const dismissSwipeHint = useCallback(() => {
-    setShowSwipeHint(false)
-    AsyncStorage.setItem('messages_swipe_hint_dismissed', 'true').catch(() => {})
-  }, [])
   const conversationsRef = useRef(conversations)
   conversationsRef.current = conversations
   // Fast client-side filter for realtime events — avoids refetching when
@@ -415,7 +403,7 @@ export default function MessagesScreen() {
   return (
     <ScreenErrorBoundary screenName="Messages">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('messages.title')}</Text>
         <PressableOpacity
           onPress={() => setShowArchived(!showArchived)}
@@ -448,7 +436,7 @@ export default function MessagesScreen() {
           <PressableOpacity
             onPress={() => setSearchQuery('')}
             hitSlop={8}
-            style={{ minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}
+            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
             accessibilityLabel={t('common.clear') ?? 'Clear search'}
             accessibilityRole="button"
           >
@@ -458,30 +446,10 @@ export default function MessagesScreen() {
       </View>
 
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchConversations() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
+        <PressableOpacity onPress={() => { setRefreshing(true); fetchConversations() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20, backgroundColor: `${colors.destructive}10` }}>
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
         </PressableOpacity>
-      )}
-
-      {showSwipeHint && filtered.length > 0 && (
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-          borderBottomWidth: StyleSheet.hairlineWidth,
-          borderBottomColor: colors.border,
-        }}>
-          <ArrowLeftRight size={13} color={colors.mutedForeground} />
-          <Text style={{ flex: 1, fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-            ← → Pyyhkäise arkistoidaksesi tai pinnataksesi
-          </Text>
-          <PressableOpacity onPress={dismissSwipeHint} hitSlop={8}>
-            <X size={13} color={colors.mutedForeground} />
-          </PressableOpacity>
-        </View>
       )}
 
       <FlatList
@@ -497,7 +465,8 @@ export default function MessagesScreen() {
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.eventChatsScroll}>
               {eventChats.map((ec) => {
-                const emoji = getTableCategoryEmoji(ec.event_category)
+                const EventChatIcon = getTableCategoryIcon(ec.event_category)
+                const ecColor = getTableCategoryColor(ec.event_category)
                 return (
                   <Pressable
                     key={ec.conversation_id}
@@ -511,10 +480,10 @@ export default function MessagesScreen() {
                     accessibilityLabel={ec.event_title}
                   >
                     <View style={styles.eventChatTop}>
-                      <Text style={styles.eventChatEmoji}>{emoji}</Text>
+                      <EventChatIcon size={22} color={ecColor} />
                       {ec.unread_count > 0 && (
                         <View style={[styles.eventChatBadge, { backgroundColor: colors.destructive }]}>
-                          <Text style={styles.eventChatBadgeText}>
+                          <Text style={[styles.eventChatBadgeText, { color: colors.primaryForeground }]}>
                             {ec.unread_count > 9 ? '9+' : ec.unread_count}
                           </Text>
                         </View>
@@ -565,7 +534,7 @@ export default function MessagesScreen() {
                 accessibilityLabel={showArchived ? t('messages.unarchive') ?? 'Unarchive' : t('messages.archive') ?? 'Archive'}
               >
                 <Animated.View style={{ transform: [{ scale }] }}>
-                  <Archive size={22} color="#FFFFFF" strokeWidth={2} />
+                  <Archive size={22} color={colors.primaryForeground} strokeWidth={2} />
                 </Animated.View>
               </PressableOpacity>
             )
@@ -700,6 +669,7 @@ export default function MessagesScreen() {
         }
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
+        initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
       />
@@ -729,13 +699,14 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, borderWidth: 1,
-    borderRadius: 12, paddingHorizontal: 16, height: 48,
+    borderRadius: 20, paddingHorizontal: 16, height: 48,
   },
   searchInput: { flex: 1, fontSize: 14, lineHeight: 20, fontFamily: fonts.body, paddingVertical: 0 },
   list: {},
   convRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingVertical: 12,
+    minHeight: 68,
   },
   swipeActionRight: {
     justifyContent: 'center',
@@ -744,8 +715,6 @@ const styles = StyleSheet.create({
   },
   avatarWrap: { position: 'relative' },
   avatar: { width: 48, height: 48, borderRadius: 24 },
-  avatarFb: { alignItems: 'center', justifyContent: 'center' },
-  avatarInit: { fontSize: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   onlineDot: {
     position: 'absolute', bottom: 0, right: 0,
     width: 14, height: 14, borderRadius: 7,
@@ -759,14 +728,13 @@ const styles = StyleSheet.create({
   convPreview: { fontSize: 13, flex: 1, lineHeight: 18, fontFamily: fonts.body },
   convRight: { alignItems: 'flex-end', gap: 4, minWidth: 56 },
   convRightBottom: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  moreBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  moreBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   convTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
-  separator: { height: StyleSheet.hairlineWidth, marginLeft: 72 },
   empty: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 8 },
   emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyTitle: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.headingSemi },
   emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
-  loginBtn: { marginTop: 8, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 32, alignItems: 'center' },
+  loginBtn: { marginTop: 8, borderRadius: 999, paddingVertical: 16, paddingHorizontal: 32, alignItems: 'center', minHeight: 48 },
   loginBtnText: { fontSize: 16, fontWeight: '600', lineHeight: 22, fontFamily: fonts.bodySemi },
   // Event chats section
   eventChatsSection: { paddingTop: 8 },
@@ -776,20 +744,21 @@ const styles = StyleSheet.create({
   },
   eventChatsScroll: { paddingHorizontal: 12, gap: 12 },
   eventChatCard: {
-    width: 140, borderRadius: 14, borderWidth: 1,
+    width: 140, borderRadius: 20, borderWidth: 1,
     padding: 12, gap: 4,
+    minHeight: 80,
   },
   eventChatTop: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
-  eventChatEmoji: { fontSize: 22 },
   eventChatBadge: {
     minWidth: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
   },
   eventChatBadgeText: {
-    color: '#FFFFFF', fontSize: 10, fontWeight: '700', lineHeight: 12,
+    fontSize: 10, fontWeight: '700', lineHeight: 12,
     fontFamily: fonts.bodySemi,
+    // color set via inline style with colors.primaryForeground
   },
   eventChatTitle: {
     fontSize: 13, fontWeight: '600', lineHeight: 18, fontFamily: fonts.bodySemi,

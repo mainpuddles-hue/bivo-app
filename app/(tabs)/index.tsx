@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ViewToken, ScrollView
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Users, Plus, MapPin, ChevronDown, CheckCircle, X as XIcon, ArrowUpDown } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Users, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -23,14 +23,13 @@ import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import type { Post } from '@/lib/types'
 
-const FILTER_BAR_CONTENT_HEIGHT = 80
-
 function FeedScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const params = useLocalSearchParams<{ openNeighborhoodPicker?: string }>()
+  const [headerHeight, setHeaderHeight] = useState(160)
 
   const toast = useToast()
   const welcomeShownRef = useRef(false)
@@ -263,55 +262,58 @@ function FeedScreenInner() {
   // ── Render ──
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Sticky filter bar */}
-      <View style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: 4 }]}>
-        <View style={styles.neighborhoodRow}>
-          <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.neighborhoodBtn} hitSlop={8}>
-            <MapPin size={20} color={colors.foreground} />
-            <Text style={[styles.neighborhoodText, { color: colors.foreground }]}>
-              {feed.userNeighborhood ? `${feed.userCityName ?? 'Helsinki'} · ${feed.userNeighborhood}` : (feed.userCityName ?? 'Helsinki')}
+      {/* Sticky header — matches Helsinki Monochrome mockup 05 */}
+      <View
+        style={[styles.filterWrapper, { backgroundColor: colors.background, borderBottomColor: colors.border, paddingTop: insets.top }]}
+        onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+      >
+        {/* Location eyebrow + title + action circles */}
+        <View style={styles.headerRow}>
+          <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.headerLeft} hitSlop={8}>
+            <Text style={[styles.locationEyebrow, { color: colors.mutedForeground }]}>
+              {feed.userNeighborhood
+                ? `${feed.userNeighborhood} · ${feed.userCityName ?? 'Helsinki'}`
+                : (feed.userCityName ?? 'Helsinki')}
             </Text>
-            <ChevronDown size={16} color={colors.primary} />
+            <Text style={[styles.feedTitle, { color: colors.foreground }]}>
+              {t('feed.nearbyNow') ?? 'Lähellä nyt'}
+            </Text>
           </PressableOpacity>
-          {/* Sort — single button, opens ActionSheet */}
-          <PressableOpacity
-            onPress={() => {
-              const labels = SORT_OPTIONS.map(o => o.label).concat(t('common.cancel') ?? 'Cancel')
-              if (Platform.OS === 'ios') {
-                ActionSheetIOS.showActionSheetWithOptions(
-                  { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
-                  (idx) => { if (idx < SORT_OPTIONS.length) handleSortChangeWithHaptics(SORT_OPTIONS[idx].key) },
-                )
-              } else {
-                Alert.alert(t('feed.sort') ?? 'Sort', '', SORT_OPTIONS.map(o => ({
-                  text: o.label + (feed.sortBy === o.key ? ' ✓' : ''),
-                  onPress: () => handleSortChangeWithHaptics(o.key),
-                })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
-              }
-            }}
-            style={[styles.sortBtn, { backgroundColor: isDark ? colors.card : colors.muted }]}
-            hitSlop={8}
-            accessibilityLabel={t('feed.sort') ?? 'Sort'}
-          >
-            <ArrowUpDown size={14} color={colors.mutedForeground} />
-          </PressableOpacity>
+          <View style={styles.headerActions}>
+            <PressableOpacity
+              onPress={() => router.push('/search')}
+              style={[styles.iconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+              accessibilityLabel={t('common.search')}
+              accessibilityRole="button"
+            >
+              <Search size={16} color={colors.mutedForeground} strokeWidth={2} />
+            </PressableOpacity>
+            <PressableOpacity
+              onPress={() => {
+                const labels = SORT_OPTIONS.map(o => o.label).concat(t('common.cancel') ?? 'Cancel')
+                if (Platform.OS === 'ios') {
+                  ActionSheetIOS.showActionSheetWithOptions(
+                    { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
+                    (idx) => { if (idx < SORT_OPTIONS.length) handleSortChangeWithHaptics(SORT_OPTIONS[idx].key) },
+                  )
+                } else {
+                  Alert.alert(t('feed.sort') ?? 'Sort', '', SORT_OPTIONS.map(o => ({
+                    text: o.label + (feed.sortBy === o.key ? ' ✓' : ''),
+                    onPress: () => handleSortChangeWithHaptics(o.key),
+                  })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
+                }
+              }}
+              style={[styles.iconCircleDark, { backgroundColor: colors.foreground }]}
+              accessibilityLabel={t('feed.sort') ?? 'Sort'}
+              accessibilityRole="button"
+            >
+              <SlidersHorizontal size={16} color={colors.background} strokeWidth={2} />
+            </PressableOpacity>
+          </View>
         </View>
+        {/* Category chips */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={{ gap: 8, alignItems: 'center', paddingHorizontal: 16 }}>
           <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
-          {feed.followedIds.length > 0 && (
-            <PressableOpacity
-              onPress={() => feed.setShowFollowing(p => !p)}
-              style={[styles.followingBtn, feed.showFollowing ? { backgroundColor: colors.primary } : { backgroundColor: isDark ? colors.card : colors.muted }]}
-              accessibilityRole="button"
-              accessibilityLabel={t('feed.following')}
-              accessibilityState={{ selected: feed.showFollowing }}
-            >
-              <Users size={14} color={feed.showFollowing ? colors.primaryForeground : colors.mutedForeground} strokeWidth={1.8} />
-              <Text style={[styles.followingText, { color: feed.showFollowing ? colors.primaryForeground : colors.mutedForeground }]}>
-                {t('feed.following')}
-              </Text>
-            </PressableOpacity>
-          )}
         </ScrollView>
       </View>
 
@@ -321,7 +323,7 @@ function FeedScreenInner() {
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={{ gap: 10, paddingHorizontal: 12 }}
-        contentContainerStyle={{ paddingTop: FILTER_BAR_CONTENT_HEIGHT, paddingBottom: insets.bottom + 96, gap: 10 }}
+        contentContainerStyle={{ paddingTop: headerHeight, paddingBottom: insets.bottom + 96, gap: 10 }}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={EmptyComponent}
         ListFooterComponent={FooterComponent}
@@ -337,6 +339,16 @@ function FeedScreenInner() {
         maxToRenderPerBatch={10}
         windowSize={5}
       />
+
+      {/* FAB — create new post */}
+      <PressableOpacity
+        onPress={() => router.push('/(tabs)/create')}
+        style={[styles.fab, { backgroundColor: colors.foreground }]}
+        accessibilityLabel={t('feed.createPost') ?? 'Create post'}
+        accessibilityRole="button"
+      >
+        <Plus size={24} color={colors.background} strokeWidth={2.5} />
+      </PressableOpacity>
 
       <NeighborhoodPicker
         visible={feed.showNeighborhoodPicker}
@@ -355,37 +367,54 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
     paddingBottom: 12, gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
-  neighborhoodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
-  neighborhoodBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, alignSelf: 'flex-start', minHeight: 44 },
-  neighborhoodText: { fontSize: 17, fontWeight: '700', fontFamily: fonts.heading, letterSpacing: -0.3 },
-  filterRow: { paddingBottom: 0 },
-  followingBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20,
-    alignSelf: 'flex-start', minHeight: 44,
+  headerRow: {
+    flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 8,
   },
-  followingText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  sortBtn: {
-    width: 44, height: 44, borderRadius: 22,
+  headerLeft: { flex: 1, gap: 2 },
+  locationEyebrow: {
+    fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium,
+    letterSpacing: 1.2, textTransform: 'uppercase', lineHeight: 14,
+  },
+  feedTitle: {
+    fontSize: 24, fontWeight: '600', fontFamily: fonts.heading,
+    letterSpacing: -0.3, lineHeight: 30,
+  },
+  headerActions: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  iconCircle: {
+    width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1,
+  },
+  iconCircleDark: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  filterRow: { paddingBottom: 0 },
+  fab: {
+    position: 'absolute', right: 20, bottom: 92,
+    width: 56, height: 56, borderRadius: 28,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
   },
   newBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, borderRadius: 16, paddingVertical: 12, minHeight: 44,
+    gap: 8, borderRadius: 999, paddingVertical: 12, minHeight: 44,
   },
   newBannerText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   errorRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12,
+    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12,
   },
   errorRowText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1, lineHeight: 18 },
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
   coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.heading, lineHeight: 24 },
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 16, marginTop: 8, minHeight: 48 },
+  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999, marginTop: 8, minHeight: 48 },
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },
   allLoadedLine: { height: 1, width: '100%' },
@@ -393,7 +422,7 @@ const styles = StyleSheet.create({
   allLoadedText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   missedBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16,
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999,
   },
   missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
   // streakMilestone, digestCard — removed (content-first: moved to Explore tab)

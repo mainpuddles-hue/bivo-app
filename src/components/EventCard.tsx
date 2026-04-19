@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { getImageUrl } from '@/lib/imageUtils'
 import { ParticipantAvatarRow } from './ParticipantAvatarRow'
-import { isTableEvent, getTableCategoryEmoji } from '@/lib/eventHelpers'
+import { isTableEvent, getTableCategoryIcon } from '@/lib/eventHelpers'
 import { EVENT_CATEGORY_COLORS } from '@/lib/constants'
 import type { CommunityEvent } from '@/lib/types'
 
@@ -18,11 +18,12 @@ interface EventCardProps {
 }
 
 export const EventCard = memo(function EventCard({ event, compact }: EventCardProps) {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
-  const categoryColor = EVENT_CATEGORY_COLORS[event.category] ?? '#6B7280'
+  const categoryColor = EVENT_CATEGORY_COLORS[event.category] ?? colors.mutedForeground
   const isTable = isTableEvent(event)
+  const TableCategoryIcon = isTable ? getTableCategoryIcon(event.category) : null
 
   const formattedDate = useMemo(() => new Date(event.event_date).toLocaleDateString(
     locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US',
@@ -60,9 +61,9 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
       {/* Image or Emoji Header */}
       {event.image_url && !isTable ? (
         <Image source={{ uri: getImageUrl(event.image_url, 'medium')! }} style={s.image} contentFit="cover" />
-      ) : isTable ? (
-        <View style={[s.emojiBox, { backgroundColor: `${categoryColor}15` }]}>
-          <Text style={s.emoji}>{getTableCategoryEmoji(event.category)}</Text>
+      ) : isTable && TableCategoryIcon ? (
+        <View style={[s.iconBox, { backgroundColor: `${categoryColor}15` }]}>
+          <TableCategoryIcon size={36} color={categoryColor} />
         </View>
       ) : null}
 
@@ -138,20 +139,19 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: 140,
   },
-  emojiBox: {
+  iconBox: {
     width: '100%',
     height: 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emoji: { fontSize: 36 },
   content: { padding: 16, gap: 8 },
   topRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   categoryBadge: {
@@ -160,14 +160,14 @@ const s = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
   categoryText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
   tableBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 16,
+    borderRadius: 999,
   },
   tableText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
   title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },

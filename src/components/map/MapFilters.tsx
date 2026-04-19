@@ -166,10 +166,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 8,
     zIndex: 10,
-    shadowColor: '#000',
+    shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
     elevation: 2,
   },
   filterScrollContent: {

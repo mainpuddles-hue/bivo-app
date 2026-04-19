@@ -240,6 +240,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
-    color: '#FFFFFF',
+    // color set via inline style with colors.primaryForeground
   },
 })

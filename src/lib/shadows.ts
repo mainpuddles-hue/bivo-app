@@ -1,7 +1,7 @@
 import { Platform } from 'react-native'
 
 /**
- * 3-tier shadow system with tinted colors (2026 trend).
+ * Helsinki Monochrome — ink-tinted shadow system.
  * sm: subtle lift (lists, chips)
  * md: standard card elevation
  * lg: prominent elevation (modals, FAB, floating elements)
@@ -9,10 +9,10 @@ import { Platform } from 'react-native'
 
 export const shadowSm = Platform.select({
   ios: {
-    shadowColor: '#10B981',
+    shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
   },
   android: { elevation: 1 },
   default: {},
@@ -20,10 +20,10 @@ export const shadowSm = Platform.select({
 
 export const shadowMd = Platform.select({
   ios: {
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.10,
-    shadowRadius: 8,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
   },
   android: { elevation: 3 },
   default: {},
@@ -31,10 +31,10 @@ export const shadowMd = Platform.select({
 
 export const shadowLg = Platform.select({
   ios: {
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.10,
+    shadowRadius: 40,
   },
   android: { elevation: 6 },
   default: {},
@@ -45,8 +45,8 @@ export const shadowSmDark = Platform.select({
   ios: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.20,
-    shadowRadius: 4,
+    shadowOpacity: 0.40,
+    shadowRadius: 2,
   },
   android: { elevation: 2 },
   default: {},
@@ -55,9 +55,9 @@ export const shadowSmDark = Platform.select({
 export const shadowMdDark = Platform.select({
   ios: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.30,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.50,
+    shadowRadius: 12,
   },
   android: { elevation: 4 },
   default: {},
@@ -66,27 +66,18 @@ export const shadowMdDark = Platform.select({
 export const shadowLgDark = Platform.select({
   ios: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.40,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.60,
+    shadowRadius: 32,
   },
   android: { elevation: 8 },
   default: {},
 }) as any
 
-// Category-tinted shadows for PostCards
-export function categoryCardShadow(categoryColor: string, isDark: boolean): any {
-  if (isDark) return shadowMdDark
-  return Platform.select({
-    ios: {
-      shadowColor: categoryColor,
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.12,
-      shadowRadius: 8,
-    },
-    android: { elevation: 3 },
-    default: {},
-  }) as any
+// Category-tinted shadows removed — Helsinki Monochrome uses ink-only shadows.
+// Keeping function signature for backward compat but returning standard shadow.
+export function categoryCardShadow(_categoryColor: string, isDark: boolean): any {
+  return isDark ? shadowMdDark : shadowMd
 }
 
 // Legacy aliases

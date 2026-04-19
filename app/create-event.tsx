@@ -37,7 +37,7 @@ const EVENT_CATEGORIES: { key: EventCategory; labelKey: string; color: string }[
   { key: 'social', labelKey: 'events.catSocial', color: '#7C5CBF' },
   { key: 'sports', labelKey: 'events.catSports', color: '#2B8A62' },
   { key: 'culture', labelKey: 'events.catCulture', color: '#3B7DD8' },
-  { key: 'nature', labelKey: 'events.catNature', color: '#4CAF6A' },
+  { key: 'nature', labelKey: 'events.catNature', color: '#2B8A62' },
   { key: 'kids', labelKey: 'events.catKids', color: '#E8A050' },
   { key: 'other', labelKey: 'events.catOther', color: '#6B7280' },
 ]
@@ -418,7 +418,7 @@ function CreateEventScreenInner() {
                 accessibilityLabel={t('common.remove')}
                 accessibilityRole="button"
               >
-                <X size={16} color="#FFFFFF" />
+                <X size={16} color={colors.primaryForeground} />
               </PressableOpacity>
             </View>
           ) : (

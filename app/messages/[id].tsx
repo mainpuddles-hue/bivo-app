@@ -545,8 +545,8 @@ function ConversationScreenInner() {
             <View style={[
               s.bubble,
               isMine
-                ? { backgroundColor: colors.foreground }
-                : { backgroundColor: isDark ? colors.card : colors.muted },
+                ? { backgroundColor: colors.foreground, borderRadius: 18, borderBottomRightRadius: 6 }
+                : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderRadius: 18, borderBottomLeftRadius: 6 },
             ]}>
               {isDeleted ? (
                 <Text style={[s.msgText, s.deletedText, { color: isMine ? `${colors.background}88` : colors.mutedForeground }]}>

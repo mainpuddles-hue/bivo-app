@@ -21,7 +21,7 @@ async function setupAndroidChannel() {
     name: 'Default',
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#2D6B5E',
+    lightColor: '#1A1D1F',
   })
 }
 

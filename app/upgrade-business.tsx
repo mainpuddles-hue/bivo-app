@@ -373,17 +373,13 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi },
   content: { padding: 16, gap: 8, paddingBottom: 64 },
   hero: { alignItems: 'center', paddingVertical: 24, gap: 8 },
-  iconCircle: {
-    width: 80, height: 80, borderRadius: 40,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 8,
-  },
-  heroTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.3, fontFamily: fonts.heading },
+  heroTitle: { fontSize: 24, letterSpacing: -0.3, fontFamily: fonts.heading },
   heroSubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
-  heroPrice: { fontSize: 22, fontWeight: '800', marginTop: 8, fontFamily: fonts.heading },
+  heroPrice: { fontSize: 22, marginTop: 8, fontFamily: fonts.heading },
   benefitsCard: { borderRadius: 16, padding: 16, gap: 12 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitText: { fontSize: 14, flex: 1, fontFamily: fonts.body },
-  label: { fontSize: 13, fontWeight: '600', marginTop: 8, fontFamily: fonts.bodySemi },
+  label: { fontSize: 13, marginTop: 8, fontFamily: fonts.bodySemi },
   input: {
     borderRadius: 12, borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16, paddingVertical: 16, fontSize: 14, fontFamily: fonts.body,
@@ -392,12 +388,12 @@ const styles = StyleSheet.create({
   categoryChip: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
-  categoryText: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  categoryText: { fontSize: 13, fontFamily: fonts.bodyMedium },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 16, borderRadius: 16, marginTop: 12, minHeight: 48,
   },
-  submitText: { fontSize: 16, fontWeight: '700', fontFamily: fonts.bodySemi },
+  submitText: { fontSize: 16, fontFamily: fonts.bodySemi },
   terms: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   iosInfoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,

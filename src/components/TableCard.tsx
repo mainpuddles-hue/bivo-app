@@ -2,11 +2,11 @@ import { memo, useCallback } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { MapPin, Clock } from 'lucide-react-native'
+import { MapPin, Clock, Check } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { getTableCategoryEmoji, getTableCategoryColor, getTableTimeRemaining, isExpiredEvent } from '@/lib/eventHelpers'
+import { getTableCategoryIcon, getTableCategoryColor, getTableTimeRemaining, isExpiredEvent } from '@/lib/eventHelpers'
 import { TABLE_CATEGORIES } from '@/lib/constants'
 import type { CommunityEvent, TableCategory } from '@/lib/types'
 
@@ -20,7 +20,7 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
   const { t } = useI18n()
   const router = useRouter()
   const expired = isExpiredEvent(event)
-  const emoji = getTableCategoryEmoji(event.category)
+  const CategoryIcon = getTableCategoryIcon(event.category)
   const catColor = getTableCategoryColor(event.category)
   const catConfig = TABLE_CATEGORIES[event.category as TableCategory]
   const bgColor = catConfig
@@ -52,8 +52,8 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
       accessibilityRole="button"
       accessibilityLabel={[event.title, timeText, event.location_name, spotsLeft !== null && spotsLeft > 0 && !expired ? t('tables.spotsOpen', { count: spotsLeft }) : null].filter(Boolean).join(', ')}
     >
-      {/* Emoji */}
-      <Text style={s.emoji}>{emoji}</Text>
+      {/* Category icon */}
+      <CategoryIcon size={28} color={catColor} />
 
       {/* Title */}
       <Text style={[s.title, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>
@@ -106,7 +106,7 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
           accessibilityRole="button"
           accessibilityLabel={t('tables.quickJoin')}
         >
-          <Text style={[s.joinText, { fontFamily: fonts.bodySemi }]}>
+          <Text style={[s.joinText, { fontFamily: fonts.bodySemi, color: colors.primaryForeground }]}>
             {t('tables.quickJoin')}
           </Text>
         </Pressable>
@@ -114,7 +114,7 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
 
       {event.is_participant && !expired && (
         <View style={[s.joinedBadge, { backgroundColor: `${catColor}20` }]}>
-          <Text style={[s.joinedText, { color: catColor, fontFamily: fonts.bodySemi }]}>✓</Text>
+          <Check size={14} color={catColor} strokeWidth={2.5} />
         </View>
       )}
     </Pressable>
@@ -124,11 +124,10 @@ export const TableCard = memo(function TableCard({ event, onJoin }: TableCardPro
 const s = StyleSheet.create({
   card: {
     width: 180,
-    borderRadius: 16,
+    borderRadius: 24,
     padding: 16,
     gap: 8,
   },
-  emoji: { fontSize: 28 },
   title: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   timeText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
@@ -146,16 +145,15 @@ const s = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 999,
     marginTop: 4,
   },
-  joinText: { fontSize: 12, fontFamily: fonts.bodySemi, color: '#FFFFFF', lineHeight: 16 },
+  joinText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   joinedBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 999,
     marginTop: 4,
   },
-  joinedText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 })

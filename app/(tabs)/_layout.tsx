@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { enableFreeze } from 'react-native-screens'
 import { Tabs, useRouter, usePathname } from 'expo-router'
-import { View, Text, StyleSheet, Platform, Animated } from 'react-native'
-import { BlurView } from 'expo-blur'
+import { View, Text, StyleSheet, Platform, Pressable, Animated } from 'react-native'
 import * as Notifications from 'expo-notifications'
 import * as Haptics from 'expo-haptics'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
@@ -13,80 +12,175 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Newspaper, Plus, MessageCircle, User, Compass } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { fonts } from '@/lib/fonts'
-import { Header } from '@/components/Header'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useUnreadCount } from '@/hooks/useUnreadCount'
 import { useEventChatUnread } from '@/hooks/useEventChatUnread'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 
-function TabIcon({ icon: Icon, label, focused, isCreate, colors, badge }: {
-  icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
-  label: string
-  focused: boolean
-  isCreate?: boolean
-  colors: ReturnType<typeof useTheme>['colors']
-  badge?: number
-}) {
+// --- Floating Pill Tab Bar ---
+
+const TAB_ICONS = [Newspaper, Compass, Plus, MessageCircle, User] as const
+
+function FloatingTabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
+  const { colors, isDark } = useTheme()
   const reduceMotion = useReduceMotion()
-  const scale = useRef(new Animated.Value(focused ? 1.1 : 1)).current
+
+  return (
+    <View
+      style={[
+        s.floatingContainer,
+        { bottom: insets.bottom + 22 },
+      ]}
+      pointerEvents="box-none"
+    >
+      <View
+        style={[
+          s.pill,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            // ink-tinted shadow
+            shadowColor: '#1A1D1F',
+          },
+        ]}
+      >
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key]
+          const focused = state.index === index
+          const Icon = TAB_ICONS[index]
+
+          const onPress = () => {
+            try { Haptics.selectionAsync() } catch {}
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            })
+            if (!focused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params)
+            }
+          }
+
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key,
+            })
+          }
+
+          return (
+            <FloatingTabItem
+              key={route.key}
+              icon={Icon}
+              focused={focused}
+              colors={colors}
+              reduceMotion={reduceMotion}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              badge={(options.tabBarBadge as number | undefined)}
+              onPress={onPress}
+              onLongPress={onLongPress}
+            />
+          )
+        })}
+      </View>
+    </View>
+  )
+}
+
+function FloatingTabItem({
+  icon: Icon,
+  focused,
+  colors,
+  reduceMotion,
+  accessibilityLabel,
+  badge,
+  onPress,
+  onLongPress,
+}: {
+  icon: React.ComponentType<{ size: number; color: string; strokeWidth?: number }>
+  focused: boolean
+  colors: ReturnType<typeof useTheme>['colors']
+  reduceMotion: boolean
+  accessibilityLabel?: string
+  badge?: number
+  onPress: () => void
+  onLongPress: () => void
+}) {
+  const scale = useRef(new Animated.Value(1)).current
+  const bgOpacity = useRef(new Animated.Value(focused ? 1 : 0)).current
   const isFirstRun = useRef(true)
 
-  // Apple HIG: spring pulse on focus change — skip initial mount (already at target)
   useEffect(() => {
     if (isFirstRun.current) { isFirstRun.current = false; return }
     if (reduceMotion) {
-      scale.setValue(focused ? 1.1 : 1)
+      bgOpacity.setValue(focused ? 1 : 0)
       return
     }
-    Animated.spring(scale, {
-      toValue: focused ? 1.1 : 1,
-      friction: 4,
-      tension: 180,
-      useNativeDriver: true,
-    }).start()
-  }, [focused, reduceMotion, scale])
 
-  if (isCreate) {
-    return (
-      <View style={s.createTabItem}>
-        <View style={[s.createFab, { backgroundColor: colors.foreground }]}>
-          <Icon size={24} color={colors.background} strokeWidth={2.2} />
-        </View>
-      </View>
-    )
-  }
+    // Subtle pop on focus
+    Animated.parallel([
+      Animated.spring(scale, {
+        toValue: focused ? 1 : 1,
+        friction: 5,
+        tension: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(bgOpacity, {
+        toValue: focused ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [focused, reduceMotion, scale, bgOpacity])
+
+  const iconColor = focused ? colors.primaryForeground : colors.primary
 
   return (
-    <View style={s.tabItem}>
-      <Animated.View style={[
-        s.iconWrap,
-        { transform: [{ scale }] },
-        focused && { backgroundColor: `${colors.primary}14`, borderRadius: 16 },
-      ]}>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={accessibilityLabel}
+      style={s.tabPressable}
+    >
+      <Animated.View
+        style={[
+          s.tabItemPill,
+          { transform: [{ scale }] },
+        ]}
+      >
+        {/* Active background pill */}
+        <Animated.View
+          style={[
+            s.activeBg,
+            {
+              backgroundColor: colors.primary,
+              opacity: bgOpacity,
+            },
+          ]}
+        />
         <Icon
-          size={24}
-          color={focused ? colors.primary : colors.mutedForeground}
-          strokeWidth={focused ? 2.4 : 1.6}
+          size={20}
+          color={iconColor}
+          strokeWidth={focused ? 2.2 : 1.8}
         />
         {badge != null && badge > 0 && (
           <View
-            style={[s.badge, { borderColor: colors.card, backgroundColor: colors.destructive }]}
-            accessibilityLabel={`${badge} ${label}`}
+            style={[s.badge, { backgroundColor: colors.destructive, borderColor: colors.card }]}
+            accessibilityLabel={`${badge}`}
             accessibilityRole="text"
           >
             <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
           </View>
         )}
       </Animated.View>
-      <Text numberOfLines={1} style={[
-        s.tabLabel,
-        { color: focused ? colors.primary : colors.mutedForeground },
-        focused && { fontFamily: fonts.bodySemi },
-      ]}>{label}</Text>
-    </View>
+    </Pressable>
   )
 }
+
+// --- Main Layout ---
 
 export default function TabLayout() {
   const { colors, isDark } = useTheme()
@@ -94,12 +188,6 @@ export default function TabLayout() {
   const router = useRouter()
   const pathname = usePathname()
   const insets = useSafeAreaInsets()
-  // Liquid Glass tab bar: translucent BlurView background on iOS (always on)
-  // Falls back to semi-transparent solid color on Android (no native blur)
-  const isIOS = Platform.OS === 'ios'
-  const tabBarBg = isIOS
-    ? 'transparent'
-    : (isDark ? 'rgba(30,30,30,0.97)' : 'rgba(255,255,255,0.97)')
   const supabase = useSupabase()
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)
@@ -107,9 +195,7 @@ export default function TabLayout() {
   const totalUnread = unreadCount + eventChatUnread
   // Auto-register push token on app start (EAS builds only)
   usePushNotifications(userId)
-  // Sync app icon badge with combined unread count. Centralized here so
-  // useUnreadCount and useEventChatUnread can't fight each other. Change
-  // detection prevents no-op bridge calls.
+  // Sync app icon badge with combined unread count
   const lastBadgeRef = useRef<number>(-1)
   useEffect(() => {
     if (lastBadgeRef.current === totalUnread) return
@@ -123,7 +209,6 @@ export default function TabLayout() {
       if (mounted && user) setUserId(user.id)
     }).catch(() => {})
 
-    // Keep userId in sync with auth changes so unread hooks track the right user
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return
       setUserId(session?.user?.id ?? null)
@@ -137,107 +222,90 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-    <Header />
     <Tabs
+      tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: tabBarBg,
-          borderTopColor: colors.border,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          height: 72 + insets.bottom,
-          paddingBottom: insets.bottom,
-          paddingTop: 8,
-          // Position absolute on iOS so content scrolls under the glass
-          ...(isIOS ? { position: 'absolute' as const } : {}),
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 6,
-          elevation: 8,
-        },
         tabBarShowLabel: false,
-        ...(isIOS ? {
-          tabBarBackground: () => (
-            <BlurView
-              tint={isDark ? 'dark' : 'light'}
-              intensity={80}
-              style={StyleSheet.absoluteFill}
-            />
-          ),
-        } : {}),
       }}
     >
       <Tabs.Screen name="index" options={{
         tabBarAccessibilityLabel: t('nav.feed'),
-        tabBarIcon: ({ focused }) => <TabIcon icon={Newspaper} label={t('nav.feed')} focused={focused} colors={colors} />,
-      }} listeners={{
-        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
       <Tabs.Screen name="explore" options={{
         tabBarAccessibilityLabel: t('explore.title'),
-        tabBarIcon: ({ focused }) => <TabIcon icon={Compass} label={t('explore.title')} focused={focused} colors={colors} />,
-      }} listeners={{
-        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
       <Tabs.Screen name="create" options={{
         tabBarAccessibilityLabel: t('nav.create'),
-        tabBarIcon: ({ focused }) => <TabIcon icon={Plus} label={t('nav.create')} focused={focused} isCreate colors={colors} />,
-      }} listeners={{
-        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
       <Tabs.Screen name="messages" options={{
         tabBarAccessibilityLabel: t('nav.messages'),
-        tabBarIcon: ({ focused }) => <TabIcon icon={MessageCircle} label={t('nav.messages')} focused={focused} colors={colors} badge={totalUnread} />,
-      }} listeners={{
-        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
+        tabBarBadge: totalUnread > 0 ? totalUnread : undefined,
       }} />
       <Tabs.Screen name="profile" options={{
         tabBarAccessibilityLabel: t('nav.profile'),
-        tabBarIcon: ({ focused }) => <TabIcon icon={User} label={t('nav.profile')} focused={focused} colors={colors} />,
-      }} listeners={{
-        tabPress: () => { try { Haptics.selectionAsync() } catch {} },
       }} />
     </Tabs>
-    {/* Create menu modal removed — tab navigates directly to create screen */}
     </View>
   )
 }
 
+// --- Styles ---
+
 const s = StyleSheet.create({
-  tabItem: { alignItems: 'center', gap: 2, position: 'relative', width: 64 },
-  iconWrap: {
-    width: 44, height: 36, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center',
+  floatingContainer: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    alignItems: 'center',
   },
-  createTabItem: {
-    alignItems: 'center', justifyContent: 'center',
-    position: 'relative', width: 64, marginTop: -18,
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    width: '100%',
+    padding: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    // Shadow: ink-tinted subtle
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 8,
   },
-  createFab: {
-    width: 56, height: 56, borderRadius: 28,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
+  tabPressable: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tabLabel: { fontSize: 12, fontWeight: '500', fontFamily: fonts.body },
+  tabItemPill: {
+    width: 44,
+    height: 44,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  activeBg: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+  },
   badge: {
-    position: 'absolute' as const,
-    top: -4,
-    right: -8,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    paddingHorizontal: 4,
+    position: 'absolute',
+    top: 2,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
     borderWidth: 2,
   },
   badgeText: {
-    color: '#FFFFFF', // always white on destructive background
-    fontSize: 11,
-    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
     lineHeight: 12,
-    fontFamily: fonts.bodySemi,
   },
 })

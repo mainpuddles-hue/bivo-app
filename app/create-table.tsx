@@ -7,7 +7,8 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, MapPin, Check } from 'lucide-react-native'
+import { ArrowLeft, MapPin, Check, Coffee, UtensilsCrossed, Footprints, Trophy, Handshake } from 'lucide-react-native'
+import type { LucideIcon } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -19,12 +20,12 @@ import { createEventChat } from '@/lib/eventChatHelpers'
 import { TABLE_CATEGORIES } from '@/lib/constants'
 import type { TableCategory } from '@/lib/types'
 
-const CATEGORY_OPTIONS: { key: TableCategory; labelKey: string; emoji: string; color: string }[] = [
-  { key: 'coffee', labelKey: 'tables.catCoffee', emoji: '☕', color: '#8B5E3C' },
-  { key: 'lunch', labelKey: 'tables.catLunch', emoji: '🍽️', color: '#E8A050' },
-  { key: 'walk', labelKey: 'tables.catWalk', emoji: '🚶', color: '#4CAF6A' },
-  { key: 'sports', labelKey: 'tables.catSports', emoji: '⚽', color: '#3B7DD8' },
-  { key: 'hangout', labelKey: 'tables.catHangout', emoji: '🤝', color: '#7C5CBF' },
+const CATEGORY_OPTIONS: { key: TableCategory; labelKey: string; icon: LucideIcon; color: string }[] = [
+  { key: 'coffee', labelKey: 'tables.catCoffee', icon: Coffee, color: '#8B5E3C' },
+  { key: 'lunch', labelKey: 'tables.catLunch', icon: UtensilsCrossed, color: '#E8A050' },
+  { key: 'walk', labelKey: 'tables.catWalk', icon: Footprints, color: '#2B8A62' },
+  { key: 'sports', labelKey: 'tables.catSports', icon: Trophy, color: '#3B7DD8' },
+  { key: 'hangout', labelKey: 'tables.catHangout', icon: Handshake, color: '#7C5CBF' },
 ]
 
 const DURATION_OPTIONS = [
@@ -188,9 +189,9 @@ function CreateTableScreenInner() {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
               >
-                <Text style={s.categoryEmoji}>{cat.emoji}</Text>
+                <cat.icon size={18} color={selected ? colors.primaryForeground : cat.color} />
                 <Text style={[s.categoryLabel, {
-                  color: selected ? '#FFF' : colors.foreground,
+                  color: selected ? colors.primaryForeground : colors.foreground,
                   fontFamily: selected ? fonts.bodySemi : fonts.body,
                 }]}>
                   {t(cat.labelKey)}
@@ -387,9 +388,6 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-  },
-  categoryEmoji: {
-    fontSize: 18,
   },
   categoryLabel: {
     fontSize: 14,

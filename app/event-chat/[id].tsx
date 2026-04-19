@@ -321,7 +321,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingBottom: 10,
+    paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: {
@@ -337,7 +337,7 @@ const s = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontFamily: fonts.heading,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   headerMeta: {
     flexDirection: 'row',
@@ -354,7 +354,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   eventBarText: {
@@ -368,7 +368,7 @@ const s = StyleSheet.create({
   },
   messageList: {
     paddingHorizontal: 12,
-    gap: 6,
+    gap: 8,
   },
   emptyText: {
     fontSize: 14,
@@ -389,29 +389,29 @@ const s = StyleSheet.create({
   },
   bubble: {
     borderRadius: 16,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     maxWidth: '100%',
   },
   senderName: {
     fontSize: 11,
     fontFamily: fonts.bodySemi,
-    lineHeight: 14,
+    lineHeight: 16,
     marginBottom: 2,
   },
   msgText: {
     fontSize: 15,
-    lineHeight: 21,
+    lineHeight: 20,
   },
   msgImage: {
     width: 200,
     height: 150,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 4,
   },
   msgTime: {
     fontSize: 11,
-    lineHeight: 14,
+    lineHeight: 16,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
@@ -435,7 +435,7 @@ const s = StyleSheet.create({
     flex: 1,
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 15,
     maxHeight: 120,
     lineHeight: 20,

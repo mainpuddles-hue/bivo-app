@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
 import { withHapticRefresh } from '@/lib/haptics'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -11,7 +11,7 @@ import * as ImagePicker from 'expo-image-picker'
 import {
   Settings, LogOut, LogIn, MapPin, Star, Users, Pencil, Camera, X,
   Crown, Heart, FileText, CalendarDays, Package, ChevronRight,
-  Zap, Flame, Trophy, RotateCcw, XCircle, Trash2, Building2, TrendingUp, RefreshCw,
+  Zap, RotateCcw, XCircle, Trash2, Building2, RefreshCw,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -21,16 +21,14 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { PostCard } from '@/components/PostCard'
-import { TrustBadge, TrustProgress } from '@/components/TrustBadge'
+import { TrustBadge } from '@/components/TrustBadge'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { useIdentityVerification } from '@/hooks/useIdentityVerification'
 import { VerificationModal } from '@/components/VerificationModal'
 import { fonts } from '@/lib/fonts'
 import { BADGE_ICONS } from '@/lib/badgeIcons'
-import { useStreak } from '@/hooks/useStreak'
 import { Avatar } from '@/components/Avatar'
 import { StarRating } from '@/components/StarRating'
-import { ReferralCard } from '@/components/ReferralCard'
 import { getCachedUserId, clearAuthCache } from '@/lib/authCache'
 import { clearExpiredPro } from '@/lib/proExpiry'
 import { useToast } from '@/components/Toast'
@@ -46,25 +44,6 @@ interface ActivityItem {
 
 const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
 
-// TODO: UX — CONTENT MANAGEMENT (friction for returning users after 2+ weeks):
-//
-// 1. "MY POSTS" TAB: Add a third tab ('overview' | 'activity' | 'posts') that
-//    shows ALL of the user's posts (not just recent 5) with status indicators
-//    (active/expired/archived). Currently only 5 recent posts show in overview.
-//    Users with 10+ posts have no way to find/manage older ones.
-//
-// 2. REVIEWS GIVEN: The activity tab shows "review_given" items but there's no
-//    dedicated "Reviews I wrote" view. Add a section or filter to see all reviews
-//    the user has given, not just received.
-//
-// 3. POINT HISTORY: Profile shows total_points in stats bar but NO breakdown
-//    of how points were earned. Add a "Point history" screen accessible by
-//    tapping the points stat. Query user_points table and show a chronological
-//    list with action type, amount, and date.
-//
-// 4. INVITE HISTORY: ReferralCard exists but shows only the referral code.
-//    There's no view of who was invited and whether they joined. Add an
-//    invite history list showing invited email/name + status (pending/joined).
 export default function ProfileScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -95,14 +74,9 @@ export default function ProfileScreen() {
   const [allPostsLoading, setAllPostsLoading] = useState(false)
   const [allPostsLoaded, setAllPostsLoaded] = useState(false)
   const [postFilter, setPostFilter] = useState<'all' | 'active' | 'expired' | 'closed'>('all')
-  // TODO 3: Point history modal
-  const [showPointHistory, setShowPointHistory] = useState(false)
-  const [pointHistory, setPointHistory] = useState<{ action: string; points: number; created_at: string }[]>([])
-  const [pointHistoryLoading, setPointHistoryLoading] = useState(false)
   const [fetchError, setFetchError] = useState(false)
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
-  const streakData = useStreak(profile?.id ?? null)
 
   const loadProfile = useCallback(async () => {
     setFetchError(false)
@@ -203,6 +177,16 @@ export default function ProfileScreen() {
       setProfileLoading(false)
     }
   }, [supabase, t])
+
+  // Stable onRefresh — withHapticRefresh returns a new function on every
+  // call, which would cause RefreshControl to rebind on every render.
+  const onRefreshHandler = useMemo(
+    () => withHapticRefresh(() => {
+      setRefreshing(true)
+      loadProfile().finally(() => setRefreshing(false))
+    }),
+    [loadProfile],
+  )
 
   useFocusEffect(useCallback(() => {
     let cancelled = false
@@ -334,22 +318,6 @@ export default function ProfileScreen() {
     )
   }, [supabase, t])
 
-  // TODO 3: Load point history
-  const loadPointHistory = useCallback(async () => {
-    if (!profile) return
-    setPointHistoryLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('user_points')
-        .select('action, points, created_at')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(20)
-      if (!error && data) setPointHistory(data as any[])
-    } catch { /* table may not exist */ }
-    finally { setPointHistoryLoading(false) }
-  }, [profile, supabase])
-
   const handleLogout = () => {
     Alert.alert(
       t('settings.logout'),
@@ -372,7 +340,7 @@ export default function ProfileScreen() {
   if (profileLoading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: 12 }]}>
+        <View style={[s.header, { paddingTop: insets.top + 12 }]}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <ProfileSkeleton />
@@ -383,7 +351,7 @@ export default function ProfileScreen() {
   if (!profile) {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
-        <View style={[s.header, { paddingTop: 12 }]}>
+        <View style={[s.header, { paddingTop: insets.top + 12 }]}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </View>
         <View style={s.emptyLogin}>
@@ -412,10 +380,18 @@ export default function ProfileScreen() {
   return (
     <ScreenErrorBoundary screenName="Profile">
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: 12, borderBottomColor: colors.border }]}>
+      {/* Header — mockup 08: centered title + settings circle */}
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+        <View style={{ width: 36 }} />
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
-        <PressableOpacity onPress={() => router.push('/settings')} hitSlop={8} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={t('settings.title')} accessibilityRole="button">
-          <Settings size={20} color={colors.mutedForeground} />
+        <PressableOpacity
+          onPress={() => router.push('/settings')}
+          hitSlop={8}
+          style={[s.headerCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+          accessibilityLabel={t('settings.title')}
+          accessibilityRole="button"
+        >
+          <Settings size={14} color={colors.foreground} strokeWidth={2} />
         </PressableOpacity>
       </View>
 
@@ -425,87 +401,51 @@ export default function ProfileScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={withHapticRefresh(() => {
-              setRefreshing(true)
-              loadProfile().finally(() => setRefreshing(false))
-            })}
+            onRefresh={onRefreshHandler}
             tintColor={colors.primary}
           />
         }
       >
         {fetchError && !profileLoading && (
-          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 16, backgroundColor: `${colors.destructive}10` }}>
+          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20, backgroundColor: `${colors.destructive}10` }}>
             <RefreshCw size={14} color={colors.destructive} />
             <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
           </PressableOpacity>
         )}
 
-        {/* Hero — Threads style: avatar left, info right */}
+        {/* Hero — mockup 08: centered avatar + name + location */}
         <View style={s.hero}>
-          {/* Top row: avatar + info */}
-          <View style={s.heroRow}>
-            <PressableOpacity onPress={handleAvatarUpload} accessibilityLabel={`${profile.name} — ${t('profile.avatarUpdated')}`} accessibilityRole="button">
-              <View>
-                <Avatar url={profile.avatar_url} name={profile.name} size={80} borderColor={profile.is_pro ? colors.pro : 'transparent'} borderWidth={2} />
-                <View style={[s.cameraBtn, { backgroundColor: colors.primary }]} accessibilityElementsHidden>
-                  <Camera size={12} color={colors.primaryForeground} />
-                </View>
-              </View>
-            </PressableOpacity>
+          <PressableOpacity onPress={handleAvatarUpload} accessibilityLabel={`${profile.name} — ${t('profile.avatarUpdated')}`} accessibilityRole="button" style={s.avatarWrap}>
+            <Avatar url={profile.avatar_url} name={profile.name} size={104} borderColor={profile.is_pro ? colors.pro : colors.border} borderWidth={1} />
+            <View style={[s.cameraBtn, { backgroundColor: colors.primary }]} accessibilityElementsHidden>
+              <Camera size={12} color={colors.primaryForeground} />
+            </View>
+          </PressableOpacity>
 
-            {/* Info block */}
-            <View style={s.heroInfo}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
-                {!trust.loading && <TrustBadge level={trust.level} size="small" />}
-                {profile.is_pro && (
-                  <View style={[s.inlineBadge, { backgroundColor: `${colors.pro}20` }]}>
-                    <Crown size={10} color={colors.pro} fill={colors.pro} />
-                    <Text style={[s.inlineBadgeText, { color: colors.pro }]}>Pro</Text>
-                  </View>
-                )}
-                {profile.is_business && (
-                  <View style={[s.inlineBadge, { backgroundColor: `${colors.primary}15` }]}>
-                    <Building2 size={10} color={colors.primary} />
-                    <Text style={[s.inlineBadgeText, { color: colors.primary }]}>{profile.business_name ?? t('business.verified')}</Text>
-                  </View>
-                )}
-              </View>
-
-              {profile.naapurusto && (
-                <View style={s.nhRow}>
-                  <MapPin size={12} color={colors.mutedForeground} />
-                  <Text style={[s.nhText, { color: colors.mutedForeground }]}>{profile.naapurusto}</Text>
+          <View style={s.heroCenterInfo}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
+              {!trust.loading && <TrustBadge level={trust.level} size="small" />}
+              {profile.is_pro && (
+                <View style={[s.inlineBadge, { backgroundColor: `${colors.pro}20` }]}>
+                  <Crown size={10} color={colors.pro} fill={colors.pro} />
+                  <Text style={[s.inlineBadgeText, { color: colors.pro }]}>Pro</Text>
                 </View>
               )}
-
-              {/* Stats inline */}
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 0 }}>
-                <PressableOpacity onPress={() => postCount === 0 ? router.push('/(tabs)/create') : setActiveTab('posts')} accessibilityRole="button">
-                  <Text style={[s.inlineStat, { color: colors.foreground }]}>
-                    <Text style={s.inlineStatNum}>{postCount}</Text>
-                    {' '}{t('profile.posts')}
-                  </Text>
-                </PressableOpacity>
-                <Text style={[s.inlineStatSep, { color: colors.mutedForeground }]}> · </Text>
-                <Pressable onPress={() => followerCount > 0 ? openFollowList('followers') : undefined} accessibilityRole="button">
-                  <Text style={[s.inlineStat, { color: colors.foreground }]}>
-                    <Text style={s.inlineStatNum}>{followerCount}</Text>
-                    {' '}{t('profile.followers')}
-                  </Text>
-                </Pressable>
-                <Text style={[s.inlineStatSep, { color: colors.mutedForeground }]}> · </Text>
-                <PressableOpacity onPress={() => { setShowPointHistory(true); loadPointHistory() }} accessibilityRole="button">
-                  <Text style={[s.inlineStat, { color: colors.foreground }]}>
-                    <Text style={s.inlineStatNum}>{profile?.total_points ?? 0}</Text>
-                    {' '}{t('profile.points')}
-                  </Text>
-                </PressableOpacity>
-              </View>
+              {profile.is_business && (
+                <View style={[s.inlineBadge, { backgroundColor: `${colors.primary}15` }]}>
+                  <Building2 size={10} color={colors.primary} />
+                  <Text style={[s.inlineBadgeText, { color: colors.primary }]}>{profile.business_name ?? t('business.verified')}</Text>
+                </View>
+              )}
             </View>
+            <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]}>
+              {[profile.naapurusto, 'Helsinki'].filter(Boolean).join(', ')}
+              {profile.created_at ? ` · TackBird ${formatTimeAgo(profile.created_at, t, locale)}` : ''}
+            </Text>
           </View>
 
-          {/* Bio - editable, full width below hero row */}
+          {/* Bio */}
           {editingBio ? (
             <View style={s.bioEditWrap}>
               <TextInput
@@ -528,28 +468,22 @@ export default function ProfileScreen() {
                 </PressableOpacity>
               </View>
             </View>
-          ) : (
-            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'flex-start', gap: 6 }, !profile.bio && { backgroundColor: `${colors.primary}10`, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }]} accessibilityLabel={profile.bio ? t('profile.editBio') : t('profile.clickToAddBio')} accessibilityRole="button">
-              <Text style={[s.bio, { color: profile.bio ? colors.foreground : colors.mutedForeground, flex: 1 }]}>
-                {profile.bio || t('profile.clickToAddBio')}
+          ) : profile.bio ? (
+            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'flex-start', gap: 6 }]} accessibilityLabel={t('profile.editBio')} accessibilityRole="button">
+              <Text style={[s.bio, { color: colors.foreground, flex: 1, textAlign: 'center' }]}>
+                {profile.bio}
               </Text>
               <Pencil size={12} color={colors.mutedForeground} style={{ marginTop: 2 }} />
             </PressableOpacity>
+          ) : (
+            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { backgroundColor: `${colors.primary}10`, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'center' }]} accessibilityLabel={t('profile.clickToAddBio')} accessibilityRole="button">
+              <Text style={[s.bio, { color: colors.mutedForeground }]}>{t('profile.clickToAddBio')}</Text>
+            </PressableOpacity>
           )}
 
-          {/* Trust progress — thin bar, no uppercase label */}
-          {!trust.loading && trust.level === 1 && (
-            <View style={s.trustBarWrap}>
-              <View style={s.trustBarTrack}>
-                <View style={[s.trustBarFill, { width: `${Math.min(100, Math.max(0, trust.score))}%`, backgroundColor: trust.score < 40 ? colors.destructive : trust.score < 75 ? colors.pro : colors.primary }]} />
-              </View>
-              <Text style={[s.trustBarLabel, { color: colors.mutedForeground }]}>{Math.round(trust.score)}/100</Text>
-            </View>
-          )}
-
-          {/* Badges inline chips */}
+          {/* Badges */}
           {badges.length > 0 && (
-            <View style={s.badgesRow}>
+            <View style={[s.badgesRow, { justifyContent: 'center' }]}>
               {badges.map((b) => {
                 const cfg = BADGE_ICONS[b.badge_type]
                 if (!cfg) return null
@@ -565,66 +499,55 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Following count — text link */}
-        {followingCount > 0 && (
-          <PressableOpacity onPress={() => openFollowList('following')} style={{ paddingVertical: 4 }}>
-            <Text style={[{ fontSize: 13, color: colors.mutedForeground, fontFamily: fonts.body }]}>
-              {followingCount} {t('profile.following').toLowerCase()}
-            </Text>
+        {/* Stats grid — mockup 08: 3-column surface cards */}
+        <View style={s.statsGrid}>
+          <PressableOpacity onPress={() => avgRating !== null ? setActiveTab('overview') : undefined} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating?.toFixed(1) ?? '—'}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.rating') ?? 'Arvio'}</Text>
           </PressableOpacity>
-        )}
+          <PressableOpacity onPress={() => postCount > 0 ? setActiveTab('posts') : router.push('/(tabs)/create')} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
+          </PressableOpacity>
+          <PressableOpacity onPress={() => followerCount > 0 ? openFollowList('followers') : undefined} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
+          </PressableOpacity>
+        </View>
 
-        {/* Pro upgrade card */}
-        {FEATURES.PRO_SUBSCRIPTION && !profile.is_pro && (
-          <PressableOpacity onPress={() => router.push('/pro')} style={[s.proUpgradeCard, { backgroundColor: `${colors.pro}12`, borderColor: `${colors.pro}30` }]} accessibilityLabel={t('pro.upgradeToPro')} accessibilityRole="button">
-            <Crown size={20} color={colors.pro} />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={[s.proUpgradeTitle, { color: colors.pro }]}>{t('pro.upgradeToPro')}</Text>
-              <Text style={[s.proUpgradeSubtitle, { color: colors.mutedForeground }]}>{t('pro.profileBanner')}</Text>
+        {/* Menu rows — mockup 08: individual surface cards with chevrons */}
+        <View style={s.menuSection}>
+          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
+            <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('profile.myPosts')}</Text>
+            <View style={s.menuRowRight}>
+              <Text style={[s.menuRowMeta, { color: colors.mutedForeground }]}>{postCount > 0 ? `${postCount} ${t('profile.active').toLowerCase()}` : ''}</Text>
+              <ChevronRight size={10} color={colors.mutedForeground} strokeWidth={2.5} />
             </View>
-            <ChevronRight size={16} color={colors.pro} />
           </PressableOpacity>
-        )}
-
-        {/* Quick actions — flat list with hairline separators */}
-        <View style={[s.flatList, { borderColor: colors.border }]}>
-          {FEATURES.PAYMENTS && (
-            <PressableOpacity onPress={() => router.push('/bookings')} style={[s.flatRow, { borderBottomColor: colors.border }]} accessibilityLabel={t('bookings.title')} accessibilityRole="button">
-              <Package size={18} color={colors.pro} />
-              <Text style={[s.flatRowText, { color: colors.foreground }]}>{t('bookings.title')}</Text>
-              <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.5} />
-            </PressableOpacity>
-          )}
-          <PressableOpacity onPress={() => router.push('/saved')} style={[s.flatRow, { borderBottomColor: colors.border }]} accessibilityLabel={t('saved.title')} accessibilityRole="button">
-            <Heart size={18} color={colors.primary} />
-            <Text style={[s.flatRowText, { color: colors.foreground }]}>{t('saved.title')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.5} />
+          <PressableOpacity onPress={() => setActiveTab('overview')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
+            <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('profile.reviews') ?? 'Arviot'}</Text>
+            <View style={s.menuRowRight}>
+              <Text style={[s.menuRowMeta, { color: colors.mutedForeground }]}>{reviews.length > 0 ? `${reviews.length}` : ''}</Text>
+              <ChevronRight size={10} color={colors.mutedForeground} strokeWidth={2.5} />
+            </View>
           </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/leaderboard')} style={[s.flatRow, !FEATURES.BOOSTS && s.flatRowLast, { borderBottomColor: colors.border }]} accessibilityLabel={t('leaderboard.title')} accessibilityRole="button">
-            <Trophy size={18} color={colors.pro} />
-            <Text style={[s.flatRowText, { color: colors.foreground }]}>{t('leaderboard.title')}</Text>
-            <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.5} />
+          <PressableOpacity onPress={() => router.push('/saved')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
+            <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('saved.title')}</Text>
+            <View style={s.menuRowRight}>
+              <Text style={[s.menuRowMeta, { color: colors.mutedForeground }]}>{savedCount > 0 ? `${savedCount}` : ''}</Text>
+              <ChevronRight size={10} color={colors.mutedForeground} strokeWidth={2.5} />
+            </View>
           </PressableOpacity>
-          {FEATURES.BOOSTS && (
-            <PressableOpacity onPress={() => router.push('/boosts')} style={[s.flatRow, s.flatRowLast]} accessibilityLabel={t('boost.title')} accessibilityRole="button">
-              <TrendingUp size={18} color={colors.accent} />
-              <Text style={[s.flatRowText, { color: colors.foreground }]}>{t('boost.title')}</Text>
-              <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.5} />
+          {FEATURES.PRO_SUBSCRIPTION && !profile.is_pro && (
+            <PressableOpacity onPress={() => router.push('/pro')} style={[s.menuRow, { backgroundColor: `${colors.pro}08`, borderColor: `${colors.pro}30` }]} accessibilityRole="button">
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Crown size={14} color={colors.pro} />
+                <Text style={[s.menuRowLabel, { color: colors.pro }]}>{t('pro.upgradeToPro')}</Text>
+              </View>
+              <ChevronRight size={10} color={colors.pro} strokeWidth={2.5} />
             </PressableOpacity>
           )}
         </View>
-
-        {/* Trust Level Progress */}
-        {!trust.loading && (
-          <TrustProgress level={trust.level} nextTierHints={trust.nextTierHints} score={trust.score} factors={trust.factors} onVerifyPress={identity.startVerification} />
-        )}
-
-        {/* Referral Program */}
-        {profile && (
-          <View style={{ paddingHorizontal: 16 }}>
-            <ReferralCard userId={profile.id} />
-          </View>
-        )}
 
         {/* Tabs */}
         <View style={[s.tabRow, { borderBottomColor: colors.border }]} accessibilityRole="tablist">
@@ -642,56 +565,6 @@ export default function ProfileScreen() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <View style={s.tabContent}>
-            {/* Impact Dashboard */}
-            <View style={[impactStyles.card, { backgroundColor: colors.card }]}>
-              <Text style={[impactStyles.title, { color: colors.foreground }]}>{t('profile.yourImpact')}</Text>
-              <View style={impactStyles.statsRow}>
-                <View style={impactStyles.statItem}>
-                  <Text style={[impactStyles.statNumber, { color: colors.primary }]}>{postCount}</Text>
-                  <Text style={[impactStyles.statLabel, { color: colors.mutedForeground }]}>{t('profile.shared')}</Text>
-                </View>
-                <View style={impactStyles.statItem}>
-                  <Text style={[impactStyles.statNumber, { color: colors.primary }]}>{savedCount}</Text>
-                  <Text style={[impactStyles.statLabel, { color: colors.mutedForeground }]}>{t('profile.impactSaved')}</Text>
-                </View>
-              </View>
-              {(profile?.current_streak ?? 0) > 0 && (
-                <View style={[impactStyles.streakRow, { borderTopColor: colors.border }]}>
-                  <Flame size={16} color={colors.destructive} />
-                  <Text style={[impactStyles.streakText, { color: colors.foreground }]}>
-                    {t('profile.streakDays', { count: profile?.current_streak ?? 0 })}
-                  </Text>
-                  <Text style={[impactStyles.pointsText, { color: colors.mutedForeground }]}>
-                    · {profile?.total_points ?? 0} {t('profile.points')}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Badge Showcase */}
-            {badges.length > 0 && (
-              <View style={[impactStyles.card, { backgroundColor: colors.card }]}>
-                <Text style={[impactStyles.title, { color: colors.foreground }]}>{t('profile.badges')}</Text>
-                <View style={badgeStyles.grid}>
-                  {badges.map(badge => {
-                    const info = BADGE_ICONS[badge.badge_type]
-                    if (!info) return null
-                    const Icon = info.icon
-                    return (
-                      <View key={badge.badge_type} style={badgeStyles.item}>
-                        <View style={[badgeStyles.circle, { backgroundColor: `${info.color}18` }]}>
-                          <Icon size={20} color={info.color} />
-                        </View>
-                        <Text style={[badgeStyles.label, { color: colors.foreground }]} numberOfLines={1}>
-                          {t(`badges.${badge.badge_type}`)}
-                        </Text>
-                      </View>
-                    )
-                  })}
-                </View>
-              </View>
-            )}
-
             {/* Reviews */}
             <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('profile.reviewsCount', { count: reviews.length })}</Text>
             {reviews.length === 0 ? (
@@ -758,7 +631,7 @@ export default function ProfileScreen() {
                   <FileText size={48} color={colors.primary} strokeWidth={1.6} />
                 </View>
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.myPostsEmpty')}</Text>
-                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, marginTop: 8 }]}>
+                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[s.loginBtn, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, marginTop: 8 }]}>
                   <Text style={[s.loginBtnText, { color: colors.primaryForeground }]}>{t('profile.createFirst')}</Text>
                 </PressableOpacity>
               </View>
@@ -893,47 +766,6 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {/* Point History Modal */}
-      <Modal visible={showPointHistory} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowPointHistory(false)}>
-        <View style={[s.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
-            <Text style={[s.modalTitle, { color: colors.foreground }]}>{t('profile.pointHistory')}</Text>
-            <PressableOpacity onPress={() => setShowPointHistory(false)} hitSlop={12}>
-              <X size={24} color={colors.foreground} />
-            </PressableOpacity>
-          </View>
-          {pointHistoryLoading ? (
-            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
-              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
-            </View>
-          ) : pointHistory.length === 0 ? (
-            <View style={s.emptyActivity}>
-              <Trophy size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
-              <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noPointHistory')}</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={pointHistory}
-              keyExtractor={(item, idx) => `${item.created_at}-${idx}`}
-              contentContainerStyle={{ padding: 16, gap: 8 }}
-              renderItem={({ item }) => (
-                <View style={[s.pointHistoryRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <Text style={[s.pointHistoryPoints, { color: colors.primary }]}>+{item.points}</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[s.pointHistoryAction, { color: colors.foreground }]}>
-                      {t(`points.${item.action}`, undefined as any) !== `points.${item.action}` ? t(`points.${item.action}`) : item.action}
-                    </Text>
-                    <Text style={[s.pointHistoryTime, { color: colors.mutedForeground }]}>
-                      {formatTimeAgo(item.created_at, t, locale)}
-                    </Text>
-                  </View>
-                </View>
-              )}
-            />
-          )}
-        </View>
-      </Modal>
-
       {/* Suomi.fi Verification Modal */}
       {FEATURES.IDENTITY_VERIFICATION && (
         <VerificationModal
@@ -955,65 +787,71 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16, paddingBottom: 12,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, lineHeight: 28 },
-  content: { padding: 16, gap: 16 },
+  headerTitle: { fontSize: 14.5, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
+  headerCircle: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1,
+  },
+  content: { paddingHorizontal: 16, paddingTop: 4, gap: 18 },
 
-  // Hero — Threads style
-  hero: { gap: 12, paddingBottom: 4 },
-  heroRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16 },
-  heroInfo: { flex: 1, gap: 4, paddingTop: 4 },
-  profileName: { fontSize: 17, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 22, letterSpacing: -0.2 },
-  nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nhText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
+  // Hero — centered (mockup 08)
+  hero: { alignItems: 'center', gap: 12, paddingTop: 8 },
+  avatarWrap: { position: 'relative' },
+  heroCenterInfo: { alignItems: 'center', gap: 4 },
+  profileName: { fontSize: 24, fontWeight: '600', fontFamily: fonts.heading, lineHeight: 30, letterSpacing: -0.5 },
+  heroSubtitle: { fontSize: 12.5, fontFamily: fonts.body, lineHeight: 16, letterSpacing: 0.1, textAlign: 'center' },
 
-  // Inline stats
-  inlineStat: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-  inlineStatNum: { fontWeight: '700', fontFamily: fonts.bodySemi },
-  inlineStatSep: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
+  // Stats grid (mockup 08)
+  statsGrid: { flexDirection: 'row', gap: 8 },
+  statCard: {
+    flex: 1, borderRadius: 18, borderWidth: 1,
+    paddingVertical: 14, paddingHorizontal: 10,
+    alignItems: 'center', gap: 2,
+  },
+  statNum: { fontSize: 19, fontWeight: '600', fontFamily: fonts.heading, letterSpacing: -0.3, lineHeight: 24 },
+  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, letterSpacing: 0.2 },
+
+  // Menu rows (mockup 08)
+  menuSection: { gap: 8 },
+  menuRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderRadius: 16, borderWidth: 1,
+    paddingHorizontal: 16, paddingVertical: 14, minHeight: 48,
+  },
+  menuRowLabel: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  menuRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  menuRowMeta: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
 
   // Inline badge (Pro, Business) next to name
-  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
   inlineBadgeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 13 },
 
-  // Trust bar — thin, no label noise
-  trustBarWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  trustBarTrack: { flex: 1, height: 2, backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 1, overflow: 'hidden' },
-  trustBarFill: { height: '100%', borderRadius: 1 },
-  trustBarLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, minWidth: 36 },
-
   cameraBtn: {
-    position: 'absolute', bottom: 0, right: 0,
-    width: 22, height: 22, borderRadius: 11,
+    position: 'absolute', bottom: -4, right: -4,
+    width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
   bio: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  bioTapArea: { minHeight: 32, justifyContent: 'center' },
+  bioTapArea: { minHeight: 44, justifyContent: 'center' },
   bioEditWrap: { width: '100%', gap: 8 },
-  bioInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, minHeight: 64, textAlignVertical: 'top', fontFamily: fonts.body },
+  bioInput: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, minHeight: 64, textAlignVertical: 'top', fontFamily: fonts.body },
   bioActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, alignItems: 'center' },
-  bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16 },
+  bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44, justifyContent: 'center' as const },
   badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
 
-  // Flat list with hairline separators (replaces grouped card)
+  // Flat list (kept for logout row at bottom)
   flatList: { borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
   flatRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4, paddingVertical: 14, minHeight: 44, borderBottomWidth: StyleSheet.hairlineWidth },
   flatRowLast: { borderBottomWidth: 0 },
   flatRowText: { flex: 1, fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-
-  proUpgradeCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16, borderWidth: 1,
-  },
-  proUpgradeTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20 },
-  proUpgradeSubtitle: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 8, fontFamily: fonts.headingSemi, lineHeight: 22 },
-  reviewCard: { borderRadius: 16, padding: 16, gap: 8 },
+  reviewCard: { borderRadius: 20, padding: 16, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 18 },
   reviewTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   reviewComment: { fontSize: 14, lineHeight: 19, fontFamily: fonts.body },
@@ -1037,51 +875,24 @@ const s = StyleSheet.create({
   emptyIconCircle: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyLoginTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.heading, textAlign: 'center' },
   emptyLoginHint: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlign: 'center' },
-  loginBtn: { marginTop: 8, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center' },
+  loginBtn: { marginTop: 8, borderRadius: 999, paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center' },
   loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },
   modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi },
-  followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  followAvatar: { width: 40, height: 40, borderRadius: 20 },
+  followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, minHeight: 56 },
   followName: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  multiplierBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 16 },
-  multiplierText: { fontSize: 11, fontWeight: '800', fontFamily: fonts.bodySemi },
   // My Posts tab
-  myPostItem: { gap: 8, padding: 16, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth },
+  myPostItem: { gap: 8, padding: 16, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth },
   myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
-  myPostTypeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
+  myPostTypeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   myPostTypeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostDate: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-  myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
+  myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   myPostStatusText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostActions: { flexDirection: 'row', gap: 8, paddingTop: 4 },
-  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, minHeight: 44 },
+  myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, minHeight: 44 },
   myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
-  postFilterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  postFilterChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44 , justifyContent: 'center' as const },
   postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  // Point history modal
-  pointHistoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth },
-  pointHistoryPoints: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, minWidth: 32 },
-  pointHistoryAction: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  pointHistoryTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-})
-
-const impactStyles = StyleSheet.create({
-  card: { borderRadius: 16, padding: 16, gap: 12 },
-  title: { fontSize: 16, fontWeight: '600', fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 22 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-around' },
-  statItem: { alignItems: 'center', gap: 4 },
-  statNumber: { fontSize: 24, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 34 },
-  statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
-  streakText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
-  pointsText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-})
-
-const badgeStyles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  item: { alignItems: 'center', gap: 8, width: 72 },
-  circle: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 11, fontFamily: fonts.body, textAlign: 'center', lineHeight: 14 },
 })

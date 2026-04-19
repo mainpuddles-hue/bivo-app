@@ -31,11 +31,11 @@ interface GroupCategoryDef {
 }
 
 const GROUP_CATEGORIES: GroupCategoryDef[] = [
-  { key: 'general', labelKey: 'groups.general', color: '#2D6B5E' },
-  { key: 'sports', labelKey: 'groups.sports', color: '#27AE60' },
+  { key: 'general', labelKey: 'groups.general', color: '#1A1D1F' },
+  { key: 'sports', labelKey: 'groups.sports', color: '#2B8A62' },
   { key: 'kids', labelKey: 'groups.kids', color: '#FF9800' },
   { key: 'pets', labelKey: 'groups.pets', color: '#E8A050' },
-  { key: 'garden', labelKey: 'groups.garden', color: '#4CAF6A' },
+  { key: 'garden', labelKey: 'groups.garden', color: '#2B8A62' },
   { key: 'food', labelKey: 'groups.food', color: '#E74C3C' },
   { key: 'culture', labelKey: 'groups.culture', color: '#8E44AD' },
   { key: 'other', labelKey: 'groups.other', color: '#607D8B' },

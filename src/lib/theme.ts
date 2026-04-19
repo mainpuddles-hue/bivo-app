@@ -1,64 +1,67 @@
+// Helsinki Monochrome — a quiet, confident frame where content brings color.
+// No brand emerald, no accent hue. Ink + warm neutrals only.
+
 export const colors = {
   light: {
-    // Threads-light aesthetic: pure white canvas + hairline separators
-    primary: '#10B981',         // emerald — brand accent
-    accent: '#059669',          // darker emerald for press/active
+    // Helsinki Monochrome: ink-on-warm-neutral canvas
+    primary: '#1A1D1F',            // ink — primary text, active states, CTA fill
+    accent: '#2A2D30',             // ink-soft — hover/press on ink surfaces
     secondary: '#FF9500',
-    background: '#FFFFFF',      // pure white (Threads-style)
-    foreground: '#000000',      // pure black for max contrast
-    card: '#FFFFFF',            // cards match bg — hairline creates separation
-    cardElevated: '#FAFAFA',    // elevated (toast, modal)
-    border: '#E5E5E5',          // hairline separator
-    muted: '#F5F5F5',           // input/chip inactive bg
-    mutedForeground: '#737373', // secondary text (Apple HIG-like)
-    tertiaryForeground: '#A3A3A3',
-    destructive: '#DC2626',
+    background: '#F5F6F7',         // warm-neutral canvas
+    foreground: '#1A1D1F',         // near-black text
+    card: '#FFFFFF',               // white cards stand out against gray bg
+    cardElevated: '#FAFAFB',       // slightly recessed blocks
+    border: '#E8EAEC',             // hairline separator
+    muted: '#EEF0F2',              // wash/tint fill
+    mutedForeground: '#6B7075',    // meta, captions
+    tertiaryForeground: '#9AA0A6', // placeholder, disabled
+    destructive: '#C44536',        // muted red
     pro: '#F59E0B',
-    success: '#10B981',
+    success: '#2D7A4F',            // muted green
     info: '#3B82F6',
     purple: '#7C5CBF',
     purpleMuted: '#F4F0FF',
-    primaryForeground: '#FFFFFF',
+    primaryForeground: '#FFFFFF',  // on-ink text (white on ink buttons)
     accentForeground: '#FFFFFF',
     surfaceOverlay: 'rgba(255,255,255,0.82)',
-    surfaceTinted: 'rgba(16,185,129,0.04)',
+    surfaceTinted: 'rgba(26,29,31,0.04)', // ink tint
+    warmTint: '#F0EEE9',               // warm neutral for text-only cards, suggestion banners
   },
   dark: {
-    // Threads-style dark theme: pure black base + hairline separations
-    // Per UI/UX Pro Max: desaturated primary for dark mode vibrancy
-    primary: '#34D399',        // lighter emerald (was #6FCF97)
-    accent: '#6EE7B7',         // even lighter for highlights
+    // Helsinki Monochrome dark: inverted ink palette
+    primary: '#F5F6F7',            // inverted ink
+    accent: '#E8EAEC',             // inverted ink-soft
     secondary: '#FFAD33',
-    background: '#000000',     // pure black (Threads-style)
-    foreground: '#FFFFFF',     // pure white for max contrast
-    card: '#000000',           // cards match bg — hairline borders create separation
-    cardElevated: '#141416',   // elevated cards, modals, toast
-    border: '#1F1F22',         // hairline separator (very subtle, Threads-like)
-    muted: '#141416',          // input/pill inactive background
-    mutedForeground: '#8E8E93',// Apple HIG secondary label
-    tertiaryForeground: '#636366', // Apple HIG tertiary label
-    destructive: '#FF453A',    // iOS system red (dark mode)
+    background: '#0E1012',         // near-black canvas
+    foreground: '#F5F6F7',         // near-white text
+    card: '#17191C',               // dark surface
+    cardElevated: '#1C1E21',       // slightly elevated
+    border: '#26292D',             // dark hairline
+    muted: '#202326',              // dark wash
+    mutedForeground: '#8B8F94',    // dark meta
+    tertiaryForeground: '#5B5F64', // dark placeholder
+    destructive: '#FF453A',        // iOS system red dark
     pro: '#FBBF24',
     success: '#34D399',
-    info: '#0A84FF',           // iOS system blue (dark mode)
-    purple: '#BF5AF2',         // iOS system purple (dark mode)
+    info: '#0A84FF',
+    purple: '#BF5AF2',
     purpleMuted: '#1E1628',
-    primaryForeground: '#000000',
-    accentForeground: '#000000',
-    surfaceOverlay: 'rgba(12,12,14,0.82)',
-    surfaceTinted: 'rgba(52,211,153,0.06)',
+    primaryForeground: '#1A1D1F',  // dark on-ink (dark text on light buttons)
+    accentForeground: '#1A1D1F',
+    surfaceOverlay: 'rgba(14,16,18,0.82)',
+    surfaceTinted: 'rgba(245,246,247,0.06)',
+    warmTint: '#2A2722',               // dark warm neutral
   },
 }
 
-// --- Gradient pairs for LinearGradient ---
+// --- Gradient pairs for LinearGradient (ink-based, no emerald) ---
 export const gradients = {
-  primary:  ['#10B981', '#059669'] as [string, string],
-  primarySoft: ['#D1FAE5', '#A7F3D0'] as [string, string],
-  hero:     ['#10B981', '#3B82F6'] as [string, string],
-  warm:     ['#F59E0B', '#EF4444'] as [string, string],
-  // Login/onboarding background
-  loginLight: ['#F3F4F6', '#E0F2FE'] as [string, string],
-  loginDark:  ['#0A0A0C', '#0D1B2A'] as [string, string],
+  primary:      ['#1A1D1F', '#2A2D30'] as [string, string],
+  primarySoft:  ['#E8EAEC', '#D4D7DA'] as [string, string],
+  hero:         ['#1A1D1F', '#3B82F6'] as [string, string],
+  warm:         ['#F59E0B', '#EF4444'] as [string, string],
+  loginLight:   ['#F5F6F7', '#EEF0F2'] as [string, string],
+  loginDark:    ['#0E1012', '#17191C'] as [string, string],
 }
 
 // Category-specific gradient pairs (vibrant for Create screen bento grid)
@@ -88,16 +91,41 @@ export const categoryAccents: Record<string, string> = {
   tapahtuma: '#2B8A62',
 }
 
+// --- Shadows: ink-tinted light, black dark ---
+export const shadows = {
+  light: {
+    sm: { shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 2 },
+    md: { shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 16 },
+    lg: { shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 16 }, shadowOpacity: 0.10, shadowRadius: 40 },
+  },
+  dark: {
+    sm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.40, shadowRadius: 2 },
+    md: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.50, shadowRadius: 12 },
+    lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 16 }, shadowOpacity: 0.60, shadowRadius: 32 },
+  },
+}
+
 // --- Typography scale ---
 export const typography = {
-  display:   { fontSize: 28, fontWeight: '700' as const, letterSpacing: -0.5, lineHeight: 34 },
-  h1:        { fontSize: 22, fontWeight: '700' as const, letterSpacing: -0.3, lineHeight: 28 },
-  h2:        { fontSize: 18, fontWeight: '600' as const, letterSpacing: -0.2, lineHeight: 24 },
-  h3:        { fontSize: 16, fontWeight: '600' as const, letterSpacing: -0.1, lineHeight: 22 },
+  display:   { fontSize: 32, fontWeight: '600' as const, letterSpacing: -0.9, lineHeight: 36 },
+  h1:        { fontSize: 24, fontWeight: '600' as const, letterSpacing: -0.5, lineHeight: 30 },
+  h2:        { fontSize: 19, fontWeight: '600' as const, letterSpacing: -0.3, lineHeight: 25 },
+  h3:        { fontSize: 16, fontWeight: '600' as const, letterSpacing: -0.15, lineHeight: 22 },
   body:      { fontSize: 15, fontWeight: '400' as const, letterSpacing: 0,    lineHeight: 22 },
   bodySmall: { fontSize: 13, fontWeight: '400' as const, letterSpacing: 0,    lineHeight: 18 },
-  caption:   { fontSize: 11, fontWeight: '500' as const, letterSpacing: 0.5,  lineHeight: 14 },
+  caption:   { fontSize: 12, fontWeight: '500' as const, letterSpacing: 0,    lineHeight: 16 },
 }
+
+// --- Radii ---
+export const radii = {
+  chip: 999,
+  pill: 999,
+  input: 20,
+  card: 20,
+  post: 24,
+  modal: 28,
+  hero: 32,
+} as const
 
 export type ThemeColors = {
   primary: string
@@ -121,4 +149,5 @@ export type ThemeColors = {
   accentForeground: string
   surfaceOverlay: string
   surfaceTinted: string
+  warmTint: string
 }

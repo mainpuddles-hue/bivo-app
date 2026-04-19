@@ -157,9 +157,9 @@ export function DisputeModal({
             style={[styles.submitBtn, { backgroundColor: reason ? colors.destructive : colors.muted }]}
           >
             {submitting ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={colors.primaryForeground} />
             ) : (
-              <Text style={[styles.submitText, { color: reason ? '#FFFFFF' : colors.mutedForeground }]}>
+              <Text style={[styles.submitText, { color: reason ? colors.primaryForeground : colors.mutedForeground }]}>
                 {t('rental.disputeItem')}
               </Text>
             )}

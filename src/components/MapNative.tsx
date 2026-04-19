@@ -322,7 +322,7 @@ export default function MapScreen() {
               }}
             >
               <View style={[styles.businessMarker, { backgroundColor: colors.primary }]}>
-                <Building2 size={14} color="#FFF" />
+                <Building2 size={14} color={colors.primaryForeground} />
               </View>
             </Marker>
           ))}
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: '#FFFFFF',
-    shadowColor: '#000',
+    shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -803,7 +803,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFFFFF',
-    shadowColor: '#000',
+    shadowColor: '#1A1D1F',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3,

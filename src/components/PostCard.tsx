@@ -4,9 +4,9 @@ import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
-  MapPin, Crown, ImageIcon, BadgeCheck, Heart,
+  MapPin, Crown, ImageIcon, Heart,
   MessageCircle, Clock, Building2,
-  Share2, Bookmark, BookmarkCheck, MoreHorizontal, User, Flag, EyeOff,
+  Bookmark, BookmarkCheck, User,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
@@ -17,11 +17,7 @@ import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
 import { haversineKm } from '@/lib/geo'
-import { TrustBadge } from '@/components/TrustBadge'
-import { BoostBadge } from '@/components/BoostBadge'
-import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import { isHumanAction } from '@/lib/abuseDetection'
-import { FEATURES } from '@/lib/featureFlags'
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType } from '@/lib/types'
 
@@ -48,11 +44,10 @@ interface PostCardProps {
   userId?: string | null
   onInteraction?: (postId: string, type: 'view' | 'click' | 'like' | 'save' | 'message' | 'skip' | 'hide') => void
   onHide?: (postId: string) => void
-  isNew?: boolean
   index?: number
 }
 
-export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction, onHide, isNew, index = 0 }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, userLocation, userId, onInteraction, onHide, index = 0 }: PostCardProps) {
   const { colors, isDark } = useTheme()
   const reduceMotion = useReduceMotion()
   const { t, locale } = useI18n()
@@ -106,13 +101,10 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   const user = post.user
   const hasImage = post.image_url && !imgError
   const CategoryIcon = category ? ICON_MAP[category.icon] : null
-  const isVerified = user?.user_badges?.some(b => b.badge_type === 'verified') ?? false
-  const userTrustLevel = computeTrustLevelFromBadges(user?.user_badges)
 
   const isAnonymous = post.is_anonymous === true
   const isUrgentPost = post.is_urgent && post.expires_at && new Date(post.expires_at).getTime() > Date.now()
   const isExpired = !!(post.expires_at && new Date(post.expires_at).getTime() <= Date.now())
-  const [showMore, setShowMore] = useState(false)
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
 
@@ -131,24 +123,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     return parts.filter(Boolean).join(', ')
   }, [category, post.type, post.title, post.description, post.location, post.created_at, post.comment_count, isAnonymous, user?.name, likeCount, t, locale])
 
-  // Staggered card entrance — spring physics + index-based delay (2026 trend)
-  const entranceAnim = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    if (reduceMotion) { entranceAnim.setValue(1); return }
-    const delay = Math.min(index * 40, 200) // Max 200ms stagger
-    const timer = setTimeout(() => {
-      try {
-        Animated.spring(entranceAnim, { toValue: 1, friction: 8, tension: 100, useNativeDriver: true }).start()
-      } catch {} // Intentional: animation failure is non-critical
-    }, delay)
-    return () => clearTimeout(timer)
-  }, [entranceAnim, reduceMotion, index])
-  const entranceOpacity = entranceAnim
-  const entranceTranslateY = entranceAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [16, 0],
-  })
-
   const distanceText = useMemo(() => {
     if (!userLocation || !post.latitude || !post.longitude) return null
     const dist = haversineKm(userLocation.latitude, userLocation.longitude, post.latitude, post.longitude)
@@ -157,7 +131,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   }, [userLocation, post.latitude, post.longitude, t])
 
   return (
-    <Animated.View style={{ opacity: entranceOpacity, transform: [{ translateY: entranceTranslateY }] }}>
     <Pressable
       accessibilityLabel={a11yLabel}
       accessibilityRole="button"
@@ -244,10 +217,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
-        // Accent bar only for truly special states — category badge handles type distinction
         isUrgentPost && { borderLeftWidth: 3, borderLeftColor: colors.destructive },
         !isUrgentPost && isPro && { borderLeftWidth: 3, borderLeftColor: colors.pro },
-        !isUrgentPost && !isPro && post.is_boosted && FEATURES.BOOSTS && { borderLeftWidth: 3, borderLeftColor: colors.accent },
         isExpired && { opacity: 0.55 },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
@@ -306,7 +277,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                     <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
                       {user?.name ?? t('postCard.anonymousUser')}
                     </Text>
-                    {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
                     {isPro && (
                       <View style={[styles.proMicroBadge, { backgroundColor: `${colors.pro}18` }]}>
                         <Crown size={10} color={colors.pro} />
@@ -332,16 +302,14 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               </Pressable>
             )}
           </View>
-          {/* Category badge + boost badge — top right */}
+          {/* Category badge — top right */}
           <View style={styles.topRowRight}>
-            {post.is_boosted && FEATURES.BOOSTS && <BoostBadge />}
             {category && (
               <View style={[styles.categoryBadge, { backgroundColor: `${category.color}30` }]}>
                 {CategoryIcon && <CategoryIcon size={12} color={category.color} strokeWidth={2.2} />}
                 <Text style={[styles.categoryBadgeText, { color: category.color }]}>
                   {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
                 </Text>
-                {isNew && <View style={[styles.newDot, { backgroundColor: colors.accent }]} />}
               </View>
             )}
           </View>
@@ -372,7 +340,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {/* Pro crown */}
             {isPro && (
               <View style={[styles.proBadgeOnImage, { backgroundColor: colors.pro }]}>
-                <Crown size={14} color="#1A1A1A" />
+                <Crown size={14} color={colors.foreground} />
               </View>
             )}
           </View>
@@ -452,6 +420,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             accessibilityRole="button"
             accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
             accessibilityState={{ selected: liked }}
+            style={({ pressed }) => [styles.actionItem, likingRef.current && { opacity: 0.5 }, pressed && { opacity: 0.7 }]}
             onPress={async (e) => {
               if (!isHumanAction()) return
               if (!userId) { router.push('/(auth)/login'); return }
@@ -513,7 +482,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 }
               } finally { likingRef.current = false }
             }}
-            style={[styles.actionItem, likingRef.current && { opacity: 0.5 }]}
           >
             <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
               <Heart size={16} color={liked ? colors.destructive : colors.mutedForeground} fill={liked ? colors.destructive : 'transparent'} />
@@ -564,74 +532,13 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 }
               } finally { savingRef.current = false }
             }}
-            style={[styles.actionItem, savingRef.current && { opacity: 0.5 }]}
+            style={({ pressed }) => [styles.actionItem, savingRef.current && { opacity: 0.5 }, pressed && { opacity: 0.7 }]}
           >
             {saved ? (
               <BookmarkCheck size={16} color={colors.primary} fill={colors.primary} />
             ) : (
               <Bookmark size={16} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
             )}
-          </Pressable>
-
-          {/* More menu items */}
-          {showMore && (
-            <Pressable
-              hitSlop={8}
-              accessibilityLabel={t('common.share')}
-              onPress={async (e) => {
-                e.stopPropagation?.()
-                try {
-                  Haptics.selectionAsync()
-                  await Share.share({ message: post.title + '\n' + APP_URL + '/post/' + post.id })
-                } catch {} // Intentional: user cancelled share
-              }}
-              style={styles.actionItem}
-            >
-              <Share2 size={16} color={colors.mutedForeground} />
-            </Pressable>
-          )}
-          {showMore && (
-            <Pressable
-              hitSlop={8}
-              accessibilityLabel={t('post.report')}
-              onPress={(e) => {
-                e.stopPropagation?.()
-                setShowMore(false)
-                if (!userId) { router.push('/(auth)/login'); return }
-                // Navigate to post detail where report modal exists
-                router.push(`/post/${post.id}`)
-              }}
-              style={styles.actionItem}
-            >
-              <Flag size={16} color={colors.mutedForeground} />
-            </Pressable>
-          )}
-          {showMore && userId && (
-            <Pressable
-              hitSlop={8}
-              accessibilityLabel={t('postCard.hide')}
-              onPress={(e) => {
-                e.stopPropagation?.()
-                setShowMore(false)
-                onInteraction?.(post.id, 'hide')
-                onHide?.(post.id)
-              }}
-              style={styles.actionItem}
-            >
-              <EyeOff size={16} color={colors.mutedForeground} />
-            </Pressable>
-          )}
-
-          {/* More toggle */}
-          <Pressable
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={t('postCard.moreOptions')}
-            accessibilityState={{ expanded: showMore }}
-            onPress={(e) => { e.stopPropagation?.(); setShowMore(p => !p) }}
-            style={[styles.actionItem, !showMore && { opacity: 0.5 }]}
-          >
-            <MoreHorizontal size={16} color={colors.mutedForeground} />
           </Pressable>
 
           {/* Distance — push to right edge */}
@@ -647,18 +554,17 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         </View>
       </View>
     </Pressable>
-    </Animated.View>
   )
 })
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 16, overflow: 'hidden', position: 'relative' as const },
+  card: { borderRadius: 24, overflow: 'hidden', position: 'relative' as const },
   proBanner: {
     height: 22,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
     shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
   },
-  proBannerText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
+  proBannerText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 8 },
 
   // Top row: user + category badge
@@ -684,16 +590,13 @@ const styles = StyleSheet.create({
   // Category badge — top right pill
   categoryBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16,
+    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999,
     flexShrink: 0,
   },
   categoryBadgeText: { fontSize: 13, fontFamily: fonts.heading, letterSpacing: 0.2, lineHeight: 16 },
-  newDot: {
-    width: 6, height: 6, borderRadius: 3, marginLeft: 2,
-  },
 
   // Image — full width, inline
-  imageContainer: { borderRadius: 8, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
+  imageContainer: { borderRadius: 14, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
   image: { width: '100%', height: 200 },
   imageGradient: {
     position: 'absolute',
@@ -706,7 +609,7 @@ const styles = StyleSheet.create({
   multiImageBadge: {
     position: 'absolute', bottom: 8, right: 8,
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999,
     paddingHorizontal: 8, paddingVertical: 4,
   },
   multiImageText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
@@ -719,7 +622,7 @@ const styles = StyleSheet.create({
   // Expiration
   expirationBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999,
     alignSelf: 'flex-start',
   },
   expirationText: { fontSize: 11, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
@@ -731,18 +634,14 @@ const styles = StyleSheet.create({
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  priceBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
+  priceBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
-  conditionBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
+  conditionBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 },
-  locationText: { fontSize: 12, fontFamily: fonts.body, flex: 1, lineHeight: 16 },
-
   // Action row — tight, touch targets met via hitSlop not minHeight
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
-  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 36, minWidth: 36, paddingHorizontal: 4, justifyContent: 'center' as const },
+  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },
   actionText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  // popularBadge removed — visual hierarchy: action row is for actions only
   distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4 },
   distanceText: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
 
@@ -753,10 +652,4 @@ const styles = StyleSheet.create({
   businessMicroBadge: {
     borderRadius: 8, paddingHorizontal: 4, paddingVertical: 2,
   },
-  // Fix 1: Nappaa urgency banner
-  urgencyBanner: {
-    paddingVertical: 4,
-    alignItems: 'center' as const, justifyContent: 'center' as const,
-  },
-  urgencyText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: fonts.bodySemi, letterSpacing: 0.3, lineHeight: 14 },
 })
