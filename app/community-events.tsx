@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo } from 'react'
 import {
-  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, ActivityIndicator, Alert,
+  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, Alert,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -153,7 +153,7 @@ function CommunityEventsScreenInner() {
         </Pressable>
       )}
     </View>
-  ), [colors, fonts])
+  ), [colors])
 
   // ── Tables horizontal list ──
   const renderTableSection = () => {
@@ -454,7 +454,7 @@ const s = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderStyle: 'dashed',
-    padding: 14,
+    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
@@ -468,7 +468,7 @@ const s = StyleSheet.create({
   },
   createTableText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 18,
     textAlign: 'center',
   },

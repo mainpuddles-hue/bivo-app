@@ -1,8 +1,8 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert,
+  View, Text, ScrollView, Pressable, StyleSheet, Alert,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
@@ -609,7 +609,6 @@ const s = StyleSheet.create({
   },
   categoryBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
@@ -618,13 +617,12 @@ const s = StyleSheet.create({
   // Title
   title: {
     fontSize: 22,
-    fontWeight: '700',
-    fontFamily: fonts.headingSemi,
+    fontFamily: fonts.heading,
     letterSpacing: -0.3,
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
-    lineHeight: 30,
+    lineHeight: 28,
   },
 
   // Ended banner
@@ -665,7 +663,6 @@ const s = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -673,7 +670,7 @@ const s = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    lineHeight: 22,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
 
@@ -711,7 +708,6 @@ const s = StyleSheet.create({
   },
   moreAvatarsText: {
     fontSize: 11,
-    fontWeight: '700',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
@@ -724,9 +720,8 @@ const s = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 16,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 22,
+    lineHeight: 24,
   },
 
   // Creator card
@@ -745,19 +740,17 @@ const s = StyleSheet.create({
   },
   creatorName: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.headingSemi,
     lineHeight: 20,
   },
   organizerBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 8,
   },
   organizerBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
@@ -770,14 +763,13 @@ const s = StyleSheet.create({
     gap: 8,
     marginHorizontal: 16,
     marginTop: 12,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 16,
     borderWidth: 1,
     minHeight: 48,
   },
   groupChatText: {
     fontSize: 15,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -796,7 +788,6 @@ const s = StyleSheet.create({
   },
   messageCreatorText: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -822,7 +813,6 @@ const s = StyleSheet.create({
   },
   creatorActionText: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },

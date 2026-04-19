@@ -1,23 +1,23 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, Alert, useWindowDimensions, Linking } from 'react-native'
+import { useState, useCallback, useRef } from 'react'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, Alert, useWindowDimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import { clearBlockedCache } from '@/lib/blockedUsers'
 import {
   ArrowLeft, MapPin, MessageCircle, UserPlus, UserMinus,
-  Flag, ShieldBan, Crown, PenLine, Zap, ShieldCheck, Clock, CalendarDays, CheckCircle2,
+  Flag, ShieldBan, Crown, PenLine, ShieldCheck, Clock, CalendarDays, CheckCircle2,
   Phone, Globe, Building2, Camera, BadgeCheck,
 } from 'lucide-react-native'
 import { Image } from 'expo-image'
-import { ImageWithFallback } from '@/components/ImageWithFallback'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
+import { PublicProfileSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { BackButton, PressableOpacity } from '@/components/ui'
 import { PostCard } from '@/components/PostCard'
@@ -327,7 +327,7 @@ export default function PublicProfileScreen() {
         <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
           <BackButton />
         </View>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 80 }} />
+        <PublicProfileSkeleton />
       </View>
       </ScreenErrorBoundary>
     )
@@ -878,14 +878,6 @@ export default function PublicProfileScreen() {
             <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating ?? '\u2013'}</Text>
             <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.avgRating')}</Text>
           </View>
-          <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-          <View style={s.stat}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Text style={[s.statNum, { color: colors.foreground }]}>{((profile as any)?.total_points ?? 0) > 0 ? (profile as any).total_points : '\u2013'}</Text>
-              <Zap size={12} color={colors.pro} fill={colors.pro} />
-            </View>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.points')}</Text>
-          </View>
         </View>
 
         {/* Rating Summary Card */}
@@ -949,30 +941,6 @@ export default function PublicProfileScreen() {
               <Text style={[s.verifyText, { color: colors.foreground }]}>
                 {completedTransactions} {t('profile.completedTransactions')}
               </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Activity Summary */}
-        <View style={[s.activitySummaryCard, { backgroundColor: 'transparent', borderColor: colors.border }]}>
-          <Text style={[s.activitySummaryTitle, { color: colors.foreground }]}>{t('profile.activitySummary')}</Text>
-          <Text style={[s.activitySummaryText, { color: colors.mutedForeground }]}>
-            {postCount} {t('profile.totalPosts')}, {totalReviewCount} {t('profile.reviewCount')}, {(profile as any)?.total_points ?? 0} {t('profile.points')}
-          </Text>
-          {/* Recent posts preview — last 3 with thumbnails */}
-          {posts.length > 0 && (
-            <View style={s.recentPostsRow}>
-              {posts.slice(0, 3).map(post => (
-                <PressableOpacity key={post.id} onPress={() => router.push(`/post/${post.id}` as any)} style={s.recentPostThumb}>
-                  {post.image_url ? (
-                    <ImageWithFallback uri={post.image_url} style={s.recentPostImg} contentFit="cover" />
-                  ) : (
-                    <View style={[s.recentPostImg, { backgroundColor: colors.muted }]}>
-                      <Text style={[s.recentPostImgPlaceholder, { color: colors.mutedForeground }]} numberOfLines={1}>{post.title}</Text>
-                    </View>
-                  )}
-                </PressableOpacity>
-              ))}
             </View>
           )}
         </View>
@@ -1089,47 +1057,43 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3, fontFamily: fonts.headingSemi, maxWidth: 250, lineHeight: 28 },
+  headerTitle: { fontSize: 20, letterSpacing: -0.3, fontFamily: fonts.headingSemi, maxWidth: 250, lineHeight: 28 },
   content: { padding: 16, gap: 16, paddingBottom: 100 },
   hero: { alignItems: 'center', gap: 8, paddingVertical: 8 },
-  bigAvatar: { width: 80, height: 80, borderRadius: 40 },
-  bigAvatarFb: { alignItems: 'center', justifyContent: 'center' },
-  bigAvatarInit: { fontSize: 32, fontWeight: '700', lineHeight: 44 },
-  profileName: { fontSize: 20, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 28 },
+  profileName: { fontSize: 20, fontFamily: fonts.headingSemi, lineHeight: 28 },
   nhRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  nhText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  nhText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, fontFamily: fonts.body },
   badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16 },
-  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
+  badgeText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16 },
-  proText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
+  proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   actions: { flexDirection: 'row', gap: 12, marginTop: 8, width: '100%', paddingHorizontal: 16 },
   followBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 12, borderRadius: 24,
   },
-  followBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  followBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   messageBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 12, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth,
   },
-  messageBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  messageBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   statsRow: { flexDirection: 'row', borderRadius: 16, padding: 16, borderWidth: StyleSheet.hairlineWidth },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statNum: { fontSize: 20, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 26 },
+  statNum: { fontSize: 20, fontFamily: fonts.heading, lineHeight: 26 },
   statLabel: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textTransform: 'uppercase', letterSpacing: 0.3 },
   statDiv: { width: 1, alignSelf: 'stretch' as const },
   tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center', minHeight: 44 },
   tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  tabText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   tabContent: { gap: 12 },
   emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24, fontFamily: fonts.body, lineHeight: 20 },
   reviewCard: { borderRadius: 16, padding: 16, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  reviewAvatar: { width: 32, height: 32, borderRadius: 16 },
-  reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
+  reviewName: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   reviewTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   reviewComment: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   dangerActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
@@ -1137,37 +1101,29 @@ const s = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, padding: 16, borderRadius: 16,
   },
-  dangerBtnText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  dangerBtnText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   reviewBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 12, borderRadius: 24, borderWidth: StyleSheet.hairlineWidth, width: '100%', paddingHorizontal: 16,
   },
-  reviewBtnText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
+  reviewBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   notFound: { fontSize: 16, textAlign: 'center', marginTop: 100, fontFamily: fonts.body, lineHeight: 22 },
   // Rating summary card
   ratingCard: { borderRadius: 16, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
-  ratingCardTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
+  ratingCardTitle: { fontSize: 14, fontFamily: fonts.headingSemi, lineHeight: 22 },
   ratingOverview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingStarsCol: { alignItems: 'center', gap: 4 },
-  ratingBigNum: { fontSize: 16, fontWeight: '700', fontFamily: fonts.heading, lineHeight: 22 },
+  ratingBigNum: { fontSize: 16, fontFamily: fonts.heading, lineHeight: 22 },
   ratingBars: { gap: 6 },
   ratingBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ratingBarLabel: { fontSize: 12, fontWeight: '600', width: 24, textAlign: 'right', fontFamily: fonts.bodySemi, lineHeight: 16 },
+  ratingBarLabel: { fontSize: 12, width: 24, textAlign: 'right', fontFamily: fonts.bodySemi, lineHeight: 16 },
   ratingBarTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   ratingBarFill: { height: 8, borderRadius: 4 },
-  ratingBarCount: { fontSize: 12, fontWeight: '500', width: 20, fontFamily: fonts.body, lineHeight: 16 },
+  ratingBarCount: { fontSize: 12, width: 20, fontFamily: fonts.body, lineHeight: 16 },
   // Verification card
   verificationCard: { borderRadius: 16, padding: 16, gap: 12, borderWidth: StyleSheet.hairlineWidth },
   verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  verifyText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  // Activity summary
-  activitySummaryCard: { borderRadius: 16, padding: 16, gap: 8, borderWidth: StyleSheet.hairlineWidth },
-  activitySummaryTitle: { fontSize: 14, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 22 },
-  activitySummaryText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.body },
-  recentPostsRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  recentPostThumb: { flex: 1 },
-  recentPostImg: { height: 60, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  recentPostImgPlaceholder: { fontSize: 11, textAlign: 'center', fontFamily: fonts.body, lineHeight: 14 },
+  verifyText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
 })
 
 // === Business profile styles ===
@@ -1196,13 +1152,12 @@ const bs = StyleSheet.create({
   },
   heroPlaceholderText: {
     fontSize: 14,
-    fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
   },
   imageCountBadge: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 12,
     right: 24,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1214,7 +1169,6 @@ const bs = StyleSheet.create({
   },
   imageCountText: {
     fontSize: 12,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
@@ -1237,20 +1191,18 @@ const bs = StyleSheet.create({
   },
   businessName: {
     fontSize: 22,
-    fontWeight: '800',
     letterSpacing: -0.4,
-    fontFamily: fonts.headingSemi,
-    lineHeight: 30,
+    fontFamily: fonts.heading,
+    lineHeight: 32,
   },
   categoryBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 8,
   },
   categoryBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
@@ -1267,13 +1219,11 @@ const bs = StyleSheet.create({
   },
   prhBadgeText: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 18,
   },
   prhVatText: {
     fontSize: 12,
-    fontWeight: '400',
     fontFamily: fonts.body,
     lineHeight: 16,
   },
@@ -1286,13 +1236,11 @@ const bs = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    fontWeight: '700',
     fontFamily: fonts.heading,
     lineHeight: 22,
   },
   reviewCountText: {
     fontSize: 13,
-    fontWeight: '400',
     fontFamily: fonts.body,
     lineHeight: 18,
   },
@@ -1312,7 +1260,6 @@ const bs = StyleSheet.create({
   },
   nhText: {
     fontSize: 14,
-    fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
   },
@@ -1331,7 +1278,6 @@ const bs = StyleSheet.create({
   },
   locationCardTitle: {
     fontSize: 16,
-    fontWeight: '700',
     lineHeight: 22,
     fontFamily: fonts.headingSemi,
   },
@@ -1352,7 +1298,6 @@ const bs = StyleSheet.create({
   },
   mapButtonText: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -1366,7 +1311,6 @@ const bs = StyleSheet.create({
   },
   contactCardTitle: {
     fontSize: 16,
-    fontWeight: '700',
     fontFamily: fonts.headingSemi,
     lineHeight: 22,
   },
@@ -1384,13 +1328,11 @@ const bs = StyleSheet.create({
   },
   contactLabel: {
     fontSize: 12,
-    fontWeight: '400',
     fontFamily: fonts.body,
     lineHeight: 16,
   },
   contactValue: {
     fontSize: 14,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
   },
@@ -1406,18 +1348,16 @@ const bs = StyleSheet.create({
   hoursRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 2,
+    paddingVertical: 4,
   },
   hoursDay: {
     fontSize: 13,
-    fontWeight: '600',
     width: 40,
     fontFamily: fonts.bodySemi,
     lineHeight: 18,
   },
   hoursValue: {
     fontSize: 13,
-    fontWeight: '400',
     fontFamily: fonts.body,
     lineHeight: 18,
   },
@@ -1431,14 +1371,12 @@ const bs = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
     letterSpacing: -0.2,
     fontFamily: fonts.headingSemi,
     lineHeight: 24,
   },
   sectionCount: {
     fontSize: 14,
-    fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
   },

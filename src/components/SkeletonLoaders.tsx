@@ -300,6 +300,81 @@ export function EventDetailSkeleton() {
   )
 }
 
+// ── Feed Load More Skeleton (replaces ActivityIndicator in feed footer) ──
+export function FeedLoadMoreSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={feedMoreSkel.container}>
+      {[0, 1].map(i => (
+        <View key={i} style={[feedMoreSkel.card, { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+          <Animated.View style={[feedMoreSkel.image, { backgroundColor: colors.muted, opacity }]} />
+          <View style={feedMoreSkel.body}>
+            <Animated.View style={[skel.line, { width: '60%', backgroundColor: colors.muted, opacity }]} />
+            <Animated.View style={[skel.line, { width: '40%', height: 10, backgroundColor: colors.muted, opacity }]} />
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+}
+
+const feedMoreSkel = StyleSheet.create({
+  container: { flexDirection: 'row', gap: 10, paddingHorizontal: 12, paddingVertical: 12 },
+  card: { flex: 1, borderRadius: 16, overflow: 'hidden' },
+  image: { width: '100%', aspectRatio: 16 / 9 },
+  body: { padding: 12, gap: 8 },
+})
+
+// ── Public Profile Skeleton ──
+export function PublicProfileSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={pubProfileSkel.wrap}>
+      {/* Avatar + name */}
+      <Animated.View style={[pubProfileSkel.avatar, { backgroundColor: colors.muted, opacity }]} />
+      <Animated.View style={[skel.line, { width: '35%', height: 18, alignSelf: 'center', backgroundColor: colors.muted, opacity }]} />
+      <Animated.View style={[skel.line, { width: '50%', alignSelf: 'center', backgroundColor: colors.muted, opacity }]} />
+      {/* Stats row */}
+      <View style={pubProfileSkel.stats}>
+        {[0, 1, 2].map(i => (
+          <Animated.View key={i} style={[pubProfileSkel.statBox, { backgroundColor: colors.muted, opacity }]} />
+        ))}
+      </View>
+      {/* Bio */}
+      <Animated.View style={[skel.line, { width: '100%', height: 60, borderRadius: 16, backgroundColor: colors.muted, opacity }]} />
+      {/* Action buttons */}
+      <View style={pubProfileSkel.actions}>
+        <Animated.View style={[pubProfileSkel.actionBtn, { backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[pubProfileSkel.actionBtn, { backgroundColor: colors.muted, opacity }]} />
+      </View>
+      {/* Posts section */}
+      <Animated.View style={[skel.line, { width: '25%', height: 16, backgroundColor: colors.muted, opacity, marginTop: 8 }]} />
+      <View style={pubProfileSkel.postsRow}>
+        {[0, 1].map(i => (
+          <View key={i} style={[pubProfileSkel.postCard, { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}>
+            <Animated.View style={[pubProfileSkel.postImage, { backgroundColor: colors.muted, opacity }]} />
+            <Animated.View style={[skel.line, { width: '70%', height: 10, backgroundColor: colors.muted, opacity, margin: 10 }]} />
+          </View>
+        ))}
+      </View>
+    </View>
+  )
+}
+
+const pubProfileSkel = StyleSheet.create({
+  wrap: { alignItems: 'stretch', gap: 14, padding: 24 },
+  avatar: { width: 80, height: 80, borderRadius: 40, alignSelf: 'center' },
+  stats: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
+  statBox: { width: 80, height: 56, borderRadius: 16 },
+  actions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
+  actionBtn: { flex: 1, height: 44, borderRadius: 14 },
+  postsRow: { flexDirection: 'row', gap: 10 },
+  postCard: { flex: 1, borderRadius: 16, overflow: 'hidden' },
+  postImage: { width: '100%', aspectRatio: 16 / 9 },
+})
+
 const eventSkel = StyleSheet.create({
   card: { borderRadius: 16, overflow: 'hidden' },
   image: { width: '100%', height: 140 },
