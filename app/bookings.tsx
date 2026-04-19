@@ -1,20 +1,18 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, Alert, ActivityIndicator, Animated } from 'react-native'
+import { View, Text, SectionList, RefreshControl, StyleSheet, Alert, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { Image } from 'expo-image'
 import { ImageWithFallback } from '@/components/ImageWithFallback'
-import { ArrowLeft, Package, CheckCircle, XCircle, RotateCcw, Star, Calendar, ShoppingBag, RefreshCw } from 'lucide-react-native'
+import { ArrowLeft, Package, ShoppingBag, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { Avatar } from '@/components/Avatar'
 import { EmptyState } from '@/components/EmptyState'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
-import { formatPrice, formatDateRange } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -26,24 +24,20 @@ function BookingCardSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
   return (
-    <View style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={styles.cardTop}>
-        <Animated.View style={{ width: 64, height: 64, borderRadius: 14, backgroundColor: colors.muted, opacity }} />
-        <View style={styles.cardInfo}>
-          <Animated.View style={{ width: '70%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
-          <Animated.View style={{ width: '50%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
-          <Animated.View style={{ width: '40%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
-        </View>
-        <View style={styles.cardRight}>
-          <Animated.View style={{ width: 60, height: 18, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
-          <Animated.View style={{ width: 50, height: 16, borderRadius: 6, backgroundColor: colors.muted, opacity, marginTop: 6 }} />
-        </View>
+    <View style={[styles.loanCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <Animated.View style={{ width: 60, height: 60, borderRadius: 12, backgroundColor: colors.muted, opacity }} />
+      <View style={{ flex: 1, gap: 6 }}>
+        <Animated.View style={{ width: '65%', height: 14, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={{ width: '45%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={{ width: '35%', height: 10, borderRadius: 6, backgroundColor: colors.muted, opacity }} />
       </View>
+      <Animated.View style={{ width: 54, height: 20, borderRadius: 999, backgroundColor: colors.muted, opacity }} />
     </View>
   )
 }
 
 type BookingStatus = 'pending' | 'confirmed' | 'paid' | 'active' | 'in_progress' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
+type StatusTab = 'running' | 'requests' | 'upcoming' | 'past'
 
 interface RentalBooking {
   id: string
@@ -93,7 +87,10 @@ const STATUS_KEYS: Record<BookingStatus, string> = {
   refunded: 'rental.statusRefunded',
 }
 
-const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active', 'in_progress']
+// Status groupings for segment tabs
+const RUNNING_STATUSES: BookingStatus[] = ['active', 'in_progress']
+const REQUEST_STATUSES: BookingStatus[] = ['pending']
+const UPCOMING_STATUSES: BookingStatus[] = ['confirmed', 'paid']
 const PAST_STATUSES: BookingStatus[] = ['completed', 'cancelled', 'disputed', 'refunded']
 
 function getStatusStyle(status: BookingStatus, colors: ReturnType<typeof useTheme>['colors']): { bg: string; text: string } {
@@ -106,28 +103,43 @@ function getStatusStyle(status: BookingStatus, colors: ReturnType<typeof useThem
       return { bg: `${colors.destructive}14`, text: colors.destructive }
     case 'refunded':
       return { bg: colors.muted, text: colors.mutedForeground }
-    case 'pending': case 'confirmed': case 'paid':
+    case 'confirmed': case 'paid':
+      return { bg: colors.card, text: colors.foreground }
+    case 'pending':
     default:
-      return { bg: colors.muted, text: colors.mutedForeground }
+      return { bg: colors.muted, text: colors.foreground }
   }
 }
 
+function formatShortDate(dateStr: string, locale: string): string {
+  try {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', {
+      weekday: 'short', day: 'numeric', month: 'numeric',
+    })
+  } catch { return dateStr }
+}
 
-// TODO: UX — BOOKING LIFECYCLE (friction for returning users):
-//
-// 1. REVIEW PROMPT: After booking status changes to 'completed', the "Leave
-//    review" button is subtle and easy to miss. Add a prominent review prompt
-//    card at the top of the list for completed bookings without a review.
-//    Check if a review exists for reviewer_id + reviewed_id pair.
-//
-// 2. PAST BOOKINGS FILTER: All bookings show in one list mixed together.
-//    Add a "Past" / "Active" segmented filter within each tab so users can
-//    find old bookings. Currently cancelled/completed bookings push active
-//    ones down.
-//
-// 3. BOOKING HISTORY STATS: Show a summary card at top: total spent, total
-//    earned, number of completed transactions — gives returning users a sense
-//    of their activity.
+function getTimeLabel(booking: RentalBooking, locale: string, t: (k: string, p?: any) => string): string {
+  const s = booking.status
+  if (s === 'active' || s === 'in_progress') {
+    return t('bookings.returnBy', { date: formatShortDate(booking.end_date, locale) })
+  }
+  if (s === 'pending') {
+    return t('bookings.requestAt', { date: formatShortDate(booking.created_at, locale) })
+  }
+  if (s === 'confirmed' || s === 'paid') {
+    return t('bookings.pickupAt', { date: formatShortDate(booking.start_date, locale) })
+  }
+  return formatShortDate(booking.created_at, locale)
+}
+
+// Section builder: group bookings by status category
+interface BookingSection {
+  title: string
+  data: RentalBooking[]
+}
+
 export default function BookingsScreen() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -138,28 +150,23 @@ export default function BookingsScreen() {
 
   const [userId, setUserId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'borrower' | 'lender' | 'services'>('borrower')
+  const [statusTab, setStatusTab] = useState<StatusTab>('running')
   const [bookings, setBookings] = useState<RentalBooking[]>([])
   const [serviceBookings, setServiceBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<'active' | 'past'>('active')
   const [fetchError, setFetchError] = useState(false)
 
-  // Feature flag gate — redirect if Payments are disabled
+  // Feature flag gate
   useEffect(() => {
-    if (!FEATURES.PAYMENTS) {
-      router.replace('/(tabs)')
-    }
+    if (!FEATURES.PAYMENTS) { router.replace('/(tabs)') }
   }, [router])
 
-  // Auth gate — redirect to login if not authenticated
+  // Auth gate
   useEffect(() => {
     async function checkAuth() {
       const cachedId = await getCachedUserId()
-      if (!cachedId) {
-        router.replace('/(auth)/login')
-      }
+      if (!cachedId) { router.replace('/(auth)/login') }
     }
     checkAuth()
   }, [router])
@@ -171,7 +178,6 @@ export default function BookingsScreen() {
       if (!cachedId) { setLoading(false); return }
       setUserId(cachedId)
       if (!isValidUUID(cachedId)) { setLoading(false); return }
-      const user = { id: cachedId }
 
       const { data, error } = await supabase
         .from('rental_bookings')
@@ -182,7 +188,7 @@ export default function BookingsScreen() {
           borrower:profiles!rental_bookings_borrower_id_fkey(id, name, avatar_url),
           lender:profiles!rental_bookings_lender_id_fkey(id, name, avatar_url)
         `)
-        .or(`borrower_id.eq.${user.id},lender_id.eq.${user.id}`)
+        .or(`borrower_id.eq.${cachedId},lender_id.eq.${cachedId}`)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -192,7 +198,6 @@ export default function BookingsScreen() {
         setBookings((data ?? []) as unknown as RentalBooking[])
       }
 
-      // Also fetch service bookings
       const { data: svcData, error: svcError } = await supabase
         .from('service_bookings')
         .select(`
@@ -202,11 +207,9 @@ export default function BookingsScreen() {
           buyer:profiles!service_bookings_buyer_id_fkey(id, name, avatar_url),
           provider:profiles!service_bookings_provider_id_fkey(id, name, avatar_url)
         `)
-        .or(`buyer_id.eq.${user.id},provider_id.eq.${user.id}`)
+        .or(`buyer_id.eq.${cachedId},provider_id.eq.${cachedId}`)
         .order('created_at', { ascending: false })
-      if (svcError) {
-        if (__DEV__) console.log('[bookings] service_bookings error:', svcError.message)
-      }
+      if (svcError && __DEV__) console.log('[bookings] service error:', svcError.message)
       setServiceBookings((svcData ?? []) as any[])
     } catch (err) {
       if (__DEV__) console.log('[bookings] fetchBookings error:', err)
@@ -217,368 +220,145 @@ export default function BookingsScreen() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [supabase, t])
+  }, [supabase])
 
   useFocusEffect(useCallback(() => { fetchBookings() }, [fetchBookings]))
 
-  const filteredBookings = useMemo(() => {
+  // Role-filtered bookings
+  const roleBookings = useMemo(() => {
     if (!userId) return []
-    const tabFiltered = activeTab === 'borrower'
+    return activeTab === 'borrower'
       ? bookings.filter(b => b.borrower_id === userId)
-      : bookings.filter(b => b.lender_id === userId)
-    const statusSet = statusFilter === 'active' ? ACTIVE_STATUSES : PAST_STATUSES
-    return tabFiltered.filter(b => statusSet.includes(b.status))
-  }, [bookings, userId, activeTab, statusFilter])
+      : activeTab === 'lender'
+        ? bookings.filter(b => b.lender_id === userId)
+        : []
+  }, [bookings, userId, activeTab])
 
-  const filteredServiceBookings = useMemo(() => {
-    const statusSet = statusFilter === 'active'
-      ? ['pending', 'confirmed', 'paid', 'active', 'in_progress']
-      : ['completed', 'cancelled', 'disputed', 'refunded']
-    return serviceBookings.filter(b => statusSet.includes(b.status))
-  }, [serviceBookings, statusFilter])
+  // Service bookings for service tab
+  const roleServiceBookings = useMemo(() => {
+    if (activeTab !== 'services') return []
+    return serviceBookings
+  }, [serviceBookings, activeTab])
 
-  const handleConfirm = useCallback(async (booking: RentalBooking) => {
-    setActionLoading(booking.id)
-    const { error } = await (supabase.from('rental_bookings') as any)
-      .update({ status: 'confirmed' })
-      .eq('id', booking.id)
-    if (error) {
-      Alert.alert(t('common.error'), t('rental.confirmFailed'))
-    } else {
-      setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'confirmed' as BookingStatus } : b))
+  // Counts for segment tabs
+  const counts = useMemo(() => {
+    const src = activeTab === 'services'
+      ? roleServiceBookings.map(b => ({ status: (isBookingStatus(b.status) ? b.status : 'pending') as BookingStatus }))
+      : roleBookings
+    return {
+      running: src.filter(b => RUNNING_STATUSES.includes(b.status)).length,
+      requests: src.filter(b => REQUEST_STATUSES.includes(b.status)).length,
+      upcoming: src.filter(b => UPCOMING_STATUSES.includes(b.status)).length,
+      past: src.filter(b => PAST_STATUSES.includes(b.status)).length,
     }
-    setActionLoading(null)
-  }, [supabase, t])
+  }, [roleBookings, roleServiceBookings, activeTab])
 
-  const handleCancel = useCallback(async (booking: RentalBooking) => {
-    Alert.alert(
-      t('rental.cancelBooking'),
-      t('rental.bookingCancelled'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          style: 'destructive',
-          onPress: async () => {
-            setActionLoading(booking.id)
-            const { error } = await (supabase.from('rental_bookings') as any)
-              .update({ status: 'cancelled' })
-              .eq('id', booking.id)
-            if (error) {
-              Alert.alert(t('common.error'), t('rental.cancelFailed'))
-            } else {
-              setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'cancelled' as BookingStatus } : b))
-              // Trigger refund if booking was paid via Stripe
-              if ((booking as any).stripe_payment_intent_id && (booking.status === 'paid' || booking.status === 'confirmed')) {
-                try {
-                  const { data: { session } } = await supabase.auth.getSession()
-                  if (session?.access_token) {
-                    await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/stripe-checkout`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-                      body: JSON.stringify({ action: 'refund', payment_intent_id: (booking as any).stripe_payment_intent_id, booking_id: booking.id }),
-                    }).catch(() => {})
-                  }
-                } catch {} // Refund is best-effort — webhook handles the rest
-              }
-            }
-            setActionLoading(null)
-          },
-        },
-      ],
-    )
-  }, [supabase, t])
+  // Build sections for SectionList based on active status tab
+  const sections = useMemo((): BookingSection[] => {
+    const src = activeTab === 'services'
+      ? roleServiceBookings as unknown as RentalBooking[]
+      : roleBookings
 
-  const handleMarkReturned = useCallback(async (booking: RentalBooking) => {
-    setActionLoading(booking.id)
-    const { error } = await (supabase.from('rental_bookings') as any)
-      .update({ status: 'completed' })
-      .eq('id', booking.id)
-    if (error) {
-      Alert.alert(t('common.error'), t('rental.completeFailed'))
-    } else {
-      setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'completed' as BookingStatus } : b))
-      toast.show({ message: t('rental.markedReturned'), type: 'success' })
+    if (statusTab === 'running') {
+      const running = src.filter(b => RUNNING_STATUSES.includes(b.status))
+      const requests = src.filter(b => REQUEST_STATUSES.includes(b.status))
+      const upcoming = src.filter(b => UPCOMING_STATUSES.includes(b.status))
+      const result: BookingSection[] = []
+      if (running.length > 0) result.push({ title: t('bookings.running'), data: running })
+      if (requests.length > 0) result.push({ title: t('bookings.waitingResponse'), data: requests })
+      if (upcoming.length > 0) result.push({ title: t('bookings.upcoming'), data: upcoming })
+      return result
     }
-    setActionLoading(null)
-  }, [supabase, t])
+    if (statusTab === 'requests') {
+      const items = src.filter(b => REQUEST_STATUSES.includes(b.status))
+      return items.length > 0 ? [{ title: t('bookings.requests'), data: items }] : []
+    }
+    if (statusTab === 'upcoming') {
+      const items = src.filter(b => UPCOMING_STATUSES.includes(b.status))
+      return items.length > 0 ? [{ title: t('bookings.upcoming'), data: items }] : []
+    }
+    // past
+    const items = src.filter(b => PAST_STATUSES.includes(b.status))
+    return items.length > 0 ? [{ title: t('bookings.past'), data: items }] : []
+  }, [roleBookings, roleServiceBookings, statusTab, activeTab, t])
 
-  const handleLeaveReview = useCallback((booking: RentalBooking) => {
-    const revieweeId = activeTab === 'borrower' ? booking.lender_id : booking.borrower_id
-    router.push(`/profile/${revieweeId}` as any)
-  }, [activeTab, router])
-
-  // Service booking actions
-  const handleServiceConfirm = useCallback(async (booking: any) => {
-    setActionLoading(booking.id)
-    try {
-      const { error } = await (supabase.from('service_bookings') as any).update({ status: 'confirmed' }).eq('id', booking.id)
-      if (error) throw error
-      setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'confirmed' } : b))
-    } catch {
-      Alert.alert(t('common.error'), t('service.updateFailed'))
-    } finally { setActionLoading(null) }
-  }, [supabase, t])
-
-  const handleServiceStart = useCallback(async (booking: any) => {
-    setActionLoading(booking.id)
-    try {
-      const { error } = await (supabase.from('service_bookings') as any).update({ status: 'in_progress' }).eq('id', booking.id)
-      if (error) throw error
-      setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'in_progress' } : b))
-    } catch {
-      Alert.alert(t('common.error'), t('service.updateFailed'))
-    } finally { setActionLoading(null) }
-  }, [supabase, t])
-
-  const handleServiceComplete = useCallback(async (booking: any) => {
-    setActionLoading(booking.id)
-    try {
-      const { error } = await (supabase.from('service_bookings') as any).update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', booking.id)
-      if (error) throw error
-      setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'completed' } : b))
-      toast.show({ message: t('service.markedComplete'), type: 'success' })
-    } catch {
-      Alert.alert(t('common.error'), t('service.updateFailed'))
-    } finally { setActionLoading(null) }
-  }, [supabase, t])
-
-  const handleServiceCancel = useCallback(async (booking: any) => {
-    Alert.alert(t('service.cancelBooking'), t('service.cancelConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: async () => {
-        setActionLoading(booking.id)
-        try {
-          const { error } = await (supabase.from('service_bookings') as any).update({ status: 'cancelled' }).eq('id', booking.id)
-          if (error) throw error
-          setServiceBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'cancelled' } : b))
-        } catch {
-          Alert.alert(t('common.error'), t('service.updateFailed'))
-        } finally { setActionLoading(null) }
-      }},
-    ])
-  }, [supabase, t])
-
-  const isActionLoading = (id: string) => actionLoading === id
-
-  const renderBooking = useCallback(({ item }: { item: RentalBooking }) => {
-    const statusStyle = getStatusStyle(item.status, colors)
-    const otherUser = activeTab === 'borrower' ? item.lender : item.borrower
-    const isLender = activeTab === 'lender'
-    const canConfirm = isLender && item.status === 'pending'
-    const canCancel = item.status === 'pending' || item.status === 'confirmed'
-    const canMarkReturned = isLender && (item.status === 'active' || item.status === 'paid' || item.status === 'confirmed')
-    const canReview = item.status === 'completed'
-
-    return (
-      <PressableOpacity
-        onPress={() => router.push(`/booking/${item.id}` as any)}
-        accessibilityRole="button"
-        accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
-        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-      >
-        <View style={styles.cardTop}>
-          <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<Package size={24} color={colors.mutedForeground} />} />
-          <View style={styles.cardInfo}>
-            <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
-              {item.post?.title ?? t('rental.deletedPost')}
-            </Text>
-            <View style={styles.dateRow}>
-              <Calendar size={13} color={colors.mutedForeground} />
-              <Text style={[styles.dateText, { color: colors.mutedForeground }]}>
-                {formatDateRange(item.start_date, item.end_date, locale)}
-              </Text>
-            </View>
-            {otherUser && (
-              <View style={styles.userRow}>
-                <Avatar url={otherUser.avatar_url} name={otherUser.name} size={18} />
-                <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {otherUser.name}
-                </Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.cardRight}>
-            {/* Status badge pill */}
-            <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-              <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                {t(STATUS_KEYS[item.status])}
-              </Text>
-            </View>
-            <Text style={[styles.priceText, { color: colors.foreground }]}>
-              {formatPrice(item.total_amount, locale)}
-            </Text>
-          </View>
-        </View>
-
-        {/* Action buttons */}
-        {(canConfirm || canCancel || canMarkReturned || canReview) && (
-          <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
-            {canConfirm && (
-              <PressableOpacity
-                onPress={() => handleConfirm(item)}
-                disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
-              >
-                {isActionLoading(item.id) ? (
-                  <ActivityIndicator size="small" color={colors.primaryForeground} />
-                ) : (
-                  <>
-                    <CheckCircle size={14} color={colors.primaryForeground} />
-                    <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text>
-                  </>
-                )}
-              </PressableOpacity>
-            )}
-            {canMarkReturned && (
-              <PressableOpacity
-                onPress={() => handleMarkReturned(item)}
-                disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
-              >
-                {isActionLoading(item.id) ? (
-                  <ActivityIndicator size="small" color={colors.primaryForeground} />
-                ) : (
-                  <>
-                    <RotateCcw size={14} color={colors.primaryForeground} />
-                    <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.returnItem')}</Text>
-                  </>
-                )}
-              </PressableOpacity>
-            )}
-            {canCancel && (
-              <PressableOpacity
-                onPress={() => handleCancel(item)}
-                disabled={isActionLoading(item.id)}
-                style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
-              >
-                <XCircle size={14} color={colors.mutedForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.mutedForeground }]}>{t('rental.cancelBooking')}</Text>
-              </PressableOpacity>
-            )}
-            {canReview && (
-              <PressableOpacity
-                onPress={() => handleLeaveReview(item)}
-                style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
-              >
-                <Star size={14} color={colors.mutedForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
-              </PressableOpacity>
-            )}
-          </View>
-        )}
-      </PressableOpacity>
-    )
-  }, [colors, isDark, activeTab, router, t, locale, handleConfirm, handleCancel, handleMarkReturned, handleLeaveReview, actionLoading])
-
+  // Counts for role tabs
   const borrowerCount = useMemo(() => bookings.filter(b => b.borrower_id === userId).length, [bookings, userId])
   const lenderCount = useMemo(() => bookings.filter(b => b.lender_id === userId).length, [bookings, userId])
   const serviceCount = useMemo(() => serviceBookings.length, [serviceBookings])
 
-  const renderServiceBooking = useCallback(({ item }: { item: any }) => {
-    const safeStatus: BookingStatus = isBookingStatus(item.status) ? item.status : 'pending'
-    const statusStyle = getStatusStyle(safeStatus, colors)
-    const isBuyer = item.buyer_id === userId
-    const otherUser = isBuyer ? item.provider : item.buyer
-    const isProvider = item.provider_id === userId
-    const canConfirm = isProvider && item.status === 'paid'
-    const canStart = isProvider && item.status === 'confirmed'
-    const canComplete = isProvider && item.status === 'in_progress'
-    const canCancel = item.status === 'pending' || item.status === 'paid' || item.status === 'confirmed'
-    const canReview = item.status === 'completed'
+  // Role tab config
+  const ROLE_TABS: { key: 'borrower' | 'lender' | 'services'; label: string; count: number }[] = [
+    { key: 'borrower', label: t('rental.myRentals'), count: borrowerCount },
+    { key: 'lender', label: t('rental.lendingOut'), count: lenderCount },
+    { key: 'services', label: t('service.services'), count: serviceCount },
+  ]
+
+  // Status segment tabs
+  const STATUS_TABS: { key: StatusTab; label: string; count: number }[] = [
+    { key: 'running', label: t('bookings.running'), count: counts.running },
+    { key: 'requests', label: t('bookings.requests'), count: counts.requests },
+    { key: 'upcoming', label: t('bookings.upcoming'), count: counts.upcoming },
+    { key: 'past', label: t('bookings.past'), count: counts.past },
+  ]
+
+  const renderSectionHeader = useCallback(({ section }: { section: BookingSection }) => (
+    <View style={styles.sectionHeader}>
+      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{section.title}</Text>
+    </View>
+  ), [colors])
+
+  const renderItem = useCallback(({ item }: { item: RentalBooking }) => {
+    const statusStyle = getStatusStyle(item.status, colors)
+    const otherUser = activeTab === 'borrower'
+      ? item.lender
+      : activeTab === 'lender'
+        ? item.borrower
+        : (item as any).buyer_id === userId ? (item as any).provider : (item as any).buyer
+    const otherName = otherUser?.name ?? ''
+    const timeLabel = getTimeLabel(item, locale, t)
 
     return (
       <PressableOpacity
         onPress={() => router.push(`/booking/${item.id}` as any)}
         accessibilityRole="button"
-        accessibilityLabel={`${item.post?.title ?? t('rental.deletedPost')}`}
-        style={[styles.bookingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        accessibilityLabel={item.post?.title ?? t('rental.deletedPost')}
+        style={[styles.loanCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
-        <View style={styles.cardTop}>
-          <ImageWithFallback uri={item.post?.image_url} style={styles.itemImage} contentFit="cover" fallbackIcon={<ShoppingBag size={24} color={colors.mutedForeground} />} />
-          <View style={styles.cardInfo}>
-            <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
-              {item.post?.title ?? t('service.deletedPost')}
-            </Text>
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.bodySemi }}>
-              {isBuyer ? t('service.youBought') : t('service.youProvide')}
-            </Text>
-            {otherUser && (
-              <View style={styles.userRow}>
-                <Avatar url={otherUser.avatar_url} name={otherUser.name} size={18} />
-                <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {otherUser.name}
-                </Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.cardRight}>
-            {/* Status badge pill */}
-            <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-              <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                {t(STATUS_KEYS[safeStatus])}
-              </Text>
-            </View>
-            <Text style={[styles.priceText, { color: colors.foreground }]}>
-              {formatPrice(item.total_amount, locale)}
-            </Text>
-          </View>
+        <ImageWithFallback
+          uri={item.post?.image_url}
+          style={styles.loanImage}
+          contentFit="cover"
+          fallbackIcon={
+            activeTab === 'services'
+              ? <ShoppingBag size={22} color={colors.mutedForeground} />
+              : <Package size={22} color={colors.mutedForeground} />
+          }
+        />
+        <View style={styles.loanInfo}>
+          <Text style={[styles.loanTitle, { color: colors.foreground }]} numberOfLines={1}>
+            {item.post?.title ?? t('rental.deletedPost')}
+          </Text>
+          <Text style={[styles.loanSub, { color: colors.mutedForeground }]} numberOfLines={1}>
+            {otherName ? `${otherName}` : ''}
+          </Text>
+          <Text style={[styles.loanTime, { color: colors.foreground }]} numberOfLines={1}>
+            {timeLabel}
+          </Text>
         </View>
-
-        {(canConfirm || canStart || canComplete || canCancel || canReview) && (
-          <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
-            {canConfirm && (
-              <PressableOpacity onPress={() => handleServiceConfirm(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}>
-                <CheckCircle size={14} color={colors.primaryForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.acceptJob')}</Text>
-              </PressableOpacity>
-            )}
-            {canStart && (
-              <PressableOpacity onPress={() => handleServiceStart(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}>
-                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
-              </PressableOpacity>
-            )}
-            {canComplete && (
-              <PressableOpacity onPress={() => handleServiceComplete(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}>
-                <CheckCircle size={14} color={colors.primaryForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.markDone')}</Text>
-              </PressableOpacity>
-            )}
-            {canCancel && (
-              <PressableOpacity onPress={() => handleServiceCancel(item)} disabled={isActionLoading(item.id)} style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}>
-                <XCircle size={14} color={colors.mutedForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.mutedForeground }]}>{t('service.cancelBooking')}</Text>
-              </PressableOpacity>
-            )}
-            {canReview && (
-              <PressableOpacity onPress={() => { const id = isBuyer ? item.provider_id : item.buyer_id; router.push(`/profile/${id}` as any) }} style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}>
-                <Star size={14} color={colors.mutedForeground} />
-                <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
-              </PressableOpacity>
-            )}
-          </View>
-        )}
+        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+          <Text style={[styles.statusText, { color: statusStyle.text }]}>
+            {t(STATUS_KEYS[isBookingStatus(item.status) ? item.status : 'pending'])}
+          </Text>
+        </View>
       </PressableOpacity>
     )
-  }, [colors, isDark, userId, router, t, locale, handleServiceConfirm, handleServiceStart, handleServiceComplete, handleServiceCancel, actionLoading])
-
-  // Filter chip data
-  const TAB_FILTERS = [
-    { key: 'borrower' as const, label: `${t('rental.myRentals')} (${borrowerCount})` },
-    { key: 'lender' as const, label: `${t('rental.lendingOut')} (${lenderCount})` },
-    { key: 'services' as const, label: `${t('service.services')} (${serviceCount})` },
-  ]
-
-  const STATUS_FILTERS = [
-    { key: 'all' as const, label: t('bookings.all') ?? t('common.all') ?? 'Kaikki' },
-    { key: 'active' as const, label: t('bookings.active') },
-    { key: 'past' as const, label: t('bookings.past') },
-  ]
+  }, [colors, activeTab, userId, router, t, locale])
 
   return (
     <ScreenErrorBoundary screenName="Bookings">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header — circle back button + centered title */}
+      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <PressableOpacity
           onPress={() => router.back()}
@@ -593,72 +373,87 @@ export default function BookingsScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Tab chips */}
-      <View style={styles.tabRow}>
-        {TAB_FILTERS.map(tab => {
+      {/* Role tabs — pill chips */}
+      <View style={styles.roleTabRow}>
+        {ROLE_TABS.map(tab => {
           const isActive = activeTab === tab.key
           return (
             <PressableOpacity
               key={tab.key}
               onPress={() => setActiveTab(tab.key)}
               style={[
-                styles.pillChip,
+                styles.roleChip,
                 isActive
                   ? { backgroundColor: colors.foreground }
                   : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
               ]}
             >
-              <Text style={[styles.pillChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
-                {tab.label}
+              <Text style={[styles.roleChipText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
+                {tab.label} ({tab.count})
               </Text>
             </PressableOpacity>
           )
         })}
       </View>
 
-      {/* Status filter chips */}
-      <View style={styles.statusFilterRow}>
-        {(['active', 'past'] as const).map(f => {
-          const isActive = statusFilter === f
-          return (
-            <PressableOpacity
-              key={f}
-              onPress={() => setStatusFilter(f)}
-              style={[
-                styles.pillChipSmall,
-                isActive
-                  ? { backgroundColor: colors.foreground }
-                  : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.pillChipSmallText, { color: isActive ? colors.primaryForeground : colors.mutedForeground }]}>
-                {t(`bookings.${f}`)}
-              </Text>
-            </PressableOpacity>
-          )
-        })}
+      {/* Status segment control — matches mockup 26 */}
+      <View style={styles.segmentWrap}>
+        <View style={[styles.segmentContainer, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          {STATUS_TABS.map(tab => {
+            const isActive = statusTab === tab.key
+            return (
+              <PressableOpacity
+                key={tab.key}
+                onPress={() => setStatusTab(tab.key)}
+                style={[
+                  styles.segmentTab,
+                  isActive && [styles.segmentTabActive, {
+                    backgroundColor: colors.card,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.06,
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowRadius: 3,
+                  }],
+                ]}
+              >
+                <Text style={[styles.segmentLabel, { color: isActive ? colors.foreground : colors.mutedForeground }]}>
+                  {tab.label}{' '}
+                </Text>
+                <Text style={[styles.segmentCount, { color: colors.tertiaryForeground }]}>
+                  {tab.count}
+                </Text>
+              </PressableOpacity>
+            )
+          })}
+        </View>
       </View>
 
+      {/* Error banner */}
       {fetchError && !loading && (
-        <PressableOpacity onPress={() => { setRefreshing(true); fetchBookings() }} style={[styles.errorBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <PressableOpacity
+          onPress={() => { setRefreshing(true); fetchBookings() }}
+          style={[styles.errorBanner, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
           <RefreshCw size={14} color={colors.mutedForeground} />
           <Text style={[styles.errorBannerText, { color: colors.foreground }]}>{t('common.loadError')}</Text>
         </PressableOpacity>
       )}
 
-      {/* Booking list */}
+      {/* Content */}
       {loading ? (
-        <View style={styles.listContent}>
+        <View style={styles.skeletonWrap}>
           <BookingCardSkeleton />
           <BookingCardSkeleton />
           <BookingCardSkeleton />
         </View>
       ) : (
-        <FlatList
-          data={activeTab === 'services' ? filteredServiceBookings : filteredBookings}
+        <SectionList
+          sections={sections}
           keyExtractor={item => item.id}
-          renderItem={activeTab === 'services' ? renderServiceBooking : renderBooking}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
           contentContainerStyle={styles.listContent}
+          stickySectionHeadersEnabled={false}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -690,7 +485,7 @@ export default function BookingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
-  // Header — circle back + centered title
+  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -716,150 +511,132 @@ const styles = StyleSheet.create({
   },
   headerSpacer: { width: 36 },
 
-  // Tab chips
-  tabRow: {
+  // Role tab chips
+  roleTabRow: {
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 16,
     paddingBottom: 10,
   },
-  pillChip: {
-    paddingHorizontal: 16,
+  roleChip: {
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
     minHeight: 36,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  pillChipText: {
-    fontSize: 13,
+  roleChipText: {
+    fontSize: 12.5,
     fontFamily: fonts.bodySemi,
     lineHeight: 18,
   },
 
-  // Status filter chips
-  statusFilterRow: {
-    flexDirection: 'row',
-    gap: 8,
+  // Segment control — mockup 26 style
+  segmentWrap: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 14,
   },
-  pillChipSmall: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 999,
-    minHeight: 32,
+  segmentContainer: {
+    flexDirection: 'row',
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 3,
+  },
+  segmentTab: {
+    flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 9,
   },
-  pillChipSmallText: {
-    fontSize: 12,
+  segmentTabActive: {
+    elevation: 1,
+  },
+  segmentLabel: {
+    fontSize: 11.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+  },
+  segmentCount: {
+    fontSize: 11.5,
     fontFamily: fonts.bodyMedium,
     lineHeight: 16,
   },
 
-  listContent: { padding: 16, gap: 12, paddingBottom: 100 },
-
-  // Booking card — monochrome
-  bookingCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden',
+  // Section headers — uppercase muted labels
+  sectionHeader: {
+    paddingTop: 4,
+    paddingBottom: 6,
   },
-  cardTop: {
-    flexDirection: 'row',
-    padding: 16,
-    gap: 12,
-  },
-  itemImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-  },
-  cardInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  itemTitle: {
-    fontSize: 14,
-    lineHeight: 20,
+  sectionLabel: {
+    fontSize: 10.5,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
     fontFamily: fonts.bodySemi,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  dateText: {
-    fontSize: 12,
     lineHeight: 16,
-    fontFamily: fonts.body,
-  },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
-  },
-  userName: {
-    fontSize: 12,
-    flex: 1,
-    lineHeight: 16,
-    fontFamily: fonts.body,
-  },
-  cardRight: {
-    alignItems: 'flex-end',
-    gap: 8,
   },
 
-  // Status badge — monochrome pill
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 100,
+  },
+  skeletonWrap: {
+    padding: 16,
+    gap: 10,
+  },
+
+  // Loan card — mockup 26 style
+  loanCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    padding: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  loanImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+  },
+  loanInfo: {
+    flex: 1,
+    gap: 3,
+  },
+  loanTitle: {
+    fontSize: 13.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 20,
+    letterSpacing: -0.1,
+  },
+  loanSub: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  loanTime: {
+    fontSize: 11,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 16,
+    marginTop: 3,
+  },
+
+  // Status badge pill
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderRadius: 999,
+    alignSelf: 'flex-start',
   },
   statusText: {
-    fontSize: 10.5,
+    fontSize: 9.5,
     fontFamily: fonts.bodySemi,
-    lineHeight: 16,
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
-  },
-
-  priceText: {
-    fontSize: 16,
-    fontFamily: fonts.headingSemi,
-    lineHeight: 24,
-  },
-
-  // Actions row
-  actionsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-  },
-  actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    minHeight: 44,
-  },
-  actionBtnPrimary: {
-    // INK bg — set inline
-  },
-  actionBtnOutline: {
-    borderWidth: 1,
-  },
-  actionBtnText: {
-    fontSize: 12,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+    textTransform: 'uppercase',
+    lineHeight: 14,
   },
 
   // Error banner
