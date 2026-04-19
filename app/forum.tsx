@@ -140,10 +140,11 @@ export default function ForumScreen() {
   // ── Fetch user info ──
   useEffect(() => {
     async function fetchUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      setCurrentUserId(user.id)
-      const { data: profile } = await (supabase.from('profiles') as any).select('naapurusto').eq('id', user.id).maybeSingle()
+      const { getCachedUserId } = await import('@/lib/authCache')
+      const cachedId = await getCachedUserId()
+      if (!cachedId) return
+      setCurrentUserId(cachedId)
+      const { data: profile } = await (supabase.from('profiles') as any).select('naapurusto').eq('id', cachedId).maybeSingle()
       if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto)
     }
     fetchUser().catch(() => {})
@@ -177,7 +178,7 @@ export default function ForumScreen() {
       else setPosts(prev => [...prev, ...newData])
     } catch (err) { if (__DEV__) console.warn('[forum] fetchPosts failed:', err); if (pageNum === 0) setPosts([]) }
     finally { setLoading(false); setRefreshing(false); setLoadingMore(false) }
-  }, [supabase, activeCategory, neighborhoodFilter, sortBy])
+  }, [supabase, activeCategory, neighborhoodFilter, sortBy, currentUserId])
 
   useFocusEffect(useCallback(() => { setPage(0); setLoading(true); fetchPosts(0) }, [fetchPosts]))
 

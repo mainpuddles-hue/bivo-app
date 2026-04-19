@@ -129,7 +129,7 @@ export default function CreateAdScreen() {
 
   const uploadImage = useCallback(async (uri: string, userId: string): Promise<string | null> => {
     try {
-      const ext = (uri.split('.').pop() ?? 'jpg').toLowerCase()
+      const ext = ((uri.split('.').pop() ?? 'jpg').split('?')[0]).toLowerCase()
       if (!ALLOWED_EXTS.includes(ext)) return null
       const fileName = `${userId}/${Date.now()}.${ext}`
       const response = await fetch(uri)

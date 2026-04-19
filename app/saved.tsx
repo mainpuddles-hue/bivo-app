@@ -102,7 +102,7 @@ function SavedScreenInner() {
 
       if (communityEventIds.length > 0) {
         const { data: communityEvents } = await supabase
-          .from('events')
+          .from('community_events')
           .select('id, title, event_date, location_name')
           .in('id', communityEventIds)
         ;(communityEvents ?? []).forEach((e: any) => {
@@ -154,9 +154,9 @@ function SavedScreenInner() {
       return current.filter(post => post.id !== postId)
     })
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-      await (supabase.from('saved_posts') as any).delete().eq('post_id', postId).eq('user_id', user.id)
+      const cachedId = await getCachedUserId()
+      if (!cachedId) throw new Error('Not authenticated')
+      await (supabase.from('saved_posts') as any).delete().eq('post_id', postId).eq('user_id', cachedId)
     } catch {
       if (removedPost) {
         const restored = removedPost
@@ -172,9 +172,9 @@ function SavedScreenInner() {
     const prev = events
     setEvents(e => e.filter(ev => ev.id !== eventId))
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-      const { error } = await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', user.id)
+      const cachedId = await getCachedUserId()
+      if (!cachedId) throw new Error('Not authenticated')
+      const { error } = await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', cachedId)
       if (error) throw error
     } catch {
       setEvents(prev)

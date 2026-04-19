@@ -168,7 +168,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        sceneStyle: { paddingBottom: 100 },
+        sceneStyle: { backgroundColor: 'transparent' },
       }}
     >
       <Tabs.Screen name="index" options={{

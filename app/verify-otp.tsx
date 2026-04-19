@@ -71,6 +71,7 @@ export default function VerifyOtpScreen() {
   }, [resendCooldown > 0]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleVerify = async (codeOverride?: string) => {
+    if (loading) return // Prevent double verification
     const code = codeOverride ?? getCode()
     if (code.length < 6) {
       setError(t('auth.otpTooShort'))

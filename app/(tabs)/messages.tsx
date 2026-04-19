@@ -90,12 +90,13 @@ export default function MessagesScreen() {
   }, [])
 
   const handleTogglePin = useCallback(async (convId: string) => {
-    const isPinned = pinnedIds.includes(convId)
-    const newIds = isPinned
-      ? pinnedIds.filter(id => id !== convId)
-      : [...pinnedIds, convId]
-    await savePinnedIds(newIds)
-  }, [pinnedIds, savePinnedIds])
+    setPinnedIds(prev => {
+      const isPinned = prev.includes(convId)
+      const newIds = isPinned ? prev.filter(id => id !== convId) : [...prev, convId]
+      AsyncStorage.setItem(PINNED_KEY, JSON.stringify(newIds)).catch(() => {})
+      return newIds
+    })
+  }, [])
 
   const fetchConversations = useCallback(async () => {
     if (!mountedRef.current) return

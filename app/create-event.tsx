@@ -339,7 +339,7 @@ function CreateEventScreenInner() {
       setSubmitting(false)
     }
   }, [
-    title, description, eventDate, eventTime, locationName, category,
+    title, description, eventDate, eventTime, locationName, locationLat, locationLng, category,
     maxParticipants, approvalRequired, imageUri, currentUserId,
     userNaapurusto, supabase, router, t, edit,
   ])

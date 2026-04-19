@@ -61,9 +61,10 @@ function CommunityEventsScreenInner() {
       }
       let events = (data ?? []) as CommunityEvent[]
       // Filter out events from blocked users
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const blocked = await getBlockedUserIds(user.id)
+      const { getCachedUserId } = await import('@/lib/authCache')
+      const cachedId = await getCachedUserId()
+      if (cachedId) {
+        const blocked = await getBlockedUserIds(cachedId)
         if (blocked.size > 0) events = events.filter(e => !blocked.has((e as any).creator_id))
       }
       setEvents(events)

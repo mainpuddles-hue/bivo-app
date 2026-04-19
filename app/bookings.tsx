@@ -218,7 +218,7 @@ export default function BookingsScreen() {
 
   useFocusEffect(useCallback(() => { fetchBookings() }, [fetchBookings]))
 
-  const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active']
+  const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'paid', 'active', 'in_progress']
   const PAST_STATUSES: BookingStatus[] = ['completed', 'cancelled', 'disputed', 'refunded']
 
   const filteredBookings = useMemo(() => {
