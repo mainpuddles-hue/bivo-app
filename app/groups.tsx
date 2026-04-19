@@ -102,17 +102,18 @@ export default function GroupsScreen() {
   // Fetch user
   useEffect(() => {
     async function fetchUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const { getCachedUserId } = await import('@/lib/authCache')
+      const cachedId = await getCachedUserId()
+      if (!cachedId) {
         // Not logged in — clear loading so UI isn't stuck on skeleton forever
         setLoading(false)
         return
       }
-      setCurrentUserId(user.id)
+      setCurrentUserId(cachedId)
       try {
         const { data: profile } = await (supabase.from('profiles') as any)
           .select('naapurusto')
-          .eq('id', user.id)
+          .eq('id', cachedId)
           .maybeSingle()
         if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto as string)
       } catch {} // Intentional: profile table columns may be missing

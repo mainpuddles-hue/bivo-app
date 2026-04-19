@@ -102,14 +102,15 @@ export default function MessagesScreen() {
     if (!mountedRef.current) return
     setFetchError(false)
     try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { getCachedUserId } = await import('@/lib/authCache')
+    const uid = await getCachedUserId()
     if (!mountedRef.current) return
-    if (!user) { setLoading(false); setRefreshing(false); return }
-    setUserId(user.id)
-    if (!isValidUUID(user.id)) { setLoading(false); setRefreshing(false); return }
+    if (!uid) { setLoading(false); setRefreshing(false); return }
+    setUserId(uid)
+    if (!isValidUUID(uid)) { setLoading(false); setRefreshing(false); return }
 
     // Single RPC call replaces N+1 queries (1 conversations + 2N messages queries)
-    const { data, error: rpcError } = await (supabase.rpc as any)('get_conversations_with_details', { p_user_id: user.id })
+    const { data, error: rpcError } = await (supabase.rpc as any)('get_conversations_with_details', { p_user_id: uid })
 
     if (!mountedRef.current) return
 
@@ -120,14 +121,14 @@ export default function MessagesScreen() {
         const { data: fallbackData } = await supabase
           .from('conversations')
           .select('*, user1:profiles!conversations_user1_id_fkey(id, name, avatar_url, last_active_date), user2:profiles!conversations_user2_id_fkey(id, name, avatar_url, last_active_date)')
-          .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+          .or(`user1_id.eq.${uid},user2_id.eq.${uid}`)
           .order('updated_at', { ascending: false })
           .limit(50)
 
         if (!mountedRef.current) return
 
         const fallbackConvs = (fallbackData ?? []).map((row: any) => {
-          const isUser1 = row.user1_id === user.id
+          const isUser1 = row.user1_id === uid
           const otherProfile = isUser1 ? row.user2 : row.user1
           return {
             id: row.id,
@@ -156,11 +157,11 @@ export default function MessagesScreen() {
           const { data: blockedData } = await supabase
             .from('blocked_users')
             .select('blocked_id')
-            .eq('blocker_id', user.id)
+            .eq('blocker_id', uid)
           const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
           if (blockedIds.size > 0) {
             filteredFallback = fallbackConvs.filter(c => {
-              const otherId = (c as any).user1_id === user.id ? (c as any).user2_id : (c as any).user1_id
+              const otherId = (c as any).user1_id === uid ? (c as any).user2_id : (c as any).user1_id
               return !blockedIds.has(otherId)
             })
           }
@@ -191,7 +192,7 @@ export default function MessagesScreen() {
         avatar_url: row.other_user_avatar,
         last_active_date: row.other_user_last_active,
       },
-      is_archived: row.user1_id === user.id ? row.user1_archived : row.user2_archived,
+      is_archived: row.user1_id === uid ? row.user1_archived : row.user2_archived,
       last_message: row.last_message_id ? {
         id: row.last_message_id,
         content: row.last_message_content,
@@ -209,11 +210,11 @@ export default function MessagesScreen() {
       const { data: blockedData } = await supabase
         .from('blocked_users')
         .select('blocked_id')
-        .eq('blocker_id', user.id)
+        .eq('blocker_id', uid)
       const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
       if (blockedIds.size > 0) {
         filteredConvs = convs.filter(c => {
-          const otherId = (c as any).user1_id === user.id ? (c as any).user2_id : (c as any).user1_id
+          const otherId = (c as any).user1_id === uid ? (c as any).user2_id : (c as any).user1_id
           return !blockedIds.has(otherId)
         })
       }

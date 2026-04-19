@@ -110,15 +110,16 @@ function CommunityEventsScreenInner() {
 
   const handleQuickJoin = useCallback(async (eventId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const { getCachedUserId } = await import('@/lib/authCache')
+      const cachedId = await getCachedUserId()
+      if (!cachedId) {
         router.replace('/(auth)/login')
         return
       }
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       await (supabase.from('community_event_participants') as any)
         .upsert(
-          { event_id: eventId, user_id: user.id, status: 'joined' },
+          { event_id: eventId, user_id: cachedId, status: 'joined' },
           { onConflict: 'event_id,user_id', ignoreDuplicates: true },
         )
       // Refresh to update counts

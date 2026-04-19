@@ -48,11 +48,11 @@ function EventChatScreenInner() {
   // Get user
   useEffect(() => {
     let mounted = true
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user && mounted) setUserId(user.id)
-    })
+    import('@/lib/authCache').then(({ getCachedUserId }) =>
+      getCachedUserId().then(id => { if (id && mounted) setUserId(id) })
+    )
     return () => { mounted = false }
-  }, [supabase])
+  }, [])
 
   // Get event info from conversation_id
   useEffect(() => {
