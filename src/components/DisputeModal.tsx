@@ -75,7 +75,7 @@ export function DisputeModal({
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
         <View style={styles.header}>
-          <PressableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={8}>
+          <PressableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.close')}>
             <X size={24} color={colors.foreground} />
           </PressableOpacity>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('rental.disputeItem')}</Text>
@@ -126,6 +126,9 @@ export function DisputeModal({
                   styles.reasonBtn,
                   { backgroundColor: reason === r.key ? `${colors.destructive}14` : colors.card },
                 ]}
+                accessibilityRole="radio"
+                accessibilityLabel={r.label}
+                accessibilityState={{ selected: reason === r.key }}
               >
                 <AlertTriangle size={16} color={reason === r.key ? colors.destructive : colors.mutedForeground} />
                 <Text style={[styles.reasonText, { color: reason === r.key ? colors.destructive : colors.foreground }]}>
@@ -145,6 +148,7 @@ export function DisputeModal({
               value={description}
               onChangeText={setDescription}
               maxLength={500}
+              accessibilityLabel={t('rental.disputeDescriptionPlaceholder')}
             />
           )}
         </ScrollView>
@@ -155,6 +159,9 @@ export function DisputeModal({
             onPress={handleSubmit}
             disabled={!reason || submitting}
             style={[styles.submitBtn, { backgroundColor: reason ? colors.destructive : colors.muted }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('rental.disputeItem')}
+            accessibilityState={{ disabled: !reason || submitting }}
           >
             {submitting ? (
               <ActivityIndicator color={colors.primaryForeground} />

@@ -177,6 +177,14 @@ serve(async (req) => {
       })
     }
 
+    // Authorization: only allow sending push to yourself, or urgent broadcasts (which go to nearby users)
+    const BROADCAST_TYPES = ['urgent_help', 'juuri_nyt']
+    if (!BROADCAST_TYPES.includes(type) && user_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Cannot send push to other users' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // === URGENT AUTO-MATCH: If this is an urgent post, find and notify nearby helpers ===
     if ((type === 'urgent_help' || type === 'juuri_nyt') && post_id) {
       // Rate limit: check if this user sent an urgent broadcast in the last 30 minutes

@@ -125,7 +125,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
           {/* Header */}
           <View style={s.header}>
             <Text style={[s.title, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
-            <Pressable onPress={handleClose} hitSlop={12}>
+            <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
               <X size={20} color={colors.mutedForeground} />
             </Pressable>
           </View>
@@ -155,6 +155,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
                 numberOfLines={4}
                 textAlignVertical="top"
                 inputAccessoryViewID={KEYBOARD_DONE_ID}
+                accessibilityLabel={t('profile.reviewComment')}
               />
               <Text style={[s.charCount, { color: colors.mutedForeground }]}>{comment.length}/500</Text>
 
@@ -163,6 +164,9 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
                 onPress={handleSubmit}
                 disabled={loading || rating === 0}
                 style={[s.submitBtn, { backgroundColor: colors.foreground, opacity: loading || rating === 0 ? 0.6 : 1 }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('profile.submitReview')}
+                accessibilityState={{ disabled: loading || rating === 0 }}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color={colors.primaryForeground} />

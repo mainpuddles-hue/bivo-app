@@ -22,6 +22,8 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
       <PressableOpacity
         style={[styles.showAllPlacesBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         onPress={() => onShowAllPlaces?.()}
+        accessibilityRole="button"
+        accessibilityLabel={item.title}
       >
         <Text style={[styles.showAllPlacesText, { color: colors.foreground }]}>{item.title}</Text>
         <ChevronDown size={16} color={colors.foreground} />
@@ -36,6 +38,8 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
     <PressableOpacity
       style={[styles.placeRow, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
+      accessibilityRole="button"
+      accessibilityLabel={`${item.title}, ${placeCategory}, ${formatDistance(item.distance)}`}
     >
       <View style={styles.placeInfo}>
         <Text style={[styles.placeTitle, { color: colors.foreground }]} numberOfLines={1}>{item.title}</Text>
@@ -56,6 +60,8 @@ export function PlaceRow({ item, colors, t, onPress, onDirections, onShowAllPlac
         }}
         hitSlop={8}
         style={[styles.placeDirectionsBtn, { backgroundColor: colors.muted }]}
+        accessibilityRole="button"
+        accessibilityLabel={t('map.directions')}
       >
         <Navigation size={14} color={colors.foreground} />
       </Pressable>

@@ -1074,7 +1074,7 @@ export default function CreateScreen() {
                         <Text style={[mk.toggleHint, { color: colors.mutedForeground }]}>{t('create.anonymousHint')}</Text>
                       </View>
                     </View>
-                    <Switch value={isAnonymous} onValueChange={setIsAnonymous} trackColor={{ false: colors.muted, true: colors.foreground }} thumbColor={colors.background} />
+                    <Switch value={isAnonymous} onValueChange={setIsAnonymous} trackColor={{ false: colors.muted, true: colors.foreground }} thumbColor={colors.background} accessibilityLabel={t('create.anonymous')} />
                   </View>
 
                   {selectedType !== 'tapahtuma' && (
@@ -1087,7 +1087,7 @@ export default function CreateScreen() {
                             <Text style={[mk.toggleHint, { color: colors.mutedForeground }]}>{t('urgency.toggleHint')}</Text>
                           </View>
                         </View>
-                        <Switch value={isUrgent} onValueChange={setIsUrgent} trackColor={{ false: colors.muted, true: colors.destructive }} thumbColor={colors.background} />
+                        <Switch value={isUrgent} onValueChange={setIsUrgent} trackColor={{ false: colors.muted, true: colors.destructive }} thumbColor={colors.background} accessibilityLabel={t('urgency.toggle')} />
                       </View>
                       {isUrgent && (
                         <View style={mk.urgencyOpts}>

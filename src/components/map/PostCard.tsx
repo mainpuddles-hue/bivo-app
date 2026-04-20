@@ -31,6 +31,8 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
     <PressableOpacity
       style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
+      accessibilityRole="button"
+      accessibilityLabel={`${item.title}${cat ? `, ${t(cat.label)}` : ''}${userName ? `, ${userName}` : ''}`}
     >
       {/* Image left (borderRadius 10) */}
       {imageUrl ? (
