@@ -763,7 +763,7 @@ export default function SettingsScreen() {
             icon={<Shield size={16} color={colors.foreground} strokeWidth={1.8} />}
             label={t('settings.security') ?? 'Vahvistus'}
             value={`${verificationCount} / 3`}
-            onPress={() => {}}
+            onPress={() => router.push('/verification')}
             colors={colors}
             isDark={isDark}
           />

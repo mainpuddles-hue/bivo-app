@@ -311,6 +311,11 @@ export default function CreateScreen() {
       setShowTrustGate(true)
       return
     }
+    // Loan listings use the dedicated 7-step wizard for richer flow
+    if (type === 'lainaa' && FEATURES.LENDING) {
+      router.push('/new-listing')
+      return
+    }
     setSelectedType(type)
     setSelectedTags([])
     setTarjoanType('service')

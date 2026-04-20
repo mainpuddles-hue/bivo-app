@@ -517,7 +517,7 @@ export default function ProfileScreen() {
 
         {/* Menu rows — mockup 08: individual surface cards with chevrons */}
         <View style={s.menuSection}>
-          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
+          <PressableOpacity onPress={() => router.push('/my-listings')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
             <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('profile.myPosts')}</Text>
             <View style={s.menuRowRight}>
               <Text style={[s.menuRowMeta, { color: colors.mutedForeground }]}>{postCount > 0 ? `${postCount} ${t('profile.active').toLowerCase()}` : ''}</Text>
