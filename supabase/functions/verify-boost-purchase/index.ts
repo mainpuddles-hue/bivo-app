@@ -124,9 +124,9 @@ serve(async (req) => {
     let validation_details: Record<string, unknown> = {}
 
     if (platform === 'sandbox') {
-      // Only allow sandbox in development/staging — block in production
-      const env = Deno.env.get('ENVIRONMENT') ?? 'production'
-      if (env !== 'development' && env !== 'staging') {
+      // Only allow sandbox when explicitly enabled via env var — blocks production abuse
+      const sandboxAllowed = Deno.env.get('SANDBOX_ALLOWED') === 'true'
+      if (!sandboxAllowed) {
         return new Response(JSON.stringify({ error: 'Sandbox not available' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -329,10 +329,10 @@ async function validateAppleReceipt(
   }
   let result = await res.json()
 
-  // Status 21007 means receipt is from sandbox — reject in production
+  // Status 21007 means receipt is from sandbox — only allow when SANDBOX_ALLOWED is set
   if (result.status === 21007) {
-    const env = Deno.env.get('ENVIRONMENT') ?? 'production'
-    if (env === 'production') {
+    const sandboxAllowed = Deno.env.get('SANDBOX_ALLOWED') === 'true'
+    if (!sandboxAllowed) {
       details.error = 'Sandbox receipt rejected in production'
       details.apple_status = 21007
       return false

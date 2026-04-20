@@ -187,18 +187,33 @@ serve(async (req) => {
 
     // === URGENT AUTO-MATCH: If this is an urgent post, find and notify nearby helpers ===
     if ((type === 'urgent_help' || type === 'juuri_nyt') && post_id) {
-      // Rate limit: check if this user sent an urgent broadcast in the last 30 minutes
-      const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-      const { count: recentUrgentCount } = await supabase
-        .from('posts')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user_id)
-        .eq('is_urgent', true)
-        .gte('created_at', thirtyMinAgo)
+      // Rate limit: max 1 urgent broadcast per 6 hours AND max 4 per day
+      const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const [{ count: recentUrgent6h }, { count: recentUrgent24h }] = await Promise.all([
+        supabase
+          .from('posts')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user_id)
+          .eq('is_urgent', true)
+          .gte('created_at', sixHoursAgo),
+        supabase
+          .from('posts')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user_id)
+          .eq('is_urgent', true)
+          .gte('created_at', oneDayAgo),
+      ])
 
-      if ((recentUrgentCount ?? 0) > 1) {
+      if ((recentUrgent6h ?? 0) >= 1) {
         return new Response(
-          JSON.stringify({ sent: 0, type: 'urgent_rate_limited', reason: 'Too many urgent posts in 30 minutes' }),
+          JSON.stringify({ sent: 0, type: 'urgent_rate_limited', reason: 'Max 1 urgent broadcast per 6 hours' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+      if ((recentUrgent24h ?? 0) >= 4) {
+        return new Response(
+          JSON.stringify({ sent: 0, type: 'urgent_rate_limited', reason: 'Max 4 urgent broadcasts per day' }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
       }
@@ -220,7 +235,7 @@ serve(async (req) => {
           .eq('naapurusto', neighborhood)
           .neq('id', (post as any).user_id)
           .not('push_token', 'is', null)
-          .limit(200)
+          .limit(50)
 
         // Build batch messages for Expo push API (up to 100 per request)
         const BATCH_SIZE = 100

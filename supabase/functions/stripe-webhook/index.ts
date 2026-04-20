@@ -295,7 +295,9 @@ serve(async (req) => {
       payload: { id: event.id, type: event.type },
       status: 'completed',
       attempts: 1,
-    }).catch(() => {}) // Non-critical
+    }).catch((err: any) => {
+      console.error(`[webhook] CRITICAL: Failed to log webhook event ${event.id} (${event.type}):`, err?.message ?? err)
+    })
 
     return new Response(JSON.stringify({ received: true }), {
       status: 200,

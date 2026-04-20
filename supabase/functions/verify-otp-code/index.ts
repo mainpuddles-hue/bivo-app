@@ -57,32 +57,56 @@ serve(async (req) => {
       })
     }
 
-    // ── Brute-force protection ──────────────────────────────────
-    // Count failed verification attempts in the last 15 minutes for this email.
-    // Uses the verify_attempts column on otp_codes rows as a cumulative counter.
-    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
-
+    // ── Brute-force protection with progressive lockout ─────────
+    // Count failed verification attempts for this email and enforce
+    // exponential backoff:
+    //   3+ failed  → wait 5 minutes since last attempt
+    //   5+ failed  → wait 15 minutes since last attempt
+    //   10+ failed → OTP locked entirely (must request new OTP)
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { data: recentOtps } = await supabase
       .from('otp_codes')
-      .select('verify_attempts')
+      .select('verify_attempts, updated_at')
       .eq('email', cleanEmail)
       .eq('type', type)
-      .gte('created_at', fifteenMinAgo)
+      .gte('created_at', twentyFourHoursAgo)
+      .order('created_at', { ascending: false })
+      .limit(10)
 
     const totalAttempts = (recentOtps ?? []).reduce(
       (sum: number, row: any) => sum + (row.verify_attempts ?? 0),
       0,
     )
 
-    if (totalAttempts >= 5) {
-      console.warn(`[verify-otp-code] Brute-force blocked for ${cleanEmail} (${totalAttempts} attempts in 15 min)`)
+    if (totalAttempts >= 10) {
+      console.warn(`[verify-otp-code] OTP locked for ${cleanEmail} (${totalAttempts} attempts — require new OTP)`)
       return new Response(JSON.stringify({
-        error: 'too_many_attempts',
+        error: 'otp_locked',
         verified: false,
-        message: 'Too many failed attempts. Please wait 15 minutes before trying again.',
+        message: 'Too many failed attempts. Please request a new verification code.',
       }), {
         status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+    }
+
+    if (totalAttempts >= 3) {
+      const lastAttemptAt = recentOtps?.[0]?.updated_at
+      if (lastAttemptAt) {
+        const waitMinutes = totalAttempts >= 5 ? 15 : 5
+        const waitMs = waitMinutes * 60 * 1000
+        const elapsed = Date.now() - new Date(lastAttemptAt).getTime()
+        if (elapsed < waitMs) {
+          const remainingSec = Math.ceil((waitMs - elapsed) / 1000)
+          console.warn(`[verify-otp-code] Backoff enforced for ${cleanEmail} (${totalAttempts} attempts, wait ${waitMinutes}min)`)
+          return new Response(JSON.stringify({
+            error: 'too_many_attempts',
+            verified: false,
+            message: `Too many failed attempts. Please wait ${Math.ceil(remainingSec / 60)} minutes before trying again.`,
+          }), {
+            status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      }
     }
 
     // Atomically find AND mark the code as used in a single UPDATE to prevent

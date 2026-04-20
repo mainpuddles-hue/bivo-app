@@ -173,6 +173,15 @@ function VerificationScreenInner() {
                 {/* Right action */}
                 {step.done ? (
                   <Text style={[s.stepDoneLabel, { color: colors.foreground }]}>{t('verification.done')}</Text>
+                ) : step.key === 'identity' ? (
+                  <View
+                    style={[s.stepActionPill, { backgroundColor: colors.muted }]}
+                    accessibilityLabel={`${step.title} — ${t('verification.comingSoon')}`}
+                  >
+                    <Text style={[s.stepActionText, { color: colors.mutedForeground }]}>
+                      {t('verification.comingSoon')}
+                    </Text>
+                  </View>
                 ) : (
                   <PressableOpacity
                     style={[s.stepActionPill, { backgroundColor: colors.foreground }]}

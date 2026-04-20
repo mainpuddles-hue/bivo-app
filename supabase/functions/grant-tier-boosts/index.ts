@@ -185,15 +185,35 @@ async function grantCreditsIfNeeded(
   currentMonth: string,
   now: Date,
 ): Promise<boolean> {
-  // Check existing boost record
+  const monthStart = `${currentMonth}-01T00:00:00Z`
+  const nowIso = now.toISOString()
+
+  // Atomic UPDATE with WHERE conditions that include eligibility check.
+  // Only updates if last_grant_at IS NULL or last_grant_at < month start,
+  // so concurrent cron runs cannot double-grant.
+  // Note: balance uses optimistic locking (eq on current balance) to prevent
+  // read-then-write races with concurrent balance modifications.
   const { data: existing } = await supabase
     .from('user_boosts')
     .select('balance, last_grant_at')
     .eq('user_id', userId)
     .maybeSingle()
 
+  if (!existing) {
+    // Insert new row — handle race via unique constraint
+    const { error } = await supabase
+      .from('user_boosts')
+      .insert({ user_id: userId, balance: credits, last_grant_at: nowIso, updated_at: nowIso })
+    if (error) {
+      if (error.code === '23505') return false // Race: another cron inserted first
+      console.error(`[grant-tier-boosts] Failed to grant to ${userId}:`, error.message)
+      return false
+    }
+    return true
+  }
+
   // Idempotency: check if already granted this month
-  if (existing?.last_grant_at) {
+  if (existing.last_grant_at) {
     const lastGrant = new Date(existing.last_grant_at)
     const lastGrantMonth = `${lastGrant.getFullYear()}-${String(lastGrant.getMonth() + 1).padStart(2, '0')}`
     if (lastGrantMonth === currentMonth) {
@@ -201,33 +221,24 @@ async function grantCreditsIfNeeded(
     }
   }
 
-  const newBalance = (existing?.balance ?? 0) + credits
-  const nowIso = now.toISOString()
+  const currentBalance = existing.balance ?? 0
+  const newBalance = currentBalance + credits
 
-  if (existing) {
-    // Conditional update: only if last_grant_at hasn't changed (prevents double-grant race)
-    const { data: updated, error } = await supabase
-      .from('user_boosts')
-      .update({ balance: newBalance, last_grant_at: nowIso, updated_at: nowIso })
-      .eq('user_id', userId)
-      .lt('last_grant_at', `${currentMonth}-01T00:00:00Z`)
-      .select('user_id')
-    if (error) {
-      console.error(`[grant-tier-boosts] Failed to grant to ${userId}:`, error.message)
-      return false
-    }
-    if (!updated?.length) return false // Another cron already granted this month
-  } else {
-    // Insert new row
-    const { error } = await supabase
-      .from('user_boosts')
-      .insert({ user_id: userId, balance: newBalance, last_grant_at: nowIso, updated_at: nowIso })
-    if (error) {
-      if (error.code === '23505') return false // Race: another cron inserted first
-      console.error(`[grant-tier-boosts] Failed to grant to ${userId}:`, error.message)
-      return false
-    }
+  // Atomic conditional update with optimistic locking on balance:
+  // - last_grant_at guard prevents double-grant from concurrent cron runs
+  // - balance guard prevents overwriting concurrent balance changes (e.g., use-boost)
+  const { data: updated, error } = await supabase
+    .from('user_boosts')
+    .update({ balance: newBalance, last_grant_at: nowIso, updated_at: nowIso })
+    .eq('user_id', userId)
+    .eq('balance', currentBalance)
+    .or(`last_grant_at.is.null,last_grant_at.lt.${monthStart}`)
+    .select('user_id')
+  if (error) {
+    console.error(`[grant-tier-boosts] Failed to grant to ${userId}:`, error.message)
+    return false
   }
+  if (!updated?.length) return false // Another cron already granted or balance changed
 
   return true
 }

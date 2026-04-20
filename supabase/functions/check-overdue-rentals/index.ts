@@ -148,6 +148,16 @@ serve(async (req) => {
         switch (tier) {
           case 'grace': {
             // 0-24h: Send reminder to borrower
+            // Conditional update: only set overdue_notified_at if still NULL
+            // to prevent concurrent runs from double-processing
+            const { data: graceUpdated } = await (supabase.from('rental_bookings') as any)
+              .update({ overdue_notified_at: nowIso })
+              .eq('id', booking.id)
+              .is('overdue_notified_at', null)
+              .select('id')
+
+            if (!graceUpdated?.length) break // Another run already processed this
+
             await (supabase.from('notifications') as any).insert({
               user_id: booking.borrower_id,
               type: 'rental_overdue_reminder',
@@ -157,17 +167,25 @@ serve(async (req) => {
               link_id: booking.id,
             })
 
-            await (supabase.from('rental_bookings') as any)
-              .update({ overdue_notified_at: nowIso })
-              .eq('id', booking.id)
-
             stats.grace++
             break
           }
 
           case 'warning': {
             // 24-48h: Warning to both borrower and lender
-            const notifications = [
+            // Conditional update: only set overdue_warning_at if still NULL
+            const { data: warnUpdated } = await (supabase.from('rental_bookings') as any)
+              .update({
+                overdue_notified_at: booking.overdue_notified_at || nowIso,
+                overdue_warning_at: nowIso,
+              })
+              .eq('id', booking.id)
+              .is('overdue_warning_at', null)
+              .select('id')
+
+            if (!warnUpdated?.length) break // Another run already processed this
+
+            const warnNotifications = [
               {
                 user_id: booking.borrower_id,
                 type: 'rental_overdue_warning',
@@ -186,14 +204,7 @@ serve(async (req) => {
               },
             ]
 
-            await (supabase.from('notifications') as any).insert(notifications)
-
-            await (supabase.from('rental_bookings') as any)
-              .update({
-                overdue_notified_at: booking.overdue_notified_at || nowIso,
-                overdue_warning_at: nowIso,
-              })
-              .eq('id', booking.id)
+            await (supabase.from('notifications') as any).insert(warnNotifications)
 
             stats.warning++
             break
@@ -205,7 +216,21 @@ serve(async (req) => {
             const daysOver24 = Math.ceil(hoursOver24 / 24)
             const penaltyAmount = daysOver24 * (booking.daily_fee || 0) * PENALTY_MULTIPLIER
 
-            const notifications = [
+            // Conditional update: only set overdue_penalty_at if still NULL
+            const { data: penaltyUpdated } = await (supabase.from('rental_bookings') as any)
+              .update({
+                penalty_amount: penaltyAmount,
+                overdue_notified_at: booking.overdue_notified_at || nowIso,
+                overdue_warning_at: booking.overdue_warning_at || nowIso,
+                overdue_penalty_at: nowIso,
+              })
+              .eq('id', booking.id)
+              .is('overdue_penalty_at', null)
+              .select('id')
+
+            if (!penaltyUpdated?.length) break // Another run already processed this
+
+            const penaltyNotifications = [
               {
                 user_id: booking.borrower_id,
                 type: 'rental_overdue_penalty',
@@ -224,16 +249,7 @@ serve(async (req) => {
               },
             ]
 
-            await (supabase.from('notifications') as any).insert(notifications)
-
-            await (supabase.from('rental_bookings') as any)
-              .update({
-                penalty_amount: penaltyAmount,
-                overdue_notified_at: booking.overdue_notified_at || nowIso,
-                overdue_warning_at: booking.overdue_warning_at || nowIso,
-                overdue_penalty_at: nowIso,
-              })
-              .eq('id', booking.id)
+            await (supabase.from('notifications') as any).insert(penaltyNotifications)
 
             stats.penalty++
             break
@@ -241,6 +257,15 @@ serve(async (req) => {
 
           case 'forfeit': {
             // 168h+ (7 days): Forfeit deposit, capture Stripe hold, demote trust
+            // Conditional update: only set overdue_forfeit_at if still NULL
+            const { data: forfeitUpdated } = await (supabase.from('rental_bookings') as any)
+              .update({ overdue_forfeit_at: nowIso })
+              .eq('id', booking.id)
+              .is('overdue_forfeit_at', null)
+              .select('id')
+
+            if (!forfeitUpdated?.length) break // Another run already processed this
+
             const hoursOver24 = hoursOverdue - GRACE_PERIOD_HOURS
             const daysOver24 = Math.ceil(hoursOver24 / 24)
             const penaltyAmount = daysOver24 * (booking.daily_fee || 0) * PENALTY_MULTIPLIER
@@ -295,7 +320,7 @@ serve(async (req) => {
                 ? ' Vakuusmaksun pidätys käsitellään erikseen.'
                 : ''
 
-            const notifications = [
+            const forfeitNotifications = [
               {
                 user_id: booking.borrower_id,
                 type: 'rental_overdue_forfeit',
@@ -318,9 +343,9 @@ serve(async (req) => {
               },
             ]
 
-            await (supabase.from('notifications') as any).insert(notifications)
+            await (supabase.from('notifications') as any).insert(forfeitNotifications)
 
-            // ── Update booking status ─────────────────────────────
+            // ── Update remaining booking fields ─────────────────────
             await (supabase.from('rental_bookings') as any)
               .update({
                 penalty_amount: penaltyAmount,
@@ -329,7 +354,6 @@ serve(async (req) => {
                 overdue_notified_at: booking.overdue_notified_at || nowIso,
                 overdue_warning_at: booking.overdue_warning_at || nowIso,
                 overdue_penalty_at: booking.overdue_penalty_at || nowIso,
-                overdue_forfeit_at: nowIso,
               })
               .eq('id', booking.id)
 

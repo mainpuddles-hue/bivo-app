@@ -96,7 +96,7 @@ serve(async (req) => {
       })
     }
 
-    // 5. Check no active boost exists for this post
+    // 5. Pre-check for active boost (non-authoritative — real guard is INSERT below)
     const now = new Date().toISOString()
     const { data: activeBoost } = await supabase
       .from('post_boosts')
@@ -203,6 +203,9 @@ serve(async (req) => {
     }
 
     // 10. Insert post_boosts record
+    // Uses unique constraint on (post_id) WHERE boost_end > now to prevent
+    // double-boost. If two concurrent requests both pass the SELECT check above,
+    // only one INSERT succeeds; the other hits a 23505 duplicate key error.
     const { error: insertError } = await supabase
       .from('post_boosts')
       .insert({
@@ -224,6 +227,16 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id)
+
+      // Race condition: another concurrent request already created an active boost
+      if (insertError.code === '23505') {
+        return new Response(JSON.stringify({
+          error: 'Post already has an active boost',
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
 
       console.error('[use-boost] Failed to insert post_boosts:', insertError.message)
       return new Response(

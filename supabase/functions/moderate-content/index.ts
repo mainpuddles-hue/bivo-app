@@ -42,7 +42,7 @@ const SCAM_PATTERNS = [
 // Inappropriate content patterns
 const INAPPROPRIATE_PATTERNS = [
   // Explicit hate speech markers (Finnish + English)
-  /\b(vittu|perkele|saatana)\b.*\b(kuole|tapa|lyö)\b/gi, // Finnish profanity + violence
+  /\b(vittu|perkele|saatana)\b.{0,200}\b(kuole|tapa|lyö)\b/gi, // Finnish profanity + violence
   /\b(kill|murder|threat)\b/gi,
   /\b(nazi|natsit?)\b/gi,
 ]

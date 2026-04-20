@@ -127,25 +127,56 @@ serve(async (req) => {
       })
     }
 
-    // ── Rate limiting: max 5 emails per hour per user (DB-backed) ──────────
+    // ── Rate limiting: max 5 emails per hour per user (DB-backed, atomic) ──
+    // Insert the rate-limit log entry FIRST (optimistically), then count.
+    // If count > limit, delete the entry and reject. This closes the race
+    // window where two concurrent requests both pass a SELECT count check.
     const now = Date.now()
     const oneHourAgo = new Date(now - RATE_LIMIT_WINDOW_MS).toISOString()
-    // Primary: DB-backed count (survives container restarts)
+
+    // Optimistic insert — reserve a slot
+    const { data: rateLimitEntry, error: rlInsertError } = await supabase
+      .from('notifications')
+      .insert({
+        user_id: user.id,
+        type: 'email_sent',
+        title: 'Email: rate_limit_reserve',
+        body: 'pending',
+        is_read: true,
+      })
+      .select('id')
+      .single()
+
+    if (rlInsertError) {
+      console.error('[send-email] Rate limit insert failed:', rlInsertError.message)
+      // Fall through — don't block email on rate-limit bookkeeping failure
+    }
+
+    // Now count how many (including the one we just inserted)
     const { count: recentCount } = await supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .eq('type', 'email_sent')
       .gte('created_at', oneHourAgo)
-    if ((recentCount ?? 0) >= RATE_LIMIT_MAX) {
+
+    if ((recentCount ?? 0) > RATE_LIMIT_MAX) {
+      // Over limit — delete the optimistic entry and reject
+      if (rateLimitEntry?.id) {
+        await supabase.from('notifications').delete().eq('id', rateLimitEntry.id)
+      }
       return new Response(JSON.stringify({ error: 'Rate limit exceeded. Max 5 emails per hour.' }), {
         status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
     // Fallback: in-memory guard for burst protection within same container
     const entry = rateLimitMap.get(user.id)
     if (entry && (now - entry.windowStart) < RATE_LIMIT_WINDOW_MS) {
       if (entry.count >= RATE_LIMIT_MAX) {
+        if (rateLimitEntry?.id) {
+          await supabase.from('notifications').delete().eq('id', rateLimitEntry.id)
+        }
         return new Response(JSON.stringify({ error: 'Rate limit exceeded. Max 5 emails per hour.' }), {
           status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -166,6 +197,10 @@ serve(async (req) => {
     const { to_email, template, data } = body
 
     if (!to_email || !template || !TEMPLATES[template]) {
+      // Clean up rate-limit reservation on validation failure
+      if (rateLimitEntry?.id) {
+        await supabase.from('notifications').delete().eq('id', rateLimitEntry.id).catch(() => {})
+      }
       return new Response(JSON.stringify({ error: 'Missing fields' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -180,6 +215,9 @@ serve(async (req) => {
       .maybeSingle()
     const callerEmail = callerProfile?.email ?? user.email
     if (to_email.toLowerCase() !== callerEmail?.toLowerCase()) {
+      if (rateLimitEntry?.id) {
+        await supabase.from('notifications').delete().eq('id', rateLimitEntry.id).catch(() => {})
+      }
       return new Response(JSON.stringify({ error: 'Can only send to your own email' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -203,6 +241,9 @@ serve(async (req) => {
     } catch (fetchErr: any) {
       clearTimeout(timeout)
       console.error('[send-email] Resend fetch failed:', fetchErr.message)
+      if (rateLimitEntry?.id) {
+        await supabase.from('notifications').delete().eq('id', rateLimitEntry.id).catch(() => {})
+      }
       return new Response(JSON.stringify({ error: 'Failed to send email' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -211,19 +252,21 @@ serve(async (req) => {
     if (!resendRes.ok) {
       const resendErr = await resendRes.json().catch(() => ({}))
       console.error('[send-email] Resend error:', JSON.stringify(resendErr))
+      if (rateLimitEntry?.id) {
+        await supabase.from('notifications').delete().eq('id', rateLimitEntry.id).catch(() => {})
+      }
       return new Response(JSON.stringify({ error: 'Failed to send email' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Record email send for DB-backed rate limiting
-    await supabase.from('notifications').insert({
-      user_id: user.id,
-      type: 'email_sent',
-      title: `Email: ${template}`,
-      body: to_email,
-      is_read: true,
-    }).catch(() => {}) // Non-critical
+    // Update the optimistic rate-limit entry with actual template info
+    if (rateLimitEntry?.id) {
+      await supabase.from('notifications')
+        .update({ title: `Email: ${template}`, body: to_email })
+        .eq('id', rateLimitEntry.id)
+        .catch(() => {}) // Non-critical
+    }
 
     return new Response(
       JSON.stringify({ sent: true, template }),

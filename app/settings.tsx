@@ -404,9 +404,9 @@ export default function SettingsScreen() {
       let postLikesRes: PromiseSettledResult<any> = rejected
       try {
         ;[savedPostsRes, savedEventsRes, postLikesRes] = await Promise.allSettled([
-          supabase.from('saved_posts').select('*').eq('user_id', profile.id),
-          supabase.from('saved_events').select('*').eq('user_id', profile.id),
-          supabase.from('post_likes').select('*').eq('user_id', profile.id),
+          supabase.from('saved_posts').select('*').eq('user_id', profile.id).limit(10000),
+          supabase.from('saved_events').select('*').eq('user_id', profile.id).limit(10000),
+          supabase.from('post_likes').select('*').eq('user_id', profile.id).limit(10000),
         ])
       } catch (e: any) {
         tableErrors['batch2_saved_likes'] = e?.message ?? 'Batch failed'
@@ -419,9 +419,9 @@ export default function SettingsScreen() {
       let followingRes: PromiseSettledResult<any> = rejected
       try {
         ;[commentsRes, followersRes, followingRes] = await Promise.allSettled([
-          supabase.from('post_comments').select('*').eq('user_id', profile.id),
-          supabase.from('user_follows').select('*').eq('followed_id', profile.id),
-          supabase.from('user_follows').select('*').eq('follower_id', profile.id),
+          supabase.from('post_comments').select('*').eq('user_id', profile.id).limit(10000),
+          supabase.from('user_follows').select('*').eq('followed_id', profile.id).limit(10000),
+          supabase.from('user_follows').select('*').eq('follower_id', profile.id).limit(10000),
         ])
       } catch (e: any) {
         tableErrors['batch3_comments_follows'] = e?.message ?? 'Batch failed'

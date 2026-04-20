@@ -126,15 +126,16 @@ function ForumPostCardInner({
           </View>
         </View>
 
-        {/* Title */}
-        <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
-          {post.title}
-        </Text>
+        {/* Title + Content — pressable to open detail */}
+        <Pressable onPress={() => onSelect(post)} accessibilityRole="button">
+          <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
+            {post.title}
+          </Text>
 
-        {/* Content preview */}
-        <Text style={[styles.cardContent, { color: colors.mutedForeground }]} numberOfLines={2}>
-          {post.content}
-        </Text>
+          <Text style={[styles.cardContent, { color: colors.mutedForeground, marginTop: 8 }]} numberOfLines={2}>
+            {post.content}
+          </Text>
+        </Pressable>
 
         {/* Actions row */}
         <View style={styles.cardActions}>

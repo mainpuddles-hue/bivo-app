@@ -29,9 +29,25 @@ serve(async (req) => {
       })
     }
 
+    // Security: reject any request that tries to supply custom recipients.
+    // Digest emails are ONLY sent to addresses from the profiles table.
+    if (req.headers.get('content-type')?.includes('application/json')) {
+      try {
+        const body = await req.json()
+        if (body?.email || body?.to || body?.recipients) {
+          console.warn('[send-digest] Rejected attempt to supply custom recipients')
+          return new Response(JSON.stringify({ error: 'Custom recipients not allowed' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      } catch {
+        // No valid JSON body — fine, continue
+      }
+    }
+
     const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
 
-    // Get active users with neighborhoods
+    // Get active users with neighborhoods — emails come from profiles only
     const { data: users } = await supabase
       .from('profiles')
       .select('id, email, name, naapurusto, language')

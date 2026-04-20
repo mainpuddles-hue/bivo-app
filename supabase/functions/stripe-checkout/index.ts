@@ -177,6 +177,14 @@ serve(async (req) => {
       validatedAmount = Math.round(amount)
     }
 
+    // Reject if client-provided amount doesn't match server-calculated amount
+    // (prevents tampered requests where client sends a lower price)
+    if (type !== 'ad_campaign' && (typeof amount !== 'number' || !Number.isFinite(amount) || Math.abs(validatedAmount - Math.round(amount)) > 1)) {
+      return new Response(JSON.stringify({ error: 'Amount mismatch — price may have changed' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Final validation: ensure validated amount is still positive and within sane bounds
     if (validatedAmount <= 0 || validatedAmount > 1000000) { // max 10,000 EUR
       return new Response(JSON.stringify({ error: 'Amount out of allowed range' }), {

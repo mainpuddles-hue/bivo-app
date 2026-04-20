@@ -89,11 +89,17 @@ serve(async (req) => {
       case 'ban_user': {
         const { user_id, banned } = params as { user_id: string; banned: boolean }
         if (!user_id) return jsonResponse({ error: 'user_id required' }, 400)
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id)) {
+          return jsonResponse({ error: 'Invalid user_id format' }, 400)
+        }
         const { error } = await supabase
           .from('profiles')
           .update({ is_banned: banned ?? true })
           .eq('id', user_id)
-        if (error) return jsonResponse({ error: error.message }, 500)
+        if (error) {
+          console.error('[admin-api] ban_user error:', error.message)
+          return jsonResponse({ error: 'Internal server error' }, 500)
+        }
         return jsonResponse({ success: true, user_id, banned: banned ?? true })
       }
 
@@ -101,6 +107,9 @@ serve(async (req) => {
         const { report_id, resolution } = params as { report_id: string; resolution: string }
         if (!report_id || !resolution) {
           return jsonResponse({ error: 'report_id and resolution required' }, 400)
+        }
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(report_id)) {
+          return jsonResponse({ error: 'Invalid report_id format' }, 400)
         }
         const VALID_RESOLUTIONS = ['resolved', 'dismissed', 'escalated', 'actioned']
         if (!VALID_RESOLUTIONS.includes(resolution)) {
@@ -110,7 +119,10 @@ serve(async (req) => {
           .from('reports')
           .update({ status: resolution })
           .eq('id', report_id)
-        if (error) return jsonResponse({ error: error.message }, 500)
+        if (error) {
+          console.error('[admin-api] resolve_report error:', error.message)
+          return jsonResponse({ error: 'Internal server error' }, 500)
+        }
         return jsonResponse({ success: true, report_id, resolution })
       }
 
@@ -121,19 +133,28 @@ serve(async (req) => {
           .eq('reviewed', false)
           .order('created_at', { ascending: false })
           .limit(20)
-        if (error) return jsonResponse({ error: error.message }, 500)
+        if (error) {
+          console.error('[admin-api] content_flags error:', error.message)
+          return jsonResponse({ error: 'Internal server error' }, 500)
+        }
         return jsonResponse(data ?? [])
       }
 
       case 'review_flag': {
         const { flag_id, action: flagAction } = params as { flag_id: string; action: string }
         if (!flag_id) return jsonResponse({ error: 'flag_id required' }, 400)
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(flag_id)) {
+          return jsonResponse({ error: 'Invalid flag_id format' }, 400)
+        }
 
         const { error: updateError } = await supabase
           .from('content_flags')
           .update({ reviewed: true })
           .eq('id', flag_id)
-        if (updateError) return jsonResponse({ error: updateError.message }, 500)
+        if (updateError) {
+          console.error('[admin-api] review_flag error:', updateError.message)
+          return jsonResponse({ error: 'Internal server error' }, 500)
+        }
 
         if (flagAction === 'hide') {
           const { data: flag } = await supabase
@@ -154,7 +175,10 @@ serve(async (req) => {
           .select('*')
           .order('created_at', { ascending: false })
           .limit(50)
-        if (error) return jsonResponse({ error: error.message }, 500)
+        if (error) {
+          console.error('[admin-api] audit_log error:', error.message)
+          return jsonResponse({ error: 'Internal server error' }, 500)
+        }
         return jsonResponse(data ?? [])
       }
 
