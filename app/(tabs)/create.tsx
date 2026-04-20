@@ -689,7 +689,7 @@ export default function CreateScreen() {
             <X size={14} color={colors.foreground} strokeWidth={2.5} />
           </Pressable>
           <Text style={[mk.headerTitle, { color: colors.foreground }]}>
-            {step === 'category' ? t('create.selectCategory') : (t('create.newPost') ?? 'Uusi ilmoitus')}
+            {step === 'category' ? t('create.selectCategory') : (t('create.newPost') ?? 'New post')}
           </Text>
           <Text style={[mk.headerDraft, { color: colors.mutedForeground }]}>
             {step === 'form' && hasUnsavedContent ? (t('create.draft') ?? 'Luonnos') : ' '}

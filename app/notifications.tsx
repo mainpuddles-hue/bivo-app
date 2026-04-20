@@ -645,8 +645,9 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 10,
     borderRadius: 999,
+    minHeight: 36,
   },
   filterText: {
     fontSize: 12,

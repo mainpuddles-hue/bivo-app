@@ -271,7 +271,8 @@ export default function GroupDetailScreen() {
         if (uploadError) { Alert.alert(t('common.error'), t('create.imageUploadFailed') ?? 'Kuvan lataus epäonnistui'); setSending(false); return }
         const { data: urlData } = supabase.storage.from('group-images').getPublicUrl(fileName); imageUrl = urlData.publicUrl
       }
-      await (supabase.from('group_posts') as any).insert({ group_id: id, user_id: currentUserId, content: postText.trim(), image_url: imageUrl, like_count: 0, comment_count: 0 })
+      const { error: postError } = await (supabase.from('group_posts') as any).insert({ group_id: id, user_id: currentUserId, content: postText.trim(), image_url: imageUrl, like_count: 0, comment_count: 0 })
+      if (postError) throw postError
       setPostText(''); setPostImage(null); fetchPosts()
     } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
     finally { setSending(false) }

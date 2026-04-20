@@ -149,7 +149,7 @@ function PayoutsScreenInner() {
         </PressableOpacity>
         <View style={s.headerTitleWrap}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
-            {locale === 'fi' ? 'Tulot' : 'Earnings'}
+            {t('payouts.title')}
           </Text>
         </View>
         <PressableOpacity
@@ -157,7 +157,7 @@ function PayoutsScreenInner() {
           hitSlop={12}
           style={s.headerRight}
           accessibilityRole="button"
-          accessibilityLabel={locale === 'fi' ? 'Historia' : 'History'}
+          accessibilityLabel={t('payouts.history')}
         >
           <Archive size={18} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
@@ -177,13 +177,13 @@ function PayoutsScreenInner() {
         {/* Total earnings hero */}
         <View style={s.totalSection}>
           <Text style={[s.totalLabel, { color: colors.mutedForeground }]}>
-            {(locale === 'fi' ? 'Tämä vuosi' : 'This year').toUpperCase()}
+            {t('payouts.thisYear')}
           </Text>
           <Text style={[s.totalValue, { color: colors.foreground }]}>
             {formatPrice(totalEarnings, locale)}
           </Text>
           <Text style={[s.totalMeta, { color: colors.mutedForeground }]}>
-            {loanCount} {locale === 'fi' ? 'lainaa' : 'loans'} · {locale === 'fi' ? 'keskiarvo' : 'avg'} {formatPrice(avgPerLoan, locale)} / {locale === 'fi' ? 'laina' : 'loan'}
+            {loanCount} {t('payouts.loans')} · {t('payouts.avg')} {formatPrice(avgPerLoan, locale)} / {t('payouts.perLoan')}
           </Text>
         </View>
 
@@ -191,7 +191,7 @@ function PayoutsScreenInner() {
         <View style={[s.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={s.chartHeader}>
             <Text style={[s.chartTitle, { color: colors.foreground }]}>
-              {locale === 'fi' ? 'Kuukausittain' : 'Monthly'}
+              {t('payouts.monthly')}
             </Text>
           </View>
           <View style={s.chartBars}>
@@ -230,7 +230,7 @@ function PayoutsScreenInner() {
           <View style={[s.nextPayoutCard, { backgroundColor: colors.foreground }]}>
             <View style={s.nextPayoutInfo}>
               <Text style={s.nextPayoutLabel}>
-                {(locale === 'fi' ? 'Seuraava tilitys' : 'Next payout').toUpperCase()}
+                {t('payouts.nextPayout')}
               </Text>
               <Text style={s.nextPayoutValue}>
                 {formatPrice(nextPayout, locale)} · {nextPayoutDate}
@@ -244,7 +244,7 @@ function PayoutsScreenInner() {
         {transactions.length > 0 && (
           <>
             <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-              {(locale === 'fi' ? 'Viimeisimmät' : 'Recent').toUpperCase()}
+              {t('payouts.recent')}
             </Text>
             <View style={[s.txnCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {transactions.map((txn, idx) => (

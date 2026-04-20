@@ -42,12 +42,8 @@ type Tab = 'active' | 'lent' | 'draft' | 'archive'
 
 // ── Tab config ──
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'active', label: 'Aktiiviset' },
-  { key: 'lent', label: 'Lainassa' },
-  { key: 'draft', label: 'Luonnos' },
-  { key: 'archive', label: 'Arkisto' },
-]
+// Tab keys - labels resolved inside component with t()
+const TAB_KEYS: Tab[] = ['active', 'lent', 'draft', 'archive']
 
 // ── Status helpers ──
 
@@ -83,6 +79,13 @@ function MyListingsScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+
+  const TABS = useMemo(() => [
+    { key: 'active' as Tab, label: t('myListings.tabActive') },
+    { key: 'lent' as Tab, label: t('myListings.tabLent') },
+    { key: 'draft' as Tab, label: t('myListings.tabDraft') },
+    { key: 'archive' as Tab, label: t('myListings.tabArchive') },
+  ], [t])
 
   const [posts, setPosts] = useState<MyPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -156,21 +159,21 @@ function MyListingsScreenInner() {
     switch (status) {
       case 'lent':
         return {
-          label: 'Lainassa',
+          label: t('myListings.statusLent'),
           bgColor: colors.foreground,
           textColor: colors.primaryForeground,
           imageOpacity: 1,
         }
       case 'active':
         return {
-          label: 'Aktiivinen',
+          label: t('myListings.statusActive'),
           bgColor: colors.warmTint,
           textColor: colors.foreground,
           imageOpacity: 1,
         }
       case 'draft':
         return {
-          label: 'Luonnos',
+          label: t('myListings.statusDraft'),
           bgColor: colors.border,
           textColor: colors.mutedForeground,
           imageOpacity: 0.55,
@@ -249,7 +252,7 @@ function MyListingsScreenInner() {
           }}
           style={s.menuBtn}
           accessibilityRole="button"
-          accessibilityLabel="Valikko"
+          accessibilityLabel={t('myListings.menu')}
           hitSlop={8}
         >
           <MoreHorizontal size={18} color={colors.mutedForeground} />
@@ -322,17 +325,17 @@ function MyListingsScreenInner() {
       <View style={s.statsRow}>
         <View style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.statNumber, { color: colors.foreground }]}>{totalLent}</Text>
-          <Text style={[s.statLabel, { color: colors.mutedForeground }]}>LAINAUSTA</Text>
+          <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('myListings.statLoans')}</Text>
         </View>
         <View style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.statNumber, { color: colors.foreground }]}>{avgRating.toFixed(1)}</Text>
-          <Text style={[s.statLabel, { color: colors.mutedForeground }]}>ARVIO</Text>
+          <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('myListings.statRating')}</Text>
         </View>
         <View style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.statNumber, { color: colors.foreground }]}>
             {earnings != null ? `${earnings}\u00A0\u20AC` : '\u2014'}
           </Text>
-          <Text style={[s.statLabel, { color: colors.mutedForeground }]}>ANSIO</Text>
+          <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('myListings.statEarnings')}</Text>
         </View>
       </View>
 
@@ -353,9 +356,9 @@ function MyListingsScreenInner() {
         ListEmptyComponent={
           <EmptyState
             icon={<Package size={40} color={colors.tertiaryForeground} />}
-            title="Ei ilmoituksia"
-            description="Luo ensimm\u00E4inen ilmoituksesi ja aloita naapuruston palveleminen."
-            actionLabel="Luo ilmoitus"
+            title={t('myListings.emptyTitle')}
+            description={t('myListings.emptyDescription')}
+            actionLabel={t('myListings.emptyAction')}
             onAction={() => router.push('/(tabs)/create')}
           />
         }
@@ -367,6 +370,7 @@ function MyListingsScreenInner() {
 // ── Header component ──
 
 function Header({ colors, router }: { colors: any; router: any }) {
+  const { t } = useI18n()
   return (
     <View style={s.header}>
       {/* Back button */}
@@ -374,20 +378,20 @@ function Header({ colors, router }: { colors: any; router: any }) {
         onPress={() => router.back()}
         style={[s.headerCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
         accessibilityRole="button"
-        accessibilityLabel="Takaisin"
+        accessibilityLabel={t('common.back')}
       >
         <ChevronLeft size={20} color={colors.foreground} />
       </PressableOpacity>
 
       {/* Title */}
-      <Text style={[s.headerTitle, { color: colors.foreground }]}>Ilmoitukseni</Text>
+      <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('myListings.title')}</Text>
 
       {/* Add button */}
       <PressableOpacity
         onPress={() => router.push('/(tabs)/create')}
         style={[s.headerCircle, { backgroundColor: colors.foreground }]}
         accessibilityRole="button"
-        accessibilityLabel="Luo uusi ilmoitus"
+        accessibilityLabel={t('myListings.createNew')}
       >
         <Plus size={18} color={colors.primaryForeground} />
       </PressableOpacity>

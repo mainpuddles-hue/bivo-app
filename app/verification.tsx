@@ -70,26 +70,26 @@ function VerificationScreenInner() {
   const steps: VerificationStep[] = [
     {
       key: 'identity',
-      title: 'Henkilöllisyys',
-      subtitle: 'Passi tai ajokortti',
+      title: t('verification.stepIdentity'),
+      subtitle: t('verification.stepIdentitySub'),
       done: profile?.id_verified === true,
     },
     {
       key: 'phone',
-      title: 'Puhelinnumero',
+      title: t('verification.stepPhone'),
       subtitle: profile?.phone_verified ? '+358 40 ***1234' : '+358 40 ***1234',
       done: profile?.phone_verified === true,
     },
     {
       key: 'address',
-      title: 'Osoite',
-      subtitle: profile?.naapurusto || 'Naapurusto',
+      title: t('verification.stepAddress'),
+      subtitle: profile?.naapurusto || t('verification.stepAddressSub'),
       done: !!profile?.naapurusto,
     },
     {
       key: 'photo',
-      title: 'Kasvokuva',
-      subtitle: 'Suositus — näkyy profiilissa',
+      title: t('verification.stepPhoto'),
+      subtitle: t('verification.stepPhotoSub'),
       done: !!profile?.avatar_url,
     },
   ]
@@ -101,13 +101,13 @@ function VerificationScreenInner() {
         <PressableOpacity
           style={[s.headerBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => router.back()}
-          accessibilityLabel="Takaisin"
+          accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
           <ChevronLeft size={18} color={colors.foreground} strokeWidth={2} />
         </PressableOpacity>
 
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>Vahvistukset</Text>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('verification.title')}</Text>
 
         {/* Spacer to balance the back button */}
         <View style={s.headerSpacer} />
@@ -129,11 +129,11 @@ function VerificationScreenInner() {
             </View>
 
             <Text style={[s.heroTitle, { color: colors.foreground }]}>
-              Vahvistettu naapuri
+              {t('verification.heroTitle')}
             </Text>
 
             <Text style={[s.heroDescription, { color: colors.mutedForeground }]}>
-              Vahvistukset tekevät yhteisöstä turvallisen. Lainojen toiminta parantuu.
+              {t('verification.heroDescription')}
             </Text>
           </View>
 
@@ -172,15 +172,15 @@ function VerificationScreenInner() {
 
                 {/* Right action */}
                 {step.done ? (
-                  <Text style={[s.stepDoneLabel, { color: colors.foreground }]}>VALMIS</Text>
+                  <Text style={[s.stepDoneLabel, { color: colors.foreground }]}>{t('verification.done')}</Text>
                 ) : (
                   <PressableOpacity
                     style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
-                    accessibilityLabel={`Tee ${step.title}`}
+                    accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
                     accessibilityRole="button"
                   >
                     <Text style={[s.stepActionText, { color: colors.primaryForeground }]}>
-                      Tee nyt
+                      {t('verification.doNow')}
                     </Text>
                   </PressableOpacity>
                 )}
@@ -190,7 +190,7 @@ function VerificationScreenInner() {
 
           {/* ── Footer privacy note ── */}
           <Text style={[s.footerNote, { color: colors.mutedForeground }]}>
-            Tiedot säilytetään salattuna. TackBird ei jaa niitä kolmansille osapuolille.
+            {t('verification.privacyNote')}
           </Text>
         </ScrollView>
       )}
@@ -327,9 +327,10 @@ const s = StyleSheet.create({
     textTransform: 'uppercase',
   },
   stepActionPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 999,
+    minHeight: 36,
   },
   stepActionText: {
     fontSize: 11.5,

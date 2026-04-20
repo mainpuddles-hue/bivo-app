@@ -674,7 +674,7 @@ function ConversationScreenInner() {
             accessibilityLabel={t('errors.backToMessages') ?? 'Back to messages'}
           >
             <Text style={{ color: colors.primaryForeground, fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium }}>
-              {t('errors.backToMessages') ?? 'Takaisin viesteihin'}
+              {t('errors.backToMessages') ?? 'Back to messages'}
             </Text>
           </PressableOpacity>
         </View>

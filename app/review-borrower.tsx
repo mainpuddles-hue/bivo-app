@@ -70,7 +70,7 @@ function ReviewBorrowerScreenInner() {
       const reviewerId = await getCachedUserId()
       if (!reviewerId) { router.replace('/(auth)/login'); return }
 
-      await (supabase.from('reviews') as any).insert({
+      const { error: reviewError } = await (supabase.from('reviews') as any).insert({
         reviewer_id: reviewerId,
         reviewed_id: params.userId,
         booking_id: params.bookingId || null,
@@ -78,10 +78,11 @@ function ReviewBorrowerScreenInner() {
         comment: comment.trim() || null,
         tags: Array.from(selectedTags),
       })
+      if (reviewError) throw reviewError
 
       Alert.alert(
-        locale === 'fi' ? 'Arvio julkaistu' : 'Review published',
-        locale === 'fi' ? 'Kiitos arviostasi!' : 'Thanks for your review!',
+        t('reviewBorrower.reviewPublished'),
+        t('reviewBorrower.reviewPublishedDesc'),
         [{ text: 'OK', onPress: () => router.back() }],
       )
     } catch (err) {
@@ -90,7 +91,7 @@ function ReviewBorrowerScreenInner() {
     } finally {
       setSubmitting(false)
     }
-  }, [submitting, rating, comment, selectedTags, params, locale, router, supabase, t])
+  }, [submitting, rating, comment, selectedTags, params, router, supabase, t])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -107,7 +108,7 @@ function ReviewBorrowerScreenInner() {
         </PressableOpacity>
         <View style={s.headerTitleWrap}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
-            {locale === 'fi' ? 'Arvioi lainaaja' : 'Review borrower'}
+            {t('reviewBorrower.title')}
           </Text>
         </View>
         <View style={s.headerSpacer} />
@@ -127,9 +128,7 @@ function ReviewBorrowerScreenInner() {
             />
           </View>
           <Text style={[s.heroTitle, { color: colors.foreground }]}>
-            {locale === 'fi'
-              ? `Miten ${params.userName || 'lainaaja'} hoiti lainan?`
-              : `How did ${params.userName || 'borrower'} handle the loan?`}
+            {t('reviewBorrower.heroQuestion', { name: params.userName || t('rental.borrower') })}
           </Text>
           <Text style={[s.heroMeta, { color: colors.mutedForeground }]}>
             {params.itemTitle}{params.dates ? ` · ${params.dates}` : ''}
@@ -139,16 +138,17 @@ function ReviewBorrowerScreenInner() {
         {/* Star rating */}
         <View style={[s.starsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.starsLabel, { color: colors.mutedForeground }]}>
-            {locale === 'fi' ? 'YLEISARVIO' : 'OVERALL RATING'}
+            {t('reviewBorrower.overallRating')}
           </Text>
           <View style={s.starsRow}>
             {[1, 2, 3, 4, 5].map(n => (
               <PressableOpacity
                 key={n}
                 onPress={() => setRating(n)}
-                hitSlop={4}
+                hitSlop={8}
                 accessibilityRole="button"
-                accessibilityLabel={`${n} ${locale === 'fi' ? 'tähteä' : 'stars'}`}
+                accessibilityLabel={`${n} ${t('reviewBorrower.stars')}`}
+                style={s.starBtn}
               >
                 <Star
                   size={30}
@@ -160,17 +160,17 @@ function ReviewBorrowerScreenInner() {
             ))}
           </View>
           <Text style={[s.starsHint, { color: colors.mutedForeground }]}>
-            {rating === 5 ? (locale === 'fi' ? 'Erinomainen' : 'Excellent')
-              : rating === 4 ? (locale === 'fi' ? 'Hyvä' : 'Good')
-              : rating === 3 ? (locale === 'fi' ? 'OK' : 'OK')
-              : rating === 2 ? (locale === 'fi' ? 'Heikko' : 'Poor')
-              : (locale === 'fi' ? 'Huono' : 'Bad')}
+            {rating === 5 ? t('reviewBorrower.ratingExcellent')
+              : rating === 4 ? t('reviewBorrower.ratingGood')
+              : rating === 3 ? t('reviewBorrower.ratingOk')
+              : rating === 2 ? t('reviewBorrower.ratingPoor')
+              : t('reviewBorrower.ratingBad')}
           </Text>
         </View>
 
         {/* Tags */}
         <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-          {locale === 'fi' ? 'MIKÄ MENI HYVIN' : 'WHAT WENT WELL'}
+          {t('reviewBorrower.whatWentWell')}
         </Text>
         <View style={s.tagsWrap}>
           {tags.map(tag => {
@@ -197,26 +197,22 @@ function ReviewBorrowerScreenInner() {
 
         {/* Comment */}
         <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-          {locale === 'fi' ? 'JULKINEN KOMMENTTI' : 'PUBLIC COMMENT'}{' '}
+          {t('reviewBorrower.publicComment')}{' '}
           <Text style={[s.optionalTag, { color: colors.tertiaryForeground }]}>
-            ({locale === 'fi' ? 'valinnainen' : 'optional'})
+            ({t('returnItem.optional')})
           </Text>
         </Text>
         <TextInput
           value={comment}
           onChangeText={setComment}
-          placeholder={locale === 'fi'
-            ? 'Kerro kokemuksestasi...'
-            : 'Tell about your experience...'}
+          placeholder={t('reviewBorrower.commentPlaceholder')}
           placeholderTextColor={colors.mutedForeground}
           multiline
           style={[s.commentInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
         />
 
         <Text style={[s.footerNote, { color: colors.mutedForeground }]}>
-          {locale === 'fi'
-            ? `Arvio näytetään ${params.userName || 'lainaajan'} profiilissa.`
-            : `Review will be shown on ${params.userName || "borrower's"} profile.`}
+          {t('reviewBorrower.footerNote', { name: params.userName || t('rental.borrower') })}
         </Text>
       </ScrollView>
 
@@ -227,12 +223,13 @@ function ReviewBorrowerScreenInner() {
           disabled={submitting || rating === 0}
           style={[s.ctaBtn, { backgroundColor: colors.foreground, opacity: (submitting || rating === 0) ? 0.6 : 1 }]}
           accessibilityRole="button"
-          accessibilityLabel={locale === 'fi' ? 'Julkaise arvio' : 'Publish review'}
+          accessibilityLabel={t('reviewBorrower.publishReview')}
+          accessibilityState={{ disabled: submitting || rating === 0 }}
         >
           <Text style={[s.ctaBtnText, { color: colors.primaryForeground }]}>
             {submitting
-              ? (locale === 'fi' ? 'Julkaistaan…' : 'Publishing…')
-              : (locale === 'fi' ? 'Julkaise arvio' : 'Publish review')}
+              ? t('reviewBorrower.publishing')
+              : t('reviewBorrower.publishReview')}
           </Text>
         </PressableOpacity>
       </View>
@@ -276,7 +273,8 @@ const s = StyleSheet.create({
     fontSize: 10.5, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, marginBottom: 12,
   },
-  starsRow: { flexDirection: 'row', gap: 10 },
+  starsRow: { flexDirection: 'row', gap: 6 },
+  starBtn: { width: 44, height: 44, alignItems: 'center' as const, justifyContent: 'center' as const },
   starsHint: { fontSize: 12, fontFamily: fonts.body, marginTop: 10 },
 
   /* Section */
@@ -290,7 +288,7 @@ const s = StyleSheet.create({
   tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 22 },
   tag: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999,
+    paddingHorizontal: 14, paddingVertical: 12, borderRadius: 999, minHeight: 44,
   },
   tagText: { fontSize: 11.5, fontWeight: '500', fontFamily: fonts.bodyMedium },
 

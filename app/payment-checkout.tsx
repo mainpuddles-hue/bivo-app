@@ -44,9 +44,9 @@ function PaymentCheckoutScreenInner() {
     serviceFee: string
   }>()
 
-  const deposit = parseFloat(params.deposit || '0')
-  const loanPrice = parseFloat(params.loanPrice || '0')
-  const serviceFee = parseFloat(params.serviceFee || '0')
+  const deposit = parseFloat(params.deposit || '0') || 0
+  const loanPrice = parseFloat(params.loanPrice || '0') || 0
+  const serviceFee = parseFloat(params.serviceFee || '0') || 0
   const total = deposit + loanPrice + serviceFee
 
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('card')
@@ -55,8 +55,8 @@ function PaymentCheckoutScreenInner() {
   const methods: MethodOption[] = [
     {
       id: 'card',
-      title: locale === 'fi' ? 'Visa ···· 4321' : 'Visa ···· 4321',
-      subtitle: locale === 'fi' ? 'Voimassa 05/28' : 'Valid 05/28',
+      title: 'Visa ···· 4321',
+      subtitle: t('checkout.cardValid', { date: '05/28' }),
       icon: 'card',
     },
     {
@@ -67,16 +67,16 @@ function PaymentCheckoutScreenInner() {
     },
     {
       id: 'new',
-      title: locale === 'fi' ? 'Lisää maksutapa' : 'Add payment method',
+      title: t('checkout.addPaymentMethod'),
       subtitle: '',
       icon: 'plus',
     },
   ]
 
   const breakdown = [
-    { label: locale === 'fi' ? 'Lainauksen hinta' : 'Loan price', value: loanPrice === 0 ? (locale === 'fi' ? 'Ilmainen' : 'Free') : formatPrice(loanPrice, locale) },
-    { label: locale === 'fi' ? 'Vakuus' : 'Deposit', value: formatPrice(deposit, locale) },
-    { label: locale === 'fi' ? 'TackBird-palvelumaksu' : 'TackBird fee', value: formatPrice(serviceFee, locale) },
+    { label: t('checkout.loanPrice'), value: loanPrice === 0 ? t('checkout.free') : formatPrice(loanPrice, locale) },
+    { label: t('checkout.deposit'), value: formatPrice(deposit, locale) },
+    { label: t('checkout.tackbirdFee'), value: formatPrice(serviceFee, locale) },
   ]
 
   const handlePay = useCallback(async () => {
@@ -92,11 +92,12 @@ function PaymentCheckoutScreenInner() {
       if (!userId) { router.replace('/(auth)/login'); return }
 
       // Update booking status to paid
-      await (supabase.from('bookings') as any).update({
+      const { error: payError } = await (supabase.from('bookings') as any).update({
         status: 'paid',
         payment_method: selectedMethod,
         paid_at: new Date().toISOString(),
       }).eq('id', params.bookingId)
+      if (payError) throw payError
 
       router.replace('/payment/success')
     } catch (err) {
@@ -122,7 +123,7 @@ function PaymentCheckoutScreenInner() {
         </PressableOpacity>
         <View style={s.headerTitleWrap}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
-            {locale === 'fi' ? 'Vakuuden maksu' : 'Deposit payment'}
+            {t('checkout.title')}
           </Text>
         </View>
         <View style={s.headerSpacer} />
@@ -156,15 +157,13 @@ function PaymentCheckoutScreenInner() {
         {/* Amount hero */}
         <View style={s.amountHero}>
           <Text style={[s.amountLabel, { color: colors.mutedForeground }]}>
-            {(locale === 'fi' ? 'MAKSETTAVA VAKUUS' : 'DEPOSIT TO PAY').toUpperCase()}
+            {t('checkout.depositToPay')}
           </Text>
           <Text style={[s.amountValue, { color: colors.foreground }]}>
             {formatPrice(total, locale)}
           </Text>
           <Text style={[s.amountHint, { color: colors.mutedForeground }]}>
-            {locale === 'fi'
-              ? 'Palautetaan tilillesi kun omistaja vahvistaa palautuksen kuntoisena.'
-              : 'Refunded when the owner confirms the return in good condition.'}
+            {t('checkout.refundHint')}
           </Text>
         </View>
 
@@ -184,7 +183,7 @@ function PaymentCheckoutScreenInner() {
           ))}
           <View style={[s.breakdownTotal, { borderTopColor: colors.foreground }]}>
             <Text style={[s.breakdownTotalLabel, { color: colors.foreground }]}>
-              {locale === 'fi' ? 'Yhteensä' : 'Total'}
+              {t('checkout.total')}
             </Text>
             <Text style={[s.breakdownTotalValue, { color: colors.foreground }]}>
               {formatPrice(total, locale)}
@@ -194,7 +193,7 @@ function PaymentCheckoutScreenInner() {
 
         {/* Payment methods */}
         <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-          {(locale === 'fi' ? 'Maksutapa' : 'Payment method').toUpperCase()}
+          {t('checkout.paymentMethod')}
         </Text>
         {methods.map(method => {
           const isSelected = selectedMethod === method.id
@@ -245,13 +244,13 @@ function PaymentCheckoutScreenInner() {
           disabled={paying}
           style={[s.ctaBtn, { backgroundColor: colors.foreground, opacity: paying ? 0.6 : 1 }]}
           accessibilityRole="button"
-          accessibilityLabel={`${locale === 'fi' ? 'Maksa' : 'Pay'} ${formatPrice(total, locale)}`}
+          accessibilityLabel={`${t('checkout.pay')} ${formatPrice(total, locale)}`}
         >
           {paying ? (
             <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
             <Text style={[s.ctaBtnText, { color: colors.primaryForeground }]}>
-              {locale === 'fi' ? 'Maksa' : 'Pay'} {formatPrice(total, locale)}
+              {t('checkout.pay')} {formatPrice(total, locale)}
             </Text>
           )}
         </PressableOpacity>

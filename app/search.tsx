@@ -661,7 +661,7 @@ function SearchScreenInner() {
         .from('posts')
         .select(POST_SELECT)
         .eq('is_active', true)
-        .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
+        .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/[(),]/g, '')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/[(),]/g, '')}%`)
 
       // Hide disabled category types from search results (same as feed)
       const hiddenTypes: string[] = []
@@ -779,7 +779,7 @@ function SearchScreenInner() {
           .from('community_events')
           .select('id, title, description, event_date, location_name')
           .eq('is_active', true)
-          .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
+          .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/[(),]/g, '')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/[(),]/g, '')}%`)
           .order('event_date', { ascending: true })
           .limit(10)
           .then(res => {
@@ -860,7 +860,7 @@ function SearchScreenInner() {
     setLoadingMore(true)
     try {
       const q = query.trim()
-      const escapedQ = q.replace(/%/g, '\\%').replace(/_/g, '\\_')
+      const escapedQ = q.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/[(),]/g, '')
       let postQuery = supabase
         .from('posts')
         .select(POST_SELECT)

@@ -626,7 +626,7 @@ function ExploreScreenInner() {
                   style={s.seeAllLink}
                   hitSlop={8}
                 >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('events.showAllEvents') ?? 'Nayta kaikki'}</Text>
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('events.showAllEvents') ?? 'Show all'}</Text>
                 </PressableOpacity>
               </View>
 
@@ -700,7 +700,7 @@ function ExploreScreenInner() {
                   style={s.seeAllLink}
                   hitSlop={8}
                 >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Nayta kaikki'}</Text>
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Show all'}</Text>
                 </PressableOpacity>
               </View>
               <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -755,7 +755,7 @@ function ExploreScreenInner() {
                   style={s.seeAllLink}
                   hitSlop={8}
                 >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Nayta kaikki'}</Text>
+                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Show all'}</Text>
                 </PressableOpacity>
               </View>
               <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>

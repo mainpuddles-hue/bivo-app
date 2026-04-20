@@ -43,10 +43,10 @@ function ReturnItemScreenInner() {
 
   const [photos, setPhotos] = useState<string[]>([])
   const [checklist, setChecklist] = useState<ChecklistItem[]>([
-    { id: '1', label: locale === 'fi' ? 'Puhdistettu ja siisti' : 'Cleaned and tidy', done: false },
-    { id: '2', label: locale === 'fi' ? 'Kaikki osat mukana' : 'All parts included', done: false },
-    { id: '3', label: locale === 'fi' ? 'Toimii normaalisti' : 'Works normally', done: false },
-    { id: '4', label: locale === 'fi' ? 'Laukku/pakkaus suljettu' : 'Bag/packaging closed', done: false },
+    { id: '1', label: t('returnItem.check1'), done: false },
+    { id: '2', label: t('returnItem.check2'), done: false },
+    { id: '3', label: t('returnItem.check3'), done: false },
+    { id: '4', label: t('returnItem.check4'), done: false },
   ])
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -75,8 +75,8 @@ function ReturnItemScreenInner() {
     if (submitting) return
     if (!hasPhotos) {
       Alert.alert(
-        locale === 'fi' ? 'Kuva vaaditaan' : 'Photo required',
-        locale === 'fi' ? 'Ota vähintään yksi kuva palautuksesta.' : 'Take at least one return photo.',
+        t('returnItem.photoRequired'),
+        t('returnItem.photoRequiredDesc'),
       )
       return
     }
@@ -106,16 +106,17 @@ function ReturnItemScreenInner() {
       }
 
       // Mark booking as returned
-      await (supabase.from('bookings') as any).update({
+      const { error: returnError } = await (supabase.from('bookings') as any).update({
         status: 'completed',
         completed_at: new Date().toISOString(),
         return_notes: note || null,
         return_photos: uploadedUrls,
       }).eq('id', params.bookingId)
+      if (returnError) throw returnError
 
       Alert.alert(
-        locale === 'fi' ? 'Palautus vahvistettu' : 'Return confirmed',
-        locale === 'fi' ? 'Kiitos! Vakuus palautetaan 3 arkipäivän sisällä.' : 'Thanks! Deposit refunded within 3 business days.',
+        t('returnItem.returnConfirmed'),
+        t('returnItem.returnConfirmedDesc'),
         [{ text: 'OK', onPress: () => router.back() }],
       )
     } catch (err) {
@@ -124,7 +125,7 @@ function ReturnItemScreenInner() {
     } finally {
       setSubmitting(false)
     }
-  }, [submitting, hasPhotos, photos, params.bookingId, note, locale, router, supabase, t])
+  }, [submitting, hasPhotos, photos, params.bookingId, note, router, supabase, t])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -141,7 +142,7 @@ function ReturnItemScreenInner() {
         </PressableOpacity>
         <View style={s.headerTitleWrap}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
-            {locale === 'fi' ? 'Palautus' : 'Return'}
+            {t('returnItem.title')}
           </Text>
         </View>
         <View style={s.headerSpacer} />
@@ -164,20 +165,20 @@ function ReturnItemScreenInner() {
           )}
           <View style={s.itemInfo}>
             <Text style={[s.itemSubtitle, { color: colors.mutedForeground }]}>
-              {locale === 'fi' ? 'Palautetaan nyt' : 'Returning now'}
+              {t('returnItem.returningNow')}
             </Text>
             <Text style={[s.itemTitle, { color: colors.foreground }]} numberOfLines={1}>
               {params.itemTitle || '—'}
             </Text>
             <Text style={[s.itemMeta, { color: colors.mutedForeground }]}>
-              {params.ownerName ? `${params.ownerName}lle` : ''}{params.days ? ` · ${params.days} ${locale === 'fi' ? 'päivää' : 'days'}` : ''}
+              {params.ownerName ? `${params.ownerName}` : ''}{params.days ? ` · ${params.days} ${t('returnItem.days')}` : ''}
             </Text>
           </View>
         </View>
 
         {/* Photo step */}
         <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-          1 · {locale === 'fi' ? 'Kuva palautuksesta' : 'Return photo'}
+          1 · {t('returnItem.photoSection')}
         </Text>
         <View style={s.photoRow}>
           {photos.map((uri, i) => (
@@ -193,11 +194,11 @@ function ReturnItemScreenInner() {
               onPress={pickPhoto}
               style={[s.photoAddSlot, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
-              accessibilityLabel={locale === 'fi' ? 'Lisää kuva' : 'Add photo'}
+              accessibilityLabel={t('returnItem.addPhotoAccessibility')}
             >
               <Camera size={20} color={colors.foreground} strokeWidth={1.6} />
               <Text style={[s.photoAddText, { color: colors.mutedForeground }]}>
-                {locale === 'fi' ? 'Lisää' : 'Add'}
+                {t('returnItem.addPhoto')}
               </Text>
             </PressableOpacity>
           )}
@@ -206,7 +207,7 @@ function ReturnItemScreenInner() {
 
         {/* Checklist */}
         <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-          2 · {locale === 'fi' ? 'Tarkistuslista' : 'Checklist'}
+          2 · {t('returnItem.checklistSection')}
         </Text>
         <View style={[s.checklistCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           {checklist.map((item, idx) => (
@@ -236,15 +237,15 @@ function ReturnItemScreenInner() {
 
         {/* Note */}
         <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-          3 · {locale === 'fi' ? 'Viesti' : 'Message'}{' '}
+          3 · {t('returnItem.messageSection')}{' '}
           <Text style={[s.optionalTag, { color: colors.tertiaryForeground }]}>
-            ({locale === 'fi' ? 'valinnainen' : 'optional'})
+            ({t('returnItem.optional')})
           </Text>
         </Text>
         <TextInput
           value={note}
           onChangeText={setNote}
-          placeholder={locale === 'fi' ? 'Kiitos, laite toimi hyvin…' : 'Thanks, device worked great…'}
+          placeholder={t('returnItem.messagePlaceholder')}
           placeholderTextColor={colors.mutedForeground}
           multiline
           style={[s.noteInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
@@ -258,12 +259,12 @@ function ReturnItemScreenInner() {
           disabled={submitting}
           style={[s.ctaBtn, { backgroundColor: colors.foreground, opacity: submitting ? 0.6 : 1 }]}
           accessibilityRole="button"
-          accessibilityLabel={locale === 'fi' ? 'Vahvista palautus' : 'Confirm return'}
+          accessibilityLabel={t('returnItem.confirmReturn')}
         >
           <Text style={[s.ctaBtnText, { color: colors.primaryForeground }]}>
             {submitting
-              ? (locale === 'fi' ? 'Lähetetään…' : 'Submitting…')
-              : (locale === 'fi' ? 'Vahvista palautus' : 'Confirm return')}
+              ? t('returnItem.submitting')
+              : t('returnItem.confirmReturn')}
           </Text>
         </PressableOpacity>
       </View>

@@ -275,7 +275,7 @@ function BookingDetailScreenInner() {
     if (!booking?.other_user?.id || !userId) return
     setActionLoading(true)
     try {
-      await (supabase.from('reviews') as any).insert({
+      const { error: revError } = await (supabase.from('reviews') as any).insert({
         reviewer_id: userId,
         reviewee_id: booking.other_user.id,
         rating: reviewStars,
@@ -283,6 +283,7 @@ function BookingDetailScreenInner() {
         booking_id: booking.id,
         tags: Array.from(reviewTags),
       })
+      if (revError) throw revError
       Alert.alert(t('common.success'))
       router.back()
     } catch {

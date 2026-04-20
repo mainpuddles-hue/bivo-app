@@ -808,7 +808,7 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<Moon size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.themeDark') ?? 'Tumma tila'}
+            label={t('settings.themeDark') ?? 'Dark mode'}
             switchValue={isDark}
             onSwitchChange={(val) => setAppTheme(val ? 'dark' : 'light')}
             colors={colors}
@@ -833,7 +833,7 @@ export default function SettingsScreen() {
         <Group label={t('settings.sectionPrivacy') ?? 'Yksityisyys'} colors={colors}>
           <Row
             icon={<Lock size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.profileVisibility') ?? 'Kuka n\u00E4kee'}
+            label={t('settings.profileVisibility') ?? 'Profile visibility'}
             value={t(VISIBILITY_OPTIONS.find(v => v.key === visibility)?.label ?? '') ?? visibility}
             onPress={() => {
               const keys = VISIBILITY_OPTIONS.map(v => v.key)
@@ -864,7 +864,7 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<Mail size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.feedback') ?? 'Ota yhteytt\u00E4'}
+            label={t('settings.feedback') ?? 'Contact us'}
             onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})}
             colors={colors}
             isDark={isDark}
@@ -935,7 +935,7 @@ export default function SettingsScreen() {
         <Group colors={colors}>
           <Row
             icon={exporting ? undefined : <Download size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={exporting ? (t('settings.exportLoading') ?? 'Ladataan...') : (t('settings.export') ?? 'Lataa tietosi')}
+            label={exporting ? (t('settings.exportLoading') ?? 'Loading...') : (t('settings.export') ?? 'Download your data')}
             meta={exporting && exportProgress ? exportProgress : undefined}
             onPress={exporting ? undefined : handleExport}
             disabled={exporting}
@@ -964,7 +964,7 @@ export default function SettingsScreen() {
           {isOAuthUser ? (
             <Row
               icon={<Lock size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={t('settings.changePassword') ?? 'Vaihda salasana'}
+              label={t('settings.changePassword') ?? 'Change password'}
               meta={t('settings.passwordManagedByOAuth', { provider: (oauthProvider ?? 'OAuth').charAt(0).toUpperCase() + (oauthProvider ?? 'OAuth').slice(1) }) ?? undefined}
               chevron={false}
               colors={colors}
@@ -1133,7 +1133,7 @@ export default function SettingsScreen() {
           <Row
             icon={<Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />}
             iconBg={warmTintBg}
-            label={t('settings.deletePermanently') ?? 'Poista tili'}
+            label={t('settings.deletePermanently') ?? 'Delete account'}
             danger
             chevron={false}
             onPress={handleDeleteAccount}

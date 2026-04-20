@@ -215,7 +215,7 @@ function FeedScreenInner() {
                     {onlineCount > 0 ? ` · ${onlineCount} ${t('feed.online') ?? 'paikalla'}` : ''}
                   </Text>
                   <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-                    {t('feed.nearbyNow') ?? 'Lähellä nyt'}
+                    {t('feed.nearbyNow') ?? 'Nearby now'}
                   </Text>
                 </PressableOpacity>
                 <View style={styles.headerRight}>
@@ -425,7 +425,7 @@ function FeedScreenInner() {
             {remainingPosts.length > 0 && (
               <View style={styles.remainingHeader}>
                 <Text style={[styles.remainingSectionTitle, { color: colors.foreground }]}>
-                  {t('feed.morePosts') ?? 'Lisää ilmoituksia'}
+                  {t('feed.morePosts') ?? 'More posts'}
                 </Text>
               </View>
             )}

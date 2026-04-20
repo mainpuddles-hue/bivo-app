@@ -386,7 +386,8 @@ export default function ForumScreen() {
             (supabase.from('forum_votes') as any).delete().eq('post_id', postId),
             (supabase.from('forum_replies') as any).delete().eq('post_id', postId),
           ])
-          await (supabase.from('forum_posts') as any).delete().eq('id', postId).eq('user_id', currentUserId)
+          const { error: delError } = await (supabase.from('forum_posts') as any).delete().eq('id', postId).eq('user_id', currentUserId)
+          if (delError) throw delError
           setPosts(prev => prev.filter(p => p.id !== postId))
           if (selectedPost?.id === postId) setSelectedPost(null)
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
@@ -438,7 +439,8 @@ export default function ForumScreen() {
     if (editingPost.user_id !== currentUserId) return
     setSavingEdit(true)
     try {
-      await (supabase.from('forum_posts') as any).update({ title: editTitle.trim(), content: editContent.trim() }).eq('id', editingPost.id).eq('user_id', currentUserId)
+      const { error: editError } = await (supabase.from('forum_posts') as any).update({ title: editTitle.trim(), content: editContent.trim() }).eq('id', editingPost.id).eq('user_id', currentUserId)
+      if (editError) throw editError
       const updated = { ...editingPost, title: editTitle.trim(), content: editContent.trim() }
       setPosts(prev => prev.map(p => p.id === editingPost.id ? updated : p))
       if (selectedPost?.id === editingPost.id) setSelectedPost(updated)
@@ -706,15 +708,15 @@ const s = StyleSheet.create({
 
   // Filter bar — monochrome pills
   filterBar: { paddingHorizontal: 16, paddingVertical: 12, gap: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, alignSelf: 'flex-start', borderWidth: 1 },
+  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, alignSelf: 'flex-start', borderWidth: 1, minHeight: 38 },
   neighborhoodChipText: { fontSize: 12, lineHeight: 16, fontFamily: fonts.bodyMedium },
   categoryChips: { gap: 8, paddingRight: 4 },
-  categoryChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
+  categoryChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 40 },
   categoryChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
 
   // Sort chips — monochrome
   sortRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
-  sortChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
+  sortChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 40 },
   sortChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
 
   // New posts banner — INK bg

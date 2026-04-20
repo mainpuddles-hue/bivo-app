@@ -31,6 +31,9 @@ import {
   Clock,
   Lightbulb,
   Zap,
+  Wrench,
+  Bike,
+  Sofa,
 } from 'lucide-react-native'
 import * as ImagePicker from 'expo-image-picker'
 import * as Haptics from 'expo-haptics'
@@ -47,30 +50,13 @@ import { trackEvent } from '@/lib/analytics'
 const TOTAL_STEPS = 7
 
 // ── Templates (Step 1) ──
-const TEMPLATES = [
-  { key: 'drill', name: 'Porakone', cat: 'Työkalu', icon: '🔧' },
-  { key: 'bike', name: 'Polkupyörä', cat: 'Liikenne', icon: '🚲' },
-  { key: 'furniture', name: 'Sohva', cat: 'Huonekalu', icon: '🛋️' },
-  { key: 'blank', name: 'Tyhjä', cat: 'Aloita alusta', icon: '+' },
-] as const
+const TEMPLATE_ICONS: Record<string, (props: { size: number; color: string; strokeWidth: number }) => React.JSX.Element> = {
+  drill: (p) => <Wrench {...p} />,
+  bike: (p) => <Bike {...p} />,
+  furniture: (p) => <Sofa {...p} />,
+  blank: (p) => <Plus {...p} />,
+}
 
-// ── Pricing models (Step 3) ──
-const PRICING_MODELS = [
-  { key: 'free', label: 'Ilmainen', sub: 'Vain vakuus' },
-  { key: 'daily', label: 'Per päivä', sub: '€ / vrk' },
-  { key: 'weekly', label: 'Per viikko', sub: '€ / vk' },
-  { key: 'flat', label: 'Kerta', sub: 'Yksi maksu' },
-] as const
-
-// ── Pickup methods (Step 5) ──
-const PICKUP_METHODS = [
-  { key: 'meeting', label: 'Tapaaminen', sub: 'Sovitaan aika, tapaan henkilökohtaisesti' },
-  { key: 'lockbox', label: 'Avainboksi', sub: 'Lainaaja saa koodin, hakee itse' },
-  { key: 'shipping', label: 'Lähetys', sub: 'Postitan lainaajalle' },
-] as const
-
-// ── Weekdays ──
-const WEEKDAYS = ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'] as const
 
 // ── Checklist tabs (Step 6) ──
 type ChecklistTab = 'instructions' | 'before' | 'return'
@@ -86,6 +72,33 @@ function NewListingScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+
+  // ── Localized data arrays ──
+  const TEMPLATES = useMemo(() => [
+    { key: 'drill', name: t('newListing.templateDrill'), cat: t('newListing.templateDrillCat') },
+    { key: 'bike', name: t('newListing.templateBike'), cat: t('newListing.templateBikeCat') },
+    { key: 'furniture', name: t('newListing.templateFurniture'), cat: t('newListing.templateFurnitureCat') },
+    { key: 'blank', name: t('newListing.templateBlank'), cat: t('newListing.templateBlankCat') },
+  ], [t])
+
+  const PRICING_MODELS = useMemo(() => [
+    { key: 'free', label: t('newListing.pricingFree'), sub: t('newListing.pricingFreeSub') },
+    { key: 'daily', label: t('newListing.pricingDaily'), sub: t('newListing.pricingDailySub') },
+    { key: 'weekly', label: t('newListing.pricingWeekly'), sub: t('newListing.pricingWeeklySub') },
+    { key: 'flat', label: t('newListing.pricingFlat'), sub: t('newListing.pricingFlatSub') },
+  ], [t])
+
+  const PICKUP_METHODS = useMemo(() => [
+    { key: 'meeting', label: t('newListing.pickupMeeting'), sub: t('newListing.pickupMeetingSub') },
+    { key: 'lockbox', label: t('newListing.pickupLockbox'), sub: t('newListing.pickupLockboxSub') },
+    { key: 'shipping', label: t('newListing.pickupShipping'), sub: t('newListing.pickupShippingSub') },
+  ], [t])
+
+  const WEEKDAYS = useMemo(() => [
+    t('newListing.weekdayMon'), t('newListing.weekdayTue'), t('newListing.weekdayWed'),
+    t('newListing.weekdayThu'), t('newListing.weekdayFri'), t('newListing.weekdaySat'),
+    t('newListing.weekdaySun'),
+  ], [t])
   const scrollRef = useRef<ScrollView>(null)
   const { width: SCREEN_WIDTH } = useWindowDimensions()
 
@@ -216,7 +229,7 @@ function NewListingScreenInner() {
   // ── Publish ──
   const handlePublish = useCallback(async (isDraft: boolean) => {
     if (!title.trim()) {
-      Alert.alert('Virhe', 'Anna ilmoitukselle otsikko')
+      Alert.alert(t('newListing.errorTitle'), t('newListing.errorNoTitle'))
       return
     }
     setPublishing(true)
@@ -274,7 +287,8 @@ function NewListingScreenInner() {
           image_url: url,
           sort_order: i,
         }))
-        await (supabase.from('post_images') as any).insert(imageRows)
+        const { error: imgError } = await (supabase.from('post_images') as any).insert(imageRows)
+        if (imgError && __DEV__) console.warn('[new-listing] post_images insert failed:', imgError.message)
       }
 
       trackEvent('listing_published' as any, { draft: isDraft, template: selectedTemplate })
@@ -282,7 +296,7 @@ function NewListingScreenInner() {
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       router.replace(isDraft ? '/(tabs)/profile' : `/post/${post?.id}`)
     } catch (err) {
-      Alert.alert('Virhe', 'Julkaisu epäonnistui. Yritä uudelleen.')
+      Alert.alert(t('newListing.errorTitle'), t('newListing.errorPublishFailed'))
     } finally {
       setPublishing(false)
     }
@@ -299,7 +313,7 @@ function NewListingScreenInner() {
             onPress={() => goToStep(step - 1)}
             style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             hitSlop={8}
-            accessibilityLabel="Takaisin"
+            accessibilityLabel={t('common.back')}
             accessibilityRole="button"
           >
             <ChevronLeft size={13} color={colors.foreground} strokeWidth={2.2} />
@@ -309,22 +323,22 @@ function NewListingScreenInner() {
             onPress={() => router.back()}
             style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             hitSlop={8}
-            accessibilityLabel="Sulje"
+            accessibilityLabel={t('common.close')}
             accessibilityRole="button"
           >
             <X size={13} color={colors.foreground} strokeWidth={2.2} />
           </PressableOpacity>
         )}
         <Text style={[s.wizStepLabel, { color: colors.mutedForeground }]}>
-          Vaihe {step + 1} / {TOTAL_STEPS}
+          {t('newListing.stepLabel', { step: step + 1, total: TOTAL_STEPS })}
         </Text>
         <PressableOpacity
           onPress={() => handlePublish(true)}
           hitSlop={8}
-          accessibilityLabel="Tallenna luonnos"
+          accessibilityLabel={t('newListing.saveDraftAccessibility')}
           accessibilityRole="button"
         >
-          <Text style={[s.wizSaveLabel, { color: colors.mutedForeground }]}>Tallenna</Text>
+          <Text style={[s.wizSaveLabel, { color: colors.mutedForeground }]}>{t('newListing.saveDraft')}</Text>
         </PressableOpacity>
       </View>
       {/* Progress bars */}
@@ -379,11 +393,11 @@ function NewListingScreenInner() {
   const renderStep1 = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {renderWizardHeader(0, 'Aloita pohjasta tai tyhjältä')}
+        {renderWizardHeader(0, t('newListing.step1Title'))}
 
         {/* Templates grid */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>SUOSITUIMMAT POHJAT</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.popularTemplates')}</Text>
           <View style={s.templateGrid}>
             {TEMPLATES.map((tmpl, i) => {
               const isSelected = selectedTemplate === tmpl.key
@@ -407,7 +421,13 @@ function NewListingScreenInner() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                 >
-                  <Text style={[s.templateIcon, { opacity: isLast ? 0.4 : 1 }]}>{tmpl.icon}</Text>
+                  <View style={[s.templateIconWrap, { opacity: isLast ? 0.4 : 1 }]}>
+                    {TEMPLATE_ICONS[tmpl.key]?.({
+                      size: 24,
+                      color: isSelected ? colors.background : colors.foreground,
+                      strokeWidth: 1.5,
+                    })}
+                  </View>
                   <View>
                     <Text style={[s.templateName, { color: isSelected ? colors.background : colors.foreground }]}>
                       {tmpl.name}
@@ -424,36 +444,36 @@ function NewListingScreenInner() {
 
         {/* Basic fields */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>PERUSTIEDOT</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.basicInfo')}</Text>
           <View style={[s.fieldsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={s.fieldRow}>
-              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>Otsikko</Text>
+              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>{t('newListing.titleLabel')}</Text>
               <TextInput
                 value={title}
                 onChangeText={setTitle}
-                placeholder="Tuotteen tai tavaran nimi"
+                placeholder={t('newListing.titlePlaceholder')}
                 placeholderTextColor={colors.tertiaryForeground}
                 style={[s.fieldValue, { color: colors.foreground, fontFamily: fonts.bodySemi }]}
               />
             </View>
             <View style={[s.fieldDivider, { backgroundColor: colors.border }]} />
             <View style={s.fieldRow}>
-              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>Kategoria</Text>
+              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>{t('newListing.categoryLabel')}</Text>
               <TextInput
                 value={category}
                 onChangeText={setCategory}
-                placeholder="esim. Työkalut · Sähkötyökalut"
+                placeholder={t('newListing.categoryPlaceholder')}
                 placeholderTextColor={colors.tertiaryForeground}
                 style={[s.fieldValue, { color: colors.foreground, fontFamily: fonts.bodySemi }]}
               />
             </View>
             <View style={[s.fieldDivider, { backgroundColor: colors.border }]} />
             <View style={s.fieldRow}>
-              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>Tila</Text>
+              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>{t('newListing.conditionLabel')}</Text>
               <TextInput
                 value={condition}
                 onChangeText={setCondition}
-                placeholder="esim. Hyvä — käytetty mutta toimiva"
+                placeholder={t('newListing.conditionPlaceholder')}
                 placeholderTextColor={colors.tertiaryForeground}
                 style={[s.fieldValue, { color: colors.foreground, fontFamily: fonts.bodySemi }]}
               />
@@ -461,7 +481,7 @@ function NewListingScreenInner() {
           </View>
         </View>
       </ScrollView>
-      {renderCTA('Jatka kuviin', () => goToStep(1))}
+      {renderCTA(t('newListing.continueToPhotos'), () => goToStep(1))}
     </View>
   )
 
@@ -471,12 +491,12 @@ function NewListingScreenInner() {
   const renderStep2 = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {renderWizardHeader(1, 'Lisää kuvat ja kuvaus')}
+        {renderWizardHeader(1, t('newListing.step2Title'))}
 
         {/* Photo grid */}
         <View style={s.section}>
           <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-            KUVAT · {photos.length} / 6
+            {t('newListing.photosLabel')} · {photos.length} / 6
           </Text>
           <View style={s.photoGrid}>
             {photos.map((uri, i) => (
@@ -484,7 +504,7 @@ function NewListingScreenInner() {
                 <Image source={{ uri }} style={s.photoImage} contentFit="cover" />
                 {i === 0 && (
                   <View style={[s.photoBadge, { backgroundColor: colors.foreground }]}>
-                    <Text style={[s.photoBadgeText, { color: colors.background }]}>PÄÄ</Text>
+                    <Text style={[s.photoBadgeText, { color: colors.background }]}>{t('newListing.photoBadgeMain')}</Text>
                   </View>
                 )}
                 <PressableOpacity
@@ -500,27 +520,27 @@ function NewListingScreenInner() {
               <PressableOpacity
                 onPress={pickPhoto}
                 style={[s.photoAdd, { backgroundColor: colors.card, borderColor: colors.border }]}
-                accessibilityLabel="Lisää kuva"
+                accessibilityLabel={t('newListing.addPhotoAccessibility')}
                 accessibilityRole="button"
               >
                 <Plus size={20} color={colors.mutedForeground} strokeWidth={2} />
-                <Text style={[s.photoAddText, { color: colors.mutedForeground }]}>Lisää</Text>
+                <Text style={[s.photoAddText, { color: colors.mutedForeground }]}>{t('newListing.addPhoto')}</Text>
               </PressableOpacity>
             )}
           </View>
           <Text style={[s.photoHint, { color: colors.mutedForeground }]}>
-            Veto järjestääksesi · Pää-kuva näkyy feedissä
+            {t('newListing.photoHint')}
           </Text>
         </View>
 
         {/* Description */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>KUVAUS</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.descriptionLabel')}</Text>
           <View style={[s.descCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <TextInput
               value={description}
               onChangeText={setDescription}
-              placeholder="Kuvaile tavaraa, käyttöä ja kuntoa..."
+              placeholder={t('newListing.descriptionPlaceholder')}
               placeholderTextColor={colors.tertiaryForeground}
               style={[s.descInput, { color: colors.foreground, fontFamily: fonts.body }]}
               multiline
@@ -543,7 +563,7 @@ function NewListingScreenInner() {
                 value={tagInput}
                 onChangeText={setTagInput}
                 onSubmitEditing={addTag}
-                placeholder="+ avainsana"
+                placeholder={t('newListing.tagPlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
                 style={[s.tagAddInput, { color: colors.foreground, fontFamily: fonts.bodyMedium }]}
                 returnKeyType="done"
@@ -552,7 +572,7 @@ function NewListingScreenInner() {
           </View>
         </View>
       </ScrollView>
-      {renderCTA('Jatka hintaan', () => goToStep(2))}
+      {renderCTA(t('newListing.continueToPrice'), () => goToStep(2))}
     </View>
   )
 
@@ -562,11 +582,11 @@ function NewListingScreenInner() {
   const renderStep3 = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {renderWizardHeader(2, 'Aseta hinta ja vakuus')}
+        {renderWizardHeader(2, t('newListing.step3Title'))}
 
         {/* Pricing model grid */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>HINNOITTELUMALLI</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.pricingModelLabel')}</Text>
           <View style={s.pricingGrid}>
             {PRICING_MODELS.map((model) => {
               const isSelected = pricingModel === model.key
@@ -597,7 +617,7 @@ function NewListingScreenInner() {
           </View>
           {pricingModel !== 'free' && (
             <View style={[s.priceInputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>Hinta (€)</Text>
+              <Text style={[s.fieldLabel, { color: colors.tertiaryForeground }]}>{t('newListing.priceLabel')}</Text>
               <TextInput
                 value={price}
                 onChangeText={setPrice}
@@ -612,7 +632,7 @@ function NewListingScreenInner() {
 
         {/* Deposit */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>VAKUUS</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.depositLabel')}</Text>
           <View style={[s.depositCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={s.depositRow}>
               <Text style={[s.depositAmount, { color: colors.foreground }]}>{deposit}</Text>
@@ -622,39 +642,39 @@ function NewListingScreenInner() {
                 <PressableOpacity
                   onPress={() => setDeposit(prev => Math.max(0, prev - 5))}
                   style={[s.depositBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
-                  accessibilityLabel="Vähennä"
+                  accessibilityLabel={t('newListing.depositDecrease')}
                 >
                   <Minus size={18} color={colors.foreground} strokeWidth={1.5} />
                 </PressableOpacity>
                 <PressableOpacity
                   onPress={() => setDeposit(prev => prev + 5)}
                   style={[s.depositBtnDark, { backgroundColor: colors.foreground }]}
-                  accessibilityLabel="Lisää"
+                  accessibilityLabel={t('newListing.depositIncrease')}
                 >
                   <Plus size={18} color={colors.background} strokeWidth={1.5} />
                 </PressableOpacity>
               </View>
             </View>
             <Text style={[s.depositHint, { color: colors.mutedForeground }]}>
-              Lainaaja maksaa vakuuden varauksen yhteydessä. Palautetaan kun tavara on takaisin samassa kunnossa.
+              {t('newListing.depositHint')}
             </Text>
           </View>
         </View>
 
         {/* Suggestion */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>SUOSITUS</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.suggestionLabel')}</Text>
           <View style={[s.suggestionCard, { backgroundColor: colors.warmTint }]}>
             <View style={[s.suggestionIcon, { backgroundColor: colors.foreground }]}>
               <Lightbulb size={14} color={colors.background} />
             </View>
             <Text style={[s.suggestionText, { color: colors.foreground }]}>
-              Vastaavat tavarat alueellasi: vakuus <Text style={{ fontFamily: fonts.bodySemi }}>25–40 €</Text>, ilmainen laina yleisin
+              {t('newListing.suggestionText', { range: '25–40 €' })}
             </Text>
           </View>
         </View>
       </ScrollView>
-      {renderCTA('Jatka saatavuuteen', () => goToStep(3))}
+      {renderCTA(t('newListing.continueToAvailability'), () => goToStep(3))}
     </View>
   )
 
@@ -667,12 +687,12 @@ function NewListingScreenInner() {
   const renderStep4 = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {renderWizardHeader(3, 'Milloin saatavilla')}
+        {renderWizardHeader(3, t('newListing.step4Title'))}
 
         {/* Weekday picker */}
         <View style={s.section}>
           <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-            VIIKONPÄIVÄT · VALITSE JOLLOIN LAINAAJAT VOIVAT NOUTAA
+            {t('newListing.weekdaysLabel')}
           </Text>
           <View style={s.weekdayRow}>
             {WEEKDAYS.map((day, i) => {
@@ -707,7 +727,7 @@ function NewListingScreenInner() {
         {/* Calendar */}
         <View style={s.section}>
           <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-            KALENTERI · ESTÄ PÄIVÄT JOLLOIN ET VOI ANTAA
+            {t('newListing.calendarLabel')}
           </Text>
           <View style={[s.calendarCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {/* Day headers */}
@@ -759,7 +779,7 @@ function NewListingScreenInner() {
             <View style={[s.calendarLegend, { borderTopColor: colors.border }]}>
               <View style={s.legendItem}>
                 <View style={[s.legendDot, { backgroundColor: colors.warmTint }]} />
-                <Text style={[s.legendText, { color: colors.mutedForeground }]}>Estetty</Text>
+                <Text style={[s.legendText, { color: colors.mutedForeground }]}>{t('newListing.blockedLegend')}</Text>
               </View>
             </View>
           </View>
@@ -767,17 +787,17 @@ function NewListingScreenInner() {
 
         {/* Time windows */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>AIKA-IKKUNAT</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.timeWindowsLabel')}</Text>
           <View style={[s.timeCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={s.timeRow}>
-              <Text style={[s.timeLabel, { color: colors.foreground }]}>Nouto</Text>
+              <Text style={[s.timeLabel, { color: colors.foreground }]}>{t('newListing.timePickup')}</Text>
               <Text style={[s.timeValue, { color: colors.mutedForeground }]}>
                 {pickupTimeStart} – {pickupTimeEnd}
               </Text>
             </View>
             <View style={[s.fieldDivider, { backgroundColor: colors.border, marginVertical: 10 }]} />
             <View style={s.timeRow}>
-              <Text style={[s.timeLabel, { color: colors.foreground }]}>Palautus</Text>
+              <Text style={[s.timeLabel, { color: colors.foreground }]}>{t('newListing.timeReturn')}</Text>
               <Text style={[s.timeValue, { color: colors.mutedForeground }]}>
                 {returnTimeStart} – {returnTimeEnd}
               </Text>
@@ -785,7 +805,7 @@ function NewListingScreenInner() {
           </View>
         </View>
       </ScrollView>
-      {renderCTA('Jatka noutoon', () => goToStep(4))}
+      {renderCTA(t('newListing.continueToPickup'), () => goToStep(4))}
     </View>
   )
 
@@ -795,11 +815,11 @@ function NewListingScreenInner() {
   const renderStep5 = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {renderWizardHeader(4, 'Miten lainaaja noutaa')}
+        {renderWizardHeader(4, t('newListing.step5Title'))}
 
         {/* Location */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>SIJAINTI</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.locationLabel')}</Text>
           <View style={[s.locationCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {/* Mini map placeholder */}
             <View style={[s.miniMap, { backgroundColor: colors.muted }]}>
@@ -809,12 +829,12 @@ function NewListingScreenInner() {
               <TextInput
                 value={address}
                 onChangeText={setAddress}
-                placeholder="Osoite"
+                placeholder={t('newListing.addressPlaceholder')}
                 placeholderTextColor={colors.tertiaryForeground}
                 style={[s.locationAddress, { color: colors.foreground, fontFamily: fonts.bodySemi }]}
               />
               <Text style={[s.locationHint, { color: colors.mutedForeground }]}>
-                Tarkka osoite jaetaan vasta hyväksynnän jälkeen
+                {t('newListing.addressHint')}
               </Text>
             </View>
           </View>
@@ -822,7 +842,7 @@ function NewListingScreenInner() {
 
         {/* Pickup method */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>NOUTOTAPA</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.pickupMethodLabel')}</Text>
           <View style={s.pickupMethods}>
             {PICKUP_METHODS.map((method) => {
               const isSelected = pickupMethod === method.key
@@ -858,7 +878,7 @@ function NewListingScreenInner() {
           </View>
         </View>
       </ScrollView>
-      {renderCTA('Jatka ohjeisiin', () => goToStep(5))}
+      {renderCTA(t('newListing.continueToInstructions'), () => goToStep(5))}
     </View>
   )
 
@@ -870,7 +890,7 @@ function NewListingScreenInner() {
   const renderStep6 = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {renderWizardHeader(5, 'Mitä lainaajan pitää tehdä')}
+        {renderWizardHeader(5, t('newListing.step6Title'))}
 
         {/* Tab segment */}
         <View style={s.section}>
@@ -878,9 +898,9 @@ function NewListingScreenInner() {
             {(['instructions', 'before', 'return'] as ChecklistTab[]).map((tab) => {
               const on = checklistTab === tab
               const labels: Record<ChecklistTab, string> = {
-                instructions: 'Käyttöohje',
-                before: 'Ennen',
-                return: 'Palautus',
+                instructions: t('newListing.checklistInstructions'),
+                before: t('newListing.checklistBefore'),
+                return: t('newListing.checklistReturn'),
               }
               return (
                 <PressableOpacity
@@ -911,8 +931,8 @@ function NewListingScreenInner() {
         {/* Checklist items */}
         <View style={s.section}>
           <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
-            {checklistTab === 'before' ? 'ENNEN KÄYTTÖÄ — LAINAAJA NÄKEE TÄMÄN NOUDETTAESSA' :
-              checklistTab === 'instructions' ? 'KÄYTTÖOHJEET' : 'PALAUTUSOHJEET'}
+            {checklistTab === 'before' ? t('newListing.checklistBeforeDesc') :
+              checklistTab === 'instructions' ? t('newListing.checklistInstructionsDesc') : t('newListing.checklistReturnDesc')}
           </Text>
           {checklists[checklistTab].map((item, i) => (
             <View key={item.id} style={[s.checkItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -940,7 +960,7 @@ function NewListingScreenInner() {
                 addChecklistItem(checklistTab, newCheckItem)
                 setNewCheckItem('')
               }}
-              placeholder="Lisää askel"
+              placeholder={t('newListing.addStep')}
               placeholderTextColor={colors.mutedForeground}
               style={[s.checkAddInput, { color: colors.foreground, fontFamily: fonts.body }]}
               returnKeyType="done"
@@ -950,9 +970,9 @@ function NewListingScreenInner() {
 
         {/* Suggestion pills */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>POHJA-EHDOTUKSET</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.suggestionsLabel')}</Text>
           <View style={s.suggestPills}>
-            {['Tarkista akun varaus', 'Lue manuaali', 'Testaa että toimii'].map(sug => (
+            {[t('newListing.suggestCheckBattery'), t('newListing.suggestReadManual'), t('newListing.suggestTestWorks')].map(sug => (
               <PressableOpacity
                 key={sug}
                 onPress={() => addChecklistItem(checklistTab, sug)}
@@ -964,7 +984,7 @@ function NewListingScreenInner() {
           </View>
         </View>
       </ScrollView>
-      {renderCTA('Jatka sääntöihin', () => goToStep(6))}
+      {renderCTA(t('newListing.continueToRules'), () => goToStep(6))}
     </View>
   )
 
@@ -974,11 +994,11 @@ function NewListingScreenInner() {
   const renderStep7 = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {renderWizardHeader(6, 'Säännöt ja julkaisu')}
+        {renderWizardHeader(6, t('newListing.step7Title'))}
 
         {/* Rules */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>SÄÄNNÖT</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.rulesLabel')}</Text>
           <View style={[s.rulesCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {rules.map((rule, i) => (
               <View key={i}>
@@ -996,7 +1016,7 @@ function NewListingScreenInner() {
             ))}
             {rules.length === 0 && (
               <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>
-                Ei sääntöjä vielä
+                {t('newListing.noRulesYet')}
               </Text>
             )}
           </View>
@@ -1006,7 +1026,7 @@ function NewListingScreenInner() {
               value={ruleInput}
               onChangeText={setRuleInput}
               onSubmitEditing={addRule}
-              placeholder="+ lisää sääntö"
+              placeholder={t('newListing.addRulePlaceholder')}
               placeholderTextColor={colors.mutedForeground}
               style={[s.addRuleInput, { color: colors.foreground, fontFamily: fonts.bodyMedium }]}
               returnKeyType="done"
@@ -1016,17 +1036,17 @@ function NewListingScreenInner() {
 
         {/* Damage info */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>VAHINKOTAPAUS</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.damageLabel')}</Text>
           <View style={[s.damageCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[s.damageIcon, { backgroundColor: colors.warmTint }]}>
               <AlertTriangle size={14} color={colors.foreground} strokeWidth={2} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[s.damageTitle, { color: colors.foreground }]}>
-                TackBird-vakuus {deposit} € → 200 €
+                {t('newListing.damageTitle', { deposit })}
               </Text>
               <Text style={[s.damageSub, { color: colors.mutedForeground }]}>
-                Lievä vahinko korvataan vakuudesta. Suuremmat vahingot TackBird-vakuutuksesta.
+                {t('newListing.damageSub')}
               </Text>
             </View>
             <ChevronRight size={14} color={colors.tertiaryForeground} strokeWidth={2.2} />
@@ -1035,7 +1055,7 @@ function NewListingScreenInner() {
 
         {/* Feed preview */}
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>ESIKATSELU FEEDISSÄ</Text>
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.previewLabel')}</Text>
           <View style={[s.previewCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {photos[0] ? (
               <Image source={{ uri: photos[0] }} style={s.previewImage} contentFit="cover" />
@@ -1046,17 +1066,17 @@ function NewListingScreenInner() {
             )}
             <View style={s.previewInfo}>
               <Text style={[s.previewTitle, { color: colors.foreground }]} numberOfLines={1}>
-                {title || 'Ilmoituksen nimi'}
+                {title || t('newListing.previewPlaceholder')}
               </Text>
               <Text style={[s.previewMeta, { color: colors.mutedForeground }]}>
-                Sinä · 0 km
+                {t('newListing.previewMeta')}
               </Text>
             </View>
           </View>
         </View>
       </ScrollView>
-      {renderCTA('Julkaise', () => handlePublish(false), {
-        label: 'Tallenna luonnos',
+      {renderCTA(t('newListing.publish'), () => handlePublish(false), {
+        label: t('newListing.saveDraftButton'),
         onPress: () => handlePublish(true),
       })}
     </View>
@@ -1126,6 +1146,7 @@ const s = StyleSheet.create({
   templateGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   templateCard: { width: '48%', borderRadius: 16, padding: 16, minHeight: 110, justifyContent: 'space-between' },
   templateIcon: { fontSize: 24, lineHeight: 28 },
+  templateIconWrap: { marginBottom: 8 },
   templateName: { fontSize: 14, fontWeight: '600', letterSpacing: -0.1, fontFamily: 'InstrumentSans_600SemiBold' },
   templateCat: { fontSize: 10.5, marginTop: 2, fontFamily: 'InstrumentSans_400Regular' },
 
@@ -1171,8 +1192,8 @@ const s = StyleSheet.create({
   depositAmount: { fontSize: 36, fontWeight: '600', letterSpacing: -1.2, lineHeight: 40, fontFamily: 'InstrumentSans_600SemiBold' },
   depositCurrency: { fontSize: 18, fontWeight: '600', fontFamily: 'InstrumentSans_600SemiBold' },
   depositControls: { flexDirection: 'row', gap: 6 },
-  depositBtn: { width: 32, height: 32, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  depositBtnDark: { width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  depositBtn: { width: 40, height: 40, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  depositBtnDark: { width: 40, height: 40, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   depositHint: { fontSize: 11.5, lineHeight: 16, marginTop: 8, fontFamily: 'InstrumentSans_400Regular' },
 
   // ── Suggestion card ──

@@ -392,8 +392,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 999,
+    minHeight: 40,
   },
   chipText: {
     fontSize: 13,
