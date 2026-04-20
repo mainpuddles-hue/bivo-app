@@ -259,7 +259,14 @@
     "receivedBody": "Bud {amount} för: {title}",
     "accepted": "Bud accepterat",
     "rejected": "Bud avvisat",
-    "withdrawn": "Bud återkallat"
+    "withdrawn": "Bud återkallat",
+    "pendingOffer": "Väntande bud: {amount}",
+    "accept": "Acceptera",
+    "reject": "Avvisa",
+    "withdraw": "Återkalla bud",
+    "acceptConfirm": "Acceptera bud på {amount}?",
+    "rejectConfirm": "Avvisa detta bud?",
+    "withdrawConfirm": "Återkalla ditt bud?"
   },
   "events": {
     "title": "Evenemang",

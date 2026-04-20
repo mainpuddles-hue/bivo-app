@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check, Banknote } from 'lucide-react-native'
+import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check, Banknote, Search, BellOff, BellRing } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -228,6 +228,10 @@ export default function SettingsScreen() {
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'loading' | ApplyResult>('idle')
 
+  // Saved searches
+  const [savedSearches, setSavedSearches] = useState<{ id: string; query: string; push_enabled: boolean }[]>([])
+  const [loadingSearches, setLoadingSearches] = useState(false)
+
   // Account info
   const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null)
 
@@ -277,6 +281,34 @@ export default function SettingsScreen() {
     }
     load()
   }, [supabase])
+
+  // Load saved searches
+  useEffect(() => {
+    if (!profile?.id) return
+    setLoadingSearches(true)
+    Promise.resolve(
+      supabase
+        .from('saved_searches')
+        .select('id, query, push_enabled')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+    ).then(({ data }) => {
+        if (data) setSavedSearches(data as any)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSearches(false))
+  }, [profile?.id, supabase])
+
+  const toggleSearchPush = useCallback(async (searchId: string, enabled: boolean) => {
+    await (supabase.from('saved_searches') as any).update({ push_enabled: enabled }).eq('id', searchId)
+    setSavedSearches(prev => prev.map(s => s.id === searchId ? { ...s, push_enabled: enabled } : s))
+  }, [supabase])
+
+  const deleteSearch = useCallback(async (searchId: string) => {
+    await (supabase.from('saved_searches') as any).delete().eq('id', searchId)
+    setSavedSearches(prev => prev.filter(s => s.id !== searchId))
+    toast.show({ message: t('savedSearch.deleted') ?? 'Deleted', type: 'success' })
+  }, [supabase, toast, t])
 
   // Detect if user arrived via password recovery flow
   useEffect(() => {
@@ -929,6 +961,51 @@ export default function SettingsScreen() {
             colors={colors}
             isDark={isDark}
           />
+        </Group>
+
+        {/* ── Saved searches ── */}
+        <Group colors={colors}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 }}>
+            <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              {t('savedSearch.savedSearches') ?? 'Saved searches'}
+            </Text>
+          </View>
+          {loadingSearches && <ActivityIndicator size="small" color={colors.foreground} style={{ padding: 12 }} />}
+          {!loadingSearches && savedSearches.length === 0 && (
+            <Text style={{ fontSize: 13, fontFamily: fonts.body, color: colors.mutedForeground, paddingHorizontal: 16, paddingVertical: 12 }}>
+              {t('savedSearch.noSavedSearches') ?? 'No saved searches yet'}
+            </Text>
+          )}
+          {savedSearches.map(s => (
+            <Row
+              key={s.id}
+              icon={<Search size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={s.query}
+              colors={colors}
+              isDark={isDark}
+              onPress={() => {
+                Alert.alert(
+                  t('savedSearch.delete') ?? 'Delete saved search',
+                  s.query,
+                  [
+                    { text: t('common.cancel') ?? 'Cancel', style: 'cancel' },
+                    { text: t('common.delete') ?? 'Delete', style: 'destructive', onPress: () => deleteSearch(s.id) },
+                  ]
+                )
+              }}
+            >
+              <PressableOpacity
+                onPress={() => toggleSearchPush(s.id, !s.push_enabled)}
+                hitSlop={8}
+                style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
+                accessibilityLabel={s.push_enabled ? (t('savedSearch.notifyOff') ?? 'Turn off notifications') : (t('savedSearch.notifyOn') ?? 'Turn on notifications')}
+              >
+                {s.push_enabled
+                  ? <BellRing size={16} color={colors.primary} strokeWidth={1.8} />
+                  : <BellOff size={16} color={colors.mutedForeground} strokeWidth={1.8} />}
+              </PressableOpacity>
+            </Row>
+          ))}
         </Group>
 
         {/* ── Data export ── */}

@@ -7,14 +7,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronLeft, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink, Phone, Plus } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronLeft, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink, Phone, Plus, DollarSign, CheckCircle, XCircle } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { Avatar } from '@/components/Avatar'
 import { useSupabase } from '@/hooks/useSupabase'
-import { formatTimeAgo, formatDateHeader } from '@/lib/format'
+import { formatTimeAgo, formatDateHeader, formatPrice } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { ReportModal } from '@/components/ReportModal'
@@ -75,6 +75,10 @@ function ConversationScreenInner() {
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userIdRef = useRef<string | null>(null)
   userIdRef.current = userId
+
+  // Offer state
+  const [pendingOffer, setPendingOffer] = useState<{ id: string; amount: number; message: string | null; from_user_id: string; status: string } | null>(null)
+  const [offerLoading, setOfferLoading] = useState(false)
 
   // Reaction & deletion state
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
@@ -138,6 +142,18 @@ function ConversationScreenInner() {
           .maybeSingle()
         if (cancelled) return
         if (postData) setLinkedPost(postData as any)
+
+        // Load pending offer for this conversation
+        const { data: offerData } = await supabase
+          .from('offers')
+          .select('id, amount, message, from_user_id, status')
+          .eq('conversation_id', id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (cancelled) return
+        if (offerData) setPendingOffer(offerData as any)
       }
 
       const { data: msgs } = await supabase
@@ -507,6 +523,35 @@ function ConversationScreenInner() {
     )
   }, [selectedMessageId, userId, supabase, t])
 
+  const handleOfferAction = useCallback(async (action: 'accepted' | 'rejected' | 'withdrawn') => {
+    if (!pendingOffer) return
+    const confirmKey = action === 'accepted' ? 'offer.acceptConfirm' : action === 'rejected' ? 'offer.rejectConfirm' : 'offer.withdrawConfirm'
+    const amount = formatPrice(pendingOffer.amount, locale)
+    Alert.alert(
+      t(`offer.${action === 'withdrawn' ? 'withdraw' : action === 'accepted' ? 'accept' : 'reject'}`) ?? action,
+      t(confirmKey, { amount }) ?? '',
+      [
+        { text: t('common.cancel') ?? 'Cancel', style: 'cancel' },
+        {
+          text: t('common.confirm') ?? 'OK',
+          style: action === 'rejected' ? 'destructive' : 'default',
+          onPress: async () => {
+            setOfferLoading(true)
+            try {
+              await (supabase.from('offers') as any).update({ status: action, updated_at: new Date().toISOString() }).eq('id', pendingOffer.id)
+              setPendingOffer(null)
+              try { Haptics.notificationAsync(action === 'accepted' ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning) } catch {}
+            } catch {
+              Alert.alert(t('common.error') ?? 'Error')
+            } finally {
+              setOfferLoading(false)
+            }
+          },
+        },
+      ]
+    )
+  }, [pendingOffer, supabase, t, locale])
+
   const renderMessage = useCallback(({ item, index }: { item: Message; index: number }) => {
     const isMine = item.sender_id === userId
     const prev = index > 0 ? messagesRef.current[index - 1] : null
@@ -763,6 +808,57 @@ function ConversationScreenInner() {
                     {t('common.show') ?? 'Näytä'}
                   </Text>
                 </PressableOpacity>
+              </View>
+            )}
+            {pendingOffer && (
+              <View style={[offerStyles.banner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={offerStyles.bannerTop}>
+                  <DollarSign size={16} color={colors.primary} strokeWidth={2} />
+                  <Text style={[offerStyles.bannerAmount, { color: colors.foreground }]}>
+                    {t('offer.pendingOffer', { amount: formatPrice(pendingOffer.amount, locale) }) ?? `Offer: ${pendingOffer.amount}`}
+                  </Text>
+                </View>
+                {pendingOffer.message && (
+                  <Text style={[offerStyles.bannerMsg, { color: colors.mutedForeground }]} numberOfLines={2}>
+                    {pendingOffer.message}
+                  </Text>
+                )}
+                <View style={offerStyles.bannerActions}>
+                  {pendingOffer.from_user_id === userId ? (
+                    <PressableOpacity
+                      onPress={() => handleOfferAction('withdrawn')}
+                      style={[offerStyles.actionBtn, { borderColor: colors.border }]}
+                      disabled={offerLoading}
+                    >
+                      <Text style={[offerStyles.actionText, { color: colors.mutedForeground }]}>
+                        {t('offer.withdraw') ?? 'Withdraw'}
+                      </Text>
+                    </PressableOpacity>
+                  ) : (
+                    <>
+                      <PressableOpacity
+                        onPress={() => handleOfferAction('rejected')}
+                        style={[offerStyles.actionBtn, { borderColor: colors.destructive }]}
+                        disabled={offerLoading}
+                      >
+                        <XCircle size={14} color={colors.destructive} strokeWidth={1.8} />
+                        <Text style={[offerStyles.actionText, { color: colors.destructive }]}>
+                          {t('offer.reject') ?? 'Reject'}
+                        </Text>
+                      </PressableOpacity>
+                      <PressableOpacity
+                        onPress={() => handleOfferAction('accepted')}
+                        style={[offerStyles.actionBtn, offerStyles.acceptBtn, { borderColor: colors.primary, backgroundColor: colors.primary }]}
+                        disabled={offerLoading}
+                      >
+                        <CheckCircle size={14} color="#fff" strokeWidth={1.8} />
+                        <Text style={[offerStyles.actionText, { color: '#fff' }]}>
+                          {t('offer.accept') ?? 'Accept'}
+                        </Text>
+                      </PressableOpacity>
+                    </>
+                  )}
+                </View>
               </View>
             )}
             {hasOlder ? (
@@ -1035,6 +1131,24 @@ const contextStyles = StyleSheet.create({
   eyebrow: { fontSize: 10, fontWeight: '500', letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   showLink: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
+})
+
+const offerStyles = StyleSheet.create({
+  banner: {
+    marginHorizontal: 16, marginTop: 4, marginBottom: 8, padding: 12,
+    borderRadius: 16, borderWidth: 1, gap: 8,
+  },
+  bannerTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  bannerAmount: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  bannerMsg: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
+  bannerActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
+  actionBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1,
+    minHeight: 32,
+  },
+  acceptBtn: { borderWidth: 0 },
+  actionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 })
 
 export default function ConversationScreen() {

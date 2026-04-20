@@ -184,6 +184,37 @@ export interface PostImage {
   created_at: string
 }
 
+export interface SavedSearch {
+  id: string
+  user_id: string
+  query: string
+  filters: {
+    type?: string
+    neighborhood?: string
+    min_price?: number
+    max_price?: number
+    tags?: string[]
+  } | null
+  push_enabled: boolean
+  last_notified_at: string | null
+  created_at: string
+}
+
+export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'expired' | 'withdrawn'
+
+export interface Offer {
+  id: string
+  post_id: string
+  from_user_id: string
+  to_user_id: string
+  amount: number
+  message: string | null
+  status: OfferStatus
+  conversation_id: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Event {
   id: string
   post_id: string | null

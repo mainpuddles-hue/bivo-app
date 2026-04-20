@@ -259,7 +259,14 @@
     "receivedBody": "Offer {amount} for: {title}",
     "accepted": "Offer accepted",
     "rejected": "Offer rejected",
-    "withdrawn": "Offer withdrawn"
+    "withdrawn": "Offer withdrawn",
+    "pendingOffer": "Pending offer: {amount}",
+    "accept": "Accept",
+    "reject": "Reject",
+    "withdraw": "Withdraw offer",
+    "acceptConfirm": "Accept offer of {amount}?",
+    "rejectConfirm": "Reject this offer?",
+    "withdrawConfirm": "Withdraw your offer?"
   },
   "events": {
     "title": "Events",

@@ -259,7 +259,14 @@
     "receivedBody": "Tarjous {amount} ilmoituksesta: {title}",
     "accepted": "Tarjous hyväksytty",
     "rejected": "Tarjous hylätty",
-    "withdrawn": "Tarjous peruutettu"
+    "withdrawn": "Tarjous peruutettu",
+    "pendingOffer": "Odottava tarjous: {amount}",
+    "accept": "Hyväksy",
+    "reject": "Hylkää",
+    "withdraw": "Peru tarjous",
+    "acceptConfirm": "Haluatko hyväksyä tarjouksen {amount}?",
+    "rejectConfirm": "Haluatko hylätä tarjouksen?",
+    "withdrawConfirm": "Haluatko perua tarjouksesi?"
   },
   "events": {
     "title": "Tapahtumat",
