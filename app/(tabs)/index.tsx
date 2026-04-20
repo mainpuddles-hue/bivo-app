@@ -58,6 +58,43 @@ function FeedScreenInner() {
       .catch(() => {})
   }, [feed.posts, supabase])
 
+  // Inline events — fetch 3 upcoming events to inject into feed
+  const [inlineEvents, setInlineEvents] = useState<Post[]>([])
+  useEffect(() => {
+    const now = new Date().toISOString()
+    Promise.resolve(
+      supabase
+        .from('events')
+        .select('id, title, event_date, location_name, creator_id')
+        .gte('event_date', now)
+        .order('event_date', { ascending: true })
+        .limit(3)
+    ).then(({ data }) => {
+      if (!data || data.length === 0) return
+      // Convert to Post-like objects for PostCardGrid event variant
+      const eventPosts: Post[] = (data as any[]).map(e => ({
+        id: `event-${e.id}`,
+        user_id: e.creator_id ?? '',
+        title: e.title,
+        description: null,
+        type: 'tapahtuma' as const,
+        location: e.location_name,
+        event_date: e.event_date,
+        image_url: null,
+        created_at: e.event_date,
+        like_count: 0,
+        is_liked: false,
+        is_anonymous: false,
+        is_urgent: false,
+        is_boosted: false,
+        service_price: null,
+        daily_fee: null,
+        expires_at: null,
+      })) as any
+      setInlineEvents(eventPosts)
+    }).catch(() => {})
+  }, [supabase])
+
   // NOTE: User profile/greeting removed — mockup 05 uses location-based header
 
   // Welcome toast on first feed load (shown once per install)
@@ -176,10 +213,20 @@ function FeedScreenInner() {
     () => visiblePosts.slice(0, DISCOVERY_COUNT),
     [visiblePosts],
   )
-  const remainingPosts = useMemo(
-    () => visiblePosts.slice(DISCOVERY_COUNT),
-    [visiblePosts],
-  )
+  const remainingPosts = useMemo(() => {
+    const posts = visiblePosts.slice(DISCOVERY_COUNT)
+    if (inlineEvents.length === 0) return posts
+    // Inject events at positions 6, 12, 18
+    const result: Post[] = []
+    let eventIdx = 0
+    for (let i = 0; i < posts.length; i++) {
+      if ((i === 6 || i === 12 || i === 18) && eventIdx < inlineEvents.length) {
+        result.push(inlineEvents[eventIdx++])
+      }
+      result.push(posts[i])
+    }
+    return result
+  }, [visiblePosts, inlineEvents])
 
   const renderPost = useCallback(({ item, index }: { item: Post; index: number }) => (
     <PostCardGrid

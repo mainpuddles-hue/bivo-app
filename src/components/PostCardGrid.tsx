@@ -102,7 +102,12 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const handlePress = () => {
     try { Haptics.selectionAsync() } catch {}
     onInteraction?.(post.id, 'click')
-    router.push(`/post/${post.id}`)
+    // Inline event cards have id prefixed with "event-"
+    if (post.id.startsWith('event-')) {
+      router.push(`/event/${post.id.replace('event-', '')}`)
+    } else {
+      router.push(`/post/${post.id}`)
+    }
   }
 
   const handleLike = async () => {
