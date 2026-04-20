@@ -217,6 +217,7 @@ function ActivitiesScreenInner() {
         .select('*, creator:profiles!activities_creator_id_fkey(id, name, avatar_url)')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
+        .limit(100)
 
       if (error) {
         if (__DEV__) console.log('[activities] fetch error:', error.message)

@@ -157,6 +157,7 @@ export default function PublicProfileScreen() {
       .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
       .eq('reviewed_id', userId)
       .order('created_at', { ascending: false })
+      .limit(200)
     const revsList = (allRevs ?? []) as unknown as Review[]
     setReviews(revsList)
     setTotalReviewCount(revsList.length)
@@ -410,6 +411,7 @@ export default function PublicProfileScreen() {
       .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
       .eq('reviewed_id', userId)
       .order('created_at', { ascending: false })
+      .limit(200)
       .then(({ data }) => {
         if (data) {
           const revsList = data as unknown as Review[]
