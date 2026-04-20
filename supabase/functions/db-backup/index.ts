@@ -65,9 +65,10 @@ serve(async (req) => {
     }
     // All tables fetched in parallel batches above
 
-    // Save to storage
+    // Save to storage — use randomized path suffix to prevent path guessing
     const date = new Date().toISOString().split('T')[0]
-    const path = `backups/${date}.json`
+    const randomSuffix = crypto.randomUUID().slice(0, 8)
+    const path = `backups/${date}-${randomSuffix}.json`
     const { error: uploadError } = await supabase.storage
       .from('backups')
       .upload(path, JSON.stringify(backup), {
@@ -92,7 +93,7 @@ serve(async (req) => {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[db-backup]', msg)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: msg }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     )
   }
