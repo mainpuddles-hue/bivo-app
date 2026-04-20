@@ -13,6 +13,7 @@ import { BoostPurchaseCard } from '@/components/BoostPurchaseCard'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
+import { FEATURES } from '@/lib/featureFlags'
 import type { BoostTier } from '@/lib/types'
 
 function BoostsScreenInner() {
@@ -20,6 +21,13 @@ function BoostsScreenInner() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
+
+  // Feature flag gate
+  useEffect(() => {
+    if (!FEATURES.BOOSTS) {
+      router.replace('/(tabs)')
+    }
+  }, [router])
 
   const [userId, setUserId] = useState<string | null>(null)
 

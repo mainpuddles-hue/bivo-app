@@ -61,6 +61,10 @@ export interface Profile {
   stripe_subscription_id?: string | null
   stripe_connect_onboarded: boolean
   identity_verified_at?: string | null
+  pro_since?: string | null
+  detected_country?: string | null
+  detected_city?: string | null
+  last_seen_at?: string | null
   invite_code?: string | null
   invited_by?: string | null
   invite_count?: number
@@ -195,6 +199,7 @@ export interface SavedSearch {
     max_price?: number
     tags?: string[]
   } | null
+  notify: boolean
   push_enabled: boolean
   last_notified_at: string | null
   match_count: number
@@ -334,4 +339,114 @@ export interface LocalPlace {
   tags: string[]
   synced_at: string
   created_at: string
+}
+
+// ── Marketplace types ──
+
+export type BookingStatus = 'pending' | 'paid' | 'confirmed' | 'completed' | 'cancelled' | 'refunded'
+
+export interface RentalBooking {
+  id: string
+  post_id: string
+  lender_id: string
+  borrower_id: string
+  conversation_id: string | null
+  start_date: string
+  end_date: string
+  days: number
+  daily_fee: number
+  total_fee: number
+  service_fee: number
+  total_amount: number
+  platform_commission: number
+  platform_commission_rate: number
+  status: BookingStatus
+  stripe_session_id: string | null
+  stripe_payment_intent_id: string | null
+  paid_at: string | null
+  completed_at: string | null
+  cancelled_at: string | null
+  notes: string | null
+  created_at: string
+  post?: { title: string; image_url: string | null }
+}
+
+export interface ServiceBooking {
+  id: string
+  post_id: string
+  buyer_id: string
+  provider_id: string
+  service_price: number
+  service_fee: number
+  total_amount: number
+  notes: string | null
+  status: BookingStatus
+  stripe_session_id: string | null
+  stripe_payment_intent_id: string | null
+  service_date: string | null
+  completed_at: string | null
+  created_at: string
+  post?: { title: string; image_url: string | null }
+}
+
+export type PaymentStatus = 'paid' | 'refunded' | 'pending' | 'failed'
+
+export interface Payment {
+  id: string
+  user_id: string
+  buyer_id: string | null
+  seller_id: string | null
+  amount: number
+  description: string
+  status: PaymentStatus
+  type: string
+  post_id: string | null
+  booking_id: string | null
+  stripe_session_id: string | null
+  stripe_payment_intent_id: string | null
+  created_at: string
+}
+
+export type AdStatus = 'pending_payment' | 'paid' | 'active' | 'ended' | 'rejected'
+
+export interface Advertisement {
+  id: string
+  advertiser_id: string
+  user_id: string
+  title: string
+  description: string | null
+  image_url: string | null
+  link_url: string | null
+  cta_text: string | null
+  target_naapurusto: string | null
+  target_neighborhoods: string[] | null
+  daily_rate: number
+  duration_days: number
+  total_cost: number
+  budget_cents: number | null
+  start_date: string
+  end_date: string
+  status: AdStatus
+  impressions: number
+  clicks: number
+  is_active: boolean
+  stripe_session_id: string | null
+  stripe_payment_intent_id: string | null
+  paid_at: string | null
+  created_at: string
+}
+
+export interface ForumPost {
+  id: string
+  user_id: string
+  category: string
+  neighborhood: string | null
+  title: string
+  content: string
+  upvote_count: number
+  comment_count: number
+  is_pinned: boolean
+  created_at: string
+  updated_at: string
+  user?: PartialProfile
 }
