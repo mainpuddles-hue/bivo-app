@@ -582,7 +582,18 @@ function BookingDetailScreenInner() {
 
         {/* Sticky CTA */}
         <StickyCTA
-          onPress={canComplete ? handleComplete : handleSendMessage}
+          onPress={canComplete && isRental
+            ? () => router.push({
+                pathname: '/return-item',
+                params: {
+                  bookingId: booking.id,
+                  itemTitle: booking.post?.title ?? '',
+                  itemImage: booking.post?.image_url ?? '',
+                  ownerName: booking.other_user?.name ?? '',
+                  days: totalDays.toString(),
+                },
+              })
+            : canComplete ? handleComplete : handleSendMessage}
           label={canComplete ? t('booking.startReturn') : t('booking.sendMessage')}
           colors={colors}
           insets={insets}

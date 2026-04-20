@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check } from 'lucide-react-native'
+import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check, Banknote } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -772,6 +772,15 @@ export default function SettingsScreen() {
               icon={<CreditCard size={16} color={colors.foreground} strokeWidth={1.8} />}
               label={t('payment.settings') ?? 'Maksutavat'}
               onPress={() => router.push('/payment-settings' as any)}
+              colors={colors}
+              isDark={isDark}
+            />
+          )}
+          {FEATURES.LENDING && (
+            <Row
+              icon={<Banknote size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={locale === 'fi' ? 'Tulot' : 'Earnings'}
+              onPress={() => router.push('/payouts' as any)}
               colors={colors}
               isDark={isDark}
             />
