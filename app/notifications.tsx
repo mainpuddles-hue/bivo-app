@@ -170,7 +170,7 @@ function NotificationsScreenInner() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [fetchError, setFetchError] = useState(false)
 
-  const warmTint = isDark ? 'rgba(240,238,233,0.08)' : '#F0EEE9'
+  const warmTint = useMemo(() => isDark ? 'rgba(240,238,233,0.08)' : '#F0EEE9', [isDark])
 
   const fetchNotifications = useCallback(async () => {
     setFetchError(false)
@@ -299,7 +299,7 @@ function NotificationsScreenInner() {
   }, [notifications, activeFilter])
 
   const sections = useMemo(() => groupByTime(filtered, t), [filtered, t])
-  const unreadCount = notifications.filter(n => !n.is_read).length
+  const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
 
   // Per-filter unread counts — used for accessibility labels
   const unreadByFilter = useMemo(() => {
@@ -474,6 +474,7 @@ function NotificationsScreenInner() {
                         style={styles.avatar}
                         contentFit="cover"
                         cachePolicy="memory-disk"
+                        recyclingKey={item.from_user.avatar_url}
                       />
                     ) : (
                       <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted }]}>

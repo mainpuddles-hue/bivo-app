@@ -61,6 +61,14 @@ serve(async (req) => {
     }
     const { platform, product_id, receipt_data, transaction_id } = body
 
+    // 2b. Validate receipt_data size (prevent storage DoS)
+    const MAX_RECEIPT_SIZE = 65536
+    if (receipt_data && (typeof receipt_data !== 'string' || receipt_data.length > MAX_RECEIPT_SIZE)) {
+      return new Response(JSON.stringify({ error: 'receipt_data invalid or too large' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // 3. Validate platform
     if (!VALID_PLATFORMS.includes(platform)) {
       return new Response(JSON.stringify({ error: 'Invalid platform' }), {
@@ -321,8 +329,14 @@ async function validateAppleReceipt(
   }
   let result = await res.json()
 
-  // Status 21007 means receipt is from sandbox — retry against sandbox endpoint
+  // Status 21007 means receipt is from sandbox — reject in production
   if (result.status === 21007) {
+    const env = Deno.env.get('ENVIRONMENT') ?? 'production'
+    if (env === 'production') {
+      details.error = 'Sandbox receipt rejected in production'
+      details.apple_status = 21007
+      return false
+    }
     const sandboxController = new AbortController()
     const sandboxTimeout = setTimeout(() => sandboxController.abort(), 15000)
     try {

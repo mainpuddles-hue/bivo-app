@@ -28,6 +28,9 @@ import * as Haptics from 'expo-haptics'
 import type { CityEvent, LocalPlace } from '@/lib/types'
 import { getCityEventName } from '@/lib/eventHelpers'
 import { haversineKm, isInCityBounds } from '@/lib/geo'
+
+// Helsinki default bounds — module-level constant
+const HKI_BOUNDS = { south: 60.14, north: 60.27, west: 24.83, east: 25.20 } as const
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
 import { rankEvents } from '@/lib/eventAlgorithm'
@@ -229,12 +232,10 @@ function ExploreScreenInner() {
   const placesCount = places.length
 
   // ── Out-of-area detection ──
-  // Helsinki default bounds
-  const HKI_BOUNDS = useMemo(() => ({ south: 60.14, north: 60.27, west: 24.83, east: 25.20 }), [])
   const isOutOfArea = useMemo(() => {
     if (!userLocation) return false
     return !isInCityBounds(userLocation.latitude, userLocation.longitude, HKI_BOUNDS)
-  }, [userLocation, HKI_BOUNDS])
+  }, [userLocation])
 
   // ── Sorted & filtered places with distance ──
   const sortedPlaces = useMemo(() => {

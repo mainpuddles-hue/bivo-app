@@ -50,6 +50,8 @@ export function MapFilters({
               }]}
               hitSlop={8}
               onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange('all'); onSubCategoryChange(null); onTimeFilterChange('all') }}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.back')}
             >
               <ArrowLeft size={14} color={colors.primaryForeground} />
               <Text style={[styles.backPillText, { color: colors.primaryForeground }]}>
@@ -70,6 +72,9 @@ export function MapFilters({
                 ]}
                 hitSlop={8}
                 onPress={() => { try { Haptics.selectionAsync() } catch {} onTimeFilterChange(timeFilter === tf.key ? 'all' : tf.key) }}
+                accessibilityRole="button"
+                accessibilityLabel={t(tf.labelKey)}
+                accessibilityState={{ selected: timeFilter === tf.key }}
               >
                 <Text style={[styles.filterPillText, { color: timeFilter === tf.key ? colors.primaryForeground : colors.foreground }]}>
                   {t(tf.labelKey)}
@@ -94,6 +99,9 @@ export function MapFilters({
                     ]}
                     hitSlop={8}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t(sc.labelKey)}
+                    accessibilityState={{ selected: isActive }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                       {t(sc.labelKey)} ({count})
@@ -118,6 +126,9 @@ export function MapFilters({
                     ]}
                     hitSlop={8}
                     onPress={() => { try { Haptics.selectionAsync() } catch {} onSubCategoryChange(subCategory === sc.key ? null : sc.key) }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t(sc.labelKey)}
+                    accessibilityState={{ selected: isActive }}
                   >
                     <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                       {t(sc.labelKey)} ({count})
@@ -148,6 +159,9 @@ export function MapFilters({
                 ]}
                 hitSlop={8}
                 onPress={() => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} onFilterChange(f.key); onSubCategoryChange(null); onTimeFilterChange('all') }}
+                accessibilityRole="button"
+                accessibilityLabel={`${f.label} (${counts[f.key]})`}
+                accessibilityState={{ selected: isActive }}
               >
                 <Text style={[styles.filterPillText, { color: isActive ? colors.primaryForeground : colors.foreground }]}>
                   {f.label} ({counts[f.key]}){f.hasSubFilter ? ' \u25B8' : ''}

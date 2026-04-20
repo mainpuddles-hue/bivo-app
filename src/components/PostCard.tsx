@@ -460,14 +460,6 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                     setLiked(!wasLiked) // actually it WAS already liked/unliked
                   }
                 } else {
-                  // Sync count from source of truth
-                  const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id)
-                  if (realCount != null) {
-                    setLikeCount(realCount)
-                    // Fire-and-forget: sync denormalized count on posts table
-                    ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', post.id).then(() => {}).catch(() => {})
-                  }
-
                   if (!wasLiked) {
                     onInteraction?.(post.id, 'like')
                     // Notification (fire-and-forget)

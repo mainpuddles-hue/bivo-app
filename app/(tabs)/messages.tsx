@@ -382,10 +382,10 @@ export default function MessagesScreen() {
     return list
   }, [conversations, showArchived, searchQuery, pinnedIds])
 
-  const isOnline = (lastActive: string | null | undefined) => {
+  const isOnline = useCallback((lastActive: string | null | undefined) => {
     if (!lastActive) return false
     return Date.now() - new Date(lastActive).getTime() < 5 * 60 * 1000
-  }
+  }, [])
 
   const totalUnread = useMemo(() => {
     return conversations.reduce((sum, c) => sum + (c.unread_count ?? 0), 0)

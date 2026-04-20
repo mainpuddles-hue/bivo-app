@@ -12,7 +12,8 @@ serve(async (req) => {
   try {
     // Auth: only allow cron calls with the correct secret
     const cronSecret = Deno.env.get('CRON_SECRET')
-    if (req.headers.get('x-cron-secret') !== cronSecret) {
+    const providedSecret = req.headers.get('x-cron-secret')
+    if (!cronSecret || !providedSecret || providedSecret !== cronSecret) {
       return new Response('Unauthorized', { status: 401, headers: corsHeaders })
     }
 

@@ -36,8 +36,8 @@ serve(async () => {
     if (error) throw error
     checks.database = { status: 'ok', latency: Date.now() - dbStart }
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    checks.database = { status: 'error', error: msg }
+    console.error('[health-check] DB:', err instanceof Error ? err.message : err)
+    checks.database = { status: 'error', error: 'database_unavailable' }
   }
 
   // Storage check
@@ -47,8 +47,8 @@ serve(async () => {
     if (error) throw error
     checks.storage = { status: 'ok', latency: Date.now() - stStart }
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    checks.storage = { status: 'error', error: msg }
+    console.error('[health-check] Storage:', err instanceof Error ? err.message : err)
+    checks.storage = { status: 'error', error: 'storage_unavailable' }
   }
 
   // Auth check
@@ -59,8 +59,8 @@ serve(async () => {
     if (error) throw error
     checks.auth = { status: 'ok', latency: Date.now() - authStart }
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    checks.auth = { status: 'error', error: msg }
+    console.error('[health-check] Auth:', err instanceof Error ? err.message : err)
+    checks.auth = { status: 'error', error: 'auth_unavailable' }
   }
 
   const allOk = Object.values(checks).every((c) => c.status === 'ok')

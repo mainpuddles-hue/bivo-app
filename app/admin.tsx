@@ -78,21 +78,23 @@ function AdminScreenInner() {
     unreviewedFlags: 0,
   })
 
-  // Check admin status
+  // Check admin status — redirect non-admins
   useEffect(() => {
     async function checkAdmin() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setIsAdmin(false); setLoading(false); return }
+      if (!user) { router.replace('/(auth)/login'); return }
       const { data } = await supabase
         .from('profiles')
         .select('is_admin')
         .eq('id', user.id)
         .maybeSingle()
-      setIsAdmin(!!(data as any)?.is_admin)
+      const admin = !!(data as any)?.is_admin
+      if (!admin) { router.back(); return }
+      setIsAdmin(true)
       setLoading(false)
     }
     checkAdmin()
-  }, [supabase])
+  }, [supabase, router])
 
   // Load data for active tab
   const loadData = useCallback(async () => {

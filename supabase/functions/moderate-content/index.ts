@@ -169,8 +169,22 @@ serve(async (req) => {
       })
     }
 
+    // Verify post ownership before allowing auto-hide actions
+    if (post_id) {
+      const { data: postCheck } = await supabase.from('posts').select('user_id').eq('id', post_id).maybeSingle()
+      if (!postCheck || postCheck.user_id !== user_id) {
+        return new Response(JSON.stringify({ error: 'Post not found or not owned by caller' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
+    // Cap input length to prevent ReDoS on regex patterns
+    const safeTitle = (title ?? '').slice(0, 500)
+    const safeDesc = (description ?? '').slice(0, 5000)
+
     // Run text moderation
-    const result = moderateText(title ?? '', description ?? '')
+    const result = moderateText(safeTitle, safeDesc)
 
     // Check for duplicate/repeat posting (same user, similar title in last hour)
     if (user_id) {

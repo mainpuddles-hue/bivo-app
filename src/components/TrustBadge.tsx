@@ -68,7 +68,6 @@ export function TrustProgress({ level, nextTierHints, score = 0, factors = {}, o
   const { t } = useI18n()
 
   const scoreColor = getScoreColor(score, colors)
-  const factorEntries = Object.entries(factors)
 
   return (
     <View style={[styles.progress, { backgroundColor: colors.card, borderColor: colors.border }]}>

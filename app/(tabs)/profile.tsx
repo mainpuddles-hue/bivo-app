@@ -9,8 +9,8 @@ import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import {
-  Settings, LogOut, LogIn, MapPin, Star, Users, Pencil, Camera, X,
-  Crown, Heart, FileText, CalendarDays, Package, ChevronRight,
+  Settings, LogOut, LogIn, Star, Pencil, Camera, X,
+  Crown, Heart, FileText, CalendarDays, ChevronRight,
   Zap, RotateCcw, XCircle, Trash2, Building2, RefreshCw,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
@@ -122,12 +122,13 @@ export default function ProfileScreen() {
     setFollowingCount(followingRes.count ?? 0)
     setSavedCount(savedRes.count ?? 0)
 
-      // Reviews received — fetch all for correct average, display latest 10
+      // Reviews received — fetch up to 100 for average, display latest 10
       const { data: revs } = await supabase
         .from('reviews')
         .select('*, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
         .eq('reviewed_id', user.id)
         .order('created_at', { ascending: false })
+        .limit(100)
       const allRevs = (revs ?? []) as any[]
       setReviews(allRevs.slice(0, 10) as unknown as Review[])
       if (allRevs.length > 0) {
@@ -271,17 +272,17 @@ export default function ProfileScreen() {
     if (activeTab === 'posts' && !allPostsLoaded) loadAllPosts()
   }, [activeTab, allPostsLoaded, loadAllPosts])
 
-  // Post status helpers
-  const getPostStatus = useCallback((post: Post): 'active' | 'expired' | 'closed' => {
+  // Post status helpers — pure function, no closure deps
+  const getPostStatus = (post: Post): 'active' | 'expired' | 'closed' => {
     if (!post.is_active) return 'closed'
     if (post.expires_at && new Date(post.expires_at) < new Date()) return 'expired'
     return 'active'
-  }, [])
+  }
 
   const filteredPosts = useMemo(() => {
     const base = postFilter === 'all' ? allPosts : allPosts.filter(p => getPostStatus(p) === postFilter)
     return base
-  }, [allPosts, postFilter, getPostStatus])
+  }, [allPosts, postFilter])
 
   // Paginated slice — avoids rendering 100+ items at once in ScrollView
   const visiblePosts = useMemo(() => filteredPosts.slice(0, visiblePostCount), [filteredPosts, visiblePostCount])

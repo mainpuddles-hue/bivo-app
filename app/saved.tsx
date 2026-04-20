@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, Pressable,
   StyleSheet, Alert, Dimensions,
@@ -196,24 +196,26 @@ function SavedScreenInner() {
   }
 
   // Tab definitions
-  const tabs: { key: SavedTab; label: string; count: number }[] = [
+  const tabs = useMemo((): { key: SavedTab; label: string; count: number }[] => [
     { key: 'all', label: locale === 'fi' ? 'Kaikki' : locale === 'sv' ? 'Alla' : 'All', count: posts.length + events.length },
     { key: 'posts', label: t('saved.tabPosts'), count: posts.length },
     { key: 'events', label: t('saved.tabEvents'), count: events.length },
-  ]
+  ], [locale, posts.length, events.length, t])
 
   // Items to display based on active tab
   const showPosts = activeTab === 'all' || activeTab === 'posts'
   const showEvents = activeTab === 'all' || activeTab === 'events'
   const isEmpty = (showPosts ? posts.length : 0) + (showEvents ? events.length : 0) === 0
 
-  // Build pairs for 2-column grid layout of posts
-  const postRows: Post[][] = []
-  if (showPosts) {
+  // Build pairs for 2-column grid layout of posts — memoized
+  const postRows = useMemo(() => {
+    if (!showPosts) return []
+    const rows: Post[][] = []
     for (let i = 0; i < posts.length; i += 2) {
-      postRows.push(posts.slice(i, i + 2))
+      rows.push(posts.slice(i, i + 2))
     }
-  }
+    return rows
+  }, [showPosts, posts])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -348,6 +350,8 @@ function SavedScreenInner() {
                           style={s.gridImage}
                           contentFit="cover"
                           transition={200}
+                          cachePolicy="memory-disk"
+                          recyclingKey={imageUri}
                         />
                       ) : (
                         <View style={[s.gridImagePlaceholder, { backgroundColor: colors.muted }]}>

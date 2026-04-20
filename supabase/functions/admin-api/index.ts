@@ -102,6 +102,10 @@ serve(async (req) => {
         if (!report_id || !resolution) {
           return jsonResponse({ error: 'report_id and resolution required' }, 400)
         }
+        const VALID_RESOLUTIONS = ['resolved', 'dismissed', 'escalated', 'actioned']
+        if (!VALID_RESOLUTIONS.includes(resolution)) {
+          return jsonResponse({ error: `Invalid resolution. Must be one of: ${VALID_RESOLUTIONS.join(', ')}` }, 400)
+        }
         const { error } = await supabase
           .from('reports')
           .update({ status: resolution })

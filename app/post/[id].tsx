@@ -152,25 +152,26 @@ function PostDetailScreenInner() {
         setIsSaved(!!saveRes.data)
       }
 
-      // Fetch comments (including parent_id for threading)
-      const { data: cmts } = await supabase
-        .from('post_comments')
-        .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
-        .eq('post_id', id)
-        .order('created_at', { ascending: true })
-      setComments((cmts ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
-
-      if (data) {
-        const { data: related } = await supabase
-          .from('posts')
-          .select('id, type, title, image_url, location, created_at')
-          .eq('type', (data as any).type)
-          .eq('is_active', true)
-          .neq('id', id)
-          .order('created_at', { ascending: false })
-          .limit(4)
-        setRelatedPosts((related ?? []) as any[])
-      }
+      // Fetch comments + related posts in parallel
+      const [cmtsRes, relatedRes] = await Promise.all([
+        supabase
+          .from('post_comments')
+          .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
+          .eq('post_id', id)
+          .order('created_at', { ascending: true }),
+        data
+          ? supabase
+              .from('posts')
+              .select('id, type, title, image_url, location, created_at')
+              .eq('type', (data as any).type)
+              .eq('is_active', true)
+              .neq('id', id)
+              .order('created_at', { ascending: false })
+              .limit(4)
+          : Promise.resolve({ data: null }),
+      ])
+      setComments((cmtsRes.data ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
+      if (relatedRes.data) setRelatedPosts(relatedRes.data as any[])
     } catch (err: any) {
       if (__DEV__) console.error('[PostDetail] loadPost error:', err)
       setLoadError(t('common.error'))

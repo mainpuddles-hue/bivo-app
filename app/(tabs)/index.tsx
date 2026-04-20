@@ -201,7 +201,7 @@ function FeedScreenInner() {
         renderItem={renderPost}
         keyExtractor={item => item.id}
         numColumns={2}
-        columnWrapperStyle={remainingPosts.length > 0 ? { gap: 10, paddingHorizontal: 12 } : undefined}
+        columnWrapperStyle={remainingPosts.length > 0 ? styles.columnWrapper : undefined}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 10 }}
         ListHeaderComponent={
           <View>
@@ -337,6 +337,7 @@ function FeedScreenInner() {
                         style={styles.heroImage}
                         contentFit="cover"
                         transition={300}
+                        recyclingKey={heroImageUrl}
                       />
                     ) : (
                       <View style={[styles.heroImage, { backgroundColor: isDark ? '#2A2825' : '#F0EEE9' }]}>
@@ -481,6 +482,7 @@ function FeedScreenInner() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  columnWrapper: { gap: 10, paddingHorizontal: 12 },
 
   // ── Top area ──
   topArea: {
