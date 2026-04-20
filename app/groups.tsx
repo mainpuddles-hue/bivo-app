@@ -88,6 +88,7 @@ export default function GroupsScreen() {
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
 
   // Create modal state
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -129,6 +130,7 @@ export default function GroupsScreen() {
     }
 
     try {
+      setFetchError(false)
       // My groups
       const { data: myData, error: myError } = await supabase
         .from('groups')
@@ -166,6 +168,7 @@ export default function GroupsScreen() {
       setSuggestedGroups(suggested)
     } catch (err) {
       if (__DEV__) console.warn('[groups] fetchGroups failed:', err)
+      setFetchError(true)
       setMyGroups([])
       setSuggestedGroups([])
     } finally {
@@ -437,6 +440,26 @@ export default function GroupsScreen() {
             <Text style={[s.sectionTitle, { color: colors.mutedForeground, marginTop: 24 }]}>{t('groups.suggested')}</Text>
             {[4, 5].map((i) => <GroupSkeleton key={i} colors={colors} />)}
           </ScrollView>
+        ) : fetchError ? (
+          <View style={{ alignItems: 'center', paddingTop: 60, gap: 12 }}>
+            <Users size={40} color={colors.mutedForeground} />
+            <Text style={{ color: colors.foreground, fontFamily: fonts.headingSemi, fontSize: 16 }}>
+              {t('common.error')}
+            </Text>
+            <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 14 }}>
+              {t('common.tryAgain')}
+            </Text>
+            <PressableOpacity
+              onPress={() => { setLoading(true); fetchGroups() }}
+              style={{ marginTop: 8, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, backgroundColor: colors.foreground }}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.retry')}
+            >
+              <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 14 }}>
+                {t('common.retry')}
+              </Text>
+            </PressableOpacity>
+          </View>
         ) : (
           <ScrollView
             style={s.scrollContent}

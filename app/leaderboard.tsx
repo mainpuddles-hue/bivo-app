@@ -53,6 +53,7 @@ export default function LeaderboardScreen() {
   const [users, setUsers] = useState<LeaderboardUser[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [isMonthlyData, setIsMonthlyData] = useState(false)
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
@@ -63,6 +64,7 @@ export default function LeaderboardScreen() {
 
   const fetchLeaderboard = useCallback(async (neighborhood?: string | null) => {
     try {
+      setFetchError(false)
       // Query user_points for this month's points to make the "this month" label accurate
       const monthStart = new Date()
       monthStart.setDate(1)
@@ -156,6 +158,7 @@ export default function LeaderboardScreen() {
       }
     } catch (err) {
       if (__DEV__) console.warn('[leaderboard] fetch failed:', err)
+      setFetchError(true)
       setUsers([])
     } finally {
       setLoading(false)
@@ -321,6 +324,26 @@ export default function LeaderboardScreen() {
       {loading ? (
         <View style={s.list}>
           {[0, 1, 2, 3, 4, 5, 6, 7].map(i => <LeaderboardRowSkeleton key={i} />)}
+        </View>
+      ) : fetchError ? (
+        <View style={s.emptyWrap}>
+          <Trophy size={40} color={colors.mutedForeground} />
+          <Text style={[s.emptyText, { color: colors.foreground }]}>
+            {t('common.error')}
+          </Text>
+          <Text style={[s.emptyText, { color: colors.mutedForeground }]}>
+            {t('common.tryAgain')}
+          </Text>
+          <PressableOpacity
+            onPress={() => { setLoading(true); fetchLeaderboard(filter === 'neighborhood' ? userNeighborhood : null) }}
+            style={{ marginTop: 12, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, backgroundColor: colors.foreground }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry')}
+          >
+            <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 14 }}>
+              {t('common.retry')}
+            </Text>
+          </PressableOpacity>
         </View>
       ) : (
         <FlatList

@@ -78,6 +78,8 @@ export const DiscoverySection = memo(function DiscoverySection({
           onPress={() => router.push('/map')}
           hitSlop={8}
           style={styles.showAllBtn}
+          accessibilityRole="button"
+          accessibilityLabel={t('nav.map') || 'Kartta'}
         >
           <Text style={[styles.showAllText, { color: colors.foreground }]}>
             {t('nav.map') || 'Kartta'}
@@ -101,6 +103,9 @@ export const DiscoverySection = memo(function DiscoverySection({
               key={place.id}
               onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`).catch(() => {})}
               style={styles.placeCompact}
+              accessibilityRole="button"
+              accessibilityLabel={`${place.name}, ${catLabel}`}
+              accessibilityHint={t('map.directions')}
             >
               <View style={[styles.placeCircle, { backgroundColor: `${catColor}26` }]}>
                 <Text style={[styles.placeCircleText, { color: catColor }]}>{firstLetter}</Text>
@@ -115,7 +120,12 @@ export const DiscoverySection = memo(function DiscoverySection({
           )
         })}
         {nearbyPlaces.length > 6 && (
-          <Pressable onPress={() => router.push('/map')} style={styles.placeCompact}>
+          <Pressable
+            onPress={() => router.push('/map')}
+            style={styles.placeCompact}
+            accessibilityRole="button"
+            accessibilityLabel={t('feed.showAll')}
+          >
             <View style={[styles.placeCircle, { backgroundColor: colors.muted }]}>
               <Text style={[styles.placeCircleText, { color: colors.mutedForeground }]}>+{nearbyPlaces.length - 6}</Text>
             </View>

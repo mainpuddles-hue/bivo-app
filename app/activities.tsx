@@ -190,6 +190,7 @@ function ActivitiesScreenInner() {
   const [refreshing, setRefreshing] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [filterCategory, setFilterCategory] = useState('all')
+  const [fetchError, setFetchError] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
 
   // ── Create form state ──
@@ -206,6 +207,7 @@ function ActivitiesScreenInner() {
   // ── Fetch activities ──
   const fetchActivities = useCallback(async () => {
     try {
+      setFetchError(false)
       const { getCachedUserId } = await import('@/lib/authCache')
       const cachedId = await getCachedUserId()
       if (cachedId) setUserId(cachedId)
@@ -218,35 +220,28 @@ function ActivitiesScreenInner() {
 
       if (error) {
         if (__DEV__) console.log('[activities] fetch error:', error.message)
+        setFetchError(true)
         return
       }
 
       let activityList = (data ?? []) as unknown as Activity[]
 
-      // Fetch member counts
+      // Fetch member counts + user memberships in parallel
       if (activityList.length > 0) {
         const ids = activityList.map(a => a.id)
-        const { data: memberData } = await supabase
-          .from('activity_members')
-          .select('activity_id')
-          .in('activity_id', ids)
+        const [{ data: memberData }, { data: myMemberships }] = await Promise.all([
+          supabase.from('activity_members').select('activity_id').in('activity_id', ids),
+          cachedId
+            ? supabase.from('activity_members').select('activity_id').eq('user_id', cachedId).in('activity_id', ids)
+            : Promise.resolve({ data: null }),
+        ])
 
         const countMap: Record<string, number> = {}
         ;(memberData ?? []).forEach((m: any) => {
           countMap[m.activity_id] = (countMap[m.activity_id] ?? 0) + 1
         })
 
-        // Check which ones the user is a member of
-        let memberSet = new Set<string>()
-        if (cachedId) {
-          const { data: myMemberships } = await supabase
-            .from('activity_members')
-            .select('activity_id')
-            .eq('user_id', cachedId)
-            .in('activity_id', ids)
-
-          memberSet = new Set((myMemberships ?? []).map((m: any) => m.activity_id))
-        }
+        const memberSet = new Set((myMemberships ?? []).map((m: any) => m.activity_id))
 
         activityList = activityList.map(a => ({
           ...a,
@@ -263,6 +258,7 @@ function ActivitiesScreenInner() {
       setActivities(activityList)
     } catch (err) {
       if (__DEV__) console.log('[activities] fetchActivities error:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -545,6 +541,25 @@ function ActivitiesScreenInner() {
       {loading ? (
         <View style={st.listPad}>
           <ActivitySkeleton colors={colors} />
+        </View>
+      ) : fetchError ? (
+        <View style={st.empty}>
+          <RefreshCw size={48} color={colors.mutedForeground} />
+          <Text style={[st.emptyTitle, { color: colors.foreground }]}>
+            {t('common.error')}
+          </Text>
+          <Text style={[st.emptyHint, { color: colors.mutedForeground }]}>
+            {t('common.tryAgain')}
+          </Text>
+          <PressableOpacity
+            onPress={() => { setLoading(true); fetchActivities() }}
+            style={[st.emptyBtn, { backgroundColor: colors.foreground }]}
+          >
+            <RefreshCw size={16} color={colors.background} />
+            <Text style={[st.emptyBtnText, { color: colors.background }]}>
+              {t('common.retry')}
+            </Text>
+          </PressableOpacity>
         </View>
       ) : (
         <FlatList
