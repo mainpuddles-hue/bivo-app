@@ -179,6 +179,7 @@ export default function CreateAdScreen() {
 
       const { data: ad, error: adError } = await (supabase.from('advertisements') as any).insert({
         user_id: profile.id,
+        advertiser_id: profile.id,
         title: title.trim(),
         description: description.trim() || null,
         image_url: uploadedImageUrl,

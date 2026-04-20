@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check, Banknote, Search, BellOff, BellRing } from 'lucide-react-native'
+import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check, Banknote, Search, BellOff, BellRing, Megaphone } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -804,6 +804,24 @@ export default function SettingsScreen() {
               icon={<CreditCard size={16} color={colors.foreground} strokeWidth={1.8} />}
               label={t('payment.settings') ?? 'Payment methods'}
               onPress={() => router.push('/payment-settings' as any)}
+              colors={colors}
+              isDark={isDark}
+            />
+          )}
+          {FEATURES.PAYMENTS && (
+            <Row
+              icon={<CreditCard size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={t('payment.history') ?? 'Payment history'}
+              onPress={() => router.push('/payment-history' as any)}
+              colors={colors}
+              isDark={isDark}
+            />
+          )}
+          {FEATURES.AD_CAMPAIGNS && profile?.is_business && (
+            <Row
+              icon={<Megaphone size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={t('ads.yourAds') ?? 'Your ads'}
+              onPress={() => router.push('/create-ad' as any)}
               colors={colors}
               isDark={isDark}
             />

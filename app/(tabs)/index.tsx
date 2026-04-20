@@ -17,6 +17,7 @@ import { useSessionManager } from '@/hooks/useSessionManager'
 import { useToast } from '@/components/Toast'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCardGrid } from '@/components/PostCardGrid'
+import { AdCard, type Ad } from '@/components/AdCard'
 import { AlertBanner } from '@/components/AlertBanner'
 import { PostCardSkeleton, FeedLoadMoreSkeleton } from '@/components/SkeletonLoaders'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
@@ -24,6 +25,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { DiscoveryStack } from '@/components/DiscoveryStack'
 import { FeedMapView } from '@/components/FeedMapView'
 import { useSupabase } from '@/hooks/useSupabase'
+import { FEATURES } from '@/lib/featureFlags'
 import type { Post, PostType } from '@/lib/types'
 
 function FeedScreenInner() {
@@ -94,6 +96,35 @@ function FeedScreenInner() {
       setInlineEvents(eventPosts)
     }).catch(() => {})
   }, [supabase])
+
+  // Fetch active ads for feed display
+  const [feedAds, setFeedAds] = useState<Ad[]>([])
+  useEffect(() => {
+    if (!FEATURES.AD_CAMPAIGNS) return
+    const now = new Date().toISOString()
+    Promise.resolve(
+      supabase
+        .from('advertisements')
+        .select('id, user_id, title, description, image_url, link_url, cta_text, target_naapurusto, start_date, end_date, status, created_at')
+        .eq('status', 'active')
+        .lte('start_date', now)
+        .gte('end_date', now)
+        .order('created_at', { ascending: false })
+        .limit(3)
+    ).then(({ data }) => {
+      if (!data || data.length === 0) return
+      // Filter by neighborhood if user has one
+      const nh = feed.userNeighborhood
+      const filtered = nh
+        ? (data as any[]).filter((a: any) => !a.target_naapurusto || a.target_naapurusto === nh)
+        : (data as any[]).filter((a: any) => !a.target_naapurusto)
+      const ads: Ad[] = (filtered.length > 0 ? filtered : (data as any[]).slice(0, 1)).map((a: any) => ({
+        ...a,
+        _isAd: true as const,
+      }))
+      setFeedAds(ads)
+    }).catch(() => {})
+  }, [supabase, feed.userNeighborhood])
 
   // NOTE: User profile/greeting removed — mockup 05 uses location-based header
 
@@ -215,30 +246,44 @@ function FeedScreenInner() {
   )
   const remainingPosts = useMemo(() => {
     const posts = visiblePosts.slice(DISCOVERY_COUNT)
-    if (inlineEvents.length === 0) return posts
-    // Inject events at positions 6, 12, 18
-    const result: Post[] = []
+    if (inlineEvents.length === 0 && feedAds.length === 0) return posts
+    // Inject events at positions 6, 12, 18 and ads at positions 4, 10
+    const result: (Post | Ad)[] = []
     let eventIdx = 0
+    let adIdx = 0
     for (let i = 0; i < posts.length; i++) {
+      if ((i === 4 || i === 10) && adIdx < feedAds.length) {
+        result.push(feedAds[adIdx++])
+      }
       if ((i === 6 || i === 12 || i === 18) && eventIdx < inlineEvents.length) {
         result.push(inlineEvents[eventIdx++])
       }
       result.push(posts[i])
     }
     return result
-  }, [visiblePosts, inlineEvents])
+  }, [visiblePosts, inlineEvents, feedAds])
 
-  const renderPost = useCallback(({ item, index }: { item: Post; index: number }) => (
-    <PostCardGrid
-      post={item}
-      userId={feed.currentUserId}
-      onInteraction={trackInteraction}
-      index={index}
-      sortBy={feed.sortBy}
-      followedIds={feed.followedIds}
-      viewCount={viewCounts[item.id]}
-    />
-  ), [feed.currentUserId, trackInteraction, feed.sortBy, feed.followedIds, viewCounts])
+  const renderPost = useCallback(({ item, index }: { item: Post | Ad; index: number }) => {
+    // Render AdCard for ad items (full width — spans both columns)
+    if ('_isAd' in item && item._isAd) {
+      return (
+        <View style={{ width: '100%', paddingHorizontal: 12 }}>
+          <AdCard ad={item as Ad} />
+        </View>
+      )
+    }
+    return (
+      <PostCardGrid
+        post={item as Post}
+        userId={feed.currentUserId}
+        onInteraction={trackInteraction}
+        index={index}
+        sortBy={feed.sortBy}
+        followedIds={feed.followedIds}
+        viewCount={viewCounts[(item as Post).id]}
+      />
+    )
+  }, [feed.currentUserId, trackInteraction, feed.sortBy, feed.followedIds, viewCounts])
 
   // ── Render ──
   return (
@@ -290,7 +335,7 @@ function FeedScreenInner() {
       <FlatList
         data={remainingPosts}
         renderItem={renderPost}
-        keyExtractor={item => item.id}
+        keyExtractor={item => ('_isAd' in item ? `ad-${item.id}` : item.id)}
         numColumns={2}
         columnWrapperStyle={remainingPosts.length > 0 ? styles.columnWrapper : undefined}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 10 }}

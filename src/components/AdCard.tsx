@@ -38,7 +38,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
     try {
       await (supabase.from('ad_impressions') as any).insert({
         ad_id: ad.id,
-        type: 'impression',
+        impression_type: 'impression',
       })
     } catch {
       // Non-critical — ignore
@@ -50,7 +50,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
     try {
       await (supabase.from('ad_impressions') as any).insert({
         ad_id: ad.id,
-        type: 'click',
+        impression_type: 'click',
       })
     } catch {
       // Non-critical

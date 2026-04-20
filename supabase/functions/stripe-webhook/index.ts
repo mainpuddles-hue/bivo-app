@@ -111,8 +111,28 @@ serve(async (req) => {
           })
         }
 
+        // Handle ad campaign activation
+        if (type === 'ad_campaign') {
+          const adId = session.metadata?.ad_id
+          if (adId) {
+            const { error: adUpdateErr } = await supabase
+              .from('advertisements')
+              .update({
+                status: 'active',
+                stripe_session_id: session.id,
+              })
+              .eq('id', adId)
+              .eq('status', 'pending_payment')
+            if (adUpdateErr) {
+              console.error(`[webhook] CRITICAL: failed to activate ad ${adId}:`, adUpdateErr.message)
+            } else {
+              console.log(`[webhook] Ad campaign activated: ${adId}`)
+            }
+          }
+        }
+
         // Send notification to seller
-        if (seller_id) {
+        if (seller_id && type !== 'ad_campaign') {
           await supabase.from('notifications').insert({
             user_id: seller_id,
             from_user_id: buyer_id,
