@@ -16,7 +16,6 @@ import { useFeedData, type FeedSortBy } from '@/hooks/useFeedData'
 import { useInteractionTracker } from '@/hooks/useInteractionTracker'
 import { usePresence } from '@/hooks/usePresence'
 import { useSessionManager } from '@/hooks/useSessionManager'
-import { useSupabase } from '@/hooks/useSupabase'
 import { useToast } from '@/components/Toast'
 import { FilterBar } from '@/components/FilterBar'
 import { PostCardGrid } from '@/components/PostCardGrid'
@@ -24,7 +23,6 @@ import { AlertBanner } from '@/components/AlertBanner'
 import { PostCardSkeleton, FeedLoadMoreSkeleton } from '@/components/SkeletonLoaders'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { getCachedUserId } from '@/lib/authCache'
 import { getImageUrl } from '@/lib/imageUtils'
 import { haversineKm } from '@/lib/geo'
 import { CATEGORIES } from '@/lib/constants'
@@ -36,8 +34,6 @@ function FeedScreenInner() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const params = useLocalSearchParams<{ openNeighborhoodPicker?: string }>()
-  const supabase = useSupabase()
-
   const toast = useToast()
   const welcomeShownRef = useRef(false)
 
@@ -46,31 +42,7 @@ function FeedScreenInner() {
   const { onlineCount } = usePresence(feed.currentUserId, feed.userNeighborhood)
   useSessionManager(feed.currentUserId)
 
-  // ── User profile for greeting ──
-  const [userName, setUserName] = useState<string | null>(null)
-  const [userAvatar, setUserAvatar] = useState<string | null>(null)
-
-  useEffect(() => {
-    let mounted = true
-    getCachedUserId().then(async (id) => {
-      if (!id || !mounted) return
-      const { data } = await (supabase.from('profiles') as any)
-        .select('name, avatar_url')
-        .eq('id', id)
-        .maybeSingle()
-      if (mounted && data) {
-        setUserName(data.name ?? null)
-        setUserAvatar(data.avatar_url ?? null)
-      }
-    }).catch(() => {})
-    return () => { mounted = false }
-  }, [supabase])
-
-  // First name for greeting
-  const firstName = useMemo(() => {
-    if (!userName) return null
-    return userName.split(' ')[0]
-  }, [userName])
+  // NOTE: User profile/greeting removed — mockup 05 uses location-based header
 
   // Welcome toast on first feed load (shown once per install)
   useEffect(() => {
@@ -235,82 +207,51 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-              {/* 1. Greeting row */}
-              <View style={styles.greetingRow}>
-                <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.greetingLeft} hitSlop={8}>
-                  <Text style={[styles.greetingTitle, { color: colors.foreground }]}>
-                    {firstName ? `Hei, ${firstName}` : (t('feed.nearbyNow') ?? 'Lähellä nyt')}
-                  </Text>
-                  <Text style={[styles.greetingSubtitle, { color: colors.mutedForeground }]}>
+              {/* 1. Header row — Monochrome 05 */}
+              <View style={styles.headerRow}>
+                <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.headerLeft} hitSlop={8}>
+                  <Text style={[styles.headerLocation, { color: colors.mutedForeground }]}>
                     {feed.userNeighborhood ?? 'Helsinki'}
-                    {onlineCount > 0 ? ` · ${t('post.neighborsOnline', { count: onlineCount }) ?? `${onlineCount} naapuria paikalla`}` : ''}
+                    {onlineCount > 0 ? ` · ${onlineCount} ${t('feed.online') ?? 'paikalla'}` : ''}
+                  </Text>
+                  <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+                    {t('feed.nearbyNow') ?? 'Lähellä nyt'}
                   </Text>
                 </PressableOpacity>
-                <PressableOpacity
-                  onPress={() => router.push('/(tabs)/profile')}
-                  style={[styles.avatarCircle, { borderColor: colors.border }]}
-                  accessibilityLabel={t('nav.profile') ?? 'Profile'}
-                  accessibilityRole="button"
-                >
-                  {userAvatar ? (
-                    <Image
-                      source={{ uri: getImageUrl(userAvatar, 'thumbnail') ?? undefined }}
-                      style={styles.avatarImage}
-                      contentFit="cover"
-                      transition={200}
-                    />
-                  ) : (
-                    <View style={[styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
-                      <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>
-                        {firstName ? firstName[0].toUpperCase() : '?'}
-                      </Text>
-                    </View>
-                  )}
-                </PressableOpacity>
+                <View style={styles.headerRight}>
+                  <PressableOpacity
+                    onPress={() => router.push('/search')}
+                    style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                    accessibilityLabel={t('common.search')}
+                    accessibilityRole="button"
+                  >
+                    <Search size={16} color={colors.foreground} strokeWidth={2} />
+                  </PressableOpacity>
+                  <PressableOpacity
+                    onPress={() => {
+                      const labels = SORT_OPTIONS.map(o => o.label).concat(t('common.cancel') ?? 'Cancel')
+                      if (Platform.OS === 'ios') {
+                        ActionSheetIOS.showActionSheetWithOptions(
+                          { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
+                          (idx) => { if (idx < SORT_OPTIONS.length) handleSortChangeWithHaptics(SORT_OPTIONS[idx].key) },
+                        )
+                      } else {
+                        Alert.alert(t('feed.sort') ?? 'Sort', '', SORT_OPTIONS.map(o => ({
+                          text: o.label + (feed.sortBy === o.key ? ' ✓' : ''),
+                          onPress: () => handleSortChangeWithHaptics(o.key),
+                        })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
+                      }
+                    }}
+                    style={[styles.circleBtnDark, { backgroundColor: colors.foreground }]}
+                    accessibilityLabel={t('feed.sort') ?? 'Sort'}
+                    accessibilityRole="button"
+                  >
+                    <SlidersHorizontal size={16} color={colors.background} strokeWidth={2} />
+                  </PressableOpacity>
+                </View>
               </View>
 
-              {/* 2. Search + filter row */}
-              <View style={styles.searchRow}>
-                <PressableOpacity
-                  onPress={() => router.push('/search')}
-                  style={[styles.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  accessibilityLabel={t('common.search')}
-                  accessibilityRole="button"
-                >
-                  <Search size={16} color={colors.mutedForeground} strokeWidth={2} />
-                  <Text style={[styles.searchPlaceholder, { color: colors.mutedForeground }]}>
-                    {t('search.placeholder') ?? 'Etsi mitä tarvitset…'}
-                  </Text>
-                </PressableOpacity>
-                <PressableOpacity
-                  onPress={() => {
-                    const labels = SORT_OPTIONS.map(o => o.label).concat(t('common.cancel') ?? 'Cancel')
-                    if (Platform.OS === 'ios') {
-                      ActionSheetIOS.showActionSheetWithOptions(
-                        { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
-                        (idx) => { if (idx < SORT_OPTIONS.length) handleSortChangeWithHaptics(SORT_OPTIONS[idx].key) },
-                      )
-                    } else {
-                      Alert.alert(t('feed.sort') ?? 'Sort', '', SORT_OPTIONS.map(o => ({
-                        text: o.label + (feed.sortBy === o.key ? ' ✓' : ''),
-                        onPress: () => handleSortChangeWithHaptics(o.key),
-                      })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
-                    }
-                  }}
-                  style={[styles.filterButton, { backgroundColor: colors.foreground }]}
-                  accessibilityLabel={t('feed.sort') ?? 'Sort'}
-                  accessibilityRole="button"
-                >
-                  <SlidersHorizontal size={16} color={colors.background} strokeWidth={2} />
-                </PressableOpacity>
-              </View>
-
-              {/* 3. Section title */}
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                {t('feed.whatDoToday') ?? 'Mitä teet tänään?'}
-              </Text>
-
-              {/* 4. Category pills */}
+              {/* 2. Category pills */}
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -546,96 +487,54 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  // 1. Greeting row
-  greetingRow: {
+  // 1. Header row — Monochrome 05
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 18,
+    marginBottom: 14,
   },
-  greetingLeft: {
+  headerLeft: {
     flex: 1,
     marginRight: 12,
   },
-  greetingTitle: {
+  headerLocation: {
+    fontSize: 11,
+    fontFamily: fonts.bodyMedium,
+    fontWeight: '500',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+    marginBottom: 2,
+  },
+  headerTitle: {
     fontSize: 24,
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.5,
     lineHeight: 28,
-    marginBottom: 2,
   },
-  greetingSubtitle: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    letterSpacing: 0.1,
-    lineHeight: 16,
-  },
-  avatarCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  avatarImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  avatarPlaceholder: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-  },
-
-  // 2. Search + filter row
-  searchRow: {
+  headerRight: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
+    gap: 8,
   },
-  searchBar: {
-    flex: 1,
-    height: 48,
+  circleBtn: {
+    width: 40,
+    height: 40,
     borderRadius: 999,
-    borderWidth: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    gap: 10,
+    justifyContent: 'center',
+    borderWidth: 1,
   },
-  searchPlaceholder: {
-    fontSize: 14,
-    fontFamily: fonts.body,
-    lineHeight: 20,
-  },
-  filterButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  circleBtnDark: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // 3. Section title
-  sectionTitle: {
-    fontSize: 19,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.3,
-    lineHeight: 24,
-    marginBottom: 12,
-  },
-
-  // 4. Category pills
+  // 2. Category pills
   pillRow: {
     marginBottom: 18,
   },

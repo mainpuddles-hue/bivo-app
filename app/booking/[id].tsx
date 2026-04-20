@@ -2,15 +2,14 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
-  View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert,
+  View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert, TextInput,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
-import { Image } from 'expo-image'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ImageWithFallback } from '@/components/ImageWithFallback'
 import {
   ArrowLeft, MessageCircle, Package, ShoppingBag, CheckCircle, XCircle,
-  RotateCcw, Star, Calendar, Check,
+  RotateCcw, Star, Check, ChevronRight, AlertCircle,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -22,7 +21,6 @@ import { PressableOpacity } from '@/components/ui'
 import { fonts } from '@/lib/fonts'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
-import { SERVICE_FEE_RATE } from '@/lib/constants'
 
 type BookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
@@ -36,17 +34,14 @@ interface BookingData {
   total_amount: number
   service_fee: number
   notes?: string | null
-  // Rental fields
   start_date?: string
   end_date?: string
   daily_fee?: number
-  // Service fields
   service_price?: number
   completed_at?: string | null
-  // Joined data
   post?: { id: string; title: string; image_url: string | null } | null
   other_user?: { id: string; name: string; avatar_url: string | null } | null
-  other_user_role: string // 'lender' | 'borrower' | 'provider' | 'buyer'
+  other_user_role: string
   my_role: string
 }
 
@@ -62,25 +57,8 @@ const STATUS_KEYS: Record<BookingStatus, string> = {
   in_progress: 'service.statusInProgress',
 }
 
-function getStatusStyle(status: BookingStatus, colors: ReturnType<typeof useTheme>['colors']): { bg: string; text: string } {
-  switch (status) {
-    case 'active': case 'in_progress':
-      return { bg: colors.foreground, text: colors.primaryForeground }
-    case 'completed':
-      return { bg: colors.muted, text: colors.foreground }
-    case 'cancelled': case 'disputed':
-      return { bg: `${colors.destructive}14`, text: colors.destructive }
-    case 'refunded':
-      return { bg: colors.muted, text: colors.mutedForeground }
-    case 'pending': case 'confirmed': case 'paid':
-    default:
-      return { bg: colors.muted, text: colors.mutedForeground }
-  }
-}
-
-// Timeline steps for rental bookings
+// Timeline steps
 const RENTAL_STEPS: BookingStatus[] = ['pending', 'paid', 'confirmed', 'active', 'completed']
-// Timeline steps for service bookings
 const SERVICE_STEPS: BookingStatus[] = ['pending', 'paid', 'confirmed', 'in_progress', 'completed']
 
 function getStepIndex(status: BookingStatus, steps: BookingStatus[]): number {
@@ -88,8 +66,38 @@ function getStepIndex(status: BookingStatus, steps: BookingStatus[]): number {
   return idx >= 0 ? idx : -1
 }
 
+// ─── Helpers ───
+function getDaysBetween(start: string, end: string): number {
+  const s = new Date(start)
+  const e = new Date(end)
+  return Math.max(1, Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)))
+}
+
+function getDaysElapsed(start: string): number {
+  const s = new Date(start)
+  const now = new Date()
+  return Math.max(0, Math.ceil((now.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)))
+}
+
+function formatShortDate(dateStr: string, locale: string): string {
+  try {
+    const d = new Date(dateStr)
+    const days = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
+    const daysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const dayNames = locale === 'fi' ? days : daysEn
+    const day = dayNames[d.getDay()]
+    const date = d.getDate()
+    const month = d.getMonth() + 1
+    const hours = d.getHours().toString().padStart(2, '0')
+    const mins = d.getMinutes().toString().padStart(2, '0')
+    return `${day} ${date}.${month} · ${hours}.${mins}`
+  } catch {
+    return dateStr
+  }
+}
+
 function BookingDetailScreenInner() {
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -101,7 +109,12 @@ function BookingDetailScreenInner() {
   const [userId, setUserId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
 
-  // Feature flag gate — redirect if Payments are disabled
+  // Review state
+  const [reviewStars, setReviewStars] = useState(5)
+  const [reviewTags, setReviewTags] = useState<Set<string>>(new Set())
+  const [reviewComment, setReviewComment] = useState('')
+
+  // Feature flag gate
   useEffect(() => {
     if (!FEATURES.PAYMENTS) {
       router.replace('/(tabs)')
@@ -191,6 +204,7 @@ function BookingDetailScreenInner() {
     load()
   }, [id, supabase])
 
+  // ─── Messaging ───
   const messagingRef = useRef(false)
   const handleSendMessage = useCallback(async () => {
     if (messagingRef.current) return
@@ -217,15 +231,14 @@ function BookingDetailScreenInner() {
     }
   }, [userId, booking, supabase, router])
 
-  // Actions
+  // ─── Status actions ───
   const updatingRef = useRef(false)
   const updateBookingStatus = useCallback(async (newStatus: BookingStatus) => {
     if (!booking || !userId) return
     if (updatingRef.current) return
-    // Authorization: only the correct role can perform each action
     if (newStatus === 'confirmed' && booking.my_role !== 'lender' && booking.my_role !== 'provider') return
     if (newStatus === 'completed' && booking.my_role !== 'lender' && booking.my_role !== 'provider') return
-    if (newStatus === 'cancelled' && booking.my_role !== 'borrower' && booking.my_role !== 'buyer' && booking.my_role !== 'lender' && booking.my_role !== 'provider') return
+    if (newStatus === 'cancelled' && !['borrower', 'buyer', 'lender', 'provider'].includes(booking.my_role)) return
     updatingRef.current = true
     setActionLoading(true)
     try {
@@ -246,7 +259,7 @@ function BookingDetailScreenInner() {
       setActionLoading(false)
       updatingRef.current = false
     }
-  }, [booking, supabase, t])
+  }, [booking, supabase, t, userId])
 
   const handleConfirm = useCallback(() => updateBookingStatus('confirmed'), [updateBookingStatus])
   const handleCancel = useCallback(() => {
@@ -257,315 +270,667 @@ function BookingDetailScreenInner() {
   }, [t, updateBookingStatus])
   const handleComplete = useCallback(() => updateBookingStatus('completed'), [updateBookingStatus])
   const handleStartWork = useCallback(() => updateBookingStatus('in_progress'), [updateBookingStatus])
-  const handleLeaveReview = useCallback(() => {
-    if (booking?.other_user?.id) {
-      router.push(`/profile/${booking.other_user.id}` as any)
+
+  const handleSubmitReview = useCallback(async () => {
+    if (!booking?.other_user?.id || !userId) return
+    setActionLoading(true)
+    try {
+      await (supabase.from('reviews') as any).insert({
+        reviewer_id: userId,
+        reviewee_id: booking.other_user.id,
+        rating: reviewStars,
+        comment: reviewComment || null,
+        booking_id: booking.id,
+        tags: Array.from(reviewTags),
+      })
+      Alert.alert(t('common.success'))
+      router.back()
+    } catch {
+      Alert.alert(t('common.error'))
+    } finally {
+      setActionLoading(false)
     }
-  }, [booking, router])
+  }, [booking, userId, reviewStars, reviewComment, reviewTags, supabase, t, router])
 
   const steps = useMemo(() => booking?.type === 'service' ? SERVICE_STEPS : RENTAL_STEPS, [booking?.type])
   const currentStepIndex = useMemo(() => {
     if (!booking) return -1
-    if (booking.status === 'cancelled' || booking.status === 'disputed' || booking.status === 'refunded') return -1
+    if (['cancelled', 'disputed', 'refunded'].includes(booking.status)) return -1
     return getStepIndex(booking.status, steps)
   }, [booking, steps])
 
-  // Determine action buttons
   const canConfirm = booking?.my_role === 'lender' && booking?.status === 'pending'
     || booking?.my_role === 'provider' && booking?.status === 'paid'
   const canCancel = booking?.status === 'pending' || booking?.status === 'paid' || booking?.status === 'confirmed'
-  const canComplete = (booking?.my_role === 'lender' && (booking?.status === 'active' || booking?.status === 'paid' || booking?.status === 'confirmed'))
+  const canComplete = (booking?.my_role === 'lender' && ['active', 'paid', 'confirmed'].includes(booking?.status ?? ''))
     || (booking?.my_role === 'provider' && booking?.status === 'in_progress')
   const canStart = booking?.my_role === 'provider' && booking?.status === 'confirmed'
-  const canReview = booking?.status === 'completed'
 
-  // Loading state
+  const otherName = booking?.other_user?.name ?? ''
+  const itemTitle = booking?.post?.title ?? ''
+  const isRental = booking?.type === 'rental'
+
+  // ─── Loading ───
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <PressableOpacity
-            onPress={() => router.back()}
-            hitSlop={12}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.back')}
-            style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
-            <ArrowLeft size={20} color={colors.foreground} />
-          </PressableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
-          <View style={styles.headerSpacer} />
-        </View>
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <BarHeader colors={colors} t={t} insets={insets} router={router} />
         <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
       </View>
     )
   }
 
-  // Not found state
+  // ─── Not found ───
   if (!booking) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <PressableOpacity
-            onPress={() => router.back()}
-            hitSlop={12}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.back')}
-            style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
-            <ArrowLeft size={20} color={colors.foreground} />
-          </PressableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
-          <View style={styles.headerSpacer} />
-        </View>
-        <Text style={[styles.notFound, { color: colors.mutedForeground }]}>{t('booking.notFound')}</Text>
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <BarHeader colors={colors} t={t} insets={insets} router={router} />
+        <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('booking.notFound')}</Text>
       </View>
     )
   }
 
-  const statusStyle = getStatusStyle(booking.status, colors)
-  const isService = booking.type === 'service'
-  const basePrice = isService ? (booking.service_price ?? 0) : ((booking.daily_fee ?? 0) * (() => {
-    if (!booking.start_date || !booking.end_date) return 0
-    const s = new Date(booking.start_date); const e = new Date(booking.end_date)
-    const d = Math.max(1, Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)))
-    return d > 0 ? d : 1
-  })())
+  // ─── Compute rental day info ───
+  const totalDays = booking.start_date && booking.end_date ? getDaysBetween(booking.start_date, booking.end_date) : 0
+  const elapsedDays = booking.start_date ? Math.min(getDaysElapsed(booking.start_date), totalDays) : 0
+  const progressPct = totalDays > 0 ? Math.min(elapsedDays / totalDays, 1) : 0
+  const basePrice = booking.type === 'service'
+    ? (booking.service_price ?? 0)
+    : ((booking.daily_fee ?? 0) * Math.max(1, totalDays))
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header — circle back button + centered title */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <PressableOpacity
-          onPress={() => router.back()}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-          style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-          <ArrowLeft size={20} color={colors.foreground} />
-        </PressableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('booking.details')}</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+  // ════════════════════════════════════════════════════════════════════
+  // STATUS-SPECIFIC RENDERS
+  // ════════════════════════════════════════════════════════════════════
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
-        {/* Hero post card */}
-        <PressableOpacity
-          onPress={() => booking.post?.id && router.push(`/post/${booking.post.id}` as any)}
-          style={[styles.postCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-          accessibilityRole="button"
-          accessibilityLabel={booking.post?.title ?? t('booking.viewPost')}
-        >
-          {booking.post?.image_url ? (
-            <ImageWithFallback uri={booking.post.image_url} style={styles.postImage} contentFit="cover" fallbackIcon={isService ? <ShoppingBag size={28} color={colors.mutedForeground} /> : <Package size={28} color={colors.mutedForeground} />} />
-          ) : (
-            <View style={[styles.postImage, styles.postImageFb, { backgroundColor: colors.muted }]}>
-              {isService ? <ShoppingBag size={28} color={colors.mutedForeground} /> : <Package size={28} color={colors.mutedForeground} />}
+  // ── PENDING / PAID: Waiting for confirmation ──
+  if (booking.status === 'pending' || booking.status === 'paid') {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.loan')} />
+
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Hero — waiting */}
+          <View style={s.heroCenter}>
+            <View style={[s.heroCircle, { backgroundColor: colors.muted }]}>
+              <ActivityIndicator size="small" color={colors.foreground} />
             </View>
+            <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+              {t('booking.waitingConfirmation')}
+            </Text>
+            <Text style={[s.heroHeadline, { color: colors.foreground }]}>
+              {t('booking.waitingConfirmationDesc')}
+            </Text>
+          </View>
+
+          {/* Item summary card */}
+          <ItemSummaryCard booking={booking} colors={colors} t={t} locale={locale} router={router} />
+
+          {/* Date range card */}
+          {booking.start_date && booking.end_date && (
+            <DateRangeCard startDate={booking.start_date} endDate={booking.end_date} colors={colors} t={t} locale={locale} />
           )}
-          <View style={styles.postInfo}>
-            <Text style={[styles.postTitle, { color: colors.foreground }]} numberOfLines={2}>
-              {booking.post?.title ?? t('rental.deletedPost')}
-            </Text>
-            <Text style={[styles.postType, { color: colors.mutedForeground }]}>
-              {isService ? t('service.services') : t('rental.booking')}
-            </Text>
-          </View>
-        </PressableOpacity>
 
-        {/* Status badge */}
-        <View style={styles.statusRow}>
-          <View style={[styles.statusBadgeLarge, { backgroundColor: statusStyle.bg }]}>
-            <Text style={[styles.statusTextLarge, { color: statusStyle.text }]}>
-              {t(STATUS_KEYS[booking.status] ?? 'rental.statusPending')}
-            </Text>
-          </View>
-        </View>
+          {/* Timeline */}
+          <TimelineCard booking={booking} steps={steps} currentStepIndex={currentStepIndex} colors={colors} t={t} locale={locale} />
 
-        {/* Other party info */}
-        {booking.other_user && (
-          <PressableOpacity
-            onPress={() => router.push(`/profile/${booking.other_user!.id}` as any)}
-            style={[styles.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-            accessibilityRole="button"
-            accessibilityLabel={booking.other_user!.name}
-          >
-            <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={44} />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>{booking.other_user.name ?? t('common.user')}</Text>
-              <Text style={[styles.userRole, { color: colors.mutedForeground }]}>{t(`booking.otherParty`)}</Text>
-            </View>
-          </PressableOpacity>
-        )}
+          {/* Price breakdown */}
+          <PriceBreakdownCard basePrice={basePrice} serviceFee={booking.service_fee} total={booking.total_amount} isService={!isRental} colors={colors} t={t} locale={locale} />
 
-        {/* Status timeline */}
-        {currentStepIndex >= 0 && (
-          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.statusTimeline')}</Text>
-            <View style={styles.timeline}>
-              {steps.map((step, i) => {
-                const isCompleted = i <= currentStepIndex
-                const isCurrent = i === currentStepIndex
-                const isFuture = i > currentStepIndex
-                const dotColor = isCompleted ? colors.foreground : colors.muted
-                const textColor = isCompleted ? colors.foreground : colors.mutedForeground
-
-                return (
-                  <View key={step} style={styles.timelineStep}>
-                    <View style={styles.timelineDotCol}>
-                      <View style={[
-                        styles.timelineDot,
-                        { backgroundColor: dotColor },
-                        isCurrent && { borderWidth: 3, borderColor: colors.border },
-                      ]}>
-                        {isCompleted && !isCurrent && <Check size={10} color={colors.primaryForeground} />}
-                      </View>
-                      {i < steps.length - 1 && (
-                        <View style={[styles.timelineLine, { backgroundColor: isCompleted ? colors.foreground : colors.muted }]} />
-                      )}
-                    </View>
-                    <Text style={[styles.timelineLabel, { color: textColor, fontFamily: isCurrent ? fonts.bodySemi : fonts.body }]}>
-                      {t(STATUS_KEYS[step] ?? step)}
-                    </Text>
-                  </View>
-                )
-              })}
-            </View>
-          </View>
-        )}
-
-        {/* Dates section (rentals) */}
-        {booking.start_date && booking.end_date && (
-          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.dates')}</Text>
-            <View style={styles.dateRow}>
-              <Calendar size={16} color={colors.mutedForeground} />
-              <Text style={[styles.dateValue, { color: colors.foreground }]}>
-                {formatDateRange(booking.start_date, booking.end_date, locale)}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* Price breakdown */}
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.priceBreakdown')}</Text>
-          <View style={styles.priceRow}>
-            <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>
-              {isService ? t('service.servicePrice') : t('rental.rentalFee')}
-            </Text>
-            <Text style={[styles.priceValue, { color: colors.foreground }]}>{formatPrice(basePrice, locale)}</Text>
-          </View>
-          <View style={styles.priceRow}>
-            <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>{t('booking.serviceFee')}</Text>
-            <Text style={[styles.priceValue, { color: colors.foreground }]}>{formatPrice(booking.service_fee, locale)}</Text>
-          </View>
-          <View style={[styles.priceRow, styles.priceTotalRow, { borderTopColor: colors.border }]}>
-            <Text style={[styles.priceTotalLabel, { color: colors.foreground }]}>{t('booking.total')}</Text>
-            <Text style={[styles.priceTotalValue, { color: colors.foreground }]}>
-              {formatPrice(booking.total_amount, locale)}
-            </Text>
-          </View>
-        </View>
-
-        {/* Notes (service bookings) */}
-        {booking.notes && (
-          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.notes')}</Text>
-            <Text style={[styles.notesText, { color: colors.foreground }]}>{booking.notes}</Text>
-          </View>
-        )}
-
-        {/* Action buttons */}
-        <View style={styles.actionsContainer}>
+          {/* Actions for lender/provider */}
           {canConfirm && (
-            <PressableOpacity
-              onPress={handleConfirm}
-              disabled={actionLoading}
-              style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
-              accessibilityLabel={t('rental.confirmBooking')}
-              accessibilityRole="button"
-            >
-              {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
-                <><CheckCircle size={16} color={colors.primaryForeground} /><Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text></>
-              )}
-            </PressableOpacity>
-          )}
-          {canStart && (
-            <PressableOpacity
-              onPress={handleStartWork}
-              disabled={actionLoading}
-              style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
-              accessibilityLabel={t('service.startWork')}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
-            </PressableOpacity>
-          )}
-          {canComplete && (
-            <PressableOpacity
-              onPress={handleComplete}
-              disabled={actionLoading}
-              style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: colors.foreground }]}
-              accessibilityLabel={booking.type === 'rental' ? t('rental.returnItem') : t('service.markDone')}
-              accessibilityRole="button"
-            >
-              {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
-                <><RotateCcw size={16} color={colors.primaryForeground} /><Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>
-                  {booking.type === 'rental' ? t('rental.returnItem') : t('service.markDone')}
-                </Text></>
-              )}
-            </PressableOpacity>
+            <View style={s.actionsContainer}>
+              <PressableOpacity
+                onPress={handleConfirm}
+                disabled={actionLoading}
+                style={[s.actionBtnPrimary, { backgroundColor: colors.foreground }]}
+                accessibilityLabel={t('rental.confirmBooking')}
+                accessibilityRole="button"
+              >
+                {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
+                  <><CheckCircle size={16} color={colors.primaryForeground} /><Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>{t('rental.confirmBooking')}</Text></>
+                )}
+              </PressableOpacity>
+            </View>
           )}
           {canCancel && (
             <PressableOpacity
               onPress={handleCancel}
               disabled={actionLoading}
-              style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
+              style={[s.actionBtnOutline, { borderColor: colors.border }]}
               accessibilityLabel={t('rental.cancelBooking')}
               accessibilityRole="button"
             >
               <XCircle size={16} color={colors.mutedForeground} />
-              <Text style={[styles.actionBtnText, { color: colors.mutedForeground }]}>{t('rental.cancelBooking')}</Text>
+              <Text style={[s.actionBtnText, { color: colors.mutedForeground }]}>{t('rental.cancelBooking')}</Text>
             </PressableOpacity>
           )}
-          {canReview && (
+        </ScrollView>
+
+        {/* Sticky CTA */}
+        {booking.other_user && (
+          <StickyCTA onPress={handleSendMessage} label={t('booking.sendMessage')} colors={colors} insets={insets} icon={<MessageCircle size={18} color={colors.primaryForeground} />} />
+        )}
+      </View>
+    )
+  }
+
+  // ── CONFIRMED: Hero checkmark + timeline + next-step ribbon (Mockup 11) ──
+  if (booking.status === 'confirmed') {
+    const startDay = booking.start_date ? formatShortDate(booking.start_date, locale) : ''
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.loan')} />
+
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Hero — confirmed checkmark */}
+          <View style={s.heroCenter}>
+            <View style={[s.heroCircle, { backgroundColor: colors.foreground }]}>
+              <Check size={32} color={colors.primaryForeground} strokeWidth={2.5} />
+            </View>
+            <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+              {t('booking.approved', { name: otherName })}
+            </Text>
+            <Text style={[s.heroHeadline, { color: colors.foreground }]}>
+              {t('booking.itemReserved', { item: itemTitle, day: startDay })}
+            </Text>
+          </View>
+
+          {/* Timeline card */}
+          <TimelineCard booking={booking} steps={steps} currentStepIndex={currentStepIndex} colors={colors} t={t} locale={locale} />
+
+          {/* Next-step ribbon — dark card */}
+          {booking.other_user && (
             <PressableOpacity
-              onPress={handleLeaveReview}
-              style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.border }]}
-              accessibilityLabel={t('rental.leaveReview')}
+              onPress={handleSendMessage}
+              style={[s.ribbonCard, { backgroundColor: colors.foreground }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('booking.arrangePickup', { name: otherName })}
+            >
+              <View style={[s.ribbonIconCircle, { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.12)' }]}>
+                <MessageCircle size={16} color={colors.primaryForeground} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.ribbonTitle, { color: colors.primaryForeground }]}>
+                  {t('booking.arrangePickup', { name: otherName })}
+                </Text>
+                <Text style={[s.ribbonSubtitle, { color: isDark ? colors.mutedForeground : '#B8BCC0' }]}>
+                  {t('booking.arrangePickupHint')}
+                </Text>
+              </View>
+              <ChevronRight size={14} color={colors.primaryForeground} />
+            </PressableOpacity>
+          )}
+
+          {/* Price breakdown */}
+          <PriceBreakdownCard basePrice={basePrice} serviceFee={booking.service_fee} total={booking.total_amount} isService={!isRental} colors={colors} t={t} locale={locale} />
+
+          {canCancel && (
+            <PressableOpacity
+              onPress={handleCancel}
+              disabled={actionLoading}
+              style={[s.actionBtnOutline, { borderColor: colors.border }]}
+              accessibilityLabel={t('rental.cancelBooking')}
               accessibilityRole="button"
             >
-              <Star size={16} color={colors.foreground} />
-              <Text style={[styles.actionBtnText, { color: colors.foreground }]}>{t('rental.leaveReview')}</Text>
+              <XCircle size={16} color={colors.mutedForeground} />
+              <Text style={[s.actionBtnText, { color: colors.mutedForeground }]}>{t('rental.cancelBooking')}</Text>
             </PressableOpacity>
           )}
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      {/* Sticky CTA at bottom — Send message */}
-      {booking.other_user && (
-        <View style={[styles.stickyBottom, { paddingBottom: insets.bottom + 12, backgroundColor: colors.background, borderTopColor: colors.border }]}>
+        {/* Sticky CTA */}
+        <StickyCTA onPress={handleSendMessage} label={t('booking.openChat')} colors={colors} insets={insets} icon={<MessageCircle size={18} color={colors.primaryForeground} />} />
+      </View>
+    )
+  }
+
+  // ── ACTIVE / IN_PROGRESS: Progress bar + item + todo list (Mockup 13) ──
+  if (booking.status === 'active' || booking.status === 'in_progress') {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <BarHeader
+          colors={colors} t={t} insets={insets} router={router}
+          title={t('booking.loan')}
+          subtitle={booking.start_date && booking.end_date ? formatDateRange(booking.start_date, booking.end_date, locale) : undefined}
+        />
+
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Status banner with progress bar */}
+          <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={s.statusDotRow}>
+              <View style={[s.statusDot, { backgroundColor: colors.foreground }]} />
+              <Text style={[s.sectionLabel, { color: colors.foreground, marginBottom: 0 }]}>
+                {t('booking.inProgress')}
+              </Text>
+            </View>
+            <Text style={[s.bannerHeadline, { color: colors.foreground }]}>
+              {booking.end_date
+                ? t('booking.returnIn', { days: Math.max(0, totalDays - elapsedDays).toString() })
+                : t('booking.activeTitle')
+              }
+            </Text>
+            {totalDays > 0 && (
+              <View style={s.progressRow}>
+                <View style={{ flex: 1 }}>
+                  <View style={[s.progressTrack, { backgroundColor: colors.border }]}>
+                    <View style={[s.progressFill, { backgroundColor: colors.foreground, width: `${Math.round(progressPct * 100)}%` as any }]} />
+                  </View>
+                </View>
+                <Text style={[s.progressText, { color: colors.mutedForeground }]}>
+                  {t('booking.daysProgress', { current: elapsedDays.toString(), total: totalDays.toString() })}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Item snapshot */}
+          <ItemSummaryCard booking={booking} colors={colors} t={t} locale={locale} router={router} compact />
+
+          {/* Todo list: Before returning */}
+          {isRental && (
+            <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.beforeReturn')}</Text>
+              {[
+                { text: t('rental.verifyCondition'), done: false },
+                { text: t('rental.takeReturnPhotos'), done: false },
+              ].map((item, i, arr) => (
+                <View key={i} style={[s.todoRow, i < arr.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+                  <View style={[s.todoCheck, { backgroundColor: item.done ? colors.foreground : 'transparent', borderColor: item.done ? colors.foreground : colors.border }]}>
+                    {item.done && <Check size={11} color={colors.primaryForeground} strokeWidth={3.5} />}
+                  </View>
+                  <Text style={[s.todoText, { color: item.done ? colors.mutedForeground : colors.foreground, textDecorationLine: item.done ? 'line-through' : 'none' }]}>
+                    {item.text}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Price breakdown */}
+          <PriceBreakdownCard basePrice={basePrice} serviceFee={booking.service_fee} total={booking.total_amount} isService={!isRental} colors={colors} t={t} locale={locale} />
+
+          {/* Action buttons */}
+          <View style={s.actionsContainer}>
+            {canComplete && (
+              <PressableOpacity
+                onPress={handleComplete}
+                disabled={actionLoading}
+                style={[s.actionBtnPrimary, { backgroundColor: colors.foreground }]}
+                accessibilityLabel={isRental ? t('rental.returnItem') : t('service.markDone')}
+                accessibilityRole="button"
+              >
+                {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
+                  <><RotateCcw size={16} color={colors.primaryForeground} /><Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>
+                    {isRental ? t('rental.returnItem') : t('service.markDone')}
+                  </Text></>
+                )}
+              </PressableOpacity>
+            )}
+            {canStart && (
+              <PressableOpacity
+                onPress={handleStartWork}
+                disabled={actionLoading}
+                style={[s.actionBtnPrimary, { backgroundColor: colors.foreground }]}
+                accessibilityLabel={t('service.startWork')}
+                accessibilityRole="button"
+              >
+                <Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>{t('service.startWork')}</Text>
+              </PressableOpacity>
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Sticky CTA */}
+        <StickyCTA
+          onPress={canComplete ? handleComplete : handleSendMessage}
+          label={canComplete ? t('booking.startReturn') : t('booking.sendMessage')}
+          colors={colors}
+          insets={insets}
+          icon={canComplete ? <RotateCcw size={18} color={colors.primaryForeground} /> : <MessageCircle size={18} color={colors.primaryForeground} />}
+        />
+      </View>
+    )
+  }
+
+  // ── COMPLETED: Review screen (Mockup 14) ──
+  if (booking.status === 'completed') {
+    const tagKeys = ['tagFastResponse', 'tagFriendly', 'tagGoodCondition', 'tagClearInstructions', 'tagFlexibleSchedule'] as const
+    return (
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.reviewTitle')} />
+
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Hero — avatar + prompt */}
+          <View style={s.heroCenter}>
+            {booking.other_user && (
+              <View style={[s.reviewAvatarRing, { borderColor: colors.card }]}>
+                <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={72} />
+              </View>
+            )}
+            <Text style={[s.heroHeadline, { color: colors.foreground, fontSize: 22 }]}>
+              {t('booking.howDidItGo', { name: otherName })}
+            </Text>
+            <Text style={[s.heroSubtext, { color: colors.mutedForeground }]}>
+              {t('booking.reviewHelp')}
+            </Text>
+          </View>
+
+          {/* Star rating */}
+          <View style={s.starsRow}>
+            {[1, 2, 3, 4, 5].map(n => (
+              <PressableOpacity key={n} onPress={() => setReviewStars(n)} accessibilityLabel={`${n} star`} accessibilityRole="button">
+                <Star size={34} color={colors.foreground} fill={n <= reviewStars ? colors.foreground : 'none'} strokeWidth={1.6} />
+              </PressableOpacity>
+            ))}
+          </View>
+
+          {/* Tag chips */}
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground, paddingHorizontal: 4 }]}>
+            {t('booking.whatWorkedWell')}
+          </Text>
+          <View style={s.tagsWrap}>
+            {tagKeys.map(key => {
+              const label = t(`booking.${key}`)
+              const on = reviewTags.has(key)
+              return (
+                <PressableOpacity
+                  key={key}
+                  onPress={() => {
+                    const next = new Set(reviewTags)
+                    on ? next.delete(key) : next.add(key)
+                    setReviewTags(next)
+                  }}
+                  style={[
+                    s.tagChip,
+                    on
+                      ? { backgroundColor: colors.foreground }
+                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: on }}
+                >
+                  <Text style={[s.tagText, { color: on ? colors.primaryForeground : colors.foreground, fontFamily: on ? fonts.bodySemi : fonts.bodyMedium }]}>
+                    {label}
+                  </Text>
+                </PressableOpacity>
+              )
+            })}
+          </View>
+
+          {/* Free comment */}
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground, paddingHorizontal: 4, marginTop: 8 }]}>
+            {t('booking.freeComment')}
+          </Text>
+          <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border, padding: 16 }]}>
+            <TextInput
+              style={[s.commentInput, { color: colors.foreground }]}
+              value={reviewComment}
+              onChangeText={setReviewComment}
+              multiline
+              numberOfLines={3}
+              placeholder="..."
+              placeholderTextColor={colors.tertiaryForeground}
+            />
+          </View>
+        </ScrollView>
+
+        {/* Sticky CTA */}
+        <StickyCTA
+          onPress={handleSubmitReview}
+          label={t('booking.submitReview')}
+          colors={colors}
+          insets={insets}
+          loading={actionLoading}
+        />
+      </View>
+    )
+  }
+
+  // ── CANCELLED / DISPUTED / REFUNDED: Simple status ──
+  return (
+    <View style={[s.container, { backgroundColor: colors.background }]}>
+      <BarHeader colors={colors} t={t} insets={insets} router={router} />
+
+      <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
+        {/* Hero — cancelled */}
+        <View style={s.heroCenter}>
+          <View style={[s.heroCircle, { backgroundColor: `${colors.destructive}14` }]}>
+            <XCircle size={32} color={colors.destructive} />
+          </View>
+          <Text style={[s.heroHeadline, { color: colors.foreground }]}>
+            {t(STATUS_KEYS[booking.status] ?? 'rental.statusCancelled')}
+          </Text>
+        </View>
+
+        {/* Item summary */}
+        <ItemSummaryCard booking={booking} colors={colors} t={t} locale={locale} router={router} />
+
+        {/* Timeline */}
+        <TimelineCard booking={booking} steps={steps} currentStepIndex={currentStepIndex} colors={colors} t={t} locale={locale} />
+
+        {/* Price breakdown */}
+        <PriceBreakdownCard basePrice={basePrice} serviceFee={booking.service_fee} total={booking.total_amount} isService={!isRental} colors={colors} t={t} locale={locale} />
+
+        {booking.other_user && (
           <PressableOpacity
             onPress={handleSendMessage}
-            style={[styles.stickyCta, { backgroundColor: colors.foreground }]}
+            style={[s.actionBtnOutline, { borderColor: colors.border }]}
             accessibilityLabel={t('booking.sendMessage')}
             accessibilityRole="button"
           >
-            <MessageCircle size={18} color={colors.primaryForeground} />
-            <Text style={[styles.stickyCtaText, { color: colors.primaryForeground }]}>{t('booking.sendMessage')}</Text>
+            <MessageCircle size={16} color={colors.foreground} />
+            <Text style={[s.actionBtnText, { color: colors.foreground }]}>{t('booking.sendMessage')}</Text>
           </PressableOpacity>
-        </View>
-      )}
+        )}
+      </ScrollView>
     </View>
   )
 }
 
-const styles = StyleSheet.create({
+// ════════════════════════════════════════════════════════════════════
+// SUB-COMPONENTS
+// ════════════════════════════════════════════════════════════════════
+
+function BarHeader({ colors, t, insets, router, title, subtitle }: {
+  colors: any; t: any; insets: any; router: any; title?: string; subtitle?: string
+}) {
+  return (
+    <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+      <PressableOpacity
+        onPress={() => router.back()}
+        hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.back')}
+        style={[s.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+      >
+        <ArrowLeft size={16} color={colors.foreground} strokeWidth={2.2} />
+      </PressableOpacity>
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        <Text style={[s.headerTitle, { color: colors.foreground }]}>{title ?? t('booking.details')}</Text>
+        {subtitle ? <Text style={[s.headerSubtitle, { color: colors.mutedForeground }]}>{subtitle}</Text> : null}
+      </View>
+      <View style={s.headerSpacer} />
+    </View>
+  )
+}
+
+function ItemSummaryCard({ booking, colors, t, locale, router, compact }: {
+  booking: BookingData; colors: any; t: any; locale: string; router: any; compact?: boolean
+}) {
+  const isService = booking.type === 'service'
+  const imgSize = compact ? 54 : 64
+  return (
+    <PressableOpacity
+      onPress={() => booking.post?.id && router.push(`/post/${booking.post.id}` as any)}
+      style={[s.card, { backgroundColor: colors.card, borderColor: colors.border, padding: 12 }]}
+      accessibilityRole="button"
+      accessibilityLabel={booking.post?.title ?? t('booking.viewPost')}
+    >
+      <View style={s.itemRow}>
+        {booking.post?.image_url ? (
+          <ImageWithFallback
+            uri={booking.post.image_url}
+            style={{ width: imgSize, height: imgSize, borderRadius: 14 }}
+            contentFit="cover"
+            fallbackIcon={isService ? <ShoppingBag size={24} color={colors.mutedForeground} /> : <Package size={24} color={colors.mutedForeground} />}
+          />
+        ) : (
+          <View style={[{ width: imgSize, height: imgSize, borderRadius: 14, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+            {isService ? <ShoppingBag size={24} color={colors.mutedForeground} /> : <Package size={24} color={colors.mutedForeground} />}
+          </View>
+        )}
+        <View style={{ flex: 1 }}>
+          <Text style={[s.itemTitle, { color: colors.foreground }]} numberOfLines={2}>
+            {booking.post?.title ?? t('rental.deletedPost')}
+          </Text>
+          {booking.other_user && (
+            <Text style={[s.itemMeta, { color: colors.mutedForeground }]}>
+              {booking.other_user.name}
+            </Text>
+          )}
+          {!compact && (
+            <Text style={[s.itemPrice, { color: colors.foreground }]}>
+              {booking.total_amount > 0
+                ? formatPrice(booking.total_amount, locale)
+                : t('booking.free')
+              }
+            </Text>
+          )}
+        </View>
+      </View>
+    </PressableOpacity>
+  )
+}
+
+function DateRangeCard({ startDate, endDate, colors, t, locale }: {
+  startDate: string; endDate: string; colors: any; t: any; locale: string
+}) {
+  return (
+    <>
+      <Text style={[s.sectionLabel, { color: colors.mutedForeground, paddingHorizontal: 4 }]}>
+        {t('booking.loanDuration')}
+      </Text>
+      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border, padding: 16 }]}>
+        <View style={s.dateRangeRow}>
+          <View>
+            <Text style={[s.dateLabelSmall, { color: colors.mutedForeground }]}>{t('booking.pickup')}</Text>
+            <Text style={[s.dateValueBold, { color: colors.foreground }]}>{formatShortDate(startDate, locale)}</Text>
+          </View>
+          <View style={[s.dateDivider, { backgroundColor: colors.border }]} />
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={[s.dateLabelSmall, { color: colors.mutedForeground }]}>{t('booking.returnDate')}</Text>
+            <Text style={[s.dateValueBold, { color: colors.foreground }]}>{formatShortDate(endDate, locale)}</Text>
+          </View>
+        </View>
+      </View>
+    </>
+  )
+}
+
+function TimelineCard({ booking, steps, currentStepIndex, colors, t, locale }: {
+  booking: BookingData; steps: BookingStatus[]; currentStepIndex: number; colors: any; t: any; locale: string
+}) {
+  if (currentStepIndex < 0) return null
+  const timelineSteps = steps.map((step, i) => ({
+    key: step,
+    label: t(STATUS_KEYS[step] ?? step),
+    done: i < currentStepIndex,
+    current: i === currentStepIndex,
+    future: i > currentStepIndex,
+  }))
+
+  return (
+    <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border, padding: 18 }]}>
+      {timelineSteps.map((step, i) => (
+        <View key={step.key} style={[s.timelineStep, { paddingBottom: i === timelineSteps.length - 1 ? 0 : 18 }]}>
+          <View style={s.timelineDotCol}>
+            <View style={[
+              s.timelineDot,
+              {
+                backgroundColor: step.done || step.current ? colors.foreground : 'transparent',
+                borderWidth: 2,
+                borderColor: colors.foreground,
+              },
+            ]} />
+            {i < timelineSteps.length - 1 && (
+              <View style={[s.timelineLine, { backgroundColor: step.done ? colors.foreground : colors.border }]} />
+            )}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[
+              s.timelineLabel,
+              {
+                color: step.done ? colors.mutedForeground : colors.foreground,
+                fontFamily: step.current ? fonts.bodySemi : fonts.body,
+                textDecorationLine: step.done ? 'line-through' : 'none',
+              },
+            ]}>
+              {step.label}
+            </Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+}
+
+function PriceBreakdownCard({ basePrice, serviceFee, total, isService, colors, t, locale }: {
+  basePrice: number; serviceFee: number; total: number; isService: boolean; colors: any; t: any; locale: string
+}) {
+  return (
+    <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.priceBreakdown')}</Text>
+      <View style={s.priceRow}>
+        <Text style={[s.priceLabel, { color: colors.mutedForeground }]}>
+          {isService ? t('service.servicePrice') : t('rental.rentalFee')}
+        </Text>
+        <Text style={[s.priceValue, { color: colors.foreground }]}>{formatPrice(basePrice, locale)}</Text>
+      </View>
+      <View style={s.priceRow}>
+        <Text style={[s.priceLabel, { color: colors.mutedForeground }]}>{t('booking.serviceFee')}</Text>
+        <Text style={[s.priceValue, { color: colors.foreground }]}>{formatPrice(serviceFee, locale)}</Text>
+      </View>
+      <View style={[s.priceRow, s.priceTotalRow, { borderTopColor: colors.border }]}>
+        <Text style={[s.priceTotalLabel, { color: colors.foreground }]}>{t('booking.total')}</Text>
+        <Text style={[s.priceTotalValue, { color: colors.foreground }]}>{formatPrice(total, locale)}</Text>
+      </View>
+    </View>
+  )
+}
+
+function StickyCTA({ onPress, label, colors, insets, icon, loading: isLoading }: {
+  onPress: () => void; label: string; colors: any; insets: any; icon?: React.ReactNode; loading?: boolean
+}) {
+  return (
+    <View style={[s.stickyWrap, { bottom: insets.bottom + 22 }]}>
+      <PressableOpacity
+        onPress={onPress}
+        disabled={isLoading}
+        style={[s.stickyCta, { backgroundColor: colors.foreground }]}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="small" color={colors.primaryForeground} />
+        ) : (
+          <>
+            {icon}
+            <Text style={[s.stickyCtaText, { color: colors.primaryForeground }]}>{label}</Text>
+          </>
+        )}
+      </PressableOpacity>
+    </View>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════
+// STYLES
+// ════════════════════════════════════════════════════════════════════
+
+const s = StyleSheet.create({
   container: { flex: 1 },
 
-  // Header — circle back + centered title
+  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -580,109 +945,265 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minWidth: 44,
+    minHeight: 44,
   },
   headerTitle: {
-    flex: 1,
     fontSize: 14,
     letterSpacing: -0.2,
     fontFamily: fonts.headingSemi,
-    lineHeight: 24,
-    textAlign: 'center',
+    lineHeight: 20,
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    marginTop: 1,
   },
   headerSpacer: { width: 36 },
 
-  scrollContent: { padding: 16, gap: 12 },
+  scrollPadded: { paddingHorizontal: 16, gap: 12 },
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 104, lineHeight: 22 },
 
-  // Post card — hero preview
-  postCard: {
-    flexDirection: 'row',
-    padding: 12,
-    gap: 12,
-    borderRadius: 20,
-    borderWidth: 1,
+  // Hero center
+  heroCenter: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
   },
-  postImage: { width: 72, height: 72, borderRadius: 14 },
-  postImageFb: { alignItems: 'center', justifyContent: 'center' },
-  postInfo: { flex: 1, gap: 4, justifyContent: 'center' },
-  postTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi },
-  postType: { fontSize: 12, lineHeight: 16, fontFamily: fonts.bodyMedium },
-
-  // Status badge row
-  statusRow: {
-    paddingVertical: 4,
-  },
-  statusBadgeLarge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+  heroCircle: {
+    width: 72,
+    height: 72,
     borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
   },
-  statusTextLarge: {
-    fontSize: 10.5,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+  heroHeadline: {
+    fontSize: 24,
     fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    lineHeight: 30,
+    marginBottom: 8,
+  },
+  heroSubtext: {
+    fontSize: 12.5,
+    fontFamily: fonts.body,
+    lineHeight: 18,
+    textAlign: 'center',
   },
 
-  // User card
-  userCard: {
+  // Section labels
+  sectionLabel: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    fontFamily: fonts.bodySemi,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+
+  // Card
+  card: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+  },
+
+  // Item summary
+  itemRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  itemTitle: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.1,
+  },
+  itemMeta: {
+    fontSize: 11.5,
+    fontFamily: fonts.body,
+    marginTop: 3,
+  },
+  itemPrice: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    marginTop: 6,
+  },
+
+  // Date range
+  dateRangeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateLabelSmall: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+  },
+  dateValueBold: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    marginTop: 2,
+  },
+  dateDivider: {
+    width: 28,
+    height: 1,
+  },
+
+  // Ribbon (dark card)
+  ribbonCard: {
+    borderRadius: 18,
+    padding: 14,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
   },
-  userName: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 22 },
-  userRole: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
-
-  // Section card — monochrome
-  section: {
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 12,
+  ribbonIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sectionLabel: {
-    fontSize: 10.5,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+  ribbonTitle: {
+    fontSize: 12.5,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  ribbonSubtitle: {
+    fontSize: 10.5,
+    fontFamily: fonts.body,
+    marginTop: 1,
   },
 
-  // Timeline — monochrome
-  timeline: { gap: 0, marginTop: 4 },
-  timelineStep: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, minHeight: 36 },
-  timelineDotCol: { alignItems: 'center', width: 20 },
-  timelineDot: {
-    width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
+  // Status banner
+  statusDotRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
   },
-  timelineLine: { width: 2, flex: 1, minHeight: 14, marginVertical: 2 },
-  timelineLabel: { fontSize: 14, fontFamily: fonts.body, paddingTop: 1, lineHeight: 20 },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+  },
+  bannerHeadline: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.3,
+  },
 
-  // Date row
-  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dateValue: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  // Progress
+  progressRow: {
+    flexDirection: 'row',
+    gap: 14,
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 999,
+  },
+  progressText: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+  },
 
-  // Price breakdown
-  priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  // Todo list
+  todoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+  },
+  todoCheck: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todoText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+  },
+
+  // Stars
+  starsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 14,
+    paddingVertical: 4,
+    paddingBottom: 24,
+  },
+
+  // Tags
+  tagsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 18,
+  },
+  tagChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+  },
+  tagText: {
+    fontSize: 12.5,
+  },
+
+  // Review avatar
+  reviewAvatarRing: {
+    borderWidth: 3,
+    borderRadius: 999,
+    marginBottom: 14,
+  },
+
+  // Comment input
+  commentInput: {
+    fontSize: 13.5,
+    fontFamily: fonts.body,
+    lineHeight: 20,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+
+  // Timeline
+  timelineStep: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
+  timelineDotCol: { alignItems: 'center', width: 14 },
+  timelineDot: { width: 14, height: 14, borderRadius: 999 },
+  timelineLine: { width: 1.5, flex: 1, minHeight: 30, marginTop: 4 },
+  timelineLabel: { fontSize: 13.5, fontFamily: fonts.body, lineHeight: 18, letterSpacing: -0.1 },
+
+  // Price
+  priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   priceLabel: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   priceValue: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  priceTotalRow: { borderTopWidth: 1, paddingTop: 10, marginTop: 4 },
+  priceTotalRow: { borderTopWidth: 1, paddingTop: 10, marginTop: 8 },
   priceTotalLabel: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
   priceTotalValue: { fontSize: 18, fontFamily: fonts.headingSemi, lineHeight: 24 },
 
-  // Notes
-  notesText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-
   // Actions
-  actionsContainer: { gap: 8, marginTop: 8 },
-  actionBtn: {
+  actionsContainer: { gap: 8, marginTop: 4 },
+  actionBtnPrimary: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -691,37 +1212,42 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     minHeight: 48,
   },
-  actionBtnPrimary: {
-    // INK bg — set inline
-  },
   actionBtnOutline: {
-    borderWidth: 1,
-  },
-  actionBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-
-  // Sticky CTA at bottom
-  stickyBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  stickyCta: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
     borderRadius: 999,
-    minHeight: 52,
+    minHeight: 48,
+    borderWidth: 1,
+  },
+  actionBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
+
+  // Sticky CTA
+  stickyWrap: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+  },
+  stickyCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 56,
+    borderRadius: 999,
+    shadowColor: '#1A1D1F',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 28,
+    elevation: 8,
   },
   stickyCtaText: {
     fontSize: 15,
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 22,
+    letterSpacing: -0.1,
   },
 })
 
