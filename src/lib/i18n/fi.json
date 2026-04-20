@@ -914,7 +914,8 @@
     "tapToOpen": "Avaa ilmoitus napauttamalla",
     "hide": "Piilota ilmoitus",
     "moreOptions": "Lisää vaihtoehtoja",
-    "urgent": "Kiireellinen"
+    "urgent": "Kiireellinen",
+    "fromFollowed": "Seuraamasi"
   },
   "auth": {
     "login": "Kirjaudu",
@@ -2243,7 +2244,8 @@
     "noContentYet": "Alueella ei vielä ilmoituksia — ole ensimmäinen ja herätä naapurustosi!",
     "recentPosts": "Tuoreimmat ilmoitukset",
     "upcomingEvents": "Tulevat tapahtumat",
-    "andMore": "ja paljon muuta..."
+    "andMore": "ja paljon muuta...",
+    "swipeHint": "Pyyhkäise löytääksesi"
   },
   "nappaaSwipe": {
     "swipeHint": "Pyyhkäise oikealle →",

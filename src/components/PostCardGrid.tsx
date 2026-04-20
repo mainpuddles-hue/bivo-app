@@ -40,13 +40,15 @@ interface PostCardGridProps {
   userId?: string | null
   onInteraction?: (postId: string, type: 'view' | 'click' | 'like' | 'save' | 'message' | 'skip' | 'hide') => void
   index?: number
+  sortBy?: string
+  followedIds?: string[]
 }
 
 // Warm tint for text-only cards (from mockup)
 const WARM_TINT = '#F0EEE9'
 const WARM_TINT_DARK = '#2A2825'
 
-export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0 }: PostCardGridProps) {
+export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds }: PostCardGridProps) {
   const { colors, isDark } = useTheme()
   const reduceMotion = useReduceMotion()
   const { t, locale } = useI18n()
@@ -76,6 +78,10 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const user = post.user
   const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : (user?.name ?? '')
   const timeAgo = post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''
+
+  // Recommendation reason (only shown when sort is 'recommended')
+  const isFollowed = sortBy === 'recommended' && followedIds?.includes(post.user_id)
+  const isBoosted = sortBy === 'recommended' && (post as any).is_boosted === true
 
   // Consistent image height — FlatList numColumns forces equal row heights,
   // so variable heights only create uneven whitespace below shorter cards.
@@ -238,6 +244,25 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
                   ? t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })
                   : formatPrice(post.service_price, locale)}
               </Text>
+            )}
+            {/* Recommendation reason pills */}
+            {(isBoosted || isFollowed) && (
+              <View style={styles.reasonRow}>
+                {isBoosted && (
+                  <View style={[styles.reasonPill, { backgroundColor: `${colors.primary}15` }]}>
+                    <Text style={[styles.reasonPillText, { color: colors.primary }]}>
+                      {t('postCard.boosted')}
+                    </Text>
+                  </View>
+                )}
+                {isFollowed && (
+                  <View style={[styles.reasonPill, { backgroundColor: `${colors.primary}15` }]}>
+                    <Text style={[styles.reasonPillText, { color: colors.primary }]}>
+                      {t('postCard.fromFollowed')}
+                    </Text>
+                  </View>
+                )}
+              </View>
             )}
             {MetaFooter(colors.mutedForeground)}
           </View>
@@ -405,6 +430,25 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+  },
+
+  // ── Reason pills ──
+  reasonRow: {
+    flexDirection: 'row',
+    gap: 4,
+    flexWrap: 'wrap',
+  },
+  reasonPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  reasonPillText: {
+    fontSize: 9,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
 
   // ── Typography ──

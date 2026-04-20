@@ -895,7 +895,8 @@
     "tapToOpen": "Tryck för att öppna annons",
     "hide": "Dölj inlägg",
     "moreOptions": "Fler alternativ",
-    "urgent": "Brådskande"
+    "urgent": "Brådskande",
+    "fromFollowed": "Följer"
   },
   "auth": {
     "login": "Logga in",
@@ -2208,7 +2209,8 @@
     "noContentYet": "Inga inlägg i detta område ännu — var den första!",
     "recentPosts": "Senaste inlägg",
     "upcomingEvents": "Kommande evenemang",
-    "andMore": "och mycket mer..."
+    "andMore": "och mycket mer...",
+    "swipeHint": "Svep för att utforska"
   },
   "nappaaSwipe": {
     "swipeHint": "Svep höger →",

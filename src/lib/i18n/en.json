@@ -914,7 +914,8 @@
     "tapToOpen": "Tap to open listing",
     "hide": "Hide post",
     "moreOptions": "More options",
-    "urgent": "Urgent"
+    "urgent": "Urgent",
+    "fromFollowed": "Following"
   },
   "auth": {
     "login": "Log in",
@@ -2243,7 +2244,8 @@
     "noContentYet": "No posts in this area yet — be the first!",
     "recentPosts": "Recent posts",
     "upcomingEvents": "Upcoming events",
-    "andMore": "and much more..."
+    "andMore": "and much more...",
+    "swipeHint": "Swipe to discover"
   },
   "nappaaSwipe": {
     "swipeHint": "Swipe right →",

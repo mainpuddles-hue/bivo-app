@@ -3,9 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ViewToken, ScrollView
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Image } from 'expo-image'
-import { LinearGradient } from 'expo-linear-gradient'
-import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Heart, Star, ChevronRight } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -23,9 +21,7 @@ import { AlertBanner } from '@/components/AlertBanner'
 import { PostCardSkeleton, FeedLoadMoreSkeleton } from '@/components/SkeletonLoaders'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
-import { getImageUrl } from '@/lib/imageUtils'
-import { haversineKm } from '@/lib/geo'
-import { CATEGORIES } from '@/lib/constants'
+import { DiscoveryStack } from '@/components/DiscoveryStack'
 import type { Post, PostType } from '@/lib/types'
 
 function FeedScreenInner() {
@@ -80,10 +76,13 @@ function FeedScreenInner() {
     feed.handleSortChange(sort)
   }, [feed.handleSortChange])
 
-  // Sort options — keep simple: newest (default) + nearest
+  // Sort options — expose all 5 algorithm modes
   const SORT_OPTIONS: { key: FeedSortBy; label: string }[] = useMemo(() => [
+    { key: 'recommended', label: t('feed.sortRecommended') },
     { key: 'newest', label: t('feed.sortNewest') },
+    { key: 'popular', label: t('feed.sortPopular') },
     { key: 'nearest', label: t('feed.sortNearest') },
+    { key: 'cheapest', label: t('feed.sortCheapest') },
   ], [t])
 
   // ── Hidden post IDs (persisted to AsyncStorage) ──
@@ -151,38 +150,16 @@ function FeedScreenInner() {
     }
   }).current
 
-  // ── Hero post (first visible post) + remaining posts ──
-  const heroPost = visiblePosts.length > 0 ? visiblePosts[0] : null
-  const remainingPosts = visiblePosts.length > 1 ? visiblePosts.slice(1) : []
-
-  // ── Hero post helpers ──
-  const heroImageUrl = useMemo(() => {
-    if (!heroPost) return null
-    // Check images array first, then image_url
-    if (heroPost.images && heroPost.images.length > 0) {
-      return getImageUrl(heroPost.images[0].image_url, 'medium')
-    }
-    return getImageUrl(heroPost.image_url, 'medium')
-  }, [heroPost])
-
-  const heroDistance = useMemo(() => {
-    if (!heroPost || !feed.userLocation) return null
-    if (heroPost.latitude == null || heroPost.longitude == null) return null
-    const km = haversineKm(
-      feed.userLocation.latitude,
-      feed.userLocation.longitude,
-      heroPost.latitude,
-      heroPost.longitude,
-    )
-    if (km < 1) return `${Math.round(km * 1000)} m`
-    return `${km.toFixed(1)} km`
-  }, [heroPost, feed.userLocation])
-
-  const heroCategoryLabel = useMemo(() => {
-    if (!heroPost) return ''
-    const cat = CATEGORIES[heroPost.type]
-    return cat ? t(cat.label) : heroPost.type
-  }, [heroPost, t])
+  // ── Discovery stack (top 5) + remaining posts ──
+  const DISCOVERY_COUNT = 5
+  const discoveryPosts = useMemo(
+    () => visiblePosts.slice(0, DISCOVERY_COUNT),
+    [visiblePosts],
+  )
+  const remainingPosts = useMemo(
+    () => visiblePosts.slice(DISCOVERY_COUNT),
+    [visiblePosts],
+  )
 
   const renderPost = useCallback(({ item, index }: { item: Post; index: number }) => (
     <PostCardGrid
@@ -190,8 +167,10 @@ function FeedScreenInner() {
       userId={feed.currentUserId}
       onInteraction={trackInteraction}
       index={index}
+      sortBy={feed.sortBy}
+      followedIds={feed.followedIds}
     />
-  ), [feed.currentUserId, trackInteraction])
+  ), [feed.currentUserId, trackInteraction, feed.sortBy, feed.followedIds])
 
   // ── Render ──
   return (
@@ -229,7 +208,7 @@ function FeedScreenInner() {
                   </PressableOpacity>
                   <PressableOpacity
                     onPress={() => {
-                      const labels = SORT_OPTIONS.map(o => o.label).concat(t('common.cancel') ?? 'Cancel')
+                      const labels = SORT_OPTIONS.map(o => feed.sortBy === o.key ? `${o.label} ✓` : o.label).concat(t('common.cancel') ?? 'Cancel')
                       if (Platform.OS === 'ios') {
                         ActionSheetIOS.showActionSheetWithOptions(
                           { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
@@ -261,6 +240,23 @@ function FeedScreenInner() {
                 <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
               </ScrollView>
             </View>
+
+            {/* ── Active sort indicator ── */}
+            {feed.sortBy !== 'recommended' && (
+              <View style={[styles.sortIndicator, { paddingHorizontal: 20 }]}>
+                <Text style={[styles.sortIndicatorText, { color: colors.mutedForeground }]}>
+                  {SORT_OPTIONS.find(o => o.key === feed.sortBy)?.label}
+                </Text>
+                <PressableOpacity
+                  onPress={() => handleSortChangeWithHaptics('recommended')}
+                  hitSlop={8}
+                  accessibilityLabel={t('feed.sortRecommended')}
+                  accessibilityRole="button"
+                >
+                  <XIcon size={12} color={colors.mutedForeground} />
+                </PressableOpacity>
+              </View>
+            )}
 
             {/* ── Banners ── */}
             <View style={{ paddingHorizontal: 20, gap: 8 }}>
@@ -309,102 +305,19 @@ function FeedScreenInner() {
               )}
             </View>
 
-            {/* ── 5. Hero card ── */}
+            {/* ── 5. Discovery stack ── */}
             {feed.loading && visiblePosts.length === 0 ? (
               <View style={{ paddingHorizontal: 12, gap: 16, paddingTop: 16 }}>
                 {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
               </View>
-            ) : heroPost ? (
-              <View style={styles.heroWrapper}>
-                {/* Main hero card */}
-                <PressableOpacity
-                  onPress={() => {
-                    trackInteraction(heroPost.id, 'click')
-                    router.push(`/post/${heroPost.id}`)
-                  }}
-                  style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={heroPost.title}
-                >
-                  {/* Square image */}
-                  <View style={styles.heroImageWrap}>
-                    {heroImageUrl ? (
-                      <Image
-                        source={{ uri: heroImageUrl }}
-                        style={styles.heroImage}
-                        contentFit="cover"
-                        transition={300}
-                        recyclingKey={heroImageUrl}
-                      />
-                    ) : (
-                      <View style={[styles.heroImage, { backgroundColor: isDark ? '#2A2825' : '#F0EEE9' }]}>
-                        <Text style={[styles.heroImagePlaceholder, { color: colors.mutedForeground }]}>
-                          {heroCategoryLabel}
-                        </Text>
-                      </View>
-                    )}
-
-                    {/* Gradient overlay */}
-                    <LinearGradient
-                      colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.35)', 'rgba(0,0,0,0.72)']}
-                      locations={[0.38, 0.68, 1]}
-                      style={StyleSheet.absoluteFill}
-                      pointerEvents="none"
-                    />
-
-                    {/* Heart icon top-right */}
-                    <View style={[styles.heroHeartCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                      <Heart
-                        size={16}
-                        color={heroPost.is_liked ? '#EF4444' : colors.foreground}
-                        fill={heroPost.is_liked ? '#EF4444' : 'none'}
-                        strokeWidth={1.8}
-                      />
-                    </View>
-
-                    {/* Title overlay bottom-left */}
-                    <View style={styles.heroOverlay}>
-                      <Text style={styles.heroNeighborhood}>
-                        {(heroPost.user as any)?.naapurusto ?? feed.userNeighborhood ?? 'Helsinki'}
-                      </Text>
-                      <Text style={styles.heroTitle} numberOfLines={2}>
-                        {heroPost.title}
-                      </Text>
-                      <View style={styles.heroMeta}>
-                        {heroPost.like_count > 0 && (
-                          <View style={styles.heroRatingPill}>
-                            <Star size={11} color="#fff" fill="#fff" />
-                            <Text style={styles.heroRatingText}>
-                              {heroPost.like_count > 99 ? '99+' : heroPost.like_count}
-                            </Text>
-                          </View>
-                        )}
-                        {heroPost.comment_count > 0 && (
-                          <Text style={styles.heroMetaText}>
-                            {heroPost.comment_count} {t('post.comments') ?? 'kommenttia'}
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* CTA row below image */}
-                  <View style={styles.heroCta}>
-                    <View style={styles.heroCtaLeft}>
-                      <Text style={[styles.heroCtaOwner, { color: colors.mutedForeground }]} numberOfLines={1}>
-                        {(heroPost.user as any)?.name ?? '?'}
-                        {heroDistance ? ` · ${heroDistance}` : ''}
-                      </Text>
-                      <Text style={[styles.heroCtaAction, { color: colors.foreground }]}>
-                        {heroCategoryLabel}
-                      </Text>
-                    </View>
-                    <View style={[styles.heroCtaArrow, { backgroundColor: colors.foreground }]}>
-                      <ChevronRight size={16} color={colors.background} strokeWidth={2.2} />
-                    </View>
-                  </View>
-                </PressableOpacity>
-              </View>
+            ) : discoveryPosts.length > 0 ? (
+              <DiscoveryStack
+                posts={discoveryPosts}
+                userId={feed.currentUserId}
+                onInteraction={trackInteraction}
+                userNeighborhood={feed.userNeighborhood}
+                userLocation={feed.userLocation}
+              />
             ) : !feed.loading ? (
               <View style={styles.coldStart}>
                 <BoardIllustration size={80} />
@@ -533,137 +446,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  // Sort indicator
+  sortIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingBottom: 4,
+  },
+  sortIndicatorText: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+
   // 2. Category pills
   pillRow: {
     marginBottom: 18,
-  },
-
-  // 5. Hero card
-  heroWrapper: {
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    marginBottom: 20,
-  },
-  heroCard: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  heroImageWrap: {
-    aspectRatio: 4 / 3,
-    position: 'relative',
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroImagePlaceholder: {
-    fontSize: 32,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    opacity: 0.4,
-  },
-  heroHeartCircle: {
-    position: 'absolute',
-    top: 14,
-    right: 14,
-    zIndex: 2,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  heroOverlay: {
-    position: 'absolute',
-    left: 18,
-    bottom: 14,
-    zIndex: 2,
-  },
-  heroNeighborhood: {
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    opacity: 0.85,
-    fontWeight: '500',
-    fontFamily: fonts.bodyMedium,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0,0,0,0.4)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.5,
-    marginTop: 2,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0,0,0,0.4)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  heroMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 6,
-  },
-  heroRatingPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    borderRadius: 999,
-  },
-  heroRatingText: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    fontFamily: fonts.bodyMedium,
-  },
-  heroMetaText: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    opacity: 0.9,
-    fontFamily: fonts.body,
-  },
-
-  // CTA row
-  heroCta: {
-    padding: 8,
-    paddingLeft: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  heroCtaLeft: {
-    flex: 1,
-    marginRight: 12,
-  },
-  heroCtaOwner: {
-    fontSize: 11,
-    letterSpacing: 0.2,
-    fontFamily: fonts.body,
-    lineHeight: 14,
-  },
-  heroCtaAction: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-    marginTop: 2,
-    lineHeight: 20,
-  },
-  heroCtaArrow: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   // Remaining posts header
