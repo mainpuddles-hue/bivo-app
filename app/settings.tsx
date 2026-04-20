@@ -737,7 +737,7 @@ export default function SettingsScreen() {
                   <View style={s.profileVerifiedRow}>
                     <Check size={10} color={colors.foreground} strokeWidth={2.5} />
                     <Text style={[s.profileVerifiedText, { color: colors.foreground }]}>
-                      {t('settings.emailVerified') ?? 'Vahvistettu'}
+                      {t('settings.emailVerified') ?? 'Verified'}
                     </Text>
                   </View>
                 )}
@@ -751,7 +751,7 @@ export default function SettingsScreen() {
         <Group label={t('settings.sectionAccount')} colors={colors}>
           <Row
             icon={<User size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('profile.title') ?? 'Profiili'}
+            label={t('profile.title') ?? 'Profile'}
             onPress={() => {
               if (editingName) return
               setEditingName(true)
@@ -761,7 +761,7 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<Shield size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.security') ?? 'Vahvistus'}
+            label={t('settings.security') ?? 'Security'}
             value={`${verificationCount} / 3`}
             onPress={() => router.push('/verification')}
             colors={colors}
@@ -770,7 +770,7 @@ export default function SettingsScreen() {
           {FEATURES.PAYMENTS && (
             <Row
               icon={<CreditCard size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={t('payment.settings') ?? 'Maksutavat'}
+              label={t('payment.settings') ?? 'Payment methods'}
               onPress={() => router.push('/payment-settings' as any)}
               colors={colors}
               isDark={isDark}
@@ -788,10 +788,10 @@ export default function SettingsScreen() {
         </Group>
 
         {/* ── Section: Sovellus (App) ── */}
-        <Group label={t('settings.sectionAppearance') ?? 'Sovellus'} colors={colors}>
+        <Group label={t('settings.sectionAppearance') ?? 'App'} colors={colors}>
           <Row
             icon={<Bell size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.notifSection') ?? 'Ilmoitukset'}
+            label={t('settings.notifSection') ?? 'Notifications'}
             switchValue={push.isSupported ? push.isSubscribed : true}
             onSwitchChange={push.isSupported ? (val) => val ? push.subscribe() : push.unsubscribe() : undefined}
             disabled={push.isLoading}
@@ -800,7 +800,7 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<MapPin size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('onboarding.chooseNeighborhood') ?? 'Sijainti'}
+            label={t('onboarding.chooseNeighborhood') ?? 'Location'}
             value={`${profile?.naapurusto ?? userCityName}`}
             onPress={() => setShowNeighborhoodPicker(true)}
             colors={colors}
@@ -816,7 +816,7 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<Globe size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.language') ?? 'Kieli'}
+            label={t('settings.language') ?? 'Language'}
             value={langLabel(locale) ?? locale}
             onPress={() => {
               const locales: Locale[] = ['fi', 'en', 'sv']
@@ -830,7 +830,7 @@ export default function SettingsScreen() {
         </Group>
 
         {/* ── Section: Yksityisyys (Privacy) ── */}
-        <Group label={t('settings.sectionPrivacy') ?? 'Yksityisyys'} colors={colors}>
+        <Group label={t('settings.sectionPrivacy') ?? 'Privacy'} colors={colors}>
           <Row
             icon={<Lock size={16} color={colors.foreground} strokeWidth={1.8} />}
             label={t('settings.profileVisibility') ?? 'Profile visibility'}
@@ -846,7 +846,7 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<Shield size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.privacy') ?? 'Tietosuoja'}
+            label={t('settings.privacy') ?? 'Privacy policy'}
             onPress={() => router.push('/privacy')}
             colors={colors}
             isDark={isDark}
@@ -854,10 +854,10 @@ export default function SettingsScreen() {
         </Group>
 
         {/* ── Section: Tuki (Support) ── */}
-        <Group label={t('settings.sectionAbout') ?? 'Tuki'} colors={colors}>
+        <Group label={t('settings.sectionAbout') ?? 'Support'} colors={colors}>
           <Row
             icon={<HelpCircle size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('help.title') ?? 'Ohje'}
+            label={t('help.title') ?? 'Help'}
             onPress={() => router.push('/help' as any)}
             colors={colors}
             isDark={isDark}
@@ -871,7 +871,7 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<FileText size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.terms') ?? 'Lakitekstit'}
+            label={t('settings.terms') ?? 'Terms & legal'}
             onPress={() => router.push('/terms')}
             colors={colors}
             isDark={isDark}
@@ -906,7 +906,7 @@ export default function SettingsScreen() {
           <Group colors={colors}>
             <Row
               icon={<Building2 size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={profile?.is_business ? (t('business.dashboard') ?? 'Yritystili') : (t('business.upgradeCTA') ?? 'Yritystili')}
+              label={profile?.is_business ? (t('business.dashboard') ?? 'Business account') : (t('business.upgradeCTA') ?? 'Business account')}
               onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
               colors={colors}
               isDark={isDark}
@@ -924,7 +924,7 @@ export default function SettingsScreen() {
         <Group colors={colors}>
           <Row
             icon={<Bookmark size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('saved.title') ?? 'Tallennetut'}
+            label={t('saved.title') ?? 'Saved'}
             onPress={() => router.push('/saved')}
             colors={colors}
             isDark={isDark}

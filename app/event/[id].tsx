@@ -104,14 +104,14 @@ function EventDetailScreenInner() {
     if (joiningRef.current || !event) return
     // Prevent joining past events
     if (!isNaN(new Date(event.event_date).getTime()) && new Date(event.event_date) < new Date()) {
-      Alert.alert(t('common.error'), t('events.eventPassed') ?? 'Tapahtuma on jo päättynyt')
+      Alert.alert(t('common.error'), t('events.eventPassed') ?? 'Event has already ended')
       return
     }
     // Prevent overbooking — re-check capacity from DB
     if (event.max_participants) {
       const { count } = await supabase.from('community_event_participants').select('*', { count: 'exact', head: true }).eq('event_id', event.id).in('status', ['joined', 'approved'])
       if ((count ?? 0) >= event.max_participants) {
-        Alert.alert(t('common.error'), t('events.eventFull') ?? 'Tapahtuma on täynnä')
+        Alert.alert(t('common.error'), t('events.eventFull') ?? 'Event is full')
         await fetchEvent()
         return
       }
