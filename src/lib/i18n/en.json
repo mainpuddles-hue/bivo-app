@@ -140,7 +140,10 @@
     "inviteButton": "Invite neighbor →",
     "inviteShareText": "Join TackBird — your neighborhood bulletin board! https://tackbird.com",
     "welcomeToast": "Welcome to {neighborhood}'s bulletin board!",
-    "welcomeToastGeneric": "Welcome to TackBird!"
+    "welcomeToastGeneric": "Welcome to TackBird!",
+    "mapView": "Map view",
+    "listView": "List view",
+    "postsOnMap": "posts on map"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",

@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ViewToken, ScrollView
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Map, LayoutGrid } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -22,6 +22,7 @@ import { PostCardSkeleton, FeedLoadMoreSkeleton } from '@/components/SkeletonLoa
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { DiscoveryStack } from '@/components/DiscoveryStack'
+import { FeedMapView } from '@/components/FeedMapView'
 import type { Post, PostType } from '@/lib/types'
 
 function FeedScreenInner() {
@@ -37,6 +38,8 @@ function FeedScreenInner() {
   const { trackInteraction } = useInteractionTracker(feed.currentUserId)
   const { onlineCount } = usePresence(feed.currentUserId, feed.userNeighborhood)
   useSessionManager(feed.currentUserId)
+
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
 
   // NOTE: User profile/greeting removed — mockup 05 uses location-based header
 
@@ -175,6 +178,50 @@ function FeedScreenInner() {
   // ── Render ──
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {viewMode === 'map' ? (
+        <>
+          {/* Map header — same top area as list mode */}
+          <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
+            <View style={styles.headerRow}>
+              <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.headerLeft} hitSlop={8}>
+                <Text style={[styles.headerLocation, { color: colors.mutedForeground }]}>
+                  {feed.userNeighborhood ?? 'Helsinki'}
+                  {onlineCount > 0 ? ` · ${onlineCount} ${t('feed.online') ?? 'paikalla'}` : ''}
+                </Text>
+                <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+                  {t('feed.nearbyNow') ?? 'Nearby now'}
+                </Text>
+              </PressableOpacity>
+              <View style={styles.headerRight}>
+                <PressableOpacity
+                  onPress={() => router.push('/search')}
+                  style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  accessibilityLabel={t('common.search')}
+                  accessibilityRole="button"
+                >
+                  <Search size={16} color={colors.foreground} strokeWidth={2} />
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode('list') }}
+                  style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  accessibilityLabel={t('feed.listView') ?? 'List view'}
+                  accessibilityRole="button"
+                >
+                  <LayoutGrid size={16} color={colors.foreground} strokeWidth={2} />
+                </PressableOpacity>
+              </View>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }} style={styles.pillRow}>
+              <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
+            </ScrollView>
+          </View>
+          <FeedMapView
+            posts={visiblePosts}
+            userLocation={feed.userLocation}
+            activeFilter={feed.activeFilter}
+          />
+        </>
+      ) : (
       <FlatList
         data={remainingPosts}
         renderItem={renderPost}
@@ -205,6 +252,18 @@ function FeedScreenInner() {
                     accessibilityRole="button"
                   >
                     <Search size={16} color={colors.foreground} strokeWidth={2} />
+                  </PressableOpacity>
+                  <PressableOpacity
+                    onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode(v => v === 'list' ? 'map' : 'list') }}
+                    style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                    accessibilityLabel={viewMode === 'list' ? (t('feed.mapView') ?? 'Map view') : (t('feed.listView') ?? 'List view')}
+                    accessibilityRole="button"
+                  >
+                    {viewMode === 'list' ? (
+                      <Map size={16} color={colors.foreground} strokeWidth={2} />
+                    ) : (
+                      <LayoutGrid size={16} color={colors.foreground} strokeWidth={2} />
+                    )}
                   </PressableOpacity>
                   <PressableOpacity
                     onPress={() => {
@@ -368,6 +427,7 @@ function FeedScreenInner() {
         maxToRenderPerBatch={10}
         windowSize={5}
       />
+      )}
 
       {/* FAB — create new post */}
       <PressableOpacity

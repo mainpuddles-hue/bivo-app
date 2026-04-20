@@ -140,7 +140,10 @@
     "inviteButton": "Bjud in granne →",
     "inviteShareText": "Gå med i TackBird — ditt grannskaps anslagstavla! https://tackbird.com",
     "welcomeToast": "Välkommen till {neighborhood}s anslagstavla!",
-    "welcomeToastGeneric": "Välkommen till TackBird!"
+    "welcomeToastGeneric": "Välkommen till TackBird!",
+    "mapView": "Kartvy",
+    "listView": "Listvy",
+    "postsOnMap": "annonser på kartan"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",

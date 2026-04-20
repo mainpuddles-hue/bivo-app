@@ -140,7 +140,10 @@
     "inviteButton": "Kutsu naapuri →",
     "inviteShareText": "Liity TackBirdiin — naapurustosi ilmoitustaulu! https://tackbird.com",
     "welcomeToast": "Tervetuloa {neighborhood}n ilmoitustaululle!",
-    "welcomeToastGeneric": "Tervetuloa TackBirdiin!"
+    "welcomeToastGeneric": "Tervetuloa TackBirdiin!",
+    "mapView": "Karttanäkymä",
+    "listView": "Listanäkymä",
+    "postsOnMap": "ilmoitusta kartalla"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
