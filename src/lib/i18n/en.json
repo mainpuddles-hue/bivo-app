@@ -47,7 +47,13 @@
     "continue": "Continue",
     "notFound": "Not found",
     "tryAgain": "Try again",
-    "details": "Details"
+    "details": "Details",
+    "accept": "Accept",
+    "decline": "Decline",
+    "readMore": "Read more",
+    "show": "Show",
+    "showAll": "Show all",
+    "showLess": "Show less"
   },
   "nav": {
     "feed": "Home",
@@ -69,6 +75,7 @@
     "newPosts": "New posts — refresh",
     "refresh": "Refresh",
     "allLoaded": "All posts loaded",
+    "morePosts": "More posts",
     "popular": "Popular",
     "nearbyNow": "Nearby now",
     "createPost": "Create post",
@@ -161,6 +168,7 @@
     "atTime": "at"
   },
   "post": {
+    "reviews": "Reviews",
     "save": "Save",
     "saved": "Saved",
     "unsave": "Unsave",
@@ -518,6 +526,7 @@
   },
   "messages": {
     "title": "Messages",
+    "directMessages": "Direct messages",
     "noConversations": "No conversations yet. Start chatting with a neighbor!",
     "newMessage": "New message",
     "noArchivedConversations": "No archived conversations",
@@ -530,6 +539,7 @@
     "typing": "typing...",
     "sendPlaceholder": "Type a message...",
     "imageMessage": "📷 Image",
+    "startConversation": "Start a conversation",
     "startHint": "Start a conversation by messaging the poster",
     "startCta": "Start a conversation",
     "archivedHint": "Archived conversations appear here",
@@ -598,6 +608,7 @@
   },
   "profile": {
     "title": "Profile",
+    "joined": "Joined",
     "loginRequired": "Log in to see your profile",
     "loginHint": "Log in to see your profile, posts, and manage your account.",
     "editBio": "Edit bio",
@@ -1454,6 +1465,13 @@
   },
   "create": {
     "title": "Create post",
+    "newPost": "New post",
+    "draft": "Draft",
+    "iWant": "I want to...",
+    "addTag": "Add tag",
+    "mainImageHint": "First image will be shown as the main image",
+    "timing": "Timing",
+    "timingPlaceholder": "e.g. weekdays 9am–5pm",
     "selectType": "Select type",
     "fillDetails": "Fill in the details",
     "labelTitle": "Title",
@@ -2666,6 +2684,7 @@
   },
   "explore": {
     "title": "Explore",
+    "discoverLabel": "Explore your area",
     "openMap": "Open map",
     "mapHint": "See listings, events, and places on the map",
     "eventsThisWeek": "{count} events this week",

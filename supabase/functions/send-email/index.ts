@@ -171,6 +171,20 @@ serve(async (req) => {
       })
     }
 
+    // Authorization: users can only send transactional emails to their own address.
+    // Fetch caller's email from profile and compare.
+    const { data: callerProfile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', user.id)
+      .maybeSingle()
+    const callerEmail = callerProfile?.email ?? user.email
+    if (to_email.toLowerCase() !== callerEmail?.toLowerCase()) {
+      return new Response(JSON.stringify({ error: 'Can only send to your own email' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const { subject, html } = TEMPLATES[template](data ?? {})
 
     // Send via Resend API

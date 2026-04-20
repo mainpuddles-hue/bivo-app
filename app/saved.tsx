@@ -156,7 +156,8 @@ function SavedScreenInner() {
     try {
       const cachedId = await getCachedUserId()
       if (!cachedId) throw new Error('Not authenticated')
-      await (supabase.from('saved_posts') as any).delete().eq('post_id', postId).eq('user_id', cachedId)
+      const { error: unsaveErr } = await (supabase.from('saved_posts') as any).delete().eq('post_id', postId).eq('user_id', cachedId)
+      if (unsaveErr) throw unsaveErr
     } catch {
       if (removedPost) {
         const restored = removedPost

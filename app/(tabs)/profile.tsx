@@ -74,6 +74,7 @@ export default function ProfileScreen() {
   const [allPostsLoading, setAllPostsLoading] = useState(false)
   const [allPostsLoaded, setAllPostsLoaded] = useState(false)
   const [postFilter, setPostFilter] = useState<'all' | 'active' | 'expired' | 'closed'>('all')
+  const [visiblePostCount, setVisiblePostCount] = useState(20)
   const [fetchError, setFetchError] = useState(false)
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
@@ -278,9 +279,16 @@ export default function ProfileScreen() {
   }, [])
 
   const filteredPosts = useMemo(() => {
-    if (postFilter === 'all') return allPosts
-    return allPosts.filter(p => getPostStatus(p) === postFilter)
+    const base = postFilter === 'all' ? allPosts : allPosts.filter(p => getPostStatus(p) === postFilter)
+    return base
   }, [allPosts, postFilter, getPostStatus])
+
+  // Paginated slice — avoids rendering 100+ items at once in ScrollView
+  const visiblePosts = useMemo(() => filteredPosts.slice(0, visiblePostCount), [filteredPosts, visiblePostCount])
+  const hasMorePosts = filteredPosts.length > visiblePostCount
+
+  // Reset visible count when filter changes
+  useEffect(() => { setVisiblePostCount(20) }, [postFilter])
 
   // Post actions
   const handleReactivatePost = useCallback(async (postId: string) => {
@@ -625,7 +633,7 @@ export default function ProfileScreen() {
               <View style={{ alignItems: 'center', paddingVertical: 24 }}>
                 <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
               </View>
-            ) : filteredPosts.length === 0 ? (
+            ) : visiblePosts.length === 0 ? (
               <View style={s.emptyActivity}>
                 <View style={[s.emptyPostsIconCircle, { backgroundColor: colors.foreground + '10' }]}>
                   <FileText size={48} color={colors.foreground} strokeWidth={1.6} />
@@ -636,7 +644,8 @@ export default function ProfileScreen() {
                 </PressableOpacity>
               </View>
             ) : (
-              filteredPosts.map((post) => {
+              <>
+              {visiblePosts.map((post) => {
                 const status = getPostStatus(post)
                 const statusColor = status === 'active' ? (colors.success ?? colors.foreground)
                   : status === 'expired' ? colors.foreground
@@ -695,7 +704,21 @@ export default function ProfileScreen() {
                     </View>
                   </View>
                 )
-              })
+              })}
+              {hasMorePosts && (
+                <PressableOpacity
+                  onPress={() => setVisiblePostCount(prev => prev + 20)}
+                  style={[s.loadMoreBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('search.loadMore')}
+                >
+                  <Text style={[s.loadMoreText, { color: colors.foreground }]}>{t('search.loadMore')}</Text>
+                  <Text style={[s.loadMoreHint, { color: colors.mutedForeground }]}>
+                    {visiblePostCount}/{filteredPosts.length}
+                  </Text>
+                </PressableOpacity>
+              )}
+              </>
             )}
           </View>
         )}
@@ -895,4 +918,7 @@ const s = StyleSheet.create({
   myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
   postFilterChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44 , justifyContent: 'center' as const },
   postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  loadMoreBtn: { alignItems: 'center', gap: 4, paddingVertical: 14, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, minHeight: 48, justifyContent: 'center' as const },
+  loadMoreText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
+  loadMoreHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
 })

@@ -47,7 +47,13 @@
     "continue": "Fortsätt",
     "notFound": "Hittades inte",
     "tryAgain": "Försök igen",
-    "details": "Detaljer"
+    "details": "Detaljer",
+    "accept": "Acceptera",
+    "decline": "Avvisa",
+    "readMore": "Läs mer",
+    "show": "Visa",
+    "showAll": "Visa alla",
+    "showLess": "Visa mindre"
   },
   "nav": {
     "feed": "Hem",
@@ -69,6 +75,7 @@
     "newPosts": "Nya inlägg — uppdatera",
     "refresh": "Uppdatera",
     "allLoaded": "Alla inlägg laddade",
+    "morePosts": "Fler inlägg",
     "popular": "Populär",
     "nearbyNow": "Nära nu",
     "createPost": "Skapa inlägg",
@@ -161,6 +168,7 @@
     "atTime": "kl."
   },
   "post": {
+    "reviews": "Recensioner",
     "save": "Spara",
     "saved": "Sparad",
     "unsave": "Ta bort sparning",
@@ -500,6 +508,7 @@
   },
   "messages": {
     "title": "Meddelanden",
+    "directMessages": "Direktmeddelanden",
     "noConversations": "Inga konversationer annu. Borja chatta med en granne!",
     "noArchivedConversations": "Inga arkiverade konversationer",
     "archive": "Arkivera",
@@ -511,6 +520,7 @@
     "typing": "skriver...",
     "sendPlaceholder": "Skriv ett meddelande...",
     "imageMessage": "📷 Bild",
+    "startConversation": "Starta en konversation",
     "startHint": "Starta en konversation genom att skicka ett meddelande till annonsören",
     "startCta": "Starta en konversation",
     "archivedHint": "Arkiverade konversationer visas här",
@@ -579,6 +589,7 @@
   },
   "profile": {
     "title": "Profil",
+    "joined": "Gick med",
     "loginRequired": "Logga in för att se din profil",
     "loginHint": "Logga in för att se din profil, inlägg och hantera ditt konto.",
     "editBio": "Redigera presentation",
@@ -1419,6 +1430,13 @@
   },
   "create": {
     "title": "Skapa inlägg",
+    "newPost": "Nytt inlägg",
+    "draft": "Utkast",
+    "iWant": "Jag vill...",
+    "addTag": "Lägg till tagg",
+    "mainImageHint": "Första bilden visas som huvudbild",
+    "timing": "Tidpunkt",
+    "timingPlaceholder": "t.ex. vardagar kl 9–17",
     "selectType": "Välj typ",
     "fillDetails": "Fyll i uppgifterna",
     "labelTitle": "Titel",
@@ -2631,6 +2649,7 @@
   },
   "explore": {
     "title": "Utforska",
+    "discoverLabel": "Utforska ditt område",
     "openMap": "Öppna karta",
     "mapHint": "Se annonser, evenemang och platser på kartan",
     "eventsThisWeek": "{count} evenemang denna vecka",

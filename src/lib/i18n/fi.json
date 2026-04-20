@@ -47,7 +47,13 @@
     "continue": "Jatka",
     "notFound": "Ei löytynyt",
     "tryAgain": "Yritä uudelleen",
-    "details": "Tiedot"
+    "details": "Tiedot",
+    "accept": "Hyväksy",
+    "decline": "Hylkää",
+    "readMore": "Lue lisää",
+    "show": "Näytä",
+    "showAll": "Näytä kaikki",
+    "showLess": "Näytä vähemmän"
   },
   "nav": {
     "feed": "Koti",
@@ -69,6 +75,7 @@
     "newPosts": "Uusia ilmoituksia — päivitä",
     "refresh": "Päivitä",
     "allLoaded": "Kaikki ilmoitukset ladattu",
+    "morePosts": "Lisää ilmoituksia",
     "popular": "Suosittu",
     "nearbyNow": "Lähellä nyt",
     "createPost": "Luo ilmoitus",
@@ -161,6 +168,7 @@
     "atTime": "klo"
   },
   "post": {
+    "reviews": "Arvostelut",
     "save": "Tallenna",
     "saved": "Tallennettu",
     "unsave": "Poista tallennus",
@@ -518,6 +526,7 @@
   },
   "messages": {
     "title": "Viestit",
+    "directMessages": "Yksityisviestit",
     "noConversations": "Ei vielä keskusteluja. Aloita juttelemalla naapurillesi!",
     "newMessage": "Uusi viesti",
     "noArchivedConversations": "Ei arkistoituja keskusteluja.",
@@ -530,6 +539,7 @@
     "typing": "kirjoittaa...",
     "sendPlaceholder": "Kirjoita viesti...",
     "imageMessage": "📷 Kuva",
+    "startConversation": "Aloita keskustelu",
     "startHint": "Aloita keskustelu lähettämällä viesti ilmoituksen tekijälle",
     "startCta": "Aloita keskustelu",
     "archivedHint": "Arkistoidut keskustelut näkyvät täällä",
@@ -598,6 +608,7 @@
   },
   "profile": {
     "title": "Profiili",
+    "joined": "Liittynyt",
     "loginRequired": "Kirjaudu sisään nähdäksesi profiilisi",
     "loginHint": "Kirjaudu sisään nähdäksesi profiilisi, ilmoituksesi ja hallitaksesi tiliäsi.",
     "editBio": "Muokkaa esittelyä",
@@ -1454,6 +1465,13 @@
   },
   "create": {
     "title": "Luo ilmoitus",
+    "newPost": "Uusi ilmoitus",
+    "draft": "Luonnos",
+    "iWant": "Haluan...",
+    "addTag": "Lisää tagi",
+    "mainImageHint": "Ensimmäinen kuva näytetään pääkuvana",
+    "timing": "Aikataulu",
+    "timingPlaceholder": "esim. arkisin klo 9–17",
     "selectType": "Valitse tyyppi",
     "fillDetails": "Täytä tiedot",
     "labelTitle": "Otsikko",
@@ -2666,6 +2684,7 @@
   },
   "explore": {
     "title": "Tutustu",
+    "discoverLabel": "Tutustu alueeseen",
     "openMap": "Avaa kartta",
     "mapHint": "Näe ilmoitukset, tapahtumat ja paikat kartalla",
     "eventsThisWeek": "{count} tapahtumaa tällä viikolla",

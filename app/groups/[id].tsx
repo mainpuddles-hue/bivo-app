@@ -226,7 +226,8 @@ export default function GroupDetailScreen() {
     if (isMember) {
       setIsMember(false); setIsAdmin(false)
       try {
-        await (supabase.from('group_members') as any).delete().eq('group_id', id).eq('user_id', currentUserId)
+        const { error: leaveErr } = await (supabase.from('group_members') as any).delete().eq('group_id', id).eq('user_id', currentUserId)
+        if (leaveErr) throw leaveErr
         // Sync member count from source of truth
         const { count } = await supabase.from('group_members').select('*', { count: 'exact', head: true }).eq('group_id', id)
         const realCount = count ?? Math.max(0, group.member_count - 1)

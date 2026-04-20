@@ -394,10 +394,11 @@ function ConversationScreenInner() {
       const { error: uploadError } = await supabase.storage.from('message-images').upload(path, arrayBuffer, { contentType: mimeType })
       if (uploadError) throw uploadError
       const { data: urlData } = supabase.storage.from('message-images').getPublicUrl(path)
-      await (supabase.from('messages') as any).insert({
+      const { error: msgError } = await (supabase.from('messages') as any).insert({
         conversation_id: id, sender_id: userId,
         content: '', image_url: urlData.publicUrl,
       })
+      if (msgError) throw msgError
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
     } catch (err) {
       Alert.alert(t('common.error'), t('messages.imageSendFailed'))

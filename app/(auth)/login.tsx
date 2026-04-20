@@ -149,11 +149,12 @@ function LoginScreenInner() {
         if (signUpData?.user) {
           const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', signUpData.user.id).maybeSingle()
           if (!existingProfile) {
-            await (supabase.from('profiles') as any).insert({
+            const { error: profileError } = await (supabase.from('profiles') as any).insert({
               id: signUpData.user.id,
               email: email.trim(),
               name: name.trim(),
             })
+            if (profileError) console.error('[auth] CRITICAL: profile creation failed:', profileError.message)
           }
         }
 

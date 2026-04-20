@@ -64,6 +64,15 @@ serve(async (req) => {
   }
 
   try {
+    // Validate request comes from our app via apikey header (Supabase anon key)
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const reqApiKey = req.headers.get('apikey') ?? ''
+    if (!anonKey || reqApiKey !== anonKey) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const url = new URL(req.url)
     const incomingParams = url.searchParams
 
