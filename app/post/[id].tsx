@@ -114,6 +114,8 @@ function PostDetailScreenInner() {
   const [serviceNotes, setServiceNotes] = useState('')
   const [sendingService, setSendingService] = useState(false)
 
+  const { width: screenWidth } = useWindowDimensions()
+
   const loadPost = useCallback(async () => {
     if (!id || !isValidUUID(id)) { setLoading(false); setRefreshing(false); setLoadError(t('post.notFound') ?? 'Post not found'); return }
 
@@ -867,8 +869,6 @@ function PostDetailScreenInner() {
   // expirationInfo moved before early returns (React hooks rules)
 
   const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
-
-  const { width: screenWidth } = useWindowDimensions()
 
   return (
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
