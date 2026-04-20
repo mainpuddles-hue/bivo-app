@@ -1852,6 +1852,8 @@
     "noSavedSearches": "Ei tallennettuja hakuja",
     "searchSaved": "Haku tallennettu",
     "searchRemoved": "Haku poistettu",
+    "pushOn": "Ilmoitukset päällä",
+    "pushOff": "Ilmoitukset pois",
     "locationRequired": "Sijaintilupa tarvitaan etäisyyssuodattimelle",
     "selectDate": "Valitse päivä",
     "timeToday": "Tänään",

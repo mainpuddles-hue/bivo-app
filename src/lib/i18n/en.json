@@ -1852,6 +1852,8 @@
     "noSavedSearches": "No saved searches yet",
     "searchSaved": "Search saved",
     "searchRemoved": "Search removed",
+    "pushOn": "Notifications on",
+    "pushOff": "Notifications off",
     "locationRequired": "Location access needed for distance filter",
     "selectDate": "Select date",
     "timeToday": "Today",

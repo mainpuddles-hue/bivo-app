@@ -94,6 +94,7 @@ function getLocalizedTypeTitle(type: string, t: (k: string) => string): string |
     new_post_nearby: 'notifications.newPostNearby',
     neighborhood_digest: 'notifications.neighborhoodDigest',
     payment_failed: 'notifications.paymentFailed',
+    search_match: 'notifications.savedSearchMatch',
   }
   const key = typeMap[type]
   if (!key) return null
@@ -288,6 +289,9 @@ function NotificationsScreenInner() {
       else if (item.link_type === 'profile') router.push(`/profile/${linkId}`)
       else if (item.link_type === 'booking') router.push(`/booking/${linkId}`)
       else if (item.link_type === 'event') router.push(`/event/${linkId}` as any)
+      else if (item.type === 'search_match' && (item as any).data?.post_id) {
+        router.push(`/post/${(item as any).data.post_id}`)
+      }
     } catch (err) {
       if (__DEV__) console.error('[notifications] handleTap error:', err)
     }

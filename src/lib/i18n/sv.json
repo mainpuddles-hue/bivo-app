@@ -1817,6 +1817,8 @@
     "noSavedSearches": "Inga sparade sökningar",
     "searchSaved": "Sökning sparad",
     "searchRemoved": "Sökning borttagen",
+    "pushOn": "Notiser på",
+    "pushOff": "Notiser av",
     "locationRequired": "Platsåtkomst krävs för avståndsfilter",
     "selectDate": "Välj datum",
     "timeToday": "Idag",

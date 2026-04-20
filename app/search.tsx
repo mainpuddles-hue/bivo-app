@@ -7,7 +7,7 @@ import { PressableOpacity } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, ChevronDown, Star, Trash2, Heart, CalendarDays, Users, Plus } from 'lucide-react-native'
+import { Search as SearchIcon, X, SlidersHorizontal, Clock, TrendingUp, MapPin, LayoutGrid, ChevronRight, ChevronDown, Star, Trash2, Heart, CalendarDays, Users, Plus, Bell, BellOff } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SearchSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -44,6 +44,8 @@ interface SavedSearch {
   query: string
   filters: SearchFilterValues
   createdAt: string
+  push_enabled?: boolean
+  match_count?: number
 }
 
 /**
@@ -82,6 +84,7 @@ interface DiscoveryViewProps {
   savedSearches: SavedSearch[]
   loadSavedSearch: (saved: SavedSearch) => void
   removeSavedSearch: (id: string) => Promise<void>
+  toggleSearchPush: (id: string) => void
   trendingPosts: { id: string; title: string; type: string; like_count: number }[]
   demandInsights: { tag: string; count: number }[]
   router: ReturnType<typeof useRouter>
@@ -94,8 +97,8 @@ interface DiscoveryViewProps {
 function DiscoveryView({
   query, setQuery,
   executeSearch, history, handleHistoryChipTap, removeFromHistory,
-  savedSearches, loadSavedSearch, removeSavedSearch, trendingPosts,
-  demandInsights,
+  savedSearches, loadSavedSearch, removeSavedSearch, toggleSearchPush,
+  trendingPosts, demandInsights,
   router, colors, isDark, t, setActiveFilter,
 }: DiscoveryViewProps) {
   return (
@@ -156,9 +159,20 @@ function DiscoveryView({
                     )}
                   </View>
                 </PressableOpacity>
-                <PressableOpacity onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
-                  <Trash2 size={14} color={colors.mutedForeground} />
-                </PressableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  {saved.id.includes('-') && (
+                    <PressableOpacity onPress={() => toggleSearchPush(saved.id)} hitSlop={8} accessibilityLabel={saved.push_enabled ? t('search.pushOff') : t('search.pushOn')}>
+                      {saved.push_enabled ? (
+                        <Bell size={14} color={colors.primary} />
+                      ) : (
+                        <BellOff size={14} color={colors.mutedForeground} />
+                      )}
+                    </PressableOpacity>
+                  )}
+                  <PressableOpacity onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
+                    <Trash2 size={14} color={colors.mutedForeground} />
+                  </PressableOpacity>
+                </View>
               </View>
             )
           })}
@@ -443,15 +457,50 @@ function SearchScreenInner() {
     })
   }, [supabase])
 
-  // Load search history + saved searches + recent searches
+  // Current user ID for Supabase sync
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  useEffect(() => {
+    getCachedUserId().then(id => { if (id) setCurrentUserId(id) }).catch(() => {})
+  }, [])
+
+  // Load search history + saved searches (prefer Supabase, fallback to AsyncStorage)
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY).then(stored => {
       if (stored) try { setHistory(JSON.parse(stored)) } catch {}
     }).catch(() => {})
-    AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
-      if (stored) try { setSavedSearches(JSON.parse(stored)) } catch {}
-    }).catch(() => {})
-  }, [])
+    // Load saved searches from Supabase if logged in
+    if (currentUserId) {
+      Promise.resolve(
+        supabase
+          .from('saved_searches')
+          .select('id, query, filters, push_enabled, match_count, created_at')
+          .eq('user_id', currentUserId)
+          .order('created_at', { ascending: false })
+          .limit(20)
+      ).then(({ data }) => {
+          if (data && data.length > 0) {
+            setSavedSearches((data as any[]).map(s => ({
+              id: s.id,
+              query: s.query,
+              filters: s.filters ?? {},
+              createdAt: s.created_at,
+              push_enabled: s.push_enabled ?? true,
+              match_count: s.match_count ?? 0,
+            })))
+          }
+        })
+        .catch(() => {
+          // Fallback to local
+          AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
+            if (stored) try { setSavedSearches(JSON.parse(stored)) } catch {}
+          }).catch(() => {})
+        })
+    } else {
+      AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
+        if (stored) try { setSavedSearches(JSON.parse(stored)) } catch {}
+      }).catch(() => {})
+    }
+  }, [currentUserId, supabase])
 
   const addToHistory = useCallback(async (q: string) => {
     const updated = [q, ...history.filter(h => h !== q)].slice(0, MAX_HISTORY)
@@ -468,22 +517,68 @@ function SearchScreenInner() {
   const saveCurrentSearch = useCallback(async () => {
     const q = query.trim()
     if (!q) return
+
+    // Save to Supabase if logged in
+    if (currentUserId) {
+      const { data, error } = await (supabase.from('saved_searches') as any).upsert(
+        { user_id: currentUserId, query: q, filters, push_enabled: true },
+        { onConflict: 'user_id,query' },
+      ).select('id, query, filters, push_enabled, match_count, created_at').maybeSingle()
+
+      if (!error && data) {
+        const newSaved: SavedSearch = {
+          id: data.id,
+          query: data.query,
+          filters: data.filters ?? {},
+          createdAt: data.created_at,
+          push_enabled: data.push_enabled ?? true,
+          match_count: data.match_count ?? 0,
+        }
+        setSavedSearches(prev => {
+          const existing = prev.filter(s => s.id !== data.id && s.query !== q)
+          return [newSaved, ...existing].slice(0, 20)
+        })
+        return
+      }
+    }
+
+    // Fallback: local-only
     const newSaved: SavedSearch = {
       id: Date.now().toString(),
       query: q,
       filters: { ...filters },
       createdAt: new Date().toISOString(),
+      push_enabled: false,
     }
     const updated = [newSaved, ...savedSearches].slice(0, 20)
     setSavedSearches(updated)
     await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
-  }, [query, filters, savedSearches])
+  }, [query, filters, savedSearches, currentUserId, supabase])
 
   const removeSavedSearch = useCallback(async (id: string) => {
     const updated = savedSearches.filter(s => s.id !== id)
     setSavedSearches(updated)
+    // Delete from Supabase if it looks like a UUID (server-side search)
+    if (currentUserId && id.includes('-')) {
+      await (supabase.from('saved_searches') as any).delete().eq('id', id).catch(() => {})
+    }
     await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
-  }, [savedSearches])
+  }, [savedSearches, currentUserId, supabase])
+
+  const toggleSearchPush = useCallback((id: string) => {
+    setSavedSearches(prev => prev.map(s => {
+      if (s.id !== id) return s
+      const newEnabled = !s.push_enabled
+      // Update Supabase in background
+      if (currentUserId && id.includes('-')) {
+        (supabase.from('saved_searches') as any)
+          .update({ push_enabled: newEnabled })
+          .eq('id', id)
+          .catch(() => {})
+      }
+      return { ...s, push_enabled: newEnabled }
+    }))
+  }, [currentUserId, supabase])
 
   // Note: executeSearch is defined below but will be available by the time
   // the setTimeout callback runs. We use a ref to avoid stale closures.
@@ -1323,6 +1418,7 @@ function SearchScreenInner() {
           savedSearches={savedSearches}
           loadSavedSearch={loadSavedSearch}
           removeSavedSearch={removeSavedSearch}
+          toggleSearchPush={toggleSearchPush}
           trendingPosts={trendingPosts}
           demandInsights={demandInsights}
           router={router}
