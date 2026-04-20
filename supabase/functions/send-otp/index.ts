@@ -22,6 +22,89 @@ function generateCode(): string {
   return String(array[0] % 900000 + 100000)
 }
 
+// --- MX record validation for disposable email detection ---
+
+// In-memory cache for MX lookup results (persists for function lifetime)
+const mxCache = new Map<string, { hasMx: boolean; checkedAt: number }>()
+const MX_CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+
+// Known disposable email MX hosts — domains whose MX records point to these are likely disposable
+const DISPOSABLE_MX_HOSTS = [
+  'mx.yopmail.com',
+  'mx1.guerrillamail.com',
+  'mx2.guerrillamail.com',
+  'mail.sharklasers.com',
+  'mx.throwaway.email',
+  'mx.tempail.com',
+  'mx.mailinator.com',
+  'mx1.tempmailo.com',
+  'mx2.tempmailo.com',
+  'mx.dispostable.com',
+  'mx.trashmail.com',
+  'mx.fakeinbox.com',
+]
+
+/**
+ * Check if a domain has valid MX records using Deno's DNS resolver.
+ * Returns false (reject) if:
+ *   - Domain has no MX records at all
+ *   - Domain's MX records point to known disposable email services
+ * Returns true (allow) if:
+ *   - Domain has valid MX records not matching disposable patterns
+ *   - DNS lookup times out (fail-open to avoid blocking legitimate emails)
+ *   - DNS lookup fails for any reason (fail-open)
+ */
+async function hasMxRecords(domain: string): Promise<boolean> {
+  // Check cache first
+  const cached = mxCache.get(domain)
+  if (cached && Date.now() - cached.checkedAt < MX_CACHE_TTL) {
+    return cached.hasMx
+  }
+
+  try {
+    // Race DNS lookup against a 2-second timeout
+    const result = await Promise.race([
+      Deno.resolveDns(domain, 'MX'),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
+    ])
+
+    // Timeout — fail open (allow the email)
+    if (result === null) {
+      mxCache.set(domain, { hasMx: true, checkedAt: Date.now() })
+      return true
+    }
+
+    const mxRecords = result as Deno.MxRecord[]
+
+    // No MX records → reject
+    if (!mxRecords || mxRecords.length === 0) {
+      mxCache.set(domain, { hasMx: false, checkedAt: Date.now() })
+      return false
+    }
+
+    // Check if MX records point to known disposable services
+    const isDisposable = mxRecords.some((mx) =>
+      DISPOSABLE_MX_HOSTS.some((disposableHost) =>
+        mx.exchange.toLowerCase().replace(/\.$/, '') === disposableHost
+      )
+    )
+
+    if (isDisposable) {
+      mxCache.set(domain, { hasMx: false, checkedAt: Date.now() })
+      return false
+    }
+
+    // Valid MX records that are not known disposable hosts
+    mxCache.set(domain, { hasMx: true, checkedAt: Date.now() })
+    return true
+  } catch {
+    // DNS resolution failed (NXDOMAIN, SERVFAIL, etc.) — fail open to avoid
+    // false positives for domains with temporary DNS issues
+    mxCache.set(domain, { hasMx: true, checkedAt: Date.now() })
+    return true
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -66,9 +149,12 @@ serve(async (req) => {
 
     const cleanEmail = email.trim().toLowerCase()
 
-    // Block disposable email domains
+    // Block disposable email domains — two-layer check:
+    // 1. Static blocklist in DB (fast)
+    // 2. MX record validation (catches unknown disposable domains)
     const emailDomain = cleanEmail.split('@')[1]
     if (emailDomain) {
+      // Layer 1: Static blocklist check
       const { data: blockedDomain } = await supabase
         .from('blocked_email_domains')
         .select('domain')
@@ -76,6 +162,15 @@ serve(async (req) => {
         .maybeSingle()
 
       if (blockedDomain) {
+        return new Response(JSON.stringify({ error: 'This email provider is not supported' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Layer 2: MX record validation — reject domains with no MX records
+      // or MX records pointing to known disposable email services
+      const domainHasMx = await hasMxRecords(emailDomain)
+      if (!domainHasMx) {
         return new Response(JSON.stringify({ error: 'This email provider is not supported' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })

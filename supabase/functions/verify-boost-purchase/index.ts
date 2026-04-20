@@ -138,51 +138,19 @@ serve(async (req) => {
       // Apple receipt validation
       receipt_valid = await validateAppleReceipt(receipt_data, validation_details)
     } else if (platform === 'android') {
-      // Google Play: do NOT auto-grant credits — flag for manual review.
-      // Full Google validation requires OAuth2 service account setup.
-      receipt_valid = false
-      validation_details = {
-        mode: 'android_pending_review',
-        note: 'Receipt requires manual verification before credits are granted',
-        receipt_data_length: receipt_data?.length ?? 0,
-        receipt_data_preview: typeof receipt_data === 'string' ? receipt_data.slice(0, 200) : null,
-      }
-      console.log('[verify-boost-purchase] Android receipt pending manual review:', {
-        user_id: user.id,
+      // Google Play receipt validation via Android Publisher API
+      receipt_valid = await validateGooglePlayReceipt(
         product_id,
-        transaction_id,
-        receipt_data_length: receipt_data?.length ?? 0,
-      })
+        receipt_data,
+        validation_details,
+      )
     }
 
     if (!receipt_valid) {
-      // For Android pending review, store the purchase record and return pending status
-      if (platform === 'android') {
-        await supabase
-          .from('boost_purchases')
-          .insert({
-            user_id: user.id,
-            platform,
-            product_id,
-            transaction_id,
-            receipt_data: receipt_data ?? null,
-            credits_granted: 0,
-            validation_details,
-            created_at: new Date().toISOString(),
-          })
-
-        return new Response(JSON.stringify({
-          success: false,
-          verification_status: 'pending_review',
-          credits_granted: 0,
-          message: 'Android purchase is pending manual verification. Credits will be granted after review.',
-        }), {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-
-      return new Response(JSON.stringify({ error: 'Receipt validation failed' }), {
+      return new Response(JSON.stringify({
+        error: 'Receipt validation failed',
+        details: validation_details,
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -361,4 +329,234 @@ async function validateAppleReceipt(
 
   details.apple_status = result.status
   return result.status === 0
+}
+
+/**
+ * Validate Google Play purchase token via Android Publisher API.
+ *
+ * Requires GOOGLE_PLAY_SERVICE_ACCOUNT_KEY env var containing the JSON service
+ * account key (base64-encoded) with androidpublisher scope access.
+ *
+ * If credentials are not configured:
+ * - In production (SANDBOX_ALLOWED != 'true'), rejects the purchase.
+ * - In development (SANDBOX_ALLOWED == 'true'), logs a warning and accepts.
+ */
+async function validateGooglePlayReceipt(
+  productId: string,
+  purchaseToken: string,
+  details: Record<string, unknown>,
+): Promise<boolean> {
+  const PACKAGE_NAME = 'com.tackbird.app'
+
+  if (!purchaseToken || typeof purchaseToken !== 'string') {
+    details.error = 'Missing or invalid purchase token'
+    return false
+  }
+
+  const serviceAccountKeyBase64 = Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_KEY')
+  if (!serviceAccountKeyBase64) {
+    const isProduction = Deno.env.get('SANDBOX_ALLOWED') !== 'true'
+    if (isProduction) {
+      console.error(
+        '[verify-boost-purchase] GOOGLE_PLAY_SERVICE_ACCOUNT_KEY not configured — rejecting Android purchase in production'
+      )
+      details.error = 'Google Play service account not configured'
+      details.mode = 'rejected_no_credentials'
+      return false
+    }
+    // Development/sandbox: warn but accept
+    console.warn(
+      '[verify-boost-purchase] GOOGLE_PLAY_SERVICE_ACCOUNT_KEY not configured — accepting Android purchase in dev mode'
+    )
+    details.mode = 'dev_no_credentials'
+    details.warning = 'Accepted without verification (credentials not configured, sandbox mode)'
+    return true
+  }
+
+  // Decode service account key JSON
+  let serviceAccountKey: {
+    client_email: string
+    private_key: string
+    token_uri?: string
+  }
+  try {
+    const decoded = atob(serviceAccountKeyBase64)
+    serviceAccountKey = JSON.parse(decoded)
+  } catch (err: any) {
+    console.error('[verify-boost-purchase] Failed to decode GOOGLE_PLAY_SERVICE_ACCOUNT_KEY:', err.message)
+    details.error = 'Invalid service account key format'
+    return false
+  }
+
+  // Generate JWT for Google OAuth2
+  const accessToken = await getGoogleAccessToken(serviceAccountKey)
+  if (!accessToken) {
+    details.error = 'Failed to obtain Google access token'
+    return false
+  }
+
+  // Call Android Publisher API to verify purchase
+  const apiUrl =
+    `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/products/${productId}/tokens/${purchaseToken}`
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
+  let res: Response
+  try {
+    res = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+  } catch (err: any) {
+    clearTimeout(timeout)
+    console.error('[verify-boost-purchase] Google Play API fetch failed:', err.message)
+    details.error = 'Google Play API request failed or timed out'
+    return false
+  }
+
+  if (!res.ok) {
+    const errorBody = await res.text()
+    console.error('[verify-boost-purchase] Google Play API error:', res.status, errorBody)
+    details.error = `Google Play API returned ${res.status}`
+    details.google_api_error = errorBody.slice(0, 500)
+    return false
+  }
+
+  const purchaseData = await res.json()
+  details.google_purchase_state = purchaseData.purchaseState
+  details.google_consumption_state = purchaseData.consumptionState
+  details.google_order_id = purchaseData.orderId
+  details.google_acknowledged = purchaseData.acknowledgementState
+
+  // purchaseState: 0 = Purchased, 1 = Canceled, 2 = Pending
+  if (purchaseData.purchaseState !== 0) {
+    details.error = `Purchase state is ${purchaseData.purchaseState} (expected 0 = purchased)`
+    return false
+  }
+
+  // consumptionState: 0 = Not consumed, 1 = Consumed
+  // For one-time boost products, we expect NOT consumed (0) since we haven't consumed it yet.
+  // If it's already consumed (1), someone already used this token.
+  if (purchaseData.consumptionState === 1) {
+    details.error = 'Purchase already consumed'
+    return false
+  }
+
+  details.mode = 'google_play_verified'
+  return true
+}
+
+/**
+ * Generate a Google OAuth2 access token from a service account key using JWT.
+ * Implements the "two-legged OAuth" flow for server-to-server auth.
+ */
+async function getGoogleAccessToken(
+  serviceAccount: { client_email: string; private_key: string; token_uri?: string }
+): Promise<string | null> {
+  const tokenUri = serviceAccount.token_uri || 'https://oauth2.googleapis.com/token'
+  const scope = 'https://www.googleapis.com/auth/androidpublisher'
+  const now = Math.floor(Date.now() / 1000)
+
+  // Create JWT header and claims
+  const header = { alg: 'RS256', typ: 'JWT' }
+  const claims = {
+    iss: serviceAccount.client_email,
+    scope,
+    aud: tokenUri,
+    iat: now,
+    exp: now + 3600,
+  }
+
+  const encodedHeader = base64urlEncode(JSON.stringify(header))
+  const encodedClaims = base64urlEncode(JSON.stringify(claims))
+  const unsignedJwt = `${encodedHeader}.${encodedClaims}`
+
+  // Sign JWT with RSA-SHA256
+  let signature: string
+  try {
+    const privateKey = await importPKCS8Key(serviceAccount.private_key)
+    const signatureBuffer = await crypto.subtle.sign(
+      { name: 'RSASSA-PKCS1-v1_5' },
+      privateKey,
+      new TextEncoder().encode(unsignedJwt),
+    )
+    signature = base64urlEncodeBuffer(new Uint8Array(signatureBuffer))
+  } catch (err: any) {
+    console.error('[verify-boost-purchase] JWT signing failed:', err.message)
+    return null
+  }
+
+  const jwt = `${unsignedJwt}.${signature}`
+
+  // Exchange JWT for access token
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10000)
+  try {
+    const res = await fetch(tokenUri, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+
+    if (!res.ok) {
+      const errorText = await res.text()
+      console.error('[verify-boost-purchase] Google token exchange failed:', res.status, errorText)
+      return null
+    }
+
+    const tokenData = await res.json()
+    return tokenData.access_token || null
+  } catch (err: any) {
+    clearTimeout(timeout)
+    console.error('[verify-boost-purchase] Google token exchange request failed:', err.message)
+    return null
+  }
+}
+
+/**
+ * Import a PEM-encoded PKCS8 private key for use with Web Crypto API.
+ */
+async function importPKCS8Key(pem: string): Promise<CryptoKey> {
+  // Strip PEM header/footer and whitespace
+  const pemContents = pem
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/\s/g, '')
+
+  const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0))
+
+  return crypto.subtle.importKey(
+    'pkcs8',
+    binaryDer.buffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+}
+
+/** Base64url encode a string (no padding). */
+function base64urlEncode(str: string): string {
+  return btoa(str)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+}
+
+/** Base64url encode a Uint8Array (no padding). */
+function base64urlEncodeBuffer(buffer: Uint8Array): string {
+  let binary = ''
+  for (let i = 0; i < buffer.length; i++) {
+    binary += String.fromCharCode(buffer[i])
+  }
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 }
