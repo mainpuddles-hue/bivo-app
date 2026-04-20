@@ -316,9 +316,6 @@ function FeedScreenInner() {
               </View>
             ) : heroPost ? (
               <View style={styles.heroWrapper}>
-                {/* Peek card behind (suggests swipeable stack) */}
-                <View style={[styles.peekCard, { backgroundColor: isDark ? '#3A3530' : '#D8BDA4' }]} />
-
                 {/* Main hero card */}
                 <PressableOpacity
                   onPress={() => {
@@ -545,27 +542,15 @@ const styles = StyleSheet.create({
   heroWrapper: {
     paddingHorizontal: 20,
     paddingTop: 4,
-    position: 'relative',
     marginBottom: 20,
   },
-  peekCard: {
-    position: 'absolute',
-    top: 18,
-    right: 8,
-    bottom: 80,
-    width: 30,
-    borderRadius: 24,
-    zIndex: 0,
-  },
   heroCard: {
-    position: 'relative',
-    zIndex: 1,
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
   },
   heroImageWrap: {
-    aspectRatio: 1,
+    aspectRatio: 4 / 3,
     position: 'relative',
   },
   heroImage: {

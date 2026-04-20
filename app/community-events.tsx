@@ -145,7 +145,7 @@ function CommunityEventsScreenInner() {
         {title}
       </Text>
       {actionLabel && onAction && (
-        <Pressable onPress={onAction} hitSlop={8}>
+        <Pressable onPress={onAction} hitSlop={8} accessibilityRole="button" accessibilityLabel={actionLabel}>
           <Text style={[s.sectionAction, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {actionLabel}
           </Text>

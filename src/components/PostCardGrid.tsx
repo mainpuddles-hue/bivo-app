@@ -77,8 +77,9 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : (user?.name ?? '')
   const timeAgo = post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''
 
-  // Vary image height for masonry feel — alternate tall/short based on index
-  const imageHeight = (index % 3 === 0) ? 180 : (index % 3 === 1) ? 140 : 110
+  // Consistent image height — FlatList numColumns forces equal row heights,
+  // so variable heights only create uneven whitespace below shorter cards.
+  const imageHeight = 150
 
   const a11yLabel = useMemo(() => {
     const parts: string[] = []
