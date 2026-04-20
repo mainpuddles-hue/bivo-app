@@ -23,6 +23,7 @@ import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { DiscoveryStack } from '@/components/DiscoveryStack'
 import { FeedMapView } from '@/components/FeedMapView'
+import { useSupabase } from '@/hooks/useSupabase'
 import type { Post, PostType } from '@/lib/types'
 
 function FeedScreenInner() {
@@ -40,6 +41,22 @@ function FeedScreenInner() {
   useSessionManager(feed.currentUserId)
 
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
+  const supabase = useSupabase()
+
+  // Batch view counts for feed cards
+  const [viewCounts, setViewCounts] = useState<Record<string, number>>({})
+  useEffect(() => {
+    if (feed.posts.length === 0) return
+    const postIds = feed.posts.map(p => p.id)
+    ;(supabase.rpc as any)('get_post_view_counts_batch', { p_post_ids: postIds })
+      .then(({ data }: any) => {
+        if (!data) return
+        const map: Record<string, number> = {}
+        for (const row of data) map[row.post_id] = row.view_count
+        setViewCounts(map)
+      })
+      .catch(() => {})
+  }, [feed.posts, supabase])
 
   // NOTE: User profile/greeting removed — mockup 05 uses location-based header
 
@@ -172,8 +189,9 @@ function FeedScreenInner() {
       index={index}
       sortBy={feed.sortBy}
       followedIds={feed.followedIds}
+      viewCount={viewCounts[item.id]}
     />
-  ), [feed.currentUserId, trackInteraction, feed.sortBy, feed.followedIds])
+  ), [feed.currentUserId, trackInteraction, feed.sortBy, feed.followedIds, viewCounts])
 
   // ── Render ──
   return (

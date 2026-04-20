@@ -14,7 +14,7 @@ import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-nat
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { Heart, Calendar, Clock, User } from 'lucide-react-native'
+import { Heart, Calendar, Clock, User, Eye } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
@@ -42,13 +42,14 @@ interface PostCardGridProps {
   index?: number
   sortBy?: string
   followedIds?: string[]
+  viewCount?: number
 }
 
 // Warm tint for text-only cards (from mockup)
 const WARM_TINT = '#F0EEE9'
 const WARM_TINT_DARK = '#2A2825'
 
-export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds }: PostCardGridProps) {
+export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds, viewCount }: PostCardGridProps) {
   const { colors, isDark } = useTheme()
   const reduceMotion = useReduceMotion()
   const { t, locale } = useI18n()
@@ -154,6 +155,12 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
       <Text style={[styles.metaText, { color: metaColor }]} numberOfLines={1}>
         {authorName}{post.location ? ` · ${post.location}` : ''}
       </Text>
+      {viewCount != null && viewCount > 2 && (
+        <View style={styles.viewCountPill}>
+          <Eye size={9} color={metaColor} strokeWidth={2} />
+          <Text style={[styles.viewCountText, { color: metaColor }]}>{viewCount}</Text>
+        </View>
+      )}
     </View>
   )
 
@@ -487,6 +494,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     lineHeight: 13,
     flex: 1,
+  },
+  viewCountPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  viewCountText: {
+    fontSize: 9.5,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 12,
   },
 
   // ── Event card (ink bg, inverted) ──

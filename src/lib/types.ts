@@ -197,6 +197,7 @@ export interface SavedSearch {
   } | null
   push_enabled: boolean
   last_notified_at: string | null
+  match_count: number
   created_at: string
 }
 

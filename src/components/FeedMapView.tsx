@@ -7,6 +7,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native'
 import MapView, { Marker, PROVIDER_DEFAULT, type Region } from 'react-native-maps'
+import ClusteredMapView from 'react-native-map-clustering'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
@@ -82,8 +83,8 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
+      <ClusteredMapView
+        ref={mapRef as any}
         style={styles.map}
         provider={PROVIDER_DEFAULT}
         initialRegion={initialRegion}
@@ -91,6 +92,13 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
         showsMyLocationButton={false}
         customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
         onPress={() => setSelectedPost(null)}
+        clusterColor={colors.primary}
+        clusterTextColor="#fff"
+        clusterFontFamily={fonts.bodySemi}
+        radius={50}
+        minZoomLevel={0}
+        maxZoom={15}
+        spiralEnabled={false}
       >
         {mappablePosts.map(post => (
           <Marker
@@ -104,7 +112,7 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
             </View>
           </Marker>
         ))}
-      </MapView>
+      </ClusteredMapView>
 
       {/* Post preview card */}
       {selectedPost && (
