@@ -88,10 +88,6 @@ function ConversationScreenInner() {
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false)
 
-  // TODO: UX — Handle self-conversation edge case. If user1_id === user2_id (user
-  // messages their own post), otherId will be themselves. Should either prevent
-  // self-conversations at creation time (in post/[id].tsx) or display a "notes to
-  // self" UI instead of a broken "unknown user" state.
   useEffect(() => {
     let cancelled = false
     async function load() {
@@ -124,6 +120,13 @@ function ConversationScreenInner() {
       }
 
       const otherId = (conv as any).user1_id === uid ? (conv as any).user2_id : (conv as any).user1_id
+      // Defensive: self-conversation shouldn't exist (prevented in post/[id].tsx)
+      // but if it does, treat as not found rather than showing broken UI
+      if (otherId === uid) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
       const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).maybeSingle()
       if (cancelled) return
       if (profile) {
