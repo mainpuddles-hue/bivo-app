@@ -693,7 +693,7 @@ function PostDetailScreenInner() {
       const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
       if (sessionId) {
         const { error: updateError } = await (supabase.from('rental_bookings') as any).update({ stripe_session_id: sessionId }).eq('id', booking.id)
-        if (updateError && __DEV__) console.log('[bookings] update stripe session error:', updateError.message)
+        if (updateError) console.error('[bookings] CRITICAL: failed to link Stripe session to booking:', updateError.message)
       }
       setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
       if (!sessionId) {

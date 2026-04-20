@@ -589,7 +589,10 @@ export default function CreateScreen() {
             setSubmitting(false); setUploadStatus(''); return
           }
         }
-        if (post?.id) { await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id) }
+        if (post?.id) {
+        const { error: activateError } = await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id)
+        if (activateError) throw new Error(`Post activation failed: ${activateError.message}`)
+      }
       }
       if (selectedType === 'tapahtuma' && post?.id) {
         let eventDateISO = new Date(eventDate).toISOString()

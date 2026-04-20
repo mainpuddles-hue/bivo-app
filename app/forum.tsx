@@ -417,7 +417,8 @@ export default function ForumScreen() {
                   .select('id', { count: 'exact', head: true })
                   .eq('post_id', selectedPost.id)
                 const newCount = realCount ?? Math.max(0, selectedPost.comment_count - 1)
-                await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
+                const { error: countErr } = await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
+                if (countErr) console.error('[forum] comment count update failed:', countErr.message)
                 setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
                 setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
               }

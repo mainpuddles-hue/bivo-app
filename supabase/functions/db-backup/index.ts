@@ -14,10 +14,10 @@ function getEnvOrThrow(key: string): string {
 
 serve(async (req) => {
   try {
-    // Cron secret authentication
+    // Cron secret authentication — require CRON_SECRET to be set AND match
     const cronSecret = Deno.env.get('CRON_SECRET')
     const reqSecret = req.headers.get('x-cron-secret')
-    if (cronSecret && reqSecret !== cronSecret) {
+    if (!cronSecret || reqSecret !== cronSecret) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },

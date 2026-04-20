@@ -524,7 +524,8 @@ export default function GroupDetailScreen() {
             (supabase.from('group_posts') as any).delete().eq('group_id', id),
             (supabase.from('group_members') as any).delete().eq('group_id', id),
           ])
-          await (supabase.from('groups') as any).delete().eq('id', id)
+          const { error: deleteGroupError } = await (supabase.from('groups') as any).delete().eq('id', id)
+          if (deleteGroupError) throw deleteGroupError
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
           router.back()
         } catch { Alert.alert(t('common.error'), t('groups.sendError')) }

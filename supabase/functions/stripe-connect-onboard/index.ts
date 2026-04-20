@@ -94,10 +94,14 @@ serve(async (req) => {
     }
 
     // Create Account Link for onboarding UI
+    // Validate return_url to prevent open redirect — only allow tackbird:// scheme
+    const safeReturnUrl = (typeof return_url === 'string' && return_url.startsWith('tackbird://'))
+      ? return_url
+      : 'tackbird://payment-settings'
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: return_url || 'tackbird://payment-settings',
-      return_url: return_url || 'tackbird://payment-settings',
+      refresh_url: safeReturnUrl,
+      return_url: safeReturnUrl,
       type: 'account_onboarding',
     })
 
