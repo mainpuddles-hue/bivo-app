@@ -236,7 +236,27 @@
     "openGallery": "Öppna bildgalleri",
     "liked": "Gillat",
     "deleteCommentConfirm": "Ta bort kommentar?",
-    "safetyTip": "Möts på en offentlig plats. Dela inte personlig information innan mötet."
+    "safetyTip": "Möts på en offentlig plats. Dela inte personlig information innan mötet.",
+    "viewing": "{count} personer tittar"
+  },
+  "offer": {
+    "title": "Ge ett bud",
+    "makeOffer": "Ge ett bud",
+    "amountLabel": "Budbelopp (€)",
+    "messageLabel": "Meddelande (valfritt)",
+    "messagePlaceholder": "Lägg till ett meddelande till säljaren...",
+    "listedPrice": "Angivet pris: {price}",
+    "send": "Skicka bud",
+    "sent": "Bud skickat!",
+    "sendFailed": "Kunde inte skicka bud",
+    "invalidAmount": "Ange ett giltigt belopp",
+    "alreadySent": "Du har redan skickat ett bud",
+    "offerMessage": "Bud: {amount} — {title}",
+    "receivedTitle": "Nytt bud!",
+    "receivedBody": "Bud {amount} för: {title}",
+    "accepted": "Bud accepterat",
+    "rejected": "Bud avvisat",
+    "withdrawn": "Bud återkallat"
   },
   "events": {
     "title": "Evenemang",
@@ -1920,6 +1940,7 @@
     "postLiked": "Någon gillade ditt inlägg",
     "postCommented": "Ny kommentar på ditt inlägg",
     "savedSearchMatch": "Nya träffar i din sparade sökning",
+    "offerReceived": "Nytt bud mottaget",
     "reengagementD1": "Välkommen till TackBird!",
     "reengagementD3": "Det händer saker i ditt grannskap!",
     "reengagementD7": "Dina grannar saknar dig!",

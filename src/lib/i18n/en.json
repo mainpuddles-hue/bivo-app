@@ -236,7 +236,27 @@
     "openGallery": "Open image gallery",
     "liked": "Liked",
     "deleteCommentConfirm": "Delete comment?",
-    "safetyTip": "Meet in a public place. Don't share personal information before meeting."
+    "safetyTip": "Meet in a public place. Don't share personal information before meeting.",
+    "viewing": "{count} people viewing"
+  },
+  "offer": {
+    "title": "Make an Offer",
+    "makeOffer": "Make an offer",
+    "amountLabel": "Offer amount (€)",
+    "messageLabel": "Message (optional)",
+    "messagePlaceholder": "Add a message to the seller...",
+    "listedPrice": "Listed price: {price}",
+    "send": "Send offer",
+    "sent": "Offer sent!",
+    "sendFailed": "Failed to send offer",
+    "invalidAmount": "Enter a valid amount",
+    "alreadySent": "You already sent an offer",
+    "offerMessage": "Offer: {amount} — {title}",
+    "receivedTitle": "New offer!",
+    "receivedBody": "Offer {amount} for: {title}",
+    "accepted": "Offer accepted",
+    "rejected": "Offer rejected",
+    "withdrawn": "Offer withdrawn"
   },
   "events": {
     "title": "Events",
@@ -1955,6 +1975,7 @@
     "postLiked": "Someone liked your post",
     "postCommented": "New comment on your post",
     "savedSearchMatch": "New results for your saved search",
+    "offerReceived": "New offer received",
     "reengagementD1": "Welcome to TackBird!",
     "reengagementD3": "Things are happening in your neighborhood!",
     "reengagementD7": "Your neighbors miss you!",

@@ -8,9 +8,9 @@ import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
-  Send, Flag, Clock, ChevronRight,
+  Send, Flag, Clock, ChevronRight, Eye,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
-  ShoppingBag, Star, Shield,
+  ShoppingBag, Star, Shield, DollarSign,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -33,6 +33,7 @@ import { computeTrustLevelFromBadges } from '@/lib/trustUtils'
 import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { OfferModal } from '@/components/OfferModal'
 import { PostDetailSkeleton } from '@/components/SkeletonLoaders'
 import { isValidUUID } from '@/lib/validation'
 import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
@@ -108,6 +109,12 @@ function PostDetailScreenInner() {
     post?.tags ?? [],
     (post as any)?.user?.naapurusto ?? null,
   )
+
+  // Social proof: view count
+  const [viewCount, setViewCount] = useState(0)
+
+  // Offer modal state
+  const [offerModalVisible, setOfferModalVisible] = useState(false)
 
   // Service booking state (for tarjoan posts with service_price)
   const [serviceModalVisible, setServiceModalVisible] = useState(false)
@@ -188,6 +195,23 @@ function PostDetailScreenInner() {
     loadPost().then(() => { if (cancelled) return })
     return () => { cancelled = true }
   }, [loadPost])
+
+  // Track post view + fetch view count
+  useEffect(() => {
+    if (!post?.id) return
+    let mounted = true
+    // Fetch view count (distinct viewers in last 7 days)
+    ;(supabase.rpc as any)('get_post_view_count', { p_post_id: post.id }).then(({ data }: { data: number | null }) => {
+      if (mounted && typeof data === 'number') setViewCount(data)
+    })
+    // Record view (fire-and-forget)
+    if (userId) {
+      (supabase.from('post_views') as any)
+        .upsert({ post_id: post.id, user_id: userId }, { onConflict: 'post_id,user_id' })
+        .catch(() => {})
+    }
+    return () => { mounted = false }
+  }, [post?.id, userId, supabase])
 
   useEffect(() => {
     if (!post?.user_id) return
@@ -1014,6 +1038,29 @@ function PostDetailScreenInner() {
             </View>
           )}
 
+          {/* Social proof: view count */}
+          {viewCount > 2 && (
+            <View style={styles.socialProofRow}>
+              <Eye size={13} color={colors.mutedForeground} />
+              <Text style={[styles.socialProofText, { color: colors.mutedForeground }]}>
+                {t('post.viewing', { count: viewCount })}
+              </Text>
+            </View>
+          )}
+
+          {/* Make offer button — for tarjoan items with a price, non-author */}
+          {post.type === 'tarjoan' && post.service_price != null && post.service_price > 0 && !isAuthor && (
+            <PressableOpacity
+              onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setOfferModalVisible(true) }}
+              style={[styles.offerBtn, { backgroundColor: `${category?.color ?? colors.primary}15`, borderColor: category?.color ?? colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('offer.makeOffer')}
+            >
+              <DollarSign size={16} color={category?.color ?? colors.primary} />
+              <Text style={[styles.offerBtnText, { color: category?.color ?? colors.primary }]}>{t('offer.makeOffer')}</Text>
+            </PressableOpacity>
+          )}
+
           {/* Description — 13px muted with "Lue lisaa" toggle */}
           {post.description ? (
             <View style={styles.descriptionBlock}>
@@ -1480,6 +1527,18 @@ function PostDetailScreenInner() {
           targetId={post.id}
         />
       )}
+      {post && userId && post.service_price != null && post.service_price > 0 && (
+        <OfferModal
+          visible={offerModalVisible}
+          onClose={() => setOfferModalVisible(false)}
+          postId={post.id}
+          postTitle={post.title}
+          sellerId={post.user_id}
+          sellerName={(post.user as any)?.name ?? ''}
+          listedPrice={post.service_price}
+          userId={userId}
+        />
+      )}
     </KeyboardAvoidingView>
   )
 }
@@ -1583,6 +1642,14 @@ const styles = StyleSheet.create({
   // Description block
   descriptionBlock: { marginTop: 14, marginBottom: 4 },
   readMoreLink: { fontSize: 13, fontFamily: fonts.bodyMedium, textDecorationLine: 'underline', marginTop: 4, lineHeight: 18 },
+
+  // Social proof
+  socialProofRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  socialProofText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
+
+  // Offer button
+  offerBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1.5, alignSelf: 'flex-start', marginTop: 8 },
+  offerBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 
   // Safety tip
   safetyTip: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 8, paddingVertical: 8 },

@@ -236,7 +236,27 @@
     "openGallery": "Avaa kuvagalleria",
     "liked": "Tykätty",
     "deleteCommentConfirm": "Poista kommentti?",
-    "safetyTip": "Tapaa julkisella paikalla. Älä jaa henkilökohtaisia tietoja ennen tapaamista."
+    "safetyTip": "Tapaa julkisella paikalla. Älä jaa henkilökohtaisia tietoja ennen tapaamista.",
+    "viewing": "{count} henkilöä katsoo"
+  },
+  "offer": {
+    "title": "Tee tarjous",
+    "makeOffer": "Tee tarjous",
+    "amountLabel": "Tarjous (€)",
+    "messageLabel": "Viesti (valinnainen)",
+    "messagePlaceholder": "Lisää viesti myyjälle...",
+    "listedPrice": "Ilmoitettu hinta: {price}",
+    "send": "Lähetä tarjous",
+    "sent": "Tarjous lähetetty!",
+    "sendFailed": "Tarjouksen lähetys epäonnistui",
+    "invalidAmount": "Syötä kelvollinen summa",
+    "alreadySent": "Olet jo lähettänyt tarjouksen",
+    "offerMessage": "Tarjous: {amount} — {title}",
+    "receivedTitle": "Uusi tarjous!",
+    "receivedBody": "Tarjous {amount} ilmoituksesta: {title}",
+    "accepted": "Tarjous hyväksytty",
+    "rejected": "Tarjous hylätty",
+    "withdrawn": "Tarjous peruutettu"
   },
   "events": {
     "title": "Tapahtumat",
@@ -1955,6 +1975,7 @@
     "postLiked": "Joku tykkäsi ilmoituksestasi",
     "postCommented": "Uusi kommentti ilmoitukseesi",
     "savedSearchMatch": "Uusia osumia talletettuun hakuun",
+    "offerReceived": "Uusi tarjous vastaanotettu",
     "reengagementD1": "Tervetuloa TackBirdiin!",
     "reengagementD3": "Naapurustossasi tapahtuu!",
     "reengagementD7": "Naapurisi kaipaavat sinua!",
