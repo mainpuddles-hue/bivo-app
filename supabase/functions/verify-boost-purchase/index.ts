@@ -156,7 +156,47 @@ serve(async (req) => {
       })
     }
 
-    // 9. Atomic balance increment via RPC, with read-then-write fallback.
+    // 9. Insert purchase record FIRST as an atomic lock — prevents double-credit
+    // from concurrent requests with the same transaction_id. The unique constraint
+    // on transaction_id ensures only one request succeeds here.
+    const { error: purchaseInsertError } = await supabase
+      .from('boost_purchases')
+      .insert({
+        user_id: user.id,
+        platform,
+        product_id,
+        transaction_id,
+        receipt_data: receipt_data ?? null,
+        credits_granted: credits,
+        validation_details,
+        created_at: new Date().toISOString(),
+      })
+
+    if (purchaseInsertError) {
+      // Unique constraint violation = concurrent request already processing this transaction
+      if (purchaseInsertError.code === '23505') {
+        const { data: boostRow } = await supabase
+          .from('user_boosts')
+          .select('balance')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        return new Response(JSON.stringify({
+          success: true,
+          new_balance: boostRow?.balance ?? 0,
+          credits_granted: credits,
+          already_processed: true,
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      console.error('[verify-boost-purchase] purchase record insert failed:', purchaseInsertError.message)
+      return new Response(JSON.stringify({ error: 'Failed to record purchase' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // 10. Atomic balance increment via RPC, with read-then-write fallback.
     // The RPC `increment_boost_balance` does `SET balance = balance + p_credits`
     // atomically in SQL, preventing lost updates from concurrent requests.
     let newBalance: number = credits // safe default — overwritten on success
@@ -170,7 +210,6 @@ serve(async (req) => {
       newBalance = rpcResult
     } else {
       // Fallback: use conditional upsert with optimistic concurrency.
-      // First check if user_boosts row exists.
       const { data: currentBoost } = await supabase
         .from('user_boosts')
         .select('balance')
@@ -191,18 +230,21 @@ serve(async (req) => {
           .single()
 
         if (updateError || !updated) {
-          // Concurrent modification — retry once with fresh read
+          // Concurrent modification — retry with optimistic lock on fresh read
           const { data: retry } = await supabase
             .from('user_boosts')
             .select('balance')
             .eq('user_id', user.id)
             .maybeSingle()
           const retryBalance = (retry?.balance ?? 0) + credits
-          await supabase
+          const { data: retryUpdated } = await supabase
             .from('user_boosts')
             .update({ balance: retryBalance, updated_at: new Date().toISOString() })
             .eq('user_id', user.id)
-          newBalance = retryBalance
+            .eq('balance', retry?.balance ?? 0) // optimistic lock on retry too
+            .select('balance')
+            .maybeSingle()
+          newBalance = retryUpdated?.balance ?? retryBalance
         } else {
           newBalance = updated.balance
         }
@@ -217,27 +259,15 @@ serve(async (req) => {
           })
 
         if (insertErr) {
-          // Race: another request just inserted — update instead
-          await supabase.rpc('increment_boost_balance', { p_user_id: user.id, p_credits: credits })
-            .then(({ data }) => { newBalance = typeof data === 'number' ? data : credits })
+          // Race: another request just inserted — use RPC or optimistic update
+          const { data: rpcRetry } = await supabase.rpc(
+            'increment_boost_balance',
+            { p_user_id: user.id, p_credits: credits }
+          )
+          newBalance = typeof rpcRetry === 'number' ? rpcRetry : credits
         }
-        newBalance = newBalance! ?? credits
       }
     }
-
-    // 10. Insert boost_purchases record
-    await supabase
-      .from('boost_purchases')
-      .insert({
-        user_id: user.id,
-        platform,
-        product_id,
-        transaction_id,
-        receipt_data: receipt_data ?? null,
-        credits_granted: credits,
-        validation_details,
-        created_at: new Date().toISOString(),
-      })
 
     // 11. Return success
     return new Response(JSON.stringify({
