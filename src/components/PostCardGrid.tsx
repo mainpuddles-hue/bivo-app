@@ -304,7 +304,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             {/* Calendar + category */}
             <View style={styles.eventCategoryRow}>
               <Calendar size={11} color={isDark ? colors.mutedForeground : '#B8BCC0'} strokeWidth={2} />
-              <Text style={[styles.eventCategoryText, { color: isDark ? colors.mutedForeground : '#B8BCC0' }]}>
+              <Text style={[styles.eventCategoryText, { color: colors.mutedForeground }]}>
                 {t(category?.label ?? 'categories.tapahtuma')}
               </Text>
             </View>
@@ -313,7 +313,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
               {post.title}
             </Text>
             {/* Date + location */}
-            <Text style={[styles.eventMeta, { color: isDark ? colors.mutedForeground : '#B8BCC0' }]} numberOfLines={1}>
+            <Text style={[styles.eventMeta, { color: colors.mutedForeground }]} numberOfLines={1}>
               {post.location ? `${post.location} · ` : ''}
               {post.event_date ? formatEventDateShort(post.event_date, locale) : t('events.eventPending')}
             </Text>

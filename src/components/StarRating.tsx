@@ -24,7 +24,7 @@ export function StarRating({ rating, onRatingChange, size = 16, gap = 2 }: StarR
           accessibilityRole={onRatingChange ? 'button' : undefined}
           accessibilityLabel={onRatingChange ? `${i}/5` : undefined}
         >
-          <Star size={size} color={i <= rating ? colors.pro : colors.border} fill={i <= rating ? colors.pro : 'transparent'} />
+          <Star size={size} color={i <= rating ? colors.pro : colors.border} fill={i <= rating ? colors.pro : 'transparent'} opacity={!onRatingChange ? 0.6 : 1} />
         </Pressable>
       ))}
     </View>

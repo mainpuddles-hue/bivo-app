@@ -333,7 +333,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {/* Multi-image badge */}
             {post.images && post.images.length > 1 && (
               <View style={styles.multiImageBadge}>
-                <ImageIcon size={12} color="#FFFFFF" />
+                <ImageIcon size={12} color={colors.primaryForeground} />
                 <Text style={styles.multiImageText}>{post.images.length + 1}</Text>
               </View>
             )}
@@ -352,7 +352,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
 
         {/* Expiration badge */}
         {expirationInfo && (() => {
-          const expirationColor = expirationInfo.severity === 'urgent' ? colors.destructive : '#E8A050'
+          const expirationColor = expirationInfo.severity === 'urgent' ? colors.destructive : colors.pro
           return (
             <View style={[styles.expirationBadge, { backgroundColor: `${expirationColor}18` }]}>
               <Clock size={10} color={expirationColor} />
@@ -591,9 +591,9 @@ const styles = StyleSheet.create({
   categoryBadgeText: { fontSize: 13, fontFamily: fonts.heading, letterSpacing: 0.2, lineHeight: 16 },
 
   // Image — full width, inline
-  imageContainer: { borderRadius: 14, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
+  imageContainer: { borderRadius: 16, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
   image: { width: '100%', height: 200 },
-  imageFallback: { width: '100%', height: 200, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
+  imageFallback: { width: '100%', height: 200, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   imageGradient: {
     position: 'absolute',
     left: 0,

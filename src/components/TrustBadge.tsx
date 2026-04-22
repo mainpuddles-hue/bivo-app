@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   progress: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     marginTop: 4,
   },
   verifyBtnText: {

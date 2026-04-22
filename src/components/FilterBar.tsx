@@ -46,6 +46,7 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
         accessibilityRole="tab"
         accessibilityState={{ selected: isActive }}
         onPress={onPress}
+        hitSlop={8}
         style={[
           styles.chip,
           isActive
