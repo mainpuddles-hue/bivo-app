@@ -26,6 +26,7 @@ import { DiscoveryStack } from '@/components/DiscoveryStack'
 import { FeedMapView } from '@/components/FeedMapView'
 import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
+import { PollCard, type Poll } from '@/components/PollCard'
 import type { Post, PostType } from '@/lib/types'
 
 function FeedScreenInner() {
@@ -109,6 +110,44 @@ function FeedScreenInner() {
         .single()
     ).then(({ data }: any) => {
       if (data?.building) setUserBuilding(data.building)
+    }).catch(() => {})
+  }, [feed.currentUserId, supabase])
+
+  // Fetch active polls for feed display
+  const [feedPolls, setFeedPolls] = useState<Poll[]>([])
+  useEffect(() => {
+    if (!FEATURES.POLLS || !feed.currentUserId) return
+    const now = new Date().toISOString()
+    Promise.resolve(
+      supabase
+        .from('polls')
+        .select('id, creator_id, question, options, building_id, naapurusto, vote_count, expires_at, created_at, is_active')
+        .eq('is_active', true)
+        .or(`expires_at.is.null,expires_at.gt.${now}`)
+        .order('created_at', { ascending: false })
+        .limit(3)
+    ).then(async ({ data }) => {
+      if (!data || data.length === 0) return
+      // Check user's votes
+      const pollIds = (data as any[]).map((p: any) => p.id)
+      const { data: votes } = await Promise.resolve(
+        supabase
+          .from('poll_votes')
+          .select('poll_id, option_index')
+          .eq('user_id', feed.currentUserId!)
+          .in('poll_id', pollIds)
+      )
+      const voteMap: Record<string, number> = {}
+      if (votes) for (const v of votes as any[]) voteMap[v.poll_id] = v.option_index
+
+      // Get vote counts per option
+      const polls: Poll[] = (data as any[]).map((p: any) => ({
+        ...p,
+        options: p.options as string[],
+        my_vote: voteMap[p.id] ?? null,
+        option_counts: (p.options as string[]).map(() => 0), // Approximate — will be refined by vote_count
+      }))
+      setFeedPolls(polls)
     }).catch(() => {})
   }, [feed.currentUserId, supabase])
 
@@ -510,6 +549,15 @@ function FeedScreenInner() {
                 >
                   <Map size={14} color={colors.primaryForeground} />
                 </PressableOpacity>
+              </View>
+            )}
+
+            {/* ── Active polls ── */}
+            {FEATURES.POLLS && feedPolls.length > 0 && (
+              <View style={{ paddingHorizontal: 20, gap: 10, marginTop: 8 }}>
+                {feedPolls.map(poll => (
+                  <PollCard key={poll.id} poll={poll} userId={feed.currentUserId} />
+                ))}
               </View>
             )}
 

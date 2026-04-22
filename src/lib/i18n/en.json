@@ -3270,5 +3270,22 @@
     "title": "Error",
     "description": "Something went wrong. Try reloading.",
     "retry": "Try again"
+  },
+  "polls": {
+    "communityPoll": "Community Poll",
+    "ended": "Ended",
+    "votes": "{count} votes",
+    "createTitle": "Create Poll",
+    "questionLabel": "Question",
+    "questionPlaceholder": "What do you want to ask your neighbors?",
+    "optionsLabel": "Options",
+    "option": "Option",
+    "addOption": "Add option",
+    "durationLabel": "Duration",
+    "duration1d": "1 day",
+    "duration3d": "3 days",
+    "duration7d": "7 days",
+    "publish": "Publish poll",
+    "newPoll": "Poll"
   }
 }

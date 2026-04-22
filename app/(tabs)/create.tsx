@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle, ImageIcon } from 'lucide-react-native'
+import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle, ImageIcon, BarChart3 } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
@@ -774,6 +774,30 @@ export default function CreateScreen() {
                     </Pressable>
                   )
                 })}
+
+              {/* Poll card */}
+              {FEATURES.POLLS && (
+                <Pressable
+                  onPress={() => router.push('/create-poll')}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('polls.newPoll')}
+                  style={({ pressed }) => [
+                    mk.catCard,
+                    { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
+                    pressed && { backgroundColor: colors.muted },
+                  ]}
+                >
+                  <View style={mk.catCardInner} importantForAccessibility="no-hide-descendants">
+                    <View style={mk.catIcon}>
+                      <BarChart3 size={32} color={colors.foreground} strokeWidth={1.8} />
+                    </View>
+                    <Text style={[mk.catName, { color: colors.foreground }]}>{t('polls.newPoll')}</Text>
+                    <Text style={[mk.catSub, { color: colors.mutedForeground }]} numberOfLines={1}>
+                      {t('polls.communityPoll')}
+                    </Text>
+                  </View>
+                </Pressable>
+              )}
             </View>
           </ScrollView>
         )}

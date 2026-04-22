@@ -3270,5 +3270,22 @@
     "title": "Virhe",
     "description": "Jotain meni pieleen. Yritä ladata uudelleen.",
     "retry": "Yritä uudelleen"
+  },
+  "polls": {
+    "communityPoll": "Yhteisökysely",
+    "ended": "Päättynyt",
+    "votes": "{count} ääntä",
+    "createTitle": "Luo kysely",
+    "questionLabel": "Kysymys",
+    "questionPlaceholder": "Mitä haluat kysyä naapureiltasi?",
+    "optionsLabel": "Vaihtoehdot",
+    "option": "Vaihtoehto",
+    "addOption": "Lisää vaihtoehto",
+    "durationLabel": "Kesto",
+    "duration1d": "1 päivä",
+    "duration3d": "3 päivää",
+    "duration7d": "7 päivää",
+    "publish": "Julkaise kysely",
+    "newPoll": "Kysely"
   }
 }

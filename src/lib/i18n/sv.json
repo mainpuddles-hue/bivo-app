@@ -3270,5 +3270,22 @@
     "title": "Fel",
     "description": "Något gick fel. Försök ladda om.",
     "retry": "Försök igen"
+  },
+  "polls": {
+    "communityPoll": "Gemenskapsomröstning",
+    "ended": "Avslutad",
+    "votes": "{count} röster",
+    "createTitle": "Skapa omröstning",
+    "questionLabel": "Fråga",
+    "questionPlaceholder": "Vad vill du fråga dina grannar?",
+    "optionsLabel": "Alternativ",
+    "option": "Alternativ",
+    "addOption": "Lägg till alternativ",
+    "durationLabel": "Varaktighet",
+    "duration1d": "1 dag",
+    "duration3d": "3 dagar",
+    "duration7d": "7 dagar",
+    "publish": "Publicera omröstning",
+    "newPoll": "Omröstning"
   }
 }
