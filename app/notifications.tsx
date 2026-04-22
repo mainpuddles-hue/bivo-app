@@ -398,6 +398,8 @@ function NotificationsScreenInner() {
         <PressableOpacity
           onPress={() => { setRefreshing(true); fetchNotifications() }}
           style={[styles.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+          accessibilityRole="button"
+          accessibilityLabel={`${t('common.loadError')}. ${t('errors.tryAgain') ?? 'Retry'}`}
         >
           <RefreshCw size={14} color={colors.destructive} />
           <Text style={[styles.errorText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
@@ -521,6 +523,8 @@ function NotificationsScreenInner() {
                           <PressableOpacity
                             onPress={() => handleTap(item)}
                             style={[styles.actionPrimary, { backgroundColor: colors.foreground }]}
+                            accessibilityRole="button"
+                            accessibilityLabel={item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
                           >
                             <Text style={[styles.actionPrimaryText, { color: colors.background }]}>
                               {item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
@@ -529,6 +533,8 @@ function NotificationsScreenInner() {
                           <PressableOpacity
                             onPress={() => handleLongPress(item)}
                             style={[styles.actionSecondary, { backgroundColor: colors.card, borderColor: colors.border }]}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('common.decline')}
                           >
                             <Text style={[styles.actionSecondaryText, { color: colors.foreground }]}>
                               {t('common.decline')}

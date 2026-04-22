@@ -166,6 +166,8 @@ export const LocationAutocomplete = memo(function LocationAutocomplete({
             <Pressable
               key={`${f.geometry.coordinates[0]}-${f.geometry.coordinates[1]}-${i}`}
               onPress={() => handleSelect(f)}
+              accessibilityRole="button"
+              accessibilityLabel={formatSuggestion(f)}
               style={({ pressed }) => [
                 styles.suggestion,
                 { borderBottomColor: colors.border },

@@ -83,14 +83,14 @@ export const PollCard = memo(function PollCard({ poll, userId }: PollCardProps) 
   const totalVotes = optionCounts.reduce((a, b) => a + b, 0) || 1
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="none" accessibilityLabel={`${t('polls.communityPoll')}: ${poll.question}`}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={[styles.iconWrap, { backgroundColor: `${colors.foreground}10` }]}>
+        <View style={[styles.iconWrap, { backgroundColor: `${colors.foreground}10` }]} accessibilityElementsHidden>
           <BarChart3 size={16} color={colors.foreground} />
         </View>
         <View style={styles.headerText}>
-          <Text style={[styles.label, { color: colors.mutedForeground }]}>
+          <Text style={[styles.label, { color: colors.mutedForeground }]} accessibilityRole="header">
             {t('polls.communityPoll')}
           </Text>
           {poll.expires_at && (
@@ -130,6 +130,7 @@ export const PollCard = memo(function PollCard({ poll, userId }: PollCardProps) 
               ]}
               accessibilityRole="button"
               accessibilityLabel={`${option}${showResults ? `, ${pct}%` : ''}`}
+              accessibilityState={{ disabled: showResults || voting || !userId, selected: isMyVote }}
             >
               {/* Result bar */}
               {showResults && (

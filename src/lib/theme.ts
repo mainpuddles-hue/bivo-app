@@ -39,7 +39,7 @@ export const colors = {
     border: '#26292D',             // dark hairline
     muted: '#202326',              // dark wash
     mutedForeground: '#8B8F94',    // dark meta
-    tertiaryForeground: '#5B5F64', // dark placeholder
+    tertiaryForeground: '#656A6F', // dark placeholder — WCAG 3.09:1+ on card
     destructive: '#FF453A',        // iOS system red dark
     pro: '#FBBF24',
     success: '#34D399',

@@ -138,6 +138,7 @@ function CreatePollInner() {
             multiline
             maxLength={200}
             inputAccessoryViewID={KEYBOARD_DONE_ID}
+            accessibilityLabel={t('polls.questionLabel')}
           />
           <Text style={[styles.charCount, { color: colors.mutedForeground }]}>
             {question.length}/200
@@ -159,6 +160,7 @@ function CreatePollInner() {
                 onChangeText={(text) => updateOption(idx, text)}
                 maxLength={80}
                 inputAccessoryViewID={KEYBOARD_DONE_ID}
+                accessibilityLabel={`${t('polls.option')} ${idx + 1}`}
               />
               {options.length > MIN_OPTIONS && (
                 <PressableOpacity

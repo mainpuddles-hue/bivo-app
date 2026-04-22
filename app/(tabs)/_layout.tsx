@@ -92,10 +92,12 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
               accessibilityLabel={options.tabBarAccessibilityLabel}
-              style={[
+              style={({ pressed }) => [
                 s.pillItem,
                 {
                   backgroundColor: focused ? colors.foreground : 'transparent',
+                  opacity: pressed ? 0.7 : 1,
+                  transform: [{ scale: pressed ? 0.95 : 1 }],
                 },
               ]}
             >

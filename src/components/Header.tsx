@@ -75,7 +75,7 @@ export function Header() {
         {/* Center: online indicator (no wordmark — brand expressed via icon/color only) */}
         <View style={styles.centerBlock}>
           {onlineCount >= 3 && (
-            <View style={styles.onlineRow}>
+            <View style={styles.onlineRow} accessibilityLabel={`${onlineCount} ${t('common.online') ?? 'online'}`} accessibilityRole="text">
               <View style={[styles.onlineDot, { backgroundColor: colors.success }]} />
               <Text style={[styles.onlineText, { color: colors.mutedForeground }]}>
                 {onlineCount}

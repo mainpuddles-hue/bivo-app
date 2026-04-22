@@ -16,12 +16,13 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
+import type { PostType } from '@/lib/types'
 import { formatPrice, formatTimeAgo } from '@/lib/format'
 import { getImageUrl } from '@/lib/imageUtils'
 import { DARK_MAP_STYLE } from '@/components/map/useMapData'
 import { PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
-import type { Post, PostType } from '@/lib/types'
+import type { Post } from '@/lib/types'
 
 interface Building {
   id: string
@@ -100,6 +101,11 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
     setSelectedPost(post)
   }, [])
 
+  const handleBuildingPress = useCallback((b: Building) => {
+    try { Haptics.selectionAsync() } catch {}
+    router.push(`/community-events` as any)
+  }, [router])
+
   const handleCardPress = useCallback(() => {
     if (selectedPost) {
       router.push(`/post/${selectedPost.id}`)
@@ -132,7 +138,11 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
             onPress={() => handleMarkerPress(post)}
             tracksViewChanges={false}
           >
-            <View style={[styles.pin, { backgroundColor: PIN_COLORS[post.type] ?? colors.foreground }]}>
+            <View
+              style={[styles.pin, { backgroundColor: PIN_COLORS[post.type] ?? colors.foreground }]}
+              accessibilityLabel={`${CATEGORIES[post.type as PostType]?.label ?? post.type}: ${post.title}`}
+              accessibilityRole="button"
+            >
               <MapPin size={12} color="#fff" fill="#fff" />
             </View>
           </Marker>
@@ -143,8 +153,13 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
             coordinate={{ latitude: b.lat, longitude: b.lng }}
             tracksViewChanges={false}
             zIndex={-1}
+            onPress={() => handleBuildingPress(b)}
           >
-            <View style={[styles.buildingPin, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View
+              style={[styles.buildingPin, { backgroundColor: colors.card, borderColor: colors.border }]}
+              accessibilityLabel={`${b.street_address}, ${b.member_count} ${t('common.members') ?? 'members'}`}
+              accessibilityRole="button"
+            >
               <Home size={10} color={colors.foreground} />
               {b.member_count > 1 && (
                 <Text style={[styles.buildingCount, { color: colors.foreground }]}>

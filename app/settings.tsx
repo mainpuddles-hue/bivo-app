@@ -729,7 +729,7 @@ export default function SettingsScreen() {
         </View>
         <View style={s.headerRightSpacer}>
           {dirty && (
-            <PressableOpacity onPress={handleSave} disabled={saving} style={[s.headerSaveBtn, { backgroundColor: colors.foreground }]}>
+            <PressableOpacity onPress={handleSave} disabled={saving} style={[s.headerSaveBtn, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('common.save') ?? 'Save'}>
               {saving ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Save size={14} color={colors.primaryForeground} />}
             </PressableOpacity>
           )}
@@ -1113,6 +1113,8 @@ export default function SettingsScreen() {
                 onPress={handleChangePassword}
                 disabled={changingPw || !newPw || (!isPasswordRecovery && !currentPw)}
                 style={[s.changePwBtn, { backgroundColor: colors.foreground, opacity: changingPw || !newPw || (!isPasswordRecovery && !currentPw) ? 0.5 : 1 }]}
+                accessibilityRole="button"
+                accessibilityLabel={changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
               >
                 <Text style={[s.changePwBtnText, { color: colors.primaryForeground }]}>
                   {changingPw ? t('settings.changingPassword') : t('settings.changePassword')}
