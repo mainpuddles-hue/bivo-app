@@ -173,7 +173,7 @@ function VerificationScreenInner() {
                 {/* Right action */}
                 {step.done ? (
                   <Text style={[s.stepDoneLabel, { color: colors.foreground }]}>{t('verification.done')}</Text>
-                ) : step.key === 'identity' ? (
+                ) : step.key === 'identity' || step.key === 'phone' ? (
                   <View
                     style={[s.stepActionPill, { backgroundColor: colors.muted }]}
                     accessibilityLabel={`${step.title} — ${t('verification.comingSoon')}`}
@@ -182,8 +182,9 @@ function VerificationScreenInner() {
                       {t('verification.comingSoon')}
                     </Text>
                   </View>
-                ) : (
+                ) : step.key === 'photo' ? (
                   <PressableOpacity
+                    onPress={() => router.push('/(tabs)/profile')}
                     style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
                     accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
                     accessibilityRole="button"
@@ -192,6 +193,26 @@ function VerificationScreenInner() {
                       {t('verification.doNow')}
                     </Text>
                   </PressableOpacity>
+                ) : step.key === 'address' ? (
+                  <PressableOpacity
+                    onPress={() => router.push('/settings' as any)}
+                    style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
+                    accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[s.stepActionText, { color: colors.primaryForeground }]}>
+                      {t('verification.doNow')}
+                    </Text>
+                  </PressableOpacity>
+                ) : (
+                  <View
+                    style={[s.stepActionPill, { backgroundColor: colors.muted }]}
+                    accessibilityLabel={`${step.title} — ${t('verification.comingSoon')}`}
+                  >
+                    <Text style={[s.stepActionText, { color: colors.mutedForeground }]}>
+                      {t('verification.comingSoon')}
+                    </Text>
+                  </View>
                 )}
               </View>
             ))}
