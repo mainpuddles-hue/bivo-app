@@ -421,11 +421,11 @@ function OnboardingScreenInner() {
   // Hide 'lainaa' when LENDING feature is disabled so users can't select
   // a purpose that leaves them with an empty feed.
   const PURPOSE_OPTIONS = [
+    { key: 'ilmaista', labelKey: 'onboarding.purposeIlmaista', icon: Heart, color: CATEGORIES.ilmaista.color },
     { key: 'tarvitsen', labelKey: 'onboarding.purposeTarvitsen', icon: Handshake, color: CATEGORIES.tarvitsen.color },
     { key: 'tarjoan', labelKey: 'onboarding.purposeTarjoan', icon: Gift, color: CATEGORIES.tarjoan.color },
-    { key: 'ilmaista', labelKey: 'onboarding.purposeIlmaista', icon: Heart, color: CATEGORIES.ilmaista.color },
-    ...(FEATURES.LENDING ? [{ key: 'lainaa', labelKey: 'onboarding.purposeLainaa', icon: BookOpen, color: CATEGORIES.lainaa.color }] : []),
     { key: 'tapahtuma', labelKey: 'onboarding.purposeTapahtuma', icon: CalendarDays, color: CATEGORIES.tapahtuma.color },
+    ...(FEATURES.LENDING ? [{ key: 'lainaa', labelKey: 'onboarding.purposeLainaa', icon: BookOpen, color: CATEGORIES.lainaa.color }] : []),
   ]
 
   const renderPurpose = () => (

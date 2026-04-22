@@ -28,6 +28,14 @@ export const CATEGORIES: Record<PostType, {
   bgLight: string
   bgDark: string
 }> = {
+  ilmaista: {
+    label: 'categories.ilmaista',
+    subtitle: 'categories.ilmaistaSub',
+    icon: 'Heart',
+    color: '#3B7DD8',
+    bgLight: '#EBF2FE',
+    bgDark: '#101A2D',
+  },
   tarvitsen: {
     label: 'categories.tarvitsen',
     subtitle: 'categories.tarvitsenSub',
@@ -44,13 +52,13 @@ export const CATEGORIES: Record<PostType, {
     bgLight: '#F4EFFF',
     bgDark: '#1A1525',
   },
-  ilmaista: {
-    label: 'categories.ilmaista',
-    subtitle: 'categories.ilmaistaSub',
-    icon: 'Heart',
-    color: '#3B7DD8',
-    bgLight: '#EBF2FE',
-    bgDark: '#101A2D',
+  tapahtuma: {
+    label: 'categories.tapahtuma',
+    subtitle: 'categories.tapahtumaSub',
+    icon: 'CalendarDays',
+    color: '#2B8A62',
+    bgLight: '#E8F7EF',
+    bgDark: '#102D1A',
   },
   lainaa: {
     label: 'categories.lainaa',
@@ -59,14 +67,6 @@ export const CATEGORIES: Record<PostType, {
     color: '#C98B2E',
     bgLight: '#FDF6E8',
     bgDark: '#2D2010',
-  },
-  tapahtuma: {
-    label: 'categories.tapahtuma',
-    subtitle: 'categories.tapahtumaSub',
-    icon: 'CalendarDays',
-    color: '#2B8A62',
-    bgLight: '#E8F7EF',
-    bgDark: '#102D1A',
   },
 }
 

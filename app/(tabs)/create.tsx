@@ -138,11 +138,11 @@ const EXPIRATION_OPTIONS = [
 ]
 
 const CATEGORY_PILLS: { type: PostType; label: string }[] = [
+  { type: 'ilmaista', label: 'categories.ilmaista' },
   { type: 'tarvitsen', label: 'categories.tarvitsen' },
   { type: 'tarjoan', label: 'categories.tarjoan' },
-  { type: 'ilmaista', label: 'categories.ilmaista' },
-  { type: 'lainaa', label: 'categories.lainaa' },
   { type: 'tapahtuma', label: 'categories.tapahtuma' },
+  { type: 'lainaa', label: 'categories.lainaa' },
 ]
 
 export default function CreateScreen() {
