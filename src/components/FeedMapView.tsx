@@ -4,14 +4,14 @@
  * Used in feed screen when user toggles to map view.
  * Lightweight — no events, places, or bottom sheet. Just posts on a map.
  */
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native'
 import MapView, { Marker, PROVIDER_DEFAULT, type Region } from 'react-native-maps'
 import ClusteredMapView from 'react-native-map-clustering'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { MapPin, X } from 'lucide-react-native'
+import { MapPin, X, Home } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -20,7 +20,16 @@ import { formatPrice, formatTimeAgo } from '@/lib/format'
 import { getImageUrl } from '@/lib/imageUtils'
 import { DARK_MAP_STYLE } from '@/components/map/useMapData'
 import { PressableOpacity } from '@/components/ui'
+import { useSupabase } from '@/hooks/useSupabase'
 import type { Post, PostType } from '@/lib/types'
+
+interface Building {
+  id: string
+  street_address: string
+  lat: number
+  lng: number
+  member_count: number
+}
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
@@ -47,8 +56,24 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
+  const supabase = useSupabase()
   const mapRef = useRef<MapView | null>(null)
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [buildings, setBuildings] = useState<Building[]>([])
+
+  // Fetch nearby buildings with members
+  useEffect(() => {
+    Promise.resolve(
+      supabase
+        .from('buildings')
+        .select('id, street_address, lat, lng, member_count')
+        .gt('member_count', 0)
+        .not('lat', 'is', null)
+        .limit(100)
+    ).then(({ data }) => {
+      if (data) setBuildings(data as Building[])
+    }).catch(() => {})
+  }, [supabase])
 
   // Filter posts with valid coordinates
   const mappablePosts = useMemo(() =>
@@ -109,6 +134,23 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
           >
             <View style={[styles.pin, { backgroundColor: PIN_COLORS[post.type] ?? colors.foreground }]}>
               <MapPin size={12} color="#fff" fill="#fff" />
+            </View>
+          </Marker>
+        ))}
+        {buildings.map(b => (
+          <Marker
+            key={`bldg-${b.id}`}
+            coordinate={{ latitude: b.lat, longitude: b.lng }}
+            tracksViewChanges={false}
+            zIndex={-1}
+          >
+            <View style={[styles.buildingPin, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Home size={10} color={colors.foreground} />
+              {b.member_count > 1 && (
+                <Text style={[styles.buildingCount, { color: colors.foreground }]}>
+                  {b.member_count}
+                </Text>
+              )}
             </View>
           </Marker>
         ))}
@@ -191,4 +233,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1,
   },
   countText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
+  buildingPin: {
+    flexDirection: 'row', alignItems: 'center', gap: 2,
+    paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10,
+    borderWidth: 1, opacity: 0.85,
+  },
+  buildingCount: { fontSize: 10, fontFamily: fonts.bodySemi, lineHeight: 12 },
 })

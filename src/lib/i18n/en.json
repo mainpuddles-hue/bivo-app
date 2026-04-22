@@ -143,7 +143,8 @@
     "welcomeToastGeneric": "Welcome to TackBird!",
     "mapView": "Map view",
     "listView": "List view",
-    "postsOnMap": "posts on map"
+    "postsOnMap": "posts on map",
+    "neighborsInBuilding": "{count} neighbors in your building"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",

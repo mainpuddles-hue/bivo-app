@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ViewToken, ScrollView
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Map, LayoutGrid } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Map, LayoutGrid, Home } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -96,6 +96,21 @@ function FeedScreenInner() {
       setInlineEvents(eventPosts)
     }).catch(() => {})
   }, [supabase])
+
+  // Fetch user's building info for community card
+  const [userBuilding, setUserBuilding] = useState<{ street_address: string; member_count: number } | null>(null)
+  useEffect(() => {
+    if (!feed.currentUserId) return
+    Promise.resolve(
+      supabase
+        .from('user_buildings')
+        .select('building:buildings(street_address, member_count)')
+        .eq('user_id', feed.currentUserId)
+        .single()
+    ).then(({ data }: any) => {
+      if (data?.building) setUserBuilding(data.building)
+    }).catch(() => {})
+  }, [feed.currentUserId, supabase])
 
   // Fetch active ads for feed display
   const [feedAds, setFeedAds] = useState<Ad[]>([])
@@ -474,6 +489,30 @@ function FeedScreenInner() {
               )}
             </View>
 
+            {/* ── Building community card ── */}
+            {userBuilding && userBuilding.member_count > 1 && (
+              <View style={[styles.buildingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.buildingIconWrap, { backgroundColor: `${colors.foreground}10` }]}>
+                  <Home size={18} color={colors.foreground} />
+                </View>
+                <View style={styles.buildingCardText}>
+                  <Text style={[styles.buildingCardTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
+                    {userBuilding.street_address}
+                  </Text>
+                  <Text style={[styles.buildingCardSub, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                    {t('feed.neighborsInBuilding', { count: userBuilding.member_count - 1 })}
+                  </Text>
+                </View>
+                <PressableOpacity
+                  onPress={() => { try { Haptics.selectionAsync() } catch {}; setViewMode('map') }}
+                  style={[styles.buildingMapBtn, { backgroundColor: colors.foreground }]}
+                  accessibilityLabel={t('feed.mapView') ?? 'Map view'}
+                >
+                  <Map size={14} color={colors.primaryForeground} />
+                </PressableOpacity>
+              </View>
+            )}
+
             {/* ── 5. Discovery stack ── */}
             {feed.loading && visiblePosts.length === 0 ? (
               <View style={{ paddingHorizontal: 12, gap: 16, paddingTop: 16 }}>
@@ -682,6 +721,25 @@ const styles = StyleSheet.create({
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
   coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999, marginTop: 8, minHeight: 48 },
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
+
+  // Building community card
+  buildingCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    marginHorizontal: 20, marginTop: 12, marginBottom: 4,
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderRadius: 20, borderWidth: 1,
+  },
+  buildingIconWrap: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  buildingCardText: { flex: 1, gap: 2 },
+  buildingCardTitle: { fontSize: 14, lineHeight: 18 },
+  buildingCardSub: { fontSize: 12, lineHeight: 16 },
+  buildingMapBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+  },
 
   // Footer
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },
