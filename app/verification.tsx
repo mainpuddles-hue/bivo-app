@@ -12,6 +12,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { getCachedUserId } from '@/lib/authCache'
+import { PhoneVerificationModal } from '@/components/PhoneVerificationModal'
 
 // ── Types ──
 
@@ -42,6 +43,7 @@ function VerificationScreenInner() {
 
   const [profile, setProfile] = useState<VerificationProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [phoneModalVisible, setPhoneModalVisible] = useState(false)
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -173,7 +175,7 @@ function VerificationScreenInner() {
                 {/* Right action */}
                 {step.done ? (
                   <Text style={[s.stepDoneLabel, { color: colors.foreground }]}>{t('verification.done')}</Text>
-                ) : step.key === 'identity' || step.key === 'phone' ? (
+                ) : step.key === 'identity' ? (
                   <View
                     style={[s.stepActionPill, { backgroundColor: colors.muted }]}
                     accessibilityLabel={`${step.title} — ${t('verification.comingSoon')}`}
@@ -182,6 +184,17 @@ function VerificationScreenInner() {
                       {t('verification.comingSoon')}
                     </Text>
                   </View>
+                ) : step.key === 'phone' ? (
+                  <PressableOpacity
+                    onPress={() => setPhoneModalVisible(true)}
+                    style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
+                    accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[s.stepActionText, { color: colors.primaryForeground }]}>
+                      {t('verification.doNow')}
+                    </Text>
+                  </PressableOpacity>
                 ) : step.key === 'photo' ? (
                   <PressableOpacity
                     onPress={() => router.push('/(tabs)/profile')}
@@ -224,6 +237,12 @@ function VerificationScreenInner() {
           </Text>
         </ScrollView>
       )}
+
+      <PhoneVerificationModal
+        visible={phoneModalVisible}
+        onClose={() => setPhoneModalVisible(false)}
+        onVerified={() => fetchProfile()}
+      />
     </View>
   )
 }
