@@ -1,5 +1,6 @@
 // Supabase Edge Function: send-phone-otp
-// Sends a 6-digit OTP via Twilio SMS for phone number verification.
+// Sends a 6-digit OTP for phone number verification.
+// Delivery: Twilio SMS if configured, otherwise Resend email as fallback.
 // Rate limited: max 3 per phone per hour, max 5 per user per day.
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
@@ -95,48 +96,82 @@ serve(async (req: Request) => {
     })
     if (insertError) throw insertError
 
-    // Send SMS via Twilio
+    // Delivery: prefer Twilio SMS, fallback to Resend email
     const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID')
     const twilioToken = Deno.env.get('TWILIO_AUTH_TOKEN')
     const twilioFrom = Deno.env.get('TWILIO_PHONE_NUMBER')
+    const resendKey = Deno.env.get('RESEND_API_KEY')
 
-    if (!twilioSid || !twilioToken || !twilioFrom) {
-      console.error('[send-phone-otp] Twilio not configured')
+    let deliveryMethod = 'none'
+
+    if (twilioSid && twilioToken && twilioFrom) {
+      // Primary: send via Twilio SMS
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+
+      const twilioRes = await fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Basic ' + btoa(`${twilioSid}:${twilioToken}`),
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            To: cleanPhone,
+            From: twilioFrom,
+            Body: `TackBird: Vahvistuskoodisi on ${otp}. Koodi vanhenee 10 minuutissa.`,
+          }).toString(),
+          signal: controller.signal,
+        },
+      )
+      clearTimeout(timeout)
+
+      if (!twilioRes.ok) {
+        const errBody = await twilioRes.text().catch(() => 'unknown')
+        console.error('[send-phone-otp] Twilio error:', twilioRes.status, errBody)
+        return new Response(JSON.stringify({ error: 'sms_send_failed' }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      deliveryMethod = 'sms'
+    } else if (resendKey && user.email) {
+      // Fallback: send via Resend email
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'TackBird <noreply@tackbird.com>',
+          to: [user.email],
+          subject: `TackBird — Puhelinvahvistuskoodi: ${otp}`,
+          html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:24px">
+            <h2 style="margin:0 0 16px">Puhelinvahvistus</h2>
+            <p>Vahvistuskoodisi numeroon <strong>${cleanPhone}</strong>:</p>
+            <div style="font-size:32px;font-weight:bold;letter-spacing:8px;text-align:center;padding:24px;background:#f5f5f5;border-radius:12px;margin:16px 0">${otp}</div>
+            <p style="color:#666;font-size:13px">Koodi vanhenee 10 minuutissa. Jos et pyytänyt tätä koodia, voit jättää viestin huomiotta.</p>
+          </div>`,
+        }),
+      })
+
+      if (!emailRes.ok) {
+        const errBody = await emailRes.text().catch(() => 'unknown')
+        console.error('[send-phone-otp] Resend error:', emailRes.status, errBody)
+        return new Response(JSON.stringify({ error: 'sms_send_failed' }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      deliveryMethod = 'email'
+    } else {
+      console.error('[send-phone-otp] No delivery method configured (need TWILIO_* or RESEND_API_KEY)')
       return new Response(JSON.stringify({ error: 'sms_not_configured' }), {
         status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
-
-    const twilioRes = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${twilioSid}:${twilioToken}`),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          To: cleanPhone,
-          From: twilioFrom,
-          Body: `TackBird: Vahvistuskoodisi on ${otp}. Koodi vanhenee 10 minuutissa.`,
-        }).toString(),
-        signal: controller.signal,
-      },
-    )
-    clearTimeout(timeout)
-
-    if (!twilioRes.ok) {
-      const errBody = await twilioRes.text().catch(() => 'unknown')
-      console.error('[send-phone-otp] Twilio error:', twilioRes.status, errBody)
-      return new Response(JSON.stringify({ error: 'sms_send_failed' }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    return new Response(JSON.stringify({ success: true, expires_in: 600 }), {
+    return new Response(JSON.stringify({ success: true, expires_in: 600, delivery: deliveryMethod }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {

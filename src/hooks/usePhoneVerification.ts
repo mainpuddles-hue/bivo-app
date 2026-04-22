@@ -6,6 +6,7 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
 const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
 type Step = 'input' | 'otp' | 'success'
+type DeliveryMethod = 'sms' | 'email' | null
 
 export function usePhoneVerification() {
   const supabase = useSupabase()
@@ -17,6 +18,7 @@ export function usePhoneVerification() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(0)
+  const [delivery, setDelivery] = useState<DeliveryMethod>(null)
 
   const mountedRef = useRef(true)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -78,7 +80,9 @@ export function usePhoneVerification() {
         return false
       }
 
+      const resBody = await res.json().catch(() => ({}))
       if (!mountedRef.current) return false
+      setDelivery(resBody.delivery === 'email' ? 'email' : 'sms')
       setStep('otp')
       setCountdown(60)
       return true
@@ -138,11 +142,12 @@ export function usePhoneVerification() {
     setError(null)
     setLoading(false)
     setCountdown(0)
+    setDelivery(null)
   }, [])
 
   return {
     step, phone, setPhone, code, setCode,
-    loading, error, countdown,
+    loading, error, countdown, delivery,
     sendOtp, verifyOtp, reset,
   }
 }

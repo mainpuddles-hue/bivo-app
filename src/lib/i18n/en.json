@@ -3145,6 +3145,7 @@
     "sendCode": "Send code",
     "verify": "Verify",
     "codeSent": "Code sent to {{phone}}",
+    "codeSentEmail": "Code sent to your email",
     "resend": "Resend",
     "resendIn": "Resend ({{seconds}}s)",
     "verified": "Verified!",

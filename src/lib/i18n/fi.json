@@ -3145,6 +3145,7 @@
     "sendCode": "Lähetä koodi",
     "verify": "Vahvista",
     "codeSent": "Koodi lähetetty numeroon {{phone}}",
+    "codeSentEmail": "Koodi lähetetty sähköpostiisi",
     "resend": "Lähetä uudelleen",
     "resendIn": "Lähetä uudelleen ({{seconds}}s)",
     "verified": "Vahvistettu!",

@@ -20,7 +20,7 @@ export const PhoneVerificationModal = memo(function PhoneVerificationModal({
   const { t } = useI18n()
   const {
     step, phone, setPhone, code, setCode,
-    loading, error, countdown,
+    loading, error, countdown, delivery,
     sendOtp, verifyOtp, reset,
   } = usePhoneVerification()
 
@@ -76,7 +76,10 @@ export const PhoneVerificationModal = memo(function PhoneVerificationModal({
           ) : step === 'otp' ? (
             <>
               <Text style={[s.desc, { color: colors.mutedForeground }]}>
-                {t('phoneVerification.codeSent', { phone: phone.replace(/[\s\-()]/g, '') })}
+                {delivery === 'email'
+                  ? t('phoneVerification.codeSentEmail')
+                  : t('phoneVerification.codeSent', { phone: phone.replace(/[\s\-()]/g, '') })
+                }
               </Text>
 
               <TextInput

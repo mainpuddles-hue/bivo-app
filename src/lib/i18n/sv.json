@@ -3145,6 +3145,7 @@
     "sendCode": "Skicka kod",
     "verify": "Verifiera",
     "codeSent": "Kod skickad till {{phone}}",
+    "codeSentEmail": "Kod skickad till din e-post",
     "resend": "Skicka igen",
     "resendIn": "Skicka igen ({{seconds}}s)",
     "verified": "Verifierad!",
