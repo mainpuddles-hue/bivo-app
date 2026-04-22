@@ -15,4 +15,5 @@ supabase/.temp/
 repomix-output.xml
 # Local UX screenshots
 ux-audit/
+*.png
 .dmux/
