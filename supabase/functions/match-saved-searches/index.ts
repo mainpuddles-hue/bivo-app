@@ -126,16 +126,14 @@ serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // Auth: require CRON_SECRET header
+  // Auth: require CRON_SECRET header — reject if secret is missing or doesn't match
   const cronSecret = Deno.env.get('CRON_SECRET')
-  if (cronSecret) {
-    const provided = req.headers.get('x-cron-secret')
-    if (provided !== cronSecret) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+  const provided = req.headers.get('x-cron-secret')
+  if (!cronSecret || provided !== cronSecret) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 
   const supabase = createClient(

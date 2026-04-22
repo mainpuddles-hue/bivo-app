@@ -19,7 +19,7 @@ serve(async (req) => {
     // Verify cron secret to prevent unauthorized invocations
     const authHeader = req.headers.get('Authorization')
     const cronSecret = Deno.env.get('CRON_SECRET')
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return new Response('Unauthorized', { status: 401 })
     }
 

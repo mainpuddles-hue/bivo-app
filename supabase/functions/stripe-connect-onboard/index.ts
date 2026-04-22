@@ -78,9 +78,9 @@ serve(async (req) => {
       })
       accountId = account.id
 
-      // Save account ID to profile. If this fails, the Connect account
-      // becomes orphaned (next attempt would create another), so log the
-      // failure for operators to clean up manually in Stripe Dashboard.
+      // Save account ID to profile. If this fails, return error to prevent
+      // the user from proceeding with an unlinked account. The Stripe account
+      // is already created but can be reclaimed via metadata on next attempt.
       const { error: linkError } = await supabase
         .from('profiles')
         .update({ stripe_connect_account_id: accountId })
@@ -89,6 +89,10 @@ serve(async (req) => {
         console.error(
           `[stripe-connect-onboard] CRITICAL: failed to link Connect account ${accountId} to user ${user.id}:`,
           linkError.message,
+        )
+        return new Response(
+          JSON.stringify({ error: 'Failed to link payment account. Please try again.' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
       }
     }

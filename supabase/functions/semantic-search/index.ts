@@ -58,13 +58,17 @@ async function generateEmbedding(text: string): Promise<number[]> {
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 15000)
-  const res = await fetch(HF_API_URL, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ inputs: text, options: { wait_for_model: true } }),
-    signal: controller.signal,
-  })
-  clearTimeout(timeout)
+  let res: Response
+  try {
+    res = await fetch(HF_API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ inputs: text, options: { wait_for_model: true } }),
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
 
   if (!res.ok) throw new Error(`HF API error: ${res.status}`)
   const result = await res.json()

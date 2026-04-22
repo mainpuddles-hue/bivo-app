@@ -237,7 +237,7 @@ function ConversationScreenInner() {
         if (userIdRef.current && newMsg.sender_id !== userIdRef.current) {
           setNewMsgCount(prev => prev + 1)
           // Auto-mark as read (use ref to avoid stale closure)
-          ;(async () => { try { await (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id) } catch {} })()
+          ;(async () => { try { await (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id) } catch (e) { if (__DEV__) console.warn('[conversation] mark-as-read failed:', e) } })()
         }
       })
       .on('postgres_changes', {
