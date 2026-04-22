@@ -603,7 +603,7 @@ function ConversationScreenInner() {
             style={{ maxWidth: '78%' }}
             accessibilityRole="text"
             accessibilityLabel={item.content || t('messages.imageMessageAlt')}
-            accessibilityHint={t('messages.longPressHint') ?? 'Long press for reactions and options'}
+            accessibilityHint={t('conversation.longPressHint') ?? 'Long press for reactions and options'}
           >
             <View style={[
               s.bubble,
