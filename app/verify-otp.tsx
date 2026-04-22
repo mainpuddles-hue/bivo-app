@@ -309,10 +309,10 @@ export default function VerifyOtpScreen() {
                     keyboardType="number-pad"
                     maxLength={6}
                     textContentType="oneTimeCode"
+                    accessibilityLabel={`${t('verification.digit') ?? 'Digit'} ${index + 1}`}
                     autoComplete={index === 0 ? 'one-time-code' : 'off'}
                     selectTextOnFocus
                     caretHidden
-                    accessibilityLabel={`${t('auth.otpTitle')} ${index + 1}`}
                   />
                 </View>
               )

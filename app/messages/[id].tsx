@@ -983,11 +983,11 @@ function ConversationScreenInner() {
           onChangeText={(text) => { setInput(text); if (text.length > 0) setShowQuickReplies(false); sendTyping() }}
           placeholder={t('messages.sendPlaceholder')}
           placeholderTextColor={colors.tertiaryForeground}
+          accessibilityLabel={t('messages.sendPlaceholder')}
           multiline
           maxLength={2000}
           blurOnSubmit={false}
           inputAccessoryViewID={KEYBOARD_DONE_ID}
-          accessibilityLabel={t('messages.sendPlaceholder')}
         />
         <PressableOpacity
           onPress={handleSend}

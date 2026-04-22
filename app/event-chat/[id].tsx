@@ -324,6 +324,7 @@ function EventChatScreenInner() {
           }]}
           placeholder={t('eventChat.placeholder')}
           placeholderTextColor={colors.mutedForeground}
+          accessibilityLabel={t('eventChat.placeholder')}
           value={input}
           onChangeText={setInput}
           multiline

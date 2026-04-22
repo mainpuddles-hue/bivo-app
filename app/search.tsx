@@ -1283,8 +1283,8 @@ function SearchScreenInner() {
             onSubmitEditing={() => { setShowSuggestions(false); searchSuggestions.addToHistory(query); executeSearch() }}
             onFocus={() => setShowSuggestions(true)}
             returnKeyType="search"
-            autoFocus
             accessibilityLabel={t('feed.searchPlaceholder')}
+            autoFocus
             accessibilityRole="search"
           />
           {query.length > 0 && (

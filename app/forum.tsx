@@ -630,10 +630,10 @@ function ForumScreenInner() {
             </PressableOpacity>
           </View>
           <View style={s.modalSection}>
-            <TextInput style={[s.titleInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
+            <TextInput style={[s.titleInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} placeholder={t('forum.postTitle')} placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('forum.postTitle')} value={editTitle} onChangeText={setEditTitle} maxLength={200} autoFocus returnKeyType="next" autoCapitalize="sentences" />
           </View>
           <View style={[s.modalSection, { flex: 1 }]}>
-            <TextInput style={[s.contentInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
+            <TextInput style={[s.contentInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} placeholder={t('forum.postContent')} placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('forum.postContent')} value={editContent} onChangeText={setEditContent} multiline textAlignVertical="top" maxLength={5000} inputAccessoryViewID={KEYBOARD_DONE_ID} />
           </View>
           <KeyboardDoneAccessory />
         </KeyboardAvoidingView>

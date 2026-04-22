@@ -594,6 +594,7 @@ function OnboardingScreenInner() {
             onChangeText={(text) => { setReferralInput(text); setReferralStatus('idle') }}
             placeholder={t('referral.codeInput')}
             placeholderTextColor={colors.tertiaryForeground}
+            accessibilityLabel={t('referral.codeInput')}
             style={[s.searchInput, {
               backgroundColor: colors.muted,
               borderWidth: referralStatus !== 'idle' ? 1 : 0,

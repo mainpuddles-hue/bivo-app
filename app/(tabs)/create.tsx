@@ -1193,8 +1193,8 @@ export default function CreateScreen() {
                 <Text style={[mk.mapFallbackText, { color: colors.mutedForeground }]}>{t('locationPicker.tapToSelect')}</Text>
                 <Text style={[mk.mapFallbackHint, { color: colors.mutedForeground }]}>{t('locationPicker.nativeHint')}</Text>
                 <View style={mk.coordInputRow}>
-                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder="Lat (60.17)" placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" value={tempMapCoords?.lat?.toString() ?? ''} onChangeText={(text) => { const lat = parseFloat(text); if (!isNaN(lat)) setTempMapCoords(prev => ({ lat, lng: prev?.lng ?? 24.94 })) }} />
-                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder="Lng (24.94)" placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" value={tempMapCoords?.lng?.toString() ?? ''} onChangeText={(text) => { const lng = parseFloat(text); if (!isNaN(lng)) setTempMapCoords(prev => ({ lat: prev?.lat ?? 60.17, lng })) }} />
+                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder="Lat (60.17)" placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('locationPicker.latitude') ?? 'Latitude'} keyboardType="decimal-pad" value={tempMapCoords?.lat?.toString() ?? ''} onChangeText={(text) => { const lat = parseFloat(text); if (!isNaN(lat)) setTempMapCoords(prev => ({ lat, lng: prev?.lng ?? 24.94 })) }} />
+                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder="Lng (24.94)" placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('locationPicker.longitude') ?? 'Longitude'} keyboardType="decimal-pad" value={tempMapCoords?.lng?.toString() ?? ''} onChangeText={(text) => { const lng = parseFloat(text); if (!isNaN(lng)) setTempMapCoords(prev => ({ lat: prev?.lat ?? 60.17, lng })) }} />
                 </View>
               </View>
             )}

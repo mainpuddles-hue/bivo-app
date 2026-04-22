@@ -207,6 +207,7 @@ function ReviewBorrowerScreenInner() {
           onChangeText={setComment}
           placeholder={t('reviewBorrower.commentPlaceholder')}
           placeholderTextColor={colors.mutedForeground}
+          accessibilityLabel={t('reviewBorrower.commentPlaceholder')}
           multiline
           style={[s.commentInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
         />
