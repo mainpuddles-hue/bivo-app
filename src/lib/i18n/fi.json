@@ -1099,7 +1099,11 @@
     "purposeTarjoan": "Tarjoan palveluja",
     "purposeIlmaista": "Jaan ilmaista",
     "purposeLainaa": "Lainaan tai vuokraan",
-    "purposeTapahtuma": "Osallistun tapahtumiin"
+    "purposeTapahtuma": "Osallistun tapahtumiin",
+    "addressTitle": "Missä asut?",
+    "addressSubtitle": "Syötä kotiosoitteesi yhdistääksesi talon yhteisöön",
+    "addressExplainer": "Näytämme sinulle lähimpien naapureidesi ilmoitukset. Osoitettasi ei jaeta muille.",
+    "addressPlaceholder": "Kirjoita osoite, esim. Mannerheimintie 1"
   },
   "resetPassword": {
     "title": "Vaihda salasana",

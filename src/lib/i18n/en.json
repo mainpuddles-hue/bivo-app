@@ -1099,7 +1099,11 @@
     "purposeTarjoan": "I offer services",
     "purposeIlmaista": "I give away free",
     "purposeLainaa": "I lend or rent",
-    "purposeTapahtuma": "I join events"
+    "purposeTapahtuma": "I join events",
+    "addressTitle": "Where do you live?",
+    "addressSubtitle": "Enter your home address to join your building community",
+    "addressExplainer": "We'll show you posts from your nearest neighbors. Your address is never shared with others.",
+    "addressPlaceholder": "Type an address, e.g. Mannerheimintie 1"
   },
   "resetPassword": {
     "title": "Change password",

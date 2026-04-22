@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import {
   View,
   Text,
@@ -17,10 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
   ArrowLeft,
-  MapPin,
   Check,
   CheckCircle,
-  AlertTriangle,
   Shield,
   Handshake,
   Gift,
@@ -36,11 +34,12 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { TackBirdLogo } from '@/components/TackBirdLogo'
-import { NEIGHBORHOODS, CATEGORIES } from '@/lib/constants'
+import { LocationAutocomplete } from '@/components/LocationAutocomplete'
+import type { LocationResult } from '@/components/LocationAutocomplete'
+import { CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
-import { useLocationVerification } from '@/hooks/useLocationVerification'
 import { useReferral } from '@/hooks/useReferral'
 import { trackEvent } from '@/lib/analytics'
 import { FEATURES } from '@/lib/featureFlags'
@@ -63,19 +62,14 @@ function OnboardingScreenInner() {
 
   const [currentPage, setCurrentPage] = useState(0)
   const [selectedCity, setSelectedCity] = useState('helsinki')
-  const [cities, setCities] = useState<{ id: string; name: string }[]>([])
-  const [dynamicNeighborhoods, setDynamicNeighborhoods] = useState<string[]>([])
-  const [neighborhoodCoordsMap, setNeighborhoodCoordsMap] = useState<Record<string, { lat: number; lng: number }>>({})
-  const [neighborhoodsLoading, setNeighborhoodsLoading] = useState(false)
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
   const [selectedPurposes, setSelectedPurposes] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
-  const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
-  const [customNeighborhood, setCustomNeighborhood] = useState('')
   const [onboardingUserId, setOnboardingUserId] = useState<string | null>(null)
-  const { status: verificationStatus, distanceKm, verify } = useLocationVerification()
+  // Address-based onboarding state
+  const [addressText, setAddressText] = useState('')
+  const [selectedAddress, setSelectedAddress] = useState<LocationResult | null>(null)
   const { applyInviteCode } = useReferral(onboardingUserId)
 
   // Fetch user ID for referral system
@@ -85,64 +79,11 @@ function OnboardingScreenInner() {
     }).catch(() => {})
   }, [supabase])
 
-  // Filter neighborhoods by search query to reduce cognitive load on large lists
-  const filteredNeighborhoods = useMemo(() => {
-    if (!neighborhoodSearch.trim()) return dynamicNeighborhoods
-    const q = neighborhoodSearch.trim().toLowerCase()
-    return dynamicNeighborhoods.filter(nh => nh.toLowerCase().includes(q))
-  }, [dynamicNeighborhoods, neighborhoodSearch])
-
-  // Use static city list (only Helsinki for MVP launch)
-  useEffect(() => {
-    setCities(Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name })))
+  // Handle address selection from LocationAutocomplete
+  const handleAddressSelect = useCallback((location: LocationResult) => {
+    setSelectedAddress(location)
+    try { Haptics.selectionAsync() } catch {}
   }, [])
-
-  // Fetch neighborhoods when city changes
-  useEffect(() => {
-    let cancelled = false
-    async function fetchNeighborhoods() {
-      setNeighborhoodsLoading(true)
-      setSelectedNeighborhood(null) // Reset selection when city changes
-      setNeighborhoodSearch('') // Reset search when city changes
-      setCustomNeighborhood('') // Reset custom input when city changes
-      try {
-        const { data } = await supabase
-          .from('city_neighborhoods')
-          .select('name, center_lat, center_lng')
-          .eq('city_id', selectedCity)
-          .order('name')
-        if (!cancelled && data && data.length > 0) {
-          setDynamicNeighborhoods(data.map((n: any) => n.name))
-          const coordsMap: Record<string, { lat: number; lng: number }> = {}
-          for (const n of data as any[]) {
-            coordsMap[n.name] = { lat: n.center_lat, lng: n.center_lng }
-          }
-          setNeighborhoodCoordsMap(coordsMap)
-        } else if (!cancelled) {
-          // Fallback to static Helsinki neighborhoods
-          setDynamicNeighborhoods(selectedCity === 'helsinki' ? [...NEIGHBORHOODS] : [])
-          setNeighborhoodCoordsMap({})
-        }
-      } catch {
-        if (!cancelled) {
-          setDynamicNeighborhoods(selectedCity === 'helsinki' ? [...NEIGHBORHOODS] : [])
-          setNeighborhoodCoordsMap({})
-        }
-      } finally {
-        if (!cancelled) setNeighborhoodsLoading(false)
-      }
-    }
-    fetchNeighborhoods()
-    return () => { cancelled = true }
-  }, [selectedCity, supabase])
-
-  // Auto-verify when neighborhood is selected on page 5 (index 4)
-  useEffect(() => {
-    if (selectedNeighborhood && currentPage === 4) {
-      const coords = neighborhoodCoordsMap[selectedNeighborhood]
-      verify(selectedNeighborhood, coords)
-    }
-  }, [selectedNeighborhood, currentPage, verify, neighborhoodCoordsMap])
 
   const goToPage = useCallback((page: number) => {
     scrollRef.current?.scrollTo({ x: page * SCREEN_WIDTH, animated: true })
@@ -158,7 +99,7 @@ function OnboardingScreenInner() {
   }, [SCREEN_WIDTH])
 
   const handleComplete = useCallback(async () => {
-    if (!selectedNeighborhood) return
+    if (!selectedAddress) return
     setSaving(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -179,9 +120,32 @@ function OnboardingScreenInner() {
         }
       }
 
-      // Save selected city + neighborhood + mark onboarding completed in profile
+      // Build street address from Photon result
+      const streetAddress = selectedAddress.street
+        ? (selectedAddress.housenumber
+            ? `${selectedAddress.street} ${selectedAddress.housenumber}`
+            : selectedAddress.street)
+        : selectedAddress.name
+
+      // Resolve building — atomically creates or finds building + links user
+      const { error: rpcError } = await (supabase as any).rpc('resolve_building', {
+        p_street_address: streetAddress,
+        p_postal_code: selectedAddress.postalCode ?? null,
+        p_city: selectedAddress.city ?? 'Helsinki',
+        p_neighborhood: selectedAddress.neighborhood ?? null,
+        p_lat: selectedAddress.lat,
+        p_lng: selectedAddress.lng,
+      })
+
+      if (rpcError) {
+        Alert.alert(t('common.error'), t('onboarding.saveFailed'))
+        setSaving(false)
+        return
+      }
+
+      // Update profile: mark onboarding complete + save neighborhood for feed filtering
       const updateData: Record<string, any> = {
-        naapurusto: selectedNeighborhood,
+        naapurusto: selectedAddress.neighborhood ?? selectedAddress.city ?? 'Helsinki',
         city_id: selectedCity,
         onboarding_completed: true,
       }
@@ -189,9 +153,6 @@ function OnboardingScreenInner() {
         .update(updateData)
         .eq('id', user.id)
       if (updateError) {
-        // Don't mark onboarding complete locally if the DB write failed —
-        // otherwise the user will never revisit this screen but their
-        // profile remains unconfigured
         Alert.alert(t('common.error'), t('onboarding.saveFailed'))
         setSaving(false)
         return
@@ -199,14 +160,18 @@ function OnboardingScreenInner() {
 
       // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
-      trackEvent('onboarding_completed' as any, { city: selectedCity, neighborhood: selectedNeighborhood })
+      trackEvent('onboarding_completed' as any, {
+        city: selectedAddress.city ?? selectedCity,
+        neighborhood: selectedAddress.neighborhood ?? null,
+        address: streetAddress,
+      })
       router.replace('/')
     } catch (err) {
       Alert.alert(t('common.error'), t('onboarding.saveFailed'))
     } finally {
       setSaving(false)
     }
-  }, [supabase, selectedNeighborhood, selectedCity, referralInput, router, t, applyInviteCode])
+  }, [supabase, selectedAddress, selectedCity, referralInput, router, t, applyInviteCode])
 
   // ── Progress bars (mockup style: horizontal bars, active = INK, inactive = LINE) ──
   const renderProgressBar = () => (
@@ -550,8 +515,8 @@ function OnboardingScreenInner() {
     </View>
   )
 
-  // ── Slide 5: Choose Neighborhood ──
-  const renderNeighborhood = () => (
+  // ── Slide 5: Enter Your Address ──
+  const renderAddress = () => (
     <View style={[s.page, { width: SCREEN_WIDTH }]}>
       {renderProgressBar()}
 
@@ -572,200 +537,55 @@ function OnboardingScreenInner() {
 
         {/* Title */}
         <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 20 }]}>
-          Helsinki
+          {t('onboarding.addressTitle')}
         </Text>
 
-        {/* City picker row — hidden until multi-city launch (only Helsinki supported) */}
-        {cities.length > 1 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cityRow}>
-            {(cities.length > 0 ? cities : Object.entries(CITY_NAMES).map(([id, name]) => ({ id, name }))).map((city) => {
-              const isSelected = selectedCity === city.id
-              return (
-                <PressableOpacity
-                  key={city.id}
-                  onPress={() => { setSelectedCity(city.id); trackEvent('onboarding_city_selected' as any, { city: city.id }) }}
-                  style={[
-                    s.cityChip,
-                    {
-                      backgroundColor: isSelected ? colors.foreground : colors.card,
-                      borderColor: isSelected ? colors.foreground : colors.border,
-                      borderWidth: 1,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
-                  accessibilityLabel={city.name}
-                >
-                  <Text
-                    style={[
-                      s.cityChipText,
-                      {
-                        color: isSelected ? colors.primaryForeground : colors.foreground,
-                        fontFamily: isSelected ? fonts.bodySemi : fonts.body,
-                      },
-                    ]}
-                  >
-                    {city.name}
-                  </Text>
-                </PressableOpacity>
-              )
-            })}
-          </ScrollView>
-        )}
-
         <Text style={[s.neighborhoodSubtitle, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-          {t('onboarding.neighborhoodSubtitle')}
+          {t('onboarding.addressSubtitle')}
         </Text>
 
         <Text style={[s.neighborhoodExplainer, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-          {t('onboarding.neighborhoodExplainer')}
+          {t('onboarding.addressExplainer')}
         </Text>
 
-        {/* Search input for neighborhoods — reduces cognitive load when many neighborhoods */}
-        {dynamicNeighborhoods.length > 12 && (
-          <View style={s.neighborhoodSearchRow}>
-            <TextInput
-              value={neighborhoodSearch}
-              onChangeText={setNeighborhoodSearch}
-              placeholder={t('search.placeholder')}
-              placeholderTextColor={colors.tertiaryForeground}
-              style={[s.searchInput, {
-                backgroundColor: colors.muted,
-                color: colors.foreground,
-                fontFamily: fonts.body,
-              }]}
-              autoCorrect={false}
-              autoCapitalize="none"
-            />
-          </View>
-        )}
+        {/* Address autocomplete */}
+        <View style={s.addressInputRow}>
+          <LocationAutocomplete
+            value={addressText}
+            onChangeText={setAddressText}
+            onSelect={handleAddressSelect}
+            placeholder={t('onboarding.addressPlaceholder')}
+            showIcon
+            accessibilityLabel={t('onboarding.addressPlaceholder')}
+          />
+        </View>
 
-        <ScrollView
-          contentContainerStyle={s.neighborhoodGrid}
-          showsVerticalScrollIndicator={false}
-          style={s.neighborhoodScroll}
-          nestedScrollEnabled
-          keyboardShouldPersistTaps="handled"
-        >
-          {neighborhoodsLoading ? (
-            <ActivityIndicator size="small" color={colors.foreground} style={{ marginTop: 20 }} />
-          ) : dynamicNeighborhoods.length === 0 ? (
-            <View style={s.customNeighborhoodContainer}>
-              <Text style={[s.bodyTextSmall, { color: colors.mutedForeground, fontFamily: fonts.body, marginBottom: 12 }]}>
-                {t('onboarding.noNeighborhoods')}
+        {/* Selected address confirmation */}
+        {selectedAddress && (
+          <View style={[s.addressConfirmRow, {
+            backgroundColor: `${colors.success}15`,
+            borderColor: `${colors.success}30`,
+          }]}>
+            <CheckCircle size={16} color={colors.success} />
+            <View style={s.addressConfirmText}>
+              <Text style={[s.addressConfirmLabel, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
+                {selectedAddress.street
+                  ? (selectedAddress.housenumber
+                      ? `${selectedAddress.street} ${selectedAddress.housenumber}`
+                      : selectedAddress.street)
+                  : selectedAddress.name}
               </Text>
-              <TextInput
-                value={customNeighborhood}
-                onChangeText={(text) => {
-                  setCustomNeighborhood(text)
-                  setSelectedNeighborhood(text.trim() || null)
-                }}
-                placeholder={t('onboarding.typeNeighborhood')}
-                placeholderTextColor={colors.tertiaryForeground}
-                style={[s.searchInput, {
-                  backgroundColor: colors.muted,
-                  borderWidth: customNeighborhood.trim() ? 1 : 0,
-                  borderColor: customNeighborhood.trim() ? colors.foreground : 'transparent',
-                  color: colors.foreground,
-                  fontFamily: fonts.body,
-                }]}
-                autoCorrect={false}
-                autoCapitalize="words"
-                accessibilityLabel={t('onboarding.typeNeighborhood')}
-              />
-              {customNeighborhood.trim() !== '' && (
-                <View style={s.customNeighborhoodConfirm}>
-                  <MapPin size={14} color={colors.foreground} />
-                  <Text style={[s.bodyTextSmall, { color: colors.foreground, fontFamily: fonts.bodyMedium }]}>
-                    {customNeighborhood.trim()}
-                  </Text>
-                </View>
+              {selectedAddress.neighborhood && (
+                <Text style={[s.addressConfirmDetail, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+                  {selectedAddress.neighborhood}{selectedAddress.postalCode ? `, ${selectedAddress.postalCode}` : ''} {selectedAddress.city ?? 'Helsinki'}
+                </Text>
               )}
             </View>
-          ) : filteredNeighborhoods.length === 0 ? (
-            <Text style={[s.bodyTextSmall, { color: colors.mutedForeground, fontFamily: fonts.body, paddingHorizontal: 20, paddingTop: 16 }]}>
-              {t('search.noResults')}
-            </Text>
-          ) : (
-            filteredNeighborhoods.map((nh) => {
-              const isSelected = selectedNeighborhood === nh
-              return (
-                <PressableOpacity
-                  key={nh}
-                  onPress={() => { setSelectedNeighborhood(nh); trackEvent('onboarding_neighborhood_selected' as any, { neighborhood: nh }) }}
-                  style={[
-                    s.neighborhoodChip,
-                    {
-                      backgroundColor: isSelected ? colors.foreground : colors.card,
-                      borderColor: isSelected ? colors.foreground : colors.border,
-                      borderWidth: 1,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
-                  accessibilityLabel={nh}
-                >
-                  {isSelected && <Check size={14} color={colors.primaryForeground} />}
-                  <MapPin size={14} color={isSelected ? colors.primaryForeground : colors.mutedForeground} />
-                  <Text
-                    style={[
-                      s.neighborhoodText,
-                      {
-                        color: isSelected ? colors.primaryForeground : colors.foreground,
-                        fontFamily: fonts.bodyMedium,
-                      },
-                    ]}
-                  >
-                    {nh}
-                  </Text>
-                </PressableOpacity>
-              )
-            })
-          )}
-        </ScrollView>
-
-        {/* Location verification status */}
-        {selectedNeighborhood && verificationStatus !== 'idle' && (
-          <View style={[s.verificationRow, {
-            backgroundColor: verificationStatus === 'verified' ? `${colors.success}15` :
-              verificationStatus === 'unverified' ? `${colors.foreground}15` : colors.muted,
-            borderColor: verificationStatus === 'verified' ? `${colors.success}30` :
-              verificationStatus === 'unverified' ? `${colors.foreground}30` : colors.border,
-          }]}>
-            {verificationStatus === 'checking' && (
-              <>
-                <ActivityIndicator size="small" color={colors.mutedForeground} />
-                <Text style={[s.verificationText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                  {t('onboarding.verifyingLocation')}
-                </Text>
-              </>
-            )}
-            {verificationStatus === 'verified' && (
-              <>
-                <CheckCircle size={16} color={colors.success} />
-                <Text style={[s.verificationText, { color: colors.success, fontFamily: fonts.body }]}>
-                  {t('onboarding.locationVerified')}
-                </Text>
-              </>
-            )}
-            {verificationStatus === 'unverified' && (
-              <>
-                <AlertTriangle size={16} color={colors.foreground} />
-                <Text style={[s.verificationText, { color: colors.foreground, fontFamily: fonts.body }]}>
-                  {t('onboarding.locationNotVerified', { distance: distanceKm ? distanceKm.toFixed(1) : '?' })}
-                </Text>
-              </>
-            )}
-            {verificationStatus === 'error' && (
-              <>
-                <MapPin size={16} color={colors.mutedForeground} />
-                <Text style={[s.verificationText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                  {t('onboarding.locationCheckFailed')}
-                </Text>
-              </>
-            )}
           </View>
         )}
+
+        {/* Spacer to push referral to bottom */}
+        <View style={{ flex: 1 }} />
 
         {/* Referral code input */}
         <View style={s.referralInputRow}>
@@ -802,11 +622,11 @@ function OnboardingScreenInner() {
       <View style={[s.ctaArea, { paddingBottom: insets.bottom + 24 }]}>
         <PressableOpacity
           onPress={handleComplete}
-          disabled={saving || !selectedNeighborhood}
+          disabled={saving || !selectedAddress}
           style={[
             s.ctaButton,
             {
-              backgroundColor: selectedNeighborhood ? colors.foreground : colors.muted,
+              backgroundColor: selectedAddress ? colors.foreground : colors.muted,
               opacity: saving ? 0.6 : 1,
             },
           ]}
@@ -821,14 +641,14 @@ function OnboardingScreenInner() {
                 style={[
                   s.ctaText,
                   {
-                    color: selectedNeighborhood ? colors.primaryForeground : colors.mutedForeground,
+                    color: selectedAddress ? colors.primaryForeground : colors.mutedForeground,
                     fontFamily: fonts.bodySemi,
                   },
                 ]}
               >
                 {t('onboarding.start')}
               </Text>
-              {selectedNeighborhood && <Check size={18} color={colors.primaryForeground} />}
+              {selectedAddress && <Check size={18} color={colors.primaryForeground} />}
             </>
           )}
         </PressableOpacity>
@@ -852,7 +672,7 @@ function OnboardingScreenInner() {
         {renderHowItWorks()}
         {renderTrustSafety()}
         {renderPurpose()}
-        {renderNeighborhood()}
+        {renderAddress()}
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -1132,7 +952,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // ── Neighborhood ──
+  // ── Address input ──
   neighborhoodSubtitle: {
     fontSize: 14,
     lineHeight: 20,
@@ -1146,10 +966,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 8,
   },
-  neighborhoodSearchRow: {
-    paddingHorizontal: 20,
-    marginBottom: 8,
-  },
   searchInput: {
     borderRadius: 999,
     paddingHorizontal: 16,
@@ -1158,46 +974,15 @@ const s = StyleSheet.create({
     lineHeight: 20,
     minHeight: 48,
   },
-  neighborhoodScroll: {
-    flex: 1,
-  },
-  neighborhoodGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  addressInputRow: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    marginBottom: 12,
+    zIndex: 10,
   },
-  neighborhoodChip: {
+  addressConfirmRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 999,
-    minHeight: 44,
-  },
-  neighborhoodText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  customNeighborhoodContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    width: '100%',
-  },
-  customNeighborhoodConfirm: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-  },
-
-  // ── Location verification ──
-  verificationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    gap: 12,
     marginHorizontal: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -1205,10 +990,17 @@ const s = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 8,
   },
-  verificationText: {
-    fontSize: 13,
-    lineHeight: 18,
+  addressConfirmText: {
     flex: 1,
+    gap: 2,
+  },
+  addressConfirmLabel: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  addressConfirmDetail: {
+    fontSize: 12,
+    lineHeight: 16,
   },
 
   // ── Referral code input ──

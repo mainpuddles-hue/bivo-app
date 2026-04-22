@@ -23,10 +23,21 @@ interface PhotonFeature {
   properties: PhotonProps
 }
 
+export interface LocationResult {
+  name: string
+  lat: number
+  lng: number
+  street?: string
+  housenumber?: string
+  postalCode?: string
+  city?: string
+  neighborhood?: string
+}
+
 interface LocationAutocompleteProps {
   value: string
   onChangeText: (text: string) => void
-  onSelect?: (location: { name: string; lat: number; lng: number }) => void
+  onSelect?: (location: LocationResult) => void
   placeholder?: string
   maxLength?: number
   accessibilityLabel?: string
@@ -108,11 +119,21 @@ export const LocationAutocomplete = memo(function LocationAutocomplete({
     selectingRef.current = true
     const formatted = formatSuggestion(f)
     const [lng, lat] = f.geometry.coordinates
+    const p = f.properties
     onChangeText(formatted)
     setSuggestions([])
     setShowSuggestions(false)
     Keyboard.dismiss()
-    onSelect?.({ name: formatted, lat, lng })
+    onSelect?.({
+      name: formatted,
+      lat,
+      lng,
+      street: p.street,
+      housenumber: p.housenumber,
+      postalCode: p.postcode,
+      city: p.city,
+      neighborhood: p.suburb ?? p.district,
+    })
     setTimeout(() => { selectingRef.current = false }, 300)
   }, [onChangeText, onSelect])
 

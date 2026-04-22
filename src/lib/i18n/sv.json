@@ -1099,7 +1099,11 @@
     "purposeTarjoan": "Jag erbjuder tjänster",
     "purposeIlmaista": "Jag delar gratis",
     "purposeLainaa": "Jag lånar ut eller hyr",
-    "purposeTapahtuma": "Jag deltar i evenemang"
+    "purposeTapahtuma": "Jag deltar i evenemang",
+    "addressTitle": "Var bor du?",
+    "addressSubtitle": "Ange din hemadress för att gå med i din byggnads gemenskap",
+    "addressExplainer": "Vi visar dig inlägg från dina närmaste grannar. Din adress delas aldrig med andra.",
+    "addressPlaceholder": "Skriv en adress, t.ex. Mannerheimintie 1"
   },
   "resetPassword": {
     "title": "Byt lösenord",
