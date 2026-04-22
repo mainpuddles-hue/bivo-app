@@ -133,7 +133,7 @@ function PaymentSuccessScreenInner() {
             <Check size={40} color={colors.success} strokeWidth={2.5} />
           </View>
 
-          <Text style={[styles.title, { color: colors.foreground }]}>{t('payment.success')}</Text>
+          <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{t('payment.success')}</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('payment.successMessage')}</Text>
 
           {/* Order summary — show info message when no booking found */}

@@ -169,6 +169,9 @@ export function SearchFilters({ visible, onClose, filters, onApply }: SearchFilt
       <PressableOpacity
         onPress={() => toggleSection(key)}
         style={[styles.sectionHeader, { borderBottomColor: colors.border }]}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ expanded }}
       >
         <View style={styles.sectionHeaderLeft}>
           {icon}

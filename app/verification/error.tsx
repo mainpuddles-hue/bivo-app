@@ -20,7 +20,7 @@ function VerificationErrorScreenInner() {
           <X size={48} color={colors.destructive} strokeWidth={2.5} />
         </View>
 
-        <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.errorTitle')}</Text>
+        <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{t('verification.errorTitle')}</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('verification.errorMessage')}</Text>
 
         <View style={styles.actions}>

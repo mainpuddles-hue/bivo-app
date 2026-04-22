@@ -409,7 +409,7 @@ function EventDetailScreenInner() {
           </View>
 
           {/* Title */}
-          <Text style={[s.title, { color: colors.foreground }]} numberOfLines={3}>{event.title}</Text>
+          <Text style={[s.title, { color: colors.foreground }]} numberOfLines={3} accessibilityRole="header">{event.title}</Text>
 
           {/* Past event banner */}
           {isPast && (

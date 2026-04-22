@@ -958,7 +958,7 @@ function PostDetailScreenInner() {
           {/* Title + rating row */}
           <View style={styles.titleRatingRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.title, { color: colors.foreground }]}>{post.title}</Text>
+              <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{post.title}</Text>
             </View>
             {authorRating && (
               <View style={styles.ratingBlock}>

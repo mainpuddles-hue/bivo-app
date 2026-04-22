@@ -129,7 +129,7 @@ export default function ProScreen() {
           <View style={[s.heroIconCircle, { backgroundColor: colors.background }]}>
             <Crown size={28} color={colors.foreground} />
           </View>
-          <Text style={[s.heroTitle, { color: colors.foreground }]}>TackBird Pro</Text>
+          <Text style={[s.heroTitle, { color: colors.foreground }]} accessibilityRole="header">TackBird Pro</Text>
           <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]}>
             {t('pro.subtitle')}
           </Text>

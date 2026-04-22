@@ -130,7 +130,7 @@ function VerificationScreenInner() {
               <Shield size={28} color={colors.primaryForeground} strokeWidth={1.8} />
             </View>
 
-            <Text style={[s.heroTitle, { color: colors.foreground }]}>
+            <Text style={[s.heroTitle, { color: colors.foreground }]} accessibilityRole="header">
               {t('verification.heroTitle')}
             </Text>
 

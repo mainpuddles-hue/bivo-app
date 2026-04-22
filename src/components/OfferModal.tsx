@@ -138,7 +138,7 @@ export const OfferModal = memo(function OfferModal({
       >
         <View style={[styles.sheet, { backgroundColor: colors.card }]}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.foreground }]}>{t('offer.title')}</Text>
+            <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{t('offer.title')}</Text>
             <ModalCloseButton onClose={onClose} />
           </View>
 

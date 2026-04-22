@@ -120,11 +120,11 @@ export const ReviewModal = memo(function ReviewModal({ visible, onClose, reviewe
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
-      <Pressable style={s.backdrop} onPress={handleClose}>
+      <Pressable style={s.backdrop} onPress={handleClose} accessibilityRole="button" accessibilityLabel={t('common.close')}>
         <Pressable style={[s.card, { backgroundColor: colors.card }]} onPress={() => {}}>
           {/* Header */}
           <View style={s.header}>
-            <Text style={[s.title, { color: colors.foreground }]}>{t('profile.writeReview')}</Text>
+            <Text style={[s.title, { color: colors.foreground }]} accessibilityRole="header">{t('profile.writeReview')}</Text>
             <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
               <X size={20} color={colors.mutedForeground} />
             </Pressable>

@@ -482,7 +482,7 @@ function ExploreScreenInner() {
             <Text style={[s.locationEyebrow, { color: colors.mutedForeground }]}>
               {t('explore.discoverLabel') ?? 'TUTUSTU ALUEESEEN'}
             </Text>
-            <Text style={[s.screenTitle, { color: colors.foreground }]}>
+            <Text style={[s.screenTitle, { color: colors.foreground }]} accessibilityRole="header">
               {t('explore.title') ?? 'Tutustu'}
             </Text>
           </View>

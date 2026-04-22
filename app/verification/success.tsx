@@ -39,7 +39,7 @@ function VerificationSuccessScreenInner() {
           <Check size={48} color={colors.foreground} strokeWidth={2.5} />
         </Animated.View>
 
-        <Text style={[styles.title, { color: colors.foreground }]}>{t('verification.successTitle')}</Text>
+        <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{t('verification.successTitle')}</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('verification.successMessage')}</Text>
 
         {/* Unlocked features */}

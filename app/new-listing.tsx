@@ -353,7 +353,7 @@ function NewListingScreenInner() {
           />
         ))}
       </View>
-      <Text style={[s.wizTitle, { color: colors.foreground }]}>{stepTitle}</Text>
+      <Text style={[s.wizTitle, { color: colors.foreground }]} accessibilityRole="header">{stepTitle}</Text>
     </View>
   )
 

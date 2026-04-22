@@ -127,7 +127,7 @@ function ReviewBorrowerScreenInner() {
               size={72}
             />
           </View>
-          <Text style={[s.heroTitle, { color: colors.foreground }]}>
+          <Text style={[s.heroTitle, { color: colors.foreground }]} accessibilityRole="header">
             {t('reviewBorrower.heroQuestion', { name: params.userName || t('rental.borrower') })}
           </Text>
           <Text style={[s.heroMeta, { color: colors.mutedForeground }]}>

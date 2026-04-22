@@ -257,7 +257,7 @@ function OnboardingScreenInner() {
 
         {/* Copy */}
         <View style={s.copyArea}>
-          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]} accessibilityRole="header">
             {t('onboarding.welcome')}
           </Text>
           <Text style={[s.bodyText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
@@ -307,7 +307,7 @@ function OnboardingScreenInner() {
 
         {/* Copy */}
         <View style={s.copyArea}>
-          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]} accessibilityRole="header">
             {t('onboarding.howItWorks')}
           </Text>
 
@@ -374,7 +374,7 @@ function OnboardingScreenInner() {
 
         {/* Copy */}
         <View style={s.copyArea}>
-          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]} accessibilityRole="header">
             {t('onboarding.trustSafety')}
           </Text>
 
@@ -435,7 +435,7 @@ function OnboardingScreenInner() {
       <View style={s.slideContentPurpose}>
         {/* Copy */}
         <View style={s.copyAreaTop}>
-          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]}>
+          <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading }]} accessibilityRole="header">
             {t('onboarding.purposeTitle')}
           </Text>
           <Text style={[s.bodyText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
@@ -536,7 +536,7 @@ function OnboardingScreenInner() {
         </PressableOpacity>
 
         {/* Title */}
-        <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 20 }]}>
+        <Text style={[s.headline, { color: colors.foreground, fontFamily: fonts.heading, paddingHorizontal: 20 }]} accessibilityRole="header">
           {t('onboarding.addressTitle')}
         </Text>
 

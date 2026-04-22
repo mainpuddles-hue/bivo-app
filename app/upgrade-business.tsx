@@ -239,7 +239,7 @@ export default function UpgradeBusinessScreen() {
           <View style={[s.heroIconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Building2 size={28} color={colors.foreground} />
           </View>
-          <Text style={[s.heroTitle, { color: colors.foreground }]}>{t('business.upgrade')}</Text>
+          <Text style={[s.heroTitle, { color: colors.foreground }]} accessibilityRole="header">{t('business.upgrade')}</Text>
           <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]}>
             {t('business.upgradeDesc')}
           </Text>

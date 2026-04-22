@@ -21,7 +21,7 @@ function PaymentCancelScreenInner() {
           <X size={40} color={colors.destructive} strokeWidth={2.5} />
         </View>
 
-        <Text style={[styles.title, { color: colors.foreground }]}>{t('payment.cancelled')}</Text>
+        <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{t('payment.cancelled')}</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>{t('payment.cancelledMessage')}</Text>
 
         {/* Action buttons */}

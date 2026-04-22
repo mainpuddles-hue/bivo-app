@@ -358,7 +358,7 @@ function BookingDetailScreenInner() {
             <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
               {t('booking.waitingConfirmation')}
             </Text>
-            <Text style={[s.heroHeadline, { color: colors.foreground }]}>
+            <Text style={[s.heroHeadline, { color: colors.foreground }]} accessibilityRole="header">
               {t('booking.waitingConfirmationDesc')}
             </Text>
           </View>
@@ -431,7 +431,7 @@ function BookingDetailScreenInner() {
             <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
               {t('booking.approved', { name: otherName })}
             </Text>
-            <Text style={[s.heroHeadline, { color: colors.foreground }]}>
+            <Text style={[s.heroHeadline, { color: colors.foreground }]} accessibilityRole="header">
               {t('booking.itemReserved', { item: itemTitle, day: startDay })}
             </Text>
           </View>
@@ -619,7 +619,7 @@ function BookingDetailScreenInner() {
                 <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={72} />
               </View>
             )}
-            <Text style={[s.heroHeadline, { color: colors.foreground, fontSize: 22 }]}>
+            <Text style={[s.heroHeadline, { color: colors.foreground, fontSize: 22 }]} accessibilityRole="header">
               {t('booking.howDidItGo', { name: otherName })}
             </Text>
             <Text style={[s.heroSubtext, { color: colors.mutedForeground }]}>
@@ -709,7 +709,7 @@ function BookingDetailScreenInner() {
           <View style={[s.heroCircle, { backgroundColor: `${colors.destructive}14` }]}>
             <XCircle size={32} color={colors.destructive} />
           </View>
-          <Text style={[s.heroHeadline, { color: colors.foreground }]}>
+          <Text style={[s.heroHeadline, { color: colors.foreground }]} accessibilityRole="header">
             {t(STATUS_KEYS[booking.status] ?? 'rental.statusCancelled')}
           </Text>
         </View>
