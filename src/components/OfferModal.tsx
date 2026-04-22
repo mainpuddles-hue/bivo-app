@@ -4,7 +4,7 @@
  * Pre-fills with listed price. Submits to `offers` table,
  * creates/reuses conversation, sends push notification to seller.
  */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, memo } from 'react'
 import {
   View, Text, Modal, TextInput, KeyboardAvoidingView, Platform,
   StyleSheet, ActivityIndicator,
@@ -30,7 +30,7 @@ interface OfferModalProps {
   userId: string
 }
 
-export function OfferModal({
+export const OfferModal = memo(function OfferModal({
   visible, onClose, postId, postTitle, sellerId, sellerName, listedPrice, userId,
 }: OfferModalProps) {
   const { colors } = useTheme()
@@ -197,7 +197,7 @@ export function OfferModal({
       </KeyboardAvoidingView>
     </Modal>
   )
-}
+})
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },

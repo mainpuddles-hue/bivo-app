@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, memo } from 'react'
 import { View, TextInput, Text, Pressable, StyleSheet, ActivityIndicator, Keyboard } from 'react-native'
 import { MapPin } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -45,7 +45,7 @@ const HELSINKI_LNG = 24.94
  * Supports partial/prefix search (e.g. "kataj" → "Katajanokka").
  * Biased towards Helsinki area. Free, no API key required.
  */
-export function LocationAutocomplete({
+export const LocationAutocomplete = memo(function LocationAutocomplete({
   value,
   onChangeText,
   onSelect,
@@ -157,7 +157,7 @@ export function LocationAutocomplete({
       )}
     </View>
   )
-}
+})
 
 /** Format a Photon feature into a human-readable label */
 function formatSuggestion(f: PhotonFeature): string {

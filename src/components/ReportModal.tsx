@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, memo } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native'
 import { Flag, X, Check } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -17,7 +17,7 @@ interface ReportModalProps {
   targetId: string
 }
 
-export function ReportModal({ visible, onClose, type, targetId }: ReportModalProps) {
+export const ReportModal = memo(function ReportModal({ visible, onClose, type, targetId }: ReportModalProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
   const supabase = useSupabase()
@@ -182,7 +182,7 @@ export function ReportModal({ visible, onClose, type, targetId }: ReportModalPro
       <KeyboardDoneAccessory />
     </Modal>
   )
-}
+})
 
 const s = StyleSheet.create({
   backdrop: {

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { Zap } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -13,7 +14,7 @@ interface BoostPurchaseCardProps {
   onPurchase: () => void
 }
 
-export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loading, onPurchase }: BoostPurchaseCardProps) {
+export const BoostPurchaseCard = memo(function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loading, onPurchase }: BoostPurchaseCardProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
 
@@ -54,7 +55,7 @@ export function BoostPurchaseCard({ credits, priceLabel, label, isBestValue, loa
       </View>
     </Pressable>
   )
-}
+})
 
 const styles = StyleSheet.create({
   card: {

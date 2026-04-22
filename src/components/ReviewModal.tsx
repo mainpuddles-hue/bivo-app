@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, memo } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { Star, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -17,7 +17,7 @@ interface ReviewModalProps {
   onReviewSubmitted?: () => void
 }
 
-export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReviewSubmitted }: ReviewModalProps) {
+export const ReviewModal = memo(function ReviewModal({ visible, onClose, reviewedUserId, postId, onReviewSubmitted }: ReviewModalProps) {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const supabase = useSupabase()
@@ -181,7 +181,7 @@ export function ReviewModal({ visible, onClose, reviewedUserId, postId, onReview
       <KeyboardDoneAccessory />
     </Modal>
   )
-}
+})
 
 const s = StyleSheet.create({
   backdrop: {

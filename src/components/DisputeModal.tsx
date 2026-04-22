@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { View, Text, StyleSheet, Modal, Alert, TextInput, ScrollView, ActivityIndicator } from 'react-native'
 import { Image } from 'expo-image'
 import { AlertTriangle, X, ChevronRight } from 'lucide-react-native'
@@ -19,7 +19,7 @@ interface DisputeModalProps {
   returnPhotos: string[]
 }
 
-export function DisputeModal({
+export const DisputeModal = memo(function DisputeModal({
   visible, onClose, onSubmitted, bookingId, pickupPhotos, returnPhotos,
 }: DisputeModalProps) {
   const { colors, isDark } = useTheme()
@@ -175,7 +175,7 @@ export function DisputeModal({
       </View>
     </Modal>
   )
-}
+})
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

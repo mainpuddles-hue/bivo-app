@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator } from 'react-native'
 import { ShieldCheck, X, Building2, Smartphone, Lock, CheckCircle, Globe, Mail } from 'lucide-react-native'
 import { PressableOpacity } from '@/components/ui'
@@ -26,7 +27,7 @@ interface VerificationModalProps {
   branding?: IdentityBranding
 }
 
-export function VerificationModal({ visible, onClose, onConfirm, loading, error, isSuccess, branding }: VerificationModalProps) {
+export const VerificationModal = memo(function VerificationModal({ visible, onClose, onConfirm, loading, error, isSuccess, branding }: VerificationModalProps) {
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
 
@@ -139,7 +140,7 @@ export function VerificationModal({ visible, onClose, onConfirm, loading, error,
       </Pressable>
     </Modal>
   )
-}
+})
 
 const styles = StyleSheet.create({
   overlay: {
