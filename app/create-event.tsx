@@ -41,6 +41,34 @@ const EVENT_CATEGORIES: { key: EventCategory; labelKey: string }[] = [
   { key: 'other', labelKey: 'events.catOther' },
 ]
 
+// Event templates — pre-fill form for common building-level events
+interface EventTemplate {
+  titleKey: string
+  descriptionKey: string
+  category: EventCategory
+  maxParticipants?: string
+}
+
+const EVENT_TEMPLATES: Record<string, EventTemplate> = {
+  rappukirppis: {
+    titleKey: 'events.templateRappukirppisTitle',
+    descriptionKey: 'events.templateRappukirppisDesc',
+    category: 'social',
+    maxParticipants: '',
+  },
+  talkoot: {
+    titleKey: 'events.templateTalkootTitle',
+    descriptionKey: 'events.templateTalkootDesc',
+    category: 'social',
+  },
+  kahvit: {
+    titleKey: 'events.templateKahvitTitle',
+    descriptionKey: 'events.templateKahvitDesc',
+    category: 'social',
+    maxParticipants: '20',
+  },
+}
+
 export default function CreateEventScreen() {
   return (
     <ScreenErrorBoundary screenName="CreateEvent">
@@ -55,7 +83,7 @@ function CreateEventScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
-  const { edit } = useLocalSearchParams<{ edit?: string }>()
+  const { edit, template } = useLocalSearchParams<{ edit?: string; template?: string }>()
 
   // Auth
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -130,6 +158,33 @@ function CreateEventScreenInner() {
     })
     return () => { mounted = false }
   }, [supabase, router])
+
+  // Apply template when navigating with ?template=rappukirppis
+  useEffect(() => {
+    if (!template || edit) return
+    const tmpl = EVENT_TEMPLATES[template]
+    if (!tmpl) return
+    setTitle(t(tmpl.titleKey) ?? '')
+    setDescription(t(tmpl.descriptionKey) ?? '')
+    setCategory(tmpl.category)
+    if (tmpl.maxParticipants) setMaxParticipants(tmpl.maxParticipants)
+    // Pre-fill location from user's building address
+    if (currentUserId) {
+      Promise.resolve(
+        supabase
+          .from('user_buildings')
+          .select('building:buildings(street_address, lat, lng)')
+          .eq('user_id', currentUserId)
+          .single()
+      ).then(({ data }: any) => {
+        if (data?.building) {
+          setLocationName(data.building.street_address)
+          setLocationLat(data.building.lat)
+          setLocationLng(data.building.lng)
+        }
+      }).catch(() => {})
+    }
+  }, [template, edit, t, currentUserId, supabase])
 
   const pickImage = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()

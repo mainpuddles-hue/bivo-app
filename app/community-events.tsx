@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import {
-  ArrowLeft, CalendarDays, Plus,
+  ArrowLeft, CalendarDays, Plus, Home, Coffee, Leaf,
 } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
@@ -230,6 +230,13 @@ function CommunityEventsScreenInner() {
   }
 
   // ── FlatList header ──
+  // Template shortcuts for building-level events
+  const TEMPLATE_SHORTCUTS = useMemo(() => [
+    { key: 'rappukirppis', labelKey: 'events.templateRappukirppis', Icon: Home },
+    { key: 'talkoot', labelKey: 'events.templateTalkoot', Icon: Leaf },
+    { key: 'kahvit', labelKey: 'events.templateKahvit', Icon: Coffee },
+  ], [])
+
   const ListHeader = useMemo(() => (
     <View>
       {/* Tables section */}
@@ -237,6 +244,33 @@ function CommunityEventsScreenInner() {
 
       {/* Trending section */}
       {renderTrendingSection()}
+
+      {/* Template shortcuts */}
+      <View style={s.templateSection}>
+        <Text style={[s.templateSectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>
+          {t('events.quickCreate')}
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.templateRow}>
+          {TEMPLATE_SHORTCUTS.map(({ key, labelKey, Icon }) => (
+            <PressableOpacity
+              key={key}
+              onPress={() => {
+                try { Haptics.selectionAsync() } catch {}
+                router.push(`/create-event?template=${key}` as any)
+              }}
+              style={[s.templateChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+              accessibilityRole="button"
+              accessibilityLabel={t(labelKey)}
+            >
+              <Icon size={16} color={colors.foreground} />
+              <Text style={[s.templateChipText, { color: colors.foreground, fontFamily: fonts.body }]}>
+                {t(labelKey)}
+              </Text>
+              <Plus size={14} color={colors.mutedForeground} />
+            </PressableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* "All Events" label */}
       {filteredEvents.length > 0 && (
@@ -479,6 +513,20 @@ const s = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 4,
   },
+
+  // Template shortcuts
+  templateSection: { paddingTop: 12, gap: 8 },
+  templateSectionTitle: {
+    fontSize: 10.5, lineHeight: 16, textTransform: 'uppercase',
+    letterSpacing: 1, paddingHorizontal: 16,
+  },
+  templateRow: { gap: 8, paddingHorizontal: 16, paddingBottom: 4 },
+  templateChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 999,
+    borderWidth: 1, minHeight: 44,
+  },
+  templateChipText: { fontSize: 13, lineHeight: 18 },
 
   // Empty state
   emptyState: {
