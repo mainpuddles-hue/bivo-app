@@ -22,7 +22,9 @@ function InviteScreenInner() {
   const referral = useReferral(userId)
 
   useEffect(() => {
-    getCachedUserId().then(id => setUserId(id))
+    let mounted = true
+    getCachedUserId().then(id => { if (mounted) setUserId(id) })
+    return () => { mounted = false }
   }, [])
 
   useEffect(() => {

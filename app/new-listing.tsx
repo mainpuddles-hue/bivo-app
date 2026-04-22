@@ -244,6 +244,7 @@ function NewListingScreenInner() {
         if (uri.startsWith('http')) { imageUrls.push(uri); continue }
         try {
           const response = await fetch(uri)
+          if (!response.ok) { if (__DEV__) console.warn(`[new-listing] image fetch failed: ${response.status}`); continue }
           const blob = await response.blob()
           const mimeType = blob.type || 'image/jpeg'
           const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : (mimeType.split('/')[1] || 'jpg')
@@ -253,11 +254,15 @@ function NewListingScreenInner() {
           const { error: uploadError } = await supabase.storage
             .from('post-images')
             .upload(path, arrayBuffer, { contentType: mimeType, upsert: true })
-          if (!uploadError) {
+          if (uploadError) {
+            if (__DEV__) console.warn('[new-listing] image upload failed:', uploadError.message)
+          } else {
             const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)
             imageUrls.push(urlData.publicUrl)
           }
-        } catch {}
+        } catch (e) {
+          if (__DEV__) console.warn('[new-listing] image upload error:', e)
+        }
       }
 
       const postData: Record<string, any> = {

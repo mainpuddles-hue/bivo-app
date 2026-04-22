@@ -444,24 +444,22 @@ function SearchScreenInner() {
   }, [supabase])
 
   // Fetch current user's neighborhood for search ranking
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   useEffect(() => {
+    let mounted = true
     getCachedUserId().then(id => {
-      if (!id) return
+      if (!mounted || !id) return
+      setCurrentUserId(id)
       ;(supabase.from('profiles') as any)
         .select('naapurusto')
         .eq('id', id)
         .maybeSingle()
         .then(({ data }: any) => {
-          if (data?.naapurusto) setUserNeighborhood(data.naapurusto)
+          if (mounted && data?.naapurusto) setUserNeighborhood(data.naapurusto)
         })
     })
+    return () => { mounted = false }
   }, [supabase])
-
-  // Current user ID for Supabase sync
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  useEffect(() => {
-    getCachedUserId().then(id => { if (id) setCurrentUserId(id) }).catch(() => {})
-  }, [])
 
   // Load search history + saved searches (prefer Supabase, fallback to AsyncStorage)
   useEffect(() => {

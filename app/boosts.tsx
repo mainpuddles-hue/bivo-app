@@ -32,7 +32,9 @@ function BoostsScreenInner() {
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    getCachedUserId().then(id => setUserId(id)).catch(() => {})
+    let mounted = true
+    getCachedUserId().then(id => { if (mounted) setUserId(id) }).catch(() => {})
+    return () => { mounted = false }
   }, [])
 
   const { balance, tier, loading, purchasing, activeBoosts, purchaseBoost, refreshBalance } = useBoosts(userId)
