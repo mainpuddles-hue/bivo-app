@@ -33,8 +33,8 @@ export function useSessionManager(userId: string | null) {
         await (supabase.from('profiles') as any).update({
           last_active_date: new Date().toISOString().split('T')[0],
         }).eq('id', userId)
-      } catch {
-        // Non-critical
+      } catch (e) {
+        if (__DEV__) console.warn('useSessionManager:registerSession:', e)
       }
     }
 

@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect } from 'react'
 import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -154,7 +156,7 @@ function LoginScreenInner() {
               email: email.trim(),
               name: name.trim(),
             })
-            if (profileError) console.error('[auth] CRITICAL: profile creation failed:', profileError.message)
+            if (profileError && __DEV__) console.error('[auth] CRITICAL: profile creation failed:', profileError.message)
           }
         }
 

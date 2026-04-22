@@ -140,7 +140,7 @@ interface BookingSection {
   data: RentalBooking[]
 }
 
-export default function BookingsScreen() {
+function BookingsScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const toast = useToast()
@@ -356,7 +356,6 @@ export default function BookingsScreen() {
   }, [colors, activeTab, userId, router, t, locale])
 
   return (
-    <ScreenErrorBoundary screenName="Bookings">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -478,6 +477,13 @@ export default function BookingsScreen() {
         />
       )}
     </View>
+  )
+}
+
+export default function BookingsScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Bookings">
+      <BookingsScreenInner />
     </ScreenErrorBoundary>
   )
 }

@@ -24,7 +24,7 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
         .update({ last_seen_at: new Date().toISOString() })
         .eq('id', userId)
         .then(() => {})
-        .catch(() => {})
+        .catch((e: unknown) => { if (__DEV__) console.warn('usePresence:updateLastSeen:', e) })
     }
 
     // Immediately mark as online

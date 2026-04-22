@@ -43,7 +43,7 @@ function LeaderboardRowSkeleton() {
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'] // gold, silver, bronze
 
-export default function LeaderboardScreen() {
+function LeaderboardScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -260,7 +260,6 @@ export default function LeaderboardScreen() {
   const isCurrentUserInTop10 = users.some(u => u.id === currentUserId)
 
   return (
-    <ScreenErrorBoundary screenName="Leaderboard">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
@@ -382,6 +381,13 @@ export default function LeaderboardScreen() {
         />
       )}
     </View>
+  )
+}
+
+export default function LeaderboardScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Leaderboard">
+      <LeaderboardScreenInner />
     </ScreenErrorBoundary>
   )
 }

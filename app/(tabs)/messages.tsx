@@ -391,6 +391,14 @@ export default function MessagesScreen() {
     return conversations.reduce((sum, c) => sum + (c.unread_count ?? 0), 0)
   }, [conversations])
 
+  // Conversation row: padding(14*2) + avatar(42) + border(1*2) + marginBottom(8) = 80
+  const CONV_ITEM_HEIGHT = 80
+  const getItemLayout = useCallback((_: unknown, index: number) => ({
+    length: CONV_ITEM_HEIGHT,
+    offset: CONV_ITEM_HEIGHT * index,
+    index,
+  }), [])
+
   return (
     <ScreenErrorBoundary screenName="Messages">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -479,6 +487,7 @@ export default function MessagesScreen() {
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
+        getItemLayout={getItemLayout}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 96 }]}
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefreshHandler} tintColor={colors.foreground} />}
@@ -648,6 +657,7 @@ export default function MessagesScreen() {
                   }}
                   style={styles.moreBtn}
                   hitSlop={8}
+                  accessibilityRole="button"
                   accessibilityLabel={t('common.more') ?? 'More'}
                 >
                   <MoreHorizontal size={16} color={colors.mutedForeground} style={{ opacity: 0.4 }} />
@@ -887,8 +897,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
   },
   moreBtn: {
-    width: 28,
-    height: 28,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

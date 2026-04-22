@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useCallback } from 'react'
 import { useSupabase } from '@/hooks/useSupabase'
 
@@ -47,37 +49,11 @@ export function usePoints() {
         user_id_param: userId,
         points_param: points,
       })
-      if (rpcError) throw rpcError
-    } catch {
-      // Intentional: increment_points RPC may not exist — try increment_field
-      try {
-        const { error: rpcError2 } = await (supabase.rpc as any)('increment_field', {
-          table_name: 'profiles',
-          field_name: 'total_points',
-          row_id: userId,
-          amount: points,
-        })
-        if (rpcError2) throw rpcError2
-      } catch {
-        // Intentional: increment_field RPC may not exist — last resort: direct update.
-        // NOTE: This is NOT atomic and susceptible to race conditions if two
-        // awards happen simultaneously. The proper fix is to ensure the
-        // increment_points RPC exists in the database:
-        //   CREATE OR REPLACE FUNCTION increment_points(user_id_param UUID, points_param INT)
-        //   RETURNS VOID AS $$
-        //     UPDATE profiles SET total_points = COALESCE(total_points, 0) + points_param
-        //     WHERE id = user_id_param;
-        //   $$ LANGUAGE sql SECURITY DEFINER;
-        try {
-          const { data } = await supabase.from('profiles').select('total_points').eq('id', userId).maybeSingle()
-          const current = (data as any)?.total_points ?? 0
-          await (supabase.from('profiles') as any)
-            .update({ total_points: current + points })
-            .eq('id', userId)
-        } catch {
-          // Intentional: non-critical — points just won't update
-        }
+      if (rpcError) {
+        if (__DEV__) console.error(`usePoints: increment_points RPC failed for user=${userId} action=${action} points=${points}:`, rpcError)
       }
+    } catch (err) {
+      if (__DEV__) console.error(`usePoints: increment_points RPC threw for user=${userId} action=${action} points=${points}:`, err)
     }
   }, [supabase])
 

@@ -70,7 +70,7 @@ function GroupSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors
   )
 }
 
-export default function GroupsScreen() {
+function GroupsScreenInner() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
@@ -368,7 +368,6 @@ export default function GroupsScreen() {
   // ── Coming soon empty state ──
   if (!loading && !tableExists) {
     return (
-      <ScreenErrorBoundary screenName="Groups">
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         {/* Header */}
         <View style={[s.header, { borderBottomColor: colors.border }]}>
@@ -387,12 +386,10 @@ export default function GroupsScreen() {
           </Text>
         </View>
       </View>
-      </ScreenErrorBoundary>
     )
   }
 
   return (
-    <ScreenErrorBoundary screenName="Groups">
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
@@ -678,6 +675,13 @@ export default function GroupsScreen() {
         </Pressable>
       </Modal>
     </View>
+  )
+}
+
+export default function GroupsScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Groups">
+      <GroupsScreenInner />
     </ScreenErrorBoundary>
   )
 }

@@ -4,7 +4,7 @@ import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import {
-  MapPin, Crown, ImageIcon, Heart,
+  MapPin, Crown, ImageIcon, ImageOff, Heart,
   MessageCircle, Clock, Building2,
   Bookmark, BookmarkCheck, User,
 } from 'lucide-react-native'
@@ -239,7 +239,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {isAnonymous ? (
               <View style={styles.topRowUserInfo}>
                 <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: `${colors.foreground}14`, borderColor: `${colors.foreground}20` }]}>
-                  <User size={16} color={colors.foreground} style={{ opacity: 0.6 }} />
+                  <User size={16} color={colors.foreground} style={styles.iconDimmed} />
                 </View>
                 <Text style={[styles.userName, { color: colors.mutedForeground }]} numberOfLines={1}>
                   {t('postCard.anonymousNeighbor')}
@@ -256,7 +256,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                 )}
               </View>
             ) : (
-              <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo} accessibilityLabel={user?.name ?? t('postCard.anonymousUser')}>
+              <Pressable onPress={(e) => { e.stopPropagation?.(); if (user?.id) router.push(`/profile/${user.id}` as any) }} style={styles.topRowUserInfo} accessibilityRole="button" accessibilityLabel={user?.name ?? t('postCard.anonymousUser')}>
                 <View style={styles.avatarContainer}>
                   {user?.avatar_url ? (
                     <Image source={{ uri: getImageUrl(user.avatar_url, 'thumbnail')! }} style={[
@@ -316,11 +316,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         </View>
 
         {/* Image — full width, below user row (Apple News hero style with gradient) */}
-        {hasImage && (
+        {post.image_url && !imgError ? (
           <View style={styles.imageContainer}>
             <Image
               source={{ uri: getImageUrl(post.image_url, 'medium')! }}
-              style={styles.image}
+              style={[styles.image, { backgroundColor: colors.muted }]}
               contentFit="cover"
               transition={300}
               onError={() => setImgError(true)}
@@ -344,7 +344,11 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               </View>
             )}
           </View>
-        )}
+        ) : post.image_url && imgError ? (
+          <View style={[styles.imageFallback, { backgroundColor: colors.muted }]}>
+            <ImageOff size={32} color={colors.mutedForeground} />
+          </View>
+        ) : null}
 
         {/* Expiration badge */}
         {expirationInfo && (() => {
@@ -529,14 +533,14 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {saved ? (
               <BookmarkCheck size={16} color={colors.foreground} fill={colors.foreground} />
             ) : (
-              <Bookmark size={16} color={colors.mutedForeground} style={{ opacity: 0.6 }} />
+              <Bookmark size={16} color={colors.mutedForeground} style={styles.iconDimmed} />
             )}
           </Pressable>
 
           {/* Distance — push to right edge */}
           {distanceText && (
             <>
-              <View style={{ flex: 1 }} />
+              <View style={styles.flexSpacer} />
               <View style={styles.distanceRow}>
                 <MapPin size={12} color={colors.foreground} />
                 <Text style={[styles.distanceText, { color: colors.foreground }]}>{distanceText}</Text>
@@ -589,6 +593,7 @@ const styles = StyleSheet.create({
   // Image — full width, inline
   imageContainer: { borderRadius: 14, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
   image: { width: '100%', height: 200 },
+  imageFallback: { width: '100%', height: 200, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   imageGradient: {
     position: 'absolute',
     left: 0,
@@ -643,4 +648,6 @@ const styles = StyleSheet.create({
   businessMicroBadge: {
     borderRadius: 8, paddingHorizontal: 4, paddingVertical: 2,
   },
+  flexSpacer: { flex: 1 },
+  iconDimmed: { opacity: 0.6 },
 })

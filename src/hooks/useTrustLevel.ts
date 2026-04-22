@@ -136,7 +136,7 @@ export function useTrustLevel(userId?: string | null): TrustResult {
 
         if (!mounted) return
 
-        const profile = profileRes.data as any
+        const profile = profileRes.data as { response_rate?: number; created_at?: string } | null
         const badges = (badgesRes.data ?? []) as { badge_type: string }[]
         const reviews = (reviewsRes.data ?? []) as { rating: number }[]
         const reports = reportsRes.data ?? []
@@ -168,8 +168,9 @@ export function useTrustLevel(userId?: string | null): TrustResult {
 
         try {
           const { data: trustData } = await (supabase.rpc as any)('calculate_trust_score', { p_user_id: userId })
-          if (mounted && trustData && (trustData as any[]).length > 0) {
-            const result = (trustData as any[])[0]
+          const trustRows = trustData as { score?: number; factors?: Record<string, number>; tier?: number }[] | null
+          if (mounted && trustRows && trustRows.length > 0) {
+            const result = trustRows[0]
             if (typeof result.score === 'number') {
               newScore = result.score
               setScore(newScore)

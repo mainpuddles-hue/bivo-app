@@ -484,6 +484,7 @@ function PostDetailScreenInner() {
 
   const handleDelete = useCallback(() => {
     if (!post) return
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning) } catch {}
     Alert.alert(t('post.delete'), t('post.deleteConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
@@ -518,6 +519,7 @@ function PostDetailScreenInner() {
 
   const handleMarkClosed = useCallback(async () => {
     if (!post) return
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning) } catch {}
     Alert.alert(t('post.markClosed'), t('post.markClosedConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
@@ -605,6 +607,7 @@ function PostDetailScreenInner() {
   const handleReport = useCallback(() => {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post) return
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning) } catch {}
     setReportModalVisible(true)
   }, [userId, post, router])
 
@@ -720,7 +723,7 @@ function PostDetailScreenInner() {
       const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
       if (sessionId) {
         const { error: updateError } = await (supabase.from('rental_bookings') as any).update({ stripe_session_id: sessionId }).eq('id', booking.id)
-        if (updateError) console.error('[bookings] CRITICAL: failed to link Stripe session to booking:', updateError.message)
+        if (updateError && __DEV__) console.error('[bookings] CRITICAL: failed to link Stripe session to booking:', updateError.message)
       }
       setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
       if (!sessionId) {

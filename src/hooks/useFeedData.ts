@@ -88,10 +88,6 @@ export function useFeedData() {
   } | null>(null)
   const PERSONALIZATION_CACHE_TTL = 2 * 60 * 1000 // 2 minutes
 
-  // Ref for posts to avoid renderPost depending on posts array
-  const postsRef = useRef(posts)
-  postsRef.current = posts
-
   // ── Load cached feed data on mount for instant display ──
   useEffect(() => {
     let mounted = true
@@ -568,7 +564,5 @@ export function useFeedData() {
     handleNeighborhoodSelect,
     cityNeighborhoods,
 
-    // Refs
-    postsRef,
   }
 }

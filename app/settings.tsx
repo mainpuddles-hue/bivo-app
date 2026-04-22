@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, memo, type ReactNode } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -78,7 +78,7 @@ function Group({ label, children, colors }: { label?: string; children: ReactNod
 }
 
 /** Single row inside a Group */
-function Row({
+const Row = memo(function Row({
   icon,
   iconBg,
   label,
@@ -165,7 +165,7 @@ function Row({
   }
 
   return <View style={s.rowPressable}>{content}</View>
-}
+})
 
 export default function SettingsScreen() {
   const { colors, isDark, theme, setTheme: setAppTheme } = useTheme()

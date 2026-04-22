@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Alert } from 'react-native'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -41,8 +43,9 @@ export function useBoosts(userId: string | null) {
         .maybeSingle()
       if (!mountedRef.current) return
       if (data) {
-        setBalance((data as any).balance ?? 0)
-        setTier(((data as any).tier as BoostTier) ?? 'free')
+        const d = data as { balance?: number; tier?: string; monthly_grants_remaining?: number }
+        setBalance(d.balance ?? 0)
+        setTier((d.tier as BoostTier) ?? 'free')
       }
 
       // Fetch active boosts
@@ -54,8 +57,8 @@ export function useBoosts(userId: string | null) {
         .gt('boost_end', new Date().toISOString())
       if (!mountedRef.current) return
       setActiveBoosts((boosts as ActiveBoost[] | null) ?? [])
-    } catch {
-      // Silently fail — data will be empty defaults
+    } catch (e) {
+      if (__DEV__) console.warn('useBoosts:fetchBalance:', e)
     } finally {
       if (mountedRef.current) setLoading(false)
     }

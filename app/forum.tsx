@@ -75,7 +75,7 @@ function PostSkeleton({ colors }: { colors: ReturnType<typeof useTheme>['colors'
 //    Currently only posts (marketplace) can be saved, not forum discussions.
 const ForumSeparator = () => <View style={{ height: 12 }} />
 
-export default function ForumScreen() {
+function ForumScreenInner() {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -418,7 +418,7 @@ export default function ForumScreen() {
                   .eq('post_id', selectedPost.id)
                 const newCount = realCount ?? Math.max(0, selectedPost.comment_count - 1)
                 const { error: countErr } = await (supabase.from('forum_posts') as any).update({ comment_count: newCount }).eq('id', selectedPost.id)
-                if (countErr) console.error('[forum] comment count update failed:', countErr.message)
+                if (countErr && __DEV__) console.error('[forum] comment count update failed:', countErr.message)
                 setSelectedPost(prev => prev ? { ...prev, comment_count: newCount } : prev)
                 setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, comment_count: newCount } : p))
               }
@@ -508,7 +508,6 @@ export default function ForumScreen() {
   }, [loading, tableExists, colors, t])
 
   return (
-    <ScreenErrorBoundary screenName="Forum">
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header — circle back button + centered title */}
       <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.background }]}>
@@ -672,6 +671,13 @@ export default function ForumScreen() {
         targetId={reportTargetId}
       />
     </View>
+  )
+}
+
+export default function ForumScreen() {
+  return (
+    <ScreenErrorBoundary screenName="Forum">
+      <ForumScreenInner />
     </ScreenErrorBoundary>
   )
 }

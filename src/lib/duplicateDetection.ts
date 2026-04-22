@@ -30,11 +30,12 @@ export async function checkForDuplicates(
       p_limit: 3,
     })
 
-    if (!data || data.length === 0) return { isDuplicate: false, similarPosts: [] }
+    const rows = data as { id: string; title: string; sim: number }[] | null
+    if (!rows || rows.length === 0) return { isDuplicate: false, similarPosts: [] }
 
     return {
-      isDuplicate: data.some((d: any) => d.sim > 0.6),
-      similarPosts: (data as any[]).map(d => ({
+      isDuplicate: rows.some(d => d.sim > 0.6),
+      similarPosts: rows.map(d => ({
         id: d.id,
         title: d.title,
         similarity: d.sim,
