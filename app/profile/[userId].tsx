@@ -469,6 +469,7 @@ export default function PublicProfileScreen() {
                   style={s.listingGridImage}
                   contentFit="cover"
                   transition={200}
+                  accessible={false}
                 />
               ) : (
                 <View style={[s.listingGridImage, { backgroundColor: colors.muted }]} />
@@ -524,6 +525,7 @@ export default function PublicProfileScreen() {
                     style={[bs.heroImage, { width: heroImageWidth }]}
                     contentFit="cover"
                     transition={200}
+                    accessibilityLabel={`${profile.business_name ?? profile.name} ${idx + 1}/${businessImages.length}`}
                   />
                 ))}
               </ScrollView>

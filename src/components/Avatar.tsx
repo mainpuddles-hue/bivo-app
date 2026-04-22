@@ -32,6 +32,7 @@ export const Avatar = React.memo(function Avatar({ url, name, size = 36, borderC
         style={[sizeStyles.container, sizeStyles.border]}
         contentFit="cover"
         cachePolicy="memory-disk"
+        accessibilityLabel={name ? `${name}` : undefined}
       />
     )
   }

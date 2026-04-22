@@ -392,6 +392,7 @@ function EventDetailScreenInner() {
             source={{ uri: event.image_url }}
             style={s.heroImage}
             contentFit="cover"
+            accessibilityLabel={event.title}
           />
         ) : (
           <View style={[s.heroImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>

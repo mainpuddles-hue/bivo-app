@@ -53,7 +53,11 @@
     "readMore": "Läs mer",
     "show": "Visa",
     "showAll": "Visa alla",
-    "showLess": "Visa mindre"
+    "showLess": "Visa mindre",
+    "image": "Bild"
+  },
+  "gallery": {
+    "gestureHint": "Dubbeltryck för att zooma, nyp för att ändra storlek"
   },
   "nav": {
     "feed": "Hem",
@@ -648,7 +652,8 @@
     "messageDeleted": "Meddelande borttaget",
     "copyMessage": "Kopiera",
     "newMessages": "{count} nya meddelanden",
-    "scrollToBottom": "Scrolla ner"
+    "scrollToBottom": "Scrolla ner",
+    "longPressHint": "Långtryck för reaktioner och alternativ"
   },
   "profile": {
     "title": "Profil",
@@ -956,6 +961,7 @@
     "distanceKm": "{distance} km",
     "verified": "Verifierad",
     "tapToOpen": "Tryck för att öppna annons",
+    "tapToOpenLongPress": "Tryck för att öppna. Långtryck för fler alternativ",
     "hide": "Dölj inlägg",
     "moreOptions": "Fler alternativ",
     "urgent": "Brådskande",
@@ -1569,6 +1575,7 @@
     "stepType": "Typ",
     "stepDetails": "Detaljer",
     "mainImage": "Huvudbild",
+    "image": "Bild",
     "weeklyHint": "7 dagar = {weeklyPrice} €",
     "nappaaExpires24h": "Fånga-annonser förfaller alltid om 24 timmar",
     "maxAttendees": "Deltagarantal",
@@ -2296,7 +2303,8 @@
     "recentPosts": "Senaste inlägg",
     "upcomingEvents": "Kommande evenemang",
     "andMore": "och mycket mer...",
-    "swipeHint": "Svep för att utforska"
+    "swipeHint": "Svep för att utforska",
+    "swipeHintA11y": "Tryck för att öppna. Svep höger för att gilla, vänster för att hoppa över, uppåt för detaljer"
   },
   "nappaaSwipe": {
     "swipeHint": "Svep höger →",

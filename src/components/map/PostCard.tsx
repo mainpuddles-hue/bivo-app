@@ -36,7 +36,7 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
     >
       {/* Image left (borderRadius 10) */}
       {imageUrl ? (
-        <Image source={{ uri: getImageUrl(imageUrl, 'thumbnail')! }} style={styles.cardImage} contentFit="cover" />
+        <Image source={{ uri: getImageUrl(imageUrl, 'thumbnail')! }} style={styles.cardImage} contentFit="cover" accessible={false} />
       ) : (
         <View style={[styles.cardImagePlaceholder, { backgroundColor: colors.muted }]}>
           <MapPin size={18} color={colors.mutedForeground} />
@@ -58,7 +58,7 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
         {/* Meta row: user + distance + time */}
         <View style={styles.metaRow}>
           {avatarUrl ? (
-            <Image source={{ uri: getImageUrl(avatarUrl, 'thumbnail')! }} style={styles.metaAvatar} contentFit="cover" />
+            <Image source={{ uri: getImageUrl(avatarUrl, 'thumbnail')! }} style={styles.metaAvatar} contentFit="cover" accessible={false} />
           ) : userName ? (
             <View style={[styles.metaAvatarPlaceholder, { backgroundColor: colors.muted }]}>
               <Text style={[styles.metaAvatarInitial, { color: colors.mutedForeground }]}>

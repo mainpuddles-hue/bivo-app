@@ -864,7 +864,7 @@ export default function CreateScreen() {
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={mk.imgRow}>
                     {images.map((uri, idx) => (
                       <View key={uri} style={[mk.imgThumb, { borderColor: colors.border }]}>
-                        <Image source={{ uri }} style={mk.imgThumbImg} contentFit="cover" cachePolicy="memory-disk" />
+                        <Image source={{ uri }} style={mk.imgThumbImg} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={`${t('create.image')} ${idx + 1}`} />
                         <PressableOpacity onPress={() => removeImage(idx)} style={mk.imgRemove} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.remove') ?? 'Remove'}>
                           <X size={12} color="#fff" />
                         </PressableOpacity>

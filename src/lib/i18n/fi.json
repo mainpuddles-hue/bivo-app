@@ -53,7 +53,11 @@
     "readMore": "Lue lisää",
     "show": "Näytä",
     "showAll": "Näytä kaikki",
-    "showLess": "Näytä vähemmän"
+    "showLess": "Näytä vähemmän",
+    "image": "Kuva"
+  },
+  "gallery": {
+    "gestureHint": "Kaksoisnapauta zoomataksesi, nipistä suurentaaksesi"
   },
   "nav": {
     "feed": "Koti",
@@ -648,7 +652,8 @@
     "messageDeleted": "Viesti poistettu",
     "copyMessage": "Kopioi",
     "newMessages": "{count} uutta viestiä",
-    "scrollToBottom": "Siirry alas"
+    "scrollToBottom": "Siirry alas",
+    "longPressHint": "Paina pitkään reaktioille ja lisävalinnoille"
   },
   "profile": {
     "title": "Profiili",
@@ -956,6 +961,7 @@
     "distanceKm": "{distance} km",
     "verified": "Vahvistettu",
     "tapToOpen": "Avaa ilmoitus napauttamalla",
+    "tapToOpenLongPress": "Napauta avataksesi. Paina pitkään lisävalinnoille",
     "hide": "Piilota ilmoitus",
     "moreOptions": "Lisää vaihtoehtoja",
     "urgent": "Kiireellinen",
@@ -1569,6 +1575,7 @@
     "stepType": "Tyyppi",
     "stepDetails": "Tiedot",
     "mainImage": "Pääkuva",
+    "image": "Kuva",
     "selectCategory": "Valitse kategoria",
     "images": "Kuvat",
     "maxImages": "Voit lisätä enintään 5 kuvaa",
@@ -2296,7 +2303,8 @@
     "recentPosts": "Tuoreimmat ilmoitukset",
     "upcomingEvents": "Tulevat tapahtumat",
     "andMore": "ja paljon muuta...",
-    "swipeHint": "Pyyhkäise löytääksesi"
+    "swipeHint": "Pyyhkäise löytääksesi",
+    "swipeHintA11y": "Napauta avataksesi. Pyyhkäise oikealle tykätäksesi, vasemmalle ohittaaksesi, ylös avataksesi"
   },
   "nappaaSwipe": {
     "swipeHint": "Pyyhkäise oikealle →",

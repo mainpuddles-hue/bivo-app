@@ -236,7 +236,13 @@ export const DiscoveryStack = memo(function DiscoveryStack({
       {/* Top card (interactive) */}
       {currentPost && (
         <GestureDetector gesture={composedGesture}>
-          <Animated.View style={[styles.cardContainer, topCardStyle]}>
+          <Animated.View
+            style={[styles.cardContainer, topCardStyle]}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={`${currentPost.title}, ${(currentPost.user as any)?.name ?? ''}`}
+            accessibilityHint={t('discover.swipeHintA11y') ?? 'Tap to open. Swipe right to like, left to skip, up to open details'}
+          >
             <CardContent
               post={currentPost}
               colors={colors}
@@ -303,6 +309,7 @@ function CardContent({ post, colors, isDark, t, locale, userNeighborhood, userLo
             contentFit="cover"
             transition={300}
             recyclingKey={imageUrl}
+            accessible={false}
           />
         ) : (
           <View style={[styles.image, { backgroundColor: isDark ? '#2A2825' : '#F0EEE9' }]}>

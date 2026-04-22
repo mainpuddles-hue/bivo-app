@@ -48,7 +48,7 @@ export const HeroEventCard = memo(function HeroEventCard({ event }: HeroEventCar
       accessibilityLabel={[getCityEventName(event, locale), event.location_name].filter(Boolean).join(', ')}
     >
       {event.image_url && !imageError ? (
-        <Image source={{ uri: getImageUrl(event.image_url, 'thumbnail')! }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" onError={() => setImageError(true)} />
+        <Image source={{ uri: getImageUrl(event.image_url, 'thumbnail')! }} style={styles.todayEventImage} contentFit="cover" cachePolicy="memory-disk" onError={() => setImageError(true)} accessible={false} />
       ) : (
         <View style={[styles.todayEventImageFallback, { backgroundColor: `${catColor}20` }]}>
           <Globe size={20} color={catColor} />

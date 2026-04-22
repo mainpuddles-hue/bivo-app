@@ -42,7 +42,7 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
     >
       {/* Image left (borderRadius 10) */}
       {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.eventImage} contentFit="cover" />
+        <Image source={{ uri: imageUrl }} style={styles.eventImage} contentFit="cover" accessible={false} />
       ) : (
         <View style={[styles.eventImagePlaceholder, { backgroundColor: colors.muted }]}>
           <Calendar size={20} color={colors.mutedForeground} />

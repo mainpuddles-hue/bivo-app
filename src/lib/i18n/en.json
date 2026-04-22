@@ -53,7 +53,11 @@
     "readMore": "Read more",
     "show": "Show",
     "showAll": "Show all",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "image": "Image"
+  },
+  "gallery": {
+    "gestureHint": "Double-tap to zoom, pinch to resize"
   },
   "nav": {
     "feed": "Home",
@@ -648,7 +652,8 @@
     "messageDeleted": "Message deleted",
     "copyMessage": "Copy",
     "newMessages": "{count} new messages",
-    "scrollToBottom": "Scroll to bottom"
+    "scrollToBottom": "Scroll to bottom",
+    "longPressHint": "Long press for reactions and options"
   },
   "profile": {
     "title": "Profile",
@@ -956,6 +961,7 @@
     "distanceKm": "{distance} km",
     "verified": "Verified",
     "tapToOpen": "Tap to open listing",
+    "tapToOpenLongPress": "Tap to open. Long press for more options",
     "hide": "Hide post",
     "moreOptions": "More options",
     "urgent": "Urgent",
@@ -1569,6 +1575,7 @@
     "stepType": "Type",
     "stepDetails": "Details",
     "mainImage": "Main image",
+    "image": "Image",
     "weeklyHint": "7 days = €{weeklyPrice}",
     "nappaaExpires24h": "Grab posts always expire in 24 hours",
     "maxAttendees": "Attendee limit",
@@ -2296,7 +2303,8 @@
     "recentPosts": "Recent posts",
     "upcomingEvents": "Upcoming events",
     "andMore": "and much more...",
-    "swipeHint": "Swipe to discover"
+    "swipeHint": "Swipe to discover",
+    "swipeHintA11y": "Tap to open. Swipe right to like, left to skip, up to open details"
   },
   "nappaaSwipe": {
     "swipeHint": "Swipe right →",

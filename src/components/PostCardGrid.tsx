@@ -151,6 +151,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           contentFit="cover"
           cachePolicy="memory-disk"
           recyclingKey={user.avatar_url}
+          accessible={false}
         />
       ) : (
         <View style={[styles.miniAvatar, styles.miniAvatarFallback, { backgroundColor: `${metaColor}20` }]}>

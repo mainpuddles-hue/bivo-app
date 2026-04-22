@@ -98,6 +98,7 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
           style={styles.image}
           contentFit="cover"
           transition={200}
+          accessible={false}
         />
       )}
 

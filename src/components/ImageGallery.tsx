@@ -149,11 +149,17 @@ export default function ImageGallery({ images, initialIndex = 0, visible, onClos
     index,
   }), [screenWidth])
 
-  const renderItem = useCallback(({ item }: { item: string }) => (
-    <Pressable onPress={toggleControls} style={{ width: screenWidth, height: screenHeight }}>
+  const renderItem = useCallback(({ item, index }: { item: string; index: number }) => (
+    <Pressable
+      onPress={toggleControls}
+      style={{ width: screenWidth, height: screenHeight }}
+      accessibilityRole="image"
+      accessibilityLabel={`${t('common.image') ?? 'Image'} ${index + 1} / ${images.length}`}
+      accessibilityHint={t('gallery.gestureHint') ?? 'Double-tap to zoom, pinch to resize'}
+    >
       <ZoomableImage uri={item} screenWidth={screenWidth} screenHeight={screenHeight} />
     </Pressable>
-  ), [toggleControls, screenWidth, screenHeight])
+  ), [toggleControls, screenWidth, screenHeight, images.length, t])
 
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>

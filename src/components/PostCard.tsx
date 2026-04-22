@@ -134,7 +134,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     <Pressable
       accessibilityLabel={a11yLabel}
       accessibilityRole="button"
-      accessibilityHint={t('postCard.tapToOpen')}
+      accessibilityHint={t('postCard.tapToOpenLongPress') ?? 'Tap to open. Long press for more options'}
       onPress={() => {
         try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
         onInteraction?.(post.id, 'click')

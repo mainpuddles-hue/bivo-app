@@ -603,6 +603,7 @@ function ConversationScreenInner() {
             style={{ maxWidth: '78%' }}
             accessibilityRole="text"
             accessibilityLabel={item.content || t('messages.imageMessageAlt')}
+            accessibilityHint={t('messages.longPressHint') ?? 'Long press for reactions and options'}
           >
             <View style={[
               s.bubble,
@@ -617,7 +618,7 @@ function ConversationScreenInner() {
               ) : (
                 <>
                   {item.image_url ? (
-                    <Image source={{ uri: getImageUrl(item.image_url, 'medium')! }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" />
+                    <Image source={{ uri: getImageUrl(item.image_url, 'medium')! }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={t('messages.imageMessageAlt')} />
                   ) : null}
                   {item.content ? (
                     <Text selectable style={[s.msgText, { color: isMine ? colors.background : colors.foreground }]}>{item.content}</Text>
@@ -798,7 +799,7 @@ function ConversationScreenInner() {
             {linkedPost && (
               <View style={[contextStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 {linkedPost.image_url && (
-                  <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" />
+                  <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={linkedPost.title} />
                 )}
                 <View style={contextStyles.info}>
                   <Text style={[contextStyles.eyebrow, { color: colors.mutedForeground }]}>
