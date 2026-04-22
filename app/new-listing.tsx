@@ -432,7 +432,7 @@ function NewListingScreenInner() {
                     <Text style={[s.templateName, { color: isSelected ? colors.background : colors.foreground }]}>
                       {tmpl.name}
                     </Text>
-                    <Text style={[s.templateCat, { color: isSelected ? '#B8BCC0' : colors.mutedForeground }]}>
+                    <Text style={[s.templateCat, { color: isSelected ? colors.onInkMuted : colors.mutedForeground }]}>
                       {tmpl.cat}
                     </Text>
                   </View>
@@ -608,7 +608,7 @@ function NewListingScreenInner() {
                   <Text style={[s.pricingLabel, { color: isSelected ? colors.background : colors.foreground }]}>
                     {model.label}
                   </Text>
-                  <Text style={[s.pricingSub, { color: isSelected ? '#B8BCC0' : colors.mutedForeground }]}>
+                  <Text style={[s.pricingSub, { color: isSelected ? colors.onInkMuted : colors.mutedForeground }]}>
                     {model.sub}
                   </Text>
                 </PressableOpacity>
@@ -868,7 +868,7 @@ function NewListingScreenInner() {
                     <Text style={[s.pickupLabel, { color: isSelected ? colors.background : colors.foreground }]}>
                       {method.label}
                     </Text>
-                    <Text style={[s.pickupSub, { color: isSelected ? '#B8BCC0' : colors.mutedForeground }]}>
+                    <Text style={[s.pickupSub, { color: isSelected ? colors.onInkMuted : colors.mutedForeground }]}>
                       {method.sub}
                     </Text>
                   </View>
@@ -1245,7 +1245,7 @@ const s = StyleSheet.create({
   segmentTabText: { fontSize: 11.5, fontWeight: '600', fontFamily: 'InstrumentSans_600SemiBold' },
 
   // ── Checklist items ──
-  checkItem: { borderRadius: 18, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8, backgroundColor: '#fff' },
+  checkItem: { borderRadius: 18, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   checkItemDashed: { borderStyle: 'dashed', backgroundColor: 'transparent' },
   checkNum: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   checkNumDashed: { borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'transparent' },

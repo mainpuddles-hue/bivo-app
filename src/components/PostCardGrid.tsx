@@ -45,9 +45,7 @@ interface PostCardGridProps {
   viewCount?: number
 }
 
-// Warm tint for text-only cards (from mockup)
-const WARM_TINT = '#F0EEE9'
-const WARM_TINT_DARK = '#2A2825'
+// Warm tint for text-only cards — now from theme.warmTint
 
 export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds, viewCount }: PostCardGridProps) {
   const { colors, isDark } = useTheme()
@@ -304,7 +302,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           <View style={styles.eventContent}>
             {/* Calendar + category */}
             <View style={styles.eventCategoryRow}>
-              <Calendar size={11} color={isDark ? colors.mutedForeground : '#B8BCC0'} strokeWidth={2} />
+              <Calendar size={11} color={colors.onInkMuted} strokeWidth={2} />
               <Text style={[styles.eventCategoryText, { color: colors.mutedForeground }]}>
                 {t(category?.label ?? 'categories.tapahtuma')}
               </Text>
@@ -333,7 +331,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         accessibilityLabel={a11yLabel}
         style={({ pressed }) => [
           styles.card,
-          { backgroundColor: isDark ? WARM_TINT_DARK : WARM_TINT, borderColor: colors.border },
+          { backgroundColor: colors.warmTint, borderColor: colors.border },
           isExpired && { opacity: 0.55 },
           pressed && pressedStyle,
         ]}

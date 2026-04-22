@@ -17,7 +17,7 @@ const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`
 
 type Plan = 'monthly' | 'yearly'
 
-const WARM_TINT = '#F0EEE9'
+// WARM_TINT now comes from useTheme().colors.warmTint
 
 export default function ProScreen() {
   const { colors, isDark } = useTheme()

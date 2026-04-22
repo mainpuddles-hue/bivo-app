@@ -860,8 +860,8 @@ function ConversationScreenInner() {
                         style={[offerStyles.actionBtn, offerStyles.acceptBtn, { borderColor: colors.primary, backgroundColor: colors.primary }]}
                         disabled={offerLoading}
                       >
-                        <CheckCircle size={14} color="#fff" strokeWidth={1.8} />
-                        <Text style={[offerStyles.actionText, { color: '#fff' }]}>
+                        <CheckCircle size={14} color={colors.primaryForeground} strokeWidth={1.8} />
+                        <Text style={[offerStyles.actionText, { color: colors.primaryForeground }]}>
                           {t('offer.accept') ?? 'Accept'}
                         </Text>
                       </PressableOpacity>

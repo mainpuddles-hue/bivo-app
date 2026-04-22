@@ -416,6 +416,7 @@ function NotificationsScreenInner() {
           sections={sections}
           keyExtractor={item => item.id}
           stickySectionHeadersEnabled={false}
+          removeClippedSubviews
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl

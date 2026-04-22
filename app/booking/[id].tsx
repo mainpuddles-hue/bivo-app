@@ -454,7 +454,7 @@ function BookingDetailScreenInner() {
                 <Text style={[s.ribbonTitle, { color: colors.primaryForeground }]}>
                   {t('booking.arrangePickup', { name: otherName })}
                 </Text>
-                <Text style={[s.ribbonSubtitle, { color: isDark ? colors.mutedForeground : '#B8BCC0' }]}>
+                <Text style={[s.ribbonSubtitle, { color: colors.onInkMuted }]}>
                   {t('booking.arrangePickupHint')}
                 </Text>
               </View>

@@ -188,8 +188,8 @@ function ReviewBorrowerScreenInner() {
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: sel }}
               >
-                {sel && <Check size={10} color="#fff" strokeWidth={3} />}
-                <Text style={[s.tagText, { color: sel ? '#fff' : colors.foreground }]}>{tag}</Text>
+                {sel && <Check size={10} color={colors.primaryForeground} strokeWidth={3} />}
+                <Text style={[s.tagText, { color: sel ? colors.primaryForeground : colors.foreground }]}>{tag}</Text>
               </PressableOpacity>
             )
           })}

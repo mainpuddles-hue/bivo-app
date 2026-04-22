@@ -65,7 +65,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
     >
       {/* Image or Emoji Header */}
       {event.image_url && !isTable ? (
-        <Image source={{ uri: getImageUrl(event.image_url, 'medium')! }} style={s.image} contentFit="cover" accessible={false} />
+        <Image source={{ uri: getImageUrl(event.image_url, 'medium')! }} style={s.image} contentFit="cover" accessible={false} cachePolicy="memory-disk" recyclingKey={event.id} />
       ) : isTable && TableCategoryIcon ? (
         <View style={[s.iconBox, { backgroundColor: `${categoryColor}15` }]}>
           <TableCategoryIcon size={36} color={categoryColor} />

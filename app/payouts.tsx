@@ -229,14 +229,14 @@ function PayoutsScreenInner() {
         {nextPayout > 0 && (
           <View style={[s.nextPayoutCard, { backgroundColor: colors.foreground }]}>
             <View style={s.nextPayoutInfo}>
-              <Text style={s.nextPayoutLabel}>
+              <Text style={[s.nextPayoutLabel, { color: colors.onInkMuted }]}>
                 {t('payouts.nextPayout')}
               </Text>
-              <Text style={s.nextPayoutValue}>
+              <Text style={[s.nextPayoutValue, { color: colors.primaryForeground }]}>
                 {formatPrice(nextPayout, locale)} · {nextPayoutDate}
               </Text>
             </View>
-            <ChevronRight size={14} color="#fff" />
+            <ChevronRight size={14} color={colors.primaryForeground} />
           </View>
         )}
 
@@ -338,12 +338,12 @@ const s = StyleSheet.create({
   },
   nextPayoutInfo: { flex: 1 },
   nextPayoutLabel: {
-    fontSize: 10.5, letterSpacing: 1, color: 'rgba(255,255,255,0.55)',
+    fontSize: 10.5, letterSpacing: 1,
     fontWeight: '600', fontFamily: fonts.bodySemi, marginBottom: 4,
   },
   nextPayoutValue: {
     fontSize: 18, fontWeight: '600', fontFamily: fonts.heading,
-    letterSpacing: -0.4, color: '#fff',
+    letterSpacing: -0.4,
   },
 
   /* Section */

@@ -217,21 +217,21 @@ function PaymentCheckoutScreenInner() {
               accessibilityState={{ selected: isSelected }}
             >
               <View style={[s.methodIcon, { backgroundColor: isSelected ? 'rgba(255,255,255,0.12)' : colors.muted }]}>
-                {method.icon === 'card' && <CreditCard size={14} color={isSelected ? '#fff' : colors.foreground} />}
-                {method.icon === 'phone' && <Smartphone size={14} color={isSelected ? '#fff' : colors.foreground} />}
-                {method.icon === 'plus' && <Plus size={14} color={isSelected ? '#fff' : colors.foreground} />}
+                {method.icon === 'card' && <CreditCard size={14} color={isSelected ? colors.primaryForeground : colors.foreground} />}
+                {method.icon === 'phone' && <Smartphone size={14} color={isSelected ? colors.primaryForeground : colors.foreground} />}
+                {method.icon === 'plus' && <Plus size={14} color={isSelected ? colors.primaryForeground : colors.foreground} />}
               </View>
               <View style={s.methodInfo}>
-                <Text style={[s.methodTitle, { color: isSelected ? '#fff' : colors.foreground }]}>
+                <Text style={[s.methodTitle, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
                   {method.title}
                 </Text>
                 {method.subtitle ? (
-                  <Text style={[s.methodSubtitle, { color: isSelected ? '#B8BCC0' : colors.mutedForeground }]}>
+                  <Text style={[s.methodSubtitle, { color: isSelected ? colors.onInkMuted : colors.mutedForeground }]}>
                     {method.subtitle}
                   </Text>
                 ) : null}
               </View>
-              {isSelected && <Check size={13} color="#fff" strokeWidth={3} />}
+              {isSelected && <Check size={13} color={colors.primaryForeground} strokeWidth={3} />}
             </PressableOpacity>
           )
         })}

@@ -312,7 +312,7 @@ function CardContent({ post, colors, isDark, t, locale, userNeighborhood, userLo
             accessible={false}
           />
         ) : (
-          <View style={[styles.image, { backgroundColor: isDark ? '#2A2825' : '#F0EEE9' }]}>
+          <View style={[styles.image, { backgroundColor: colors.warmTint }]}>
             <Text style={[styles.imagePlaceholder, { color: colors.mutedForeground }]}>
               {categoryLabel}
             </Text>

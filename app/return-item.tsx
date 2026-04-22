@@ -185,7 +185,7 @@ function ReturnItemScreenInner() {
             <View key={i} style={s.photoSlot}>
               <Image source={{ uri }} style={s.photoImage} contentFit="cover" />
               <View style={[s.photoCheck, { backgroundColor: colors.foreground }]}>
-                <Check size={10} color="#fff" strokeWidth={3} />
+                <Check size={10} color={colors.primaryForeground} strokeWidth={3} />
               </View>
             </View>
           ))}
@@ -224,7 +224,7 @@ function ReturnItemScreenInner() {
                     ? { backgroundColor: colors.foreground }
                     : { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.border },
                 ]}>
-                  {item.done && <Check size={12} color="#fff" strokeWidth={3} />}
+                  {item.done && <Check size={12} color={colors.primaryForeground} strokeWidth={3} />}
                 </View>
                 <Text style={[s.checkLabel, { color: colors.foreground }]}>{item.label}</Text>
               </PressableOpacity>

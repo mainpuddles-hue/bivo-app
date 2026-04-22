@@ -145,6 +145,7 @@ function ForumThreadViewInner({
         data={replies}
         renderItem={renderReply}
         keyExtractor={item => item.id}
+        removeClippedSubviews
         contentContainerStyle={styles.detailList}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
