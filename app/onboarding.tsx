@@ -125,7 +125,7 @@ function OnboardingScreenInner() {
         ? (selectedAddress.housenumber
             ? `${selectedAddress.street} ${selectedAddress.housenumber}`
             : selectedAddress.street)
-        : selectedAddress.name
+        : (selectedAddress.name || 'Tuntematon osoite')
 
       // Resolve building — atomically creates or finds building + links user
       const { error: rpcError } = await (supabase as any).rpc('resolve_building', {

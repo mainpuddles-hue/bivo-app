@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, memo } from 'react'
+import { useState, useRef, useCallback, useEffect, memo } from 'react'
 import { View, TextInput, Text, Pressable, StyleSheet, ActivityIndicator, Keyboard } from 'react-native'
 import { MapPin } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -72,6 +72,11 @@ export const LocationAutocomplete = memo(function LocationAutocomplete({
   const [showSuggestions, setShowSuggestions] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const selectingRef = useRef(false)
+
+  // Cleanup debounce on unmount to prevent stale state updates
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [])
 
   const search = useCallback(async (query: string) => {
     if (query.length < 2) {
