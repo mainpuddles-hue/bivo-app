@@ -334,7 +334,7 @@ serve(async (req) => {
               {
                 user_id: booking.lender_id,
                 type: 'rental_overdue_forfeit',
-                title: 'Vakuusmaksu hyvitetty',
+                title: depositCaptured ? 'Vakuusmaksu hyvitetty' : 'Laina palautumatta — käsitellään',
                 body:
                   `Lainaajasi ei palauttanut tavaraa 7 päivän kuluessa.${depositNote} ` +
                   `Viivästysmaksu: ${penaltyAmount.toFixed(2)}€.`,

@@ -214,7 +214,7 @@ serve(async (req) => {
       .eq('id', user.id)
       .maybeSingle()
     const callerEmail = callerProfile?.email ?? user.email
-    if (to_email.toLowerCase() !== callerEmail?.toLowerCase()) {
+    if (!callerEmail || to_email.toLowerCase() !== callerEmail.toLowerCase()) {
       if (rateLimitEntry?.id) {
         await supabase.from('notifications').delete().eq('id', rateLimitEntry.id).catch(() => {})
       }

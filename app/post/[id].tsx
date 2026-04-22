@@ -739,7 +739,8 @@ function PostDetailScreenInner() {
       // Roll back the booking row if Stripe session creation threw — otherwise
       // zombie pending bookings accumulate and block future reservations
       if (createdBookingId) {
-        await (supabase.from('rental_bookings') as any).delete().eq('id', createdBookingId).catch(() => {})
+        const { error: rollbackErr } = await (supabase.from('rental_bookings') as any).delete().eq('id', createdBookingId)
+        if (rollbackErr && __DEV__) console.error('[post] booking rollback failed — zombie booking may block future reservations:', rollbackErr.message)
       }
       Alert.alert(t('common.error'), t('rental.bookingFailed'))
     }

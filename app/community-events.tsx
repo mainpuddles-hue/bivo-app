@@ -117,11 +117,12 @@ function CommunityEventsScreenInner() {
         return
       }
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-      await (supabase.from('community_event_participants') as any)
+      const { error: joinError } = await (supabase.from('community_event_participants') as any)
         .upsert(
           { event_id: eventId, user_id: cachedId, status: 'joined' },
           { onConflict: 'event_id,user_id', ignoreDuplicates: true },
         )
+      if (joinError) throw joinError
       // Refresh to update counts
       fetchEvents()
     } catch (err) {

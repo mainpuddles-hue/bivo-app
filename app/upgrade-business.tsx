@@ -56,11 +56,12 @@ export default function UpgradeBusinessScreen() {
   }, [router])
 
   useEffect(() => {
+    let mounted = true
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user || !mounted) return
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
-      if (data) {
+      if (data && mounted) {
         const p = data as unknown as Profile
         setProfile(p)
         if (p.is_business) {
@@ -85,6 +86,7 @@ export default function UpgradeBusinessScreen() {
       }
     }
     load()
+    return () => { mounted = false }
   }, [supabase, router])
 
   const handleUpgrade = useCallback(async () => {
