@@ -102,11 +102,12 @@ function GroupsScreenInner() {
 
   // Fetch user
   useEffect(() => {
+    let mounted = true
     async function fetchUser() {
       const { getCachedUserId } = await import('@/lib/authCache')
       const cachedId = await getCachedUserId()
+      if (!mounted) return
       if (!cachedId) {
-        // Not logged in — clear loading so UI isn't stuck on skeleton forever
         setLoading(false)
         return
       }
@@ -116,10 +117,11 @@ function GroupsScreenInner() {
           .select('naapurusto')
           .eq('id', cachedId)
           .maybeSingle()
-        if (profile?.naapurusto) setUserNeighborhood(profile.naapurusto as string)
+        if (mounted && profile?.naapurusto) setUserNeighborhood(profile.naapurusto as string)
       } catch {} // Intentional: profile table columns may be missing
     }
     fetchUser()
+    return () => { mounted = false }
   }, [supabase])
 
   // Fetch groups

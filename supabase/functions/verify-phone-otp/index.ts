@@ -67,18 +67,30 @@ serve(async (req: Request) => {
       })
     }
 
-    // Max 5 attempts per OTP
-    if ((verification.attempts ?? 0) >= 5) {
+    // Atomically increment attempts with optimistic lock + limit check.
+    // Prevents TOCTOU: two concurrent requests can't both pass the 5-attempt limit.
+    const currentAttempts = verification.attempts ?? 0
+    if (currentAttempts >= 5) {
       return new Response(JSON.stringify({ error: 'too_many_attempts' }), {
         status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Increment attempts
-    await supabase
+    const { data: incrementResult } = await supabase
       .from('phone_verifications')
-      .update({ attempts: (verification.attempts ?? 0) + 1 })
+      .update({ attempts: currentAttempts + 1 })
       .eq('id', verification.id)
+      .eq('attempts', currentAttempts)  // optimistic lock — fails if concurrent request already incremented
+      .lt('attempts', 5)
+      .select('id')
+      .maybeSingle()
+
+    if (!incrementResult) {
+      // Concurrent request already incremented — may be at limit now
+      return new Response(JSON.stringify({ error: 'too_many_attempts' }), {
+        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // Check expiry
     if (new Date(verification.expires_at) < new Date()) {
@@ -94,11 +106,20 @@ serve(async (req: Request) => {
       })
     }
 
-    // Mark OTP as verified
-    await supabase
+    // Mark OTP as verified — atomic guard ensures only one concurrent request succeeds
+    const { data: verifiedResult } = await supabase
       .from('phone_verifications')
       .update({ verified: true })
       .eq('id', verification.id)
+      .eq('verified', false)  // only succeed if not already verified by concurrent request
+      .select('id')
+      .maybeSingle()
+
+    if (!verifiedResult) {
+      return new Response(JSON.stringify({ error: 'already_verified' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // Update profile
     await supabase

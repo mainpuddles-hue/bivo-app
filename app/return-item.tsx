@@ -99,7 +99,10 @@ function ReturnItemScreenInner() {
           .from('post-images')
           .upload(path, buf, { contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`, upsert: false })
 
-        if (!uploadError) {
+        if (uploadError) {
+          if (__DEV__) console.warn('[return-item] photo upload failed:', uploadError.message)
+          // Continue with remaining photos rather than aborting entirely
+        } else {
           const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)
           uploadedUrls.push(urlData.publicUrl)
         }

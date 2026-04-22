@@ -137,11 +137,13 @@ export default function GroupDetailScreen() {
 
   // ── Fetch current user ──
   useEffect(() => {
+    let mounted = true
     async function fetchUser() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) setCurrentUserId(user.id)
+      if (mounted && user) setCurrentUserId(user.id)
     }
     fetchUser()
+    return () => { mounted = false }
   }, [supabase])
 
   // ── Fetch group info ──

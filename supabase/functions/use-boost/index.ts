@@ -219,7 +219,7 @@ serve(async (req) => {
       })
 
     if (insertError) {
-      // Rollback the balance decrement
+      // Rollback the balance decrement — optimistic lock prevents overwriting concurrent decrements
       await supabase
         .from('user_boosts')
         .update({
@@ -227,6 +227,7 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id)
+        .eq('balance', remainingBalance)  // only rollback if balance unchanged since our decrement
 
       // Race condition: another concurrent request already created an active boost
       if (insertError.code === '23505') {

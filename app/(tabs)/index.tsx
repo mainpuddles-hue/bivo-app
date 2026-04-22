@@ -50,20 +50,25 @@ function FeedScreenInner() {
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({})
   useEffect(() => {
     if (feed.posts.length === 0) return
+    let mounted = true
     const postIds = feed.posts.map(p => p.id)
     ;(supabase.rpc as any)('get_post_view_counts_batch', { p_post_ids: postIds })
-      .then(({ data }: any) => {
+      .then(({ data, error }: any) => {
+        if (!mounted) return
+        if (error) { if (__DEV__) console.warn('[feed] view counts RPC failed:', error.message); return }
         if (!data) return
         const map: Record<string, number> = {}
         for (const row of data) map[row.post_id] = row.view_count
         setViewCounts(map)
       })
-      .catch(() => {})
+      .catch((err: any) => { if (__DEV__) console.warn('[feed] view counts error:', err) })
+    return () => { mounted = false }
   }, [feed.posts, supabase])
 
   // Inline events — fetch 3 upcoming events to inject into feed
   const [inlineEvents, setInlineEvents] = useState<Post[]>([])
   useEffect(() => {
+    let mounted = true
     const now = new Date().toISOString()
     Promise.resolve(
       supabase
@@ -72,9 +77,10 @@ function FeedScreenInner() {
         .gte('event_date', now)
         .order('event_date', { ascending: true })
         .limit(3)
-    ).then(({ data }) => {
+    ).then(({ data, error }: any) => {
+      if (!mounted) return
+      if (error) { if (__DEV__) console.warn('[feed] inline events failed:', error.message); return }
       if (!data || data.length === 0) return
-      // Convert to Post-like objects for PostCardGrid event variant
       const eventPosts: Post[] = (data as any[]).map(e => ({
         id: `event-${e.id}`,
         user_id: e.creator_id ?? '',
@@ -95,22 +101,27 @@ function FeedScreenInner() {
         expires_at: null,
       })) as any
       setInlineEvents(eventPosts)
-    }).catch(() => {})
+    }).catch((err: any) => { if (__DEV__) console.warn('[feed] inline events error:', err) })
+    return () => { mounted = false }
   }, [supabase])
 
   // Fetch user's building info for community card
   const [userBuilding, setUserBuilding] = useState<{ street_address: string; member_count: number } | null>(null)
   useEffect(() => {
     if (!feed.currentUserId) return
+    let mounted = true
     Promise.resolve(
       supabase
         .from('user_buildings')
         .select('building:buildings(street_address, member_count)')
         .eq('user_id', feed.currentUserId)
         .single()
-    ).then(({ data }: any) => {
+    ).then(({ data, error }: any) => {
+      if (!mounted) return
+      if (error && error.code !== 'PGRST116') { if (__DEV__) console.warn('[feed] user building failed:', error.message) }
       if (data?.building) setUserBuilding(data.building)
-    }).catch(() => {})
+    }).catch((err: any) => { if (__DEV__) console.warn('[feed] user building error:', err) })
+    return () => { mounted = false }
   }, [feed.currentUserId, supabase])
 
   // Fetch active polls for feed display
@@ -126,7 +137,8 @@ function FeedScreenInner() {
         .or(`expires_at.is.null,expires_at.gt."${now}"`)
         .order('created_at', { ascending: false })
         .limit(3)
-    ).then(async ({ data }) => {
+    ).then(async ({ data, error }: any) => {
+      if (error) { if (__DEV__) console.warn('[feed] polls fetch failed:', error.message); return }
       if (!data || data.length === 0) return
       const pollIds = (data as any[]).map((p: any) => p.id)
 
@@ -171,7 +183,7 @@ function FeedScreenInner() {
         }
       })
       setFeedPolls(polls)
-    }).catch(() => {})
+    }).catch((err: any) => { if (__DEV__) console.warn('[feed] polls error:', err) })
   }, [feed.currentUserId, supabase])
 
   // Fetch active ads for feed display
@@ -188,7 +200,8 @@ function FeedScreenInner() {
         .gte('end_date', now)
         .order('created_at', { ascending: false })
         .limit(3)
-    ).then(({ data }) => {
+    ).then(({ data, error }: any) => {
+      if (error) { if (__DEV__) console.warn('[feed] ads fetch failed:', error.message); return }
       if (!data || data.length === 0) return
       // Filter by neighborhood if user has one
       const nh = feed.userNeighborhood
@@ -200,7 +213,7 @@ function FeedScreenInner() {
         _isAd: true as const,
       }))
       setFeedAds(ads)
-    }).catch(() => {})
+    }).catch((err: any) => { if (__DEV__) console.warn('[feed] ads error:', err) })
   }, [supabase, feed.userNeighborhood])
 
   // NOTE: User profile/greeting removed — mockup 05 uses location-based header
