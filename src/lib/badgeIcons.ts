@@ -3,8 +3,9 @@ import {
   TrendingUp, BookOpen, CalendarDays, Award, UserPlus, Users,
   Zap, Timer,
 } from 'lucide-react-native'
+import type { BadgeType } from './types'
 
-export const BADGE_ICONS: Record<string, { icon: React.ComponentType<any>; color: string }> = {
+export const BADGE_ICONS: Record<BadgeType, { icon: React.ComponentType<any>; color: string }> = {
   verified: { icon: BadgeCheck, color: '#3B82F6' },
   pro: { icon: Crown, color: '#F59E0B' },
   trusted: { icon: Shield, color: '#2D7A4F' },

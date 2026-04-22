@@ -85,9 +85,15 @@ serve(async (req) => {
         .single()
 
       if (existing?.embedding) {
-        // Parse stored vector string
-        queryEmbedding = JSON.parse(existing.embedding.replace(/[\[\]]/g, m => m))
-      } else {
+        // Parse stored vector string — try/catch to handle malformed data
+        try {
+          queryEmbedding = JSON.parse(existing.embedding)
+        } catch {
+          // Malformed embedding in DB — fall through to regeneration
+          existing.embedding = null
+        }
+      }
+      if (!existing?.embedding) {
         // Generate embedding for this post first
         const { data: post } = await supabase
           .from('posts')

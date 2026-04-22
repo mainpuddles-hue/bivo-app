@@ -41,7 +41,13 @@ serve(async (req: Request) => {
       })
     }
 
-    const { user_id } = await req.json()
+    let body
+    try { body = await req.json() } catch {
+      return new Response(JSON.stringify({ error: 'invalid_request_body' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const { user_id } = body
 
     // Security: user can only verify themselves
     if (user_id !== user.id) {

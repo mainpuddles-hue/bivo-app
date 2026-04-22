@@ -174,13 +174,22 @@ async function fetchSemanticMatches(
     const { matches } = await res.json()
     const result = (matches ?? []) as SemanticMatch[]
 
-    // Evict oldest entries if cache exceeds max size
-    if (semanticCache.size >= 200) {
-      const keysIter = semanticCache.keys()
-      for (let i = 0; i < 50; i++) {
-        const oldest = keysIter.next()
-        if (oldest.done) break
-        semanticCache.delete(oldest.value)
+    // Evict expired entries first, then oldest if still over limit
+    if (semanticCache.size >= 100) {
+      const now = Date.now()
+      for (const [key, entry] of semanticCache) {
+        if (now - entry.fetchedAt >= SEMANTIC_CACHE_TTL) {
+          semanticCache.delete(key)
+        }
+      }
+      // If still too large after TTL eviction, remove oldest entries
+      if (semanticCache.size >= 100) {
+        const keysIter = semanticCache.keys()
+        for (let i = 0; i < 30; i++) {
+          const oldest = keysIter.next()
+          if (oldest.done) break
+          semanticCache.delete(oldest.value)
+        }
       }
     }
 

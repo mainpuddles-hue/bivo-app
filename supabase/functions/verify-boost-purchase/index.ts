@@ -98,7 +98,7 @@ serve(async (req) => {
       .from('boost_purchases')
       .select('id, credits_granted, created_at')
       .eq('transaction_id', transaction_id)
-      .single()
+      .maybeSingle()
 
     if (existingPurchase) {
       // Already processed — fetch current balance and return
@@ -106,7 +106,7 @@ serve(async (req) => {
         .from('user_boosts')
         .select('balance')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       return new Response(JSON.stringify({
         success: true,
@@ -175,7 +175,7 @@ serve(async (req) => {
         .from('user_boosts')
         .select('balance')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (currentBoost) {
         // Row exists: conditional update (optimistic lock on current balance)
@@ -196,7 +196,7 @@ serve(async (req) => {
             .from('user_boosts')
             .select('balance')
             .eq('user_id', user.id)
-            .single()
+            .maybeSingle()
           const retryBalance = (retry?.balance ?? 0) + credits
           await supabase
             .from('user_boosts')

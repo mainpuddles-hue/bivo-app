@@ -34,6 +34,10 @@ export function useStripePayment() {
     setLoading(true)
     setError(null)
 
+    // Declare outside try so finally can always clean up
+    const controller = new AbortController()
+    let timeout: ReturnType<typeof setTimeout> | undefined
+
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
@@ -45,8 +49,7 @@ export function useStripePayment() {
       const endpoint = `${FUNCTIONS_URL}/stripe-checkout`
 
       // 15s timeout to prevent hanging fetch from allowing duplicate payments
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 15000)
+      timeout = setTimeout(() => controller.abort(), 15000)
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -88,6 +91,7 @@ export function useStripePayment() {
       setError('Maksuyhteys epäonnistui')
       return null
     } finally {
+      if (timeout) clearTimeout(timeout)
       setLoading(false)
       payingRef.current = false
     }

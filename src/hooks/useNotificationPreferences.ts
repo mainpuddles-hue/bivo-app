@@ -96,14 +96,15 @@ export function useNotificationPreferences() {
   }, [supabase])
 
   const updatePreference = useCallback(async (type: NotificationType, enabled: boolean) => {
-    // Capture original value BEFORE optimistic update for correct rollback
-    const originalValue = preferences[type]
-
-    // Optimistic update — keep updater pure and persist outside it so that
-    // React 19 StrictMode's double-invoke doesn't write to storage twice.
-    const nextOptimistic = { ...preferences, [type]: enabled }
-    setPreferences(nextOptimistic)
-    AsyncStorage.setItem(CACHE_KEY, JSON.stringify(nextOptimistic)).catch(() => {})
+    // Use functional updater to avoid stale closure when multiple toggles
+    // fire before the first upsert completes.
+    let originalValue = enabled // fallback; overwritten by updater
+    setPreferences(prev => {
+      originalValue = prev[type]
+      const next = { ...prev, [type]: enabled }
+      AsyncStorage.setItem(CACHE_KEY, JSON.stringify(next)).catch(() => {})
+      return next
+    })
 
     if (!userId) return
 
@@ -116,13 +117,15 @@ export function useNotificationPreferences() {
     )
 
     if (upsertError) {
-      // Revert to the captured original value
-      const reverted = { ...preferences, [type]: originalValue }
-      setPreferences(reverted)
-      AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reverted)).catch(() => {})
+      // Revert using functional updater to get fresh state
+      setPreferences(prev => {
+        const reverted = { ...prev, [type]: originalValue }
+        AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reverted)).catch(() => {})
+        return reverted
+      })
       Alert.alert('Error', 'Notification preference update failed. Please try again.')
     }
-  }, [userId, supabase, preferences])
+  }, [userId, supabase])
 
   return { preferences, loading, updatePreference }
 }

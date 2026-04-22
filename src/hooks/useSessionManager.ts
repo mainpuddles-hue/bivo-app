@@ -14,11 +14,11 @@ const MAX_SESSIONS = 3
  */
 export function useSessionManager(userId: string | null) {
   const supabase = useSupabase()
-  const registeredRef = useRef(false)
+  const registeredForRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!userId || registeredRef.current) return
-    registeredRef.current = true
+    if (!userId || registeredForRef.current === userId) return
+    registeredForRef.current = userId
 
     async function registerSession() {
       try {
