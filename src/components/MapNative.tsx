@@ -331,6 +331,7 @@ export default function MapScreen() {
                   onChangeText={setSearchQuery}
                   placeholder={t('map.searchPlaceholder')}
                   placeholderTextColor={colors.tertiaryForeground}
+                  accessibilityLabel={t('map.searchPlaceholder')}
                   autoFocus
                 />
               ) : (
@@ -343,13 +344,19 @@ export default function MapScreen() {
                   </Text>
                 </Pressable>
               )}
-              {showSearch && searchQuery.length > 0 && (
-                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-                  <X size={16} color={colors.mutedForeground} />
-                </Pressable>
-              )}
               {showSearch && (
-                <Pressable onPress={() => { setShowSearch(false); setSearchQuery('') }} hitSlop={8}>
+                <Pressable
+                  onPress={() => {
+                    if (searchQuery.length > 0) {
+                      setSearchQuery('')
+                    } else {
+                      setShowSearch(false)
+                    }
+                  }}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={searchQuery.length > 0 ? t('common.clear') : t('common.close')}
+                >
                   <X size={16} color={colors.mutedForeground} />
                 </Pressable>
               )}
@@ -373,6 +380,8 @@ export default function MapScreen() {
                 borderColor: userLocation ? colors.foreground : colors.border,
               },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('map.myLocation') ?? 'My location'}
           >
             <Crosshair size={18} color={userLocation ? colors.primaryForeground : colors.foreground} />
           </Pressable>

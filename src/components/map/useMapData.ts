@@ -73,7 +73,7 @@ function getRadiusKm(neighborhood: string): number {
   return 1.5
 }
 
-const MAX_MAP_MARKERS = 20
+const MAX_MAP_MARKERS = 60
 export const MAP_HEIGHT = 250
 
 export const DARK_MAP_STYLE = [

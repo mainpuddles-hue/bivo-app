@@ -54,7 +54,7 @@ export const TIME_FILTERS = [
   { key: 'week' as const, labelKey: 'map.timeThisWeek' },
 ]
 
-export const PLACES_INITIAL_LIMIT = 8
+export const PLACES_INITIAL_LIMIT = 20
 
 export function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
