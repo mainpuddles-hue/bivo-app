@@ -613,7 +613,8 @@
     "eventChats": "Eventchattar",
     "unread": "Oläst",
     "archiveError": "Arkivering misslyckades",
-    "longPressToPinHint": "Tryck länge för att fästa"
+    "longPressToPinHint": "Tryck länge för att fästa",
+    "sendFirstMessage": "Skicka det första meddelandet för att starta konversationen"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -634,7 +635,9 @@
     "deleteMessage": "Ta bort meddelande",
     "deleteMessageConfirm": "Vill du verkligen ta bort detta meddelande? Detta kan inte ångras.",
     "messageDeleted": "Meddelande borttaget",
-    "copyMessage": "Kopiera"
+    "copyMessage": "Kopiera",
+    "newMessages": "{count} nya meddelanden",
+    "scrollToBottom": "Scrolla ner"
   },
   "profile": {
     "title": "Profil",

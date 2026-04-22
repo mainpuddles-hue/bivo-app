@@ -699,6 +699,15 @@ export default function CreateScreen() {
           </Text>
         </View>
 
+        {/* ── Step indicator dots ── */}
+        <View style={mk.stepRow}>
+          <View style={[mk.stepDot, { backgroundColor: colors.foreground }]} />
+          <View style={[mk.stepDot, { backgroundColor: step === 'form' ? colors.foreground : colors.border }]} />
+          <Text style={[mk.stepLabel, { color: colors.mutedForeground }]}>
+            {step === 'category' ? t('create.stepType') : t('create.stepDetails')}
+          </Text>
+        </View>
+
         {/* ── CATEGORY STEP ── */}
         {step === 'category' && (
           <ScrollView contentContainerStyle={mk.scrollPad} showsVerticalScrollIndicator={false}>
@@ -1248,6 +1257,11 @@ const mk = StyleSheet.create({
   headerCloseBtn: { width: 36, height: 36, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 14.5, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading },
   headerDraft: { width: 56, fontSize: 12, fontWeight: '500', textAlign: 'right', textDecorationLine: 'underline', fontFamily: fonts.bodyMedium },
+
+  // Step indicator
+  stepRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingBottom: 10 },
+  stepDot: { width: 6, height: 6, borderRadius: 3 },
+  stepLabel: { fontSize: 12, fontWeight: '500' as const, marginLeft: 4, fontFamily: fonts.bodyMedium },
 
   // Section label
   sectionLabel: { fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '500', fontFamily: fonts.bodyMedium, marginBottom: 8 },

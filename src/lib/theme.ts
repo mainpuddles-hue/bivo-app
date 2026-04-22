@@ -13,8 +13,8 @@ export const colors = {
     cardElevated: '#FAFAFB',       // slightly recessed blocks
     border: '#E8EAEC',             // hairline separator
     muted: '#EEF0F2',              // wash/tint fill
-    mutedForeground: '#6B7075',    // meta, captions
-    tertiaryForeground: '#9AA0A6', // placeholder, disabled
+    mutedForeground: '#535A60',    // meta, captions — WCAG AA 4.6:1 on #F5F6F7
+    tertiaryForeground: '#848B93', // placeholder, disabled
     destructive: '#C44536',        // muted red
     pro: '#F59E0B',
     success: '#2D7A4F',            // muted green

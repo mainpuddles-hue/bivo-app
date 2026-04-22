@@ -613,7 +613,8 @@
     "eventChats": "Tapahtumachatit",
     "unread": "Lukematon",
     "archiveError": "Arkistointi epäonnistui",
-    "longPressToPinHint": "Paina pitkään kiinnittääksesi"
+    "longPressToPinHint": "Paina pitkään kiinnittääksesi",
+    "sendFirstMessage": "Lähetä ensimmäinen viesti aloittaaksesi keskustelun"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -634,7 +635,9 @@
     "deleteMessage": "Poista viesti",
     "deleteMessageConfirm": "Haluatko varmasti poistaa tämän viestin? Tätä ei voi perua.",
     "messageDeleted": "Viesti poistettu",
-    "copyMessage": "Kopioi"
+    "copyMessage": "Kopioi",
+    "newMessages": "{count} uutta viestiä",
+    "scrollToBottom": "Siirry alas"
   },
   "profile": {
     "title": "Profiili",

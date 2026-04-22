@@ -613,7 +613,8 @@
     "eventChats": "Event Chats",
     "unread": "Unread",
     "archiveError": "Archiving failed",
-    "longPressToPinHint": "Long press to pin"
+    "longPressToPinHint": "Long press to pin",
+    "sendFirstMessage": "Send the first message to start the conversation"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -634,7 +635,9 @@
     "deleteMessage": "Delete message",
     "deleteMessageConfirm": "Are you sure you want to delete this message? This cannot be undone.",
     "messageDeleted": "Message deleted",
-    "copyMessage": "Copy"
+    "copyMessage": "Copy",
+    "newMessages": "{count} new messages",
+    "scrollToBottom": "Scroll to bottom"
   },
   "profile": {
     "title": "Profile",

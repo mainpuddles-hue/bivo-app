@@ -69,6 +69,7 @@ function ConversationScreenInner() {
   const [hasOlder, setHasOlder] = useState(false)
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
+  const [newMsgCount, setNewMsgCount] = useState(0)
   const [otherTyping, setOtherTyping] = useState(false)
   const [showQuickReplies, setShowQuickReplies] = useState(true)
   const [linkedPost, setLinkedPost] = useState<{ id: string; title: string; type: string; image_url: string | null } | null>(null)
@@ -232,8 +233,10 @@ function ConversationScreenInner() {
           const next = [...prev, newMsg]
           return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next
         })
-        // Auto-mark as read if from other user (use ref to avoid stale closure)
+        // Increment unseen counter if scrolled up and message is from other user
         if (userIdRef.current && newMsg.sender_id !== userIdRef.current) {
+          setNewMsgCount(prev => prev + 1)
+          // Auto-mark as read (use ref to avoid stale closure)
           ;(async () => { try { await (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id) } catch {} })()
         }
       })
@@ -786,7 +789,9 @@ function ConversationScreenInner() {
         }}
         onScroll={(e) => {
           const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent
-          setShowScrollBtn(contentOffset.y < contentSize.height - layoutMeasurement.height - 200)
+          const isNearBottom = contentOffset.y >= contentSize.height - layoutMeasurement.height - 200
+          setShowScrollBtn(!isNearBottom)
+          if (isNearBottom) setNewMsgCount(0)
         }}
         ListHeaderComponent={
           <View>
@@ -874,16 +879,27 @@ function ConversationScreenInner() {
           </View>
         }
         ListEmptyComponent={
-          <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('messages.noMessagesYet')}</Text>
+          <View style={s.emptyContainer}>
+            <Send size={32} color={colors.mutedForeground} strokeWidth={1.5} />
+            <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('messages.noMessagesYet')}</Text>
+            <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('messages.sendFirstMessage')}</Text>
+          </View>
         }
       />
 
-      {/* Scroll to bottom button */}
+      {/* Scroll to bottom button with new message count */}
       {showScrollBtn && (
         <PressableOpacity
-          onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onPress={() => { flatListRef.current?.scrollToEnd({ animated: true }); setNewMsgCount(0) }}
           style={[s.scrollBtn, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.foreground, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }]}
+          accessibilityLabel={newMsgCount > 0 ? t('conversation.newMessages', { count: newMsgCount }) : t('conversation.scrollToBottom')}
+          accessibilityRole="button"
         >
+          {newMsgCount > 0 && (
+            <View style={[s.newMsgBadge, { backgroundColor: colors.foreground }]}>
+              <Text style={[s.newMsgBadgeText, { color: colors.primaryForeground }]}>{newMsgCount > 99 ? '99+' : newMsgCount}</Text>
+            </View>
+          )}
           <ChevronDown size={20} color={colors.foreground} />
         </PressableOpacity>
       )}
@@ -1060,6 +1076,16 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, elevation: 3,
   },
+  newMsgBadge: {
+    position: 'absolute', top: -8, right: -4,
+    minWidth: 20, height: 20, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 5, zIndex: 1,
+  },
+  newMsgBadgeText: {
+    fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600' as const,
+    lineHeight: 14,
+  },
   // ── Reaction picker modal ──────────────────────────────────
   modalOverlay: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
@@ -1102,7 +1128,9 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  emptyText: { textAlign: 'center', fontSize: 13, lineHeight: 18, marginTop: 40, fontFamily: fonts.body },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingTop: 60, gap: 8 },
+  emptyText: { textAlign: 'center', fontSize: 15, lineHeight: 22, fontFamily: fonts.bodySemi, fontWeight: '600' as const },
+  emptyHint: { textAlign: 'center', fontSize: 13, lineHeight: 18, fontFamily: fonts.body, maxWidth: 220 },
   // ── Quick replies — Monochrome pills (borderRadius 999, surface bg, 1px border) ──
   quickRepliesRow: {
     flexDirection: 'row', gap: 8,
