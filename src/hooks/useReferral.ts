@@ -77,18 +77,13 @@ export function useReferral(userId: string | null) {
         code += chars[Math.floor(Math.random() * chars.length)]
       }
 
-      // Check for collision
-      const { data: existing } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('invite_code', code)
-        .maybeSingle()
-      if (existing) continue // collision — retry
-
+      // Write directly — unique constraint on invite_code prevents duplicates.
+      // No pre-check SELECT needed (eliminates TOCTOU race).
       const { error } = await (supabase.from('profiles') as any)
         .update({ invite_code: code })
         .eq('id', userId)
       if (error) {
+        if (error.code === '23505') continue // unique violation — collision, retry
         if (__DEV__) console.warn('[referral] generateCode failed:', error.message)
         return null
       }
@@ -145,10 +140,11 @@ export function useReferral(userId: string | null) {
         })
         if (rpcError) throw rpcError
       } catch {
-        // Intentional: RPC may not exist — fallback to non-atomic read-then-write
+        // Intentional: RPC may not exist — fallback with optimistic lock
         const { error: fallbackErr } = await (supabase.from('profiles') as any)
           .update({ invite_count: newCount })
           .eq('id', (inviter as any).id)
+          .eq('invite_count', (inviter as any).invite_count ?? 0)  // optimistic lock
         if (fallbackErr && __DEV__) console.warn('[referral] invite_count update failed:', fallbackErr.message)
       }
 
@@ -173,14 +169,14 @@ export function useReferral(userId: string | null) {
         if (newTier.badgeType) {
           await (supabase.from('user_badges') as any)
             .insert({ user_id: (inviter as any).id, badge_type: newTier.badgeType })
-            .catch(() => {})
+            .catch((e: unknown) => { if (__DEV__) console.warn('[referral] badge insert failed:', e) })
         }
         if (newTier.proTrialDays > 0) {
           const proExpires = new Date(Date.now() + newTier.proTrialDays * 86400000).toISOString()
           await (supabase.from('profiles') as any)
             .update({ is_pro: true, pro_expires_at: proExpires })
             .eq('id', (inviter as any).id)
-            .catch(() => {})
+            .catch((e: unknown) => { if (__DEV__) console.warn('[referral] pro trial update failed:', e) })
         }
       }
 
@@ -199,7 +195,7 @@ export function useReferral(userId: string | null) {
           body: `Kutsukoodiasi käytettiin. +${newTier ? newTier.points : 10} pistettä.`,
           data: { invited_user_id: userId },
         })
-        .catch(() => {}) // Non-critical
+        .catch((e: unknown) => { if (__DEV__) console.warn('[referral] notification insert failed:', e) })
 
       return 'success'
     } catch (err) {

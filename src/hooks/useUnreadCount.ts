@@ -43,7 +43,10 @@ export function useUnreadCount(userId: string | null) {
         .neq('sender_id', userId)
         .eq('is_read', false)
 
-      if (msgError && __DEV__) console.warn('[useUnreadCount] messages count failed:', msgError.message)
+      if (msgError) {
+        if (__DEV__) console.warn('[useUnreadCount] messages count failed:', msgError.message)
+        return // preserve previous count on error
+      }
       if (mounted) setCount(unread ?? 0)
     }
 

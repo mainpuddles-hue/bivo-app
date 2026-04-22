@@ -55,7 +55,7 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
           setStatus('success')
         }
       })
-      .catch(() => {})
+      .catch((e: unknown) => { if (__DEV__) console.warn('[verification] badge check failed:', e) })
     return () => { mounted = false }
   }, [userId, supabase])
 

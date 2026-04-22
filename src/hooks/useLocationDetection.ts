@@ -133,7 +133,7 @@ export function useLocationDetection(userId: string | null) {
             })
             .eq('id', userId)
             .then(() => {})
-            .catch(() => {})
+            .catch((e: unknown) => { if (__DEV__) console.warn('[location] profile update failed:', e) })
         }
       } catch {
         // Intentional: on any error, assume Finland (don't block users)
