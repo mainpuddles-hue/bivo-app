@@ -260,11 +260,13 @@ serve(async (req) => {
     if (buyerProfile?.stripe_customer_id) {
       customerId = buyerProfile.stripe_customer_id
     } else {
+      // Create Stripe customer with idempotency key to prevent duplicates
+      // from concurrent requests for the same user.
       const customer = await stripe.customers.create({
         email: buyerProfile?.email ?? user.email,
         name: buyerProfile?.name ?? undefined,
         metadata: { supabase_user_id: user.id },
-      })
+      }, { idempotencyKey: `customer_create_${user.id}` })
       customerId = customer.id
       await supabase.from('profiles').update({ stripe_customer_id: customer.id }).eq('id', user.id)
     }

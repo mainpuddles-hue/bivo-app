@@ -96,13 +96,15 @@ serve(async (req) => {
       const activity = activityByNeighborhood[user.naapurusto]
       if (!activity || (activity.posts === 0 && activity.events === 0)) continue
 
-      // Check notification preferences
-      const { data: pref } = await supabase
+      // Check notification preferences — skip if explicitly disabled.
+      // On query error, default to sending (don't penalize user for DB issues).
+      const { data: pref, error: prefError } = await supabase
         .from('notification_preferences')
         .select('enabled')
         .eq('user_id', user.id)
         .eq('type', 'nearby_posts')
         .maybeSingle()
+      if (prefError) console.warn(`[send-digest] pref check failed for ${user.id}:`, prefError.message)
       if (pref?.enabled === false) continue
 
       const isFi = user.language === 'fi'
@@ -138,11 +140,11 @@ serve(async (req) => {
           }),
           signal: controller.signal,
         })
-        clearTimeout(timeout)
         sentCount++
       } catch (err) {
-        clearTimeout(timeout)
         console.error(`[send-digest] Failed to send to ${user.id}:`, err)
+      } finally {
+        clearTimeout(timeout)
       }
 
       // Rate limit: max 50 emails per batch
