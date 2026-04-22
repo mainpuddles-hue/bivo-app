@@ -18,6 +18,7 @@ import {
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { FEATURES } from '@/lib/featureFlags'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
@@ -691,7 +692,7 @@ function ExploreScreenInner() {
             </View>
 
             {/* Community: Groups */}
-            <View style={s.sectionWrap}>
+            {FEATURES.GROUPS && <View style={s.sectionWrap}>
               <View style={s.sectionHeaderRow}>
                 <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('groups.title')}</Text>
                 <PressableOpacity
@@ -743,10 +744,10 @@ function ExploreScreenInner() {
                   </PressableOpacity>
                 )}
               </View>
-            </View>
+            </View>}
 
             {/* Community: Forum */}
-            <View style={s.sectionWrap}>
+            {FEATURES.FORUM && <View style={s.sectionWrap}>
               <View style={s.sectionHeaderRow}>
                 <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('forum.title')}</Text>
                 <PressableOpacity
@@ -796,7 +797,7 @@ function ExploreScreenInner() {
                   </PressableOpacity>
                 )}
               </View>
-            </View>
+            </View>}
 
             {loading && <SectionSkeleton count={2} />}
 

@@ -826,7 +826,7 @@ export default function SettingsScreen() {
               isDark={isDark}
             />
           )}
-          {FEATURES.LENDING && (
+          {FEATURES.LENDING_PAYMENTS && (
             <Row
               icon={<Banknote size={16} color={colors.foreground} strokeWidth={1.8} />}
               label={locale === 'fi' ? 'Tulot' : 'Earnings'}

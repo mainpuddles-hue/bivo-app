@@ -2,8 +2,7 @@
  * Feature Flags — Comprehensive Tests
  *
  * Tests the FEATURES object from src/lib/featureFlags.ts:
- * - All flags have expected boolean values for MVP launch
- * - BOOSTS is enabled (IAP-based boost feature)
+ * - All flags have expected boolean values for pivot launch
  * - The FEATURES object is frozen / immutable (as const)
  * - All flag keys are boolean type
  * - No unexpected keys exist
@@ -24,12 +23,16 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 import { FEATURES } from '../src/lib/featureFlags'
 
 // ══════════════════════════════════════════════════════
-// Expected flag values for MVP launch
+// Expected flag values for pivot launch
 // ══════════════════════════════════════════════════════
 
 describe('Feature flag expected values', () => {
-  test('LENDING is false (lainaa category hidden)', () => {
-    expect(FEATURES.LENDING).toBe(false)
+  test('LENDING is true (free sharing enabled)', () => {
+    expect(FEATURES.LENDING).toBe(true)
+  })
+
+  test('LENDING_PAYMENTS is false (no deposit/fees)', () => {
+    expect(FEATURES.LENDING_PAYMENTS).toBe(false)
   })
 
   test('PAYMENTS is false (Stripe payments disabled)', () => {
@@ -56,8 +59,24 @@ describe('Feature flag expected values', () => {
     expect(FEATURES.EVENTS_TAPAHTUMA_TYPE).toBe(true)
   })
 
-  test('BOOSTS is true (IAP-based boost feature enabled)', () => {
-    expect(FEATURES.BOOSTS).toBe(true)
+  test('BOOSTS is false (no paid visibility)', () => {
+    expect(FEATURES.BOOSTS).toBe(false)
+  })
+
+  test('FORUM is false (disabled for pivot)', () => {
+    expect(FEATURES.FORUM).toBe(false)
+  })
+
+  test('GROUPS is false (disabled for pivot)', () => {
+    expect(FEATURES.GROUPS).toBe(false)
+  })
+
+  test('LEADERBOARD is false (no gamification)', () => {
+    expect(FEATURES.LEADERBOARD).toBe(false)
+  })
+
+  test('POLLS is true (community polls enabled)', () => {
+    expect(FEATURES.POLLS).toBe(true)
   })
 })
 
@@ -88,15 +107,12 @@ describe('Feature flag types', () => {
 
 describe('Feature flag immutability', () => {
   test('FEATURES object cannot be mutated at runtime', () => {
-    // FEATURES is a Proxy with a set trap that throws.
-    // Verify that attempting to write throws an error.
     const originalValue = FEATURES.LENDING
 
     expect(() => {
       ;(FEATURES as any).LENDING = true
     }).toThrow('Use fetchRemoteFlags() to update flags')
 
-    // Value should still be the original
     expect(FEATURES.LENDING).toBe(originalValue)
     expect(typeof FEATURES.LENDING).toBe('boolean')
   })
@@ -104,13 +120,11 @@ describe('Feature flag immutability', () => {
   test('No new keys can be added to FEATURES', () => {
     const originalKeys = Object.keys(FEATURES)
 
-    // Proxy set trap throws for any assignment including new keys
     expect(() => {
       ;(FEATURES as any).NEW_FLAG = true
     }).toThrow('Use fetchRemoteFlags() to update flags')
 
-    // Verify the known keys are still present and unchanged
-    expect(originalKeys.length).toBeGreaterThanOrEqual(9)
+    expect(originalKeys.length).toBeGreaterThanOrEqual(13)
     expect(Object.keys(FEATURES)).toEqual(originalKeys)
   })
 })
@@ -122,6 +136,7 @@ describe('Feature flag immutability', () => {
 describe('Feature flag inventory', () => {
   const EXPECTED_KEYS = [
     'LENDING',
+    'LENDING_PAYMENTS',
     'PAYMENTS',
     'PRO_SUBSCRIPTION',
     'BUSINESS_ACCOUNT',
@@ -129,6 +144,10 @@ describe('Feature flag inventory', () => {
     'IDENTITY_VERIFICATION',
     'EVENTS_TAPAHTUMA_TYPE',
     'BOOSTS',
+    'FORUM',
+    'GROUPS',
+    'LEADERBOARD',
+    'POLLS',
   ]
 
   test('All expected keys exist in FEATURES', () => {
@@ -148,13 +167,13 @@ describe('Feature flag inventory', () => {
     }
   })
 
-  test('Disabled features count matches MVP plan (6 disabled)', () => {
+  test('Disabled features count matches pivot plan (9 disabled)', () => {
     const disabled = Object.values(FEATURES).filter(v => v === false)
-    expect(disabled).toHaveLength(6)
+    expect(disabled).toHaveLength(9)
   })
 
-  test('Enabled features count matches MVP plan (3 enabled)', () => {
+  test('Enabled features count matches pivot plan (4 enabled)', () => {
     const enabled = Object.values(FEATURES).filter(v => v === true)
-    expect(enabled).toHaveLength(3)
+    expect(enabled).toHaveLength(4)
   })
 })

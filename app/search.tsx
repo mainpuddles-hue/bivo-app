@@ -1398,11 +1398,11 @@ function SearchScreenInner() {
               {t('search.tabEvents')} ({eventResults.length})
             </Text>
           </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
+          {FEATURES.GROUPS && <PressableOpacity onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
             <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.foreground : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
               {t('search.tabGroups')} ({groupResults.length})
             </Text>
-          </PressableOpacity>
+          </PressableOpacity>}
         </View>
       )}
 
