@@ -70,9 +70,14 @@ function CreatePollInner() {
       .from('profiles')
       .select('naapurusto, building_id')
       .eq('id', userId)
-      .single()
+      .maybeSingle()
 
     const cleanOptions = options.map(o => o.trim()).filter(Boolean)
+    if (cleanOptions.length < MIN_OPTIONS) {
+      Alert.alert(t('common.error'), t('polls.questionPlaceholder'))
+      setSubmitting(false)
+      return
+    }
 
     const { error } = await (supabase.from('polls') as any).insert({
       creator_id: userId,

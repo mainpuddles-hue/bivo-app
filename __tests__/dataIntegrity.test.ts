@@ -48,8 +48,8 @@ describe('PostType and CATEGORIES alignment', () => {
     }
   })
 
-  test('CATEGORIES has exactly 6 entries (one per PostType)', () => {
-    expect(Object.keys(CATEGORIES)).toHaveLength(6)
+  test('CATEGORIES has exactly 5 entries (one per PostType)', () => {
+    expect(Object.keys(CATEGORIES)).toHaveLength(5)
   })
 })
 

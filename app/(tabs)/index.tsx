@@ -123,30 +123,53 @@ function FeedScreenInner() {
         .from('polls')
         .select('id, creator_id, question, options, building_id, naapurusto, vote_count, expires_at, created_at, is_active')
         .eq('is_active', true)
-        .or(`expires_at.is.null,expires_at.gt.${now}`)
+        .or(`expires_at.is.null,expires_at.gt."${now}"`)
         .order('created_at', { ascending: false })
         .limit(3)
     ).then(async ({ data }) => {
       if (!data || data.length === 0) return
-      // Check user's votes
       const pollIds = (data as any[]).map((p: any) => p.id)
-      const { data: votes } = await Promise.resolve(
-        supabase
-          .from('poll_votes')
-          .select('poll_id, option_index')
-          .eq('user_id', feed.currentUserId!)
-          .in('poll_id', pollIds)
-      )
-      const voteMap: Record<string, number> = {}
-      if (votes) for (const v of votes as any[]) voteMap[v.poll_id] = v.option_index
 
-      // Get vote counts per option
-      const polls: Poll[] = (data as any[]).map((p: any) => ({
-        ...p,
-        options: p.options as string[],
-        my_vote: voteMap[p.id] ?? null,
-        option_counts: (p.options as string[]).map(() => 0), // Approximate — will be refined by vote_count
-      }))
+      // Fetch user's votes (skip if no polls to avoid empty .in() crash)
+      let voteMap: Record<string, number> = {}
+      if (pollIds.length > 0) {
+        const { data: votes } = await Promise.resolve(
+          supabase
+            .from('poll_votes')
+            .select('poll_id, option_index')
+            .eq('user_id', feed.currentUserId!)
+            .in('poll_id', pollIds)
+        )
+        if (votes) for (const v of votes as any[]) voteMap[v.poll_id] = v.option_index
+      }
+
+      // Fetch per-option vote counts
+      let optionCountsMap: Record<string, Record<number, number>> = {}
+      if (pollIds.length > 0) {
+        const { data: allVotes } = await Promise.resolve(
+          supabase
+            .from('poll_votes')
+            .select('poll_id, option_index')
+            .in('poll_id', pollIds)
+        )
+        if (allVotes) {
+          for (const v of allVotes as any[]) {
+            if (!optionCountsMap[v.poll_id]) optionCountsMap[v.poll_id] = {}
+            optionCountsMap[v.poll_id][v.option_index] = (optionCountsMap[v.poll_id][v.option_index] || 0) + 1
+          }
+        }
+      }
+
+      const polls: Poll[] = (data as any[]).map((p: any) => {
+        const opts = Array.isArray(p.options) ? p.options : []
+        const countsForPoll = optionCountsMap[p.id] || {}
+        return {
+          ...p,
+          options: opts as string[],
+          my_vote: voteMap[p.id] ?? null,
+          option_counts: opts.map((_: any, idx: number) => countsForPoll[idx] || 0),
+        }
+      })
       setFeedPolls(polls)
     }).catch(() => {})
   }, [feed.currentUserId, supabase])

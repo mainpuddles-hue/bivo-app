@@ -38,18 +38,22 @@ export const PollCard = memo(function PollCard({ poll, userId }: PollCardProps) 
 
   const [myVote, setMyVote] = useState<number | null>(poll.my_vote ?? null)
   const [voteCount, setVoteCount] = useState(poll.vote_count)
-  const [optionCounts, setOptionCounts] = useState<number[]>(poll.option_counts ?? poll.options.map(() => 0))
+  const [optionCounts, setOptionCounts] = useState<number[]>(poll.option_counts ?? (Array.isArray(poll.options) ? poll.options : []).map(() => 0))
   const [voting, setVoting] = useState(false)
   const votingRef = useRef(false)
 
+  const safeOptions = Array.isArray(poll.options) ? poll.options : []
   const hasVoted = myVote !== null
   const isExpired = poll.expires_at ? new Date(poll.expires_at) < new Date() : false
   const showResults = hasVoted || isExpired
 
   const handleVote = useCallback(async (optionIndex: number) => {
     if (!userId || votingRef.current || hasVoted || isExpired) return
+    if (optionIndex < 0 || optionIndex >= safeOptions.length) return
     votingRef.current = true
     setVoting(true)
+    // Optimistic update
+    setMyVote(optionIndex)
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     } catch {}
@@ -60,8 +64,11 @@ export const PollCard = memo(function PollCard({ poll, userId }: PollCardProps) 
       option_index: optionIndex,
     })
 
-    if (!error) {
-      setMyVote(optionIndex)
+    if (error) {
+      // Rollback optimistic update
+      setMyVote(null)
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
+    } else {
       setVoteCount(prev => prev + 1)
       setOptionCounts(prev => {
         const next = [...prev]
@@ -71,7 +78,7 @@ export const PollCard = memo(function PollCard({ poll, userId }: PollCardProps) 
     }
     votingRef.current = false
     setVoting(false)
-  }, [userId, hasVoted, isExpired, poll.id, supabase])
+  }, [userId, hasVoted, isExpired, poll.id, supabase, safeOptions.length])
 
   const totalVotes = optionCounts.reduce((a, b) => a + b, 0) || 1
 
@@ -104,7 +111,7 @@ export const PollCard = memo(function PollCard({ poll, userId }: PollCardProps) 
 
       {/* Options */}
       <View style={styles.options}>
-        {poll.options.map((option, idx) => {
+        {safeOptions.map((option, idx) => {
           const count = optionCounts[idx] || 0
           const pct = showResults ? Math.round((count / totalVotes) * 100) : 0
           const isMyVote = myVote === idx
