@@ -43,6 +43,20 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Event deduplication: Stripe can retry webhooks — skip if already processed
+    const { data: existingEvent } = await supabase
+      .from('webhook_events')
+      .select('id')
+      .eq('stripe_event_id', event.id)
+      .maybeSingle()
+    if (existingEvent) {
+      console.log(`[webhook] Already processed event ${event.id}, skipping`)
+      return new Response(JSON.stringify({ received: true, deduplicated: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     // Handle events
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -91,24 +105,20 @@ serve(async (req) => {
           }
         }
 
-        // Idempotency: don't insert duplicate payment records
-        const { data: existingPayment } = await supabase
-          .from('payments')
-          .select('id')
-          .eq('stripe_session_id', session.id)
-          .maybeSingle()
-        if (!existingPayment) {
-          await supabase.from('payments').insert({
-            user_id: buyer_id,
-            amount: session.amount_total ?? 0,
-            description: session.metadata?.description ?? `TackBird ${type}`,
-            status: 'paid',
-            type,
-            post_id: post_id || null,
-            booking_id: bookingId || null,
-            stripe_session_id: session.id,
-            stripe_payment_intent_id: sessionPaymentIntent,
-          })
+        // Idempotency: upsert payment record — atomic, no TOCTOU race
+        const { error: paymentErr } = await supabase.from('payments').upsert({
+          user_id: buyer_id,
+          amount: session.amount_total ?? 0,
+          description: session.metadata?.description ?? `TackBird ${type}`,
+          status: 'paid',
+          type,
+          post_id: post_id || null,
+          booking_id: bookingId || null,
+          stripe_session_id: session.id,
+          stripe_payment_intent_id: sessionPaymentIntent,
+        }, { onConflict: 'stripe_session_id' })
+        if (paymentErr) {
+          console.error(`[webhook] CRITICAL: payment upsert failed for session ${session.id}:`, paymentErr.message)
         }
 
         // Handle ad campaign activation
@@ -298,7 +308,10 @@ serve(async (req) => {
           }
 
           // Clear is_pro_listing on all user's posts
-          await supabase.from('posts').update({ is_pro_listing: false }).eq('user_id', userId).eq('is_pro_listing', true)
+          const { error: postsErr } = await supabase.from('posts').update({ is_pro_listing: false }).eq('user_id', userId).eq('is_pro_listing', true)
+          if (postsErr) {
+            console.error(`[webhook] CRITICAL: Failed to clear pro listings for user ${userId}:`, postsErr.message)
+          }
 
           console.log(`[webhook] Subscription cancelled (${isBusiness ? 'business' : 'pro'}) for user ${userId}`)
         }
@@ -309,8 +322,9 @@ serve(async (req) => {
         console.log(`[webhook] Unhandled event: ${event.type}`)
     }
 
-    // Log successful webhook processing
+    // Log successful webhook processing (stripe_event_id for deduplication)
     await supabase.from('webhook_events').insert({
+      stripe_event_id: event.id,
       event_type: event.type,
       payload: { id: event.id, type: event.type },
       status: 'completed',

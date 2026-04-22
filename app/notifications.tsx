@@ -223,13 +223,15 @@ function NotificationsScreenInner() {
     return () => { supabase.removeChannel(channel) }
   }, [userId, isLoggedIn, supabase, fetchNotifications])
 
-  // Mark all as read
+  // Mark all as read — update server first, then UI
   const markAllRead = useCallback(async () => {
     try {
       const cachedId = await getCachedUserId()
       if (!cachedId) return
-      await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', cachedId).eq('is_read', false)
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+      const { error } = await (supabase.from('notifications') as any).update({ is_read: true }).eq('user_id', cachedId).eq('is_read', false)
+      if (!error) {
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+      }
     } catch {} // Intentional: non-critical — mark-all-read is best-effort
   }, [supabase])
 

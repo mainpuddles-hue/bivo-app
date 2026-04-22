@@ -177,30 +177,34 @@ serve(async (req) => {
       })
     }
 
-    // Authorization: only allow sending push to yourself, or urgent broadcasts (which go to nearby users)
-    const BROADCAST_TYPES = ['urgent_help', 'juuri_nyt']
-    if (!BROADCAST_TYPES.includes(type) && user_id !== user.id) {
+    // Authorization: only allow sending push to yourself.
+    // Broadcast types (urgent_help, juuri_nyt) still require user_id === user.id
+    // to prevent impersonation — the broadcast goes to nearby users, but only
+    // the post author can trigger it.
+    if (user_id !== user.id) {
       return new Response(JSON.stringify({ error: 'Cannot send push to other users' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     // === URGENT AUTO-MATCH: If this is an urgent post, find and notify nearby helpers ===
-    if ((type === 'urgent_help' || type === 'juuri_nyt') && post_id) {
+    const BROADCAST_TYPES = ['urgent_help', 'juuri_nyt']
+    if (BROADCAST_TYPES.includes(type) && post_id) {
       // Rate limit: max 1 urgent broadcast per 6 hours AND max 4 per day
+      // Rate limit uses user.id (authenticated caller), not user_id from body
       const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const [{ count: recentUrgent6h }, { count: recentUrgent24h }] = await Promise.all([
         supabase
           .from('posts')
           .select('id', { count: 'exact', head: true })
-          .eq('user_id', user_id)
+          .eq('user_id', user.id)
           .eq('is_urgent', true)
           .gte('created_at', sixHoursAgo),
         supabase
           .from('posts')
           .select('id', { count: 'exact', head: true })
-          .eq('user_id', user_id)
+          .eq('user_id', user.id)
           .eq('is_urgent', true)
           .gte('created_at', oneDayAgo),
       ])

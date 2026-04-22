@@ -219,13 +219,16 @@ export default function CreateScreen() {
   const [userNeighborhood, setUserNeighborhood] = useState<string | null>(null)
 
   useEffect(() => {
+    let mounted = true
     getCachedUserId().then(id => {
+      if (!mounted) return
       setIsAuthenticated(!!id)
       setCurrentUserId(id)
       if (!id) { router.replace('/(auth)/login'); return }
       supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).maybeSingle()
-        .then(({ data }: any) => { if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) }, () => {})
+        .then(({ data }: any) => { if (!mounted) return; if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) }, () => {})
     }).catch(() => {})
+    return () => { mounted = false }
   }, [supabase, router])
 
   const trust = useTrustLevel(currentUserId)

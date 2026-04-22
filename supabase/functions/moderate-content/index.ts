@@ -258,10 +258,18 @@ serve(async (req) => {
         })
         if (flagError) console.error('[moderate] Failed to insert content flag:', flagError.message)
 
-        // Auto-hide if blocked
+        // Auto-hide if blocked — retry once on failure
         if (result.action === 'block') {
-          const { error: hideError } = await supabase.from('posts').update({ is_active: false }).eq('id', post_id)
-          if (hideError) console.error('[moderate] CRITICAL: Failed to hide blocked post:', post_id, hideError.message)
+          let { error: hideError } = await supabase.from('posts').update({ is_active: false }).eq('id', post_id)
+          if (hideError) {
+            console.error('[moderate] Hide failed, retrying:', post_id, hideError.message)
+            const retry = await supabase.from('posts').update({ is_active: false }).eq('id', post_id)
+            hideError = retry.error
+          }
+          if (hideError) {
+            console.error('[moderate] CRITICAL: Failed to hide blocked post after retry:', post_id, hideError.message)
+            result.hide_failed = true
+          }
         }
       }
     }
