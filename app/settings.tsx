@@ -698,7 +698,7 @@ export default function SettingsScreen() {
 
   const markDirty = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setDirty(true) }
 
-  const langLabel = (l: Locale) => ({ fi: 'Suomi', en: 'English', sv: 'Svenska', et: 'Eesti', ru: 'Русский' }[l])
+  const langLabel = (l: Locale) => ({ fi: 'Suomi', en: 'English', sv: 'Svenska' }[l])
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0'
 

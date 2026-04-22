@@ -11,9 +11,7 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import fi from './fi.json'
 
-export type Locale = 'fi' | 'en' | 'sv' | 'et' | 'ru'
-// MVP launch: only fi, en, sv visible. et/ru available but hidden from UI.
-// (VISIBLE_LOCALES const was exported previously but unused.)
+export type Locale = 'fi' | 'en' | 'sv'
 type TFunction = (key: string, params?: Record<string, string | number>) => string
 
 type TranslationMap = Record<string, string | Record<string, unknown>>
@@ -52,8 +50,6 @@ const I18nContext = createContext<I18nContextValue | null>(null)
 const localeImports: Record<string, () => Promise<Record<string, unknown>>> = {
   en: () => import('./en.json').then((m) => m.default as unknown as Record<string, unknown>),
   sv: () => import('./sv.json').then((m) => m.default as unknown as Record<string, unknown>),
-  et: () => import('./et.json').then((m) => m.default as unknown as Record<string, unknown>),
-  ru: () => import('./ru.json').then((m) => m.default as unknown as Record<string, unknown>),
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -65,7 +61,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
-      if (stored === 'en' || stored === 'sv' || stored === 'et' || stored === 'ru') setLocaleState(stored)
+      if (stored === 'en' || stored === 'sv') setLocaleState(stored)
     }).catch(() => {})
   }, [])
 
