@@ -38,8 +38,6 @@
       "**/*.webp",
       "repomix-output.*",
       "package-lock.json",
-      "src/lib/i18n/et.json",
-      "src/lib/i18n/ru.json",
       "__tests__/**"
     ]
   },

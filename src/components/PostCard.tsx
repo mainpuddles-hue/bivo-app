@@ -316,7 +316,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         </View>
 
         {/* Image — full width, below user row (Apple News hero style with gradient) */}
-        {post.image_url && !imgError ? (
+        {hasImage ? (
           <View style={styles.imageContainer}>
             <Image
               source={{ uri: getImageUrl(post.image_url, 'medium')! }}
@@ -333,7 +333,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {/* Multi-image badge */}
             {post.images && post.images.length > 1 && (
               <View style={styles.multiImageBadge}>
-                <ImageIcon size={12} color={colors.primaryForeground} />
+                <ImageIcon size={12} color="#FFFFFF" />
                 <Text style={styles.multiImageText}>{post.images.length + 1}</Text>
               </View>
             )}
