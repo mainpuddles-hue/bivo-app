@@ -77,6 +77,7 @@
     "title": "Home",
     "filterAll": "All",
     "newPosts": "New posts — refresh",
+    "newPostsCount": "{{count}} new posts",
     "refresh": "Refresh",
     "allLoaded": "All posts loaded",
     "morePosts": "More posts",

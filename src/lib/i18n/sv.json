@@ -77,6 +77,7 @@
     "title": "Hem",
     "filterAll": "Alla",
     "newPosts": "Nya inlägg — uppdatera",
+    "newPostsCount": "{{count}} nya inlägg",
     "refresh": "Uppdatera",
     "allLoaded": "Alla inlägg laddade",
     "morePosts": "Fler inlägg",

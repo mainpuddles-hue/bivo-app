@@ -55,6 +55,8 @@ export function useFeedData() {
   const [sortBy, setSortBy] = useState<FeedSortBy>('recommended')
   const [hasMore, setHasMore] = useState(true)
   const [hasNewPosts, setHasNewPosts] = useState(false)
+  const [newPostCount, setNewPostCount] = useState(0)
+  const newPostAccumRef = useRef(0)
   const [error, setError] = useState<string | null>(null)
   const [showFollowing, setShowFollowing] = useState(false)
   const [followedIds, setFollowedIds] = useState<string[]>([])
@@ -452,8 +454,12 @@ export function useFeedData() {
         table: 'posts',
         filter: 'is_active=eq.true',
       }, () => {
+        newPostAccumRef.current++
         if (debounceRef.current) clearTimeout(debounceRef.current)
-        debounceRef.current = setTimeout(() => setHasNewPosts(true), 5000)
+        debounceRef.current = setTimeout(() => {
+          setHasNewPosts(true)
+          setNewPostCount(newPostAccumRef.current)
+        }, 5000)
       })
       .subscribe()
     return () => {
@@ -488,6 +494,8 @@ export function useFeedData() {
     setRefreshing(true)
     refreshingRef.current = true
     setHasNewPosts(false)
+    setNewPostCount(0)
+    newPostAccumRef.current = 0
     offsetRef.current = 0
     // Refresh follows on pull-to-refresh (replaces realtime channel)
     if (currentUserId) {
@@ -538,6 +546,7 @@ export function useFeedData() {
     refreshing,
     hasMore,
     hasNewPosts,
+    newPostCount,
     error,
     activeFilter,
     sortBy,

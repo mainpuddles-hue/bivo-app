@@ -551,7 +551,11 @@ function FeedScreenInner() {
                   style={[styles.newBanner, { backgroundColor: isDark ? `${colors.foreground}1F` : `${colors.foreground}14`, borderWidth: 1, borderColor: `${colors.foreground}33` }]}
                 >
                   <Sparkles size={14} color={colors.foreground} />
-                  <Text style={[styles.newBannerText, { color: colors.foreground }]}>{t('feed.newPosts')}</Text>
+                  <Text style={[styles.newBannerText, { color: colors.foreground }]}>
+                    {feed.newPostCount > 0
+                      ? t('feed.newPostsCount', { count: feed.newPostCount })
+                      : t('feed.newPosts')}
+                  </Text>
                   <RefreshCw size={14} color={colors.foreground} style={{ opacity: 0.7 }} />
                 </PressableOpacity>
               )}
