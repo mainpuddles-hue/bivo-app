@@ -1046,6 +1046,7 @@
     "otpResendIn": "Skicka igen om",
     "otpNotReceived": "Fick du ingen kod?",
     "otpResent": "En ny kod har skickats till din e-post",
+    "welcomeBack": "Välkommen tillbaka!",
     "otpTooShort": "Ange den 6-siffriga koden",
     "otpExpired": "Koden har gått ut. Begär en ny kod.",
     "otpInvalid": "Ogiltig kod. Kontrollera och försök igen.",

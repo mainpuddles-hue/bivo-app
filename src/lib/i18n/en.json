@@ -1046,6 +1046,7 @@
     "otpResendIn": "Resend in",
     "otpNotReceived": "Didn't receive the code?",
     "otpResent": "A new code has been sent to your email",
+    "welcomeBack": "Welcome back!",
     "otpTooShort": "Enter the 6-digit code",
     "otpExpired": "Code has expired. Please request a new one.",
     "otpInvalid": "Invalid code. Please check and try again.",

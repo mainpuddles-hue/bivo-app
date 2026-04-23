@@ -18,6 +18,7 @@ import { trackEvent } from '@/lib/analytics'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { isBannedAndSignedOut } from '@/lib/auth/bannedCheck'
+import { useToast } from '@/components/Toast'
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Invalid login credentials': 'auth.invalidCredentials',
@@ -64,6 +65,7 @@ function LoginScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [email, setEmail] = useState('')
@@ -234,6 +236,7 @@ function LoginScreenInner() {
 
         setLoginAttempts(0)
         trackEvent('auth_login_success' as any)
+        toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
         router.replace('/')
       }
     } catch (err: any) {
@@ -301,6 +304,7 @@ function LoginScreenInner() {
                   return
                 }
               }
+              toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
               router.replace('/')
               return
             } else if (code) {
@@ -317,6 +321,7 @@ function LoginScreenInner() {
                   return
                 }
               }
+              toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
               router.replace('/')
               return
             }
@@ -369,6 +374,7 @@ function LoginScreenInner() {
       }
 
       trackEvent('auth_login_success' as any)
+      toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
       router.replace('/')
     } catch (err: any) {
       if (err?.code === 'ERR_CANCELED' || err?.code === 'ERR_REQUEST_CANCELED') return

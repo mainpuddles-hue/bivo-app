@@ -1046,6 +1046,7 @@
     "otpResendIn": "Lähetä uudelleen",
     "otpNotReceived": "Etkö saanut koodia?",
     "otpResent": "Uusi koodi lähetetty sähköpostiisi",
+    "welcomeBack": "Tervetuloa takaisin!",
     "otpTooShort": "Syötä 6-numeroinen koodi",
     "otpExpired": "Koodi on vanhentunut. Pyydä uusi koodi.",
     "otpInvalid": "Virheellinen koodi. Tarkista ja yritä uudelleen.",
