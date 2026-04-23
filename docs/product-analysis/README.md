@@ -4,6 +4,8 @@ Comprehensive product analysis using designer-skills frameworks. Created 2026-04
 
 ## Documents
 
+### Strategy & Research (Round 1)
+
 | Analysis | Framework | File |
 |----------|-----------|------|
 | **Jobs-to-be-Done** | JTBD (Christensen/Ulwick) | [jtbd-analysis.md](jtbd-analysis.md) |
@@ -12,6 +14,18 @@ Comprehensive product analysis using designer-skills frameworks. Created 2026-04
 | **Competitive Analysis** | Competitive landscape | [competitive-analysis.md](competitive-analysis.md) |
 | **Opportunity Framework** | RICE scoring + roadmap | [opportunity-framework.md](opportunity-framework.md) |
 | **Metrics Definition** | HEART + business + neighborhood | [metrics-definition.md](metrics-definition.md) |
+
+### UX & Interaction Design (Round 2)
+
+| Analysis | Framework | File |
+|----------|-----------|------|
+| **Design Principles** | design-principles + north-star-vision | [design-principles.md](design-principles.md) |
+| **Heuristic Evaluation** | Nielsen's 10 heuristics | [heuristic-evaluation.md](heuristic-evaluation.md) |
+| **UX Writing Audit** | UX writing best practices | [ux-writing-audit.md](ux-writing-audit.md) |
+| **State Machines** | Finite state machines for key flows | [state-machines.md](state-machines.md) |
+| **Interaction Patterns** | micro-interactions + feedback + loading + errors | [interaction-patterns.md](interaction-patterns.md) |
+| **Empathy Maps** | 4-quadrant empathy maps (Says/Thinks/Does/Feels) | [empathy-maps.md](empathy-maps.md) |
+| **Experience Map** | Full lifecycle touchpoint map | [experience-map.md](experience-map.md) |
 
 ## Key Findings
 
