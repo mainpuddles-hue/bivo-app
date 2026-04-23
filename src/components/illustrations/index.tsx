@@ -1,29 +1,24 @@
 import Svg, { Path, Circle, Rect } from 'react-native-svg'
 import { useTheme } from '@/hooks/useTheme'
 
-// Helsinki Monochrome — ink palette for illustrations
-const PRIMARY = '#1A1D1F'
-const ACCENT = '#6B7075'
-const MUTED_GREEN = '#9AA0A6'
-const LIGHT_GREEN = '#E8EAEC'
-
 /**
- * PinIllustration — A teardrop map pin in primary green with a white center dot.
+ * PinIllustration — A teardrop map pin. Theme-aware for light/dark.
  */
 export function PinIllustration({ size = 120 }: { size?: number }) {
+  const { colors } = useTheme()
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
       <Path
         d="M50 10 C30 10 16 26 16 44 C16 66 50 90 50 90 C50 90 84 66 84 44 C84 26 70 10 50 10 Z"
-        fill={PRIMARY}
+        fill={colors.foreground}
         opacity={0.9}
       />
       <Path
         d="M50 14 C32 14 20 28 20 44 C20 62 50 84 50 84 C50 84 80 62 80 44 C80 28 68 14 50 14 Z"
-        fill={MUTED_GREEN}
+        fill={colors.mutedForeground}
       />
-      <Circle cx={50} cy={42} r={14} fill="#FFFFFF" opacity={0.95} />
-      <Circle cx={50} cy={42} r={8} fill={ACCENT} />
+      <Circle cx={50} cy={42} r={14} fill={colors.card} opacity={0.95} />
+      <Circle cx={50} cy={42} r={8} fill={colors.mutedForeground} />
     </Svg>
   )
 }
@@ -57,34 +52,34 @@ export function BoardIllustration({ size = 120 }: { size?: number }) {
 }
 
 /**
- * CityMapIllustration — A simplified city map/grid with a location pin.
- * Grid of rectangles (streets) in muted green tones with a primary green pin marker.
+ * CityMapIllustration — A simplified city map/grid with a location pin. Theme-aware.
  */
 export function CityMapIllustration({ size = 120 }: { size?: number }) {
+  const { colors } = useTheme()
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
       {/* Background */}
-      <Rect x={5} y={5} width={90} height={90} rx={8} fill={PRIMARY} opacity={0.06} />
+      <Rect x={5} y={5} width={90} height={90} rx={8} fill={colors.foreground} opacity={0.06} />
       {/* Horizontal streets */}
-      <Rect x={10} y={30} width={80} height={4} rx={2} fill={MUTED_GREEN} opacity={0.25} />
-      <Rect x={10} y={50} width={80} height={4} rx={2} fill={MUTED_GREEN} opacity={0.25} />
-      <Rect x={10} y={70} width={80} height={4} rx={2} fill={MUTED_GREEN} opacity={0.25} />
+      <Rect x={10} y={30} width={80} height={4} rx={2} fill={colors.mutedForeground} opacity={0.25} />
+      <Rect x={10} y={50} width={80} height={4} rx={2} fill={colors.mutedForeground} opacity={0.25} />
+      <Rect x={10} y={70} width={80} height={4} rx={2} fill={colors.mutedForeground} opacity={0.25} />
       {/* Vertical streets */}
-      <Rect x={25} y={15} width={4} height={75} rx={2} fill={MUTED_GREEN} opacity={0.25} />
-      <Rect x={50} y={15} width={4} height={75} rx={2} fill={MUTED_GREEN} opacity={0.25} />
-      <Rect x={72} y={15} width={4} height={75} rx={2} fill={MUTED_GREEN} opacity={0.25} />
+      <Rect x={25} y={15} width={4} height={75} rx={2} fill={colors.mutedForeground} opacity={0.25} />
+      <Rect x={50} y={15} width={4} height={75} rx={2} fill={colors.mutedForeground} opacity={0.25} />
+      <Rect x={72} y={15} width={4} height={75} rx={2} fill={colors.mutedForeground} opacity={0.25} />
       {/* City blocks */}
-      <Rect x={30} y={35} width={18} height={13} rx={3} fill={ACCENT} opacity={0.3} />
-      <Rect x={55} y={55} width={15} height={13} rx={3} fill={PRIMARY} opacity={0.35} />
-      <Rect x={12} y={55} width={11} height={13} rx={3} fill={LIGHT_GREEN} opacity={0.4} />
+      <Rect x={30} y={35} width={18} height={13} rx={3} fill={colors.mutedForeground} opacity={0.3} />
+      <Rect x={55} y={55} width={15} height={13} rx={3} fill={colors.foreground} opacity={0.35} />
+      <Rect x={12} y={55} width={11} height={13} rx={3} fill={colors.border} opacity={0.4} />
       {/* Pin marker */}
       <Path
         d="M52 12 C44 12 38 18.5 38 26 C38 36 52 48 52 48 C52 48 66 36 66 26 C66 18.5 60 12 52 12 Z"
-        fill={PRIMARY}
+        fill={colors.foreground}
         opacity={0.9}
       />
-      <Circle cx={52} cy={25} r={6} fill="#FFFFFF" opacity={0.95} />
-      <Circle cx={52} cy={25} r={3.5} fill={ACCENT} />
+      <Circle cx={52} cy={25} r={6} fill={colors.card} opacity={0.95} />
+      <Circle cx={52} cy={25} r={3.5} fill={colors.mutedForeground} />
     </Svg>
   )
 }

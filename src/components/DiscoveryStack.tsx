@@ -329,8 +329,8 @@ function CardContent({ post, colors, isDark, t, locale, userNeighborhood, userLo
         <View style={[styles.heartCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Heart
             size={16}
-            color={post.is_liked ? '#EF4444' : colors.foreground}
-            fill={post.is_liked ? '#EF4444' : 'none'}
+            color={post.is_liked ? colors.destructive : colors.foreground}
+            fill={post.is_liked ? colors.destructive : 'none'}
             strokeWidth={1.8}
           />
         </View>
