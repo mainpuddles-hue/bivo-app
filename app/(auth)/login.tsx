@@ -118,6 +118,12 @@ function LoginScreenInner() {
   }, [lockedUntil])
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [touchedEmail, setTouchedEmail] = useState(false)
+  const [touchedPassword, setTouchedPassword] = useState(false)
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailError = touchedEmail && email.trim() && !emailRegex.test(email.trim()) ? (t('auth.invalidEmail') ?? 'Invalid email') : ''
+  const passwordError = touchedPassword && mode === 'register' && password.trim() && (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) ? (t('settings.passwordTooWeak') ?? 'Weak password') : ''
 
   const translateError = (msg: string) => {
     const key = AUTH_ERROR_KEYS[msg]
@@ -426,11 +432,12 @@ function LoginScreenInner() {
         </Text>
 
         {/* Email input */}
-        <View style={[styles.inputField, { borderColor: colors.border, borderWidth: 1, backgroundColor: colors.card }]}>
+        <View style={[styles.inputField, { borderColor: emailError ? colors.destructive : colors.border, borderWidth: emailError ? 1.5 : 1, backgroundColor: colors.card }]}>
           <TextInput
             style={[styles.inputText, { color: colors.foreground }]}
             value={email}
             onChangeText={setEmail}
+            onBlur={() => setTouchedEmail(true)}
             placeholder={t('auth.emailPlaceholder')}
             placeholderTextColor={colors.tertiaryForeground}
             keyboardType="email-address"
@@ -441,6 +448,7 @@ function LoginScreenInner() {
             accessibilityLabel={t('auth.email')}
           />
         </View>
+        {emailError ? <Text style={{ fontSize: 12, color: colors.destructive, fontFamily: fonts.body, marginTop: 4 }} accessibilityRole="alert">{emailError}</Text> : null}
 
         {/* Name input — register only */}
         {mode === 'register' && (
@@ -470,11 +478,12 @@ function LoginScreenInner() {
             <Text style={[styles.sectionLabel, { color: colors.mutedForeground, marginTop: 18 }]}>
               {t('auth.password').toUpperCase()}
             </Text>
-            <View style={[styles.inputField, { borderColor: colors.border, borderWidth: 1 }]}>
+            <View style={[styles.inputField, { borderColor: passwordError ? colors.destructive : colors.border, borderWidth: passwordError ? 1.5 : 1 }]}>
               <TextInput
                 style={[styles.inputText, { color: colors.foreground, flex: 1 }]}
                 value={password}
                 onChangeText={setPassword}
+                onBlur={() => setTouchedPassword(true)}
                 placeholder={t('auth.passwordPlaceholder')}
                 placeholderTextColor={colors.tertiaryForeground}
                 secureTextEntry={!showPassword}
