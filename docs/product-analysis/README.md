@@ -27,6 +27,13 @@ Comprehensive product analysis using designer-skills frameworks. Created 2026-04
 | **Empathy Maps** | 4-quadrant empathy maps (Says/Thinks/Does/Feels) | [empathy-maps.md](empathy-maps.md) |
 | **Experience Map** | Full lifecycle touchpoint map | [experience-map.md](experience-map.md) |
 
+### Product Strategy (Round 3 — Wondelai Skills)
+
+| Analysis | Framework | File |
+|----------|-----------|------|
+| **Positioning Canvas** | Obviously Awesome (April Dunford) | [positioning-canvas.md](positioning-canvas.md) |
+| **Hook Model** | Hooked (Nir Eyal) | [hook-model.md](hook-model.md) |
+
 ## Key Findings
 
 ### North Star Metric
