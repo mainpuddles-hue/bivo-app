@@ -1682,7 +1682,9 @@
     "titleRequired": "Titel krävs",
     "duplicateFound": "Liknande inlägg hittades: \"{title}\"",
     "draftRestored": "Utkast återställt",
-    "clearDraft": "Rensa utkast"
+    "clearDraft": "Rensa utkast",
+    "titlePlaceholder": "T.ex. Borrmaskin att låna, Kallio",
+    "descriptionPlaceholder": "Beskriv: skick, plats, tillgänglighet..."
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",

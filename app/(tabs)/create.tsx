@@ -1002,7 +1002,7 @@ export default function CreateScreen() {
                   ref={titleInputRef}
                   style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }, touchedTitle && !title.trim() && { borderColor: colors.destructive, borderWidth: 1.5 }]}
                   value={title} onChangeText={setTitle} onBlur={() => setTouchedTitle(true)}
-                  placeholder={t('post.titleLabel')} placeholderTextColor={colors.mutedForeground}
+                  placeholder={t('create.titlePlaceholder')} placeholderTextColor={colors.mutedForeground}
                   maxLength={100} returnKeyType="next" autoCapitalize="sentences" accessibilityLabel={t('post.titleLabel')}
                 />
                 {touchedTitle && !title.trim() && (
@@ -1018,7 +1018,7 @@ export default function CreateScreen() {
                   ref={descriptionInputRef}
                   style={[mk.textarea, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }, touchedDescription && !description.trim() && { borderColor: colors.destructive, borderWidth: 1.5 }]}
                   value={description} onChangeText={setDescription} onBlur={() => setTouchedDescription(true)}
-                  placeholder={t('post.descriptionLabel')} placeholderTextColor={colors.mutedForeground}
+                  placeholder={t('create.descriptionPlaceholder')} placeholderTextColor={colors.mutedForeground}
                   multiline numberOfLines={4} textAlignVertical="top" accessibilityLabel={t('post.descriptionLabel')}
                   maxLength={2000} inputAccessoryViewID={KEYBOARD_DONE_ID}
                 />

@@ -1682,7 +1682,9 @@
     "titleRequired": "Title required",
     "duplicateFound": "Similar post found: \"{title}\"",
     "draftRestored": "Draft restored",
-    "clearDraft": "Clear draft"
+    "clearDraft": "Clear draft",
+    "titlePlaceholder": "E.g. Drill for lending, Kallio",
+    "descriptionPlaceholder": "Describe: condition, location, availability..."
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",

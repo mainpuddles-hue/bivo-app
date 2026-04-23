@@ -1682,7 +1682,9 @@
     "titleRequired": "Otsikko vaaditaan",
     "duplicateFound": "Samankaltainen ilmoitus löytyy: \"{title}\"",
     "draftRestored": "Luonnos palautettu",
-    "clearDraft": "Tyhjennä luonnos"
+    "clearDraft": "Tyhjennä luonnos",
+    "titlePlaceholder": "Esim. Akkuporakone lainaan, Kallio",
+    "descriptionPlaceholder": "Kerro tarkemmin: kunto, sijainti, milloin saatavilla..."
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
