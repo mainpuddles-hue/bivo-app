@@ -469,10 +469,12 @@ export default function CreateScreen() {
 
   const uploadImages = async (userId: string, postId: string): Promise<string | null> => {
     if (images.length === 0) return null
-    setUploadStatus(t('create.uploadingImages'))
     const uploadedUrls: string[] = []
     let failedCount = 0
     for (let i = 0; i < images.length; i++) {
+      setUploadStatus(images.length > 1
+        ? `${t('create.uploadingImages')} (${i + 1}/${images.length})`
+        : t('create.uploadingImages'))
       const uri = images[i]
       const response = await fetch(uri)
       const blob = await response.blob()
