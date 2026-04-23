@@ -1475,7 +1475,8 @@ function SearchScreenInner() {
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
-              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
+              <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
             </View>
           }
           showsVerticalScrollIndicator={false}
@@ -1517,7 +1518,8 @@ function SearchScreenInner() {
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
-              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
+              <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
             </View>
           }
           showsVerticalScrollIndicator={false}
@@ -1548,7 +1550,8 @@ function SearchScreenInner() {
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
-              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{t('search.noResults')}</Text>
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
+              <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
             </View>
           }
           showsVerticalScrollIndicator={false}

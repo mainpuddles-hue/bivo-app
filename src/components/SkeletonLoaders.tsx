@@ -389,6 +389,39 @@ const pubProfileSkel = StyleSheet.create({
   postImage: { width: '100%', aspectRatio: 16 / 9 },
 })
 
+// ── Booking Detail Skeleton ──
+export function BookingDetailSkeleton() {
+  const { colors } = useTheme()
+  const opacity = useShimmer()
+  return (
+    <View style={{ gap: 16, padding: 16 }}>
+      {/* Hero status circle */}
+      <View style={{ alignItems: 'center', gap: 12, paddingVertical: 20 }}>
+        <Animated.View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.muted, opacity }} />
+        <Animated.View style={[skel.line, { width: '30%', height: 10, backgroundColor: colors.muted, opacity }]} />
+        <Animated.View style={[skel.line, { width: '55%', height: 16, backgroundColor: colors.muted, opacity }]} />
+      </View>
+      {/* Item summary card */}
+      <View style={{ flexDirection: 'row', gap: 12, padding: 14, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, borderRadius: 20 }}>
+        <Animated.View style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: colors.muted, opacity }} />
+        <View style={{ flex: 1, gap: 8, justifyContent: 'center' }}>
+          <Animated.View style={[skel.line, { width: '70%', height: 14, backgroundColor: colors.muted, opacity }]} />
+          <Animated.View style={[skel.line, { width: '45%', height: 10, backgroundColor: colors.muted, opacity }]} />
+        </View>
+      </View>
+      {/* Detail rows */}
+      {[0, 1, 2].map(i => (
+        <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
+          <Animated.View style={[skel.line, { width: '35%', height: 12, backgroundColor: colors.muted, opacity }]} />
+          <Animated.View style={[skel.line, { width: '25%', height: 12, backgroundColor: colors.muted, opacity }]} />
+        </View>
+      ))}
+      {/* CTA button */}
+      <Animated.View style={[skel.line, { width: '100%', height: 48, borderRadius: 14, backgroundColor: colors.muted, opacity, marginTop: 8 }]} />
+    </View>
+  )
+}
+
 const eventSkel = StyleSheet.create({
   card: { borderRadius: 20, overflow: 'hidden' },
   image: { width: '100%', height: 140 },

@@ -28,6 +28,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { createEventChat } from '@/lib/eventChatHelpers'
+import { useToast } from '@/components/Toast'
 import type { CommunityEvent } from '@/lib/types'
 
 type EventCategory = CommunityEvent['category']
@@ -83,6 +84,7 @@ function CreateEventScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
   const { edit, template } = useLocalSearchParams<{ edit?: string; template?: string }>()
 
   // Auth
@@ -379,7 +381,7 @@ function CreateEventScreenInner() {
       }
 
       try { await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-      Alert.alert(t('common.success'), edit ? t('events.updated') ?? t('events.created') : t('events.created'))
+      toast.show({ message: edit ? t('events.updated') ?? t('events.created') : t('events.created'), type: 'success' })
 
       if (resultId) {
         router.replace(`/event/${resultId}` as any)

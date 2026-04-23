@@ -18,6 +18,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { createEventChat } from '@/lib/eventChatHelpers'
 import { PressableOpacity } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { TABLE_CATEGORIES } from '@/lib/constants'
 import type { TableCategory } from '@/lib/types'
 
@@ -43,6 +44,7 @@ function CreateTableScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [userNaapurusto, setUserNaapurusto] = useState<string | null>(null)
@@ -131,7 +133,7 @@ function CreateTableScreenInner() {
       await createEventChat(supabase, eventId, title.trim(), currentUserId).catch(() => {})
 
       try { await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-      Alert.alert(t('common.success'), t('tables.created'))
+      toast.show({ message: t('tables.created'), type: 'success' })
 
       router.replace(`/event/${eventId}` as any)
     } catch {

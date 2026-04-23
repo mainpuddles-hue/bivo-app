@@ -11,6 +11,7 @@ import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
+import { useToast } from '@/components/Toast'
 
 type OtpMode = 'signup' | 'recovery'
 
@@ -22,6 +23,7 @@ export default function VerifyOtpScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const { email, mode: modeParam } = useLocalSearchParams<{ email: string; mode?: string }>()
   const otpMode: OtpMode = modeParam === 'recovery' ? 'recovery' : 'signup'
@@ -164,7 +166,7 @@ export default function VerifyOtpScreen() {
         throw new Error(errData.error ?? 'Failed to send')
       }
       setResendCooldown(60)
-      Alert.alert(t('common.success'), t('auth.otpResent'))
+      toast.show({ message: t('auth.otpResent'), type: 'success' })
     } catch (err: any) {
       setError(mapErrorToFinnish(err, t))
     } finally {

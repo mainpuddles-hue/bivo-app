@@ -12,6 +12,7 @@ import { PressableOpacity } from '@/components/ui'
 import { getBusinessAdapter } from '@/lib/adapters'
 import { FEATURES } from '@/lib/featureFlags'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
+import { useToast } from '@/components/Toast'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -33,6 +34,7 @@ export default function UpgradeBusinessScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [businessName, setBusinessName] = useState('')
@@ -141,7 +143,7 @@ export default function UpgradeBusinessScreen() {
 
       if (!validation.auto_approved) {
         // Manual review needed — show pending message
-        Alert.alert(t('common.success'), t('business.pendingReview'))
+        toast.show({ message: t('business.pendingReview'), type: 'success' })
         setSubmitting(false)
         router.back()
         return
@@ -200,7 +202,7 @@ export default function UpgradeBusinessScreen() {
       }
 
       // Don't navigate away — user will return via deep link after Stripe checkout
-      Alert.alert(t('common.success'), t('business.pendingPayment'))
+      toast.show({ message: t('business.pendingPayment'), type: 'success' })
     } catch (err: any) {
       Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
     } finally {

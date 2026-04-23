@@ -17,11 +17,13 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { BookingDetailSkeleton } from '@/components/SkeletonLoaders'
 import { PressableOpacity } from '@/components/ui'
 import { fonts } from '@/lib/fonts'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
+import { useToast } from '@/components/Toast'
 
 type BookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
@@ -104,6 +106,7 @@ function BookingDetailScreenInner() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [booking, setBooking] = useState<BookingData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -285,7 +288,7 @@ function BookingDetailScreenInner() {
         tags: Array.from(reviewTags),
       })
       if (revError) throw revError
-      Alert.alert(t('common.success'))
+      toast.show({ message: t('reviews.submitted') ?? t('common.success'), type: 'success' })
       router.back()
     } catch {
       Alert.alert(t('common.error'))
@@ -317,7 +320,7 @@ function BookingDetailScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <BarHeader colors={colors} t={t} insets={insets} router={router} />
-        <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
+        <BookingDetailSkeleton />
       </View>
     )
   }
