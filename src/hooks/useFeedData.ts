@@ -29,6 +29,7 @@ export function useFeedData() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const refreshingRef = useRef(false)
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
   const [preferredTypes, setPreferredTypes] = useState<string[]>([])
 
@@ -417,6 +418,10 @@ export function useFeedData() {
       if (!controller.signal.aborted) {
         setLoading(false)
         setRefreshing(false)
+        if (refreshingRef.current) {
+          refreshingRef.current = false
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+        }
       }
     }
   }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userNeighborhood, userLocation, preferredTypes])
@@ -481,6 +486,7 @@ export function useFeedData() {
   const handleRefresh = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
     setRefreshing(true)
+    refreshingRef.current = true
     setHasNewPosts(false)
     offsetRef.current = 0
     // Refresh follows on pull-to-refresh (replaces realtime channel)

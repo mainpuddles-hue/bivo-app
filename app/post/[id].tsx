@@ -1729,7 +1729,7 @@ const styles = StyleSheet.create({
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  description: { fontSize: 13, fontFamily: fonts.body, lineHeight: 20 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22, maxWidth: 560 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },

@@ -709,9 +709,10 @@ const s = StyleSheet.create({
     marginTop: 2,
   },
   descriptionText: {
-    fontSize: 13.5,
-    lineHeight: 21.6,
+    fontSize: 14,
+    lineHeight: 22,
     fontFamily: fonts.body,
+    maxWidth: 560,
   },
 
   // Organizer card — avatar + name + role
