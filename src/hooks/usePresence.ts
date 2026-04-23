@@ -18,8 +18,10 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
   // Heartbeat: update profiles.last_seen_at every 5 min
   useEffect(() => {
     if (!userId) return
+    let mounted = true
 
     const updateLastSeen = () => {
+      if (!mounted) return
       ;(supabase.from('profiles') as any)
         .update({ last_seen_at: new Date().toISOString() })
         .eq('id', userId)
@@ -37,14 +39,19 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
     })
 
     return () => {
+      mounted = false
       subscription.remove()
-      if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current)
+        heartbeatRef.current = null
+      }
     }
   }, [userId, supabase])
 
   // Realtime Presence channel
   useEffect(() => {
     if (!userId || !neighborhood) return
+    let mounted = true
 
     const channelName = `presence:${neighborhood.toLowerCase().replace(/\s/g, '_')}`
     const channel = supabase.channel(channelName, {
@@ -53,14 +60,19 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
 
     channel
       .on('presence', { event: 'sync' }, () => {
+        if (!mounted) return
         const state = channel.presenceState()
         const userIds = Object.keys(state)
         setOnlineCount(userIds.length)
-        setOnlineUsers(userIds.slice(0, 10)) // Keep max 10 for display
+        setOnlineUsers(userIds.slice(0, 10))
       })
       .subscribe(async (status: string) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.track({ user_id: userId, online_at: new Date().toISOString() })
+        if (status === 'SUBSCRIBED' && mounted) {
+          try {
+            await channel.track({ user_id: userId, online_at: new Date().toISOString() })
+          } catch (e) {
+            if (__DEV__) console.warn('usePresence:track:', e)
+          }
         }
       })
 
@@ -68,15 +80,18 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
 
     // Track app state — untrack when backgrounded
     const appSub = AppState.addEventListener('change', (state) => {
-      if (state === 'active' && channelRef.current) {
-        channelRef.current.track({ user_id: userId, online_at: new Date().toISOString() })
-      } else if (state === 'background' && channelRef.current) {
-        channelRef.current.untrack()
+      if (!mounted || !channelRef.current) return
+      if (state === 'active') {
+        channelRef.current.track({ user_id: userId, online_at: new Date().toISOString() }).catch(() => {})
+      } else if (state === 'background') {
+        channelRef.current.untrack().catch(() => {})
       }
     })
 
     return () => {
+      mounted = false
       appSub.remove()
+      channelRef.current = null
       supabase.removeChannel(channel)
     }
   }, [userId, neighborhood, supabase])
