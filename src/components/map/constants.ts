@@ -18,8 +18,8 @@ export const POST_SUBCATS = [
   { key: 'tarvitsen', labelKey: 'categories.tarvitsen', color: '#C75B3A' },
   { key: 'tarjoan', labelKey: 'categories.tarjoan', color: '#7C5CBF' },
   { key: 'ilmaista', labelKey: 'categories.ilmaista', color: '#3B7DD8' },
-  { key: 'nappaa', labelKey: 'categories.nappaa', color: '#E8A050' },
-  ...(FEATURES.LENDING ? [{ key: 'lainaa' as const, labelKey: 'categories.lainaa', color: '#C98B2E' }] : []),
+  { key: 'nappaa', labelKey: 'categories.nappaa', color: '#D48B30' },
+  ...(FEATURES.LENDING ? [{ key: 'lainaa' as const, labelKey: 'categories.lainaa', color: '#B07A20' }] : []),
   { key: 'tapahtuma', labelKey: 'categories.tapahtuma', color: '#2B8A62' },
 ]
 

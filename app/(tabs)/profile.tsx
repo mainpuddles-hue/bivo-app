@@ -434,7 +434,7 @@ export default function ProfileScreen() {
           <View style={s.heroCenterInfo}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
               <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
-              {!trust.loading && <TrustBadge level={trust.level} size="small" />}
+              {!trust.loading && <TrustBadge level={trust.level} size="small" showLabel showExplainer />}
               {profile.is_pro && (
                 <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}20` }]}>
                   <Crown size={10} color={colors.foreground} fill={colors.foreground} />

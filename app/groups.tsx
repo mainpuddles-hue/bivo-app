@@ -34,7 +34,7 @@ const GROUP_CATEGORIES: GroupCategoryDef[] = [
   { key: 'general', labelKey: 'groups.general', color: '#1A1D1F' },
   { key: 'sports', labelKey: 'groups.sports', color: '#2B8A62' },
   { key: 'kids', labelKey: 'groups.kids', color: '#FF9800' },
-  { key: 'pets', labelKey: 'groups.pets', color: '#E8A050' },
+  { key: 'pets', labelKey: 'groups.pets', color: '#D48B30' },
   { key: 'garden', labelKey: 'groups.garden', color: '#2B8A62' },
   { key: 'food', labelKey: 'groups.food', color: '#E74C3C' },
   { key: 'culture', labelKey: 'groups.culture', color: '#8E44AD' },

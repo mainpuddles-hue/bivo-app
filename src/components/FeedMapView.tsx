@@ -42,8 +42,8 @@ const PIN_COLORS: Record<string, string> = {
   tarvitsen: '#C75B3A',
   tarjoan: '#7C5CBF',
   ilmaista: '#3B7DD8',
-  nappaa: '#E8A050',
-  lainaa: '#C98B2E',
+  nappaa: '#D48B30',
+  lainaa: '#B07A20',
   tapahtuma: '#2B8A62',
 }
 

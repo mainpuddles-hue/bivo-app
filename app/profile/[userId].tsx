@@ -851,7 +851,7 @@ export default function PublicProfileScreen() {
 
           {/* Trust badge + Pro badge row */}
           <View style={s.badgesRow}>
-            {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel />}
+            {!trust.loading && <TrustBadge level={trust.level} size="medium" showLabel showExplainer />}
             {profile.is_pro && (
               <View style={[s.badgeChip, { backgroundColor: colors.muted }]}>
                 <Crown size={12} color={colors.mutedForeground} />
