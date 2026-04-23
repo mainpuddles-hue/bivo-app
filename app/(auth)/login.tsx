@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontFamily: fonts.bodySemi,
     fontSize: 11,
-    letterSpacing: 0.3,
+    letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 8,
   },

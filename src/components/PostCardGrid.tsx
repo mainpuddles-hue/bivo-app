@@ -14,7 +14,7 @@ import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-nat
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { Heart, Calendar, Clock, User, Eye } from 'lucide-react-native'
+import { Heart, Calendar, Clock, Eye } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
@@ -153,7 +153,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         />
       ) : (
         <View style={[styles.miniAvatar, styles.miniAvatarFallback, { backgroundColor: `${metaColor}20` }]}>
-          <User size={8} color={metaColor} />
+          <Text style={{ fontSize: 8, fontWeight: '600', color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
         </View>
       )}
       <Text style={[styles.metaText, { color: metaColor }]} numberOfLines={1}>

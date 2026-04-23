@@ -857,8 +857,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 20,
   },
   inputLabel: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     marginBottom: 8,
     marginTop: 12,

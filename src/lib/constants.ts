@@ -64,7 +64,7 @@ export const CATEGORIES: Record<PostType, {
     label: 'categories.lainaa',
     subtitle: 'categories.lainaaSub',
     icon: 'BookOpen',
-    color: '#C98B2E',
+    color: '#A97A1E',
     bgLight: '#FDF6E8',
     bgDark: '#2D2010',
   },
@@ -168,7 +168,7 @@ export const EVENT_CATEGORY_COLORS: Record<string, string> = {
   sports: '#2B8A62',
   culture: '#3B7DD8',
   nature: '#2B8A62',
-  kids: '#E8A050',
+  kids: '#D08B30',
   other: '#6B7280',
 } as const
 
@@ -177,7 +177,7 @@ export const GROUP_CATEGORY_COLORS: Record<string, string> = {
   general: '#1A1D1F',
   sports: '#2B8A62',
   kids: '#FF9800',
-  pets: '#E8A050',
+  pets: '#D08B30',
   garden: '#2B8A62',
   food: '#E74C3C',
   culture: '#8E44AD',
@@ -187,7 +187,7 @@ export const GROUP_CATEGORY_COLORS: Record<string, string> = {
 // Quick event ("Pöytä") categories — icon names map to Lucide React Native components
 export const TABLE_CATEGORIES = {
   coffee: { icon: 'Coffee' as const, color: '#8B5E3C', bgLight: '#FDF5F0', bgDark: '#2A1E15', label: 'tables.catCoffee' },
-  lunch: { icon: 'UtensilsCrossed' as const, color: '#E8A050', bgLight: '#FFF5E8', bgDark: '#2D2010', label: 'tables.catLunch' },
+  lunch: { icon: 'UtensilsCrossed' as const, color: '#D08B30', bgLight: '#FFF5E8', bgDark: '#2D2010', label: 'tables.catLunch' },
   walk: { icon: 'Footprints' as const, color: '#2B8A62', bgLight: '#E8F7EF', bgDark: '#102D1A', label: 'tables.catWalk' },
   sports: { icon: 'Trophy' as const, color: '#3B7DD8', bgLight: '#EBF2FE', bgDark: '#101A2D', label: 'tables.catSports' },
   hangout: { icon: 'Handshake' as const, color: '#7C5CBF', bgLight: '#F4EFFF', bgDark: '#1A1525', label: 'tables.catHangout' },

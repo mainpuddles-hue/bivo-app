@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share, Animated as RNAnimated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle, ImageIcon, BarChart3 } from 'lucide-react-native'
@@ -196,6 +196,19 @@ export default function CreateScreen() {
   const [hasDraft, setHasDraft] = useState(false)
   const [draftToastVisible, setDraftToastVisible] = useState(false)
   const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+  const shakeAnim = useRef(new RNAnimated.Value(0)).current
+
+  const shakeButton = useCallback(() => {
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
+    RNAnimated.sequence([
+      RNAnimated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+      RNAnimated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
+      RNAnimated.timing(shakeAnim, { toValue: 8, duration: 50, useNativeDriver: true }),
+      RNAnimated.timing(shakeAnim, { toValue: -8, duration: 50, useNativeDriver: true }),
+      RNAnimated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+    ]).start()
+  }, [shakeAnim])
 
   const DRAFT_KEY = 'tackbird_post_draft'
 
@@ -511,9 +524,11 @@ export default function CreateScreen() {
       setTouchedDescription(true)
       if (!title.trim()) { titleInputRef.current?.focus() }
       else if (!description.trim()) { descriptionInputRef.current?.focus() }
-      Alert.alert(t('common.error'), t('create.titleAndDescRequired'))
+      setFormError(t('create.titleAndDescRequired'))
+      shakeButton()
       return
     }
+    setFormError(null)
     if (!await checkRateLimit('post_create')) {
       Alert.alert(t('common.error'), getRateLimitMessage('post_create', t))
       return
@@ -534,7 +549,8 @@ export default function CreateScreen() {
       }
     }
     if (selectedType === 'lainaa' && (!dailyFee || isNaN(parseFloat(dailyFee)) || parseFloat(dailyFee) <= 0)) {
-      Alert.alert(t('common.error'), t('create.dailyFeeRequired'))
+      setFormError(t('create.dailyFeeRequired'))
+      shakeButton()
       return
     }
     if (selectedType === 'lainaa' && trust.permissions.maxDailyFee !== null && !isNaN(parseFloat(dailyFee)) && parseFloat(dailyFee) > trust.permissions.maxDailyFee) {
@@ -558,7 +574,8 @@ export default function CreateScreen() {
       return
     }
     if (selectedType === 'tapahtuma' && !eventDate) {
-      Alert.alert(t('common.error'), t('events.titleDateRequired'))
+      setFormError(t('events.titleDateRequired'))
+      shakeButton()
       return
     }
     if (selectedType === 'tapahtuma' && eventDate) {
@@ -1221,18 +1238,23 @@ export default function CreateScreen() {
 
             {/* Sticky publish */}
             <View style={[mk.stickyWrap, { bottom: Math.max(insets.bottom, 22) }]}>
-              <PressableOpacity onPress={handleSubmit} disabled={submitting}
-                style={[mk.publishBtn, { backgroundColor: colors.foreground, opacity: submitting ? 0.6 : 1 }]}
-                accessibilityRole="button" accessibilityLabel={t('create.publish')} accessibilityState={{ disabled: submitting }}>
-                {submitting ? (
-                  <View style={mk.publishLoading}>
-                    <ActivityIndicator size="small" color={colors.background} />
-                    <Text style={[mk.publishText, { color: colors.background }]}>{uploadStatus || t('create.publishing')}</Text>
-                  </View>
-                ) : (
-                  <Text style={[mk.publishText, { color: colors.background }]}>{t('create.publish')}</Text>
-                )}
-              </PressableOpacity>
+              {formError && (
+                <Text style={[mk.formError, { color: colors.destructive, backgroundColor: `${colors.destructive}10` }]} accessibilityRole="alert">{formError}</Text>
+              )}
+              <RNAnimated.View style={{ transform: [{ translateX: shakeAnim }] }}>
+                <PressableOpacity onPress={handleSubmit} disabled={submitting}
+                  style={[mk.publishBtn, { backgroundColor: colors.foreground, opacity: submitting ? 0.6 : 1 }]}
+                  accessibilityRole="button" accessibilityLabel={t('create.publish')} accessibilityState={{ disabled: submitting }}>
+                  {submitting ? (
+                    <View style={mk.publishLoading}>
+                      <ActivityIndicator size="small" color={colors.background} />
+                      <Text style={[mk.publishText, { color: colors.background }]}>{uploadStatus || t('create.publishing')}</Text>
+                    </View>
+                  ) : (
+                    <Text style={[mk.publishText, { color: colors.background }]}>{t('create.publish')}</Text>
+                  )}
+                </PressableOpacity>
+              </RNAnimated.View>
             </View>
           </>
         )}
@@ -1446,6 +1468,7 @@ const mk = StyleSheet.create({
 
   // Sticky publish
   stickyWrap: { position: 'absolute', left: 16, right: 16 },
+  formError: { fontSize: 13, fontFamily: fonts.bodyMedium, textAlign: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, marginBottom: 8, overflow: 'hidden' },
   publishBtn: { height: 54, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   publishText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.heading },
   publishLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },

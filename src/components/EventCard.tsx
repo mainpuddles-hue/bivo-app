@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
-import { CalendarDays, MapPin, Users } from 'lucide-react-native'
+import { MapPin, Users } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -25,22 +25,29 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
   const isTable = isTableEvent(event)
   const TableCategoryIcon = isTable ? getTableCategoryIcon(event.category) : null
 
-  const formattedDate = useMemo(() => {
-    if (!event.event_date) return ''
+  const dateParts = useMemo(() => {
+    if (!event.event_date) return null
     const d = new Date(event.event_date)
-    if (isNaN(d.getTime())) return ''
-    return d.toLocaleDateString(
-      locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US',
-      { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
-    )
+    if (isNaN(d.getTime())) return null
+    const loc = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US'
+    return {
+      day: d.getDate().toString(),
+      monthShort: d.toLocaleDateString(loc, { month: 'short' }).replace('.', ''),
+      weekday: d.toLocaleDateString(loc, { weekday: 'short' }).replace('.', ''),
+      time: d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }),
+    }
   }, [event.event_date, locale])
+
+  const formattedDate = useMemo(() => {
+    if (!dateParts) return ''
+    return `${dateParts.weekday} ${dateParts.day}. ${dateParts.monthShort} ${dateParts.time}`
+  }, [dateParts])
 
   const participantCount = event.participant_count ?? 0
   const spotsText = event.max_participants
     ? `${participantCount}/${event.max_participants}`
     : `${participantCount}`
 
-  // Composite accessibility label — reads full card as one VoiceOver unit
   const categoryLabel = t(`events.cat${event.category.charAt(0).toUpperCase() + event.category.slice(1)}`)
   const a11yLabel = useMemo(() => {
     const parts: string[] = []
@@ -73,34 +80,44 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
       ) : null}
 
       <View style={s.content}>
-        {/* Category badge */}
-        <View style={s.topRow}>
-          <View style={[s.categoryBadge, { backgroundColor: `${categoryColor}18` }]}>
-            <View style={[s.categoryDot, { backgroundColor: categoryColor }]} />
-            <Text style={[s.categoryText, { color: categoryColor }]}>
-              {t(`events.cat${event.category.charAt(0).toUpperCase() + event.category.slice(1)}`)}
-            </Text>
-          </View>
-          {isTable && (
-            <View style={[s.tableBadge, { backgroundColor: `${colors.success}15` }]}>
-              <Text style={[s.tableText, { color: colors.success }]}>
-                {t('tables.title')}
-              </Text>
+        {/* Date-first layout: large day number + details */}
+        <View style={s.dateRow}>
+          {dateParts && (
+            <View style={[s.dateBlock, { backgroundColor: `${categoryColor}12` }]}>
+              <Text style={[s.dateDay, { color: categoryColor }]}>{dateParts.day}</Text>
+              <Text style={[s.dateMonth, { color: categoryColor }]}>{dateParts.monthShort.toUpperCase()}</Text>
             </View>
           )}
-        </View>
+          <View style={s.dateDetails}>
+            {/* Category badge */}
+            <View style={s.topRow}>
+              <View style={[s.categoryBadge, { backgroundColor: `${categoryColor}18` }]}>
+                <View style={[s.categoryDot, { backgroundColor: categoryColor }]} />
+                <Text style={[s.categoryText, { color: categoryColor }]}>
+                  {categoryLabel}
+                </Text>
+              </View>
+              {isTable && (
+                <View style={[s.tableBadge, { backgroundColor: `${colors.success}15` }]}>
+                  <Text style={[s.tableText, { color: colors.success }]}>
+                    {t('tables.title')}
+                  </Text>
+                </View>
+              )}
+            </View>
 
-        {/* Title */}
-        <Text style={[s.title, { color: colors.foreground }]} numberOfLines={2}>
-          {event.title}
-        </Text>
+            {/* Title */}
+            <Text style={[s.title, { color: colors.foreground }]} numberOfLines={2}>
+              {event.title}
+            </Text>
 
-        {/* Date */}
-        <View style={s.infoRow}>
-          <CalendarDays size={14} color={colors.mutedForeground} />
-          <Text style={[s.infoText, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-            {formattedDate}
-          </Text>
+            {/* Time */}
+            {dateParts && (
+              <Text style={[s.timeText, { color: colors.mutedForeground }]}>
+                {dateParts.weekday} {dateParts.time}
+              </Text>
+            )}
+          </View>
         </View>
 
         {/* Location */}
@@ -159,6 +176,31 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   content: { padding: 16, gap: 8 },
+  dateRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  dateBlock: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateDay: {
+    fontSize: 20,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 24,
+  },
+  dateMonth: {
+    fontSize: 10,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 12,
+    letterSpacing: 0.5,
+  },
+  dateDetails: { flex: 1, gap: 4 },
+  timeText: {
+    fontSize: 12,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 16,
+  },
   topRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   categoryBadge: {
     flexDirection: 'row',
@@ -176,7 +218,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   tableText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
-  title: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
+  title: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   infoText: { fontSize: 13, lineHeight: 18 },
   bottomRow: {

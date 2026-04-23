@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
   },
   createAdText: { fontSize: 16, fontFamily: fonts.bodySemi },
   sectionLabel: {
-    fontSize: 11, letterSpacing: 0.5, fontWeight: '600',
+    fontSize: 11, letterSpacing: 1, fontWeight: '600',
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
     fontFamily: fonts.bodySemi, lineHeight: 16,
   },

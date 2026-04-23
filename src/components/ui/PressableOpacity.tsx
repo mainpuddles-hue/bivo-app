@@ -19,9 +19,10 @@ interface PressableOpacityProps extends Omit<PressableProps, 'style'> {
  *     <Text>Tap me</Text>
  *   </PressableOpacity>
  */
-export function PressableOpacity({ style, activeOpacity = 0.7, ...props }: PressableOpacityProps) {
+export function PressableOpacity({ style, activeOpacity = 0.7, hitSlop, ...props }: PressableOpacityProps) {
   return (
     <Pressable
+      hitSlop={hitSlop ?? 8}
       {...props}
       style={(state) => {
         const baseStyle = typeof style === 'function' ? style(state) : style

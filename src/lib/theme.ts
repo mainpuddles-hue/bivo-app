@@ -71,7 +71,7 @@ export const categoryGradients: Record<string, [string, string]> = {
   tarvitsen:  ['#FF7B5C', '#C75B3A'],
   tarjoan:    ['#9B6DD7', '#7C5CBF'],
   ilmaista:   ['#5B9BF0', '#3B7DD8'],
-  lainaa:     ['#E8B050', '#C98B2E'],
+  lainaa:     ['#D9A040', '#A97A1E'],
   tapahtuma:  ['#34D399', '#2B8A62'],
 }
 
@@ -89,7 +89,7 @@ export const categoryAccents: Record<string, string> = {
   tarvitsen: '#C75B3A',
   tarjoan:   '#7C5CBF',
   ilmaista:  '#3B7DD8',
-  lainaa:    '#C98B2E',
+  lainaa:    '#A97A1E',
   tapahtuma: '#2B8A62',
 }
 

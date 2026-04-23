@@ -306,7 +306,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           <View style={styles.topRowRight}>
             {category && (
               <View style={[styles.categoryBadge, { backgroundColor: `${category.color}30` }]}>
-                {CategoryIcon && <CategoryIcon size={12} color={category.color} strokeWidth={2.2} />}
+                {CategoryIcon && <CategoryIcon size={14} color={category.color} strokeWidth={2.2} />}
                 <Text style={[styles.categoryBadgeText, { color: category.color }]}>
                   {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
                 </Text>
