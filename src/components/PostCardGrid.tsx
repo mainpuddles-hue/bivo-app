@@ -55,10 +55,24 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const supabase = useSupabase()
 
   const [imgError, setImgError] = useState(false)
+  const [imgLoaded, setImgLoaded] = useState(false)
   const [liked, setLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
   const likingRef = useRef(false)
   const likeAnim = useRef(new Animated.Value(1)).current
+  const shimmerAnim = useRef(new Animated.Value(0.4)).current
+
+  useEffect(() => {
+    if (imgLoaded || imgError || !post.image_url) return
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        Animated.timing(shimmerAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
+      ]),
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [imgLoaded, imgError, post.image_url, shimmerAnim])
 
   // Sync state when post prop changes (e.g., feed refresh)
   useEffect(() => {
@@ -219,11 +233,15 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         >
           {/* Photo with overlaid badges */}
           <View style={[styles.imageWrap, { height: imageHeight, backgroundColor: colors.muted }]}>
+            {!imgLoaded && (
+              <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted, opacity: shimmerAnim, zIndex: 1 }]} />
+            )}
             <Image
               source={{ uri: getImageUrl(post.image_url, 'medium')! }}
               style={styles.image}
               contentFit="cover"
-              transition={250}
+              transition={200}
+              onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
               cachePolicy="memory-disk"
               recyclingKey={post.image_url!}

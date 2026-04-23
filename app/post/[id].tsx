@@ -34,7 +34,7 @@ import DateRangePicker from '@/components/DateRangePicker'
 import ImageGallery from '@/components/ImageGallery'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { OfferModal } from '@/components/OfferModal'
-import { PostDetailSkeleton } from '@/components/SkeletonLoaders'
+import { PostDetailSkeleton, FadeIn } from '@/components/SkeletonLoaders'
 import { isValidUUID } from '@/lib/validation'
 import { checkAndAwardSpeedBadge } from '@/lib/speedBadges'
 import { trackEvent } from '@/lib/analytics'
@@ -973,6 +973,7 @@ function PostDetailScreenInner() {
   const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
 
   return (
+    <FadeIn style={{ flex: 1 }}>
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Hero nav overlay — back + heart circles on top of photo */}
       <View style={[styles.heroNav, { top: insets.top + 16 }]} pointerEvents="box-none">
@@ -1682,6 +1683,7 @@ function PostDetailScreenInner() {
         </View>
       )}
     </KeyboardAvoidingView>
+    </FadeIn>
   )
 }
 

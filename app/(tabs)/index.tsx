@@ -19,7 +19,7 @@ import { FilterBar } from '@/components/FilterBar'
 import { PostCardGrid } from '@/components/PostCardGrid'
 import { AdCard, type Ad } from '@/components/AdCard'
 import { AlertBanner } from '@/components/AlertBanner'
-import { PostCardSkeleton, FeedLoadMoreSkeleton } from '@/components/SkeletonLoaders'
+import { PostCardSkeleton, FeedLoadMoreSkeleton, FadeIn } from '@/components/SkeletonLoaders'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { OnboardingOverlay } from '@/components/OnboardingOverlay'
@@ -612,13 +612,15 @@ function FeedScreenInner() {
                 {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
               </View>
             ) : discoveryPosts.length > 0 ? (
-              <DiscoveryStack
-                posts={discoveryPosts}
-                userId={feed.currentUserId}
-                onInteraction={trackInteraction}
-                userNeighborhood={feed.userNeighborhood}
-                userLocation={feed.userLocation}
-              />
+              <FadeIn>
+                <DiscoveryStack
+                  posts={discoveryPosts}
+                  userId={feed.currentUserId}
+                  onInteraction={trackInteraction}
+                  userNeighborhood={feed.userNeighborhood}
+                  userLocation={feed.userLocation}
+                />
+              </FadeIn>
             ) : !feed.loading ? (
               <View style={styles.coldStart}>
                 <BoardIllustration size={80} />

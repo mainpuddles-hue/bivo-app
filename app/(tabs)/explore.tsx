@@ -7,7 +7,7 @@ import {
 } from 'react-native'
 import { Image } from 'expo-image'
 import { hapticMedium } from '@/lib/haptics'
-import { SectionSkeleton } from '@/components/SkeletonLoaders'
+import { SectionSkeleton, FadeIn } from '@/components/SkeletonLoaders'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import {

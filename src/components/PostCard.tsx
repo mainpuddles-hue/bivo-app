@@ -63,6 +63,21 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   // Animated like heart
   const likeAnim = useRef(new Animated.Value(1)).current
 
+  // Image shimmer placeholder
+  const [imgLoaded, setImgLoaded] = useState(false)
+  const shimmerAnim = useRef(new Animated.Value(0.4)).current
+  useEffect(() => {
+    if (imgLoaded || imgError || !post.image_url) return
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        Animated.timing(shimmerAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
+      ]),
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [imgLoaded, imgError, post.image_url, shimmerAnim])
+
   // Sync state when post prop changes (e.g., feed refresh)
   useEffect(() => {
     if (!likingRef.current) {
@@ -318,11 +333,15 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
         {/* Image — full width, below user row (Apple News hero style with gradient) */}
         {hasImage ? (
           <View style={styles.imageContainer}>
+            {!imgLoaded && (
+              <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted, opacity: shimmerAnim }]} />
+            )}
             <Image
               source={{ uri: getImageUrl(post.image_url, 'medium')! }}
-              style={[styles.image, { backgroundColor: colors.muted }]}
+              style={[styles.image, !imgLoaded && { backgroundColor: 'transparent' }]}
               contentFit="cover"
-              transition={300}
+              transition={200}
+              onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
               accessibilityLabel={post.title}
               cachePolicy="memory-disk"

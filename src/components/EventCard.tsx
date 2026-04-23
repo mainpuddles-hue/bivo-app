@@ -1,12 +1,11 @@
 import { memo, useMemo } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
-import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { MapPin, Users } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { getImageUrl } from '@/lib/imageUtils'
+import { ImageWithFallback } from './ImageWithFallback'
 import { ParticipantAvatarRow } from './ParticipantAvatarRow'
 import { isTableEvent, getTableCategoryIcon } from '@/lib/eventHelpers'
 import { EVENT_CATEGORY_COLORS } from '@/lib/constants'
@@ -72,7 +71,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
     >
       {/* Image or Emoji Header */}
       {event.image_url && !isTable ? (
-        <Image source={{ uri: getImageUrl(event.image_url, 'medium')! }} style={s.image} contentFit="cover" accessible={false} cachePolicy="memory-disk" recyclingKey={event.id} />
+        <ImageWithFallback uri={event.image_url} imageSize="medium" style={s.image} contentFit="cover" accessible={false} />
       ) : isTable && TableCategoryIcon ? (
         <View style={[s.iconBox, { backgroundColor: `${categoryColor}15` }]}>
           <TableCategoryIcon size={36} color={categoryColor} />

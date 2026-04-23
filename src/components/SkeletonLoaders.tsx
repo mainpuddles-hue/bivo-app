@@ -1,7 +1,21 @@
-import { useRef, useEffect } from 'react'
-import { View, Animated, StyleSheet } from 'react-native'
+import { useRef, useEffect, type ReactNode } from 'react'
+import { View, Animated, StyleSheet, type ViewStyle } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
+
+/**
+ * Wraps children in a fade-in when they mount (skeleton → content crossfade).
+ * Respects prefers-reduced-motion.
+ */
+export function FadeIn({ children, style, duration = 250 }: { children: ReactNode; style?: ViewStyle; duration?: number }) {
+  const opacity = useRef(new Animated.Value(0)).current
+  const reduceMotion = useReduceMotion()
+  useEffect(() => {
+    if (reduceMotion) { opacity.setValue(1); return }
+    Animated.timing(opacity, { toValue: 1, duration, useNativeDriver: true }).start()
+  }, [opacity, duration, reduceMotion])
+  return <Animated.View style={[style, { opacity }]}>{children}</Animated.View>
+}
 
 export function useShimmer() {
   const shimmer = useRef(new Animated.Value(0)).current

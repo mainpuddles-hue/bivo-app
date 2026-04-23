@@ -14,7 +14,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useToast } from '@/components/Toast'
 import { fonts } from '@/lib/fonts'
-import { EventDetailSkeleton } from '@/components/SkeletonLoaders'
+import { EventDetailSkeleton, FadeIn } from '@/components/SkeletonLoaders'
 import { useSupabase } from '@/hooks/useSupabase'
 import { shareContent } from '@/lib/share'
 import { Avatar } from '@/components/Avatar'
@@ -347,6 +347,7 @@ function EventDetailScreenInner() {
   const isLeaveBtn = myStatus === 'joined' || myStatus === 'approved'
 
   return (
+    <FadeIn style={{ flex: 1 }}>
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Hero nav overlay — circle buttons on top of photo */}
       <View style={[s.heroNav, { top: insets.top + 12 }]} pointerEvents="box-none">
@@ -581,6 +582,7 @@ function EventDetailScreenInner() {
         type="event"
       />
     </View>
+    </FadeIn>
   )
 }
 
