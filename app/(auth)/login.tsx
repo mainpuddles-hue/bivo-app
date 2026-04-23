@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -73,6 +73,8 @@ function LoginScreenInner() {
   const [loading, setLoading] = useState(false)
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState(0)
+  const [lockoutRemaining, setLockoutRemaining] = useState(0)
+  const lockoutIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Persist lockout across app restarts
   useEffect(() => {
@@ -83,6 +85,37 @@ function LoginScreenInner() {
       }
     }).catch(() => {})
   }, [])
+
+  // Countdown timer for lockout display
+  useEffect(() => {
+    if (lockoutIntervalRef.current) {
+      clearInterval(lockoutIntervalRef.current)
+      lockoutIntervalRef.current = null
+    }
+    if (lockedUntil > Date.now()) {
+      setLockoutRemaining(Math.max(0, lockedUntil - Date.now()))
+      lockoutIntervalRef.current = setInterval(() => {
+        const remaining = lockedUntil - Date.now()
+        if (remaining <= 0) {
+          setLockoutRemaining(0)
+          if (lockoutIntervalRef.current) {
+            clearInterval(lockoutIntervalRef.current)
+            lockoutIntervalRef.current = null
+          }
+        } else {
+          setLockoutRemaining(remaining)
+        }
+      }, 1000)
+    } else {
+      setLockoutRemaining(0)
+    }
+    return () => {
+      if (lockoutIntervalRef.current) {
+        clearInterval(lockoutIntervalRef.current)
+        lockoutIntervalRef.current = null
+      }
+    }
+  }, [lockedUntil])
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -339,6 +372,14 @@ function LoginScreenInner() {
     }
   }
 
+  // Format ms remaining as mm:ss
+  const formatLockoutTime = (ms: number): string => {
+    const totalSeconds = Math.ceil(ms / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
+
   // Derived
   const isSubmitDisabled = loading || (mode === 'register' && !termsAccepted)
 
@@ -534,6 +575,13 @@ function LoginScreenInner() {
             </Text>
           )}
         </PressableOpacity>
+
+        {/* Lockout countdown timer */}
+        {lockoutRemaining > 0 && (
+          <Text style={[styles.lockoutTimer, { color: colors.destructive }]}>
+            {t('auth.lockoutTimer').replace('{time}', formatLockoutTime(lockoutRemaining))}
+          </Text>
+        )}
 
         {/* Back to login — forgot mode */}
         {mode === 'forgot' && (
@@ -761,6 +809,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',
+  },
+
+  // Lockout countdown
+  lockoutTimer: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginTop: 10,
   },
 
   // Primary CTA — pill, 54px height, 15px 600

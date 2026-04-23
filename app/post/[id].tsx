@@ -10,7 +10,7 @@ import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
   Send, Flag, Clock, ChevronRight, Eye,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
-  ShoppingBag, Star, Shield, DollarSign,
+  ShoppingBag, Star, Shield, DollarSign, Info,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -42,7 +42,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { ModalCloseButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
-import type { Post, PostType, PostComment } from '@/lib/types'
+import type { Post, PostType, PostComment, PostStatus } from '@/lib/types'
 
 function PostDetailScreenInner() {
   const { colors, isDark } = useTheme()
@@ -100,6 +100,8 @@ function PostDetailScreenInner() {
   const [bookingEndDate, setBookingEndDate] = useState<string | null>(null)
   const [sendingBooking, setSendingBooking] = useState(false)
   const [blockedDates, setBlockedDates] = useState<string[]>([])
+  const [depositInfoVisible, setDepositInfoVisible] = useState(false)
+  const [serviceFeeInfoVisible, setServiceFeeInfoVisible] = useState(false)
   const { createPayment, loading: paymentLoading, error: paymentError } = useStripePayment()
   const trust = useTrustLevel(userId)
 
@@ -539,6 +541,34 @@ function PostDetailScreenInner() {
     if (error) { Alert.alert(t('common.error'), t('post.updateFailed')) }
     else { setPost(prev => prev ? { ...prev, is_active: true } : prev) }
   }, [post, supabase, t])
+
+  const handleStatusChange = useCallback(() => {
+    if (!post) return
+    const statusOptions: { label: string; value: PostStatus }[] = [
+      { label: t('post.statusActive'), value: 'active' },
+      { label: t('post.statusReserved'), value: 'reserved' },
+      { label: t('post.statusCompleted'), value: 'completed' },
+    ]
+    const labels = [...statusOptions.map(o => o.label), t('common.cancel')]
+    const applyStatus = async (newStatus: PostStatus) => {
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+      const { error } = await (supabase.from('posts') as any).update({ status: newStatus }).eq('id', post.id)
+      if (error) { Alert.alert(t('common.error'), t('post.statusUpdateFailed')) }
+      else { setPost(prev => prev ? { ...prev, status: newStatus } : prev); toast.show({ message: t('post.statusUpdated'), type: 'success' }) }
+    }
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options: labels, cancelButtonIndex: labels.length - 1 },
+        (i) => { if (i < statusOptions.length) applyStatus(statusOptions[i].value) },
+      )
+    } else {
+      Alert.alert(t('post.changeStatus'), '', labels.map((text, i) => ({
+        text,
+        style: i === labels.length - 1 ? 'cancel' : undefined,
+        onPress: i < statusOptions.length ? () => applyStatus(statusOptions[i].value) : undefined,
+      })))
+    }
+  }, [post, supabase, t, toast])
 
   const openEditModal = useCallback(() => {
     if (!post) return
@@ -984,7 +1014,7 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {/* Category + expiration badges */}
+          {/* Category + expiration + status badges */}
           <View style={styles.badgeRow}>
             {category && (
               <View style={styles.categoryRow}>
@@ -998,6 +1028,16 @@ function PostDetailScreenInner() {
               <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
                 <Clock size={12} color={expirationInfo.color} />
                 <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
+              </View>
+            )}
+            {(post as any).status === 'reserved' && (
+              <View style={[styles.expirationBadge, { backgroundColor: '#F59E0B18' }]}>
+                <Text style={[styles.expirationText, { color: '#F59E0B' }]}>{t('post.statusReserved')}</Text>
+              </View>
+            )}
+            {(post as any).status === 'completed' && (
+              <View style={[styles.expirationBadge, { backgroundColor: `${colors.mutedForeground}18` }]}>
+                <Text style={[styles.expirationText, { color: colors.mutedForeground }]}>{t('post.statusCompleted')}</Text>
               </View>
             )}
           </View>
@@ -1111,6 +1151,10 @@ function PostDetailScreenInner() {
               <PressableOpacity onPress={openEditModal} style={[styles.authorActionBtn, { backgroundColor: `${colors.foreground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.edit')}>
                 <Pencil size={14} color={colors.foreground} />
                 <Text style={[styles.authorActionText, { color: colors.foreground }]}>{t('post.edit')}</Text>
+              </PressableOpacity>
+              <PressableOpacity onPress={handleStatusChange} style={[styles.authorActionBtn, { backgroundColor: '#F59E0B18' }]} accessibilityRole="button" accessibilityLabel={t('post.changeStatus')}>
+                <ChevronDown size={14} color="#F59E0B" />
+                <Text style={[styles.authorActionText, { color: '#F59E0B' }]}>{t('post.changeStatus')}</Text>
               </PressableOpacity>
               {post.is_active ? (
                 <PressableOpacity onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
@@ -1337,7 +1381,20 @@ function PostDetailScreenInner() {
                 <View style={[styles.pricingBreakdown, { borderColor: colors.border }]}>
                   <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('rental.pricingBreakdown')}</Text>
                   <View style={styles.pricingRow}><Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{formatPrice(post.daily_fee, locale)} x {bookingDays} {t('rental.daysAbbr')}</Text><Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(rentalFee, locale)}</Text></View>
-                  <View style={styles.pricingRow}><Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('rental.serviceFee')} ({t('rental.serviceFeeNote')})</Text><Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(serviceFee, locale)}</Text></View>
+                  <View style={styles.pricingRow}>
+                    <Pressable style={styles.pricingLabelRow} onPress={() => setServiceFeeInfoVisible(true)} hitSlop={8}>
+                      <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('rental.serviceFee')} ({t('rental.serviceFeeNote')})</Text>
+                      <Info size={13} color={colors.mutedForeground} />
+                    </Pressable>
+                    <Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(serviceFee, locale)}</Text>
+                  </View>
+                  <View style={styles.pricingRow}>
+                    <Pressable style={styles.pricingLabelRow} onPress={() => setDepositInfoVisible(true)} hitSlop={8}>
+                      <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('rental.deposit')}</Text>
+                      <Info size={13} color={colors.mutedForeground} />
+                    </Pressable>
+                    <Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(depositAmount, locale)}</Text>
+                  </View>
                   <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}><Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text><Text style={[styles.bookingTotalPrice, { color: colors.foreground }]}>{formatPrice(bookingTotal, locale)}</Text></View>
                 </View>
               )}
@@ -1349,6 +1406,26 @@ function PostDetailScreenInner() {
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
               </PressableOpacity>
             </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Deposit Info Modal */}
+      <Modal visible={depositInfoVisible} animationType="fade" transparent onRequestClose={() => setDepositInfoVisible(false)}>
+        <Pressable style={styles.infoModalOverlay} onPress={() => setDepositInfoVisible(false)}>
+          <Pressable style={[styles.infoModalCard, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => {}}>
+            <Text style={[styles.infoModalTitle, { color: colors.foreground }]}>{t('rental.deposit')}</Text>
+            <Text style={[styles.infoModalBody, { color: colors.mutedForeground }]}>{t('post.depositInfo')}</Text>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Service Fee Info Modal */}
+      <Modal visible={serviceFeeInfoVisible} animationType="fade" transparent onRequestClose={() => setServiceFeeInfoVisible(false)}>
+        <Pressable style={styles.infoModalOverlay} onPress={() => setServiceFeeInfoVisible(false)}>
+          <Pressable style={[styles.infoModalCard, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => {}}>
+            <Text style={[styles.infoModalTitle, { color: colors.foreground }]}>{t('rental.serviceFee')}</Text>
+            <Text style={[styles.infoModalBody, { color: colors.mutedForeground }]}>{t('post.serviceFeeInfo')}</Text>
           </Pressable>
         </Pressable>
       </Modal>
@@ -1693,6 +1770,11 @@ const styles = StyleSheet.create({
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999, minHeight: 48 },
   heroNav: { position: 'absolute', left: 16, right: 16, zIndex: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   heroCircle: { width: 38, height: 38, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 0 },
+  pricingLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1 },
+  infoModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  infoModalCard: { width: '100%', maxWidth: 360, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, padding: 20, gap: 10 },
+  infoModalTitle: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20 },
+  infoModalBody: { fontSize: 13, fontFamily: fonts.body, lineHeight: 19 },
 })
 
 const ctaStyles = StyleSheet.create({

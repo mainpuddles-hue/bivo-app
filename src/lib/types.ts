@@ -137,6 +137,8 @@ export interface UserBadge {
   badge_type: BadgeType
 }
 
+export type PostStatus = 'active' | 'reserved' | 'completed'
+
 export interface Post {
   id: string
   user_id: string
@@ -155,6 +157,7 @@ export interface Post {
   is_pro_listing: boolean
   tags: string[]
   is_active: boolean
+  status?: PostStatus
   is_boosted?: boolean
   is_urgent?: boolean
   urgency_hours?: number | null

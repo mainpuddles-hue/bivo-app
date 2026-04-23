@@ -192,6 +192,57 @@ export default function CreateScreen() {
   const [successPostId, setSuccessPostId] = useState<string | null>(null)
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [autoTags, setAutoTags] = useState<string[]>([])
+  const [hasDraft, setHasDraft] = useState(false)
+  const [draftToastVisible, setDraftToastVisible] = useState(false)
+  const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const DRAFT_KEY = 'tackbird_post_draft'
+
+  // Restore draft on mount
+  useEffect(() => {
+    AsyncStorage.getItem(DRAFT_KEY).then((raw) => {
+      if (!raw) return
+      try {
+        const draft = JSON.parse(raw)
+        if (!draft || typeof draft !== 'object') return
+        const hasContent = draft.title || draft.description || draft.type
+        if (!hasContent) return
+        if (draft.title) setTitle(draft.title)
+        if (draft.description) setDescription(draft.description)
+        if (draft.type) { setSelectedType(draft.type as PostType); setStep('form') }
+        if (draft.location) setLocation(draft.location)
+        if (draft.tags) setSelectedTags(draft.tags)
+        if (draft.daily_fee) setDailyFee(draft.daily_fee)
+        if (draft.service_price) setServicePrice(draft.service_price)
+        if (draft.event_date) setEventDate(draft.event_date)
+        setHasDraft(true)
+        setDraftToastVisible(true)
+        setTimeout(() => setDraftToastVisible(false), 3000)
+      } catch {}
+    }).catch(() => {})
+  }, [])
+
+  // Debounce-save draft on any field change
+  useEffect(() => {
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current)
+    draftSaveTimerRef.current = setTimeout(() => {
+      const draft = { title, description, type: selectedType, location, tags: selectedTags, daily_fee: dailyFee, service_price: servicePrice, event_date: eventDate }
+      const hasContent = title || description || selectedType
+      if (hasContent) {
+        AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draft)).catch(() => {})
+        setHasDraft(true)
+      }
+    }, 1000)
+    return () => { if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current) }
+  }, [title, description, selectedType, location, selectedTags, dailyFee, servicePrice, eventDate])
+
+  const clearDraft = useCallback(() => {
+    AsyncStorage.removeItem(DRAFT_KEY).catch(() => {})
+    setHasDraft(false)
+    setTitle(''); setDescription(''); setLocation('')
+    setDailyFee(''); setServicePrice(''); setEventDate('')
+    setSelectedTags([]); setSelectedType(null); setStep('category')
+  }, [])
 
   useEffect(() => {
     if (title.length < 5) { setAutoTags([]); return }
@@ -647,6 +698,8 @@ export default function CreateScreen() {
       }
       trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
       const createdPostId = post.id
+      AsyncStorage.removeItem(DRAFT_KEY).catch(() => {})
+      setHasDraft(false)
       setTitle(''); setDescription(''); setImages([]); setLocation('')
       setDailyFee(''); setServicePrice(''); setEventDate('')
       setEventStartTime(''); setEventEndTime(''); setEventMaxCapacity('')
@@ -710,6 +763,13 @@ export default function CreateScreen() {
             {step === 'category' ? t('create.stepType') : t('create.stepDetails')}
           </Text>
         </View>
+
+        {/* ── Draft restored toast ── */}
+        {draftToastVisible && (
+          <View style={[mk.draftToast, { backgroundColor: colors.foreground }]} pointerEvents="none">
+            <Text style={[mk.draftToastText, { color: colors.background }]}>{t('create.draftRestored') ?? 'Luonnos palautettu'}</Text>
+          </View>
+        )}
 
         {/* ── CATEGORY STEP ── */}
         {step === 'category' && (
@@ -1140,6 +1200,18 @@ export default function CreateScreen() {
                 </>
               )}
 
+              {/* Clear draft button */}
+              {hasDraft && (
+                <PressableOpacity
+                  onPress={clearDraft}
+                  style={[mk.clearDraftBtn, { borderColor: colors.border }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('create.clearDraft') ?? 'Tyhjennä luonnos'}
+                >
+                  <Text style={[mk.clearDraftText, { color: colors.mutedForeground }]}>{t('create.clearDraft') ?? 'Tyhjennä luonnos'}</Text>
+                </PressableOpacity>
+              )}
+
               <View style={{ height: 90 }} />
             </ScrollView>
 
@@ -1401,4 +1473,12 @@ const mk = StyleSheet.create({
   mapFallbackHint: { fontSize: 13, textAlign: 'center', fontFamily: fonts.body },
   coordInputRow: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
   coordInput: { flex: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, textAlign: 'center', fontFamily: fonts.body },
+
+  // Draft toast
+  draftToast: { position: 'absolute', alignSelf: 'center', top: 80, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, zIndex: 999 },
+  draftToastText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
+
+  // Clear draft button
+  clearDraftBtn: { alignSelf: 'center', marginTop: 16, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, borderWidth: StyleSheet.hairlineWidth },
+  clearDraftText: { fontSize: 13, fontFamily: fonts.body },
 })

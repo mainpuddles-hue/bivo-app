@@ -33,7 +33,7 @@ import type { Post, PostType } from '@/lib/types'
 
 const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''}/functions/v1`
 
-const HISTORY_KEY = 'tackbird-search-history'
+const HISTORY_KEY = 'tackbird_recent_searches'
 const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
 const MAX_HISTORY = 5
 
@@ -81,6 +81,7 @@ interface DiscoveryViewProps {
   history: string[]
   handleHistoryChipTap: (h: string) => void
   removeFromHistory: (q: string) => Promise<void>
+  clearHistory: () => Promise<void>
   savedSearches: SavedSearch[]
   loadSavedSearch: (saved: SavedSearch) => void
   removeSavedSearch: (id: string) => Promise<void>
@@ -96,7 +97,7 @@ interface DiscoveryViewProps {
 
 function DiscoveryView({
   query, setQuery,
-  executeSearch, history, handleHistoryChipTap, removeFromHistory,
+  executeSearch, history, handleHistoryChipTap, removeFromHistory, clearHistory,
   savedSearches, loadSavedSearch, removeSavedSearch, toggleSearchPush,
   trendingPosts, demandInsights,
   router, colors, isDark, t, setActiveFilter,
@@ -109,6 +110,9 @@ function DiscoveryView({
           <View style={s.sectionHeader}>
             <Clock size={16} color={colors.mutedForeground} />
             <Text style={[s.sectionTitle, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>{t('search.recentSearches')}</Text>
+            <PressableOpacity onPress={clearHistory} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('search.clearHistory') ?? 'Clear history'}>
+              <Text style={[s.clearHistoryLink, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.clearHistory')}</Text>
+            </PressableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.recentChipsRow}>
             {history.map((h) => (
@@ -511,6 +515,11 @@ function SearchScreenInner() {
     setHistory(updated)
     await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
   }, [history])
+
+  const clearHistory = useCallback(async () => {
+    setHistory([])
+    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify([]))
+  }, [])
 
   const saveCurrentSearch = useCallback(async () => {
     const q = query.trim()
@@ -1413,6 +1422,7 @@ function SearchScreenInner() {
           history={history}
           handleHistoryChipTap={handleHistoryChipTap}
           removeFromHistory={removeFromHistory}
+          clearHistory={clearHistory}
           savedSearches={savedSearches}
           loadSavedSearch={loadSavedSearch}
           removeSavedSearch={removeSavedSearch}
@@ -1766,7 +1776,8 @@ const s = StyleSheet.create({
   // ── Discovery sections ──
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionTitle: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
+  clearHistoryLink: { fontSize: 12, lineHeight: 16 },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
