@@ -131,7 +131,7 @@
     "sortPopular": "Suosituin",
     "sortNearest": "Lähin",
     "sortCheapest": "Halvin",
-    "online": "naapurustossasi",
+    "online": "paikalla nyt",
     "postsThisWeek": "tällä viikolla",
     "eventsThisWeek": "tapahtumaa",
     "activeThisWeek": "aktiivista",
@@ -253,7 +253,11 @@
     "statusUpdated": "Tila päivitetty",
     "statusUpdateFailed": "Tilan päivitys epäonnistui",
     "depositInfo": "Vakuusmaksu palautetaan kokonaan kun tavara palautetaan kunnossa sovittuna aikana. Jos tavara palautetaan myöhässä, voidaan periä lisämaksu.",
-    "serviceFeeInfo": "Palvelumaksu (10%) lisätään summaan. Se kattaa maksunvälityksen ja turvaa."
+    "serviceFeeInfo": "Palvelumaksu (10%) lisätään summaan. Se kattaa maksunvälityksen ja turvaa.",
+    "deletedUndo": "Ilmoitus poistettu",
+    "undo": "Kumoa",
+    "depositSuggestedRange": "Suositeltu: {min}€ – {max}€",
+    "depositOutOfRange": "Vakuus on suositellun alueen ulkopuolella"
   },
   "offer": {
     "title": "Tee tarjous",
@@ -1448,7 +1452,8 @@
     "unknown": "Jokin meni pieleen. Yritä uudelleen hetken kuluttua.",
     "cardDeclined": "Korttisi hylättiin. Tarkista korttitiedot tai kokeile toista korttia.",
     "insufficientFunds": "Kortilla ei ole riittävästi katetta.",
-    "expiredCard": "Korttisi on vanhentunut. Päivitä korttitiedot."
+    "expiredCard": "Korttisi on vanhentunut. Päivitä korttitiedot.",
+    "serverError": "Palvelin on tilapäisesti poissa käytöstä. Yritä uudelleen hetken kuluttua."
   },
   "timer": {
     "expired": "Vanhentunut",
@@ -3308,6 +3313,15 @@
     "giveAway": "Antaa pois",
     "findEvents": "Löytää tapahtumia",
     "offerServices": "Tarjota palveluita",
-    "explore": "Tutustu naapurustoon →"
+    "explore": "Tutustu naapurustoon →",
+    "skip": "Ohita",
+    "next": "Seuraava",
+    "letsGo": "Aloitetaan!",
+    "step1Title": "Selaa naapurustoasi",
+    "step1Desc": "Näe mitä lähellä tapahtuu — ilmoitukset, tapahtumat ja naapureiden tarjoukset yhdessä paikassa.",
+    "step2Title": "Jaa ja löydä",
+    "step2Desc": "Luo ilmoitus sekunneissa. Lainaa, lahjoita tai myy — naapurit löytävät sinut helposti.",
+    "step3Title": "Viesti naapureille",
+    "step3Desc": "Ota yhteyttä naapureihin suoraan. Rakenna luottamusta ja tee yhteisöstä eläväinen."
   }
 }

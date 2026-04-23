@@ -131,7 +131,7 @@
     "sortPopular": "Most popular",
     "sortNearest": "Nearest",
     "sortCheapest": "Cheapest",
-    "online": "in your neighborhood",
+    "online": "online now",
     "postsThisWeek": "this week",
     "eventsThisWeek": "events",
     "activeThisWeek": "active",
@@ -253,7 +253,11 @@
     "statusUpdated": "Status updated",
     "statusUpdateFailed": "Failed to update status",
     "depositInfo": "The deposit is fully refunded when the item is returned in good condition by the agreed time. A late fee may apply if returned late.",
-    "serviceFeeInfo": "Service fee (10%) is added. It covers payment processing and protection."
+    "serviceFeeInfo": "Service fee (10%) is added. It covers payment processing and protection.",
+    "deletedUndo": "Post deleted",
+    "undo": "Undo",
+    "depositSuggestedRange": "Suggested: {min}€ – {max}€",
+    "depositOutOfRange": "Deposit is outside the suggested range"
   },
   "offer": {
     "title": "Make an Offer",
@@ -1448,7 +1452,8 @@
     "unknown": "Something went wrong. Try again in a moment.",
     "cardDeclined": "Your card was declined. Check your card details or try another card.",
     "insufficientFunds": "Insufficient funds on your card.",
-    "expiredCard": "Your card has expired. Update your card details."
+    "expiredCard": "Your card has expired. Update your card details.",
+    "serverError": "The server is temporarily unavailable. Try again in a moment."
   },
   "timer": {
     "expired": "Expired",
@@ -3308,6 +3313,15 @@
     "giveAway": "Give things away",
     "findEvents": "Find events",
     "offerServices": "Offer services",
-    "explore": "Explore your neighborhood →"
+    "explore": "Explore your neighborhood →",
+    "skip": "Skip",
+    "next": "Next",
+    "letsGo": "Let's go!",
+    "step1Title": "Browse your neighborhood",
+    "step1Desc": "See what's happening nearby — posts, events, and neighbor offers all in one place.",
+    "step2Title": "Share and find",
+    "step2Desc": "Create a post in seconds. Lend, give, or sell — neighbors will find you easily.",
+    "step3Title": "Message neighbors",
+    "step3Desc": "Connect with neighbors directly. Build trust and make the community thrive."
   }
 }

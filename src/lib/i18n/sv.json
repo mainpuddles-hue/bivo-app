@@ -131,7 +131,7 @@
     "sortPopular": "Mest populär",
     "sortNearest": "Närmaste",
     "sortCheapest": "Billigaste",
-    "online": "i ditt grannskap",
+    "online": "online nu",
     "postsThisWeek": "denna vecka",
     "eventsThisWeek": "evenemang",
     "activeThisWeek": "aktiva",
@@ -253,7 +253,11 @@
     "statusUpdated": "Status uppdaterad",
     "statusUpdateFailed": "Kunde inte uppdatera status",
     "depositInfo": "Depositionen återbetalas i sin helhet när föremålet returneras i gott skick vid avtalad tid. Förseningsavgift kan tas ut vid sen retur.",
-    "serviceFeeInfo": "Serviceavgift (10%) tillkommer. Den täcker betalningshantering och skydd."
+    "serviceFeeInfo": "Serviceavgift (10%) tillkommer. Den täcker betalningshantering och skydd.",
+    "deletedUndo": "Inlägget borttaget",
+    "undo": "Ångra",
+    "depositSuggestedRange": "Rekommenderat: {min}€ – {max}€",
+    "depositOutOfRange": "Depositionen är utanför det rekommenderade intervallet"
   },
   "offer": {
     "title": "Ge ett bud",
@@ -1448,7 +1452,8 @@
     "unknown": "Något gick fel. Försök igen om en stund.",
     "cardDeclined": "Ditt kort nekades. Kontrollera kortuppgifterna eller prova ett annat kort.",
     "insufficientFunds": "Otillräckligt saldo på ditt kort.",
-    "expiredCard": "Ditt kort har gått ut. Uppdatera kortuppgifterna."
+    "expiredCard": "Ditt kort har gått ut. Uppdatera kortuppgifterna.",
+    "serverError": "Servern är tillfälligt otillgänglig. Försök igen om en stund."
   },
   "timer": {
     "expired": "Utgått",
@@ -3308,6 +3313,15 @@
     "giveAway": "Ge bort saker",
     "findEvents": "Hitta evenemang",
     "offerServices": "Erbjuda tjänster",
-    "explore": "Utforska ditt grannskap →"
+    "explore": "Utforska ditt grannskap →",
+    "skip": "Hoppa över",
+    "next": "Nästa",
+    "letsGo": "Vi kör!",
+    "step1Title": "Bläddra i ditt grannskap",
+    "step1Desc": "Se vad som händer i närheten — annonser, evenemang och grannars erbjudanden på ett ställe.",
+    "step2Title": "Dela och hitta",
+    "step2Desc": "Skapa en annons på sekunder. Låna ut, ge bort eller sälj — grannar hittar dig enkelt.",
+    "step3Title": "Meddelanden till grannar",
+    "step3Desc": "Ta kontakt med grannar direkt. Bygg förtroende och gör gemenskapen livligare."
   }
 }

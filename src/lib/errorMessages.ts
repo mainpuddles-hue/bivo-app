@@ -32,6 +32,22 @@ export function mapErrorToFinnish(error: any, t: (key: string) => string): strin
     return t('errors.timeout')
   }
 
+  // --- Server errors (5xx) ---
+  const statusNum = typeof error?.status === 'number' ? error.status : parseInt(code, 10)
+  if (
+    (statusNum >= 500 && statusNum < 600) ||
+    message.includes('Internal Server Error') ||
+    message.includes('Bad Gateway') ||
+    message.includes('Service Unavailable') ||
+    message.includes('Gateway Timeout') ||
+    code === '500' ||
+    code === '502' ||
+    code === '503' ||
+    code === '504'
+  ) {
+    return t('errors.serverError')
+  }
+
   // --- Auth errors ---
   if (
     message.includes('Invalid login credentials') ||

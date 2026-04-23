@@ -191,6 +191,7 @@ export default function CreateScreen() {
   const [successNeighborhood, setSuccessNeighborhood] = useState<string | null>(null)
   const [successPostId, setSuccessPostId] = useState<string | null>(null)
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastSubmitRef = useRef<number>(0)
   const [autoTags, setAutoTags] = useState<string[]>([])
   const [hasDraft, setHasDraft] = useState(false)
   const [draftToastVisible, setDraftToastVisible] = useState(false)
@@ -502,6 +503,9 @@ export default function CreateScreen() {
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return
+    const now = Date.now()
+    if (now - lastSubmitRef.current < 1000) return
+    lastSubmitRef.current = now
     if (!selectedType || !title.trim() || !description.trim()) {
       setTouchedTitle(true)
       setTouchedDescription(true)

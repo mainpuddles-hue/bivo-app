@@ -22,7 +22,7 @@ import { triggerPush } from '@/lib/pushTrigger'
 import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
 import { ReportModal } from '@/components/ReportModal'
 import { Avatar } from '@/components/Avatar'
-import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE, suggestDeposit } from '@/lib/constants'
+import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE, suggestDeposit, DEPOSIT_SUGGESTIONS } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { FEATURES } from '@/lib/featureFlags'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
@@ -122,6 +122,10 @@ function PostDetailScreenInner() {
   const [serviceModalVisible, setServiceModalVisible] = useState(false)
   const [serviceNotes, setServiceNotes] = useState('')
   const [sendingService, setSendingService] = useState(false)
+
+  // Undo delete state
+  const [undoBarVisible, setUndoBarVisible] = useState(false)
+  const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { width: screenWidth } = useWindowDimensions()
 
@@ -493,31 +497,59 @@ function PostDetailScreenInner() {
         text: t('post.delete'), style: 'destructive',
         onPress: async () => {
           try {
-            // Cascade-delete related data that may not have DB-level CASCADE
-            await Promise.allSettled([
-              (supabase.from('post_comments') as any).delete().eq('post_id', post.id),
-              (supabase.from('post_likes') as any).delete().eq('post_id', post.id),
-              (supabase.from('post_images') as any).delete().eq('post_id', post.id),
-              (supabase.from('saved_posts') as any).delete().eq('post_id', post.id),
-              (supabase.from('post_embeddings') as any).delete().eq('post_id', post.id),
-              (supabase.from('notifications') as any).delete().eq('link_id', post.id).eq('link_type', 'post'),
-            ])
-            const { error } = await (supabase.from('posts') as any).delete().eq('id', post.id)
+            // Soft-delete: mark inactive so the user can undo within 10 seconds
+            const { error } = await (supabase.from('posts') as any).update({ is_active: false }).eq('id', post.id)
             if (error) {
               try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
               Alert.alert(t('common.error'), t('post.deleteFailed'))
-            } else {
-              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-              Alert.alert(t('post.deleted'))
-              router.back()
+              return
             }
+            try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+            setPost(prev => prev ? { ...prev, is_active: false } : prev)
+            setUndoBarVisible(true)
+            // Hard-delete after 10 seconds if user doesn't undo
+            if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current)
+            undoTimeoutRef.current = setTimeout(async () => {
+              setUndoBarVisible(false)
+              try {
+                await Promise.allSettled([
+                  (supabase.from('post_comments') as any).delete().eq('post_id', post.id),
+                  (supabase.from('post_likes') as any).delete().eq('post_id', post.id),
+                  (supabase.from('post_images') as any).delete().eq('post_id', post.id),
+                  (supabase.from('saved_posts') as any).delete().eq('post_id', post.id),
+                  (supabase.from('post_embeddings') as any).delete().eq('post_id', post.id),
+                  (supabase.from('notifications') as any).delete().eq('link_id', post.id).eq('link_type', 'post'),
+                ])
+                await (supabase.from('posts') as any).delete().eq('id', post.id)
+              } catch {
+                // Fire-and-forget — hard delete on timeout
+              }
+              router.back()
+            }, 10000)
           } catch {
             Alert.alert(t('common.error'), t('post.deleteFailed'))
           }
         },
       },
     ])
-  }, [post, supabase, t, router])
+  }, [post, supabase, t, router, undoTimeoutRef])
+
+  const handleUndoDelete = useCallback(async () => {
+    if (!post) return
+    if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current)
+    setUndoBarVisible(false)
+    try {
+      const { error } = await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id)
+      if (error) {
+        Alert.alert(t('common.error'), t('post.updateFailed'))
+      } else {
+        setPost(prev => prev ? { ...prev, is_active: true } : prev)
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      }
+    } catch {
+      Alert.alert(t('common.error'), t('post.updateFailed'))
+    }
+  }, [post, supabase, t, undoTimeoutRef])
 
   const handleMarkClosed = useCallback(async () => {
     if (!post) return
@@ -699,6 +731,18 @@ function PostDetailScreenInner() {
     if (!post?.daily_fee) return 0
     return suggestDeposit(post.daily_fee, post.tags ?? [])
   }, [post?.daily_fee, post?.tags])
+
+  const depositRange = useMemo(() => {
+    const tags = post?.tags ?? []
+    const match = tags.find((t: string) => t in DEPOSIT_SUGGESTIONS)
+    if (match) return DEPOSIT_SUGGESTIONS[match]
+    return { min: 50, max: 300 }
+  }, [post?.tags])
+
+  const depositOutOfRange = useMemo(() => {
+    if (!depositAmount) return false
+    return depositAmount < depositRange.min || depositAmount > depositRange.max
+  }, [depositAmount, depositRange])
 
   useEffect(() => {
     if (!bookingModalVisible || !id) return
@@ -1388,12 +1432,19 @@ function PostDetailScreenInner() {
                     </Pressable>
                     <Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(serviceFee, locale)}</Text>
                   </View>
-                  <View style={styles.pricingRow}>
-                    <Pressable style={styles.pricingLabelRow} onPress={() => setDepositInfoVisible(true)} hitSlop={8}>
-                      <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('rental.deposit')}</Text>
-                      <Info size={13} color={colors.mutedForeground} />
-                    </Pressable>
-                    <Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(depositAmount, locale)}</Text>
+                  <View>
+                    <View style={styles.pricingRow}>
+                      <Pressable style={styles.pricingLabelRow} onPress={() => setDepositInfoVisible(true)} hitSlop={8}>
+                        <Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{t('rental.deposit')}</Text>
+                        <Info size={13} color={colors.mutedForeground} />
+                      </Pressable>
+                      <Text style={[styles.pricingValue, { color: depositOutOfRange ? colors.destructive : colors.foreground }]}>{formatPrice(depositAmount, locale)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 11, fontFamily: fonts.body, color: depositOutOfRange ? colors.destructive : colors.mutedForeground, lineHeight: 15, marginTop: 2 }}>
+                      {depositOutOfRange
+                        ? t('post.depositOutOfRange')
+                        : t('post.depositSuggestedRange', { min: depositRange.min, max: depositRange.max })}
+                    </Text>
                   </View>
                   <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}><Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text><Text style={[styles.bookingTotalPrice, { color: colors.foreground }]}>{formatPrice(bookingTotal, locale)}</Text></View>
                 </View>
@@ -1620,9 +1671,34 @@ function PostDetailScreenInner() {
           userId={userId}
         />
       )}
+
+      {/* Undo delete bar — shows for 10s after soft-delete */}
+      {undoBarVisible && (
+        <View style={[undoStyles.bar, { backgroundColor: colors.card, borderColor: colors.border, bottom: insets.bottom + 88 }]}>
+          <Text style={[undoStyles.label, { color: colors.foreground }]}>{t('post.deletedUndo')}</Text>
+          <PressableOpacity onPress={handleUndoDelete} style={[undoStyles.btn, { backgroundColor: colors.foreground }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.undo')}>
+            <Text style={[undoStyles.btnText, { color: colors.background }]}>{t('post.undo')}</Text>
+          </PressableOpacity>
+        </View>
+      )}
     </KeyboardAvoidingView>
   )
 }
+
+const undoStyles = StyleSheet.create({
+  bar: {
+    position: 'absolute', left: 16, right: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12,
+    borderRadius: 999, borderWidth: StyleSheet.hairlineWidth,
+    zIndex: 30,
+    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12, shadowRadius: 12, elevation: 8,
+  },
+  label: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20, flex: 1 },
+  btn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
+  btnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+})
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

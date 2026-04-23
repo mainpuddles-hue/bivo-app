@@ -22,6 +22,7 @@ import { AlertBanner } from '@/components/AlertBanner'
 import { PostCardSkeleton, FeedLoadMoreSkeleton } from '@/components/SkeletonLoaders'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { OnboardingOverlay } from '@/components/OnboardingOverlay'
 import { DiscoveryStack } from '@/components/DiscoveryStack'
 import { FeedMapView } from '@/components/FeedMapView'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -45,6 +46,14 @@ function FeedScreenInner() {
 
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const supabase = useSupabase()
+
+  // ── Onboarding overlay ──
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  useEffect(() => {
+    AsyncStorage.getItem('tackbird_onboarding_completed').then(val => {
+      if (!val) setShowOnboarding(true)
+    }).catch(() => {})
+  }, [])
 
   // Batch view counts for feed cards
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({})
@@ -678,6 +687,11 @@ function FeedScreenInner() {
         selectedNeighborhood={feed.userNeighborhood}
         onSelect={feed.handleNeighborhoodSelect}
         neighborhoods={feed.cityNeighborhoods.length > 0 ? feed.cityNeighborhoods : undefined}
+      />
+
+      <OnboardingOverlay
+        visible={showOnboarding}
+        onDone={() => setShowOnboarding(false)}
       />
     </View>
   )
