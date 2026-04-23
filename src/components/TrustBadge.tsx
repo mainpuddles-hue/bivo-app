@@ -1,11 +1,12 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Pressable, Modal, ScrollView, StyleSheet } from 'react-native'
 import { PressableOpacity } from '@/components/ui'
-import { Shield, ShieldCheck, ShieldPlus } from 'lucide-react-native'
+import { Shield, ShieldCheck, ShieldPlus, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { TRUST_TIERS } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import type { TrustLevel } from '@/lib/types'
+import { useState } from 'react'
 
 const ICONS = {
   Shield,
@@ -18,10 +19,13 @@ interface TrustBadgeProps {
   size?: 'small' | 'medium' | 'large'
   showLabel?: boolean
   onPress?: () => void
+  showExplainer?: boolean
 }
 
-export function TrustBadge({ level, size = 'small', showLabel = false, onPress }: TrustBadgeProps) {
+export function TrustBadge({ level, size = 'small', showLabel = false, onPress, showExplainer = false }: TrustBadgeProps) {
   const { t } = useI18n()
+  const { colors } = useTheme()
+  const [explainerVisible, setExplainerVisible] = useState(false)
   const tier = TRUST_TIERS[level]
   const Icon = ICONS[tier.icon]
 
@@ -39,10 +43,84 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress }
     </View>
   )
 
-  if (onPress) {
-    return <Pressable onPress={onPress} hitSlop={8}>{content}</Pressable>
-  }
-  return content
+  const handlePress = onPress ?? (showExplainer ? () => setExplainerVisible(true) : undefined)
+
+  const nextLevel = level < 3 ? (level + 1) as TrustLevel : null
+  const nextTier = nextLevel ? TRUST_TIERS[nextLevel] : null
+
+  return (
+    <>
+      {handlePress ? (
+        <Pressable onPress={handlePress} hitSlop={8}>{content}</Pressable>
+      ) : content}
+
+      {showExplainer && (
+        <Modal
+          visible={explainerVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setExplainerVisible(false)}
+        >
+          <Pressable style={styles.explainerOverlay} onPress={() => setExplainerVisible(false)}>
+            <Pressable style={[styles.explainerCard, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => {}}>
+              {/* Header */}
+              <View style={styles.explainerHeader}>
+                <Text style={[styles.explainerTitle, { color: colors.foreground }]}>{t('trust.explainerTitle')}</Text>
+                <Pressable onPress={() => setExplainerVisible(false)} hitSlop={8}>
+                  <X size={20} color={colors.mutedForeground} />
+                </Pressable>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Tier rows */}
+                {([1, 2, 3] as TrustLevel[]).map((lvl) => {
+                  const t2 = TRUST_TIERS[lvl]
+                  const TierIcon = ICONS[t2.icon]
+                  const isCurrentTier = lvl === level
+                  return (
+                    <View
+                      key={lvl}
+                      style={[
+                        styles.tierRow,
+                        { borderColor: isCurrentTier ? t2.color : colors.border },
+                        isCurrentTier && { backgroundColor: colors.muted },
+                      ]}
+                    >
+                      <TierIcon size={20} color={t2.color} strokeWidth={1.5} />
+                      <View style={styles.tierRowText}>
+                        <Text style={[styles.tierRowName, { color: t2.color }]}>{t(t2.nameKey)}{isCurrentTier ? ' \u2605' : ''}</Text>
+                        <Text style={[styles.tierRowDesc, { color: colors.mutedForeground }]}>{t(`trust.tier${lvl}Desc`)}</Text>
+                      </View>
+                    </View>
+                  )
+                })}
+
+                {/* Next tier requirements */}
+                {nextTier && (
+                  <View style={styles.requirementsSection}>
+                    <Text style={[styles.requirementsTitle, { color: colors.foreground }]}>{t('trust.nextTierRequirements')}</Text>
+                    {level === 1 && (
+                      <>
+                        <Text style={[styles.requirementItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('trust.step1VerifyId')}</Text>
+                        <Text style={[styles.requirementItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('trust.step2WaitDays')}</Text>
+                      </>
+                    )}
+                    {level === 2 && (
+                      <>
+                        <Text style={[styles.requirementItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('trust.step3Reviews')}</Text>
+                        <Text style={[styles.requirementItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('trust.step3Rating')}</Text>
+                        <Text style={[styles.requirementItem, { color: colors.mutedForeground }]}>{'\u2022'} {t('trust.step3Response')}</Text>
+                      </>
+                    )}
+                  </View>
+                )}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
+      )}
+    </>
+  )
 }
 
 interface TrustProgressProps {
@@ -240,5 +318,72 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
     // color set via inline style with colors.primaryForeground
+  },
+  explainerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  explainerCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 20,
+    gap: 16,
+    maxHeight: 480,
+  },
+  explainerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  explainerTitle: {
+    fontSize: 17,
+    fontFamily: fonts.headingSemi,
+    fontWeight: '600',
+    lineHeight: 22,
+  },
+  tierRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: 8,
+  },
+  tierRowText: {
+    flex: 1,
+    gap: 2,
+  },
+  tierRowName: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  tierRowDesc: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+  },
+  requirementsSection: {
+    gap: 6,
+    marginTop: 4,
+  },
+  requirementsTitle: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    fontWeight: '600',
+    lineHeight: 18,
+    marginBottom: 2,
+  },
+  requirementItem: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
   },
 })
