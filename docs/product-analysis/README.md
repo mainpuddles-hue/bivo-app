@@ -33,6 +33,11 @@ Comprehensive product analysis using designer-skills frameworks. Created 2026-04
 |----------|-----------|------|
 | **Positioning Canvas** | Obviously Awesome (April Dunford) | [positioning-canvas.md](positioning-canvas.md) |
 | **Hook Model** | Hooked (Nir Eyal) | [hook-model.md](hook-model.md) |
+| **Chasm Strategy** | Crossing the Chasm (Geoffrey Moore) | [chasm-strategy.md](chasm-strategy.md) |
+| **Mom Test Plan** | The Mom Test (Rob Fitzpatrick) | [mom-test-plan.md](mom-test-plan.md) |
+| **Grand Slam Offer** | $100M Offers (Alex Hormozi) | [grand-slam-offer.md](grand-slam-offer.md) |
+| **Microinteractions Audit** | Microinteractions (Dan Saffer) | [microinteractions-audit.md](microinteractions-audit.md) |
+| **Visual Audit** | Refactoring UI (Wathan/Schoger) | [visual-audit.md](visual-audit.md) |
 
 ## Key Findings
 
