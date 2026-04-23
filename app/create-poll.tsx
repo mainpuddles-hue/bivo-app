@@ -8,6 +8,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
+import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -89,7 +90,7 @@ function CreatePollInner() {
     })
 
     if (error) {
-      Alert.alert(t('common.error'), error.message)
+      Alert.alert(t('common.error'), mapErrorToFinnish(error, t))
       setSubmitting(false)
       return
     }

@@ -10,6 +10,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { FEATURES as APP_FEATURES } from '@/lib/featureFlags'
+import { mapErrorToFinnish } from '@/lib/errorMessages'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -90,7 +91,7 @@ export default function ProScreen() {
         await Linking.openURL(url).catch(() => {})
       }
     } catch (err: any) {
-      setError(err.message ?? t('pro.checkoutError'))
+      setError(mapErrorToFinnish(err, t))
     } finally {
       setPurchasing(false)
     }

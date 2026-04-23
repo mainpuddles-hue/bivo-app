@@ -21,6 +21,7 @@ import { PressableOpacity } from '@/components/ui'
 import { fonts } from '@/lib/fonts'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
+import { mapErrorToFinnish } from '@/lib/errorMessages'
 
 type BookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
@@ -249,12 +250,12 @@ function BookingDetailScreenInner() {
       }
       const { error } = await (supabase.from(table) as any).update(updateData).eq('id', booking.id)
       if (error) {
-        Alert.alert(t('common.error'), error.message)
+        Alert.alert(t('common.error'), mapErrorToFinnish(error, t))
       } else {
         setBooking(prev => prev ? { ...prev, status: newStatus } : prev)
       }
-    } catch {
-      Alert.alert(t('common.error'))
+    } catch (err) {
+      Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
     } finally {
       setActionLoading(false)
       updatingRef.current = false

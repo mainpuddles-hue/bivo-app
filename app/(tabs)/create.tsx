@@ -28,6 +28,7 @@ import { trackEvent } from '@/lib/analytics'
 import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
+import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { suggestTags } from '@/lib/autoCategory'
 import type { PostType, TrustLevel } from '@/lib/types'
 import { suggestExpirationDays } from '@/lib/expirePrediction'
@@ -740,7 +741,7 @@ export default function CreateScreen() {
       if (createdPostIdForCleanup) {
         try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch {}
       }
-      Alert.alert(t('common.error'), err?.message || t('create.createFailed'))
+      Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
     } finally {
       setSubmitting(false); setUploadStatus('')
     }

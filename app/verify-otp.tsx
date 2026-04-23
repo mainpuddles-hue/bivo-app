@@ -10,6 +10,7 @@ import { trackEvent } from '@/lib/analytics'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
+import { mapErrorToFinnish } from '@/lib/errorMessages'
 
 type OtpMode = 'signup' | 'recovery'
 
@@ -139,7 +140,7 @@ export default function VerifyOtpScreen() {
         router.replace('/')
       }
     } catch (err: any) {
-      setError(err?.message ?? t('common.error'))
+      setError(mapErrorToFinnish(err, t))
     } finally {
       setLoading(false)
     }
@@ -165,7 +166,7 @@ export default function VerifyOtpScreen() {
       setResendCooldown(60)
       Alert.alert(t('common.success'), t('auth.otpResent'))
     } catch (err: any) {
-      setError(err?.message ?? t('common.error'))
+      setError(mapErrorToFinnish(err, t))
     } finally {
       setResending(false)
     }

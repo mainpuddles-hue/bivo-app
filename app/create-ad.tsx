@@ -16,6 +16,7 @@ import { formatPrice as formatPriceUtil } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { mapErrorToFinnish } from '@/lib/errorMessages'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -247,7 +248,7 @@ export default function CreateAdScreen() {
       // No URL in response — treat as failure and roll back
       await rollbackAd()
     } catch (err: any) {
-      Alert.alert(t('common.error'), err.message ?? t('ads.createError'))
+      Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
     } finally {
       setSubmitting(false)
     }
