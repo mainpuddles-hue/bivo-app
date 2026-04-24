@@ -307,13 +307,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   cardMetaText: {
-    fontSize: 11, fontFamily: fonts.body, lineHeight: 14,
+    fontSize: 12, fontFamily: fonts.body, lineHeight: 16,
   },
   categoryBadge: {
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
   },
   categoryBadgeText: {
-    fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14,
+    fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16,
   },
   detailTitle: {
     fontSize: 20, fontFamily: fonts.heading, letterSpacing: -0.2, lineHeight: 26,

@@ -130,7 +130,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
             const ce = item.sourceData as CityEvent
             return (
               <View style={[styles.detailBadge, { backgroundColor: ce.is_free ? '#2B8A6220' : '#D48B3020' }]}>
-                <Text style={{ fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 14, color: ce.is_free ? '#2B8A62' : '#D48B30' }}>
+                <Text style={{ fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16, color: ce.is_free ? '#2B8A62' : '#D48B30' }}>
                   {ce.is_free ? t('events.free') : ce.price_info ?? t('events.paid')}
                 </Text>
               </View>
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   detailHeaderTitle: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
     lineHeight: 14,
   },

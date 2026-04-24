@@ -734,7 +734,7 @@ const s = StyleSheet.create({
   scrollContent: { flex: 1 },
   scrollContainer: { paddingHorizontal: 16, paddingTop: 16 },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 14,
     fontFamily: fonts.bodySemi,
     marginBottom: 12,
@@ -859,7 +859,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 20,
   },
   inputLabel: {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase',
     fontWeight: '600',

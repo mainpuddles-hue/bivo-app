@@ -449,7 +449,7 @@ const s = StyleSheet.create({
     gap: 8, height: 54, borderRadius: 999, marginTop: 12,
   },
   submitText: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi },
-  terms: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
+  terms: { fontSize: 12, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
 
   // iOS info
   iosInfoCard: {

@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     paddingTop: 18,
   },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.9,
     textTransform: 'uppercase',
@@ -743,7 +743,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
   },
   notifTime: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.body,
     marginTop: 3,

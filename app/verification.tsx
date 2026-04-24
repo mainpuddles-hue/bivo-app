@@ -363,13 +363,13 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
   stepSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
     marginTop: 1,
   },
   stepDoneLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: 0.5,
@@ -389,7 +389,7 @@ const s = StyleSheet.create({
 
   // Footer
   footerNote: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 11 * 1.4,
     textAlign: 'center',

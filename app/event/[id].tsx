@@ -668,7 +668,7 @@ const s = StyleSheet.create({
     borderRadius: 3,
   },
   categoryLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
@@ -778,7 +778,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   moreAvatarsText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },

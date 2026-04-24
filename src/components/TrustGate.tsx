@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tierLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

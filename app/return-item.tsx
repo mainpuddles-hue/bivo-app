@@ -298,13 +298,13 @@ const s = StyleSheet.create({
   itemImage: { width: 58, height: 58, borderRadius: 10 },
   itemImagePlaceholder: { width: 58, height: 58, borderRadius: 10 },
   itemInfo: { flex: 1 },
-  itemSubtitle: { fontSize: 11, fontFamily: fonts.body, letterSpacing: 0.4, marginBottom: 2 },
+  itemSubtitle: { fontSize: 12, fontFamily: fonts.body, letterSpacing: 0.4, marginBottom: 2 },
   itemTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.15 },
   itemMeta: { fontSize: 12, fontFamily: fonts.body, marginTop: 2 },
 
   /* Sections */
   sectionLabel: {
-    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10,
   },
   optionalTag: { textTransform: 'none', fontWeight: '400', letterSpacing: 0 },
@@ -323,7 +323,7 @@ const s = StyleSheet.create({
     borderWidth: 1.5, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
-  photoAddText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  photoAddText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   /* Checklist */
   checklistCard: { borderRadius: 14, borderWidth: 1, marginBottom: 22 },

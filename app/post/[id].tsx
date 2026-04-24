@@ -1116,7 +1116,7 @@ function PostDetailScreenInner() {
           )}
 
           {priceContext && (post.daily_fee !== null || post.service_price !== null) && (
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, lineHeight: 16, fontFamily: fonts.body }}>
+            <Text style={{ fontSize: 12, color: colors.mutedForeground, lineHeight: 16, fontFamily: fonts.body }}>
               {t('post.priceContext', { min: priceContext.min, max: priceContext.max })}
             </Text>
           )}
@@ -1384,10 +1384,10 @@ function PostDetailScreenInner() {
             </View>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.titleLabel')} *</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editTitle} onChangeText={setEditTitle} maxLength={100} accessibilityLabel={t('post.titleLabel')} />
-            <Text style={{ fontSize: 11, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editTitle.length}/100</Text>
+            <Text style={{ fontSize: 12, color: editTitle.length >= 90 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editTitle.length}/100</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.descriptionLabel')}</Text>
             <TextInput style={[styles.modalInput, styles.modalTextArea, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={5} textAlignVertical="top" maxLength={2000} inputAccessoryViewID={KEYBOARD_DONE_ID} accessibilityLabel={t('post.descriptionLabel')} />
-            <Text style={{ fontSize: 11, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editDescription.length}/2000</Text>
+            <Text style={{ fontSize: 12, color: editDescription.length >= 1900 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>{editDescription.length}/2000</Text>
             <Text style={[styles.modalLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
             <TextInput style={[styles.modalInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]} value={editLocation} onChangeText={setEditLocation} maxLength={100} accessibilityLabel={t('post.locationLabel')} />
             <PressableOpacity onPress={handleSaveEdit} disabled={saving || !editTitle.trim()} style={[styles.saveBtn, { backgroundColor: saving || !editTitle.trim() ? colors.muted : colors.foreground }]}>
@@ -1441,7 +1441,7 @@ function PostDetailScreenInner() {
                       </Pressable>
                       <Text style={[styles.pricingValue, { color: depositOutOfRange ? colors.destructive : colors.foreground }]}>{formatPrice(depositAmount, locale)}</Text>
                     </View>
-                    <Text style={{ fontSize: 11, fontFamily: fonts.body, color: depositOutOfRange ? colors.destructive : colors.mutedForeground, lineHeight: 16, marginTop: 2 }}>
+                    <Text style={{ fontSize: 12, fontFamily: fonts.body, color: depositOutOfRange ? colors.destructive : colors.mutedForeground, lineHeight: 16, marginTop: 2 }}>
                       {depositOutOfRange
                         ? t('post.depositOutOfRange')
                         : t('post.depositSuggestedRange', { min: depositRange.min, max: depositRange.max })}
@@ -1452,7 +1452,7 @@ function PostDetailScreenInner() {
               )}
               {bookingDays > 0 && (<Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>{t('rental.confirmationNote')}</Text>)}
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
-              <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
+              <Text style={{ fontSize: 12, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
               <PressableOpacity onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
                 style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.foreground, marginTop: 16, marginBottom: 8 }]}>
                 {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
@@ -1523,7 +1523,7 @@ function PostDetailScreenInner() {
               accessibilityLabel={t('service.notesLabel')}
             />
             {serviceNotes.length > 0 && (
-              <Text style={{ fontSize: 11, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>
+              <Text style={{ fontSize: 12, color: serviceNotes.length >= 450 ? colors.destructive : colors.mutedForeground, textAlign: 'right', fontFamily: fonts.body, lineHeight: 16 }}>
                 {serviceNotes.length}/500
               </Text>
             )}
@@ -1551,7 +1551,7 @@ function PostDetailScreenInner() {
 
             {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
 
-            <Text style={{ fontSize: 11, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
+            <Text style={{ fontSize: 12, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
 
             <PressableOpacity
               onPress={handlePayForService}
@@ -1699,7 +1699,7 @@ const undoStyles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12,
     borderRadius: 999, borderWidth: StyleSheet.hairlineWidth,
     zIndex: 30,
-    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12, shadowRadius: 12, elevation: 8,
   },
   label: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20, flex: 1 },
@@ -1727,10 +1727,10 @@ const styles = StyleSheet.create({
   // Category — Threads-style dot + muted uppercase label
   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
-  categoryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 12 },
+  categoryLabel: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 16 },
 
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
-  expirationText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16 },
+  expirationText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   title: { fontSize: 22, fontFamily: fonts.heading, lineHeight: 28, letterSpacing: -0.4 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
@@ -1773,7 +1773,7 @@ const styles = StyleSheet.create({
   commentTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   commentContent: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   replyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, minHeight: 44, paddingVertical: 8 },
-  replyBtnText: { fontSize: 11, fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  replyBtnText: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
   replyRow: { marginLeft: 48 },
   replyLine: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, borderRadius: 1 },
   replyAvatar: { width: 28, height: 28, borderRadius: 14 },
@@ -1798,7 +1798,7 @@ const styles = StyleSheet.create({
   ratingBlock: { alignItems: 'flex-end', gap: 2, marginLeft: 8 },
   ratingInline: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   ratingValue: { fontSize: 13, fontFamily: fonts.heading, lineHeight: 18 },
-  ratingCount: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textDecorationLine: 'underline' },
+  ratingCount: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, textDecorationLine: 'underline' },
 
   // Badge row
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
@@ -1828,7 +1828,7 @@ const styles = StyleSheet.create({
   relatedImage: { width: '100%', height: '100%' },
   relatedCardBody: { padding: 10, gap: 4 },
   relatedCardTitle: { fontSize: 14, fontFamily: fonts.heading, lineHeight: 18 },
-  relatedCardLocation: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },
+  relatedCardLocation: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   relatedCardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   relatedCardArrow: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   relatedHeartCircle: { position: 'absolute', top: 8, right: 8, width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
@@ -1839,7 +1839,7 @@ const styles = StyleSheet.create({
   bookingTotalPrice: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   datesSummary: { flexDirection: 'row', gap: 16, padding: 12, borderRadius: 20, marginTop: 12 },
   datesSummaryItem: { flex: 1, gap: 2 },
-  datesSummaryLabel: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3 },
+  datesSummaryLabel: { fontSize: 12, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3 },
   datesSummaryValue: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   pricingBreakdown: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 20, padding: 16, marginTop: 12, gap: 8 },
   pricingTitle: { fontSize: 14, fontFamily: fonts.headingSemi, marginBottom: 4, lineHeight: 20 },
@@ -1867,7 +1867,7 @@ const ctaStyles = StyleSheet.create({
     flexDirection: 'column', gap: 8,
     paddingHorizontal: 16, paddingTop: 12,
     // Shadow for floating CTA (only floating elements get shadow)
-    shadowColor: '#1A1D1F',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,

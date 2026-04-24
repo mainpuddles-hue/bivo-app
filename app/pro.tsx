@@ -355,7 +355,7 @@ const s = StyleSheet.create({
 
   // Section
   sectionLabel: {
-    fontSize: 11, lineHeight: 16, fontWeight: '600', letterSpacing: 0.8,
+    fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.8,
     textTransform: 'uppercase', marginTop: 8, paddingHorizontal: 4,
     fontFamily: fonts.bodySemi,
   },
@@ -397,7 +397,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 3,
     transform: [{ rotate: '30deg' }],
   },
-  saveBadgeText: { fontSize: 11, lineHeight: 14, fontWeight: '800', fontFamily: fonts.bodySemi },
+  saveBadgeText: { fontSize: 12, lineHeight: 16, fontWeight: '800', fontFamily: fonts.bodySemi },
 
   // CTA — INK bg, white text, pill
   subscribeBtn: {
@@ -425,8 +425,8 @@ const s = StyleSheet.create({
 
   // Misc
   errorText: { fontSize: 13, lineHeight: 18, textAlign: 'center', fontFamily: fonts.body },
-  termsText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
-  autoRenewalText: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
+  termsText: { fontSize: 12, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
+  autoRenewalText: { fontSize: 12, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, fontFamily: fonts.body },
   restoreBtn: {
     alignItems: 'center', paddingVertical: 12, borderRadius: 999,
     borderWidth: 1, minHeight: 48,

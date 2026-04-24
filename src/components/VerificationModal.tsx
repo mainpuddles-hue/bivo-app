@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   },
   privacyText: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
   },

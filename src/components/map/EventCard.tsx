@@ -181,12 +181,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   dateText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
     lineHeight: 14,
   },
   meta: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 14,
   },
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   distance: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 14,
   },

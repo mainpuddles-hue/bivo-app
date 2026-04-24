@@ -224,13 +224,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   cardMetaText: {
-    fontSize: 11, fontFamily: fonts.body, lineHeight: 14,
+    fontSize: 12, fontFamily: fonts.body, lineHeight: 16,
   },
   categoryBadge: {
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
   },
   categoryBadgeText: {
-    fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14,
+    fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16,
   },
   cardTitle: {
     fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 20,

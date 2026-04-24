@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
   },
   weekdayText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,

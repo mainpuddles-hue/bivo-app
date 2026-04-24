@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   previewText: { flex: 1, gap: 2 },
   previewCategoryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   previewCategoryDot: { width: 8, height: 8, borderRadius: 4 },
-  previewCategory: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3, lineHeight: 14 },
+  previewCategory: { fontSize: 12, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.3, lineHeight: 16 },
   previewTitle: { fontSize: 15, fontFamily: fonts.heading, lineHeight: 20 },
   previewMeta: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   previewClose: { position: 'absolute', top: 8, right: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },

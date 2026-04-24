@@ -489,7 +489,7 @@ export default function ProfileScreen() {
                 placeholderTextColor={colors.mutedForeground}
                 inputAccessoryViewID={KEYBOARD_DONE_ID}
               />
-              <Text style={{ fontSize: 11, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
+              <Text style={{ fontSize: 12, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
                 {bioText.length}/200
               </Text>
               <View style={s.bioActions}>
@@ -942,7 +942,7 @@ const s = StyleSheet.create({
   bioSaveBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44, justifyContent: 'center' as const },
   badgesRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   badgeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  badgeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
+  badgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
 
   // Flat list (kept for logout row at bottom)
   flatList: { borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
@@ -953,7 +953,7 @@ const s = StyleSheet.create({
   reviewCard: { borderRadius: 20, padding: 16, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 18 },
-  reviewTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+  reviewTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   reviewComment: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   emptyText: { fontSize: 14, fontFamily: fonts.body },
   emptyHint: { fontSize: 13, marginTop: 4, fontFamily: fonts.body, lineHeight: 18 },
@@ -986,16 +986,16 @@ const s = StyleSheet.create({
   myPostItem: { gap: 8, padding: 16, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth },
   myPostTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 20 },
   myPostTypeBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  myPostTypeText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
-  myPostDate: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+  myPostTypeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
+  myPostDate: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   myPostStatusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  myPostStatusText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
+  myPostStatusText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, textTransform: 'uppercase', lineHeight: 13 },
   myPostActions: { flexDirection: 'row', gap: 8, paddingTop: 4 },
   myPostActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, minHeight: 44 },
-  myPostActionText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 14 },
+  myPostActionText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   postFilterChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44 , justifyContent: 'center' as const },
   postFilterText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   loadMoreBtn: { alignItems: 'center', gap: 4, paddingVertical: 14, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, minHeight: 48, justifyContent: 'center' as const },
   loadMoreText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
-  loadMoreHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+  loadMoreHint: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
 })

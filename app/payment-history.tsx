@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   headerSpacer: { width: 36 },
   listContent: { padding: 16, gap: 16, paddingBottom: 40 },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     letterSpacing: 1,
     textTransform: 'uppercase',
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headingSemi,
   },
   miniStatusText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 0.3,

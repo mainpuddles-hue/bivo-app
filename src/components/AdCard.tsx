@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   sponsoredText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',

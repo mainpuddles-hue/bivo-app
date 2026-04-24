@@ -1034,10 +1034,10 @@ const s = StyleSheet.create({
     borderWidth: 1,
   },
   headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.bodySemi },
-  headerSub: { fontSize: 11, lineHeight: 16, fontFamily: fonts.body },
+  headerSub: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   onlineDot: { width: 6, height: 6, borderRadius: 999 },
-  onlineText: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
+  onlineText: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   // ── Messages ────────────────────────────────────────────────
   msgList: { padding: 16, gap: 4, flexGrow: 1 },
   dayStampRow: {
@@ -1046,7 +1046,7 @@ const s = StyleSheet.create({
   },
   dayStampLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dateHeader: {
-    fontSize: 11, fontWeight: '500', letterSpacing: 0.9,
+    fontSize: 12, fontWeight: '500', letterSpacing: 0.9,
     fontFamily: fonts.bodyMedium, textTransform: 'uppercase',
   },
   msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
@@ -1058,7 +1058,7 @@ const s = StyleSheet.create({
   msgText: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
-  msgTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
+  msgTime: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   reactionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   reactionsRowMine: { justifyContent: 'flex-end' },
   reactionsRowTheirs: { justifyContent: 'flex-start' },
@@ -1067,7 +1067,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, borderWidth: 1,
   },
   reactionEmoji: { fontSize: 14, lineHeight: 20 },
-  reactionCount: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
+  reactionCount: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   loadOlderBtn: { alignSelf: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 16 },
   loadOlderText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   // ── Scroll to bottom ───────────────────────────────────────
@@ -1084,7 +1084,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 4, zIndex: 1,
   },
   newMsgBadgeText: {
-    fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600' as const,
+    fontSize: 12, fontFamily: fonts.bodySemi, fontWeight: '600' as const,
     lineHeight: 14,
   },
   // ── Reaction picker modal ──────────────────────────────────
@@ -1149,7 +1149,7 @@ const s = StyleSheet.create({
     maxWidth: '100%',
   },
   linkDomain: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
-  linkAction: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
+  linkAction: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
 })
 
 const contextStyles = StyleSheet.create({
@@ -1160,9 +1160,9 @@ const contextStyles = StyleSheet.create({
   },
   image: { width: 46, height: 46, borderRadius: 12 },
   info: { flex: 1, minWidth: 0, gap: 4 },
-  eyebrow: { fontSize: 11, fontWeight: '500', letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodyMedium, lineHeight: 14 },
+  eyebrow: { fontSize: 12, fontWeight: '500', letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodyMedium, lineHeight: 16 },
   title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.bodySemi },
-  showLink: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
+  showLink: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
 })
 
 const offerStyles = StyleSheet.create({

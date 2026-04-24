@@ -262,7 +262,7 @@ function SavedScreenInner() {
                   isActive && [s.segmentTabActive, {
                     backgroundColor: colors.card,
                     // Subtle shadow for active segment
-                    shadowColor: '#1A1D1F',
+                    shadowColor: '#000',
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.08,
                     shadowRadius: 3,
@@ -542,7 +542,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   segmentTabCount: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
   },
@@ -609,7 +609,7 @@ const s = StyleSheet.create({
     letterSpacing: -0.1,
   },
   gridMeta: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginTop: 3,
   },
@@ -626,7 +626,7 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 0.9,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
@@ -661,7 +661,7 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
   eventDate: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
   },
@@ -672,7 +672,7 @@ const s = StyleSheet.create({
     marginTop: 1,
   },
   eventLocation: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
   },

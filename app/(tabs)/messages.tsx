@@ -749,7 +749,7 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flex: 1, gap: 2 },
   locationEyebrow: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     letterSpacing: 0.9,
@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
     minWidth: 36,
   },
   convTime: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 14,
     fontFamily: fonts.body,
   },
@@ -956,7 +956,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     lineHeight: 14,
     fontFamily: fonts.bodySemi,
@@ -1006,12 +1006,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   eventChatMetaText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 14,
     fontFamily: fonts.body,
   },
   eventChatPreview: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 14,
     fontFamily: fonts.body,
   },
@@ -1025,7 +1025,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#1A1D1F',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,

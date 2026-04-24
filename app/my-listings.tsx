@@ -555,7 +555,7 @@ const s = StyleSheet.create({
     marginBottom: 2,
   },
   cardMeta: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginBottom: 6,
   },
@@ -570,7 +570,7 @@ const s = StyleSheet.create({
     gap: 3,
   },
   statText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
   },
   statBold: {

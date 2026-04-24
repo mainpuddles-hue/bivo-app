@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   tierBadgeText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.bodySemi,
   },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.bodySemi,
     marginTop: 8,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   sandboxNote: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.body,
     textAlign: 'center',
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   activeBoostTime: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.body,
   },

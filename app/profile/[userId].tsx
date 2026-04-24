@@ -1061,7 +1061,7 @@ const s = StyleSheet.create({
     borderWidth: 3,
     marginBottom: 12,
     // Subtle shadow
-    shadowColor: '#1A1D1F',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -1112,7 +1112,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 14,
   },
@@ -1222,7 +1222,7 @@ const s = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.9,
     textTransform: 'uppercase',

@@ -1166,7 +1166,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
   headerSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginTop: 1,
   },
@@ -1207,7 +1207,7 @@ const s = StyleSheet.create({
 
   // Section labels
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     fontFamily: fonts.bodySemi,
@@ -1253,7 +1253,7 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
   },
   dateLabelSmall: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
   },
   dateValueBold: {
@@ -1289,7 +1289,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   ribbonSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginTop: 1,
   },
@@ -1448,7 +1448,7 @@ const s = StyleSheet.create({
     gap: 8,
     height: 56,
     borderRadius: 999,
-    shadowColor: '#1A1D1F',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 28,

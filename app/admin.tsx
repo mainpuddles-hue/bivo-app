@@ -522,7 +522,7 @@ const s = StyleSheet.create({
     borderRadius: 16,
   },
   flagBadgeText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.bodySemi,
   },
@@ -535,7 +535,7 @@ const s = StyleSheet.create({
     borderRadius: 16,
   },
   reviewedText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.bodyMedium,
   },
@@ -622,7 +622,7 @@ const s = StyleSheet.create({
     borderRadius: 8,
   },
   bannedText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.bodySemi,
   },

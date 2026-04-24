@@ -132,7 +132,7 @@ const s = StyleSheet.create({
   title: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   timeText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  locationText: { fontSize: 11, lineHeight: 16, flex: 1 },
+  locationText: { fontSize: 12, lineHeight: 16, flex: 1 },
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,7 +141,7 @@ const s = StyleSheet.create({
   },
   dots: { flexDirection: 'row', gap: 3 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  spotsText: { fontSize: 11, lineHeight: 14 },
+  spotsText: { fontSize: 12, lineHeight: 16 },
   joinPill: {
     alignSelf: 'flex-start',
     paddingHorizontal: 14,

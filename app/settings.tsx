@@ -981,7 +981,7 @@ export default function SettingsScreen() {
         {/* ── Saved searches ── */}
         <Group colors={colors}>
           <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 }}>
-            <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: colors.mutedForeground, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            <Text style={{ fontSize: 12, fontFamily: fonts.bodySemi, color: colors.mutedForeground, textTransform: 'uppercase', letterSpacing: 0.5 }}>
               {t('savedSearch.savedSearches') ?? 'Saved searches'}
             </Text>
           </View>
@@ -1421,7 +1421,7 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   profileVerifiedText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
@@ -1507,7 +1507,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   proUpgradeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
@@ -1532,7 +1532,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.body,
   },
   pwFeedback: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
   },
@@ -1586,7 +1586,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   nameCharCount: {
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'right',
     fontFamily: fonts.body,
     lineHeight: 16,
@@ -1610,7 +1610,7 @@ const s = StyleSheet.create({
 
   // ── Version ──
   versionText: {
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'center',
     paddingTop: 16,
     paddingBottom: 8,

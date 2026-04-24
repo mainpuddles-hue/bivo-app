@@ -189,7 +189,7 @@ const s = StyleSheet.create({
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   subtitle: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, marginBottom: 8 },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 1,

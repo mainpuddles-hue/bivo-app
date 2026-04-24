@@ -286,12 +286,12 @@ const s = StyleSheet.create({
   summaryImagePlaceholder: { width: 52, height: 52, borderRadius: 12 },
   summaryInfo: { flex: 1 },
   summaryTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
-  summaryDates: { fontSize: 11, fontFamily: fonts.body, marginTop: 3 },
+  summaryDates: { fontSize: 12, fontFamily: fonts.body, marginTop: 3 },
 
   /* Amount hero */
   amountHero: { alignItems: 'center', paddingBottom: 20 },
   amountLabel: {
-    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1.1, marginBottom: 10,
   },
   amountValue: { fontSize: 58, fontWeight: '600', fontFamily: fonts.heading, letterSpacing: -2.5, lineHeight: 58 },
@@ -314,7 +314,7 @@ const s = StyleSheet.create({
 
   /* Section */
   sectionLabel: {
-    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 0.9, textTransform: 'uppercase', marginBottom: 6, paddingHorizontal: 4,
   },
 
@@ -329,7 +329,7 @@ const s = StyleSheet.create({
   },
   methodInfo: { flex: 1 },
   methodTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
-  methodSubtitle: { fontSize: 11, fontFamily: fonts.body, marginTop: 2 },
+  methodSubtitle: { fontSize: 12, fontFamily: fonts.body, marginTop: 2 },
 
   /* CTA */
   ctaWrap: {
@@ -339,7 +339,7 @@ const s = StyleSheet.create({
   ctaBtn: {
     borderRadius: 999, height: 56,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 10 },
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18, shadowRadius: 28, elevation: 8,
   },
   ctaBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },

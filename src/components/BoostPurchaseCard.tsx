@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bestValueText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.5,
     textTransform: 'uppercase',

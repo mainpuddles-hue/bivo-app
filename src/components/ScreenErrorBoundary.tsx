@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   errorDetail: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: 'monospace',
     borderRadius: 8,
     padding: 8,

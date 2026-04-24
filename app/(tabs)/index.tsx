@@ -727,7 +727,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerLocation: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
     fontWeight: '500',
     letterSpacing: 1.2,
@@ -770,7 +770,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   sortIndicatorText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     letterSpacing: 0.4,
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     position: 'absolute', right: 20, bottom: 92,
     width: 56, height: 56, borderRadius: 28,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#1A1D1F', shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
   },
 
@@ -852,7 +852,7 @@ const styles = StyleSheet.create({
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },
   allLoadedLine: { height: 1, width: '100%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  allLoadedText: { fontSize: 11, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 14 },
+  allLoadedText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
 })
 
 export default function FeedScreen() {

@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 0.9,
     textTransform: 'uppercase',
     fontFamily: fonts.bodySemi,
@@ -619,12 +619,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   loanSub: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
   },
   loanTime: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     marginTop: 3,

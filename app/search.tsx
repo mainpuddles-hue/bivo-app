@@ -1634,7 +1634,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   activeChipText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     lineHeight: 16,
   },
@@ -1648,7 +1648,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
   },
   addFilterText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
     lineHeight: 16,
   },
@@ -1661,7 +1661,7 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   resultsCount: {
-    fontSize: 11,
+    fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     lineHeight: 16,
@@ -1709,7 +1709,7 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
   resultMeta: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
   },
   resultPrice: {
@@ -1735,7 +1735,7 @@ const s = StyleSheet.create({
     gap: 10,
   },
   similarSectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     lineHeight: 16,
@@ -1779,7 +1779,7 @@ const s = StyleSheet.create({
   // ── Discovery sections ──
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
+  sectionTitle: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
   clearHistoryLink: { fontSize: 12, lineHeight: 16 },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {
@@ -1791,7 +1791,7 @@ const s = StyleSheet.create({
   historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   historyBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
   historyText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
-  savedFilterHint: { fontSize: 11, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
+  savedFilterHint: { fontSize: 12, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
   hintText: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   categoryGrid: { gap: 0 },
   categoryCard: {
@@ -1826,7 +1826,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 0, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   trendingTitle: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  trendingCat: { fontSize: 11, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
+  trendingCat: { fontSize: 12, marginTop: 1, fontFamily: fonts.body, lineHeight: 16 },
   trendingLikes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   trendingLikeCount: { fontSize: 12, fontFamily: fonts.bodyMedium, lineHeight: 16 },
 
@@ -1840,7 +1840,7 @@ const s = StyleSheet.create({
     paddingVertical: 12,
   },
   suggestionText: { flex: 1, fontSize: 14, lineHeight: 20 },
-  suggestionBadge: { fontSize: 11, lineHeight: 16 },
+  suggestionBadge: { fontSize: 12, lineHeight: 16 },
 
   // ── Demand chips ──
   demandChip: {
@@ -1848,5 +1848,5 @@ const s = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999,
     borderWidth: 1,
   },
-  demandChipCount: { fontSize: 11, lineHeight: 16 },
+  demandChipCount: { fontSize: 12, lineHeight: 16 },
 })

@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     height: 22,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
   },
-  proBannerText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
+  proBannerText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5, fontFamily: fonts.bodySemi },
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 8 },
 
   // Top row: user + category badge
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999,
     paddingHorizontal: 8, paddingVertical: 4,
   },
-  multiImageText: { fontSize: 12, fontWeight: '600', color: '#F5F6F7', lineHeight: 16, fontFamily: fonts.bodySemi },
+  multiImageText: { fontSize: 12, fontWeight: '600', color: '#FFFFFF', lineHeight: 16, fontFamily: fonts.bodySemi },
   proBadgeOnImage: {
     position: 'absolute', top: 8, right: 8,
     width: 26, height: 26, borderRadius: 13,
@@ -646,19 +646,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999,
     alignSelf: 'flex-start',
   },
-  expirationText: { fontSize: 11, fontWeight: '600', lineHeight: 12, fontFamily: fonts.bodySemi },
+  expirationText: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
 
   // Title + description
   title: { fontSize: 17, fontFamily: fonts.heading, lineHeight: 22, letterSpacing: -0.3 },
-  seedLabel: { fontSize: 11, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 14 },
+  seedLabel: { fontSize: 12, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 16 },
   description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
 
   // Meta (price + location)
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   priceBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
+  priceText: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
   conditionBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
+  conditionBadgeText: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
   // Action row — tight, touch targets met via hitSlop not minHeight
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },

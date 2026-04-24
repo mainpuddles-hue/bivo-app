@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   roleText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
     lineHeight: 14,
   },

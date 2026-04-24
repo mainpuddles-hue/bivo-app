@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 8,
   },
-  headerBadgeText: { fontSize: 11, fontWeight: '700', lineHeight: 16, fontFamily: fonts.bodySemi },
+  headerBadgeText: { fontSize: 12, fontWeight: '700', lineHeight: 16, fontFamily: fonts.bodySemi },
   clearBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   clearText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   scrollContent: { paddingBottom: 20 },

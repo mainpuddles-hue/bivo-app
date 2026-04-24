@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   placeDistance: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 14,
   },

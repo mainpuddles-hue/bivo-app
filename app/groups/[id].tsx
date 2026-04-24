@@ -794,7 +794,7 @@ const ps = StyleSheet.create({
   circleBack: { width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { fontSize: 14, fontFamily: fonts.headingSemi, letterSpacing: -0.3 },
-  headerSub: { fontSize: 11, fontFamily: fonts.body, marginTop: -1 },
+  headerSub: { fontSize: 12, fontFamily: fonts.body, marginTop: -1 },
   loadingContainer: { padding: 16 },
   listContent: { padding: 16 },
   infoCard: { borderRadius: 20, padding: 16, marginBottom: 16, borderWidth: 1 },

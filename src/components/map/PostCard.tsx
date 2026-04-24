@@ -156,12 +156,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   metaAvatarInitial: {
-    fontSize: 8,
+    fontSize: 10,
     fontFamily: fonts.bodySemi,
-    lineHeight: 12,
+    lineHeight: 14,
   },
   metaText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 14,
   },

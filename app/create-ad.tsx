@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   },
   content: { padding: 16, gap: 4 },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 14,
     fontWeight: '600',
     letterSpacing: 1,
@@ -610,5 +610,5 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   submitText: { fontSize: 16, fontWeight: '600' },
-  iosDisclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8 },
+  iosDisclaimer: { fontSize: 12, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8, marginTop: 8 },
 })

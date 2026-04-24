@@ -5,6 +5,8 @@ import { Platform } from 'react-native'
  * sm: subtle raise (cards, buttons)
  * md: clear separation (dropdowns, popovers)
  * lg: prominent elevation (modals, FAB, floating elements)
+ *
+ * Use getShadow(isDark, 'sm'|'md'|'lg') for theme-aware shadows.
  */
 
 export const shadowSm = Platform.select({
@@ -73,3 +75,29 @@ export const shadowLgDark = Platform.select({
   android: { elevation: 8 },
   default: {},
 }) as any
+
+/** Theme-aware shadow helper — returns correct shadow for current theme */
+export function getShadow(isDark: boolean, level: 'sm' | 'md' | 'lg') {
+  if (isDark) {
+    return level === 'sm' ? shadowSmDark : level === 'md' ? shadowMdDark : shadowLgDark
+  }
+  return level === 'sm' ? shadowSm : level === 'md' ? shadowMd : shadowLg
+}
+
+/**
+ * Theme-aware overlay color — black overlay in light mode, subtle white in dark mode.
+ * For modal backdrops, image overlays, scrim effects.
+ */
+export function overlay(isDark: boolean, opacity = 0.5): string {
+  return isDark
+    ? `rgba(0,0,0,${Math.min(opacity + 0.2, 0.85)})`
+    : `rgba(0,0,0,${opacity})`
+}
+
+/**
+ * Theme-aware image overlay — always dark for text readability on photos.
+ * Slightly more opaque in dark mode for contrast.
+ */
+export function imageOverlay(isDark: boolean, opacity = 0.45): string {
+  return `rgba(0,0,0,${isDark ? Math.min(opacity + 0.1, 0.75) : opacity})`
+}

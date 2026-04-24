@@ -733,7 +733,7 @@ const styles = StyleSheet.create({
   // Section label — Meta style uppercase
   sectionLabel: {
     fontFamily: fonts.bodySemi,
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
   // Terms (inline for login) — 11px muted centered
   termsInline: {
     fontFamily: fonts.body,
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 17,
     marginTop: 14,
     marginBottom: 8,
@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontFamily: fonts.body,
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 17,
     flex: 1,
     paddingTop: 12,
@@ -885,7 +885,7 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1 },
   dividerText: {
     fontFamily: fonts.bodySemi,
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },

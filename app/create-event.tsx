@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 14,
     fontWeight: '600',
     letterSpacing: 1,

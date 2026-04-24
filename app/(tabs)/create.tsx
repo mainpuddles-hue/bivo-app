@@ -1251,7 +1251,7 @@ export default function CreateScreen() {
                       </View>
                       {autoTags.length > 0 && selectedTags.length === 0 && (
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingTop: 4 }}>
-                          <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: fonts.body, width: '100%' }}>{t('create.suggestedTags') ?? 'Ehdotetut:'}</Text>
+                          <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, width: '100%' }}>{t('create.suggestedTags') ?? 'Ehdotetut:'}</Text>
                           {autoTags.map(tag => (
                             <PressableOpacity key={tag} onPress={() => setSelectedTags(prev => prev.includes(tag) ? prev : [...prev, tag])}
                               accessibilityRole="button" accessibilityLabel={`${t('create.addTag') ?? 'Lisää'} ${t(`tags.${tag}`) ?? tag}`}
@@ -1487,7 +1487,7 @@ const mk = StyleSheet.create({
   stepLabel: { fontSize: 12, fontWeight: '500' as const, marginLeft: 4, fontFamily: fonts.bodyMedium },
 
   // Section label
-  sectionLabel: { fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '500', fontFamily: fonts.bodyMedium, marginBottom: 8 },
+  sectionLabel: { fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '500', fontFamily: fonts.bodyMedium, marginBottom: 8 },
 
   // Scroll
   scrollPad: { paddingBottom: 32 },
@@ -1513,7 +1513,7 @@ const mk = StyleSheet.create({
   photoDashed: { aspectRatio: 1.25, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 8 },
   photoCircle: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   photoMainText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  photoSubText: { fontSize: 11, fontFamily: fonts.body },
+  photoSubText: { fontSize: 12, fontFamily: fonts.body },
   imgRow: { flexDirection: 'row', gap: 8 },
   imgThumb: { width: 100, height: 100, borderRadius: 20, overflow: 'hidden', position: 'relative', borderWidth: 1 },
   imgThumbImg: { width: '100%', height: '100%' },
@@ -1527,13 +1527,13 @@ const mk = StyleSheet.create({
   imgCompleteOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center', borderRadius: 19 },
   imgCompleteCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
-  imgAddMoreText: { fontSize: 11, fontFamily: fonts.body },
+  imgAddMoreText: { fontSize: 12, fontFamily: fonts.body },
 
   // Form fields
   fieldWrap: { gap: 4, paddingHorizontal: 20, paddingTop: 14 },
   input: { height: 50, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, fontSize: 15, fontWeight: '600', fontFamily: fonts.heading },
   textarea: { minHeight: 90, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlignVertical: 'top' },
-  charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
+  charCount: { fontSize: 12, textAlign: 'right', fontFamily: fonts.body },
 
   // 2-column
   twoCol: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 14 },
@@ -1543,7 +1543,7 @@ const mk = StyleSheet.create({
   // Map picker row
   mapRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 10, paddingHorizontal: 16, height: 50, borderRadius: 20, borderWidth: 1 },
   mapRowText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  coordsSmall: { fontSize: 11, marginTop: 4, marginHorizontal: 20, fontFamily: fonts.body },
+  coordsSmall: { fontSize: 12, marginTop: 4, marginHorizontal: 20, fontFamily: fonts.body },
 
   // Tags
   tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -1562,7 +1562,7 @@ const mk = StyleSheet.create({
   toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 20, gap: 12 },
   toggleInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   toggleLabel: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
-  toggleHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16, marginTop: 2 },
+  toggleHint: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, marginTop: 2 },
 
   // Urgency
   urgencyWrap: { gap: 8 },

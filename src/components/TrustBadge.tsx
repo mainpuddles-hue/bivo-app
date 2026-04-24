@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   factorText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 14,
   },

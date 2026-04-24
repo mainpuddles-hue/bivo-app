@@ -422,7 +422,7 @@ const s = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
   },
   daySeparatorText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -457,7 +457,7 @@ const s = StyleSheet.create({
     borderBottomRightRadius: 18,
   },
   senderName: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     marginBottom: 2,
@@ -473,7 +473,7 @@ const s = StyleSheet.create({
     marginBottom: 4,
   },
   msgTime: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 16,
     marginTop: 4,
     alignSelf: 'flex-end',

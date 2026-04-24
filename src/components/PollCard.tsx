@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   label: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     letterSpacing: 0.8,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   expiryText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 14,
   },

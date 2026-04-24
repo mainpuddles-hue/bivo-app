@@ -263,7 +263,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
   charCount: {
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'right',
     marginTop: -8,
     fontFamily: fonts.body,

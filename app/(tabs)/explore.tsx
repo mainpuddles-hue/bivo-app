@@ -1076,7 +1076,7 @@ const s = StyleSheet.create({
   },
   headerLeft: { flex: 1, gap: 2 },
   locationEyebrow: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     letterSpacing: 1.2,
@@ -1236,7 +1236,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 2,
   },
   sectionHeading: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     letterSpacing: 1.0,
@@ -1322,7 +1322,7 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   freeBadgeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
@@ -1466,7 +1466,7 @@ const s = StyleSheet.create({
     gap: 4,
   },
   ceCardMetaText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 16,
   },

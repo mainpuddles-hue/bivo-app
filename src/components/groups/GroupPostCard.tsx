@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   postTime: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     lineHeight: 14,
     marginTop: 1,

@@ -370,7 +370,7 @@ const s = StyleSheet.create({
     gap: 4,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 14,
     fontWeight: '600',
     letterSpacing: 1,
