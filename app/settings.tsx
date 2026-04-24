@@ -240,10 +240,11 @@ export default function SettingsScreen() {
   const [oauthProvider, setOauthProvider] = useState<string | null>(null)
 
   useEffect(() => {
+    let mounted = true
     async function load() {
       try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!mounted || !user) return
       setUserEmail(user.email ?? null)
       setEmailVerified(!!user.email_confirmed_at)
       setAccountCreatedAt(user.created_at ?? null)
@@ -256,9 +257,11 @@ export default function SettingsScreen() {
         setOauthProvider(providerName)
       }
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+      if (!mounted) return
       if (data) {
         // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
         await clearExpiredPro(supabase, user.id, data as any)
+        if (!mounted) return
         const p = data as unknown as Profile
         setProfile(p)
         setNameText(p.name ?? '')
@@ -269,17 +272,18 @@ export default function SettingsScreen() {
         setUserCityId(cid)
         try {
           const { data: cityData } = await supabase.from('cities').select('name').eq('id', cid).maybeSingle()
-          if (cityData) setUserCityName((cityData as any).name)
+          if (mounted && cityData) setUserCityName((cityData as any).name)
         } catch {} // Intentional: cities table may not exist
       }
       // Only Helsinki for MVP launch — multi-city later
-      setAvailableCities([{ id: 'helsinki', name: 'Helsinki' }])
+      if (mounted) setAvailableCities([{ id: 'helsinki', name: 'Helsinki' }])
       // Theme is handled by ThemeProvider
       } catch (err) {
         if (__DEV__) console.warn('[settings] load failed:', err)
       }
     }
     load()
+    return () => { mounted = false }
   }, [supabase])
 
   // Load saved searches

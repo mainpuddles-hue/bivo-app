@@ -15,7 +15,7 @@ const TICKETMASTER_API_KEY = getEnvOrThrow('TICKETMASTER_API_KEY')
 const TM_BASE_URL = 'https://app.ticketmaster.com/discovery/v2/events.json'
 
 const corsHeaders: Record<string, string> = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
 }
@@ -128,7 +128,7 @@ serve(async (req) => {
     const body = await tmResponse.text()
 
     if (!tmResponse.ok) {
-      return new Response(body, {
+      return new Response(JSON.stringify({ error: `Upstream error: ${tmResponse.status}` }), {
         status: tmResponse.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

@@ -26,9 +26,13 @@ interface MetelihEvent {
   ticketUrl: string | null
 }
 
-// In-memory cache
+// Allowlist of valid cities to prevent SSRF
+const ALLOWED_CITIES = new Set(['helsinki', 'tampere', 'turku', 'oulu', 'jyvaskyla', 'kuopio', 'lahti'])
+
+// In-memory cache with size limit
 const cache = new Map<string, { body: string; timestamp: number }>()
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+const MAX_CACHE_ENTRIES = 20
 
 function parseEvents(html: string): MetelihEvent[] {
   const events: MetelihEvent[] = []
@@ -142,7 +146,8 @@ serve(async (req) => {
     }
 
     const url = new URL(req.url)
-    const city = url.searchParams.get('city') || 'helsinki'
+    const rawCity = (url.searchParams.get('city') || 'helsinki').toLowerCase().replace(/[^a-z]/g, '')
+    const city = ALLOWED_CITIES.has(rawCity) ? rawCity : 'helsinki'
     const cacheKey = `meteli-${city}`
 
     // Check cache
@@ -189,7 +194,11 @@ serve(async (req) => {
 
     const body = JSON.stringify({ events, count: events.length, city, scrapedAt: new Date().toISOString() })
 
-    // Cache result
+    // Cache result (prune oldest if at capacity)
+    if (cache.size >= MAX_CACHE_ENTRIES) {
+      const oldest = [...cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp)[0]
+      if (oldest) cache.delete(oldest[0])
+    }
     cache.set(cacheKey, { body, timestamp: Date.now() })
 
     return new Response(body, {

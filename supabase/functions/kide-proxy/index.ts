@@ -102,7 +102,7 @@ serve(async (req) => {
     const body = await kideResponse.text()
 
     if (!kideResponse.ok) {
-      return new Response(body, {
+      return new Response(JSON.stringify({ error: `Upstream error: ${kideResponse.status}` }), {
         status: kideResponse.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

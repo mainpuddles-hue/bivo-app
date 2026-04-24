@@ -753,10 +753,12 @@ function PostDetailScreenInner() {
 
   useEffect(() => {
     if (!bookingModalVisible || !id) return
+    let mounted = true
     async function fetchBlockedDates() {
       try {
         const { data, error } = await (supabase.from('rental_bookings') as any)
           .select('start_date, end_date').eq('post_id', id).in('status', ['pending', 'confirmed', 'paid', 'active'])
+        if (!mounted) return
         if (error) { if (__DEV__) console.log('[bookings] blocked dates error:', error.message); return }
         if (!data) return
         const blocked: string[] = []
@@ -780,6 +782,7 @@ function PostDetailScreenInner() {
       }
     }
     fetchBlockedDates()
+    return () => { mounted = false }
   }, [bookingModalVisible, id, supabase])
 
   const handlePayAndBook = useCallback(async () => {

@@ -156,7 +156,7 @@ function CreateEventScreenInner() {
       if (mounted && (data as any)?.naapurusto) {
         setUserNaapurusto((data as any).naapurusto as string)
       }
-    })
+    }).catch(() => {})
     return () => { mounted = false }
   }, [supabase, router])
 

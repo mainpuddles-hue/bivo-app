@@ -146,23 +146,30 @@ export async function fetchHelsinkiEvents(apiUrl?: string): Promise<CityEvent[]>
   return pendingFetch
 }
 
+let loadingMore = false
 async function loadMorePages(startUrl: string, maxPages: number) {
-  let url: string | null = startUrl
-  const more: CityEvent[] = []
+  if (loadingMore) return // Prevent concurrent background page loads
+  loadingMore = true
+  try {
+    let url: string | null = startUrl
+    const more: CityEvent[] = []
 
-  for (let i = 0; i < maxPages && url; i++) {
-    try {
-      const page = await fetchPage(url)
-      more.push(...page.events)
-      url = page.next
-    } catch (err) {
-      if (__DEV__) console.log('[linkedevents] loadMorePages error:', err)
-      break
+    for (let i = 0; i < maxPages && url; i++) {
+      try {
+        const page = await fetchPage(url)
+        more.push(...page.events)
+        url = page.next
+      } catch (err) {
+        if (__DEV__) console.log('[linkedevents] loadMorePages error:', err)
+        break
+      }
     }
-  }
 
-  if (more.length > 0 && cache) {
-    cache = { events: [...cache.events, ...more], fetchedAt: cache.fetchedAt }
+    if (more.length > 0 && cache) {
+      cache = { events: [...cache.events, ...more], fetchedAt: cache.fetchedAt }
+    }
+  } finally {
+    loadingMore = false
   }
 }
 
