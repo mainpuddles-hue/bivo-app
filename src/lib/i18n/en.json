@@ -1374,7 +1374,14 @@
     "confirmedTitle": "Confirmed",
     "activeTitle": "In progress",
     "completedTitle": "Completed",
-    "cancelledTitle": "Cancelled"
+    "cancelledTitle": "Cancelled",
+    "stepPending": "Pending",
+    "stepConfirmed": "Confirmed",
+    "stepPickedUp": "Picked up",
+    "stepReturned": "Returned",
+    "stepInProgress": "In progress",
+    "stepCompleted": "Completed",
+    "stepCancelled": "Cancelled"
   },
   "payment": {
     "success": "Payment successful!",

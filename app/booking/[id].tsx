@@ -9,7 +9,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ImageWithFallback } from '@/components/ImageWithFallback'
 import {
   ArrowLeft, MessageCircle, Package, ShoppingBag, CheckCircle, XCircle,
-  RotateCcw, Star, Check, ChevronRight, AlertCircle,
+  RotateCcw, Star, Check, ChevronRight, AlertCircle, Clock,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -354,6 +354,9 @@ function BookingDetailScreenInner() {
         <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.loan')} />
 
         <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Lifecycle stepper */}
+          <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
+
           {/* Hero — waiting */}
           <View style={s.heroCenter}>
             <View style={[s.heroCircle, { backgroundColor: colors.muted }]}>
@@ -427,6 +430,9 @@ function BookingDetailScreenInner() {
         <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.loan')} />
 
         <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Lifecycle stepper */}
+          <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
+
           {/* Hero — confirmed checkmark */}
           <View style={s.heroCenter}>
             <View style={[s.heroCircle, { backgroundColor: colors.foreground }]}>
@@ -500,6 +506,9 @@ function BookingDetailScreenInner() {
         />
 
         <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Lifecycle stepper */}
+          <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
+
           {/* Status banner with progress bar */}
           <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={s.statusDotRow}>
@@ -616,6 +625,9 @@ function BookingDetailScreenInner() {
         <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.reviewTitle')} />
 
         <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+          {/* Lifecycle stepper */}
+          <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
+
           {/* Hero — avatar + prompt */}
           <View style={s.heroCenter}>
             {booking.other_user && (
@@ -708,6 +720,9 @@ function BookingDetailScreenInner() {
       <BarHeader colors={colors} t={t} insets={insets} router={router} />
 
       <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
+        {/* Lifecycle stepper */}
+        <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
+
         {/* Hero — cancelled */}
         <View style={s.heroCenter}>
           <View style={[s.heroCircle, { backgroundColor: `${colors.destructive}14` }]}>
@@ -889,6 +904,185 @@ function TimelineCard({ booking, steps, currentStepIndex, colors, t, locale }: {
     </View>
   )
 }
+
+// ─── Horizontal Lifecycle Stepper ───
+
+const STEPPER_ICON_SIZE = 18
+
+type StepperIconType = 'clock' | 'check' | 'package' | 'checkCircle'
+
+interface StepperStepDef {
+  key: BookingStatus
+  labelKey: string
+  iconType: StepperIconType
+}
+
+const RENTAL_STEPPER_STEPS: StepperStepDef[] = [
+  { key: 'pending', labelKey: 'booking.stepPending', iconType: 'clock' },
+  { key: 'confirmed', labelKey: 'booking.stepConfirmed', iconType: 'check' },
+  { key: 'active', labelKey: 'booking.stepPickedUp', iconType: 'package' },
+  { key: 'completed', labelKey: 'booking.stepReturned', iconType: 'checkCircle' },
+]
+
+const SERVICE_STEPPER_STEPS: StepperStepDef[] = [
+  { key: 'pending', labelKey: 'booking.stepPending', iconType: 'clock' },
+  { key: 'confirmed', labelKey: 'booking.stepConfirmed', iconType: 'check' },
+  { key: 'in_progress', labelKey: 'booking.stepInProgress', iconType: 'package' },
+  { key: 'completed', labelKey: 'booking.stepCompleted', iconType: 'checkCircle' },
+]
+
+function StepperIcon({ type, color, size }: { type: StepperIconType; color: string; size: number }) {
+  switch (type) {
+    case 'clock': return <Clock size={size} color={color} />
+    case 'check': return <Check size={size} color={color} />
+    case 'package': return <Package size={size} color={color} />
+    case 'checkCircle': return <CheckCircle size={size} color={color} />
+  }
+}
+
+function mapStatusToStepperIndex(status: BookingStatus, isRental: boolean): number {
+  if (isRental) {
+    const map: Partial<Record<BookingStatus, number>> = { pending: 0, paid: 0, confirmed: 1, active: 2, completed: 3 }
+    return map[status] ?? -1
+  }
+  const map: Partial<Record<BookingStatus, number>> = { pending: 0, paid: 0, confirmed: 1, in_progress: 2, completed: 3 }
+  return map[status] ?? -1
+}
+
+function BookingLifecycleStepper({ booking, colors, isDark, t }: {
+  booking: BookingData; colors: any; isDark: boolean; t: any
+}) {
+  const isCancelled = ['cancelled', 'disputed', 'refunded'].includes(booking.status)
+  const isRental = booking.type === 'rental'
+  const currentIdx = mapStatusToStepperIndex(booking.status, isRental)
+
+  const doneColor = '#4CAF6A'
+  const currentColor = isDark ? '#6FCF97' : '#2D6B5E'
+  const futureColor = isDark ? '#555555' : '#C0C0C0'
+  const cancelledColor = isDark ? '#EF4444' : '#D94F4F'
+
+  const stepDefs = isRental ? RENTAL_STEPPER_STEPS : SERVICE_STEPPER_STEPS
+
+  return (
+    <View style={[stepperStyles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      {isCancelled && (
+        <View style={stepperStyles.cancelledBanner}>
+          <XCircle size={14} color={cancelledColor} />
+          <Text style={[stepperStyles.cancelledText, { color: cancelledColor }]}>
+            {t('booking.cancelledTitle')}
+          </Text>
+        </View>
+      )}
+      <View style={stepperStyles.row}>
+        {stepDefs.map((step, i) => {
+          const done = !isCancelled && currentIdx > i
+          const current = !isCancelled && currentIdx === i
+
+          const iconColor = isCancelled
+            ? futureColor
+            : (done || current)
+              ? (isDark ? '#121212' : '#FFFFFF')
+              : futureColor
+
+          const circleBg = isCancelled
+            ? 'transparent'
+            : done ? doneColor : current ? currentColor : 'transparent'
+
+          const circleBorder = isCancelled
+            ? futureColor
+            : done ? doneColor : current ? currentColor : futureColor
+
+          const connectorColor = isCancelled
+            ? futureColor
+            : done ? doneColor : current ? currentColor : futureColor
+
+          const labelColor = isCancelled
+            ? futureColor
+            : done ? doneColor : current ? currentColor : futureColor
+
+          return (
+            <View key={step.key} style={stepperStyles.stepContainer}>
+              {/* Connector line before this step */}
+              {i > 0 && (
+                <View style={[stepperStyles.connector, { backgroundColor: connectorColor }]} />
+              )}
+              {/* Icon circle */}
+              <View style={[
+                stepperStyles.iconCircle,
+                { backgroundColor: circleBg, borderColor: circleBorder },
+              ]}>
+                <StepperIcon type={step.iconType} color={iconColor} size={STEPPER_ICON_SIZE} />
+              </View>
+              {/* Label */}
+              <Text style={[
+                stepperStyles.label,
+                { color: labelColor, fontFamily: current ? fonts.bodySemi : fonts.body },
+              ]} numberOfLines={1}>
+                {t(step.labelKey)}
+              </Text>
+            </View>
+          )
+        })}
+      </View>
+    </View>
+  )
+}
+
+const stepperStyles = StyleSheet.create({
+  container: {
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+  cancelledBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  cancelledText: {
+    fontSize: 12,
+    fontFamily: fonts.bodySemi,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  stepContainer: {
+    flex: 1,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  connector: {
+    position: 'absolute',
+    top: 17,
+    right: '50%',
+    width: '100%',
+    height: 2,
+    borderRadius: 1,
+    zIndex: -1,
+  },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  label: {
+    fontSize: 10,
+    textAlign: 'center',
+    letterSpacing: -0.1,
+  },
+})
 
 function PriceBreakdownCard({ basePrice, serviceFee, total, isService, colors, t, locale }: {
   basePrice: number; serviceFee: number; total: number; isService: boolean; colors: any; t: any; locale: string

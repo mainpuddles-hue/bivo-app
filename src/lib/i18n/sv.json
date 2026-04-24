@@ -1374,7 +1374,14 @@
     "confirmedTitle": "Bekräftad",
     "activeTitle": "Pågår",
     "completedTitle": "Klar",
-    "cancelledTitle": "Avbokad"
+    "cancelledTitle": "Avbokad",
+    "stepPending": "Väntar",
+    "stepConfirmed": "Bekräftad",
+    "stepPickedUp": "Hämtad",
+    "stepReturned": "Återlämnad",
+    "stepInProgress": "Pågår",
+    "stepCompleted": "Klar",
+    "stepCancelled": "Avbokad"
   },
   "payment": {
     "success": "Betalning lyckades!",
