@@ -368,7 +368,7 @@ const s = StyleSheet.create({
   },
   comparisonIconCol: { width: 40 },
   featureIconCircle: {
-    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+    width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
   },
   comparisonFreeCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   comparisonProCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -419,7 +419,7 @@ const s = StyleSheet.create({
     padding: 16, borderRadius: 20, borderWidth: 1, marginTop: 8,
   },
   infoIconCircle: {
-    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+    width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
   },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
 

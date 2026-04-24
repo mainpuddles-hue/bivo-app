@@ -298,7 +298,7 @@ const s = StyleSheet.create({
   iconCircle: {
     width: 32,
     height: 32,
-    borderRadius: 9,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 9,
+    borderRadius: 10,
   },
   segmentTabActive: {
     elevation: 1,

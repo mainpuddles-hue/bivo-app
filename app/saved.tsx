@@ -529,7 +529,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
-    borderRadius: 9,
+    borderRadius: 10,
     gap: 5,
     minHeight: 44,
   },

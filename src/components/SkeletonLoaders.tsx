@@ -145,7 +145,7 @@ export function SectionSkeleton({ count = 3 }: { count?: number }) {
 const skel = StyleSheet.create({
   // Message
   messageRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  avatar: { width: 48, height: 48, borderRadius: 18 },
+  avatar: { width: 48, height: 48, borderRadius: 24 },
   messageInfo: { flex: 1, gap: 8 },
   line: { height: 12, borderRadius: 6 },
   timeBadge: { width: 40, height: 12, borderRadius: 6 },
@@ -156,7 +156,7 @@ const skel = StyleSheet.create({
   profileStatBox: { width: 80, height: 60, borderRadius: 16 },
   // Search
   searchRow: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 20 },
-  searchImage: { width: 60, height: 60, borderRadius: 8 },
+  searchImage: { width: 60, height: 60, borderRadius: 10 },
   searchInfo: { flex: 1, gap: 8, justifyContent: 'center' },
 })
 

@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    borderRadius: 28,
+    borderRadius: 24,
     paddingHorizontal: 28,
     paddingTop: 36,
     paddingBottom: 28,

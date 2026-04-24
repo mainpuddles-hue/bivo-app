@@ -419,7 +419,7 @@ const s = StyleSheet.create({
   benefitsCard: { borderRadius: 20, padding: 16, gap: 14 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitIconCircle: {
-    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+    width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
   },
   benefitText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
 
@@ -457,7 +457,7 @@ const s = StyleSheet.create({
     padding: 16, borderRadius: 20, borderWidth: 1, marginTop: 12,
   },
   infoIconCircle: {
-    width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+    width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
   },
   iosInfoText: { fontSize: 14, flex: 1, lineHeight: 20, fontFamily: fonts.body },
 })

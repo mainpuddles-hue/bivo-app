@@ -30,7 +30,7 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress, 
   const Icon = ICONS[tier.icon]
 
   const iconSize = size === 'large' ? 20 : size === 'medium' ? 16 : 12
-  const fontSize = size === 'large' ? 13 : size === 'medium' ? 11 : 9
+  const fontSize = size === 'large' ? 13 : size === 'medium' ? 12 : 10
 
   const infoIconSize = size === 'large' ? 14 : size === 'medium' ? 12 : 10
 
