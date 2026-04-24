@@ -1456,7 +1456,11 @@
     "cardDeclined": "Korttisi hylättiin. Tarkista korttitiedot tai kokeile toista korttia.",
     "insufficientFunds": "Kortilla ei ole riittävästi katetta.",
     "expiredCard": "Korttisi on vanhentunut. Päivitä korttitiedot.",
-    "serverError": "Palvelin on tilapäisesti poissa käytöstä. Yritä uudelleen hetken kuluttua."
+    "serverError": "Palvelin on tilapäisesti poissa käytöstä. Yritä uudelleen hetken kuluttua.",
+    "noInternet": "Ei internet-yhteyttä",
+    "processingError": "Käsittelyvirhe. Yritä uudelleen.",
+    "incorrectCvc": "Tarkista turvakoodi.",
+    "paymentFailed": "Maksu epäonnistui. Yritä toista korttia."
   },
   "timer": {
     "expired": "Vanhentunut",

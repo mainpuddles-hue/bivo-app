@@ -1456,7 +1456,11 @@
     "cardDeclined": "Your card was declined. Check your card details or try another card.",
     "insufficientFunds": "Insufficient funds on your card.",
     "expiredCard": "Your card has expired. Update your card details.",
-    "serverError": "The server is temporarily unavailable. Try again in a moment."
+    "serverError": "The server is temporarily unavailable. Try again in a moment.",
+    "noInternet": "No internet connection",
+    "processingError": "Processing error. Try again.",
+    "incorrectCvc": "Check security code.",
+    "paymentFailed": "Payment failed. Try a different card."
   },
   "timer": {
     "expired": "Expired",

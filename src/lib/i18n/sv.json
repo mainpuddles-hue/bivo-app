@@ -1456,7 +1456,11 @@
     "cardDeclined": "Ditt kort nekades. Kontrollera kortuppgifterna eller prova ett annat kort.",
     "insufficientFunds": "Otillräckligt saldo på ditt kort.",
     "expiredCard": "Ditt kort har gått ut. Uppdatera kortuppgifterna.",
-    "serverError": "Servern är tillfälligt otillgänglig. Försök igen om en stund."
+    "serverError": "Servern är tillfälligt otillgänglig. Försök igen om en stund.",
+    "noInternet": "Ingen internetanslutning",
+    "processingError": "Bearbetningsfel. Försök igen.",
+    "incorrectCvc": "Kontrollera säkerhetskoden.",
+    "paymentFailed": "Betalningen misslyckades. Prova ett annat kort."
   },
   "timer": {
     "expired": "Utgått",

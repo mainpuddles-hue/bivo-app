@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef } from 'react'
 import { Platform, Linking } from 'react-native'
 import { useSupabase } from '@/hooks/useSupabase'
+import { useI18n } from '@/lib/i18n'
+import { getNetworkAwareError } from '@/lib/errorUtils'
+import { mapErrorToFinnish } from '@/lib/errorMessages'
 
 // All Stripe operations go through Supabase Edge Functions (no web backend dependency)
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -26,6 +29,7 @@ export function useStripePayment() {
   const [error, setError] = useState<string | null>(null)
   const payingRef = useRef(false)
   const supabase = useSupabase()
+  const { t } = useI18n()
 
   const createPayment = useCallback(async (options: PaymentOptions): Promise<string | null> => {
     // Guard against double payment from rapid taps
@@ -41,7 +45,7 @@ export function useStripePayment() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        setError('Kirjaudu sisään maksaaksesi')
+        setError(t('errors.loginPrompt'))
         return null
       }
 
@@ -75,7 +79,11 @@ export function useStripePayment() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        setError(body.error ?? 'Maksu epäonnistui')
+        // Map Stripe error codes/messages to user-friendly translated strings
+        const stripeError = body.error
+          ? { message: body.error, code: body.code ?? body.decline_code ?? '' }
+          : null
+        setError(stripeError ? mapErrorToFinnish(stripeError, t) : t('errors.paymentFailed'))
         return null
       }
 
@@ -88,14 +96,16 @@ export function useStripePayment() {
 
       return session_id ?? null
     } catch (err) {
-      setError('Maksuyhteys epäonnistui')
+      // Check network status for better error differentiation
+      const msg = await getNetworkAwareError(err, t)
+      setError(msg)
       return null
     } finally {
       if (timeout) clearTimeout(timeout)
       setLoading(false)
       payingRef.current = false
     }
-  }, [supabase])
+  }, [supabase, t])
 
   return { createPayment, loading, error }
 }

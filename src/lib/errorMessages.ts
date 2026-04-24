@@ -145,14 +145,29 @@ export function mapErrorToFinnish(error: any, t: (key: string) => string): strin
     return t('errors.expiredCard')
   }
 
-  // --- Generic Stripe decline fallback ---
+  if (
+    code === 'processing_error' ||
+    message.includes('processing_error')
+  ) {
+    return t('errors.processingError')
+  }
+
+  if (
+    code === 'incorrect_cvc' ||
+    message.includes('incorrect_cvc') ||
+    message.includes('security code')
+  ) {
+    return t('errors.incorrectCvc')
+  }
+
+  // --- Generic Stripe / payment fallback ---
   if (
     message.includes('stripe') ||
     message.includes('Stripe') ||
     message.includes('payment') ||
     code?.startsWith('stripe_')
   ) {
-    return t('errors.cardDeclined')
+    return t('errors.paymentFailed')
   }
 
   // --- Unknown ---
