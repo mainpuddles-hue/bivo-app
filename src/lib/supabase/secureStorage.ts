@@ -8,7 +8,8 @@ if (Platform.OS !== 'web') {
   try { SecureStore = require('expo-secure-store') } catch {} // Intentional: expo-secure-store may not be available
 }
 
-const SECURE_KEYS = ['supabase.auth.token', 'sb-wfsghkseyyxkkalcqtzq-auth-token']
+const projectRef = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').split('.')[0].split('//')[1] || 'unknown'
+const SECURE_KEYS = ['supabase.auth.token', `sb-${projectRef}-auth-token`]
 
 function isSecureKey(key: string): boolean {
   return SECURE_KEYS.some(sk => key.includes(sk) || key.includes('auth'))
@@ -32,6 +33,8 @@ export const secureStorage = {
         if (__DEV__) {
           console.warn(`[secureStorage] Value for "${key}" exceeds 2000 bytes (${value.length}), falling back to AsyncStorage`)
         }
+        // Clean up SecureStore entry to prevent stale reads
+        try { await SecureStore.deleteItemAsync(key.replace(/[^a-zA-Z0-9._-]/g, '_')) } catch {}
         await AsyncStorage.setItem(key, value)
         return
       } else {

@@ -89,7 +89,7 @@ function OnboardingScreenInner() {
   const goToPage = useCallback((page: number) => {
     scrollRef.current?.scrollTo({ x: page * SCREEN_WIDTH, animated: true })
     setCurrentPage(page)
-    trackEvent('onboarding_slide' as any, { slide: page })
+    trackEvent('onboarding_slide', { slide: page })
   }, [SCREEN_WIDTH])
 
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -112,7 +112,7 @@ function OnboardingScreenInner() {
 
       // Apply referral code FIRST (before profile update) — if invalid, user can retry
       if (referralInput.trim()) {
-        trackEvent('onboarding_invite_code' as any, { hasCode: true })
+        trackEvent('onboarding_invite_code', { hasCode: true })
         const result = await applyInviteCode(referralInput.trim())
         setReferralStatus(result === 'success' ? 'applied' : 'invalid')
         if (result !== 'success') {
@@ -161,7 +161,7 @@ function OnboardingScreenInner() {
 
       // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
-      trackEvent('onboarding_completed' as any, {
+      trackEvent('onboarding_completed', {
         city: selectedAddress.city ?? selectedCity,
         neighborhood: selectedAddress.neighborhood ?? null,
         address: streetAddress,

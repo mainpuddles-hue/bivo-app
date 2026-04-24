@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, RefreshControl, Pressable, TextInput, StyleSheet, ScrollView, Animated, Alert, ActionSheetIOS, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -162,8 +160,8 @@ export default function MessagesScreen() {
         }
 
         setConversations(filteredFallback)
-      } catch {
-        // Both RPC and fallback failed — show empty state
+      } catch (e) {
+        if (__DEV__) console.warn('[Messages] Fallback query failed:', e)
       }
       if (mountedRef.current) { setLoading(false); setRefreshing(false) }
       return
@@ -909,11 +907,6 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  unreadBadgeText: {
-    fontSize: 0,
-    lineHeight: 0,
-  },
-
   // ── Empty states ──
   empty: {
     alignItems: 'center',

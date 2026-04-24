@@ -26,6 +26,7 @@ import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { PressableOpacity } from '@/components/ui'
 import { useReferral, type ApplyResult } from '@/hooks/useReferral'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
+import type { ThemeColors } from '@/lib/theme'
 
 const THEME_OPTIONS = [
   { key: 'light', label: 'settings.themeLight', icon: Sun },
@@ -51,14 +52,14 @@ const DANGER_COLOR = '#A03030'
 // ── Mockup 22 primitives ──
 
 /** Section label above a group — uppercase, small, muted */
-function SectionLabel({ children, colors }: { children: ReactNode; colors: any }) {
+function SectionLabel({ children, colors }: { children: ReactNode; colors: ThemeColors }) {
   return (
     <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{children}</Text>
   )
 }
 
 /** Grouped card container with surface bg, rounded corners, border */
-function Group({ label, children, colors }: { label?: string; children: ReactNode; colors: any }) {
+function Group({ label, children, colors }: { label?: string; children: ReactNode; colors: ThemeColors }) {
   const items = Array.isArray(children) ? children.filter(Boolean) : children ? [children] : []
   return (
     <View style={s.groupWrapper}>
@@ -108,7 +109,7 @@ const Row = memo(function Row({
   switchValue?: boolean
   onSwitchChange?: (val: boolean) => void
   onPress?: () => void
-  colors: any
+  colors: ThemeColors
   isDark?: boolean
   disabled?: boolean
   accessibilityLabel?: string

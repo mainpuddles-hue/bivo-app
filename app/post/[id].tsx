@@ -209,7 +209,7 @@ function PostDetailScreenInner() {
     // Fetch view count (distinct viewers in last 7 days)
     ;(supabase.rpc as any)('get_post_view_count', { p_post_id: post.id }).then(({ data }: { data: number | null }) => {
       if (mounted && typeof data === 'number') setViewCount(data)
-    })
+    }).catch(() => {})
     // Record view (fire-and-forget)
     if (userId) {
       (supabase.from('post_views') as any)

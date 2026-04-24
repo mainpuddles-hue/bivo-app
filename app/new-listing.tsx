@@ -297,7 +297,7 @@ function NewListingScreenInner() {
         if (imgError && __DEV__) console.warn('[new-listing] post_images insert failed:', imgError.message)
       }
 
-      trackEvent('listing_published' as any, { draft: isDraft, template: selectedTemplate })
+      trackEvent('listing_published', { draft: isDraft, template: selectedTemplate })
 
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       router.replace(isDraft ? '/(tabs)/profile' : `/post/${post?.id}`)

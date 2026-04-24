@@ -20,7 +20,7 @@
 // sign in after "deletion").
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 
 function getEnvOrThrow(key: string): string {
   const val = Deno.env.get(key)

@@ -259,7 +259,15 @@
     "deletedUndo": "Post deleted",
     "undo": "Undo",
     "depositSuggestedRange": "Suggested: {min}€ – {max}€",
-    "depositOutOfRange": "Deposit is outside the suggested range"
+    "depositOutOfRange": "Deposit is outside the suggested range",
+    "imageUploadLimit": "Max 5 images, up to 10 MB each",
+    "spotsRemaining": "Spots remaining: {remaining}/{max}",
+    "proBadgeInfo": "Pro business — verified local business",
+    "responsetime": {
+      "fast": "Usually responds within an hour",
+      "moderate": "Usually responds within a day",
+      "slow": "Response time varies"
+    }
   },
   "offer": {
     "title": "Make an Offer",
@@ -953,7 +961,10 @@
     "sectionNotifications": "Notifications",
     "sectionAbout": "About",
     "sectionDanger": "Danger zone",
-    "saveFailed": "Save failed"
+    "saveFailed": "Save failed",
+    "helpTitle": "Help & support",
+    "helpFaq": "Frequently asked questions",
+    "helpContact": "Contact support"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -1135,7 +1146,23 @@
     "addressTitle": "Where do you live?",
     "addressSubtitle": "Enter your home address to join your building community",
     "addressExplainer": "We'll show you posts from your nearest neighbors. Your address is never shared with others.",
-    "addressPlaceholder": "Type an address, e.g. Mannerheimintie 1"
+    "addressPlaceholder": "Type an address, e.g. Mannerheimintie 1",
+    "welcomeBody": "TackBird is your neighborhood's bulletin board — lend, give, discover events.",
+    "pickNeighborhood": "What neighborhood do you live in?",
+    "pickNeighborhoodHint": "This helps us show nearby posts and events.",
+    "interests": "What do you want to do on TackBird?",
+    "lendBorrow": "Lend & borrow items",
+    "giveAway": "Give things away",
+    "findEvents": "Find events",
+    "offerServices": "Offer services",
+    "explore": "Explore your neighborhood →",
+    "letsGo": "Let's go!",
+    "step1Title": "Browse your neighborhood",
+    "step1Desc": "See what's happening nearby — posts, events, and neighbor offers all in one place.",
+    "step2Title": "Share and find",
+    "step2Desc": "Create a post in seconds. Lend, give, or sell — neighbors will find you easily.",
+    "step3Title": "Message neighbors",
+    "step3Desc": "Connect with neighbors directly. Build trust and make the community thrive."
   },
   "resetPassword": {
     "title": "Change password",
@@ -2768,13 +2795,6 @@
     "inviteMembers": "Invite neighbors!",
     "notFound": "Group not found"
   },
-  "greeting": {
-    "morning": "Good morning",
-    "afternoon": "Good afternoon",
-    "evening": "Good evening",
-    "night": "Good night",
-    "postsInArea": "{count} listings in your neighborhood"
-  },
   "nappaa": {
     "grabNow": "Grab now!",
     "timeLeft": "{time} left",
@@ -2820,10 +2840,6 @@
     "neighborHelped": "Your neighbor {name} offered to help.",
     "howItWorks": "This is how TackBird works — neighbors helping neighbors.",
     "openMessage": "Open message"
-  },
-  "smartMatch": {
-    "neighborNeeds": "Your neighbor {name} needs help",
-    "youCanHelp": "You can help — you have experience with this!"
   },
   "trust": {
     "tier1": "Basic user",
@@ -3055,17 +3071,6 @@
     "members": "Members",
     "viewEvent": "View event",
     "sendFailed": "Failed to send message"
-  },
-  "contentQuality": {
-    "longerTitle": "A longer title gets more attention",
-    "addTitle": "Add a more descriptive title",
-    "longerDescription": "A longer description helps people find your post",
-    "addDescription": "Add a description — it improves visibility",
-    "addMoreImages": "Add more images — posts with images get 3x more attention",
-    "addImage": "Add an image — it significantly improves visibility",
-    "addMoreTags": "Add tags to help with discoverability",
-    "addTag": "Add at least one tag",
-    "addLocation": "Add location — nearby people find you easier"
   },
   "newListing": {
     "stepLabel": "Step {step} / {total}",
@@ -3303,41 +3308,5 @@
     "duration7d": "7 days",
     "publish": "Publish poll",
     "newPoll": "Poll"
-  },
-  "post": {
-    "imageUploadLimit": "Max 5 images, up to 10 MB each",
-    "spotsRemaining": "Spots remaining: {remaining}/{max}",
-    "proBadgeInfo": "Pro business — verified local business",
-    "responsetime": {
-      "fast": "Usually responds within an hour",
-      "moderate": "Usually responds within a day",
-      "slow": "Response time varies"
-    }
-  },
-  "settings": {
-    "helpTitle": "Help & support",
-    "helpFaq": "Frequently asked questions",
-    "helpContact": "Contact support"
-  },
-  "onboarding": {
-    "welcome": "Welcome to your neighborhood!",
-    "welcomeBody": "TackBird is your neighborhood's bulletin board — lend, give, discover events.",
-    "pickNeighborhood": "What neighborhood do you live in?",
-    "pickNeighborhoodHint": "This helps us show nearby posts and events.",
-    "interests": "What do you want to do on TackBird?",
-    "lendBorrow": "Lend & borrow items",
-    "giveAway": "Give things away",
-    "findEvents": "Find events",
-    "offerServices": "Offer services",
-    "explore": "Explore your neighborhood →",
-    "skip": "Skip",
-    "next": "Next",
-    "letsGo": "Let's go!",
-    "step1Title": "Browse your neighborhood",
-    "step1Desc": "See what's happening nearby — posts, events, and neighbor offers all in one place.",
-    "step2Title": "Share and find",
-    "step2Desc": "Create a post in seconds. Lend, give, or sell — neighbors will find you easily.",
-    "step3Title": "Message neighbors",
-    "step3Desc": "Connect with neighbors directly. Build trust and make the community thrive."
   }
 }

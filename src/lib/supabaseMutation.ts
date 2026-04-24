@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { Alert } from 'react-native'
 
 type TFunction = (key: string, params?: Record<string, string | number>) => string

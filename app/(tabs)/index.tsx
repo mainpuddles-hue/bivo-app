@@ -242,14 +242,14 @@ function FeedScreenInner() {
       })
       AsyncStorage.setItem('welcome_toast_shown', 'true').catch(() => {})
     }).catch(() => {})
-  }, [feed.loading, feed.posts.length, feed.userNeighborhood])
+  }, [feed.loading, feed.posts.length, feed.userNeighborhood, toast, t])
 
   // Open neighborhood picker when navigated from settings with param
   useEffect(() => {
     if (params.openNeighborhoodPicker === '1') {
       feed.setShowNeighborhoodPicker(true)
     }
-  }, [params.openNeighborhoodPicker])
+  }, [params.openNeighborhoodPicker, feed.setShowNeighborhoodPicker])
 
   // Wrap filter change with haptic feedback
   const handleFilterChangeWithHaptics = useCallback((type: PostType | null) => {

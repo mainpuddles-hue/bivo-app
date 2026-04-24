@@ -2,7 +2,7 @@
 // Types: booking_confirmation, payment_receipt, booking_reminder, welcome, password_reset, refund_confirmation
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 
 function getEnvOrThrow(key: string): string {
   const val = Deno.env.get(key)

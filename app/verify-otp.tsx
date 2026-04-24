@@ -26,8 +26,16 @@ export default function VerifyOtpScreen() {
   const supabase = useSupabase()
   const toast = useToast()
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const { email, mode: modeParam } = useLocalSearchParams<{ email: string; mode?: string }>()
   const otpMode: OtpMode = modeParam === 'recovery' ? 'recovery' : 'signup'
+
+  // Validate email from deep link
+  useEffect(() => {
+    if (email && !emailRegex.test(email)) {
+      router.replace('/(auth)/login')
+    }
+  }, [email])
 
   const [digits, setDigits] = useState<string[]>(Array(DIGIT_COUNT).fill(''))
   const [activeIndex, setActiveIndex] = useState(0)
@@ -124,11 +132,11 @@ export default function VerifyOtpScreen() {
           }
         }
         try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-        trackEvent('auth_login_success' as any)
+        trackEvent('auth_login_success')
         router.replace('/settings?recovery=true')
       } else {
         try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-        trackEvent('auth_register_success' as any)
+        trackEvent('auth_register_success')
         // User is already logged in (autoconfirm=true), navigate to onboarding or feed
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {

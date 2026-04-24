@@ -23,7 +23,7 @@ function isWithinPastDays(dateStr: string, days: number): boolean {
   return d <= now && d >= now - days * 86400000
 }
 
-export function getDateGroup(dateStr: string): string {
+function getDateGroup(dateStr: string): string {
   if (isToday(dateStr)) return 'today'
   if (isYesterday(dateStr)) return 'yesterday'
   if (isWithinPastDays(dateStr, 7)) return 'thisWeek'

@@ -149,11 +149,6 @@ export function suggestDeposit(dailyFee: number, tags: string[] = []): number {
   return Math.max(config.min, Math.min(config.max, suggested))
 }
 
-// ── Lending late return constants ──
-export const LENDING_GRACE_HOURS = 24
-export const LENDING_PENALTY_RATE = 1.5 // 1.5x daily fee after grace
-export const LENDING_FORFEIT_DAYS = 7 // Full deposit forfeited after 7 days
-
 // Centralized forum category colors — used by ForumPostCard and ForumCreateModal
 export const FORUM_CATEGORY_COLORS: Record<string, string> = {
   vinkit: '#2B8A62',

@@ -259,7 +259,15 @@
     "deletedUndo": "Ilmoitus poistettu",
     "undo": "Kumoa",
     "depositSuggestedRange": "Suositeltu: {min}€ – {max}€",
-    "depositOutOfRange": "Vakuus on suositellun alueen ulkopuolella"
+    "depositOutOfRange": "Vakuus on suositellun alueen ulkopuolella",
+    "imageUploadLimit": "Max 5 kuvaa, enintään 10 MB/kuva",
+    "spotsRemaining": "Paikkoja jäljellä: {remaining}/{max}",
+    "proBadgeInfo": "Pro-yrittäjä — vahvistettu paikallinen yritys",
+    "responsetime": {
+      "fast": "Vastaa yleensä tunnissa",
+      "moderate": "Vastaa yleensä päivässä",
+      "slow": "Vastausaika vaihtelee"
+    }
   },
   "offer": {
     "title": "Tee tarjous",
@@ -953,7 +961,10 @@
     "sectionNotifications": "Ilmoitukset",
     "sectionAbout": "Tietoja",
     "sectionDanger": "Vaara-alue",
-    "saveFailed": "Tallennus epäonnistui"
+    "saveFailed": "Tallennus epäonnistui",
+    "helpTitle": "Ohje ja tuki",
+    "helpFaq": "Usein kysytyt kysymykset",
+    "helpContact": "Ota yhteyttä tukeen"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -1135,7 +1146,23 @@
     "addressTitle": "Missä asut?",
     "addressSubtitle": "Syötä kotiosoitteesi yhdistääksesi talon yhteisöön",
     "addressExplainer": "Näytämme sinulle lähimpien naapureidesi ilmoitukset. Osoitettasi ei jaeta muille.",
-    "addressPlaceholder": "Kirjoita osoite, esim. Mannerheimintie 1"
+    "addressPlaceholder": "Kirjoita osoite, esim. Mannerheimintie 1",
+    "welcomeBody": "TackBird on naapurustosi oma ilmoitustaulu — lainaa, lahjoita, löydä tapahtumia.",
+    "pickNeighborhood": "Missä naapurustossa asut?",
+    "pickNeighborhoodHint": "Tämä auttaa näyttämään lähellä olevia ilmoituksia ja tapahtumia.",
+    "interests": "Mitä haluat tehdä TackBirdissä?",
+    "lendBorrow": "Lainata tavaroita",
+    "giveAway": "Antaa pois",
+    "findEvents": "Löytää tapahtumia",
+    "offerServices": "Tarjota palveluita",
+    "explore": "Tutustu naapurustoon →",
+    "letsGo": "Aloitetaan!",
+    "step1Title": "Selaa naapurustoasi",
+    "step1Desc": "Näe mitä lähellä tapahtuu — ilmoitukset, tapahtumat ja naapureiden tarjoukset yhdessä paikassa.",
+    "step2Title": "Jaa ja löydä",
+    "step2Desc": "Luo ilmoitus sekunneissa. Lainaa, lahjoita tai myy — naapurit löytävät sinut helposti.",
+    "step3Title": "Viesti naapureille",
+    "step3Desc": "Ota yhteyttä naapureihin suoraan. Rakenna luottamusta ja tee yhteisöstä eläväinen."
   },
   "resetPassword": {
     "title": "Vaihda salasana",
@@ -2768,13 +2795,6 @@
     "inviteMembers": "Kutsu naapureita!",
     "notFound": "Ryhmää ei löydy"
   },
-  "greeting": {
-    "morning": "Huomenta",
-    "afternoon": "Hyvää iltapäivää",
-    "evening": "Hyvää iltaa",
-    "night": "Hyvää yötä",
-    "postsInArea": "{count} ilmoitusta naapurustossasi"
-  },
   "nappaa": {
     "grabNow": "Nappaa nyt!",
     "timeLeft": "{time} jäljellä",
@@ -2820,10 +2840,6 @@
     "neighborHelped": "Naapurisi {name} tarjoutui auttamaan.",
     "howItWorks": "Näin TackBird toimii — naapurit auttavat toisiaan.",
     "openMessage": "Avaa viesti"
-  },
-  "smartMatch": {
-    "neighborNeeds": "Naapurisi {name} tarvitsee apua",
-    "youCanHelp": "Voit auttaa — sinulla on kokemusta tästä!"
   },
   "trust": {
     "tier1": "Peruskäyttäjä",
@@ -3055,17 +3071,6 @@
     "members": "Jäsenet",
     "viewEvent": "Näytä tapahtuma",
     "sendFailed": "Viestin lähetys epäonnistui"
-  },
-  "contentQuality": {
-    "longerTitle": "Pidempi otsikko saa enemmän huomiota",
-    "addTitle": "Lisää kuvaavampi otsikko",
-    "longerDescription": "Pidempi kuvaus auttaa löytämään postauksesi",
-    "addDescription": "Lisää kuvaus — se parantaa näkyvyyttä",
-    "addMoreImages": "Lisää kuvia — postaukset kuvilla saavat 3x enemmän huomiota",
-    "addImage": "Lisää kuva — se parantaa näkyvyyttä merkittävästi",
-    "addMoreTags": "Lisää tageja auttaaksesi löydettävyydessä",
-    "addTag": "Lisää vähintään yksi tagi",
-    "addLocation": "Lisää sijainti — lähellä olevat löytävät sinut helpommin"
   },
   "newListing": {
     "stepLabel": "Vaihe {step} / {total}",
@@ -3303,41 +3308,5 @@
     "duration7d": "7 päivää",
     "publish": "Julkaise kysely",
     "newPoll": "Kysely"
-  },
-  "post": {
-    "imageUploadLimit": "Max 5 kuvaa, enintään 10 MB/kuva",
-    "spotsRemaining": "Paikkoja jäljellä: {remaining}/{max}",
-    "proBadgeInfo": "Pro-yrittäjä — vahvistettu paikallinen yritys",
-    "responsetime": {
-      "fast": "Vastaa yleensä tunnissa",
-      "moderate": "Vastaa yleensä päivässä",
-      "slow": "Vastausaika vaihtelee"
-    }
-  },
-  "settings": {
-    "helpTitle": "Ohje ja tuki",
-    "helpFaq": "Usein kysytyt kysymykset",
-    "helpContact": "Ota yhteyttä tukeen"
-  },
-  "onboarding": {
-    "welcome": "Tervetuloa naapurustoon!",
-    "welcomeBody": "TackBird on naapurustosi oma ilmoitustaulu — lainaa, lahjoita, löydä tapahtumia.",
-    "pickNeighborhood": "Missä naapurustossa asut?",
-    "pickNeighborhoodHint": "Tämä auttaa näyttämään lähellä olevia ilmoituksia ja tapahtumia.",
-    "interests": "Mitä haluat tehdä TackBirdissä?",
-    "lendBorrow": "Lainata tavaroita",
-    "giveAway": "Antaa pois",
-    "findEvents": "Löytää tapahtumia",
-    "offerServices": "Tarjota palveluita",
-    "explore": "Tutustu naapurustoon →",
-    "skip": "Ohita",
-    "next": "Seuraava",
-    "letsGo": "Aloitetaan!",
-    "step1Title": "Selaa naapurustoasi",
-    "step1Desc": "Näe mitä lähellä tapahtuu — ilmoitukset, tapahtumat ja naapureiden tarjoukset yhdessä paikassa.",
-    "step2Title": "Jaa ja löydä",
-    "step2Desc": "Luo ilmoitus sekunneissa. Lainaa, lahjoita tai myy — naapurit löytävät sinut helposti.",
-    "step3Title": "Viesti naapureille",
-    "step3Desc": "Ota yhteyttä naapureihin suoraan. Rakenna luottamusta ja tee yhteisöstä eläväinen."
   }
 }

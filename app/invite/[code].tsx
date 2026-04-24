@@ -21,6 +21,9 @@ function InviteScreenInner() {
   const [status, setStatus] = useState<'loading' | ApplyResult>('loading')
   const referral = useReferral(userId)
 
+  // Validate code format (alphanumeric, max 32 chars)
+  const isValidCode = /^[a-zA-Z0-9]{1,32}$/.test(code ?? '')
+
   useEffect(() => {
     let mounted = true
     getCachedUserId().then(id => { if (mounted) setUserId(id) })
@@ -28,10 +31,14 @@ function InviteScreenInner() {
   }, [])
 
   useEffect(() => {
-    if (!userId || !code || referral.loading) return
+    if (!userId || referral.loading) return
+    if (!code || !isValidCode) {
+      setStatus('invalid')
+      return
+    }
     // Auto-apply the invite code
     referral.applyInviteCode(code).then(result => setStatus(result))
-  }, [userId, code, referral.loading])
+  }, [userId, code, isValidCode, referral.loading])
 
   // Not logged in -- redirect to login, then they can enter code in onboarding
   useEffect(() => {

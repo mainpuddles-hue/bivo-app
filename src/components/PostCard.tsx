@@ -278,7 +278,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                     <Image source={{ uri: getImageUrl(user.avatar_url, 'thumbnail')! }} style={[
                       styles.avatar,
                       { borderColor: isPro ? `${colors.foreground}80` : `${colors.border}66` }
-                    ]} contentFit="cover" cachePolicy="memory-disk" recyclingKey={user.avatar_url} />
+                    ]} contentFit="cover" cachePolicy="memory-disk" recyclingKey={user.avatar_url}
+                    accessibilityLabel={user?.name ? `${user.name} avatar` : undefined}
+                    accessible={!!user?.name} />
                   ) : (
                     <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted, borderColor: `${colors.border}66` }]}>
                       <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>

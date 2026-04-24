@@ -4,7 +4,7 @@
 // NOTE: No CORS headers — this endpoint is server-to-server (Stripe calling us).
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 import Stripe from 'https://esm.sh/stripe@14.14.0?target=deno'
 
 function getEnvOrThrow(key: string): string {

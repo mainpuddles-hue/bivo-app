@@ -259,7 +259,15 @@
     "deletedUndo": "Inlägget borttaget",
     "undo": "Ångra",
     "depositSuggestedRange": "Rekommenderat: {min}€ – {max}€",
-    "depositOutOfRange": "Depositionen är utanför det rekommenderade intervallet"
+    "depositOutOfRange": "Depositionen är utanför det rekommenderade intervallet",
+    "imageUploadLimit": "Max 5 bilder, upp till 10 MB vardera",
+    "spotsRemaining": "Platser kvar: {remaining}/{max}",
+    "proBadgeInfo": "Pro-företag — verifierat lokalt företag",
+    "responsetime": {
+      "fast": "Svarar vanligtvis inom en timme",
+      "moderate": "Svarar vanligtvis inom en dag",
+      "slow": "Svarstiden varierar"
+    }
   },
   "offer": {
     "title": "Ge ett bud",
@@ -953,7 +961,10 @@
     "sectionNotifications": "Aviseringar",
     "sectionAbout": "Om",
     "sectionDanger": "Farozon",
-    "saveFailed": "Sparning misslyckades"
+    "saveFailed": "Sparning misslyckades",
+    "helpTitle": "Hjälp och support",
+    "helpFaq": "Vanliga frågor",
+    "helpContact": "Kontakta support"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -1135,7 +1146,23 @@
     "addressTitle": "Var bor du?",
     "addressSubtitle": "Ange din hemadress för att gå med i din byggnads gemenskap",
     "addressExplainer": "Vi visar dig inlägg från dina närmaste grannar. Din adress delas aldrig med andra.",
-    "addressPlaceholder": "Skriv en adress, t.ex. Mannerheimintie 1"
+    "addressPlaceholder": "Skriv en adress, t.ex. Mannerheimintie 1",
+    "welcomeBody": "TackBird är ditt grannskaps anslagstavla — låna, ge, upptäck evenemang.",
+    "pickNeighborhood": "I vilket grannskap bor du?",
+    "pickNeighborhoodHint": "Detta hjälper oss visa närliggande inlägg och evenemang.",
+    "interests": "Vad vill du göra på TackBird?",
+    "lendBorrow": "Låna ut och låna saker",
+    "giveAway": "Ge bort saker",
+    "findEvents": "Hitta evenemang",
+    "offerServices": "Erbjuda tjänster",
+    "explore": "Utforska ditt grannskap →",
+    "letsGo": "Vi kör!",
+    "step1Title": "Bläddra i ditt grannskap",
+    "step1Desc": "Se vad som händer i närheten — annonser, evenemang och grannars erbjudanden på ett ställe.",
+    "step2Title": "Dela och hitta",
+    "step2Desc": "Skapa en annons på sekunder. Låna ut, ge bort eller sälj — grannar hittar dig enkelt.",
+    "step3Title": "Meddelanden till grannar",
+    "step3Desc": "Ta kontakt med grannar direkt. Bygg förtroende och gör gemenskapen livligare."
   },
   "resetPassword": {
     "title": "Byt lösenord",
@@ -2768,13 +2795,6 @@
     "inviteMembers": "Bjud in grannar!",
     "notFound": "Gruppen hittades inte"
   },
-  "greeting": {
-    "morning": "God morgon",
-    "afternoon": "God eftermiddag",
-    "evening": "God kväll",
-    "night": "God natt",
-    "postsInArea": "{count} annonser i ditt grannskap"
-  },
   "nappaa": {
     "grabNow": "Fånga nu!",
     "timeLeft": "{time} kvar",
@@ -2820,10 +2840,6 @@
     "neighborHelped": "Din granne {name} erbjöd sig att hjälpa.",
     "howItWorks": "Så fungerar TackBird — grannar hjälper grannar.",
     "openMessage": "Öppna meddelande"
-  },
-  "smartMatch": {
-    "neighborNeeds": "Din granne {name} behöver hjälp",
-    "youCanHelp": "Du kan hjälpa — du har erfarenhet av detta!"
   },
   "trust": {
     "tier1": "Grundanvändare",
@@ -3055,17 +3071,6 @@
     "members": "Medlemmar",
     "viewEvent": "Visa event",
     "sendFailed": "Kunde inte skicka meddelande"
-  },
-  "contentQuality": {
-    "longerTitle": "En längre titel får mer uppmärksamhet",
-    "addTitle": "Lägg till en mer beskrivande titel",
-    "longerDescription": "En längre beskrivning hjälper folk att hitta ditt inlägg",
-    "addDescription": "Lägg till en beskrivning — det förbättrar synligheten",
-    "addMoreImages": "Lägg till fler bilder — inlägg med bilder får 3x mer uppmärksamhet",
-    "addImage": "Lägg till en bild — det förbättrar synligheten avsevärt",
-    "addMoreTags": "Lägg till taggar för att förbättra sökbarheten",
-    "addTag": "Lägg till minst en tagg",
-    "addLocation": "Lägg till plats — folk i närheten hittar dig lättare"
   },
   "newListing": {
     "stepLabel": "Steg {step} / {total}",
@@ -3303,41 +3308,5 @@
     "duration7d": "7 dagar",
     "publish": "Publicera omröstning",
     "newPoll": "Omröstning"
-  },
-  "post": {
-    "imageUploadLimit": "Max 5 bilder, upp till 10 MB vardera",
-    "spotsRemaining": "Platser kvar: {remaining}/{max}",
-    "proBadgeInfo": "Pro-företag — verifierat lokalt företag",
-    "responsetime": {
-      "fast": "Svarar vanligtvis inom en timme",
-      "moderate": "Svarar vanligtvis inom en dag",
-      "slow": "Svarstiden varierar"
-    }
-  },
-  "settings": {
-    "helpTitle": "Hjälp och support",
-    "helpFaq": "Vanliga frågor",
-    "helpContact": "Kontakta support"
-  },
-  "onboarding": {
-    "welcome": "Välkommen till ditt grannskap!",
-    "welcomeBody": "TackBird är ditt grannskaps anslagstavla — låna, ge, upptäck evenemang.",
-    "pickNeighborhood": "I vilket grannskap bor du?",
-    "pickNeighborhoodHint": "Detta hjälper oss visa närliggande inlägg och evenemang.",
-    "interests": "Vad vill du göra på TackBird?",
-    "lendBorrow": "Låna ut och låna saker",
-    "giveAway": "Ge bort saker",
-    "findEvents": "Hitta evenemang",
-    "offerServices": "Erbjuda tjänster",
-    "explore": "Utforska ditt grannskap →",
-    "skip": "Hoppa över",
-    "next": "Nästa",
-    "letsGo": "Vi kör!",
-    "step1Title": "Bläddra i ditt grannskap",
-    "step1Desc": "Se vad som händer i närheten — annonser, evenemang och grannars erbjudanden på ett ställe.",
-    "step2Title": "Dela och hitta",
-    "step2Desc": "Skapa en annons på sekunder. Låna ut, ge bort eller sälj — grannar hittar dig enkelt.",
-    "step3Title": "Meddelanden till grannar",
-    "step3Desc": "Ta kontakt med grannar direkt. Bygg förtroende och gör gemenskapen livligare."
   }
 }

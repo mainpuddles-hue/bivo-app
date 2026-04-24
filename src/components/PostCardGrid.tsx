@@ -28,7 +28,7 @@ import type { Post, PostType } from '@/lib/types'
 
 type CardVariant = 'image-hero' | 'event' | 'text'
 
-export function getCardVariant(post: Post, hasImageOverride?: boolean): CardVariant {
+function getCardVariant(post: Post, hasImageOverride?: boolean): CardVariant {
   const hasImage = hasImageOverride ?? !!post.image_url
   if (post.type === 'tapahtuma') return 'event'
   if (hasImage) return 'image-hero'

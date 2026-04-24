@@ -13,6 +13,7 @@ type AnalyticsEvent =
   | 'onboarding_invite_code' | 'onboarding_completed'
   | 'auth_register_start' | 'auth_register_success' | 'auth_login_success'
   | 'boost_purchased' | 'boost_used' | 'boost_screen_viewed'
+  | 'listing_published'
 
 interface EventProps {
   [key: string]: string | number | boolean | null

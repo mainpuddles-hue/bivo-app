@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, FlatList, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Modal, ScrollView, Alert, Linking, ActivityIndicator } from 'react-native'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'

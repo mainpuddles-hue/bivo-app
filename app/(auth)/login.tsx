@@ -21,6 +21,8 @@ import { PressableOpacity } from '@/components/ui'
 import { isBannedAndSignedOut } from '@/lib/auth/bannedCheck'
 import { useToast } from '@/components/Toast'
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Invalid login credentials': 'auth.invalidCredentials',
   'User already registered': 'auth.userAlreadyRegistered',
@@ -124,7 +126,6 @@ function LoginScreenInner() {
   const [touchedEmail, setTouchedEmail] = useState(false)
   const [touchedPassword, setTouchedPassword] = useState(false)
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const emailError = touchedEmail && email.trim() && !emailRegex.test(email.trim()) ? (t('auth.invalidEmail') ?? 'Invalid email') : ''
   const passwordError = touchedPassword && mode === 'register' && password.trim() && (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) ? (t('settings.passwordTooWeak') ?? 'Weak password') : ''
 
@@ -143,7 +144,6 @@ function LoginScreenInner() {
 
     if (!email.trim()) { setErrorMsg(t('auth.emailRequired')); return }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email.trim())) {
       setErrorMsg(t('auth.invalidEmail') ?? 'Invalid email format')
       return
@@ -176,7 +176,7 @@ function LoginScreenInner() {
     setLoading(true)
     try {
       if (mode === 'register') {
-        trackEvent('auth_register_start' as any)
+        trackEvent('auth_register_start')
         const { data: signUpData, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -202,7 +202,7 @@ function LoginScreenInner() {
           }
         }
 
-        trackEvent('auth_register_success' as any)
+        trackEvent('auth_register_success')
 
         // Send OTP code via Edge Function (Resend API)
         const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
@@ -236,7 +236,7 @@ function LoginScreenInner() {
         }
 
         setLoginAttempts(0)
-        trackEvent('auth_login_success' as any)
+        trackEvent('auth_login_success')
         try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
         toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
         router.replace('/')
@@ -378,7 +378,7 @@ function LoginScreenInner() {
         }
       }
 
-      trackEvent('auth_login_success' as any)
+      trackEvent('auth_login_success')
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
       router.replace('/')
