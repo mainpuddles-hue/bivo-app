@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 11,
     fontFamily: fonts.bodySemi,
-    lineHeight: 13,
+    lineHeight: 14,
   },
   subtitle: {
     fontSize: 11,

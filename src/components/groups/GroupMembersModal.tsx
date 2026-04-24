@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontFamily: fonts.heading,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   memberRow: {
     flexDirection: 'row',

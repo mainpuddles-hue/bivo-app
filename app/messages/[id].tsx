@@ -1057,7 +1057,7 @@ const s = StyleSheet.create({
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
   bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
   msgImage: { width: 200, height: 150, borderRadius: 14, marginBottom: 4 },
-  msgText: { fontSize: 14, lineHeight: 19, letterSpacing: -0.05, fontFamily: fonts.body },
+  msgText: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
   msgTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },

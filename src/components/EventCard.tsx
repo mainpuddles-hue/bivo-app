@@ -209,7 +209,7 @@ const s = StyleSheet.create({
   dateWeekday: {
     fontSize: 10,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 13,
+    lineHeight: 14,
     marginTop: 2,
   },
   /* ---- Details (right) ---- */

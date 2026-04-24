@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: fonts.headingSemi,
-    lineHeight: 23,
+    lineHeight: 24,
     textAlign: 'center',
     paddingHorizontal: 24,
     paddingTop: 8,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 15,
+    lineHeight: 16,
   },
   errorText: {
     fontSize: 13,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 23,
+    lineHeight: 24,
     // color set via inline style with colors.primaryForeground
   },
   cancelBtn: {

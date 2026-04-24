@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14,
   },
   cardTitle: {
-    fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 21,
+    fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 20,
   },
   cardContent: {
     fontSize: 13, fontFamily: fonts.body, lineHeight: 18,

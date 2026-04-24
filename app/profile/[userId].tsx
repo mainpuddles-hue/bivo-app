@@ -1309,7 +1309,7 @@ const s = StyleSheet.create({
   },
   reviewComment: {
     fontSize: 13,
-    lineHeight: 19,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
 

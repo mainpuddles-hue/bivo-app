@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontFamily: fonts.body,
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 20,
     marginBottom: 36,
     textAlign: 'center',
     alignSelf: 'center',

@@ -1246,7 +1246,7 @@ const styles = StyleSheet.create({
   sectionCount: {
     fontSize: 11,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 13,
+    lineHeight: 14,
   },
 
   // -- Empty states --

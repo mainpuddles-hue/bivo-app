@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: fonts.body,
     textAlign: 'center',
-    lineHeight: 21,
+    lineHeight: 20,
     marginBottom: 32,
   },
   summaryCard: {

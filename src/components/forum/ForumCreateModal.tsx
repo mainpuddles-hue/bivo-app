@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   modalTitle: {
-    fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 23, flex: 1,
+    fontSize: 16, fontFamily: fonts.headingSemi, letterSpacing: -0.16, lineHeight: 24, flex: 1,
     textAlign: 'center', paddingHorizontal: 8,
   },
   modalSection: {

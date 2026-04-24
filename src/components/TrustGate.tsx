@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: fonts.headingSemi,
-    lineHeight: 23,
+    lineHeight: 24,
     textAlign: 'center',
   },
   description: {
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   steps: {
     width: '100%',

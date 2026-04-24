@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   showAllPlacesText: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
-    lineHeight: 21,
+    lineHeight: 20,
   },
   placeCatBadge: {
     paddingHorizontal: 8,

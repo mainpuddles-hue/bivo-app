@@ -237,7 +237,7 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   codeRow: {
     flexDirection: 'row',

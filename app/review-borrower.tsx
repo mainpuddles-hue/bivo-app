@@ -295,7 +295,7 @@ const s = StyleSheet.create({
   /* Comment */
   commentInput: {
     borderRadius: 14, borderWidth: 1, padding: 14,
-    fontSize: 13, fontFamily: fonts.body, lineHeight: 19,
+    fontSize: 13, fontFamily: fonts.body, lineHeight: 20,
     minHeight: 76, textAlignVertical: 'top', marginBottom: 10,
   },
   footerNote: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16 },

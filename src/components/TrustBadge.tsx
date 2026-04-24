@@ -56,7 +56,7 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress, 
   return (
     <>
       {handlePress ? (
-        <Pressable onPress={handlePress} hitSlop={8}>{content}</Pressable>
+        <Pressable onPress={handlePress} hitSlop={12}>{content}</Pressable>
       ) : content}
 
       {showExplainer && (
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   progressBar: {
     height: 6,

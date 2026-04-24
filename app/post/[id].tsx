@@ -1441,7 +1441,7 @@ function PostDetailScreenInner() {
                       </Pressable>
                       <Text style={[styles.pricingValue, { color: depositOutOfRange ? colors.destructive : colors.foreground }]}>{formatPrice(depositAmount, locale)}</Text>
                     </View>
-                    <Text style={{ fontSize: 11, fontFamily: fonts.body, color: depositOutOfRange ? colors.destructive : colors.mutedForeground, lineHeight: 15, marginTop: 2 }}>
+                    <Text style={{ fontSize: 11, fontFamily: fonts.body, color: depositOutOfRange ? colors.destructive : colors.mutedForeground, lineHeight: 16, marginTop: 2 }}>
                       {depositOutOfRange
                         ? t('post.depositOutOfRange')
                         : t('post.depositSuggestedRange', { min: depositRange.min, max: depositRange.max })}

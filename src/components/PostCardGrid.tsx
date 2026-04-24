@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    lineHeight: 15,
+    lineHeight: 16,
   },
 
   // ── Mini avatar + meta (shared) ──
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   metaText: {
     fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 13,
+    lineHeight: 14,
     flex: 1,
   },
   viewCountPill: {
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.25,
-    lineHeight: 19,
+    lineHeight: 20,
   },
   eventMeta: {
     fontSize: 11,
@@ -580,6 +580,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.25,
-    lineHeight: 19,
+    lineHeight: 20,
   },
 })

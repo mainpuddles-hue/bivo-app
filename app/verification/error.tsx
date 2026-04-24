@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   content: { flex: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 64 },
   iconCircle: { width: 96, height: 96, borderRadius: 48, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   title: { fontSize: 24, fontFamily: fonts.heading, letterSpacing: -0.3, marginBottom: 8 },
-  subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 21, marginBottom: 32, paddingHorizontal: 16 },
+  subtitle: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center', lineHeight: 20, marginBottom: 32, paddingHorizontal: 16 },
   actions: { width: '100%', gap: 12 },
   primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999 },
   primaryBtnText: { fontSize: 16, fontFamily: fonts.bodySemi },

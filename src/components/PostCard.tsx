@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999,
     paddingHorizontal: 8, paddingVertical: 4,
   },
-  multiImageText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', lineHeight: 13, fontFamily: fonts.bodySemi },
+  multiImageText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', lineHeight: 14, fontFamily: fonts.bodySemi },
   proBadgeOnImage: {
     position: 'absolute', top: 8, right: 8,
     width: 26, height: 26, borderRadius: 13,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   priceBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   priceText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
   conditionBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 13, fontFamily: fonts.bodySemi },
+  conditionBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 14, fontFamily: fonts.bodySemi },
   // Action row — tight, touch targets met via hitSlop not minHeight
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },

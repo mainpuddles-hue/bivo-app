@@ -865,7 +865,7 @@ const styles = StyleSheet.create({
   convName: {
     fontSize: 14,
     fontWeight: '600',
-    lineHeight: 19,
+    lineHeight: 20,
     fontFamily: fonts.bodySemi,
     flex: 1,
   },

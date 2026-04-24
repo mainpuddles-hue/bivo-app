@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
   },
   notifTitle: {
     fontSize: 14,
-    lineHeight: 19,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
   notifTitleBold: {
@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
   },
   notifBody: {
     fontSize: 14,
-    lineHeight: 19,
+    lineHeight: 20,
     fontFamily: fonts.body,
   },
   notifTime: {

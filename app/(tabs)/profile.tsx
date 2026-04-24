@@ -878,7 +878,7 @@ const s = StyleSheet.create({
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 18 },
   reviewTime: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
-  reviewComment: { fontSize: 14, lineHeight: 19, fontFamily: fonts.body },
+  reviewComment: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   emptyText: { fontSize: 14, fontFamily: fonts.body },
   emptyHint: { fontSize: 13, marginTop: 4, fontFamily: fonts.body, lineHeight: 18 },
   emptyPostsIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },

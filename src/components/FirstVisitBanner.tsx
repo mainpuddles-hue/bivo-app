@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     fontFamily: fonts.heading,
-    lineHeight: 23,
+    lineHeight: 24,
     paddingRight: 28,
   },
   body: {

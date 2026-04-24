@@ -855,7 +855,7 @@ const s = StyleSheet.create({
   },
   bodyText: {
     fontSize: 14,
-    lineHeight: 21,  // ~1.55x
+    lineHeight: 20,  // ~1.55x
     letterSpacing: 0,
   },
   bodyTextSmall: {

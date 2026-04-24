@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   detailDesc: {
     fontSize: 14,
     fontFamily: fonts.body,
-    lineHeight: 21,
+    lineHeight: 20,
     marginTop: 4,
   },
   detailActions: {
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   detailActionText: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
-    lineHeight: 21,
+    lineHeight: 20,
     // color set via inline style with colors.primaryForeground or colors.accentForeground
   },
 })

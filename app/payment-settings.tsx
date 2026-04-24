@@ -288,7 +288,7 @@ const s = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 12,
     paddingHorizontal: 4,
-    lineHeight: 15,
+    lineHeight: 16,
   },
   card: {
     borderRadius: 20,
@@ -310,7 +310,7 @@ const s = StyleSheet.create({
   statusBadgeText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 17 },
   providerRow: { padding: 16, gap: 12 },
   providerHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  providerTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 23, flex: 1 },
+  providerTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 24, flex: 1 },
   providerDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
   statusDotRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   statusDot: { width: 6, height: 6, borderRadius: 3 },

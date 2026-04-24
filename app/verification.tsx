@@ -322,7 +322,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: -0.3,
-    lineHeight: 25,
+    lineHeight: 24,
     marginBottom: 8,
   },
   heroDescription: {
@@ -365,7 +365,7 @@ const s = StyleSheet.create({
   stepSubtitle: {
     fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 15,
+    lineHeight: 16,
     marginTop: 1,
   },
   stepDoneLabel: {

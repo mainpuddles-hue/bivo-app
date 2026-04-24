@@ -1537,7 +1537,7 @@ const mk = StyleSheet.create({
   toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 20, gap: 12 },
   toggleInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   toggleLabel: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
-  toggleHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 15, marginTop: 2 },
+  toggleHint: { fontSize: 11, fontFamily: fonts.body, lineHeight: 16, marginTop: 2 },
 
   // Urgency
   urgencyWrap: { gap: 8 },
