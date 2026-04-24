@@ -27,7 +27,7 @@ import Animated, {
   runOnJS,
   interpolate,
 } from 'react-native-reanimated'
-import { Heart, Star, ChevronRight, ArrowRight } from 'lucide-react-native'
+import { Heart, Star, ChevronRight, ArrowRight, ImageIcon } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
@@ -68,6 +68,13 @@ export const DiscoveryStack = memo(function DiscoveryStack({
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const stackDone = currentIndex >= posts.length
+
+  // Dynamic wrapper height based on card dimensions
+  const cardWidth = screenWidth - 40 // paddingHorizontal: 20 * 2
+  const imageHeight = cardWidth * 3 / 4 // 4:3 aspect ratio
+  const CTA_HEIGHT = 60
+  const HINT_HEIGHT = 24
+  const wrapperHeight = imageHeight + CTA_HEIGHT + HINT_HEIGHT + 12 // padding + border
 
   // Shared values for the top card
   const translateX = useSharedValue(0)
@@ -117,8 +124,10 @@ export const DiscoveryStack = memo(function DiscoveryStack({
     router.push(`/post/${currentPost.id}`)
   }, [currentPost, onInteraction, router])
 
-  // Gesture handler
+  // Gesture handler — allow vertical scroll to pass to FlatList
   const panGesture = Gesture.Pan()
+    .activeOffsetX([-15, 15])
+    .failOffsetY([-10, 10])
     .onUpdate((e) => {
       translateX.value = e.translationX
       translateY.value = e.translationY
@@ -217,7 +226,7 @@ export const DiscoveryStack = memo(function DiscoveryStack({
   }
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { height: wrapperHeight }]}>
       {/* Next card (behind) */}
       {nextPost && (
         <Animated.View style={[styles.cardContainer, styles.nextCard, nextCardStyle]}>
@@ -312,10 +321,8 @@ function CardContent({ post, colors, isDark, t, locale, userNeighborhood, userLo
             accessible={false}
           />
         ) : (
-          <View style={[styles.image, { backgroundColor: colors.warmTint }]}>
-            <Text style={[styles.imagePlaceholder, { color: colors.mutedForeground }]}>
-              {categoryLabel}
-            </Text>
+          <View style={[styles.image, { backgroundColor: isDark ? colors.muted : colors.border }]}>
+            <ImageIcon size={40} color={colors.mutedForeground} strokeWidth={1.2} style={{ opacity: 0.35 }} />
           </View>
         )}
 
@@ -383,7 +390,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 4,
     marginBottom: 20,
-    height: 340,
+    // height is set dynamically via style prop
   },
   cardContainer: {
     position: 'absolute',
@@ -457,12 +464,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  imagePlaceholder: {
-    fontSize: 32,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    opacity: 0.4,
-  },
+  // placeholder content handled inline
   heartCircle: {
     position: 'absolute',
     top: 14,
