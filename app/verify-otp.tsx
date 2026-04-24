@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Alert, ActivityIndicator, KeyboardAv
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ArrowLeft, Info } from 'lucide-react-native'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -103,6 +104,7 @@ export default function VerifyOtpScreen() {
         } else {
           setError(t('auth.otpInvalid'))
         }
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
         setLoading(false)
         return
       }
@@ -121,9 +123,11 @@ export default function VerifyOtpScreen() {
             return
           }
         }
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
         trackEvent('auth_login_success' as any)
         router.replace('/settings?recovery=true')
       } else {
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
         trackEvent('auth_register_success' as any)
         // User is already logged in (autoconfirm=true), navigate to onboarding or feed
         const { data: { user } } = await supabase.auth.getUser()

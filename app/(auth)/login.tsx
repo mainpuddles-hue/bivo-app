@@ -9,6 +9,7 @@ import { Eye, EyeOff, Check, X } from 'lucide-react-native'
 import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
 import * as AppleAuthentication from 'expo-apple-authentication'
+import * as Haptics from 'expo-haptics'
 import { GoogleLogo } from '@/components/GoogleLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -236,6 +237,7 @@ function LoginScreenInner() {
 
         setLoginAttempts(0)
         trackEvent('auth_login_success' as any)
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
         toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
         router.replace('/')
       }
@@ -251,6 +253,7 @@ function LoginScreenInner() {
         }
       }
       setErrorMsg(translateError(err.message))
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
     } finally { setLoading(false) }
   }
 
@@ -304,6 +307,7 @@ function LoginScreenInner() {
                   return
                 }
               }
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
               toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
               router.replace('/')
               return
@@ -321,6 +325,7 @@ function LoginScreenInner() {
                   return
                 }
               }
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
               toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
               router.replace('/')
               return
@@ -374,11 +379,13 @@ function LoginScreenInner() {
       }
 
       trackEvent('auth_login_success' as any)
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
       router.replace('/')
     } catch (err: any) {
       if (err?.code === 'ERR_CANCELED' || err?.code === 'ERR_REQUEST_CANCELED') return
       setErrorMsg(translateError(err.message ?? 'Apple sign in failed'))
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
     } finally {
       setLoading(false)
     }
