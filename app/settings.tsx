@@ -1418,7 +1418,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 6,
+    marginTop: 4,
   },
   profileVerifiedText: {
     fontSize: 11,
@@ -1429,7 +1429,7 @@ const s = StyleSheet.create({
   // ── Group (mockup 22) ──
   groupWrapper: {
     paddingHorizontal: 16,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   sectionLabel: {
     fontSize: 11,
@@ -1500,8 +1500,8 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   proUpgradeChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 999,
   },
   proUpgradeText: {

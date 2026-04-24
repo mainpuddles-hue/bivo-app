@@ -1715,7 +1715,7 @@ const styles = StyleSheet.create({
   // Body card — overlaps bottom of photo per mockup 02
   bodyCard: {
     marginTop: -22, borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    paddingTop: 22, paddingHorizontal: 20, paddingBottom: 16,
+    paddingTop: 20, paddingHorizontal: 20, paddingBottom: 16,
     position: 'relative', zIndex: 2, gap: 14,
   },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },

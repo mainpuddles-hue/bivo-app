@@ -801,7 +801,7 @@ function NewListingScreenInner() {
                 {pickupTimeStart} – {pickupTimeEnd}
               </Text>
             </View>
-            <View style={[s.fieldDivider, { backgroundColor: colors.border, marginVertical: 10 }]} />
+            <View style={[s.fieldDivider, { backgroundColor: colors.border, marginVertical: 8 }]} />
             <View style={s.timeRow}>
               <Text style={[s.timeLabel, { color: colors.foreground }]}>{t('newListing.timeReturn')}</Text>
               <Text style={[s.timeValue, { color: colors.mutedForeground }]}>
@@ -1132,7 +1132,7 @@ const s = StyleSheet.create({
   circleBtn: { width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   wizStepLabel: { flex: 1, fontSize: 12, letterSpacing: 0.6, fontWeight: '500', fontFamily: 'InstrumentSans_500Medium' },
   wizSaveLabel: { fontSize: 13, fontWeight: '500', fontFamily: 'InstrumentSans_500Medium' },
-  wizProgressRow: { flexDirection: 'row', gap: 5, marginBottom: 24 },
+  wizProgressRow: { flexDirection: 'row', gap: 4, marginBottom: 24 },
   wizProgressBar: { flex: 1, height: 3, borderRadius: 999 },
   wizTitle: { fontSize: 25, fontWeight: '600', letterSpacing: -0.6, lineHeight: 29, fontFamily: 'InstrumentSans_600SemiBold', marginBottom: 16 },
 
@@ -1141,7 +1141,7 @@ const s = StyleSheet.create({
   ctaRow: { flexDirection: 'row', gap: 10 },
   ctaPrimary: { flex: 1, height: 54, borderRadius: 999, alignItems: 'center', justifyContent: 'center', shadowColor: '#1A1D1F', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   ctaPrimaryText: { fontSize: 15, fontWeight: '600', letterSpacing: -0.1, fontFamily: 'InstrumentSans_600SemiBold' },
-  ctaSecondary: { paddingHorizontal: 22, height: 54, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  ctaSecondary: { paddingHorizontal: 20, height: 54, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   ctaSecondaryText: { fontSize: 14, fontWeight: '600', fontFamily: 'InstrumentSans_600SemiBold' },
 
   // ── Section ──
@@ -1160,7 +1160,7 @@ const s = StyleSheet.create({
   fieldsCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
   fieldRow: { paddingHorizontal: 16, paddingVertical: 12 },
   fieldLabel: { fontSize: 11, fontWeight: '500', marginBottom: 4, fontFamily: 'InstrumentSans_500Medium' },
-  fieldValue: { fontSize: 15, fontWeight: '500', padding: 0, minHeight: 22 },
+  fieldValue: { fontSize: 15, fontWeight: '500', padding: 0, minHeight: 24 },
   fieldDivider: { height: 1 },
 
   // ── Step 2: Photos ──
@@ -1179,8 +1179,8 @@ const s = StyleSheet.create({
   descInput: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05 },
 
   // ── Tags ──
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
-  tagPill: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  tagPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   tagText: { fontSize: 12, fontWeight: '500', fontFamily: 'InstrumentSans_500Medium' },
   tagAddPill: { borderRadius: 999, borderWidth: 1, borderStyle: 'dashed', paddingHorizontal: 10 },
   tagAddInput: { fontSize: 12, minWidth: 80, paddingVertical: 5 },
@@ -1190,7 +1190,7 @@ const s = StyleSheet.create({
   pricingCard: { width: '48%', borderRadius: 14, padding: 12 },
   pricingLabel: { fontSize: 13, fontWeight: '600', letterSpacing: -0.1, fontFamily: 'InstrumentSans_600SemiBold' },
   pricingSub: { fontSize: 11, marginTop: 2, fontFamily: 'InstrumentSans_400Regular' },
-  priceInputCard: { borderRadius: 18, borderWidth: 1, padding: 16, marginTop: 10 },
+  priceInputCard: { borderRadius: 18, borderWidth: 1, padding: 16, marginTop: 8 },
 
   // ── Deposit ──
   depositCard: { borderRadius: 18, borderWidth: 1, padding: 16 },
@@ -1219,7 +1219,7 @@ const s = StyleSheet.create({
   calendarDayBtn: { margin: 2 },
   calendarDayHeader: { fontSize: 10, fontWeight: '600', fontFamily: 'InstrumentSans_600SemiBold' },
   calendarDayNum: { fontSize: 12, fontWeight: '500' },
-  calendarLegend: { flexDirection: 'row', gap: 14, marginTop: 14, paddingTop: 12, borderTopWidth: 1 },
+  calendarLegend: { flexDirection: 'row', gap: 12, marginTop: 12, paddingTop: 12, borderTopWidth: 1 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 3 },
   legendText: { fontSize: 11, fontFamily: 'InstrumentSans_400Regular' },
@@ -1233,13 +1233,13 @@ const s = StyleSheet.create({
   // ── Step 5: Location ──
   locationCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
   miniMap: { height: 120, alignItems: 'center', justifyContent: 'center' },
-  locationInfo: { padding: 14 },
+  locationInfo: { padding: 12 },
   locationAddress: { fontSize: 14, fontWeight: '600', padding: 0, minHeight: 20 },
   locationHint: { fontSize: 12, marginTop: 3, fontFamily: 'InstrumentSans_400Regular' },
 
   // ── Pickup methods ──
   pickupMethods: { gap: 8 },
-  pickupCard: { borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  pickupCard: { borderRadius: 18, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
   radioOuter: { width: 20, height: 20, borderRadius: 999, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   radioInner: { width: 9, height: 9, borderRadius: 999 },
   pickupLabel: { fontSize: 14, fontWeight: '600', letterSpacing: -0.1, fontFamily: 'InstrumentSans_600SemiBold' },
@@ -1247,11 +1247,11 @@ const s = StyleSheet.create({
 
   // ── Step 6: Segment tabs ──
   segmentRow: { borderRadius: 14, padding: 4, flexDirection: 'row', gap: 2, borderWidth: 1 },
-  segmentTab: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
+  segmentTab: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
   segmentTabText: { fontSize: 12, fontWeight: '600', fontFamily: 'InstrumentSans_600SemiBold' },
 
   // ── Checklist items ──
-  checkItem: { borderRadius: 18, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  checkItem: { borderRadius: 18, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   checkItemDashed: { borderStyle: 'dashed', backgroundColor: 'transparent' },
   checkNum: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   checkNumDashed: { borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'transparent' },
@@ -1261,20 +1261,20 @@ const s = StyleSheet.create({
 
   // ── Suggestion pills ──
   suggestPills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  suggestPill: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 999 },
+  suggestPill: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999 },
   suggestPillText: { fontSize: 12, fontWeight: '500', fontFamily: 'InstrumentSans_500Medium' },
 
   // ── Step 7: Rules ──
   rulesCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
-  ruleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
+  ruleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12 },
   ruleDot: { width: 6, height: 6, borderRadius: 999 },
   ruleText: { fontSize: 14, fontFamily: 'InstrumentSans_400Regular' },
-  emptyHint: { padding: 14, fontSize: 13, textAlign: 'center', fontFamily: 'InstrumentSans_400Regular' },
-  addRulePill: { borderRadius: 999, borderWidth: 1, borderStyle: 'dashed', marginTop: 10, paddingHorizontal: 11 },
-  addRuleInput: { fontSize: 12, paddingVertical: 7, minHeight: 32 },
+  emptyHint: { padding: 12, fontSize: 13, textAlign: 'center', fontFamily: 'InstrumentSans_400Regular' },
+  addRulePill: { borderRadius: 999, borderWidth: 1, borderStyle: 'dashed', marginTop: 8, paddingHorizontal: 11 },
+  addRuleInput: { fontSize: 12, paddingVertical: 8, minHeight: 32 },
 
   // ── Damage card ──
-  damageCard: { borderRadius: 18, borderWidth: 1, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  damageCard: { borderRadius: 18, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   damageIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   damageTitle: { fontSize: 13, fontWeight: '600', fontFamily: 'InstrumentSans_600SemiBold' },
   damageSub: { fontSize: 12, marginTop: 3, lineHeight: 16, fontFamily: 'InstrumentSans_400Regular' },
@@ -1283,7 +1283,7 @@ const s = StyleSheet.create({
   previewCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden', maxWidth: '62%' },
   previewImage: { height: 140 },
   previewImagePlaceholder: { height: 140, alignItems: 'center', justifyContent: 'center' },
-  previewInfo: { padding: 10 },
+  previewInfo: { padding: 8 },
   previewTitle: { fontSize: 13, fontWeight: '600', letterSpacing: -0.1, lineHeight: 16, fontFamily: 'InstrumentSans_600SemiBold' },
   previewMeta: { fontSize: 11, marginTop: 4, fontFamily: 'InstrumentSans_400Regular' },
 })

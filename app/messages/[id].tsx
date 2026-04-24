@@ -1027,7 +1027,7 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   // ── Header — Monochrome 06 (surface bg, 1px bottom border) ──
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1,
   },
   circleBtn: {
@@ -1041,9 +1041,9 @@ const s = StyleSheet.create({
   onlineDot: { width: 6, height: 6, borderRadius: 999 },
   onlineText: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   // ── Messages ────────────────────────────────────────────────
-  msgList: { padding: 16, gap: 3, flexGrow: 1 },
+  msgList: { padding: 16, gap: 4, flexGrow: 1 },
   dayStampRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     marginVertical: 12,
   },
   dayStampLine: { flex: 1, height: StyleSheet.hairlineWidth },
@@ -1083,7 +1083,7 @@ const s = StyleSheet.create({
     position: 'absolute', top: -8, right: -4,
     minWidth: 20, height: 20, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 5, zIndex: 1,
+    paddingHorizontal: 4, zIndex: 1,
   },
   newMsgBadgeText: {
     fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600' as const,
@@ -1156,7 +1156,7 @@ const s = StyleSheet.create({
 
 const contextStyles = StyleSheet.create({
   card: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginVertical: 8, padding: 10,
     borderRadius: 20, borderWidth: 1,
   },
@@ -1178,7 +1178,7 @@ const offerStyles = StyleSheet.create({
   bannerActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, borderWidth: 1,
     minHeight: 32,
   },
   acceptBtn: { borderWidth: 0 },

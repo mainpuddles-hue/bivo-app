@@ -323,7 +323,7 @@ const s = StyleSheet.create({
     alignItems: 'baseline', marginBottom: 14,
   },
   chartTitle: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
-  chartBars: { flexDirection: 'row', alignItems: 'flex-end', gap: 5, height: 100 },
+  chartBars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, height: 100 },
   chartBarCol: { flex: 1, alignItems: 'center', gap: 5 },
   chartBarValueWrap: { height: 16, justifyContent: 'flex-end' },
   chartBarValue: { fontSize: 9.5, fontWeight: '700', fontFamily: fonts.bodySemi },
@@ -350,7 +350,7 @@ const s = StyleSheet.create({
   sectionLabel: {
     fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, textTransform: 'uppercase',
-    paddingHorizontal: 4, marginBottom: 10,
+    paddingHorizontal: 4, marginBottom: 8,
   },
 
   /* Transactions */
