@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   metaText: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.body,
     lineHeight: 13,
     flex: 1,
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   eventTitle: {
-    fontSize: 15.5,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.25,
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   textTitle: {
-    fontSize: 15.5,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.25,

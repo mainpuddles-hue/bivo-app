@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   headerSpacer: { width: 36 },
   listContent: { padding: 16, gap: 16, paddingBottom: 40 },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     letterSpacing: 1,
     textTransform: 'uppercase',

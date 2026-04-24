@@ -285,13 +285,13 @@ const s = StyleSheet.create({
   summaryImage: { width: 52, height: 52, borderRadius: 12 },
   summaryImagePlaceholder: { width: 52, height: 52, borderRadius: 12 },
   summaryInfo: { flex: 1 },
-  summaryTitle: { fontSize: 13.5, fontWeight: '600', fontFamily: fonts.bodySemi },
+  summaryTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   summaryDates: { fontSize: 11, fontFamily: fonts.body, marginTop: 3 },
 
   /* Amount hero */
   amountHero: { alignItems: 'center', paddingBottom: 20 },
   amountLabel: {
-    fontSize: 10.5, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1.1, marginBottom: 10,
   },
   amountValue: { fontSize: 58, fontWeight: '600', fontFamily: fonts.heading, letterSpacing: -2.5, lineHeight: 58 },
@@ -314,7 +314,7 @@ const s = StyleSheet.create({
 
   /* Section */
   sectionLabel: {
-    fontSize: 10.5, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 0.9, textTransform: 'uppercase', marginBottom: 6, paddingHorizontal: 4,
   },
 
@@ -328,7 +328,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   methodInfo: { flex: 1 },
-  methodTitle: { fontSize: 13.5, fontWeight: '600', fontFamily: fonts.bodySemi },
+  methodTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   methodSubtitle: { fontSize: 11, fontFamily: fonts.body, marginTop: 2 },
 
   /* CTA */

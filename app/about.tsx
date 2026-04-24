@@ -137,7 +137,7 @@ const s = StyleSheet.create({
   versionText: { fontSize: 13, fontFamily: fonts.body },
   tagline: { fontSize: 14, fontFamily: fonts.body, marginTop: 2 },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
     letterSpacing: 1,

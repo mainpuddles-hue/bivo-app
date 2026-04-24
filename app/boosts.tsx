@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 10.5,
+    fontSize: 11,
     lineHeight: 16,
     fontFamily: fonts.bodySemi,
     marginTop: 8,

@@ -282,7 +282,7 @@ const s = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   content: { padding: 16, gap: 8, paddingBottom: 40 },
   section: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     letterSpacing: 1,
     textTransform: 'uppercase',

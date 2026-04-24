@@ -326,7 +326,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
   },
   heroDescription: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontFamily: fonts.body,
     lineHeight: 12.5 * 1.5,
     textAlign: 'center',
@@ -357,7 +357,7 @@ const s = StyleSheet.create({
     flex: 1,
   },
   stepTitle: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     lineHeight: 18,
@@ -369,7 +369,7 @@ const s = StyleSheet.create({
     marginTop: 1,
   },
   stepDoneLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: 0.5,
@@ -382,7 +382,7 @@ const s = StyleSheet.create({
     minHeight: 36,
   },
   stepActionText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
   },

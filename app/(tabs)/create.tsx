@@ -1453,7 +1453,7 @@ const mk = StyleSheet.create({
   // Header
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12 },
   headerCloseBtn: { width: 36, height: 36, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 14.5, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading },
+  headerTitle: { fontSize: 15, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading },
   headerDraft: { width: 56, fontSize: 12, fontWeight: '500', textAlign: 'right', textDecorationLine: 'underline', fontFamily: fonts.bodyMedium },
 
   // Step indicator
@@ -1487,7 +1487,7 @@ const mk = StyleSheet.create({
   photoWrap: { paddingHorizontal: 20, paddingTop: 18 },
   photoDashed: { aspectRatio: 1.25, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 8 },
   photoCircle: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  photoMainText: { fontSize: 13.5, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  photoMainText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   photoSubText: { fontSize: 11, fontFamily: fonts.body },
   imgRow: { flexDirection: 'row', gap: 8 },
   imgThumb: { width: 100, height: 100, borderRadius: 20, overflow: 'hidden', position: 'relative', borderWidth: 1 },
@@ -1506,8 +1506,8 @@ const mk = StyleSheet.create({
 
   // Form fields
   fieldWrap: { gap: 4, paddingHorizontal: 20, paddingTop: 14 },
-  input: { height: 50, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, fontSize: 14.5, fontWeight: '600', fontFamily: fonts.heading },
-  textarea: { minHeight: 90, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 13.5, lineHeight: 20, fontFamily: fonts.body, textAlignVertical: 'top' },
+  input: { height: 50, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, fontSize: 15, fontWeight: '600', fontFamily: fonts.heading },
+  textarea: { minHeight: 90, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlignVertical: 'top' },
   charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
 
   // 2-column
@@ -1517,7 +1517,7 @@ const mk = StyleSheet.create({
 
   // Map picker row
   mapRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 10, paddingHorizontal: 16, height: 50, borderRadius: 20, borderWidth: 1 },
-  mapRowText: { fontSize: 13.5, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  mapRowText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   coordsSmall: { fontSize: 11, marginTop: 4, marginHorizontal: 20, fontFamily: fonts.body },
 
   // Tags

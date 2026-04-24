@@ -1036,7 +1036,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   barTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.15,
@@ -1208,7 +1208,7 @@ const s = StyleSheet.create({
 
   // ── Bio ──
   bio: {
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.body,
     marginBottom: 14,
@@ -1222,7 +1222,7 @@ const s = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.9,
     textTransform: 'uppercase',
@@ -1302,13 +1302,13 @@ const s = StyleSheet.create({
     gap: 10,
   },
   reviewName: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 18,
   },
   reviewComment: {
-    fontSize: 12.5,
+    fontSize: 13,
     lineHeight: 19,
     fontFamily: fonts.body,
   },

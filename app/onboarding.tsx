@@ -854,7 +854,7 @@ const s = StyleSheet.create({
     lineHeight: 30,
   },
   bodyText: {
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 21,  // ~1.55x
     letterSpacing: 0,
   },

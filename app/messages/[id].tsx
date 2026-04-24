@@ -1035,7 +1035,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },
-  headerName: { fontSize: 14.5, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.bodySemi },
+  headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.bodySemi },
   headerSub: { fontSize: 11, lineHeight: 16, fontFamily: fonts.body },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
   onlineDot: { width: 6, height: 6, borderRadius: 999 },
@@ -1048,7 +1048,7 @@ const s = StyleSheet.create({
   },
   dayStampLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dateHeader: {
-    fontSize: 10.5, fontWeight: '500', letterSpacing: 0.9,
+    fontSize: 11, fontWeight: '500', letterSpacing: 0.9,
     fontFamily: fonts.bodyMedium, textTransform: 'uppercase',
   },
   msgRow: { flexDirection: 'row', gap: 8, marginVertical: 3 },
@@ -1057,10 +1057,10 @@ const s = StyleSheet.create({
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
   bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
   msgImage: { width: 200, height: 150, borderRadius: 14, marginBottom: 4 },
-  msgText: { fontSize: 13.5, lineHeight: 19, letterSpacing: -0.05, fontFamily: fonts.body },
+  msgText: { fontSize: 14, lineHeight: 19, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
-  msgTime: { fontSize: 10.5, lineHeight: 14, fontFamily: fonts.body },
+  msgTime: { fontSize: 11, lineHeight: 14, fontFamily: fonts.body },
   reactionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   reactionsRowMine: { justifyContent: 'flex-end' },
   reactionsRowTheirs: { justifyContent: 'flex-start' },
@@ -1123,7 +1123,7 @@ const s = StyleSheet.create({
   },
   textInput: {
     flex: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 13.5, maxHeight: 120, minHeight: 42, fontFamily: fonts.body,
+    fontSize: 14, maxHeight: 120, minHeight: 42, fontFamily: fonts.body,
     borderWidth: 1,
   },
   sendBtn: {
@@ -1143,7 +1143,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 7,
     borderRadius: 999, borderWidth: 1,
   },
-  quickReplyText: { fontSize: 12.5, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
+  quickReplyText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
   // ── Link preview ────────────────────────────────────────────
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

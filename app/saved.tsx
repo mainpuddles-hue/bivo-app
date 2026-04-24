@@ -503,7 +503,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.15,
@@ -603,18 +603,18 @@ const s = StyleSheet.create({
     paddingBottom: 12,
   },
   gridTitle: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,
   },
   gridMeta: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.body,
     marginTop: 3,
   },
   gridPrice: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     marginTop: 6,
@@ -626,7 +626,7 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     letterSpacing: 0.9,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
@@ -655,7 +655,7 @@ const s = StyleSheet.create({
     gap: 2,
   },
   eventTitle: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 18,

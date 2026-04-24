@@ -1341,7 +1341,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.15,
@@ -1404,13 +1404,13 @@ const s = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    fontSize: 15.5,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.15,
   },
   profileSubtitle: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginTop: 2,
   },
@@ -1421,7 +1421,7 @@ const s = StyleSheet.create({
     marginTop: 6,
   },
   profileVerifiedText: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
@@ -1432,7 +1432,7 @@ const s = StyleSheet.create({
     marginBottom: 14,
   },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     letterSpacing: 0.9,
     textTransform: 'uppercase',
     fontWeight: '600',
@@ -1470,7 +1470,7 @@ const s = StyleSheet.create({
     flex: 1,
   },
   rowLabel: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     letterSpacing: -0.05,
@@ -1481,7 +1481,7 @@ const s = StyleSheet.create({
     marginTop: 2,
   },
   rowValue: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontFamily: fonts.body,
   },
   switchStyle: {
@@ -1495,7 +1495,7 @@ const s = StyleSheet.create({
 
   // ── Pro ──
   proBadgeText: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
@@ -1516,7 +1516,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   securityTitle: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },

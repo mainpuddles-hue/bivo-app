@@ -459,7 +459,7 @@ const s = StyleSheet.create({
     paddingVertical: 8,
   },
   sectionTitle: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     textTransform: 'uppercase',
@@ -506,7 +506,7 @@ const s = StyleSheet.create({
 
   // All events label — monochrome section label
   allEventsLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     textTransform: 'uppercase',
@@ -520,7 +520,7 @@ const s = StyleSheet.create({
   // Template shortcuts
   templateSection: { paddingTop: 12, gap: 8 },
   templateSectionTitle: {
-    fontSize: 10.5, lineHeight: 16, textTransform: 'uppercase',
+    fontSize: 11, lineHeight: 16, textTransform: 'uppercase',
     letterSpacing: 1, paddingHorizontal: 16,
   },
   templateRow: { gap: 8, paddingHorizontal: 16, paddingBottom: 4 },

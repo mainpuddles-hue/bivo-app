@@ -734,7 +734,7 @@ const s = StyleSheet.create({
   scrollContent: { flex: 1 },
   scrollContainer: { paddingHorizontal: 16, paddingTop: 16 },
   sectionTitle: {
-    fontSize: 10.5,
+    fontSize: 11,
     lineHeight: 14,
     fontFamily: fonts.bodySemi,
     marginBottom: 12,

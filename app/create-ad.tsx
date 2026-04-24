@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   },
   content: { padding: 16, gap: 4 },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     lineHeight: 14,
     fontWeight: '600',
     letterSpacing: 1,

@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   roleChipText: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontFamily: fonts.bodySemi,
     lineHeight: 18,
   },
@@ -561,12 +561,12 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   segmentLabel: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
   segmentCount: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
     lineHeight: 16,
   },
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     letterSpacing: 0.9,
     textTransform: 'uppercase',
     fontFamily: fonts.bodySemi,
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   loanTitle: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontFamily: fonts.bodySemi,
     lineHeight: 20,
     letterSpacing: -0.1,

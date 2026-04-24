@@ -307,14 +307,14 @@ const s = StyleSheet.create({
   /* Total */
   totalSection: { paddingVertical: 4, paddingHorizontal: 4, marginBottom: 22 },
   totalLabel: {
-    fontSize: 10.5, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, marginBottom: 6,
   },
   totalValue: {
     fontSize: 48, fontWeight: '600', fontFamily: fonts.heading,
     letterSpacing: -2, lineHeight: 48,
   },
-  totalMeta: { fontSize: 11.5, fontFamily: fonts.body, marginTop: 4 },
+  totalMeta: { fontSize: 12, fontFamily: fonts.body, marginTop: 4 },
 
   /* Chart */
   chartCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 18 },
@@ -322,7 +322,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'baseline', marginBottom: 14,
   },
-  chartTitle: { fontSize: 11.5, fontWeight: '600', fontFamily: fonts.bodySemi },
+  chartTitle: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   chartBars: { flexDirection: 'row', alignItems: 'flex-end', gap: 5, height: 100 },
   chartBarCol: { flex: 1, alignItems: 'center', gap: 5 },
   chartBarValueWrap: { height: 16, justifyContent: 'flex-end' },
@@ -338,7 +338,7 @@ const s = StyleSheet.create({
   },
   nextPayoutInfo: { flex: 1 },
   nextPayoutLabel: {
-    fontSize: 10.5, letterSpacing: 1,
+    fontSize: 11, letterSpacing: 1,
     fontWeight: '600', fontFamily: fonts.bodySemi, marginBottom: 4,
   },
   nextPayoutValue: {
@@ -348,7 +348,7 @@ const s = StyleSheet.create({
 
   /* Section */
   sectionLabel: {
-    fontSize: 10.5, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, textTransform: 'uppercase',
     paddingHorizontal: 4, marginBottom: 10,
   },
@@ -364,7 +364,7 @@ const s = StyleSheet.create({
   txnInfo: { flex: 1 },
   txnTitle: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.1 },
   txnDate: { fontSize: 11, fontFamily: fonts.body, marginTop: 1 },
-  txnAmount: { fontSize: 13.5, fontWeight: '600', fontFamily: fonts.bodySemi },
+  txnAmount: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   txnDivider: { height: 1, marginLeft: 14 },
 })
 

@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
   // Subtitle
   subtitle: {
     fontFamily: fonts.body,
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 21,
     marginBottom: 36,
     textAlign: 'center',
@@ -885,7 +885,7 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1 },
   dividerText: {
     fontFamily: fonts.bodySemi,
-    fontSize: 10.5,
+    fontSize: 11,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },

@@ -813,7 +813,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12,
   },
-  headerTitle: { fontSize: 14.5, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
+  headerTitle: { fontSize: 15, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
   headerCircle: {
     width: 36, height: 36, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
@@ -826,7 +826,7 @@ const s = StyleSheet.create({
   avatarWrap: { position: 'relative' },
   heroCenterInfo: { alignItems: 'center', gap: 4, marginTop: 2 },
   profileName: { fontSize: 24, fontWeight: '600', fontFamily: fonts.heading, lineHeight: 30, letterSpacing: -0.5 },
-  heroSubtitle: { fontSize: 12.5, fontFamily: fonts.body, lineHeight: 16, letterSpacing: 0.1, textAlign: 'center' },
+  heroSubtitle: { fontSize: 13, fontFamily: fonts.body, lineHeight: 16, letterSpacing: 0.1, textAlign: 'center' },
 
   // Stats grid (mockup 08)
   statsGrid: { flexDirection: 'row', gap: 8 },

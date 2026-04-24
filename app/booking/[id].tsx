@@ -1198,7 +1198,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
   },
   heroSubtext: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontFamily: fonts.body,
     lineHeight: 18,
     textAlign: 'center',
@@ -1228,13 +1228,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   itemTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,
   },
   itemMeta: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginTop: 3,
   },
@@ -1283,12 +1283,12 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   ribbonTitle: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
   },
   ribbonSubtitle: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.body,
     marginTop: 1,
   },
@@ -1377,7 +1377,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   tagText: {
-    fontSize: 12.5,
+    fontSize: 13,
   },
 
   // Review avatar
@@ -1389,7 +1389,7 @@ const s = StyleSheet.create({
 
   // Comment input
   commentInput: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontFamily: fonts.body,
     lineHeight: 20,
     minHeight: 80,
@@ -1401,7 +1401,7 @@ const s = StyleSheet.create({
   timelineDotCol: { alignItems: 'center', width: 14 },
   timelineDot: { width: 14, height: 14, borderRadius: 999 },
   timelineLine: { width: 1.5, flex: 1, minHeight: 30, marginTop: 4 },
-  timelineLabel: { fontSize: 13.5, fontFamily: fonts.body, lineHeight: 18, letterSpacing: -0.1 },
+  timelineLabel: { fontSize: 14, fontFamily: fonts.body, lineHeight: 18, letterSpacing: -0.1 },
 
   // Price
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },

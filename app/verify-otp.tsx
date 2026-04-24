@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 21,
     fontFamily: fonts.body,
     marginBottom: 36,
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   infoText: {
-    fontSize: 11.5,
+    fontSize: 12,
     lineHeight: 17,
     fontFamily: fonts.body,
     flex: 1,

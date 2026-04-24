@@ -270,7 +270,7 @@ const s = StyleSheet.create({
     alignItems: 'center', marginBottom: 16,
   },
   starsLabel: {
-    fontSize: 10.5, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, marginBottom: 12,
   },
   starsRow: { flexDirection: 'row', gap: 6 },
@@ -279,7 +279,7 @@ const s = StyleSheet.create({
 
   /* Section */
   sectionLabel: {
-    fontSize: 10.5, fontWeight: '600', fontFamily: fonts.bodySemi,
+    fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10,
   },
   optionalTag: { textTransform: 'none', fontWeight: '400', letterSpacing: 0 },
@@ -290,7 +290,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 5,
     paddingHorizontal: 14, paddingVertical: 12, borderRadius: 999, minHeight: 44,
   },
-  tagText: { fontSize: 11.5, fontWeight: '500', fontFamily: fonts.bodyMedium },
+  tagText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
 
   /* Comment */
   commentInput: {

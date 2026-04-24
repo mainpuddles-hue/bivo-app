@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   headerTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     lineHeight: 20,
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   headerRightText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     lineHeight: 16,
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     paddingTop: 18,
   },
   sectionTitle: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.9,
     textTransform: 'uppercase',
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   notifTitle: {
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 19,
     fontFamily: fonts.body,
   },
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   notifBody: {
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 19,
     fontFamily: fonts.body,
   },
@@ -770,7 +770,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
   },
   actionPrimaryText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   actionSecondaryText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,

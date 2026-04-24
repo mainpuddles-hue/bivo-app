@@ -434,7 +434,7 @@ const s = StyleSheet.create({
     lineHeight: 20,
   },
   monthLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     lineHeight: 14,
     paddingHorizontal: 16,
@@ -534,7 +534,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   yourRankLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     lineHeight: 14,
     textTransform: 'uppercase',

@@ -1661,7 +1661,7 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   resultsCount: {
-    fontSize: 10.5,
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     lineHeight: 16,
@@ -1672,7 +1672,7 @@ const s = StyleSheet.create({
     gap: 4,
   },
   sortLabel: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '600',
     lineHeight: 16,
   },
@@ -1704,7 +1704,7 @@ const s = StyleSheet.create({
     gap: 2,
   },
   resultTitle: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '600',
     lineHeight: 18,
   },
@@ -1713,7 +1713,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   resultPrice: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '600',
     lineHeight: 16,
     marginTop: 2,
@@ -1735,7 +1735,7 @@ const s = StyleSheet.create({
     gap: 10,
   },
   similarSectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     lineHeight: 16,
@@ -1761,7 +1761,7 @@ const s = StyleSheet.create({
     paddingVertical: 8,
   },
   similarTitle: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '500',
     lineHeight: 16,
   },

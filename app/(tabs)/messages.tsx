@@ -751,7 +751,7 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flex: 1, gap: 2 },
   locationEyebrow: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     letterSpacing: 0.9,
@@ -794,7 +794,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 13.5,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.body,
     paddingVertical: 0,
@@ -863,7 +863,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   convName: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '600',
     lineHeight: 19,
     fontFamily: fonts.bodySemi,
@@ -883,7 +883,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   convPreview: {
-    fontSize: 11.5,
+    fontSize: 12,
     flex: 1,
     lineHeight: 16,
     fontFamily: fonts.body,
@@ -894,7 +894,7 @@ const styles = StyleSheet.create({
     minWidth: 36,
   },
   convTime: {
-    fontSize: 10.5,
+    fontSize: 11,
     lineHeight: 14,
     fontFamily: fonts.body,
   },
@@ -951,7 +951,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   ctaBtnText: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
     fontFamily: fonts.bodySemi,
@@ -963,7 +963,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '600',
     lineHeight: 14,
     fontFamily: fonts.bodySemi,
