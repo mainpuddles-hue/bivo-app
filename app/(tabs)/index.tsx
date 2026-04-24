@@ -5,7 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Map, LayoutGrid, Home } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
-import { PressableOpacity } from '@/components/ui'
+import { PressableOpacity, AnimatedEntrance, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -372,15 +372,17 @@ function FeedScreenInner() {
       )
     }
     return (
-      <PostCardGrid
-        post={item as Post}
-        userId={feed.currentUserId}
-        onInteraction={trackInteraction}
-        index={index}
-        sortBy={feed.sortBy}
-        followedIds={feed.followedIds}
-        viewCount={viewCounts[(item as Post).id]}
-      />
+      <AnimatedEntrance index={index} stagger={60} duration={350} slideDistance={16}>
+        <PostCardGrid
+          post={item as Post}
+          userId={feed.currentUserId}
+          onInteraction={trackInteraction}
+          index={index}
+          sortBy={feed.sortBy}
+          followedIds={feed.followedIds}
+          viewCount={viewCounts[(item as Post).id]}
+        />
+      </AnimatedEntrance>
     )
   }, [feed.currentUserId, trackInteraction, feed.sortBy, feed.followedIds, viewCounts])
 
@@ -632,10 +634,10 @@ function FeedScreenInner() {
                 <Text style={[styles.coldStartHint, { color: colors.mutedForeground }]}>
                   {t('map.beFirstInArea', { area: feed.userNeighborhood ?? 'Helsinki' })}
                 </Text>
-                <PressableOpacity onPress={() => router.push('/(tabs)/create')} style={[styles.coldStartBtn, { backgroundColor: colors.foreground }]}>
+                <MagneticPressable onPress={() => router.push('/(tabs)/create')} style={[styles.coldStartBtn, { backgroundColor: colors.foreground }]} pressedScale={0.92}>
                   <Plus size={16} color={colors.primaryForeground} />
                   <Text style={[styles.coldStartBtnText, { color: colors.primaryForeground }]}>{t('events.heroCreateCTA')}</Text>
-                </PressableOpacity>
+                </MagneticPressable>
               </View>
             ) : null}
 
@@ -677,15 +679,16 @@ function FeedScreenInner() {
       />
       )}
 
-      {/* FAB — create new post */}
-      <PressableOpacity
+      {/* FAB — create new post (magnetic spring press) */}
+      <MagneticPressable
         onPress={() => router.push('/(tabs)/create')}
         style={[styles.fab, { backgroundColor: colors.foreground }]}
         accessibilityLabel={t('feed.createPost') ?? 'Create post'}
         accessibilityRole="button"
+        pressedScale={0.88}
       >
         <Plus size={24} color={colors.background} strokeWidth={2.5} />
-      </PressableOpacity>
+      </MagneticPressable>
 
       <NeighborhoodPicker
         visible={feed.showNeighborhoodPicker}
@@ -733,11 +736,11 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '600',
     fontFamily: fonts.heading,
-    letterSpacing: -0.5,
-    lineHeight: 28,
+    letterSpacing: -0.8,
+    lineHeight: 32,
   },
   headerRight: {
     flexDirection: 'row',
@@ -786,11 +789,11 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   remainingSectionTitle: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: '600',
     fontFamily: fonts.heading,
-    letterSpacing: -0.2,
-    lineHeight: 22,
+    letterSpacing: -0.4,
+    lineHeight: 24,
   },
 
   // FAB

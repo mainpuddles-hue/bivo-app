@@ -4,17 +4,22 @@ import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 
 /**
- * Wraps children in a fade-in when they mount (skeleton → content crossfade).
+ * Wraps children in a fade-in + subtle slide-up when they mount.
+ * Creates a polished skeleton → content crossfade.
  * Respects prefers-reduced-motion.
  */
-export function FadeIn({ children, style, duration = 250 }: { children: ReactNode; style?: ViewStyle; duration?: number }) {
+export function FadeIn({ children, style, duration = 300 }: { children: ReactNode; style?: ViewStyle; duration?: number }) {
   const opacity = useRef(new Animated.Value(0)).current
+  const translateY = useRef(new Animated.Value(8)).current
   const reduceMotion = useReduceMotion()
   useEffect(() => {
-    if (reduceMotion) { opacity.setValue(1); return }
-    Animated.timing(opacity, { toValue: 1, duration, useNativeDriver: true }).start()
-  }, [opacity, duration, reduceMotion])
-  return <Animated.View style={[style, { opacity }]}>{children}</Animated.View>
+    if (reduceMotion) { opacity.setValue(1); translateY.setValue(0); return }
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration, useNativeDriver: true }),
+    ]).start()
+  }, [opacity, translateY, duration, reduceMotion])
+  return <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>{children}</Animated.View>
 }
 
 export function useShimmer() {

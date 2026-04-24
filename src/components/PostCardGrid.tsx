@@ -9,7 +9,7 @@
  *
  * No Threads-style header. Photo-first, content-dense, Pinterest masonry.
  */
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
@@ -214,21 +214,31 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     )
   }
 
-  const pressedStyle = { opacity: 0.92, transform: [{ scale: 0.98 }] as const }
+  // Spring-physics press feedback
+  const cardScale = useRef(new Animated.Value(1)).current
+  const handleCardPressIn = useCallback(() => {
+    if (reduceMotion) { cardScale.setValue(0.96); return }
+    Animated.spring(cardScale, { toValue: 0.96, friction: 4, tension: 200, useNativeDriver: true }).start()
+  }, [cardScale, reduceMotion])
+  const handleCardPressOut = useCallback(() => {
+    if (reduceMotion) { cardScale.setValue(1); return }
+    Animated.spring(cardScale, { toValue: 1, friction: 3, tension: 300, useNativeDriver: true }).start()
+  }, [cardScale, reduceMotion])
 
   // ─── image-hero: photo-first Pinterest card ───
   if (variant === 'image-hero') {
     return (
-      <View style={{ flex: 1 }}>
+      <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
         <Pressable
           onPress={handlePress}
+          onPressIn={handleCardPressIn}
+          onPressOut={handleCardPressOut}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [
+          style={[
             styles.card,
             { backgroundColor: colors.card, borderColor: colors.border },
             isExpired && { opacity: 0.55 },
-            pressed && pressedStyle,
           ]}
         >
           {/* Photo with overlaid badges */}
@@ -297,24 +307,25 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             {MetaFooter(colors.mutedForeground)}
           </View>
         </Pressable>
-      </View>
+      </Animated.View>
     )
   }
 
   // ─── event: ink background, inverted text ───
   if (variant === 'event') {
     return (
-      <View style={{ flex: 1 }}>
+      <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
         <Pressable
           onPress={handlePress}
+          onPressIn={handleCardPressIn}
+          onPressOut={handleCardPressOut}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
-          style={({ pressed }) => [
+          style={[
             styles.card,
             styles.eventCard,
             { backgroundColor: colors.foreground },
             isExpired && { opacity: 0.55 },
-            pressed && pressedStyle,
           ]}
         >
           <View style={styles.eventContent}>
@@ -336,22 +347,23 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             </Text>
           </View>
         </Pressable>
-      </View>
+      </Animated.View>
     )
   }
 
   // ─── text: warm tint background, no image ───
   return (
-    <View style={{ flex: 1 }}>
+    <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
       <Pressable
         onPress={handlePress}
+        onPressIn={handleCardPressIn}
+        onPressOut={handleCardPressOut}
         accessibilityRole="button"
         accessibilityLabel={a11yLabel}
-        style={({ pressed }) => [
+        style={[
           styles.card,
           { backgroundColor: colors.warmTint, borderColor: colors.border },
           isExpired && { opacity: 0.55 },
-          pressed && pressedStyle,
         ]}
       >
         <View style={styles.textContent}>
@@ -369,7 +381,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           {MetaFooter(colors.mutedForeground)}
         </View>
       </Pressable>
-    </View>
+    </Animated.View>
   )
 })
 
