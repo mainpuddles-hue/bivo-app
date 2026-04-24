@@ -17,6 +17,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatDateHeader, formatPrice } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useToast } from '@/components/Toast'
 import { ReportModal } from '@/components/ReportModal'
 import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
@@ -53,6 +54,7 @@ function getDomain(url: string): string {
 function ConversationScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -343,7 +345,7 @@ function ConversationScreenInner() {
   const handleQuickReply = useCallback(async (text: string) => {
     if (!userId || sending) return
     if (!await checkRateLimit('message')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('message', t))
+      toast.show({ message: getRateLimitMessage('message', t), type: 'error' })
       return
     }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -354,17 +356,17 @@ function ConversationScreenInner() {
       if (error) throw error
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
     } catch {
-      Alert.alert(t('common.error'), t('messages.sendFailed'))
+      toast.show({ message: t('messages.sendFailed'), type: 'error' })
     } finally {
       setSending(false)
       if (typingDebounceRef.current) { clearTimeout(typingDebounceRef.current); typingDebounceRef.current = null }
     }
-  }, [userId, id, supabase, sending, t])
+  }, [userId, id, supabase, sending, t, toast])
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !userId || sending) return
     if (!await checkRateLimit('message')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('message', t))
+      toast.show({ message: getRateLimitMessage('message', t), type: 'error' })
       return
     }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -379,20 +381,20 @@ function ConversationScreenInner() {
       (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch(() => {})
     } catch (err) {
       setInput(content)
-      Alert.alert(t('common.error'), t('messages.sendFailed'))
+      toast.show({ message: t('messages.sendFailed'), type: 'error' })
       if (__DEV__) console.error('[conversation] message send failed:', err)
     } finally {
       setSending(false)
       if (typingDebounceRef.current) { clearTimeout(typingDebounceRef.current); typingDebounceRef.current = null }
     }
-  }, [input, userId, id, supabase, sending, t])
+  }, [input, userId, id, supabase, sending, t, toast])
 
   const MAX_MSG_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
   const handleSendImage = useCallback(async () => {
     if (!userId) return
     if (!await checkRateLimit('message')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('message', t))
+      toast.show({ message: getRateLimitMessage('message', t), type: 'error' })
       return
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -407,8 +409,8 @@ function ConversationScreenInner() {
       const blob = await response.blob()
       const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
-      if (!mimeType) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
-      if (blob.size > MAX_MSG_FILE_SIZE) { Alert.alert(t('common.error'), t('messages.imageSendFailed')); setSending(false); return }
+      if (!mimeType) { toast.show({ message: t('messages.imageSendFailed'), type: 'error' }); setSending(false); return }
+      if (blob.size > MAX_MSG_FILE_SIZE) { toast.show({ message: t('messages.imageSendFailed'), type: 'error' }); setSending(false); return }
       const mimeSubtype = mimeType.split('/')[1]
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `messages/${id}/${Date.now()}.${ext}`
@@ -423,13 +425,13 @@ function ConversationScreenInner() {
       if (msgError) throw msgError
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
     } catch (err) {
-      Alert.alert(t('common.error'), t('messages.imageSendFailed'))
+      toast.show({ message: t('messages.imageSendFailed'), type: 'error' })
       if (__DEV__) console.error('[conversation] image send failed:', err)
     } finally {
       setSending(false)
       if (typingDebounceRef.current) { clearTimeout(typingDebounceRef.current); typingDebounceRef.current = null }
     }
-  }, [userId, id, supabase, t])
+  }, [userId, id, supabase, t, toast])
 
   const handleLongPress = useCallback((messageId: string) => {
     setSelectedMessageId(messageId)
@@ -521,13 +523,13 @@ function ConversationScreenInner() {
               setMessages(prev => prev.map(m =>
                 m.id === targetId ? { ...m, is_deleted: false } as any : m
               ))
-              Alert.alert(t('common.error'), t('conversation.deleteFailed'))
+              toast.show({ message: t('conversation.deleteFailed'), type: 'error' })
             }
           },
         },
       ],
     )
-  }, [selectedMessageId, userId, supabase, t])
+  }, [selectedMessageId, userId, supabase, t, toast])
 
   const handleOfferAction = useCallback(async (action: 'accepted' | 'rejected' | 'withdrawn') => {
     if (!pendingOffer) return
@@ -548,7 +550,7 @@ function ConversationScreenInner() {
               setPendingOffer(null)
               try { Haptics.notificationAsync(action === 'accepted' ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning) } catch {}
             } catch {
-              Alert.alert(t('common.error') ?? 'Error')
+              toast.show({ message: t('common.error') ?? 'Error', type: 'error' })
             } finally {
               setOfferLoading(false)
             }
@@ -556,7 +558,7 @@ function ConversationScreenInner() {
         },
       ]
     )
-  }, [pendingOffer, supabase, t, locale])
+  }, [pendingOffer, supabase, t, locale, toast])
 
   const renderMessage = useCallback(({ item, index }: { item: Message; index: number }) => {
     const isMine = item.sender_id === userId

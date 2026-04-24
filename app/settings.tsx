@@ -329,7 +329,7 @@ export default function SettingsScreen() {
         location_accuracy: locationAccuracy,
       }).eq('id', profile.id)
       if (saveError) {
-        Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
+        toast.show({ message: t('settings.settingsSaveFailed'), type: 'error' })
         return
       }
       setDirty(false)
@@ -345,7 +345,7 @@ export default function SettingsScreen() {
     try {
       const { error: nameError } = await (supabase.from('profiles') as any).update({ name: nameText.trim() }).eq('id', profile.id)
       if (nameError) {
-        Alert.alert(t('common.error'), t('settings.settingsSaveFailed'))
+        toast.show({ message: t('settings.settingsSaveFailed'), type: 'error' })
         return
       }
       setProfile(prev => prev ? { ...prev, name: nameText.trim() } : null)
@@ -358,15 +358,15 @@ export default function SettingsScreen() {
 
   const handleChangePassword = useCallback(async () => {
     if (!isPasswordRecovery && !currentPw) {
-      Alert.alert(t('common.error'), t('settings.currentPasswordRequired'))
+      toast.show({ message: t('settings.currentPasswordRequired'), type: 'error' })
       return
     }
     if (!newPw || newPw.length < 8) {
-      Alert.alert(t('common.error'), t('settings.passwordTooShort'))
+      toast.show({ message: t('settings.passwordTooShort'), type: 'error' })
       return
     }
     if (!/[A-Z]/.test(newPw) || !/[0-9]/.test(newPw)) {
-      Alert.alert(t('common.error'), t('settings.passwordTooWeak'))
+      toast.show({ message: t('settings.passwordTooWeak'), type: 'error' })
       return
     }
     setChangingPw(true)
@@ -378,7 +378,7 @@ export default function SettingsScreen() {
           password: currentPw,
         })
         if (signInError) {
-          Alert.alert(t('common.error'), t('settings.currentPasswordWrong'))
+          toast.show({ message: t('settings.currentPasswordWrong'), type: 'error' })
           setChangingPw(false)
           return
         }
@@ -390,9 +390,9 @@ export default function SettingsScreen() {
       setNewPw('')
       setIsPasswordRecovery(false)
     } catch (err: any) {
-      Alert.alert(t('common.error'), err.message ?? t('settings.passwordChangeFailed'))
+      toast.show({ message: err.message ?? t('settings.passwordChangeFailed'), type: 'error' })
     } finally { setChangingPw(false) }
-  }, [currentPw, newPw, userEmail, supabase, t, isPasswordRecovery])
+  }, [currentPw, newPw, userEmail, supabase, t, isPasswordRecovery, toast])
 
   const handleExport = useCallback(async () => {
     if (!profile) return
@@ -544,12 +544,12 @@ export default function SettingsScreen() {
         await downloadAsFile(jsonStr, filename)
       }
     } catch {
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
     } finally {
       setExporting(false)
       setExportProgress('')
     }
-  }, [profile, supabase, t])
+  }, [profile, supabase, t, toast])
 
   const handleDeleteAccount = () => {
     Alert.alert(t('settings.deleteAccount'), t('settings.deleteFirstConfirm'), [
@@ -574,7 +574,7 @@ export default function SettingsScreen() {
       // valid login after "deletion" (GDPR non-compliance).
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        Alert.alert(t('common.error'), t('auth.loginRequired'))
+        toast.show({ message: t('auth.loginRequired'), type: 'error' })
         setDeletingAccount(false)
         return
       }
@@ -591,7 +591,7 @@ export default function SettingsScreen() {
       })
 
       if (res.ok) {
-        Alert.alert(t('common.success'), t('settings.accountDeleted'))
+        toast.show({ message: t('settings.accountDeleted'), type: 'success' })
       } else {
         // Edge Function missing / network down / auth deletion failed.
         // Fall back to legacy RPC + client-side cleanup so the user still
@@ -655,21 +655,18 @@ export default function SettingsScreen() {
           }
         }
         // Inform user that full deletion requires support contact
-        Alert.alert(
-          t('settings.accountDeleted'),
-          t('settings.accountDeletePartial'),
-        )
+        toast.show({ message: t('settings.accountDeletePartial') ?? t('settings.accountDeleted'), type: 'info' })
       }
       clearAuthCache()
       await supabase.auth.signOut()
       setDeleteModalVisible(false)
       router.replace('/(auth)/login')
     } catch {
-      Alert.alert(t('common.error'), t('settings.accountDeleteFailed'))
+      toast.show({ message: t('settings.accountDeleteFailed'), type: 'error' })
     } finally {
       setDeletingAccount(false)
     }
-  }, [deleteConfirmText, deletingAccount, supabase, router, t, profile])
+  }, [deleteConfirmText, deletingAccount, supabase, router, t, profile, toast])
 
   const handleLogout = () => {
     Alert.alert(
@@ -1273,7 +1270,7 @@ export default function SettingsScreen() {
             setProfile(prev => prev ? { ...prev, naapurusto: nh as any } : null)
             setShowNeighborhoodPicker(false)
           } catch {
-            Alert.alert(t('common.error'), t('settings.saveFailed'))
+            toast.show({ message: t('settings.saveFailed'), type: 'error' })
           }
         }}
       />

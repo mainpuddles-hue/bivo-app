@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useRef } from 'react'
-import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -230,7 +230,7 @@ function LoginScreenInner() {
           const { data: profile } = await supabase.from('profiles').select('is_banned').eq('id', signInData.user.id).maybeSingle()
           if ((profile as any)?.is_banned) {
             await supabase.auth.signOut()
-            Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+            toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
             return
           }
         }
@@ -269,7 +269,7 @@ function LoginScreenInner() {
             skipBrowserRedirect: false,
           },
         })
-        if (error) Alert.alert(t('common.error'), t('auth.googleFailed'))
+        if (error) toast.show({ message: t('auth.googleFailed'), type: 'error' })
       } else {
         // Native: use WebBrowser to open OAuth flow and capture redirect
         const redirectTo = 'tackbird://auth/callback'
@@ -300,9 +300,9 @@ function LoginScreenInner() {
                 if (banErr || (oauthProfile as any)?.is_banned) {
                   await supabase.auth.signOut()
                   if ((oauthProfile as any)?.is_banned) {
-                    Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                    toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
                   } else {
-                    Alert.alert(t('common.error'), t('auth.googleFailedNetwork'))
+                    toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
                   }
                   return
                 }
@@ -318,9 +318,9 @@ function LoginScreenInner() {
                 if (banErr || (oauthProfile as any)?.is_banned) {
                   await supabase.auth.signOut()
                   if ((oauthProfile as any)?.is_banned) {
-                    Alert.alert(t('auth.accountBanned'), t('auth.accountBannedDesc'))
+                    toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
                   } else {
-                    Alert.alert(t('common.error'), t('auth.googleFailedNetwork'))
+                    toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
                   }
                   return
                 }
@@ -334,7 +334,7 @@ function LoginScreenInner() {
         }
       }
     } catch {
-      Alert.alert(t('common.error'), t('auth.googleFailedNetwork'))
+      toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
     } finally {
       setLoading(false)
     }

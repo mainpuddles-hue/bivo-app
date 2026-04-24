@@ -206,24 +206,24 @@ export default function ProfileScreen() {
       const blob = await response.blob()
       const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
-      if (!mimeType) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
-      if (blob.size > MAX_AVATAR_SIZE) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
+      if (!mimeType) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
+      if (blob.size > MAX_AVATAR_SIZE) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
       const mimeSubtype = mimeType.split('/')[1]
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `avatars/${profile.id}.${ext}`
       const arrayBuffer = await blob.arrayBuffer()
       const { error: uploadError } = await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: mimeType, upsert: true })
-      if (uploadError) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
+      if (uploadError) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
-      if (!urlData?.publicUrl) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
+      if (!urlData?.publicUrl) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
       // Append cache-busting param so the new avatar is fetched (same URL path after upsert)
       const avatarUrlWithCacheBust = `${urlData.publicUrl}?t=${Date.now()}`
       const { error: updateError } = await (supabase.from('profiles') as any).update({ avatar_url: avatarUrlWithCacheBust }).eq('id', profile.id)
-      if (updateError) { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')); return }
+      if (updateError) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
       setProfile(prev => prev ? { ...prev, avatar_url: avatarUrlWithCacheBust } : null)
       toast.show({ message: t('profile.avatarUpdated'), type: 'success' })
-    } catch { Alert.alert(t('common.error'), t('profile.avatarUploadFailed')) }
-  }, [profile, supabase, t])
+    } catch { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }) }
+  }, [profile, supabase, t, toast])
 
   const handleSaveBio = useCallback(async () => {
     if (!profile) return
@@ -231,12 +231,12 @@ export default function ProfileScreen() {
     const { error } = await (supabase.from('profiles') as any).update({ bio: bioText.trim() }).eq('id', profile.id)
     if (error) {
       setBioText(previousBio)
-      Alert.alert(t('common.error'), t('profile.bioUpdateFailed'))
+      toast.show({ message: t('profile.bioUpdateFailed'), type: 'error' })
       return
     }
     setProfile(prev => prev ? { ...prev, bio: bioText.trim() } : null)
     setEditingBio(false)
-  }, [profile, bioText, supabase, t])
+  }, [profile, bioText, supabase, t, toast])
 
   const openFollowList = useCallback(async (type: 'followers' | 'following') => {
     if (!profile) return
@@ -295,17 +295,17 @@ export default function ProfileScreen() {
   const handleReactivatePost = useCallback(async (postId: string) => {
     const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
     const { error } = await (supabase.from('posts') as any).update({ is_active: true, expires_at: newExpiry }).eq('id', postId)
-    if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
+    if (error) { toast.show({ message: t('profile.postActionFailed'), type: 'error' }); return }
     setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: true, expires_at: newExpiry } : p))
     toast.show({ message: t('profile.postReactivated'), type: 'success' })
-  }, [supabase, t])
+  }, [supabase, t, toast])
 
   const handleClosePost = useCallback(async (postId: string) => {
     const { error } = await (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId)
-    if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
+    if (error) { toast.show({ message: t('profile.postActionFailed'), type: 'error' }); return }
     setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, is_active: false } : p))
     toast.show({ message: t('profile.postClosedSuccess'), type: 'success' })
-  }, [supabase, t])
+  }, [supabase, t, toast])
 
   const handleDeletePost = useCallback(async (postId: string) => {
     Alert.alert(
@@ -318,14 +318,14 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             const { error } = await (supabase.from('posts') as any).delete().eq('id', postId)
-            if (error) { Alert.alert(t('common.error'), t('profile.postActionFailed')); return }
+            if (error) { toast.show({ message: t('profile.postActionFailed'), type: 'error' }); return }
             setAllPosts(prev => prev.filter(p => p.id !== postId))
             toast.show({ message: t('profile.postDeleted'), type: 'success' })
           },
         },
       ]
     )
-  }, [supabase, t])
+  }, [supabase, t, toast])
 
   const handleLogout = () => {
     Alert.alert(

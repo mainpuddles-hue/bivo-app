@@ -104,14 +104,14 @@ function EventDetailScreenInner() {
     if (joiningRef.current || !event) return
     // Prevent joining past events
     if (!isNaN(new Date(event.event_date).getTime()) && new Date(event.event_date) < new Date()) {
-      Alert.alert(t('common.error'), t('events.eventPassed') ?? 'Event has already ended')
+      toast.show({ message: t('events.eventPassed') ?? 'Event has already ended', type: 'error' })
       return
     }
     // Prevent overbooking — re-check capacity from DB
     if (event.max_participants) {
       const { count } = await supabase.from('community_event_participants').select('*', { count: 'exact', head: true }).eq('event_id', event.id).in('status', ['joined', 'approved'])
       if ((count ?? 0) >= event.max_participants) {
-        Alert.alert(t('common.error'), t('events.eventFull') ?? 'Event is full')
+        toast.show({ message: t('events.eventFull') ?? 'Event is full', type: 'error' })
         await fetchEvent()
         return
       }
@@ -122,7 +122,7 @@ function EventDetailScreenInner() {
       const { error } = await (supabase.from('community_event_participants') as any)
         .insert({ event_id: event.id, user_id: userId, status })
       if (error) {
-        if (error.code !== '23505') Alert.alert(t('common.error'), t('events.joinFailed'))
+        if (error.code !== '23505') toast.show({ message: t('events.joinFailed'), type: 'error' })
         // 23505 = already joined — just refresh
         await fetchEvent()
       } else {
@@ -150,11 +150,11 @@ function EventDetailScreenInner() {
         await fetchEvent()
       }
     } catch {
-      Alert.alert(t('common.error'), t('events.joinFailed'))
+      toast.show({ message: t('events.joinFailed'), type: 'error' })
     } finally {
       joiningRef.current = false
     }
-  }, [userId, event, supabase, fetchEvent, t, router])
+  }, [userId, event, supabase, fetchEvent, t, router, toast])
 
   const handleLeave = useCallback(() => {
     if (!userId || joiningRef.current || !event) return
@@ -175,14 +175,14 @@ function EventDetailScreenInner() {
                 .eq('event_id', event.id)
                 .eq('user_id', userId)
               if (error) {
-                Alert.alert(t('common.error'), t('events.leaveFailed'))
+                toast.show({ message: t('events.leaveFailed'), type: 'error' })
               } else {
                 // Remove user from event group chat (soft fail)
                 removeMemberFromChat(supabase, event.id, userId).catch(() => {})
                 await fetchEvent()
               }
             } catch {
-              Alert.alert(t('common.error'), t('events.leaveFailed'))
+              toast.show({ message: t('events.leaveFailed'), type: 'error' })
             } finally {
               joiningRef.current = false
             }
@@ -190,7 +190,7 @@ function EventDetailScreenInner() {
         },
       ],
     )
-  }, [userId, event, supabase, fetchEvent, t])
+  }, [userId, event, supabase, fetchEvent, t, toast])
 
   const handleCancelEvent = useCallback(() => {
     if (!event || !isCreator) return
@@ -208,19 +208,19 @@ function EventDetailScreenInner() {
                 .update({ is_active: false })
                 .eq('id', event.id)
               if (error) {
-                Alert.alert(t('common.error'), t('events.cancelFailed'))
+                toast.show({ message: t('events.cancelFailed'), type: 'error' })
               } else {
                 toast.show({ message: t('events.eventCancelled'), type: 'success' })
                 router.back()
               }
             } catch {
-              Alert.alert(t('common.error'), t('events.cancelFailed'))
+              toast.show({ message: t('events.cancelFailed'), type: 'error' })
             }
           },
         },
       ],
     )
-  }, [event, isCreator, supabase, t, router])
+  }, [event, isCreator, supabase, t, router, toast])
 
   const handleShare = useCallback(() => {
     if (!event) return
@@ -242,21 +242,21 @@ function EventDetailScreenInner() {
         .from('conversations').select('id')
         .or(`and(user1_id.eq.${userId},user2_id.eq.${event.creator.id}),and(user1_id.eq.${event.creator.id},user2_id.eq.${userId})`)
         .maybeSingle()
-      if (findError) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+      if (findError) { toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return }
       if (existing) {
         router.push(`/messages/${(existing as any).id}`)
       } else {
         const { data: newConv, error } = await (supabase.from('conversations') as any)
           .insert({ user1_id: userId, user2_id: event.creator.id }).select('id').maybeSingle()
-        if (error || !newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+        if (error || !newConv) { toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return }
         router.push(`/messages/${newConv.id}`)
       }
     } catch {
-      Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
+      toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' })
     } finally {
       messagingRef.current = false
     }
-  }, [userId, event, supabase, router, t])
+  }, [userId, event, supabase, router, t, toast])
 
   // ── Render ──
 

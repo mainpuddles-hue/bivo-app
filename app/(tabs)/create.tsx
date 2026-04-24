@@ -396,13 +396,13 @@ export default function CreateScreen() {
 
   const launchPicker = useCallback(async (useCamera: boolean) => {
     if (images.length >= 5) {
-      Alert.alert(t('common.error'), t('create.maxImages'))
+      toast.show({ message: t('create.maxImages'), type: 'error' })
       return
     }
     if (useCamera) {
       const { status } = await ImagePicker.requestCameraPermissionsAsync()
       if (status !== 'granted') {
-        Alert.alert(t('common.error'), t('create.cameraPermissionRequired'))
+        toast.show({ message: t('create.cameraPermissionRequired'), type: 'error' })
         return
       }
     }
@@ -412,7 +412,7 @@ export default function CreateScreen() {
     if (!result.canceled && result.assets[0]) {
       setImages(prev => [...prev, result.assets[0].uri])
     }
-  }, [images.length, t])
+  }, [images.length, t, toast])
 
   const pickImage = useCallback(() => {
     Alert.alert(t('create.addImage'), '', [
@@ -538,21 +538,21 @@ export default function CreateScreen() {
     }
     setFormError(null)
     if (!await checkRateLimit('post_create')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('post_create', t))
+      toast.show({ message: getRateLimitMessage('post_create', t), type: 'error' })
       return
     }
     const contentWarning = quickContentCheck(title, description)
-    if (contentWarning) { Alert.alert(t('common.error'), contentWarning); return }
+    if (contentWarning) { toast.show({ message: contentWarning, type: 'error' }); return }
     if (selectedType === 'tapahtuma') {
       if (eventMaxCapacity) {
         const maxAtt = parseInt(eventMaxCapacity, 10)
         if (isNaN(maxAtt) || maxAtt < 1) {
-          Alert.alert(t('common.error'), t('create.invalidMaxCapacity') ?? 'Osallistujamäärän pitää olla vähintään 1')
+          toast.show({ message: t('create.invalidMaxCapacity') ?? 'Osallistujamäärän pitää olla vähintään 1', type: 'error' })
           return
         }
       }
       if (eventEndTime && eventStartTime && eventEndTime < eventStartTime) {
-        Alert.alert(t('common.error'), t('create.endTimeBeforeStart') ?? 'Päättymisaika ei voi olla ennen alkamisaikaa')
+        toast.show({ message: t('create.endTimeBeforeStart') ?? 'Päättymisaika ei voi olla ennen alkamisaikaa', type: 'error' })
         return
       }
     }
@@ -562,23 +562,23 @@ export default function CreateScreen() {
       return
     }
     if (selectedType === 'lainaa' && trust.permissions.maxDailyFee !== null && !isNaN(parseFloat(dailyFee)) && parseFloat(dailyFee) > trust.permissions.maxDailyFee) {
-      Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
+      toast.show({ message: t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }), type: 'error' })
       return
     }
     if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && parseFloat(servicePrice) < 0) {
-      Alert.alert(t('common.error'), t('create.priceCannotBeNegative'))
+      toast.show({ message: t('create.priceCannotBeNegative'), type: 'error' })
       return
     }
     if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && parseFloat(servicePrice) === 0) {
-      Alert.alert(t('common.error'), t('create.priceCannotBeZero') ?? 'Hinta ei voi olla 0 €')
+      toast.show({ message: t('create.priceCannotBeZero') ?? 'Hinta ei voi olla 0 €', type: 'error' })
       return
     }
     if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && !trust.permissions.canOfferPaidServices) {
-      Alert.alert(t('common.error'), t('service.requiresVerification'))
+      toast.show({ message: t('service.requiresVerification'), type: 'error' })
       return
     }
     if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && !isNaN(parseFloat(servicePrice)) && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
-      Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
+      toast.show({ message: t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }), type: 'error' })
       return
     }
     if (selectedType === 'tapahtuma' && !eventDate) {
@@ -591,14 +591,14 @@ export default function CreateScreen() {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       if (!isNaN(eventDateObj.getTime()) && eventDateObj < today) {
-        Alert.alert(t('common.error'), t('create.eventDateInPast'))
+        toast.show({ message: t('create.eventDateInPast'), type: 'error' })
         return
       }
     }
     if (selectedType === 'tapahtuma' && eventMaxCapacity) {
       const maxAtt = parseInt(eventMaxCapacity, 10)
       if (isNaN(maxAtt) || maxAtt < 1) {
-        Alert.alert(t('common.error'), t('create.invalidMaxCapacity') ?? 'Invalid max capacity')
+        toast.show({ message: t('create.invalidMaxCapacity') ?? 'Invalid max capacity', type: 'error' })
         return
       }
     }
@@ -608,7 +608,7 @@ export default function CreateScreen() {
     let createdPostIdForCleanup: string | null = null
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { Alert.alert(t('common.error'), t('auth.loginRequired')); return }
+      if (!user) { toast.show({ message: t('auth.loginRequired'), type: 'error' }); return }
       const expiresAt = isUrgent
         ? new Date(Date.now() + urgencyHours * 3600000).toISOString()
         : expirationDays > 0
@@ -625,7 +625,7 @@ export default function CreateScreen() {
         if (modRes.ok) {
           const modResult = await modRes.json()
           if (modResult.action === 'block') {
-            Alert.alert(t('common.error'), t('create.contentBlocked') || 'Content blocked by moderation')
+            toast.show({ message: t('create.contentBlocked') || 'Content blocked by moderation', type: 'error' })
             setSubmitting(false); setUploadStatus(''); return
           }
         }
@@ -666,7 +666,7 @@ export default function CreateScreen() {
               const { error: deleteError } = await (supabase.from('posts') as any).delete().eq('id', post.id)
               if (deleteError) {
                 if (__DEV__) console.error('[create] rollback delete failed:', deleteError.message)
-                Alert.alert(t('common.error'), t('create.rollbackFailed') ?? 'Failed to clean up — please delete the draft from your profile')
+                toast.show({ message: t('create.rollbackFailed') ?? 'Failed to clean up — please delete the draft from your profile', type: 'error' })
               }
             }
             setSubmitting(false); setUploadStatus(''); return
@@ -702,7 +702,7 @@ export default function CreateScreen() {
         if (eventError) {
           if (__DEV__) console.error('[create] event insert failed:', eventError.message)
           try { await (supabase.from('posts') as any).delete().eq('id', post.id) } catch {}
-          Alert.alert(t('common.error'), t('create.eventCreateFailed') ?? 'Event creation failed')
+          toast.show({ message: t('create.eventCreateFailed') ?? 'Event creation failed', type: 'error' })
           setSubmitting(false); return
         }
       }
@@ -746,11 +746,11 @@ export default function CreateScreen() {
       if (createdPostIdForCleanup) {
         try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch {}
       }
-      Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
+      toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
       setSubmitting(false); setUploadStatus('')
     }
-  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages])
+  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages, toast])
 
   const cat = selectedType ? CATEGORIES[selectedType] : null
   const availableTags = selectedType === 'tarjoan'
