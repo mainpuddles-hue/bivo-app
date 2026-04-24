@@ -264,7 +264,7 @@ export interface Review {
 
 export interface CityEvent {
   id: string
-  source: 'linkedevents' | 'ticketmaster'
+  source: 'linkedevents' | 'ticketmaster' | 'kide'
   source_id: string
   name_fi: string
   name_en: string | null

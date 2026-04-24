@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Alert, Linking, Platform } from 'react-native'
 import { fetchNearbyEvents, loadMoreNearbyEvents, hasMoreNearbyEvents, getNearbyEventsTotal, invalidateEventsCache } from '@/lib/linkedevents'
 import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
+import { fetchKideEvents, invalidateKideCache } from '@/lib/kide'
 import { fetchHelsinkiPlaces, invalidatePlacesCache } from '@/lib/palvelukartta'
 import * as Location from 'expo-location'
 import { CATEGORIES } from '@/lib/constants'
@@ -225,7 +226,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     try {
       const today = new Date().toISOString().split('T')[0]
       const { south, north, west, east } = cityBounds
-      const [postsSettled, eventsSettled, cityEventsSettled, tmSettled] = await Promise.allSettled([
+      const [postsSettled, eventsSettled, cityEventsSettled, tmSettled, kideSettled] = await Promise.allSettled([
         supabase.from('posts')
           .select('id, user_id, type, title, description, location, latitude, longitude, image_url, daily_fee, created_at, user:profiles!posts_user_id_fkey(id, name, avatar_url, location_accuracy)')
           .eq('is_active', true)
@@ -246,11 +247,13 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
           .limit(500),
         fetchNearbyEvents(cityCenter.lat, cityCenter.lng, 10),
         fetchTicketmasterEvents(),
+        fetchKideEvents(),
       ])
       const postsRes = postsSettled.status === 'fulfilled' ? postsSettled.value : { data: null, error: null }
       const eventsRes = eventsSettled.status === 'fulfilled' ? eventsSettled.value : { data: null, error: null }
       const cityEventsData = cityEventsSettled.status === 'fulfilled' ? cityEventsSettled.value : []
       const tmData = tmSettled.status === 'fulfilled' ? tmSettled.value : []
+      const kideData = kideSettled.status === 'fulfilled' ? kideSettled.value : []
       if (postsRes.data) {
         // Apply location_accuracy privacy: blur or hide coordinates for 'area'/'city' users
         const privacyFiltered = (postsRes.data as any[]).reduce<Post[]>((acc, p) => {
@@ -269,18 +272,19 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
       }
       if (eventsRes.data) setCommunityEvents(eventsRes.data as unknown as Event[])
       const linkedEvents = cityEventsData
-      const tmEvents = tmData
       const allCityEvents = [...linkedEvents]
       const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
-      const linkedNames = new Set(linkedEvents.map(e => normalize(e.name_fi)))
-      for (const tm of tmEvents) {
-        if (!linkedNames.has(normalize(tm.name_fi))) {
-          allCityEvents.push(tm)
+      const seenNames = new Set(linkedEvents.map(e => normalize(e.name_fi)))
+      for (const ev of [...tmData, ...kideData]) {
+        const n = normalize(ev.name_fi)
+        if (!seenNames.has(n)) {
+          seenNames.add(n)
+          allCityEvents.push(ev)
         }
       }
       setCityEvents(allCityEvents)
       const withCoords = allCityEvents.filter(e => e.latitude && e.longitude).length
-      if (__DEV__) console.log(`[map] Events: ${linkedEvents.length} LinkedEvents + ${tmEvents.length} Ticketmaster = ${allCityEvents.length} merged (${withCoords} with coords)`)
+      if (__DEV__) console.log(`[map] Events: ${linkedEvents.length} LE + ${tmData.length} TM + ${kideData.length} Kide = ${allCityEvents.length} merged (${withCoords} with coords)`)
       if (__DEV__ && postsRes.error) console.log('[map] posts error:', postsRes.error.message)
       if (__DEV__ && eventsRes.error) console.log('[map] events error:', eventsRes.error.message)
     } catch (err) {
@@ -318,6 +322,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     setRefreshing(true)
     invalidatePlacesCache(center.latitude, center.longitude)
     invalidateEventsCache()
+    invalidateKideCache()
     await Promise.all([fetchGlobalData(), fetchPlaces()])
     setRefreshing(false)
   }, [fetchGlobalData, fetchPlaces, center])
@@ -331,10 +336,10 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     if (more) {
       setCityEvents(prev => {
         const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
-        const tmEvents = prev.filter(e => e.source === 'ticketmaster')
+        const externalEvents = prev.filter(e => e.source === 'ticketmaster' || e.source === 'kide')
         const linkedNames = new Set(more.map(e => normalize(e.name_fi)))
-        const uniqueTm = tmEvents.filter(e => !linkedNames.has(normalize(e.name_fi)))
-        return [...more, ...uniqueTm]
+        const uniqueExternal = externalEvents.filter(e => !linkedNames.has(normalize(e.name_fi)))
+        return [...more, ...uniqueExternal]
       })
     }
     loadingMoreRef.current = false

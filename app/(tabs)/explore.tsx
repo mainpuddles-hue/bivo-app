@@ -24,6 +24,8 @@ import { FEATURES } from '@/lib/featureFlags'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
+import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
+import { fetchKideEvents } from '@/lib/kide'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { formatEventDateShort } from '@/lib/format'
 import * as Location from 'expo-location'
@@ -168,15 +170,28 @@ function ExploreScreenInner() {
         }
       })()
 
-      const [helsinkiEvents, communityRes, placesResult] = await Promise.all([
+      const [helsinkiEvents, tmEvents, kideEvents, communityRes, placesResult] = await Promise.all([
         fetchHelsinkiEvents().catch(() => [] as CityEvent[]),
+        fetchTicketmasterEvents().catch(() => [] as CityEvent[]),
+        fetchKideEvents().catch(() => [] as CityEvent[]),
         communityEventsPromise,
         location
           ? fetchHelsinkiPlaces(location.latitude, location.longitude, 2000).catch(() => [] as LocalPlace[])
           : Promise.resolve([] as LocalPlace[]),
       ])
 
+      // Merge + deduplicate: LinkedEvents is base, then add unique TM + Kide
       const futureCityEvents = helsinkiEvents.filter(e => e.start_time >= now)
+      const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
+      const seenNames = new Set(futureCityEvents.map(e => normalize(e.name_fi)))
+      for (const ev of [...tmEvents, ...kideEvents]) {
+        const n = normalize(ev.name_fi)
+        if (!seenNames.has(n)) {
+          seenNames.add(n)
+          futureCityEvents.push(ev)
+        }
+      }
+      if (__DEV__) console.log(`[explore] Events: ${helsinkiEvents.length} LE + ${tmEvents.length} TM + ${kideEvents.length} Kide = ${futureCityEvents.length} merged`)
       setCityEvents(futureCityEvents)
       setCommunityEvents(communityRes)
       setPlaces(placesResult)

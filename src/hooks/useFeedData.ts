@@ -7,6 +7,8 @@ import { useFeedLocation } from '@/hooks/feed/useFeedLocation'
 import { POST_SELECT } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents, setLinkedEventsBaseUrl } from '@/lib/linkedevents'
+import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
+import { fetchKideEvents } from '@/lib/kide'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
 import { getNetworkAwareErrorSync } from '@/lib/errorUtils'
@@ -204,11 +206,21 @@ export function useFeedData() {
 
     setExtraLoading(true)
     try {
-      const [helsinkiEvents, placesData] = await Promise.all([
+      const [helsinkiEvents, tmEvents, kideEvents, placesData] = await Promise.all([
         fetchHelsinkiEvents().catch(() => []),
+        fetchTicketmasterEvents().catch(() => []),
+        fetchKideEvents().catch(() => []),
         fetchHelsinkiPlaces(lat, lng, 2000).catch(() => []),
       ])
-      setCityEvents(helsinkiEvents.slice(0, 20))
+      // Merge + deduplicate
+      const allEvents = [...helsinkiEvents]
+      const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
+      const seenNames = new Set(allEvents.map(e => normalize(e.name_fi)))
+      for (const ev of [...tmEvents, ...kideEvents]) {
+        const n = normalize(ev.name_fi)
+        if (!seenNames.has(n)) { seenNames.add(n); allEvents.push(ev) }
+      }
+      setCityEvents(allEvents.slice(0, 30))
       setNearbyPlaces(placesData.slice(0, 20))
       lastFetchLocationRef.current = { latitude: lat, longitude: lng }
     } catch {
