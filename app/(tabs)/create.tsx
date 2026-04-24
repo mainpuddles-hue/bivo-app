@@ -29,6 +29,7 @@ import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
+import { useToast } from '@/components/Toast'
 import { suggestTags } from '@/lib/autoCategory'
 import type { PostType, TrustLevel } from '@/lib/types'
 import { suggestExpirationDays } from '@/lib/expirePrediction'
@@ -153,6 +154,7 @@ export default function CreateScreen() {
   const router = useRouter()
   const params = useLocalSearchParams<{ type?: string }>()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -479,7 +481,10 @@ export default function CreateScreen() {
       const uri = images[i]
       const response = await fetch(uri)
       const blob = await response.blob()
-      if (blob.size > MAX_FILE_SIZE) { failedCount++; continue }
+      if (blob.size > MAX_FILE_SIZE) {
+        toast.show({ message: t('create.imageTooLarge') ?? 'Kuva on liian suuri (max 10 MB)', type: 'error' })
+        failedCount++; continue
+      }
       const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       const mimeType = ALLOWED_MIMES.includes(blob.type) ? blob.type : 'image/jpeg'
       const mimeSubtype = mimeType.split('/')[1] ?? 'jpeg'
@@ -504,7 +509,7 @@ export default function CreateScreen() {
       if (imgError && __DEV__) console.error('[create] post_images insert failed:', imgError.message)
     }
     if (failedCount > 0 && uploadedUrls.length > 0) {
-      Alert.alert(t('common.error'), t('create.imageUploadPartialFail', { count: failedCount }))
+      toast.show({ message: t('create.imageUploadPartialFail', { count: failedCount }), type: 'error' })
     }
     return uploadedUrls[0] ?? null
   }
@@ -970,6 +975,7 @@ export default function CreateScreen() {
                     )}
                   </ScrollView>
                 )}
+                <Text style={[mk.charCount, { color: colors.mutedForeground }]}>{t('create.imageUploadLimit') ?? 'Max 5 kuvaa, enintään 10 MB/kuva'}</Text>
               </View>
 
               {/* Tarjoan sub-type */}

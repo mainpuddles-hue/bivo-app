@@ -571,6 +571,11 @@ function EventDetailScreenInner() {
               {actionLabel}
             </Text>
           </Pressable>
+          {event.max_participants != null && !isFull && !isLeaveBtn && myStatus !== 'pending' && (
+            <Text style={[s.spotsHint, { color: (event.max_participants - participantCount) <= 3 ? colors.destructive : colors.mutedForeground }]}>
+              {t('events.spotsRemaining', { remaining: event.max_participants - participantCount, max: event.max_participants })}
+            </Text>
+          )}
         </View>
       )}
 
@@ -842,6 +847,12 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontFamily: fonts.bodySemi,
     lineHeight: 24,
+  },
+  spotsHint: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    textAlign: 'center',
+    marginTop: 6,
   },
 })
 
