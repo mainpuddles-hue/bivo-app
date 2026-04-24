@@ -367,12 +367,12 @@ function SavedScreenInner() {
                           handleUnsavePost(post.id)
                         }}
                         disabled={unsavingId === post.id}
-                        style={[s.heartOverlay, { backgroundColor: colors.foreground }]}
+                        style={[s.heartOverlay, { backgroundColor: 'rgba(0,0,0,0.45)' }]}
                         hitSlop={8}
                         accessibilityRole="button"
                         accessibilityLabel={t('saved.unsave')}
                       >
-                        <Heart size={13} color="#fff" fill="#fff" />
+                        <Heart size={13} color="#F5F6F7" fill="#F5F6F7" />
                       </Pressable>
                     </View>
 

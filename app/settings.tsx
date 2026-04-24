@@ -1432,13 +1432,14 @@ const s = StyleSheet.create({
     marginBottom: 12,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 0.9,
     textTransform: 'uppercase',
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     paddingHorizontal: 4,
     paddingBottom: 8,
+    lineHeight: 16,
   },
   groupContainer: {
     borderRadius: 16,
@@ -1476,16 +1477,17 @@ const s = StyleSheet.create({
     letterSpacing: -0.05,
   },
   rowMeta: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginTop: 4,
+    lineHeight: 16,
   },
   rowValue: {
     fontSize: 13,
     fontFamily: fonts.body,
   },
   switchStyle: {
-    transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }],
+    transform: [{ scaleX: 0.95 }, { scaleY: 0.95 }],
   },
   inlineBadge: {
     flexDirection: 'row',

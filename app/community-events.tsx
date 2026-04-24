@@ -265,11 +265,10 @@ function CommunityEventsScreenInner() {
               accessibilityRole="button"
               accessibilityLabel={t(labelKey)}
             >
-              <Icon size={16} color={colors.foreground} />
+              <Icon size={16} color={colors.mutedForeground} />
               <Text style={[s.templateChipText, { color: colors.foreground, fontFamily: fonts.body }]}>
                 {t(labelKey)}
               </Text>
-              <Plus size={14} color={colors.mutedForeground} />
             </PressableOpacity>
           ))}
         </ScrollView>

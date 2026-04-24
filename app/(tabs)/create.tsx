@@ -1098,9 +1098,34 @@ export default function CreateScreen() {
                 <Text style={[mk.charCount, { color: description.length >= 1900 ? colors.destructive : description.length >= 1500 ? colors.foreground : colors.mutedForeground }]}>{description.length}/2000</Text>
               </View>
 
-              {/* 2-column: Sijainti + Ajankohta */}
-              <View style={mk.twoCol}>
-                <View style={mk.twoColItem}>
+              {/* Location + Timing — event shows both columns; other types show location only */}
+              {selectedType === 'tapahtuma' ? (
+                <View style={mk.twoCol}>
+                  <View style={mk.twoColItem}>
+                    <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
+                    <LocationAutocomplete
+                      value={location}
+                      onChangeText={(text) => { setLocation(text); if (!text.trim()) { setLatitude(null); setLongitude(null) } }}
+                      onSelect={({ name, lat, lng }) => { setLocation(name); setLatitude(lat); setLongitude(lng) }}
+                      placeholder={t('post.locationLabel')}
+                      style={mk.twoColInputWrap}
+                    />
+                  </View>
+                  <View style={mk.twoColItem}>
+                    <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>
+                      {`${t('post.eventDate')} *`}
+                    </Text>
+                    <TextInput
+                      style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                      value={eventDate}
+                      onChangeText={setEventDate}
+                      placeholder={(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()}
+                      placeholderTextColor={colors.mutedForeground}
+                    />
+                  </View>
+                </View>
+              ) : (
+                <View style={mk.fieldWrap}>
                   <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>{t('post.locationLabel')}</Text>
                   <LocationAutocomplete
                     value={location}
@@ -1110,30 +1135,7 @@ export default function CreateScreen() {
                     style={mk.twoColInputWrap}
                   />
                 </View>
-                <View style={mk.twoColItem}>
-                  <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>
-                    {selectedType === 'tapahtuma' ? `${t('post.eventDate')} *` : (t('create.timing') ?? 'AJANKOHTA')}
-                  </Text>
-                  <TextInput
-                    style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
-                    value={selectedType === 'tapahtuma' ? eventDate : ''}
-                    onChangeText={selectedType === 'tapahtuma' ? setEventDate : undefined}
-                    placeholder={selectedType === 'tapahtuma'
-                      ? (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()
-                      : (t('create.timingPlaceholder') ?? 'Esim. pe 24.10')}
-                    placeholderTextColor={colors.mutedForeground}
-                  />
-                </View>
-              </View>
-
-              {latitude !== null && longitude !== null && (
-                <Text style={[mk.coordsSmall, { color: colors.mutedForeground }]}>{latitude.toFixed(5)}, {longitude.toFixed(5)}</Text>
               )}
-
-              <PressableOpacity onPress={handleOpenMapPicker} style={[mk.mapRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <MapPin size={16} color={colors.foreground} />
-                <Text style={[mk.mapRowText, { color: colors.foreground }]}>{t('locationPicker.pickFromMap')}</Text>
-              </PressableOpacity>
 
               {/* Details toggle */}
               <PressableOpacity onPress={() => setShowDetails(p => !p)} style={[mk.detailsToggle, { borderColor: colors.border }]}>
@@ -1145,6 +1147,29 @@ export default function CreateScreen() {
 
               {showDetails && (
                 <>
+                  {/* Timing for non-event types — collapsed into details */}
+                  {selectedType !== 'tapahtuma' && (
+                    <View style={mk.fieldWrap}>
+                      <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>{t('create.timing') ?? 'AJANKOHTA'}</Text>
+                      <TextInput
+                        style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
+                        value={''}
+                        placeholder={t('create.timingPlaceholder') ?? 'Esim. pe 24.10'}
+                        placeholderTextColor={colors.mutedForeground}
+                      />
+                    </View>
+                  )}
+
+                  {/* Map picker — secondary action */}
+                  <PressableOpacity onPress={handleOpenMapPicker} style={[mk.mapRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <MapPin size={16} color={colors.foreground} />
+                    <Text style={[mk.mapRowText, { color: colors.foreground }]}>{t('locationPicker.pickFromMap')}</Text>
+                  </PressableOpacity>
+
+                  {latitude !== null && longitude !== null && (
+                    <Text style={[mk.coordsSmall, { color: colors.mutedForeground }]}>{latitude.toFixed(5)}, {longitude.toFixed(5)}</Text>
+                  )}
+
                   {selectedType === 'lainaa' && (
                     <View style={mk.fieldWrap}>
                       <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>{t('rental.dailyFee')} *</Text>

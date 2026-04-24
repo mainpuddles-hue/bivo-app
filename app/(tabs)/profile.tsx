@@ -911,8 +911,8 @@ const s = StyleSheet.create({
     paddingVertical: 14, paddingHorizontal: 10,
     alignItems: 'center', gap: 2,
   },
-  statNum: { fontSize: 19, fontWeight: '600', fontFamily: fonts.heading, letterSpacing: -0.3, lineHeight: 24 },
-  statLabel: { fontSize: 11, fontFamily: fonts.bodyMedium, fontWeight: '500', lineHeight: 14, letterSpacing: 0.3, textTransform: 'uppercase' },
+  statNum: { fontSize: 22, fontWeight: '700', fontFamily: fonts.heading, letterSpacing: -0.4, lineHeight: 28 },
+  statLabel: { fontSize: 12, fontFamily: fonts.bodyMedium, fontWeight: '500', lineHeight: 16, letterSpacing: 0.3, textTransform: 'uppercase' },
 
   // Menu rows (mockup 08)
   menuSection: { gap: 8 },
