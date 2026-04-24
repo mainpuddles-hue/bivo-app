@@ -1374,7 +1374,14 @@
     "confirmedTitle": "Vahvistettu",
     "activeTitle": "Käynnissä",
     "completedTitle": "Valmis",
-    "cancelledTitle": "Peruutettu"
+    "cancelledTitle": "Peruutettu",
+    "stepPending": "Odottaa",
+    "stepConfirmed": "Vahvistettu",
+    "stepPickedUp": "Noudettu",
+    "stepReturned": "Palautettu",
+    "stepInProgress": "Käynnissä",
+    "stepCompleted": "Valmis",
+    "stepCancelled": "Peruutettu"
   },
   "payment": {
     "success": "Maksu onnistui!",
