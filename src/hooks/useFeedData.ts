@@ -9,6 +9,7 @@ import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents, setLinkedEventsBaseUrl } from '@/lib/linkedevents'
 import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
 import { fetchKideEvents } from '@/lib/kide'
+import { fetchMetelihEvents } from '@/lib/meteli'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
 import { getNetworkAwareErrorSync } from '@/lib/errorUtils'
@@ -206,17 +207,18 @@ export function useFeedData() {
 
     setExtraLoading(true)
     try {
-      const [helsinkiEvents, tmEvents, kideEvents, placesData] = await Promise.all([
+      const [helsinkiEvents, tmEvents, kideEvents, meteliEvents, placesData] = await Promise.all([
         fetchHelsinkiEvents().catch(() => []),
         fetchTicketmasterEvents().catch(() => []),
         fetchKideEvents().catch(() => []),
+        fetchMetelihEvents().catch(() => []),
         fetchHelsinkiPlaces(lat, lng, 2000).catch(() => []),
       ])
       // Merge + deduplicate
       const allEvents = [...helsinkiEvents]
       const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
       const seenNames = new Set(allEvents.map(e => normalize(e.name_fi)))
-      for (const ev of [...tmEvents, ...kideEvents]) {
+      for (const ev of [...tmEvents, ...kideEvents, ...meteliEvents]) {
         const n = normalize(ev.name_fi)
         if (!seenNames.has(n)) { seenNames.add(n); allEvents.push(ev) }
       }

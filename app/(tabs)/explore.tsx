@@ -26,6 +26,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
 import { fetchTicketmasterEvents } from '@/lib/ticketmaster'
 import { fetchKideEvents } from '@/lib/kide'
+import { fetchMetelihEvents } from '@/lib/meteli'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { formatEventDateShort } from '@/lib/format'
 import * as Location from 'expo-location'
@@ -170,28 +171,29 @@ function ExploreScreenInner() {
         }
       })()
 
-      const [helsinkiEvents, tmEvents, kideEvents, communityRes, placesResult] = await Promise.all([
+      const [helsinkiEvents, tmEvents, kideEvents, meteliEvents, communityRes, placesResult] = await Promise.all([
         fetchHelsinkiEvents().catch(() => [] as CityEvent[]),
         fetchTicketmasterEvents().catch(() => [] as CityEvent[]),
         fetchKideEvents().catch(() => [] as CityEvent[]),
+        fetchMetelihEvents().catch(() => [] as CityEvent[]),
         communityEventsPromise,
         location
           ? fetchHelsinkiPlaces(location.latitude, location.longitude, 2000).catch(() => [] as LocalPlace[])
           : Promise.resolve([] as LocalPlace[]),
       ])
 
-      // Merge + deduplicate: LinkedEvents is base, then add unique TM + Kide
+      // Merge + deduplicate: LinkedEvents is base, then add unique TM + Kide + Meteli
       const futureCityEvents = helsinkiEvents.filter(e => e.start_time >= now)
       const normalize = (s: string) => s.toLowerCase().replace(/[^a-zäöå0-9]/g, '').slice(0, 30)
       const seenNames = new Set(futureCityEvents.map(e => normalize(e.name_fi)))
-      for (const ev of [...tmEvents, ...kideEvents]) {
+      for (const ev of [...tmEvents, ...kideEvents, ...meteliEvents]) {
         const n = normalize(ev.name_fi)
         if (!seenNames.has(n)) {
           seenNames.add(n)
           futureCityEvents.push(ev)
         }
       }
-      if (__DEV__) console.log(`[explore] Events: ${helsinkiEvents.length} LE + ${tmEvents.length} TM + ${kideEvents.length} Kide = ${futureCityEvents.length} merged`)
+      if (__DEV__) console.log(`[explore] Events: ${helsinkiEvents.length} LE + ${tmEvents.length} TM + ${kideEvents.length} Kide + ${meteliEvents.length} Meteli = ${futureCityEvents.length} merged`)
       setCityEvents(futureCityEvents)
       setCommunityEvents(communityRes)
       setPlaces(placesResult)
@@ -290,7 +292,7 @@ function ExploreScreenInner() {
 
   // ── All events combined, deduplicated, sorted & filtered ──
   const allEvents = useMemo(() => {
-    const combined: Array<{ id: string; title: string; date: string; location: string | null; isFree: boolean; infoUrl: string | null; isCity: boolean; category: string }> = []
+    const combined: Array<{ id: string; title: string; date: string; location: string | null; isFree: boolean; infoUrl: string | null; isCity: boolean; category: string; source?: string; imageUrl?: string | null; latitude?: number; longitude?: number }> = []
     const seenTitles = new Set<string>()
 
     for (const e of communityEvents) {
@@ -306,6 +308,7 @@ function ExploreScreenInner() {
         infoUrl: null,
         isCity: false,
         category: '',
+        source: 'community',
       })
     }
 
@@ -323,6 +326,10 @@ function ExploreScreenInner() {
         infoUrl: e.info_url,
         isCity: true,
         category: e.category ?? '',
+        source: e.source,
+        imageUrl: e.image_url,
+        latitude: e.latitude ?? undefined,
+        longitude: e.longitude ?? undefined,
       })
     }
 
