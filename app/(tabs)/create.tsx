@@ -189,6 +189,8 @@ export default function CreateScreen() {
   const [showDetails, setShowDetails] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
+  const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({})
+  const [uploadComplete, setUploadComplete] = useState<Record<number, boolean>>({})
   const [userIsPro, setUserIsPro] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [successNeighborhood, setSuccessNeighborhood] = useState<string | null>(null)
@@ -470,14 +472,61 @@ export default function CreateScreen() {
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024
 
+  const uploadSingleImageWithProgress = useCallback(async (
+    uri: string, path: string, mimeType: string, arrayBuffer: ArrayBuffer, imageIndex: number
+  ): Promise<boolean> => {
+    const { data: sessionData } = await supabase.auth.getSession()
+    const token = sessionData?.session?.access_token
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+    const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    const url = `${supabaseUrl}/storage/v1/object/post-images/${path}`
+
+    return new Promise<boolean>((resolve) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', url, true)
+      xhr.setRequestHeader('Content-Type', mimeType)
+      xhr.setRequestHeader('apikey', supabaseAnonKey)
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      xhr.setRequestHeader('x-upsert', 'true')
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const pct = Math.round((event.loaded / event.total) * 100)
+          setUploadProgress(prev => ({ ...prev, [imageIndex]: pct }))
+        }
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadProgress(prev => ({ ...prev, [imageIndex]: 100 }))
+          setUploadComplete(prev => ({ ...prev, [imageIndex]: true }))
+          resolve(true)
+        } else {
+          if (__DEV__) console.error('[create] XHR upload failed:', xhr.status, xhr.responseText)
+          resolve(false)
+        }
+      }
+
+      xhr.onerror = () => {
+        if (__DEV__) console.error('[create] XHR upload error for image', imageIndex)
+        resolve(false)
+      }
+
+      xhr.send(arrayBuffer)
+    })
+  }, [supabase])
+
   const uploadImages = async (userId: string, postId: string): Promise<string | null> => {
     if (images.length === 0) return null
     const uploadedUrls: string[] = []
     let failedCount = 0
+    setUploadProgress({})
+    setUploadComplete({})
     for (let i = 0; i < images.length; i++) {
       setUploadStatus(images.length > 1
         ? `${t('create.uploadingImages')} (${i + 1}/${images.length})`
         : t('create.uploadingImages'))
+      setUploadProgress(prev => ({ ...prev, [i]: 0 }))
       const uri = images[i]
       const response = await fetch(uri)
       const blob = await response.blob()
@@ -491,10 +540,8 @@ export default function CreateScreen() {
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `${userId}/${postId}/${i}.${ext}`
       const arrayBuffer = await blob.arrayBuffer()
-      const { error } = await supabase.storage
-        .from('post-images')
-        .upload(path, arrayBuffer, { contentType: mimeType, upsert: true })
-      if (!error) {
+      const success = await uploadSingleImageWithProgress(uri, path, mimeType, arrayBuffer, i)
+      if (success) {
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)
         uploadedUrls.push(urlData.publicUrl)
       } else {
@@ -626,7 +673,7 @@ export default function CreateScreen() {
           const modResult = await modRes.json()
           if (modResult.action === 'block') {
             toast.show({ message: t('create.contentBlocked') || 'Content blocked by moderation', type: 'error' })
-            setSubmitting(false); setUploadStatus(''); return
+            setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
           }
         }
       } catch {}
@@ -669,7 +716,7 @@ export default function CreateScreen() {
                 toast.show({ message: t('create.rollbackFailed') ?? 'Failed to clean up — please delete the draft from your profile', type: 'error' })
               }
             }
-            setSubmitting(false); setUploadStatus(''); return
+            setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
           }
         }
         if (post?.id) {
@@ -748,7 +795,7 @@ export default function CreateScreen() {
       }
       toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
-      setSubmitting(false); setUploadStatus('')
+      setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({})
     }
   }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages, toast])
 
@@ -957,6 +1004,23 @@ export default function CreateScreen() {
                     {images.map((uri, idx) => (
                       <View key={uri} style={[mk.imgThumb, { borderColor: colors.border }]}>
                         <Image source={{ uri }} style={mk.imgThumbImg} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={`${t('create.image')} ${idx + 1}`} />
+                        {/* Per-image upload progress overlay */}
+                        {submitting && uploadProgress[idx] !== undefined && !uploadComplete[idx] && (
+                          <View style={mk.imgProgressOverlay}>
+                            <View style={mk.imgProgressTrack}>
+                              <View style={[mk.imgProgressFill, { width: `${uploadProgress[idx]}%` as any, backgroundColor: colors.primary }]} />
+                            </View>
+                            <Text style={mk.imgProgressText}>{uploadProgress[idx]}%</Text>
+                          </View>
+                        )}
+                        {/* Upload complete checkmark */}
+                        {submitting && uploadComplete[idx] && (
+                          <View style={mk.imgCompleteOverlay}>
+                            <View style={[mk.imgCompleteCircle, { backgroundColor: colors.primary }]}>
+                              <Check size={16} color="#fff" />
+                            </View>
+                          </View>
+                        )}
                         <PressableOpacity onPress={() => removeImage(idx)} style={mk.imgRemove} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.remove') ?? 'Remove'}>
                           <X size={12} color="#fff" />
                         </PressableOpacity>
@@ -1431,6 +1495,12 @@ const mk = StyleSheet.create({
   imgRemove: { position: 'absolute', top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   imgMainBadge: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingVertical: 2, alignItems: 'center' },
   imgMainBadgeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi },
+  imgProgressOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', borderRadius: 19, gap: 6 },
+  imgProgressTrack: { width: '70%' as any, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.3)', overflow: 'hidden' },
+  imgProgressFill: { height: '100%' as any, borderRadius: 2 },
+  imgProgressText: { fontSize: 11, fontWeight: '700', color: '#fff', fontFamily: fonts.bodySemi },
+  imgCompleteOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center', borderRadius: 19 },
+  imgCompleteCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
   imgAddMoreText: { fontSize: 11, fontFamily: fonts.body },
 
