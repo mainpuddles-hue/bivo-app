@@ -18,6 +18,8 @@ import {
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus'
+import { getNetworkAwareErrorSync } from '@/lib/errorUtils'
 import { FEATURES } from '@/lib/featureFlags'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -99,7 +101,8 @@ function ExploreScreenInner() {
   const [activeTab, setActiveTab] = useState<SubTab>('map')
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [fetchError, setFetchError] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const { isConnected } = useNetworkStatus()
 
   // Event personalization
   const { interests: eventInterests } = useEventInterests()
@@ -144,7 +147,7 @@ function ExploreScreenInner() {
   // ── Fetch all data ──
   const fetchData = useCallback(async () => {
     setLoading(true)
-    setFetchError(false)
+    setFetchError(null)
     try {
       const location = userLocationRef.current ?? await fetchLocation()
 
@@ -197,7 +200,7 @@ function ExploreScreenInner() {
       if (!communityEvtsRes.error && communityEvtsRes.data) setCommunityEventPreviews(communityEvtsRes.data)
     } catch (err) {
       if (__DEV__) console.log('[explore] fetch error:', err)
-      setFetchError(true)
+      setFetchError(getNetworkAwareErrorSync(err, t, isConnected))
     } finally {
       setLoading(false)
     }
@@ -806,11 +809,11 @@ function ExploreScreenInner() {
               <PressableOpacity
                 onPress={handleRefresh}
                 accessibilityRole="button"
-                accessibilityLabel={t('feed.loadError')}
+                accessibilityLabel={fetchError}
                 style={[s.errorRow, { backgroundColor: `${colors.destructive}10` }]}
               >
                 <Text style={[s.errorRowText, { color: colors.destructive }]}>
-                  {t('feed.loadError')}
+                  {fetchError}
                 </Text>
               </PressableOpacity>
             )}

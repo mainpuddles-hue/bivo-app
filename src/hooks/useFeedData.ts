@@ -9,6 +9,8 @@ import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { fetchHelsinkiEvents, prefetchHelsinkiEvents, setLinkedEventsBaseUrl } from '@/lib/linkedevents'
 import { fetchHelsinkiPlaces } from '@/lib/palvelukartta'
 import { useI18n } from '@/lib/i18n'
+import { getNetworkAwareErrorSync } from '@/lib/errorUtils'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { getSeedPosts } from '@/lib/seedContent'
 import { rankFeed } from '@/lib/feedAlgorithm'
 import { getCachedUserId } from '@/lib/authCache'
@@ -24,6 +26,7 @@ const FEED_CACHE_KEY = 'tackbird_feed_cache'
 export function useFeedData() {
   const { t } = useI18n()
   const supabase = useSupabase()
+  const { isConnected } = useNetworkStatus()
 
   // ── State ──
   const [posts, setPosts] = useState<Post[]>([])
@@ -412,8 +415,7 @@ export function useFeedData() {
       setHasMore(dbRowCount >= PAGE_SIZE)
     } catch (err: any) {
       if (!controller.signal.aborted) {
-        const isOffline = err?.message?.includes('Network') || err?.message?.includes('fetch') || err?.code === 'NETWORK_ERROR'
-        setError(isOffline ? t('feed.offlineError') : t('feed.loadError'))
+        setError(getNetworkAwareErrorSync(err, t, isConnected))
       }
     } finally {
       loadingRef.current = false
