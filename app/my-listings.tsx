@@ -493,9 +493,9 @@ const s = StyleSheet.create({
     letterSpacing: -0.5,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
     marginTop: 2,
   },
 
@@ -543,9 +543,10 @@ const s = StyleSheet.create({
     marginBottom: 4,
   },
   statusText: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.2,
+    lineHeight: 16,
   },
   cardTitle: {
     fontSize: 14,

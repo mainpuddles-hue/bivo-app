@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, ScrollView, RefreshControl, TextInput, StyleSheet, Alert, Modal, FlatList } from 'react-native'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { View, Text, ScrollView, RefreshControl, TextInput, StyleSheet, Alert, Modal, FlatList, Animated } from 'react-native'
 import { withHapticRefresh } from '@/lib/haptics'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -78,6 +78,21 @@ export default function ProfileScreen() {
   const [fetchError, setFetchError] = useState(false)
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
+
+  // ── Collapsible header scroll tracking ──
+  const scrollY = useRef(new Animated.Value(0)).current
+  const COLLAPSE_START = 100
+  const COLLAPSE_END = 180
+  const compactOpacity = scrollY.interpolate({
+    inputRange: [COLLAPSE_START, COLLAPSE_END],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  })
+  const titleOpacity = scrollY.interpolate({
+    inputRange: [COLLAPSE_START, COLLAPSE_END],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  })
 
   const loadProfile = useCallback(async () => {
     setFetchError(false)
@@ -392,7 +407,9 @@ export default function ProfileScreen() {
       {/* Header — mockup 08: centered title + settings circle */}
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <View style={{ width: 36 }} />
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+        <Animated.View style={{ opacity: titleOpacity }}>
+          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+        </Animated.View>
         <PressableOpacity
           onPress={() => router.push('/settings')}
           hitSlop={8}
@@ -404,7 +421,12 @@ export default function ProfileScreen() {
         </PressableOpacity>
       </View>
 
-      <ScrollView
+      <Animated.ScrollView
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
         contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 96 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -759,7 +781,32 @@ export default function ProfileScreen() {
             <Text style={[s.flatRowText, { color: colors.destructive }]}>{t('profile.logout')}</Text>
           </PressableOpacity>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+
+      {/* Compact header — crossfades in when hero scrolls away */}
+      {profile && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            s.compactHeader,
+            {
+              paddingTop: insets.top + 8,
+              backgroundColor: colors.background,
+              borderBottomColor: colors.border,
+              opacity: compactOpacity,
+            },
+          ]}
+        >
+          <View style={{ width: 36 }} />
+          <View style={s.compactCenter}>
+            <Avatar url={profile.avatar_url} name={profile.name} size={28} />
+            <Text style={[s.compactName, { color: colors.foreground }]} numberOfLines={1}>
+              {profile.name}
+            </Text>
+          </View>
+          <View style={{ width: 36 }} />
+        </Animated.View>
+      )}
 
       {/* Followers/Following Modal */}
       <Modal visible={followModal !== null} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setFollowModal(null)}>
@@ -821,6 +868,35 @@ const s = StyleSheet.create({
   },
   content: { paddingHorizontal: 16, paddingTop: 4, gap: 18 },
 
+  // Compact header overlay (collapsible)
+  compactHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    zIndex: 10,
+  },
+  compactCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  compactName: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    lineHeight: 20,
+    letterSpacing: -0.2,
+    maxWidth: 160,
+  },
+
   // Hero — centered (mockup 08)
   hero: { alignItems: 'center', gap: 12, paddingTop: 8 },
   avatarWrap: { position: 'relative' },
@@ -851,7 +927,7 @@ const s = StyleSheet.create({
 
   // Inline badge (Pro, Business) next to name
   inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
-  inlineBadgeText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 13 },
+  inlineBadgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
 
   cameraBtn: {
     position: 'absolute', bottom: -4, right: -4,

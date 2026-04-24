@@ -27,6 +27,8 @@ export const colors = {
     surfaceTinted: 'rgba(26,29,31,0.04)', // ink tint
     warmTint: '#F0EEE9',               // warm neutral for text-only cards, suggestion banners
     onInkMuted: '#B8BCC0',             // muted text on ink surfaces (subtitles on selected items)
+    borderStrong: '#C8CBCE',            // stronger border for emphasis (inputs, active states)
+    danger: '#C44536',                  // semantic danger — logout, destructive rows
   },
   dark: {
     // Helsinki Monochrome dark: inverted ink palette
@@ -53,6 +55,8 @@ export const colors = {
     surfaceTinted: 'rgba(245,246,247,0.06)',
     warmTint: '#2A2722',               // dark warm neutral
     onInkMuted: '#4A4D51',             // muted text on ink surfaces (dark mode)
+    borderStrong: '#4A4D51',            // stronger border for emphasis (inputs, active states)
+    danger: '#FF453A',                  // semantic danger — logout, destructive rows
   },
 }
 
@@ -89,4 +93,6 @@ export type ThemeColors = {
   surfaceTinted: string
   warmTint: string
   onInkMuted: string
+  borderStrong: string
+  danger: string
 }

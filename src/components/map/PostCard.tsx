@@ -131,10 +131,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   badgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14,
-    letterSpacing: 0.4,
+    lineHeight: 16,
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   metaRow: {

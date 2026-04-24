@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   counterText: {
-    color: '#FFFFFF',
+    color: '#F5F6F7',
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,

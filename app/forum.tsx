@@ -717,15 +717,15 @@ const s = StyleSheet.create({
 
   // Filter bar — monochrome pills
   filterBar: { paddingHorizontal: 16, paddingVertical: 12, gap: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, alignSelf: 'flex-start', borderWidth: 1, minHeight: 38 },
+  neighborhoodChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, alignSelf: 'flex-start', borderWidth: 1, minHeight: 44 },
   neighborhoodChipText: { fontSize: 12, lineHeight: 16, fontFamily: fonts.bodyMedium },
   categoryChips: { gap: 8, paddingRight: 4 },
-  categoryChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 40 },
+  categoryChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44 },
   categoryChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
 
   // Sort chips — monochrome
   sortRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
-  sortChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 40 },
+  sortChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, minHeight: 44 },
   sortChipText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.bodyMedium },
 
   // New posts banner — INK bg

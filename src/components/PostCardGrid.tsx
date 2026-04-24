@@ -167,7 +167,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         />
       ) : (
         <View style={[styles.miniAvatar, styles.miniAvatarFallback, { backgroundColor: `${metaColor}20` }]}>
-          <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
+          <Text style={{ fontSize: 12, fontFamily: fonts.bodySemi, color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
         </View>
       )}
       <Text style={[styles.metaText, { color: metaColor }]} numberOfLines={1}>
@@ -175,7 +175,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
       </Text>
       {viewCount != null && viewCount > 2 && (
         <View style={styles.viewCountPill}>
-          <Eye size={9} color={metaColor} strokeWidth={2} />
+          <Eye size={12} color={metaColor} strokeWidth={2} />
           <Text style={[styles.viewCountText, { color: metaColor }]}>{viewCount}</Text>
         </View>
       )}
@@ -199,14 +199,14 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
       >
         <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
           <Heart
-            size={10}
-            color={overlaid ? '#fff' : (liked ? colors.destructive : colors.mutedForeground)}
-            fill={liked ? (overlaid ? '#fff' : colors.destructive) : 'transparent'}
+            size={12}
+            color={overlaid ? colors.primaryForeground : (liked ? colors.destructive : colors.mutedForeground)}
+            fill={liked ? (overlaid ? colors.primaryForeground : colors.destructive) : 'transparent'}
             strokeWidth={2}
           />
         </Animated.View>
         {likeCount > 0 && (
-          <Text style={[styles.likePillText, { color: overlaid ? '#fff' : (liked ? colors.destructive : colors.mutedForeground) }]}>
+          <Text style={[styles.likePillText, { color: overlaid ? colors.primaryForeground : (liked ? colors.destructive : colors.mutedForeground) }]}>
             {likeCount}
           </Text>
         )}
@@ -266,8 +266,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             {/* Urgent pill — top-right */}
             {isUrgent && (
               <View style={[styles.urgentPill, { backgroundColor: colors.destructive }]}>
-                <Clock size={9} color="#fff" strokeWidth={2.5} />
-                <Text style={styles.urgentText}>{t('postCard.urgent')}</Text>
+                <Clock size={12} color={colors.primaryForeground} strokeWidth={2.5} />
+                <Text style={[styles.urgentText, { color: colors.primaryForeground }]}>{t('postCard.urgent')}</Text>
               </View>
             )}
             {/* Like count pill — top-right (if not urgent) */}
@@ -331,7 +331,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           <View style={styles.eventContent}>
             {/* Calendar + category */}
             <View style={styles.eventCategoryRow}>
-              <Calendar size={11} color={colors.onInkMuted} strokeWidth={2} />
+              <Calendar size={12} color={colors.onInkMuted} strokeWidth={2} />
               <Text style={[styles.eventCategoryText, { color: colors.mutedForeground }]}>
                 {t(category?.label ?? 'categories.tapahtuma')}
               </Text>
@@ -415,10 +415,10 @@ const styles = StyleSheet.create({
     }),
   },
   categoryPillText: {
-    fontSize: 9.5,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.6,
+    letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: '#1A1D1F',
   },
@@ -434,17 +434,16 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   urgentText: {
-    fontSize: 9.5,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#fff',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
   },
   imageCardContent: {
-    padding: 10,
-    paddingTop: 10,
-    gap: 6,
+    padding: 12,
+    paddingTop: 12,
+    gap: 8,
   },
 
   // ── Like pills ──
@@ -469,9 +468,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   likePillText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
+    lineHeight: 16,
   },
 
   // ── Reason pills ──
@@ -486,11 +486,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   reasonPillText: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     textTransform: 'uppercase',
+    lineHeight: 16,
   },
 
   // ── Typography ──
@@ -512,8 +513,8 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
+    gap: 4,
+    marginTop: 4,
   },
   miniAvatar: {
     width: 16,
@@ -525,9 +526,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   metaText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 14,
+    lineHeight: 16,
     flex: 1,
   },
   viewCountPill: {
@@ -536,9 +537,9 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   viewCountText: {
-    fontSize: 9.5,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 12,
+    lineHeight: 16,
   },
 
   // ── Event card (ink bg, inverted) ──
@@ -555,11 +556,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   eventCategoryText: {
-    fontSize: 9.5,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
+    lineHeight: 16,
   },
   eventTitle: {
     fontSize: 16,
@@ -569,9 +571,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   eventMeta: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 14,
+    lineHeight: 16,
   },
 
   // ── Text card (warm tint bg) ──
@@ -580,12 +582,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   textCategoryLabel: {
-    fontSize: 9.5,
+    fontSize: 12,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
     marginBottom: 2,
+    lineHeight: 16,
   },
   textTitle: {
     fontSize: 16,

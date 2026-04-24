@@ -46,8 +46,7 @@ const LOCATION_ACCURACY_OPTIONS: { key: LocationAccuracy; label: string; desc: s
   { key: 'city', label: 'settings.locationCity', desc: 'settings.locationCityDesc' },
 ]
 
-// Danger red for logout row per mockup 22
-const DANGER_COLOR = '#A03030'
+// Danger red for logout row — uses semantic theme token `colors.danger`
 
 // ── Mockup 22 primitives ──
 
@@ -1240,11 +1239,11 @@ export default function SettingsScreen() {
         {/* ── Logout ── */}
         <Group colors={colors}>
           <Row
-            icon={<LogOut size={16} color={isDark ? colors.destructive : DANGER_COLOR} strokeWidth={1.8} />}
+            icon={<LogOut size={16} color={isDark ? colors.destructive : colors.danger} strokeWidth={1.8} />}
             iconBg={warmTintBg}
             label={t('settings.logout')}
             danger
-            dangerColor={isDark ? colors.destructive : DANGER_COLOR}
+            dangerColor={isDark ? colors.destructive : colors.danger}
             chevron={false}
             onPress={handleLogout}
             colors={colors}

@@ -46,7 +46,7 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
             borderColor: colors.border,
             ...Platform.select({
               ios: {
-                shadowColor: '#1A1D1F',
+                shadowColor: colors.foreground,
                 shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.08,
                 shadowRadius: 20,
@@ -112,7 +112,7 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
                   accessibilityLabel={`${badge}`}
                   accessibilityRole="text"
                 >
-                  <Text style={s.badgeText}>{badge > 99 ? '99+' : badge}</Text>
+                  <Text style={[s.badgeText, { color: colors.primaryForeground }]}>{badge > 99 ? '99+' : badge}</Text>
                 </View>
               )}
             </Pressable>
@@ -230,9 +230,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 3,
   },
   badgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
-    lineHeight: 12,
+    lineHeight: 16,
   },
 })

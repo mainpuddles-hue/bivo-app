@@ -531,7 +531,7 @@ const s = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 9,
     gap: 5,
-    minHeight: 40,
+    minHeight: 44,
   },
   segmentTabActive: {
     // bg + shadow set inline

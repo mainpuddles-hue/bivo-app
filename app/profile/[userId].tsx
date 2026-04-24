@@ -1139,9 +1139,9 @@ const s = StyleSheet.create({
     lineHeight: 26,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 14,
+    lineHeight: 16,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
     marginTop: 5,

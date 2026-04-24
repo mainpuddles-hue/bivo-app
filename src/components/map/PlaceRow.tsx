@@ -120,10 +120,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   placeCatText: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14,
-    letterSpacing: 0.3,
+    lineHeight: 16,
+    letterSpacing: 0.2,
     textTransform: 'uppercase',
   },
   placeDistance: {

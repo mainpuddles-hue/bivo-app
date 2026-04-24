@@ -147,10 +147,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   dateMonth: {
-    fontSize: 9,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 12,
-    letterSpacing: 0.6,
+    lineHeight: 16,
+    letterSpacing: 0.4,
   },
   datePlaceholder: {
     width: 48,
@@ -203,10 +203,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   badgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14,
-    letterSpacing: 0.3,
+    lineHeight: 16,
+    letterSpacing: 0.2,
     textTransform: 'uppercase',
   },
   distance: {

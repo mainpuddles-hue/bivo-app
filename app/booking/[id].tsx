@@ -1078,9 +1078,10 @@ const stepperStyles = StyleSheet.create({
     marginBottom: 6,
   },
   label: {
-    fontSize: 10,
+    fontSize: 12,
     textAlign: 'center',
     letterSpacing: -0.1,
+    lineHeight: 16,
   },
 })
 

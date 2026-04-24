@@ -253,5 +253,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10,
     borderWidth: 1, opacity: 0.85,
   },
-  buildingCount: { fontSize: 10, fontFamily: fonts.bodySemi, lineHeight: 12 },
+  buildingCount: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 })

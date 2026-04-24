@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
   btn: {
     minWidth: 60,
-    minHeight: 36,
+    minHeight: 44,
     alignItems: 'flex-end',
     justifyContent: 'center',
     paddingHorizontal: 8,

@@ -110,7 +110,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
           {/* Time row */}
           {dateParts && (
             <View style={s.metaRow}>
-              <Clock size={13} color={colors.mutedForeground} />
+              <Clock size={16} color={colors.mutedForeground} />
               <Text style={[s.metaText, { color: colors.mutedForeground }]}>
                 {dateParts.weekday} {dateParts.time}
               </Text>
@@ -120,7 +120,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
           {/* Location row */}
           {event.location_name && (
             <View style={s.metaRow}>
-              <MapPin size={13} color={colors.mutedForeground} />
+              <MapPin size={16} color={colors.mutedForeground} />
               <Text style={[s.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
                 {event.location_name}
               </Text>
@@ -138,7 +138,7 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
               />
             ) : (
               <View style={s.participantCount}>
-                <Users size={13} color={colors.mutedForeground} />
+                <Users size={16} color={colors.mutedForeground} />
                 <Text style={[s.participantText, { color: colors.mutedForeground }]}>
                   {spotsText}
                 </Text>
@@ -200,16 +200,16 @@ const s = StyleSheet.create({
     lineHeight: 30,
   },
   dateMonth: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
-    lineHeight: 14,
-    letterSpacing: 0.8,
-    marginTop: 1,
+    lineHeight: 16,
+    letterSpacing: 0.6,
+    marginTop: 2,
   },
   dateWeekday: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 14,
+    lineHeight: 16,
     marginTop: 2,
   },
   /* ---- Details (right) ---- */
@@ -228,17 +228,17 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 999,
   },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
-  categoryText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14, flexShrink: 1 },
+  categoryText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16, flexShrink: 1 },
   tableBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 999,
   },
-  tableText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
+  tableText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   title: {
     fontSize: 15,
     fontFamily: fonts.headingSemi,
@@ -284,8 +284,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   creatorText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 14,
+    lineHeight: 16,
   },
 })

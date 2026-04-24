@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, marginTop: 4,
   },
-  amountInput: { flex: 1, fontSize: 20, fontFamily: fonts.heading, minHeight: 36, lineHeight: 28 },
+  amountInput: { flex: 1, fontSize: 20, fontFamily: fonts.heading, minHeight: 44, lineHeight: 28 },
   currency: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   listedPrice: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, marginTop: 4 },
   messageInput: {

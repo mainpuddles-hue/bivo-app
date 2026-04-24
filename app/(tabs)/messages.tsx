@@ -989,9 +989,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   eventChatBadgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
-    lineHeight: 12,
+    lineHeight: 16,
     fontFamily: fonts.bodySemi,
   },
   eventChatTitle: {

@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999,
     paddingHorizontal: 8, paddingVertical: 4,
   },
-  multiImageText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', lineHeight: 14, fontFamily: fonts.bodySemi },
+  multiImageText: { fontSize: 12, fontWeight: '600', color: '#F5F6F7', lineHeight: 16, fontFamily: fonts.bodySemi },
   proBadgeOnImage: {
     position: 'absolute', top: 8, right: 8,
     width: 26, height: 26, borderRadius: 13,

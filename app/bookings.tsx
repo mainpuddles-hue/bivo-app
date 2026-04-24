@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    minHeight: 36,
+    minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -638,11 +638,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   statusText: {
-    fontSize: 9.5,
+    fontSize: 12,
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
-    lineHeight: 14,
+    lineHeight: 16,
   },
 
   // Error banner

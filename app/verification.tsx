@@ -379,7 +379,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 999,
-    minHeight: 36,
+    minHeight: 44,
   },
   stepActionText: {
     fontSize: 12,
