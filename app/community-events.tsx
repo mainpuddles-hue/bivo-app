@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo } from 'react'
 import {
-  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet, Alert,
+  View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -18,6 +18,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { EventCardSkeleton, TableCardSkeleton } from '@/components/SkeletonLoaders'
 import { PressableOpacity } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { EventCard } from '@/components/EventCard'
 import { TableCard } from '@/components/TableCard'
 import { isTableEvent, isExpiredEvent } from '@/lib/eventHelpers'
@@ -41,6 +42,7 @@ function CommunityEventsScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [events, setEvents] = useState<CommunityEvent[]>([])
   const [loading, setLoading] = useState(true)
@@ -127,9 +129,9 @@ function CommunityEventsScreenInner() {
       fetchEvents()
     } catch (err) {
       if (__DEV__) console.log('[community-events] quick join error:', err)
-      Alert.alert(t('common.error'), t('events.joinFailed'))
+      toast.show({ message: t('events.joinFailed'), type: 'error' })
     }
-  }, [supabase, fetchEvents, router, t])
+  }, [supabase, fetchEvents, router, t, toast])
 
   const renderEventCard = useCallback(({ item }: { item: CommunityEvent }) => (
     <EventCard event={item} />

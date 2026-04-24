@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+// Alert kept for destructive unblock confirmation
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, ShieldOff } from 'lucide-react-native'
@@ -11,6 +12,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
+import { useToast } from '@/components/Toast'
 
 interface BlockedUser {
   blocked_id: string
@@ -29,6 +31,7 @@ function BlockedUsersScreenInner() {
   const router = useRouter()
   const supabase = useSupabase()
 
+  const toast = useToast()
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([])
   const [loading, setLoading] = useState(true)
   const [unblocking, setUnblocking] = useState<string | null>(null)
@@ -75,7 +78,7 @@ function BlockedUsersScreenInner() {
               .eq('blocked_id', blockedUserId)
 
             if (error) {
-              Alert.alert(t('common.error'), t('blocked.unblockFailed'))
+              toast.show({ message: t('blocked.unblockFailed'), type: 'error' })
             } else {
               setBlockedUsers(prev => prev.filter(b => b.blocked_id !== blockedUserId))
             }
@@ -84,7 +87,7 @@ function BlockedUsersScreenInner() {
         },
       ],
     )
-  }, [userId, supabase, t])
+  }, [userId, supabase, t, toast])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>

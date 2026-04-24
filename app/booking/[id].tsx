@@ -253,12 +253,12 @@ function BookingDetailScreenInner() {
       }
       const { error } = await (supabase.from(table) as any).update(updateData).eq('id', booking.id)
       if (error) {
-        Alert.alert(t('common.error'), mapErrorToFinnish(error, t))
+        toast.show({ message: mapErrorToFinnish(error, t), type: 'error' })
       } else {
         setBooking(prev => prev ? { ...prev, status: newStatus } : prev)
       }
     } catch (err) {
-      Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
+      toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
       setActionLoading(false)
       updatingRef.current = false
@@ -291,11 +291,11 @@ function BookingDetailScreenInner() {
       toast.show({ message: t('reviews.submitted') ?? t('common.success'), type: 'success' })
       router.back()
     } catch {
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
     } finally {
       setActionLoading(false)
     }
-  }, [booking, userId, reviewStars, reviewComment, reviewTags, supabase, t, router])
+  }, [booking, userId, reviewStars, reviewComment, reviewTags, supabase, t, toast, router])
 
   const steps = useMemo(() => booking?.type === 'service' ? SERVICE_STEPS : RENTAL_STEPS, [booking?.type])
   const currentStepIndex = useMemo(() => {

@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useEffect } from 'react'
 import {
-  View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator,
+  View, Text, ScrollView, StyleSheet, ActivityIndicator,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -18,6 +18,7 @@ import { PressableOpacity } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
 import { formatPrice } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
+import { useToast } from '@/components/Toast'
 
 type PaymentMethod = 'card' | 'mobilepay' | 'new'
 
@@ -44,6 +45,7 @@ function PaymentCheckoutScreenInner() {
     serviceFee: string
   }>()
 
+  const toast = useToast()
   const deposit = parseFloat(params.deposit || '0') || 0
   const loanPrice = parseFloat(params.loanPrice || '0') || 0
   const serviceFee = parseFloat(params.serviceFee || '0') || 0
@@ -102,11 +104,11 @@ function PaymentCheckoutScreenInner() {
       router.replace('/payment/success')
     } catch (err) {
       if (__DEV__) console.warn('[payment-checkout] pay failed:', err)
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
     } finally {
       setPaying(false)
     }
-  }, [paying, selectedMethod, params.bookingId, router, supabase, t])
+  }, [paying, selectedMethod, params.bookingId, router, supabase, t, toast])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>

@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useEffect } from 'react'
 import {
-  View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator,
+  View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator,
   KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -81,7 +81,7 @@ function CreateTableScreenInner() {
 
   const handleSubmit = useCallback(async () => {
     if (!title.trim()) {
-      Alert.alert(t('common.error'), t('events.titleDateRequired'))
+      toast.show({ message: t('events.titleDateRequired'), type: 'error' })
       return
     }
     if (!currentUserId) {
@@ -118,7 +118,7 @@ function CreateTableScreenInner() {
         .single()
 
       if (error || !data?.id) {
-        Alert.alert(t('common.error'), t('tables.createFailed'))
+        toast.show({ message: t('tables.createFailed'), type: 'error' })
         setSubmitting(false)
         return
       }
@@ -137,7 +137,7 @@ function CreateTableScreenInner() {
 
       router.replace(`/event/${eventId}` as any)
     } catch {
-      Alert.alert(t('common.error'), t('tables.createFailed'))
+      toast.show({ message: t('tables.createFailed'), type: 'error' })
     } finally {
       setSubmitting(false)
     }

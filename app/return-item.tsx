@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback } from 'react'
 import {
-  View, Text, ScrollView, StyleSheet, Alert, TextInput,
+  View, Text, ScrollView, StyleSheet, TextInput,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -20,6 +20,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
 import { getCachedUserId } from '@/lib/authCache'
+import { useToast } from '@/components/Toast'
 
 interface ChecklistItem {
   id: string
@@ -33,6 +34,7 @@ function ReturnItemScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
   const params = useLocalSearchParams<{
     bookingId: string
     itemTitle: string
@@ -74,10 +76,7 @@ function ReturnItemScreenInner() {
   const handleSubmit = useCallback(async () => {
     if (submitting) return
     if (!hasPhotos) {
-      Alert.alert(
-        t('returnItem.photoRequired'),
-        t('returnItem.photoRequiredDesc'),
-      )
+      toast.show({ message: t('returnItem.photoRequired'), type: 'error' })
       return
     }
 
@@ -117,18 +116,15 @@ function ReturnItemScreenInner() {
       }).eq('id', params.bookingId)
       if (returnError) throw returnError
 
-      Alert.alert(
-        t('returnItem.returnConfirmed'),
-        t('returnItem.returnConfirmedDesc'),
-        [{ text: 'OK', onPress: () => router.back() }],
-      )
+      toast.show({ message: t('returnItem.returnConfirmed'), type: 'success' })
+      router.back()
     } catch (err) {
       if (__DEV__) console.warn('[return-item] submit failed:', err)
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
     } finally {
       setSubmitting(false)
     }
-  }, [submitting, hasPhotos, photos, params.bookingId, note, router, supabase, t])
+  }, [submitting, hasPhotos, photos, params.bookingId, note, router, supabase, t, toast])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>

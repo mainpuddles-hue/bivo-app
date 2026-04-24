@@ -275,16 +275,16 @@ export default function PublicProfileScreen() {
             .or(`and(user1_id.eq.${currentUserId},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${currentUserId})`)
             .maybeSingle()
           if (existingConv) { router.push(`/messages/${(existingConv as any).id}`); return }
-          Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return
+          toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return
         }
-        if (insertError) { if (__DEV__) console.log('[conv] create error:', JSON.stringify(insertError)); Alert.alert(t('common.error'), insertError.message || t('messages.conversationCreateFailed')); return }
-        if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+        if (insertError) { if (__DEV__) console.log('[conv] create error:', JSON.stringify(insertError)); toast.show({ message: insertError.message || t('messages.conversationCreateFailed'), type: 'error' }); return }
+        if (!newConv) { toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return }
         router.push(`/messages/${newConv.id}`)
       }
     } finally {
       setCreatingConversation(false)
     }
-  }, [creatingConversation, currentUserId, userId, supabase, router, t])
+  }, [creatingConversation, currentUserId, userId, supabase, router, t, toast])
 
   const handleBlock = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
@@ -302,20 +302,20 @@ export default function PublicProfileScreen() {
                 await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
                 clearBlockedCache()
                 toast.show({ message: t('profile.unblocked'), type: 'success' })
-              } catch (err) { setIsBlocked(true); if (__DEV__) console.warn('[profile] unblock failed:', err); Alert.alert(t('common.error')) }
+              } catch (err) { setIsBlocked(true); if (__DEV__) console.warn('[profile] unblock failed:', err); toast.show({ message: t('common.error'), type: 'error' }) }
             } else {
               setIsBlocked(true)
               try {
                 await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
                 clearBlockedCache()
                 toast.show({ message: t('profile.blocked'), type: 'success' })
-              } catch (err) { setIsBlocked(false); if (__DEV__) console.warn('[profile] block failed:', err); Alert.alert(t('common.error')) }
+              } catch (err) { setIsBlocked(false); if (__DEV__) console.warn('[profile] block failed:', err); toast.show({ message: t('common.error'), type: 'error' }) }
             }
           },
         },
       ]
     )
-  }, [currentUserId, isBlocked, userId, profile, supabase, t, router])
+  }, [currentUserId, isBlocked, userId, profile, supabase, t, router, toast])
 
   const handleReport = useCallback(() => {
     if (!currentUserId) { router.push('/(auth)/login'); return }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Building2, MapPin, Camera, Shield, Megaphone, BarChart3, Info } from 'lucide-react-native'
@@ -94,11 +94,11 @@ export default function UpgradeBusinessScreen() {
 
   const handleUpgrade = useCallback(async () => {
     if (!businessName.trim()) {
-      Alert.alert(t('common.error'), t('business.nameRequired'))
+      toast.show({ message: t('business.nameRequired'), type: 'error' })
       return
     }
     if (!vatId.trim()) {
-      Alert.alert(t('common.error'), t('business.vatRequired'))
+      toast.show({ message: t('business.vatRequired'), type: 'error' })
       return
     }
     if (!profile) return
@@ -131,7 +131,7 @@ export default function UpgradeBusinessScreen() {
       const validation = await validateRes.json()
 
       if (!validation.valid) {
-        Alert.alert(t('common.error'), validation.message || t('business.validationFailed'))
+        toast.show({ message: validation.message || t('business.validationFailed'), type: 'error' })
         setSubmitting(false)
         return
       }
@@ -204,11 +204,11 @@ export default function UpgradeBusinessScreen() {
       // Don't navigate away — user will return via deep link after Stripe checkout
       toast.show({ message: t('business.pendingPayment'), type: 'success' })
     } catch (err: any) {
-      Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
+      toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
       setSubmitting(false)
     }
-  }, [businessName, vatId, category, address, profile, supabase, router, t])
+  }, [businessName, vatId, category, address, profile, supabase, router, t, toast])
 
   const getCategoryLabel = (id: string) => {
     const cat = BUSINESS_CATEGORIES.find(c => c.id === id)

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { View, Text, ScrollView, StyleSheet, Linking, Alert } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, ChevronDown, ChevronUp, Mail, ExternalLink } from 'lucide-react-native'
@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 
 interface FAQItem {
   question: string
@@ -65,6 +66,7 @@ function HelpScreenInner() {
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  const toast = useToast()
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   const toggleItem = useCallback((key: string) => {
@@ -133,7 +135,7 @@ function HelpScreenInner() {
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
           <PressableOpacity
-            onPress={() => Linking.openURL('mailto:tuki@tackbird.com').catch(() => Alert.alert(t('common.error'), t('common.error')))}
+            onPress={() => Linking.openURL('mailto:tuki@tackbird.com').catch(() => toast.show({ message: t('common.error'), type: 'error' }))}
             style={[s.contactBtn, { backgroundColor: colors.foreground }]}
             accessibilityLabel="tuki@tackbird.com"
             accessibilityRole="link"

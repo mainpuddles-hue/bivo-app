@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, Linking, Platform } from 'react-native'
+// Alert kept for restore purchases info dialog
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Crown, Check, X, Sparkles, BarChart3, Shield, Megaphone, BadgeCheck, Zap, Info } from 'lucide-react-native'
@@ -11,6 +12,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { FEATURES as APP_FEATURES } from '@/lib/featureFlags'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
+import { useToast } from '@/components/Toast'
 import type { Profile } from '@/lib/types'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -36,6 +38,7 @@ export default function ProScreen() {
   const router = useRouter()
   const supabase = useSupabase()
 
+  const toast = useToast()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<Plan>('yearly')
   const [purchasing, setPurchasing] = useState(false)
@@ -67,7 +70,7 @@ export default function ProScreen() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        Alert.alert(t('common.error'), t('common.loginRequired'))
+        toast.show({ message: t('common.loginRequired'), type: 'error' })
         setPurchasing(false)
         return
       }
@@ -95,7 +98,7 @@ export default function ProScreen() {
     } finally {
       setPurchasing(false)
     }
-  }, [selectedPlan, supabase, t])
+  }, [selectedPlan, supabase, t, toast])
 
   const isPro = profile?.is_pro
   const proExpiresAt = profile?.pro_expires_at

@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback } from 'react'
 import {
-  View, Text, ScrollView, StyleSheet, Alert, TextInput,
+  View, Text, ScrollView, StyleSheet, TextInput,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -15,6 +15,7 @@ import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
+import { useToast } from '@/components/Toast'
 
 const TAGS_FI = [
   'Palautti ajoissa',
@@ -48,6 +49,7 @@ function ReviewBorrowerScreenInner() {
     dates: string
   }>()
 
+  const toast = useToast()
   const tags = locale === 'fi' ? TAGS_FI : TAGS_EN
   const [rating, setRating] = useState(5)
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set())
@@ -80,18 +82,15 @@ function ReviewBorrowerScreenInner() {
       })
       if (reviewError) throw reviewError
 
-      Alert.alert(
-        t('reviewBorrower.reviewPublished'),
-        t('reviewBorrower.reviewPublishedDesc'),
-        [{ text: 'OK', onPress: () => router.back() }],
-      )
+      toast.show({ message: t('reviewBorrower.reviewPublished'), type: 'success' })
+      router.back()
     } catch (err) {
       if (__DEV__) console.warn('[review-borrower] submit failed:', err)
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
     } finally {
       setSubmitting(false)
     }
-  }, [submitting, rating, comment, selectedTags, params, router, supabase, t])
+  }, [submitting, rating, comment, selectedTags, params, router, supabase, t, toast])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>

@@ -7,7 +7,6 @@ import {
   ScrollView,
   TextInput,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   useWindowDimensions,
   Platform,
@@ -46,6 +45,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 import { trackEvent } from '@/lib/analytics'
+import { useToast } from '@/components/Toast'
 
 const TOTAL_STEPS = 7
 
@@ -72,6 +72,7 @@ function NewListingScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   // ── Localized data arrays ──
   const TEMPLATES = useMemo(() => [
@@ -229,7 +230,7 @@ function NewListingScreenInner() {
   // ── Publish ──
   const handlePublish = useCallback(async (isDraft: boolean) => {
     if (!title.trim()) {
-      Alert.alert(t('newListing.errorTitle'), t('newListing.errorNoTitle'))
+      toast.show({ message: t('newListing.errorNoTitle'), type: 'error' })
       return
     }
     setPublishing(true)
@@ -301,11 +302,11 @@ function NewListingScreenInner() {
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       router.replace(isDraft ? '/(tabs)/profile' : `/post/${post?.id}`)
     } catch (err) {
-      Alert.alert(t('newListing.errorTitle'), t('newListing.errorPublishFailed'))
+      toast.show({ message: t('newListing.errorPublishFailed'), type: 'error' })
     } finally {
       setPublishing(false)
     }
-  }, [title, description, photos, address, pricingModel, price, tags, selectedTemplate, supabase, router])
+  }, [title, description, photos, address, pricingModel, price, tags, selectedTemplate, supabase, router, toast])
 
   // ════════════════════════════════════════════════════════════════════════════
   // SHARED CHROME — Wizard Header

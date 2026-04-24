@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useCallback, useMemo } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, Pressable,
-  StyleSheet, Alert, Dimensions,
+  StyleSheet, Dimensions,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PostCardSkeleton } from '@/components/SkeletonLoaders'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useToast } from '@/components/Toast'
 import { getImageUrl } from '@/lib/imageUtils'
 import { formatPrice } from '@/lib/format'
 import type { Post } from '@/lib/types'
@@ -45,6 +46,7 @@ function SavedScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -163,11 +165,11 @@ function SavedScreenInner() {
         const restored = removedPost
         setPosts(current => [restored, ...current])
       }
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
     } finally {
       setUnsavingId(null)
     }
-  }, [unsavingId, supabase, t])
+  }, [unsavingId, supabase, t, toast])
 
   const handleUnsaveEvent = useCallback(async (eventId: string, _eventType: string) => {
     const prev = events
@@ -179,9 +181,9 @@ function SavedScreenInner() {
       if (error) throw error
     } catch {
       setEvents(prev)
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
     }
-  }, [events, supabase, t])
+  }, [events, supabase, t, toast])
 
   // Derive display price for a post
   const getPostPrice = (post: Post): string => {

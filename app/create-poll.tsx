@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Plus, X, BarChart3 } from 'lucide-react-native'
@@ -12,6 +12,7 @@ import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useToast } from '@/components/Toast'
 
 const MAX_OPTIONS = 6
 const MIN_OPTIONS = 2
@@ -22,6 +23,7 @@ function CreatePollInner() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [question, setQuestion] = useState('')
   const [options, setOptions] = useState(['', ''])
@@ -57,7 +59,7 @@ function CreatePollInner() {
 
     const userId = getCachedUserId()
     if (!userId) {
-      Alert.alert(t('common.error'), t('common.loginRequired'))
+      toast.show({ message: t('common.loginRequired'), type: 'error' })
       setSubmitting(false)
       return
     }
@@ -75,7 +77,7 @@ function CreatePollInner() {
 
     const cleanOptions = options.map(o => o.trim()).filter(Boolean)
     if (cleanOptions.length < MIN_OPTIONS) {
-      Alert.alert(t('common.error'), t('polls.questionPlaceholder'))
+      toast.show({ message: t('polls.questionPlaceholder'), type: 'error' })
       setSubmitting(false)
       return
     }
@@ -90,14 +92,14 @@ function CreatePollInner() {
     })
 
     if (error) {
-      Alert.alert(t('common.error'), mapErrorToFinnish(error, t))
+      toast.show({ message: mapErrorToFinnish(error, t), type: 'error' })
       setSubmitting(false)
       return
     }
 
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
     router.back()
-  }, [canSubmit, submitting, question, options, expiresIn, supabase, t, router])
+  }, [canSubmit, submitting, question, options, expiresIn, supabase, t, toast, router])
 
   const DURATION_OPTIONS: { key: typeof expiresIn; label: string }[] = [
     { key: '1d', label: t('polls.duration1d') },

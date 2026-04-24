@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Switch, ActivityIndicator, Alert, Platform, KeyboardAvoidingView } from 'react-native'
+import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Switch, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useToast } from '@/components/Toast'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { FEATURES } from '@/lib/featureFlags'
 import type { Profile } from '@/lib/types'
@@ -33,6 +34,7 @@ interface AdStats {
 export default function OrganizationScreen() {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
+  const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
@@ -148,7 +150,7 @@ export default function OrganizationScreen() {
   // --- Image handling ---
   const pickImage = useCallback(async () => {
     if (businessImages.length >= MAX_IMAGES) {
-      Alert.alert(t('common.error'), t('business.maxImages'))
+      toast.show({ message: t('business.maxImages'), type: 'error' })
       return
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -210,10 +212,10 @@ export default function OrganizationScreen() {
         .update({ business_images: updated })
         .eq('id', profile.id)
     } else if (result.assets.length > 0) {
-      Alert.alert(t('common.error'), t('business.imageUploadFail'))
+      toast.show({ message: t('business.imageUploadFail'), type: 'error' })
     }
     setUploading(false)
-  }, [businessImages, profile, supabase, t])
+  }, [businessImages, profile, supabase, t, toast])
 
   const removeImage = useCallback(async (index: number) => {
     if (!profile) return
@@ -238,21 +240,21 @@ export default function OrganizationScreen() {
         const lat = parseFloat(data[0].lat)
         const lng = parseFloat(data[0].lon)
         if (isNaN(lat) || isNaN(lng)) {
-          Alert.alert(t('common.error'), t('business.geocodeFail'))
+          toast.show({ message: t('business.geocodeFail'), type: 'error' })
           return
         }
         setBusinessLat(lat)
         setBusinessLng(lng)
-        Alert.alert(t('business.geocodeSuccess'), `${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+        toast.show({ message: `${t('business.geocodeSuccess')}: ${lat.toFixed(5)}, ${lng.toFixed(5)}`, type: 'success' })
       } else {
-        Alert.alert(t('common.error'), t('business.geocodeFail'))
+        toast.show({ message: t('business.geocodeFail'), type: 'error' })
       }
     } catch {
-      Alert.alert(t('common.error'), t('business.geocodeFail'))
+      toast.show({ message: t('business.geocodeFail'), type: 'error' })
     } finally {
       setGeocoding(false)
     }
-  }, [businessAddress, t])
+  }, [businessAddress, t, toast])
 
   // --- Save all ---
   const saveAll = useCallback(async () => {
@@ -272,13 +274,13 @@ export default function OrganizationScreen() {
         .eq('id', profile.id)
 
       if (error) throw error
-      Alert.alert(t('business.saved'))
+      toast.show({ message: t('business.saved'), type: 'success' })
     } catch {
-      Alert.alert(t('common.error'), t('business.saveFailed'))
+      toast.show({ message: t('business.saveFailed'), type: 'error' })
     } finally {
       setSaving(false)
     }
-  }, [profile, supabase, businessDescription, businessAddress, businessLat, businessLng, businessPhone, businessWebsite, businessImages, t])
+  }, [profile, supabase, businessDescription, businessAddress, businessLat, businessLng, businessPhone, businessWebsite, businessImages, t, toast])
 
   const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
 

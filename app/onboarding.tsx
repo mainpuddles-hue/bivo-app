@@ -5,7 +5,6 @@ import {
   ScrollView,
   TextInput,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   NativeSyntheticEvent,
   NativeScrollEvent,
@@ -40,6 +39,7 @@ import { CATEGORIES } from '@/lib/constants'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { useReferral } from '@/hooks/useReferral'
 import { trackEvent } from '@/lib/analytics'
 import { FEATURES } from '@/lib/featureFlags'
@@ -57,6 +57,7 @@ function OnboardingScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
   const scrollRef = useRef<ScrollView>(null)
   const { width: SCREEN_WIDTH } = useWindowDimensions()
 
@@ -104,7 +105,7 @@ function OnboardingScreenInner() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        Alert.alert(t('common.error'), t('auth.loginRequired'))
+        toast.show({ message: t('auth.loginRequired'), type: 'error' })
         router.replace('/(auth)/login')
         return
       }
@@ -138,7 +139,7 @@ function OnboardingScreenInner() {
       })
 
       if (rpcError) {
-        Alert.alert(t('common.error'), t('onboarding.saveFailed'))
+        toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
         setSaving(false)
         return
       }
@@ -153,7 +154,7 @@ function OnboardingScreenInner() {
         .update(updateData)
         .eq('id', user.id)
       if (updateError) {
-        Alert.alert(t('common.error'), t('onboarding.saveFailed'))
+        toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
         setSaving(false)
         return
       }
@@ -167,11 +168,11 @@ function OnboardingScreenInner() {
       })
       router.replace('/')
     } catch (err) {
-      Alert.alert(t('common.error'), t('onboarding.saveFailed'))
+      toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
     } finally {
       setSaving(false)
     }
-  }, [supabase, selectedAddress, selectedCity, referralInput, router, t, applyInviteCode])
+  }, [supabase, selectedAddress, selectedCity, referralInput, router, t, toast, applyInviteCode])
 
   // ── Progress bars (mockup style: horizontal bars, active = INK, inactive = LINE) ──
   const renderProgressBar = () => (

@@ -18,6 +18,7 @@ import { formatTimeAgo } from '@/lib/format'
 import { fonts } from '@/lib/fonts'
 import { isValidUUID } from '@/lib/validation'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useToast } from '@/components/Toast'
 import { getTableCategoryIcon, getTableCategoryColor } from '@/lib/eventHelpers'
 import type { Conversation } from '@/lib/types'
 
@@ -41,6 +42,7 @@ export default function MessagesScreen() {
   const router = useRouter()
   const supabase = useSupabase()
   const insets = useSafeAreaInsets()
+  const toast = useToast()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -352,11 +354,11 @@ export default function MessagesScreen() {
     const newVal = !isCurrentlyArchived
     const { error } = await (supabase.from('conversations') as any).update({ [field]: newVal }).eq('id', convId)
     if (error) {
-      Alert.alert(t('common.error'), t('messages.archiveError') ?? t('common.error'))
+      toast.show({ message: t('messages.archiveError') ?? t('common.error'), type: 'error' })
       return
     }
     await fetchConversations()
-  }, [conversations, userId, supabase, fetchConversations, t])
+  }, [conversations, userId, supabase, fetchConversations, t, toast])
 
   // Stable onRefresh — withHapticRefresh returns a new function on every
   // call, which would cause RefreshControl to rebind on every render.
