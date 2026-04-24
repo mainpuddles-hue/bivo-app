@@ -26,26 +26,40 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
   const price = isCityEvent ? (item.sourceData as CityEvent).price_info : null
   const isTicketmaster = isCityEvent && (item.sourceData as CityEvent).source === 'ticketmaster'
   const isLinkedEvents = isCityEvent && (item.sourceData as CityEvent).source === 'linkedevents'
-  const dateStr = item.sortDate
-    ? new Date(item.sortDate).toLocaleDateString(
-        locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB',
-        { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }
-      )
-    : null
+
+  // Parse date parts for the date block
+  const dateParts = (() => {
+    if (!item.sortDate) return null
+    const d = new Date(item.sortDate)
+    if (isNaN(d.getTime())) return null
+    const loc = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
+    return {
+      day: d.getDate().toString(),
+      monthShort: d.toLocaleDateString(loc, { month: 'short' }).replace('.', ''),
+      time: d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }),
+    }
+  })()
 
   return (
     <PressableOpacity
       style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={() => onPress(item)}
       accessibilityRole="button"
-      accessibilityLabel={[item.title, dateStr].filter(Boolean).join(', ')}
+      accessibilityLabel={[item.title, dateParts ? `${dateParts.day} ${dateParts.monthShort}` : null].filter(Boolean).join(', ')}
     >
-      {/* Image left (borderRadius 10) */}
-      {imageUrl ? (
+      {/* Date block — compact, left side */}
+      {dateParts ? (
+        <View style={[styles.dateBlock, { backgroundColor: `${colors.primary}14` }]}>
+          <Text style={[styles.dateDay, { color: colors.primary }]}>{dateParts.day}</Text>
+          <Text style={[styles.dateMonth, { color: colors.primary }]}>
+            {dateParts.monthShort.toUpperCase()}
+          </Text>
+        </View>
+      ) : imageUrl ? (
         <Image source={{ uri: imageUrl }} style={styles.eventImage} contentFit="cover" accessible={false} />
       ) : (
-        <View style={[styles.eventImagePlaceholder, { backgroundColor: colors.muted }]}>
-          <Calendar size={20} color={colors.mutedForeground} />
+        <View style={[styles.datePlaceholder, { backgroundColor: colors.muted }]}>
+          <Calendar size={18} color={colors.mutedForeground} />
         </View>
       )}
 
@@ -53,10 +67,10 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
       <View style={styles.eventContent}>
         <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
 
-        {/* Date */}
-        {dateStr && (
+        {/* Time */}
+        {dateParts && (
           <Text style={[styles.dateText, { color: colors.mutedForeground }]} numberOfLines={1}>
-            {dateStr}
+            {dateParts.time}
           </Text>
         )}
 
@@ -97,6 +111,11 @@ export function EventCard({ item, colors, locale, t, onPress }: EventCardProps) 
           </Text>
         </View>
       </View>
+
+      {/* Image thumbnail on the right when date block is shown */}
+      {dateParts && imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.thumbImage} contentFit="cover" accessible={false} />
+      ) : null}
     </PressableOpacity>
   )
 }
@@ -111,18 +130,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     gap: 12,
+    alignItems: 'center',
   },
-  eventImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 10,
-  },
-  eventImagePlaceholder: {
-    width: 72,
-    height: 72,
-    borderRadius: 10,
+  /* Date block — compact square */
+  dateBlock: {
+    width: 48,
+    minHeight: 48,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 4,
+  },
+  dateDay: {
+    fontSize: 20,
+    fontFamily: fonts.heading,
+    lineHeight: 24,
+  },
+  dateMonth: {
+    fontSize: 9,
+    fontFamily: fonts.bodySemi,
+    lineHeight: 12,
+    letterSpacing: 0.6,
+  },
+  datePlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+  },
+  thumbImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
   },
   eventContent: {
     flex: 1,

@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { MapPin, Users } from 'lucide-react-native'
+import { MapPin, Users, Clock } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -17,7 +17,7 @@ interface EventCardProps {
 }
 
 export const EventCard = memo(function EventCard({ event, compact }: EventCardProps) {
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
   const categoryColor = EVENT_CATEGORY_COLORS[event.category] ?? colors.mutedForeground
@@ -69,86 +69,101 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
       accessibilityRole="button"
       accessibilityLabel={a11yLabel}
     >
-      {/* Image or Emoji Header */}
-      {event.image_url && !isTable ? (
-        <ImageWithFallback uri={event.image_url} imageSize="medium" style={s.image} contentFit="cover" accessible={false} />
-      ) : isTable && TableCategoryIcon ? (
-        <View style={[s.iconBox, { backgroundColor: `${categoryColor}15` }]}>
-          <TableCategoryIcon size={36} color={categoryColor} />
-        </View>
-      ) : null}
-
-      <View style={s.content}>
-        {/* Date-first layout: large day number + details */}
-        <View style={s.dateRow}>
-          {dateParts && (
-            <View style={[s.dateBlock, { backgroundColor: `${categoryColor}12` }]}>
-              <Text style={[s.dateDay, { color: categoryColor }]}>{dateParts.day}</Text>
-              <Text style={[s.dateMonth, { color: categoryColor }]}>{dateParts.monthShort.toUpperCase()}</Text>
-            </View>
-          )}
-          <View style={s.dateDetails}>
-            {/* Category badge */}
-            <View style={s.topRow}>
-              <View style={[s.categoryBadge, { backgroundColor: `${categoryColor}18` }]}>
-                <View style={[s.categoryDot, { backgroundColor: categoryColor }]} />
-                <Text style={[s.categoryText, { color: categoryColor }]}>
-                  {categoryLabel}
-                </Text>
-              </View>
-              {isTable && (
-                <View style={[s.tableBadge, { backgroundColor: `${colors.success}15` }]}>
-                  <Text style={[s.tableText, { color: colors.success }]}>
-                    {t('tables.title')}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Title */}
-            <Text style={[s.title, { color: colors.foreground }]} numberOfLines={2}>
-              {event.title}
+      <View style={s.body}>
+        {/* Date block — primary visual anchor */}
+        {dateParts && (
+          <View style={[s.dateBlock, { backgroundColor: `${categoryColor}${isDark ? '28' : '14'}` }]}>
+            <Text style={[s.dateDay, { color: categoryColor }]}>{dateParts.day}</Text>
+            <Text style={[s.dateMonth, { color: categoryColor }]}>
+              {dateParts.monthShort.toUpperCase()}
             </Text>
-
-            {/* Time */}
-            {dateParts && (
-              <Text style={[s.timeText, { color: colors.mutedForeground }]}>
-                {dateParts.weekday} {dateParts.time}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        {/* Location */}
-        {event.location_name && (
-          <View style={s.infoRow}>
-            <MapPin size={14} color={colors.mutedForeground} />
-            <Text style={[s.infoText, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={1}>
-              {event.location_name}
+            <Text style={[s.dateWeekday, { color: `${categoryColor}B0` }]}>
+              {dateParts.weekday}
             </Text>
           </View>
         )}
 
-        {/* Bottom: Participants */}
-        <View style={s.bottomRow}>
-          {event.participants && event.participants.length > 0 ? (
-            <ParticipantAvatarRow
-              participants={event.participants.map(p => ({ avatar_url: p.user?.avatar_url, name: p.user?.name }))}
-              totalCount={participantCount}
-              max={4}
-              size={24}
-            />
-          ) : (
-            <View style={s.participantCount}>
-              <Users size={14} color={colors.mutedForeground} />
-              <Text style={[s.infoText, { color: colors.mutedForeground, fontFamily: fonts.bodyMedium }]}>
-                {spotsText}
+        {/* Right: details column */}
+        <View style={s.details}>
+          {/* Category + table badges */}
+          <View style={s.badgeRow}>
+            <View style={[s.categoryBadge, { backgroundColor: `${categoryColor}18` }]}>
+              <View style={[s.categoryDot, { backgroundColor: categoryColor }]} />
+              <Text style={[s.categoryText, { color: categoryColor }]}>
+                {categoryLabel}
+              </Text>
+            </View>
+            {isTable && (
+              <View style={[s.tableBadge, { backgroundColor: `${colors.success}15` }]}>
+                <Text style={[s.tableText, { color: colors.success }]}>
+                  {t('tables.title')}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Title */}
+          <Text style={[s.title, { color: colors.foreground }]} numberOfLines={2}>
+            {event.title}
+          </Text>
+
+          {/* Time row */}
+          {dateParts && (
+            <View style={s.metaRow}>
+              <Clock size={13} color={colors.mutedForeground} />
+              <Text style={[s.metaText, { color: colors.mutedForeground }]}>
+                {dateParts.weekday} {dateParts.time}
               </Text>
             </View>
           )}
 
+          {/* Location row */}
+          {event.location_name && (
+            <View style={s.metaRow}>
+              <MapPin size={13} color={colors.mutedForeground} />
+              <Text style={[s.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
+                {event.location_name}
+              </Text>
+            </View>
+          )}
+
+          {/* Bottom: participants + image thumb */}
+          <View style={s.bottomRow}>
+            {event.participants && event.participants.length > 0 ? (
+              <ParticipantAvatarRow
+                participants={event.participants.map(p => ({ avatar_url: p.user?.avatar_url, name: p.user?.name }))}
+                totalCount={participantCount}
+                max={4}
+                size={22}
+              />
+            ) : (
+              <View style={s.participantCount}>
+                <Users size={13} color={colors.mutedForeground} />
+                <Text style={[s.participantText, { color: colors.mutedForeground }]}>
+                  {spotsText}
+                </Text>
+              </View>
+            )}
+
+            {/* Image thumbnail (small, on the right) */}
+            {event.image_url && !isTable ? (
+              <ImageWithFallback
+                uri={event.image_url}
+                imageSize="thumbnail"
+                style={s.thumb}
+                contentFit="cover"
+                accessible={false}
+              />
+            ) : isTable && TableCategoryIcon ? (
+              <View style={[s.thumbIcon, { backgroundColor: `${categoryColor}15` }]}>
+                <TableCategoryIcon size={18} color={categoryColor} />
+              </View>
+            ) : null}
+          </View>
+
+          {/* Creator name */}
           {event.creator && !compact && (
-            <Text style={[s.creatorText, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={1}>
+            <Text style={[s.creatorText, { color: colors.mutedForeground }]} numberOfLines={1}>
               {event.creator.name}
             </Text>
           )}
@@ -164,49 +179,55 @@ const s = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
   },
-  image: {
-    width: '100%',
-    height: 140,
+  body: {
+    flexDirection: 'row',
+    padding: 14,
+    gap: 14,
+    alignItems: 'flex-start',
   },
-  iconBox: {
-    width: '100%',
-    height: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: { padding: 16, gap: 8 },
-  dateRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  /* ---- Date block (left) ---- */
   dateBlock: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 60,
+    minHeight: 68,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 8,
   },
   dateDay: {
-    fontSize: 20,
-    fontFamily: fonts.headingSemi,
-    lineHeight: 24,
+    fontSize: 26,
+    fontFamily: fonts.heading,
+    lineHeight: 30,
   },
   dateMonth: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
-    lineHeight: 12,
-    letterSpacing: 0.5,
+    lineHeight: 14,
+    letterSpacing: 0.8,
+    marginTop: 1,
   },
-  dateDetails: { flex: 1, gap: 4 },
-  timeText: {
-    fontSize: 12,
+  dateWeekday: {
+    fontSize: 10,
     fontFamily: fonts.bodyMedium,
-    lineHeight: 16,
+    lineHeight: 13,
+    marginTop: 2,
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  /* ---- Details (right) ---- */
+  details: {
+    flex: 1,
+    gap: 5,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 999,
   },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
@@ -217,15 +238,53 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   tableText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
-  title: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  infoText: { fontSize: 13, lineHeight: 18 },
+  title: {
+    fontSize: 15,
+    fontFamily: fonts.headingSemi,
+    lineHeight: 20,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  metaText: {
+    fontSize: 12,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 16,
+  },
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 4,
   },
-  participantCount: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  creatorText: { fontSize: 12, lineHeight: 16, maxWidth: 120 },
+  participantCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  participantText: {
+    fontSize: 12,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 16,
+  },
+  /* ---- Image thumbnail ---- */
+  thumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+  },
+  thumbIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  creatorText: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 14,
+  },
 })
