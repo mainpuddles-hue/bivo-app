@@ -7,7 +7,6 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { Image } from 'expo-image'
 import {
   ArrowLeft, Heart, CalendarDays, MapPin, Bookmark,
 } from 'lucide-react-native'
@@ -19,8 +18,10 @@ import { EmptyState } from '@/components/EmptyState'
 import { PostCardSkeleton } from '@/components/SkeletonLoaders'
 import { getCachedUserId } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { PressableOpacity } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { getImageUrl } from '@/lib/imageUtils'
+import { ImageWithFallback } from '@/components/ImageWithFallback'
 import { formatPrice } from '@/lib/format'
 import type { Post } from '@/lib/types'
 
@@ -54,8 +55,10 @@ function SavedScreenInner() {
   const [posts, setPosts] = useState<Post[]>([])
   const [events, setEvents] = useState<SavedEvent[]>([])
   const [unsavingId, setUnsavingId] = useState<string | null>(null)
+  const [fetchError, setFetchError] = useState(false)
 
   const loadSaved = useCallback(async () => {
+    setFetchError(false)
     try {
       const cachedId = await getCachedUserId()
       if (!cachedId) { router.replace('/(auth)/login'); setLoading(false); setRefreshing(false); return }
@@ -139,6 +142,7 @@ function SavedScreenInner() {
       setEvents(allEvents)
     } catch (err) {
       if (__DEV__) console.warn('[saved] loadSaved failed:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -303,6 +307,23 @@ function SavedScreenInner() {
           <PostCardSkeleton />
           <PostCardSkeleton />
         </View>
+      ) : fetchError ? (
+        <View style={{ alignItems: 'center', paddingTop: 60, gap: 12 }}>
+          <Bookmark size={40} color={colors.mutedForeground} />
+          <Text style={{ color: colors.foreground, fontFamily: fonts.headingSemi, fontSize: 16, lineHeight: 22 }}>
+            {t('common.error')}
+          </Text>
+          <PressableOpacity
+            onPress={() => { setLoading(true); loadSaved() }}
+            style={{ marginTop: 8, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, backgroundColor: colors.foreground }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry')}
+          >
+            <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 14, lineHeight: 20 }}>
+              {t('common.retry')}
+            </Text>
+          </PressableOpacity>
+        </View>
       ) : isEmpty ? (
         <EmptyState
           icon={<Bookmark size={36} color={colors.foreground} />}
@@ -347,13 +368,12 @@ function SavedScreenInner() {
                     {/* Image */}
                     <View style={s.gridImageWrap}>
                       {imageUri ? (
-                        <Image
-                          source={{ uri: imageUri }}
+                        <ImageWithFallback
+                          uri={imageUri}
+                          imageSize="thumbnail"
                           style={s.gridImage}
                           contentFit="cover"
-                          transition={200}
-                          cachePolicy="memory-disk"
-                          recyclingKey={imageUri}
+                          fallbackIcon={<Bookmark size={24} color={colors.tertiaryForeground} />}
                         />
                       ) : (
                         <View style={[s.gridImagePlaceholder, { backgroundColor: colors.muted }]}>

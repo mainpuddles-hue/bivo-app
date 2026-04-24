@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import { useTheme } from '@/hooks/useTheme'
@@ -15,6 +15,7 @@ interface AvatarProps {
 
 export const Avatar = React.memo(function Avatar({ url, name, size = 36, borderColor, borderWidth }: AvatarProps) {
   const { colors } = useTheme()
+  const [imgError, setImgError] = useState(false)
   const initial = (name || '?').charAt(0).toUpperCase()
   const fontSize = size < 24 ? 8 : size < 36 ? 10 : size < 48 ? 13 : size < 64 ? 18 : 32
   const lineHeight = size < 24 ? 10 : size < 36 ? 14 : size < 48 ? 18 : size < 64 ? 24 : 42
@@ -25,13 +26,14 @@ export const Avatar = React.memo(function Avatar({ url, name, size = 36, borderC
     text: { fontSize, lineHeight },
   }), [size, borderColor, borderWidth, fontSize, lineHeight])
 
-  if (url) {
+  if (url && !imgError) {
     return (
       <Image
         source={{ uri: getImageUrl(url, 'thumbnail')! }}
         style={[sizeStyles.container, sizeStyles.border]}
         contentFit="cover"
         cachePolicy="memory-disk"
+        onError={() => setImgError(true)}
         accessibilityLabel={name ? `${name}` : undefined}
       />
     )

@@ -48,8 +48,10 @@ function CommunityEventsScreenInner() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all')
+  const [fetchError, setFetchError] = useState(false)
 
   const fetchEvents = useCallback(async () => {
+    setFetchError(false)
     try {
       const { data, error } = await (supabase
         .from('community_events')
@@ -72,6 +74,7 @@ function CommunityEventsScreenInner() {
       setEvents(events)
     } catch (err) {
       if (__DEV__) console.log('[community-events] error:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -361,6 +364,19 @@ function CommunityEventsScreenInner() {
               <EventCardSkeleton />
               <EventCardSkeleton />
               <EventCardSkeleton />
+            </View>
+          ) : fetchError ? (
+            <View style={s.emptyState}>
+              <CalendarDays size={48} color={colors.mutedForeground} strokeWidth={1.3} />
+              <Text style={[s.emptyTitle, { color: colors.foreground }]}>{t('common.error')}</Text>
+              <PressableOpacity
+                onPress={() => { setLoading(true); fetchEvents() }}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.retry')}
+                style={[s.emptyCta, { backgroundColor: colors.foreground }]}
+              >
+                <Text style={[s.emptyCtaText, { color: colors.primaryForeground }]}>{t('common.retry')}</Text>
+              </PressableOpacity>
             </View>
           ) : (
             <View style={s.emptyState}>

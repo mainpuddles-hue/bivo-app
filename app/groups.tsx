@@ -230,7 +230,9 @@ function GroupsScreenInner() {
       if (realCount != null) {
         ;(supabase.from('groups') as any)
           .update({ member_count: realCount })
-          .eq('id', group.id).then(() => {}).catch(() => {})
+          .eq('id', group.id).then(({ error: syncErr }: any) => {
+            if (syncErr && __DEV__) console.warn('[groups] member count sync failed:', syncErr.message)
+          }).catch((err: any) => { if (__DEV__) console.warn('[groups] member count sync error:', err) })
       }
     } catch {
       // Revert

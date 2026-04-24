@@ -399,6 +399,132 @@ export default function MessagesScreen() {
     index,
   }), [])
 
+  const renderConversation = useCallback(({ item }: { item: Conversation }) => {
+    const other = item.other_user as any
+    const unread = item.unread_count ?? 0
+    const lastMsg = item.last_message
+    const isMySent = lastMsg?.sender_id === userId
+    const online = isOnline(other?.last_active_date)
+    const isImageMsg = lastMsg?.image_url && !lastMsg?.content
+    const isPinned = pinnedIds.includes(item.id)
+
+    // Apple Mail-style swipe actions: trailing -> archive, action button reveals on drag
+    const renderRightActions = (_: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
+      const scale = dragX.interpolate({
+        inputRange: [-80, 0],
+        outputRange: [1, 0.5],
+        extrapolate: 'clamp',
+      })
+      return (
+        <PressableOpacity
+          onPress={() => { hapticMedium(); handleArchive(item.id) }}
+          style={[styles.swipeActionRight, { backgroundColor: showArchived ? colors.foreground : colors.mutedForeground }]}
+          accessibilityRole="button"
+          accessibilityLabel={showArchived ? t('messages.unarchive') ?? 'Unarchive' : t('messages.archive') ?? 'Archive'}
+        >
+          <Animated.View style={{ transform: [{ scale }] }}>
+            <Archive size={22} color={colors.background} strokeWidth={2} />
+          </Animated.View>
+        </PressableOpacity>
+      )
+    }
+
+    return (
+      <Swipeable
+        renderRightActions={renderRightActions}
+        rightThreshold={40}
+        friction={2}
+        overshootRight={false}
+      >
+      <PressableOpacity
+        onPress={() => router.push(`/messages/${item.id}`)}
+        onLongPress={() => handleTogglePin(item.id)}
+        style={[styles.convRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+        accessibilityRole="button"
+        accessibilityLabel={`${other?.name ?? t('messages.unknownUser')}${unread > 0 ? `, ${unread} ${t('messages.unread') ?? 'unread'}` : ''}${isPinned ? `, ${t('messages.pinned') ?? 'pinned'}` : ''}`}
+        accessibilityHint={t('messages.longPressToPinHint') ?? 'Long press to pin or unpin'}
+      >
+        {/* Avatar with online dot */}
+        <View style={styles.avatarWrap}>
+          <Avatar url={other?.avatar_url} name={other?.name} size={42} />
+          {online && <View style={[styles.onlineDot, { borderColor: colors.card, backgroundColor: colors.success }]} accessibilityLabel={t('messages.online')} />}
+        </View>
+
+        {/* Name + preview */}
+        <View style={styles.convContent}>
+          <View style={styles.convNameRow}>
+            {isPinned && <Pin size={11} color={colors.mutedForeground} />}
+            <Text
+              style={[
+                styles.convName,
+                { color: colors.foreground },
+                unread > 0 && styles.convNameUnread,
+              ]}
+              numberOfLines={1}
+            >
+              {other?.name ?? t('messages.unknownUser')}
+            </Text>
+          </View>
+          <View style={styles.previewRow}>
+            {isMySent && lastMsg?.is_read && <CheckCheck size={12} color={colors.mutedForeground} />}
+            {isImageMsg ? (
+              <View style={styles.imgPreview}>
+                <ImageIcon size={11} color={colors.mutedForeground} />
+                <Text style={[styles.convPreview, { color: colors.mutedForeground }]}>{t('messages.imageMessage')}</Text>
+              </View>
+            ) : (
+              <Text style={[styles.convPreview, { color: colors.mutedForeground }]} numberOfLines={1}>
+                {isMySent && lastMsg?.content ? t('messages.you', { message: lastMsg.content }) : lastMsg?.content || t('messages.noMessagesYet')}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Right side: time + unread badge + more button */}
+        <View style={styles.convRight}>
+          {item.updated_at && (
+            <Text style={[styles.convTime, { color: colors.mutedForeground }]}>
+              {formatTimeAgo(item.updated_at, t, locale)}
+            </Text>
+          )}
+          {unread > 0 && (
+            <View style={[styles.unreadBadge, { backgroundColor: colors.foreground }]} />
+          )}
+          <PressableOpacity
+            onPress={(e) => {
+              e?.stopPropagation?.()
+              const pinLabel = isPinned ? (t('messages.unpinConversation') ?? 'Unpin') : (t('messages.pinConversation') ?? 'Pin')
+              const archiveLabel = showArchived ? (t('messages.unarchive') ?? 'Unarchive') : (t('messages.archive') ?? 'Archive')
+              const cancelLabel = t('common.cancel') ?? 'Cancel'
+              if (Platform.OS === 'ios') {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  { options: [pinLabel, archiveLabel, cancelLabel], cancelButtonIndex: 2 },
+                  (idx) => {
+                    if (idx === 0) handleTogglePin(item.id)
+                    if (idx === 1) { hapticMedium(); handleArchive(item.id) }
+                  },
+                )
+              } else {
+                Alert.alert(t('common.more') ?? 'More', '', [
+                  { text: pinLabel, onPress: () => handleTogglePin(item.id) },
+                  { text: archiveLabel, onPress: () => { hapticMedium(); handleArchive(item.id) } },
+                  { text: cancelLabel, style: 'cancel' },
+                ])
+              }
+            }}
+            style={styles.moreBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.more') ?? 'More'}
+          >
+            <MoreHorizontal size={16} color={colors.tertiaryForeground} />
+          </PressableOpacity>
+        </View>
+      </PressableOpacity>
+      </Swipeable>
+    )
+  }, [userId, pinnedIds, showArchived, colors, router, t, locale, isOnline, handleTogglePin, handleArchive])
+
   return (
     <ScreenErrorBoundary screenName="Messages">
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -542,131 +668,7 @@ export default function MessagesScreen() {
             </ScrollView>
           </View>
         ) : null}
-        renderItem={({ item }) => {
-          const other = item.other_user as any
-          const unread = item.unread_count ?? 0
-          const lastMsg = item.last_message
-          const isMySent = lastMsg?.sender_id === userId
-          const online = isOnline(other?.last_active_date)
-          const isImageMsg = lastMsg?.image_url && !lastMsg?.content
-          const isPinned = pinnedIds.includes(item.id)
-
-          // Apple Mail-style swipe actions: trailing -> archive, action button reveals on drag
-          const renderRightActions = (_: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
-            const scale = dragX.interpolate({
-              inputRange: [-80, 0],
-              outputRange: [1, 0.5],
-              extrapolate: 'clamp',
-            })
-            return (
-              <PressableOpacity
-                onPress={() => { hapticMedium(); handleArchive(item.id) }}
-                style={[styles.swipeActionRight, { backgroundColor: showArchived ? colors.foreground : colors.mutedForeground }]}
-                accessibilityRole="button"
-                accessibilityLabel={showArchived ? t('messages.unarchive') ?? 'Unarchive' : t('messages.archive') ?? 'Archive'}
-              >
-                <Animated.View style={{ transform: [{ scale }] }}>
-                  <Archive size={22} color={colors.background} strokeWidth={2} />
-                </Animated.View>
-              </PressableOpacity>
-            )
-          }
-
-          return (
-            <Swipeable
-              renderRightActions={renderRightActions}
-              rightThreshold={40}
-              friction={2}
-              overshootRight={false}
-            >
-            <PressableOpacity
-              onPress={() => router.push(`/messages/${item.id}`)}
-              onLongPress={() => handleTogglePin(item.id)}
-              style={[styles.convRow, { backgroundColor: colors.card, borderColor: colors.border }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${other?.name ?? t('messages.unknownUser')}${unread > 0 ? `, ${unread} ${t('messages.unread') ?? 'unread'}` : ''}${isPinned ? `, ${t('messages.pinned') ?? 'pinned'}` : ''}`}
-              accessibilityHint={t('messages.longPressToPinHint') ?? 'Long press to pin or unpin'}
-            >
-              {/* Avatar with online dot */}
-              <View style={styles.avatarWrap}>
-                <Avatar url={other?.avatar_url} name={other?.name} size={42} />
-                {online && <View style={[styles.onlineDot, { borderColor: colors.card, backgroundColor: colors.success }]} accessibilityLabel={t('messages.online')} />}
-              </View>
-
-              {/* Name + preview */}
-              <View style={styles.convContent}>
-                <View style={styles.convNameRow}>
-                  {isPinned && <Pin size={11} color={colors.mutedForeground} />}
-                  <Text
-                    style={[
-                      styles.convName,
-                      { color: colors.foreground },
-                      unread > 0 && styles.convNameUnread,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {other?.name ?? t('messages.unknownUser')}
-                  </Text>
-                </View>
-                <View style={styles.previewRow}>
-                  {isMySent && lastMsg?.is_read && <CheckCheck size={12} color={colors.mutedForeground} />}
-                  {isImageMsg ? (
-                    <View style={styles.imgPreview}>
-                      <ImageIcon size={11} color={colors.mutedForeground} />
-                      <Text style={[styles.convPreview, { color: colors.mutedForeground }]}>{t('messages.imageMessage')}</Text>
-                    </View>
-                  ) : (
-                    <Text style={[styles.convPreview, { color: colors.mutedForeground }]} numberOfLines={1}>
-                      {isMySent && lastMsg?.content ? t('messages.you', { message: lastMsg.content }) : lastMsg?.content || t('messages.noMessagesYet')}
-                    </Text>
-                  )}
-                </View>
-              </View>
-
-              {/* Right side: time + unread badge + more button */}
-              <View style={styles.convRight}>
-                {item.updated_at && (
-                  <Text style={[styles.convTime, { color: colors.mutedForeground }]}>
-                    {formatTimeAgo(item.updated_at, t, locale)}
-                  </Text>
-                )}
-                {unread > 0 && (
-                  <View style={[styles.unreadBadge, { backgroundColor: colors.foreground }]} />
-                )}
-                <PressableOpacity
-                  onPress={(e) => {
-                    e?.stopPropagation?.()
-                    const pinLabel = isPinned ? (t('messages.unpinConversation') ?? 'Unpin') : (t('messages.pinConversation') ?? 'Pin')
-                    const archiveLabel = showArchived ? (t('messages.unarchive') ?? 'Unarchive') : (t('messages.archive') ?? 'Archive')
-                    const cancelLabel = t('common.cancel') ?? 'Cancel'
-                    if (Platform.OS === 'ios') {
-                      ActionSheetIOS.showActionSheetWithOptions(
-                        { options: [pinLabel, archiveLabel, cancelLabel], cancelButtonIndex: 2 },
-                        (idx) => {
-                          if (idx === 0) handleTogglePin(item.id)
-                          if (idx === 1) { hapticMedium(); handleArchive(item.id) }
-                        },
-                      )
-                    } else {
-                      Alert.alert(t('common.more') ?? 'More', '', [
-                        { text: pinLabel, onPress: () => handleTogglePin(item.id) },
-                        { text: archiveLabel, onPress: () => { hapticMedium(); handleArchive(item.id) } },
-                        { text: cancelLabel, style: 'cancel' },
-                      ])
-                    }
-                  }}
-                  style={styles.moreBtn}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('common.more') ?? 'More'}
-                >
-                  <MoreHorizontal size={16} color={colors.tertiaryForeground} />
-                </PressableOpacity>
-              </View>
-            </PressableOpacity>
-            </Swipeable>
-          )
-        }}
+        renderItem={renderConversation}
         ListEmptyComponent={
           loading ? (
             <MessageListSkeleton />

@@ -798,7 +798,7 @@ function ConversationScreenInner() {
           <View>
             {linkedPost && (
               <View style={[contextStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {linkedPost.image_url && (
+                {linkedPost.image_url && getImageUrl(linkedPost.image_url, 'thumbnail') && (
                   <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={linkedPost.title} />
                 )}
                 <View style={contextStyles.info}>

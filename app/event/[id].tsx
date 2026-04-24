@@ -131,8 +131,11 @@ function EventDetailScreenInner() {
           message: status === 'pending' ? t('events.joinPending') : t('events.joinedSuccess'),
           type: status === 'pending' ? 'info' : 'success',
         })
-        // Add user to event group chat (soft fail)
-        addMemberToChat(supabase, event.id, userId).catch(() => {})
+        // Add user to event group chat (soft fail — warn user if chat join fails)
+        addMemberToChat(supabase, event.id, userId).catch((err) => {
+          if (__DEV__) console.warn('[event] addMemberToChat failed:', err)
+          toast.show({ message: t('events.chatJoinFailed') ?? 'Could not join event chat', type: 'info' })
+        })
         // Notify event creator about new participant
         if (event.creator_id && event.creator_id !== userId) {
           try {
@@ -178,7 +181,9 @@ function EventDetailScreenInner() {
                 toast.show({ message: t('events.leaveFailed'), type: 'error' })
               } else {
                 // Remove user from event group chat (soft fail)
-                removeMemberFromChat(supabase, event.id, userId).catch(() => {})
+                removeMemberFromChat(supabase, event.id, userId).catch((err) => {
+                  if (__DEV__) console.warn('[event] removeMemberFromChat failed:', err)
+                })
                 await fetchEvent()
               }
             } catch {

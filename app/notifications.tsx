@@ -5,8 +5,8 @@ import { View, Text, SectionList, RefreshControl, ScrollView, StyleSheet, Animat
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
-import { Image } from 'expo-image'
 import { Bell, ArrowLeft, LogIn, RefreshCw } from 'lucide-react-native'
+import { Avatar } from '@/components/Avatar'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -480,18 +480,12 @@ function NotificationsScreenInner() {
                       <View style={[styles.avatarSystem, { backgroundColor: colors.foreground }]}>
                         <Bell size={18} color={colors.background} />
                       </View>
-                    ) : item.from_user?.avatar_url ? (
-                      <Image
-                        source={{ uri: item.from_user.avatar_url }}
-                        style={styles.avatar}
-                        contentFit="cover"
-                        cachePolicy="memory-disk"
-                        recyclingKey={item.from_user.avatar_url}
-                      />
                     ) : (
-                      <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.muted }]}>
-                        <Text style={[styles.avatarInitial, { color: colors.mutedForeground }]}>{initial}</Text>
-                      </View>
+                      <Avatar
+                        url={item.from_user?.avatar_url}
+                        name={item.from_user?.name}
+                        size={40}
+                      />
                     )}
 
                     {/* Text content */}

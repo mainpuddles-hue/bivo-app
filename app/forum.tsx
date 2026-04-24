@@ -247,7 +247,9 @@ function ForumScreenInner() {
       if (count != null) {
         setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: count } : p))
         if (selectedPost?.id === post.id) setSelectedPost(prev => prev ? { ...prev, upvote_count: count } : prev)
-        ;(supabase.from('forum_posts') as any).update({ upvote_count: count }).eq('id', post.id).then(() => {}).catch(() => {})
+        ;(supabase.from('forum_posts') as any).update({ upvote_count: count }).eq('id', post.id).then(({ error: syncErr }: any) => {
+          if (syncErr && __DEV__) console.warn('[forum] post upvote count sync failed:', syncErr.message)
+        }).catch((err: any) => { if (__DEV__) console.warn('[forum] post upvote count sync error:', err) })
       }
     } catch {
       // Roll back the same delta we applied optimistically — do NOT snap
@@ -282,7 +284,9 @@ function ForumScreenInner() {
       const { count } = await supabase.from('forum_votes').select('*', { count: 'exact', head: true }).eq('reply_id', reply.id)
       if (count != null) {
         setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: count } : r))
-        ;(supabase.from('forum_replies') as any).update({ upvote_count: count }).eq('id', reply.id).then(() => {}).catch(() => {})
+        ;(supabase.from('forum_replies') as any).update({ upvote_count: count }).eq('id', reply.id).then(({ error: syncErr }: any) => {
+          if (syncErr && __DEV__) console.warn('[forum] reply upvote count sync failed:', syncErr.message)
+        }).catch((err: any) => { if (__DEV__) console.warn('[forum] reply upvote count sync error:', err) })
       }
     } catch {
       // Roll back the same delta we applied optimistically instead of
