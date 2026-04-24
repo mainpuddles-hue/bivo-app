@@ -132,8 +132,8 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   placeDirectionsBtn: {
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',

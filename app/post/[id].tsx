@@ -236,9 +236,11 @@ function PostDetailScreenInner() {
 
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
+    let mounted = true
     const channel = supabase
       .channel(`comments-${id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments', filter: `post_id=eq.${id}` }, async (payload) => {
+        if (!mounted) return
         const raw = payload.new as any
         const newComment: PostComment = { ...raw, parent_id: raw.parent_id ?? null }
         // Realtime payloads don't include joined .user data — fetch it
@@ -249,13 +251,14 @@ function PostDetailScreenInner() {
               .select('id, name, avatar_url')
               .eq('id', raw.user_id)
               .maybeSingle()
-            if (userProfile) {
+            if (mounted && userProfile) {
               (newComment as any).user = userProfile
             }
           } catch {
             // Fallback: comment renders without user name
           }
         }
+        if (!mounted) return
         setComments(prev => {
           // Deduplicate: skip if comment already exists (e.g., from reconnect replay)
           if (prev.some(c => c.id === newComment.id)) return prev
@@ -263,7 +266,7 @@ function PostDetailScreenInner() {
         })
       })
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    return () => { mounted = false; supabase.removeChannel(channel) }
   }, [id, supabase])
 
   const toggleLike = useCallback(async () => {

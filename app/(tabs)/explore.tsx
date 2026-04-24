@@ -107,7 +107,7 @@ function ExploreScreenInner() {
   // Event personalization
   const { interests: eventInterests } = useEventInterests()
   const [clickHistory, setClickHistory] = useState<{ category: string; timestamp: number }[]>([])
-  useEffect(() => { getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp })))).catch(() => {}) }, [])
+  useEffect(() => { let m = true; getClickHistory().then(h => { if (m) setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))) }).catch(() => {}); return () => { m = false } }, [])
 
   // Sort/filter state for Events sub-tab
   const [eventSort, setEventSort] = useState<'recommended' | 'today' | 'week' | 'all'>('recommended')

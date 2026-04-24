@@ -822,6 +822,7 @@ export default function ProfileScreen() {
           <FlatList
             data={followList}
             keyExtractor={item => item.id}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
             renderItem={({ item }) => (
               <PressableOpacity style={s.followItem} onPress={() => { setFollowModal(null); router.push(`/profile/${item.id}` as any) }}>
                 <Avatar url={item.avatar_url} name={item.name} size={40} />

@@ -25,7 +25,9 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
       ;(supabase.from('profiles') as any)
         .update({ last_seen_at: new Date().toISOString() })
         .eq('id', userId)
-        .then(() => {})
+        .then(({ error }: { error: any }) => {
+          if (error && __DEV__) console.warn('usePresence:updateLastSeen:', error.message)
+        })
         .catch((e: unknown) => { if (__DEV__) console.warn('usePresence:updateLastSeen:', e) })
     }
 
@@ -91,6 +93,7 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
     return () => {
       mounted = false
       appSub.remove()
+      channel.untrack().catch(() => {})
       channelRef.current = null
       supabase.removeChannel(channel)
     }

@@ -487,7 +487,7 @@ export default function MessagesScreen() {
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
-        getItemLayout={getItemLayout}
+        getItemLayout={eventChats.length > 0 && !showArchived ? undefined : getItemLayout}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 96 }]}
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefreshHandler} tintColor={colors.foreground} />}
