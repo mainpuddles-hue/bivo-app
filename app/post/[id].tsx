@@ -1466,7 +1466,12 @@ function PostDetailScreenInner() {
       <Modal visible={depositInfoVisible} animationType="fade" transparent onRequestClose={() => setDepositInfoVisible(false)}>
         <Pressable style={styles.infoModalOverlay} onPress={() => setDepositInfoVisible(false)}>
           <Pressable style={[styles.infoModalCard, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => {}}>
-            <Text style={[styles.infoModalTitle, { color: colors.foreground }]}>{t('rental.deposit')}</Text>
+            <View style={styles.infoModalHeader}>
+              <Text style={[styles.infoModalTitle, { color: colors.foreground }]}>{t('post.depositInfoTitle')}</Text>
+              <Pressable onPress={() => setDepositInfoVisible(false)} hitSlop={8}>
+                <X size={20} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
             <Text style={[styles.infoModalBody, { color: colors.mutedForeground }]}>{t('post.depositInfo')}</Text>
           </Pressable>
         </Pressable>
@@ -1851,7 +1856,8 @@ const styles = StyleSheet.create({
   pricingLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1 },
   infoModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   infoModalCard: { width: '100%', maxWidth: 360, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, padding: 20, gap: 10 },
-  infoModalTitle: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20 },
+  infoModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  infoModalTitle: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20, flex: 1 },
   infoModalBody: { fontSize: 13, fontFamily: fonts.body, lineHeight: 19 },
 })
 

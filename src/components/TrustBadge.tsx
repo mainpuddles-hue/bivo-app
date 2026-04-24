@@ -1,6 +1,6 @@
 import { View, Text, Pressable, Modal, ScrollView, StyleSheet } from 'react-native'
 import { PressableOpacity } from '@/components/ui'
-import { Shield, ShieldCheck, ShieldPlus, X } from 'lucide-react-native'
+import { Shield, ShieldCheck, ShieldPlus, X, Info } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { TRUST_TIERS } from '@/lib/constants'
@@ -32,6 +32,8 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress, 
   const iconSize = size === 'large' ? 20 : size === 'medium' ? 16 : 12
   const fontSize = size === 'large' ? 13 : size === 'medium' ? 11 : 9
 
+  const infoIconSize = size === 'large' ? 14 : size === 'medium' ? 12 : 10
+
   const content = (
     <View style={[styles.badge, size === 'large' && styles.badgeLarge]}>
       <Icon size={iconSize} color={tier.color} strokeWidth={1.5} />
@@ -39,6 +41,9 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress, 
         <Text style={[styles.label, { color: tier.color, fontSize }]}>
           {t(tier.nameKey)}
         </Text>
+      )}
+      {showExplainer && (
+        <Info size={infoIconSize} color={colors.mutedForeground} strokeWidth={1.5} />
       )}
     </View>
   )
