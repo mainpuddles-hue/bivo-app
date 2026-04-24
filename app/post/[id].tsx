@@ -8,7 +8,7 @@ import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
-  Send, Flag, Clock, ChevronRight, Eye,
+  Send, Flag, Clock, ChevronRight, Eye, ImageIcon,
   MoreHorizontal, X, Calendar, Pencil, Trash2, XCircle, Reply, ChevronDown, ChevronUp,
   ShoppingBag, Star, Shield, DollarSign, Info,
 } from 'lucide-react-native'
@@ -86,6 +86,7 @@ function PostDetailScreenInner() {
   // Image gallery state
   const [galleryVisible, setGalleryVisible] = useState(false)
   const [galleryInitialIndex, setGalleryInitialIndex] = useState(0)
+  const [heroImageError, setHeroImageError] = useState(false)
 
   // Description expand/collapse
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
@@ -154,6 +155,7 @@ function PostDetailScreenInner() {
           p.location = result.location
         }
         setPost(p)
+        setHeroImageError(false)
         setLikeCount(p.like_count ?? 0)
         trackEvent('post_viewed', { post_id: id as string, type: p.type })
       }
@@ -212,9 +214,9 @@ function PostDetailScreenInner() {
     }).catch(() => {})
     // Record view (fire-and-forget)
     if (userId) {
-      (supabase.from('post_views') as any)
+      ;(supabase.from('post_views') as any)
         .upsert({ post_id: post.id, user_id: userId }, { onConflict: 'post_id,user_id' })
-        .catch(() => {})
+        .then(() => {}, () => {})
     }
     return () => { mounted = false }
   }, [post?.id, userId, supabase])
@@ -1001,10 +1003,10 @@ function PostDetailScreenInner() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.foreground} />}>
         {/* Full-bleed hero photo — 260px height */}
-        {allImages.length > 0 ? (
+        {allImages.length > 0 && !heroImageError ? (
           allImages.length === 1 ? (
             <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
-              <Image source={{ uri: allImagesMedium[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" />
+              <Image source={{ uri: allImagesMedium[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" onError={() => setHeroImageError(true)} />
             </PressableOpacity>
           ) : (
             <FlatList
@@ -1020,7 +1022,7 @@ function PostDetailScreenInner() {
           )
         ) : (
           <View style={[styles.heroImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-            {category && <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: category.color }} />}
+            <ImageIcon size={48} color={colors.border} />
           </View>
         )}
 
