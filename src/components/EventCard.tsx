@@ -181,8 +181,8 @@ const s = StyleSheet.create({
   },
   body: {
     flexDirection: 'row',
-    padding: 14,
-    gap: 14,
+    padding: 16,
+    gap: 12,
     alignItems: 'flex-start',
   },
   /* ---- Date block (left) ---- */
@@ -215,11 +215,12 @@ const s = StyleSheet.create({
   /* ---- Details (right) ---- */
   details: {
     flex: 1,
-    gap: 5,
+    gap: 4,
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 8,
   },
   categoryBadge: {
@@ -231,7 +232,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   categoryDot: { width: 6, height: 6, borderRadius: 3 },
-  categoryText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14 },
+  categoryText: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 14, flexShrink: 1 },
   tableBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -246,7 +247,7 @@ const s = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   metaText: {
     fontSize: 12,
@@ -262,7 +263,7 @@ const s = StyleSheet.create({
   participantCount: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   participantText: {
     fontSize: 12,

@@ -167,7 +167,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         />
       ) : (
         <View style={[styles.miniAvatar, styles.miniAvatarFallback, { backgroundColor: `${metaColor}20` }]}>
-          <Text style={{ fontSize: 8, fontWeight: '600', color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
+          <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
         </View>
       )}
       <Text style={[styles.metaText, { color: metaColor }]} numberOfLines={1}>

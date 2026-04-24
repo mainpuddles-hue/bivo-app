@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
@@ -196,5 +196,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   message: { flex: 1, fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 19 },
-  closeBtn: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  closeBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
 })
