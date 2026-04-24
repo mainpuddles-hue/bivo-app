@@ -1239,11 +1239,11 @@ export default function SettingsScreen() {
         {/* ── Logout ── */}
         <Group colors={colors}>
           <Row
-            icon={<LogOut size={16} color={DANGER_COLOR} strokeWidth={1.8} />}
+            icon={<LogOut size={16} color={isDark ? colors.destructive : DANGER_COLOR} strokeWidth={1.8} />}
             iconBg={warmTintBg}
             label={t('settings.logout')}
             danger
-            dangerColor={DANGER_COLOR}
+            dangerColor={isDark ? colors.destructive : DANGER_COLOR}
             chevron={false}
             onPress={handleLogout}
             colors={colors}

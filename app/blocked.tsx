@@ -25,7 +25,7 @@ interface BlockedUser {
 }
 
 function BlockedUsersScreenInner() {
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -146,9 +146,9 @@ function BlockedUsersScreenInner() {
                   accessibilityRole="button"
                 >
                   {unblocking === item.blocked_id ? (
-                    <ActivityIndicator size="small" color="#A03030" />
+                    <ActivityIndicator size="small" color={isDark ? colors.destructive : '#A03030'} />
                   ) : (
-                    <Text style={s.unblockText}>{t('blocked.removeBlock')}</Text>
+                    <Text style={[s.unblockText, { color: isDark ? colors.destructive : '#A03030' }]}>{t('blocked.removeBlock')}</Text>
                   )}
                 </PressableOpacity>
               </View>

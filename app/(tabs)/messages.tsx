@@ -662,7 +662,7 @@ export default function MessagesScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t('common.more') ?? 'More'}
                 >
-                  <MoreHorizontal size={16} color={colors.mutedForeground} style={{ opacity: 0.4 }} />
+                  <MoreHorizontal size={16} color={colors.tertiaryForeground} />
                 </PressableOpacity>
               </View>
             </PressableOpacity>

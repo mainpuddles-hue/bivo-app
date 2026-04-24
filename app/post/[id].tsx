@@ -1076,8 +1076,8 @@ function PostDetailScreenInner() {
               </View>
             )}
             {(post as any).status === 'reserved' && (
-              <View style={[styles.expirationBadge, { backgroundColor: '#F59E0B18' }]}>
-                <Text style={[styles.expirationText, { color: '#F59E0B' }]}>{t('post.statusReserved')}</Text>
+              <View style={[styles.expirationBadge, { backgroundColor: `${colors.pro}18` }]}>
+                <Text style={[styles.expirationText, { color: colors.pro }]}>{t('post.statusReserved')}</Text>
               </View>
             )}
             {(post as any).status === 'completed' && (
@@ -1197,9 +1197,9 @@ function PostDetailScreenInner() {
                 <Pencil size={14} color={colors.foreground} />
                 <Text style={[styles.authorActionText, { color: colors.foreground }]}>{t('post.edit')}</Text>
               </PressableOpacity>
-              <PressableOpacity onPress={handleStatusChange} style={[styles.authorActionBtn, { backgroundColor: '#F59E0B18' }]} accessibilityRole="button" accessibilityLabel={t('post.changeStatus')}>
-                <ChevronDown size={14} color="#F59E0B" />
-                <Text style={[styles.authorActionText, { color: '#F59E0B' }]}>{t('post.changeStatus')}</Text>
+              <PressableOpacity onPress={handleStatusChange} style={[styles.authorActionBtn, { backgroundColor: `${colors.pro}18` }]} accessibilityRole="button" accessibilityLabel={t('post.changeStatus')}>
+                <ChevronDown size={14} color={colors.pro} />
+                <Text style={[styles.authorActionText, { color: colors.pro }]}>{t('post.changeStatus')}</Text>
               </PressableOpacity>
               {post.is_active ? (
                 <PressableOpacity onPress={handleMarkClosed} style={[styles.authorActionBtn, { backgroundColor: `${colors.mutedForeground}15` }]} accessibilityRole="button" accessibilityLabel={t('post.markClosed')}>
