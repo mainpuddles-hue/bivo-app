@@ -466,11 +466,11 @@ export default function ProfileScreen() {
               {profile.is_business && (
                 <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}15` }]}>
                   <Building2 size={10} color={colors.foreground} />
-                  <Text style={[s.inlineBadgeText, { color: colors.foreground }]}>{profile.business_name ?? t('business.verified')}</Text>
+                  <Text style={[s.inlineBadgeText, { color: colors.foreground }]} numberOfLines={1}>{profile.business_name ?? t('business.verified')}</Text>
                 </View>
               )}
             </View>
-            <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]}>
+            <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]} numberOfLines={1}>
               {[profile.naapurusto, 'Helsinki'].filter(Boolean).join(', ')}
               {profile.created_at ? ` · TackBird ${formatTimeAgo(profile.created_at, t, locale)}` : ''}
             </Text>
@@ -501,7 +501,7 @@ export default function ProfileScreen() {
             </View>
           ) : profile.bio ? (
             <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'flex-start', gap: 6 }]} accessibilityLabel={t('profile.editBio')} accessibilityRole="button">
-              <Text style={[s.bio, { color: colors.foreground, flex: 1, textAlign: 'center' }]}>
+              <Text style={[s.bio, { color: colors.foreground, flex: 1, textAlign: 'center' }]} numberOfLines={3}>
                 {profile.bio}
               </Text>
               <Pencil size={12} color={colors.mutedForeground} style={{ marginTop: 2 }} />
@@ -614,7 +614,7 @@ export default function ProfileScreen() {
                     </View>
                     <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
                   </View>
-                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]}>{rev.comment}</Text>}
+                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]} numberOfLines={3}>{rev.comment}</Text>}
                 </View>
               ))
             )}
@@ -762,7 +762,7 @@ export default function ProfileScreen() {
                     {getActivityIcon(item.type)}
                   </View>
                   <View style={s.activityContent}>
-                    <Text style={[s.activityTitle, { color: colors.foreground }]}>{item.title}</Text>
+                    <Text style={[s.activityTitle, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
                     <View style={s.activityMeta}>
                       <Text style={[s.activityTime, { color: colors.mutedForeground }]}>{formatTimeAgo(item.date, t, locale)}</Text>
                       {item.meta && <Text style={[s.activityMetaBadge, { color: colors.foreground }]}>{item.meta}</Text>}
@@ -825,7 +825,7 @@ export default function ProfileScreen() {
             renderItem={({ item }) => (
               <PressableOpacity style={s.followItem} onPress={() => { setFollowModal(null); router.push(`/profile/${item.id}` as any) }}>
                 <Avatar url={item.avatar_url} name={item.name} size={40} />
-                <Text style={[s.followName, { color: colors.foreground }]}>{item.name}</Text>
+                <Text style={[s.followName, { color: colors.foreground }]} numberOfLines={1}>{item.name}</Text>
               </PressableOpacity>
             )}
             ListEmptyComponent={

@@ -569,7 +569,7 @@ function ActivitiesScreenInner() {
           data={filteredActivities}
           keyExtractor={item => item.id}
           renderItem={renderActivity}
-          contentContainerStyle={[st.list, { paddingBottom: insets.bottom + 80 }]}
+          contentContainerStyle={[st.list, { paddingBottom: insets.bottom + 96 }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

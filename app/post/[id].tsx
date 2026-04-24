@@ -1577,7 +1577,7 @@ function PostDetailScreenInner() {
         <View style={[ctaStyles.bar, {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
-          paddingBottom: insets.bottom + 8,
+          paddingBottom: insets.bottom + 16,
         }]}>
           {replyToComment && (
             <View style={[ctaStyles.replyIndicator, { backgroundColor: `${colors.foreground}10`, borderColor: colors.foreground }]}>

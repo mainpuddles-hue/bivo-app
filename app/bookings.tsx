@@ -336,7 +336,7 @@ function BookingsScreenInner() {
           }
         />
         <View style={styles.loanInfo}>
-          <Text style={[styles.loanTitle, { color: colors.foreground }]} numberOfLines={1}>
+          <Text style={[styles.loanTitle, { color: colors.foreground }]} numberOfLines={2}>
             {item.post?.title ?? t('rental.deletedPost')}
           </Text>
           <Text style={[styles.loanSub, { color: colors.mutedForeground }]} numberOfLines={1}>

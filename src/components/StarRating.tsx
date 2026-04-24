@@ -20,7 +20,10 @@ export function StarRating({ rating, onRatingChange, size = 16, gap = 2 }: StarR
           onPress={() => onRatingChange?.(i)}
           disabled={!onRatingChange}
           hitSlop={onRatingChange ? 8 : 0}
-          style={onRatingChange ? { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' } : undefined}
+          style={({ pressed }) => [
+            onRatingChange ? { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' } : undefined,
+            pressed && onRatingChange ? { opacity: 0.5, transform: [{ scale: 1.15 }] } : undefined,
+          ]}
           accessibilityRole={onRatingChange ? 'button' : undefined}
           accessibilityLabel={onRatingChange ? `${i}/5` : undefined}
         >

@@ -315,7 +315,7 @@ function AdminScreenInner() {
                       )}
                     </View>
 
-                    <Text style={[s.flagTitle, { color: colors.foreground }]}>
+                    <Text style={[s.flagTitle, { color: colors.foreground }]} numberOfLines={2}>
                       {flag.post?.title ?? `Post ${(flag.post_id ?? '').slice(0, 8)}`}
                     </Text>
 
@@ -393,14 +393,14 @@ function AdminScreenInner() {
                     <Avatar url={user.avatar_url} name={user.name} size={40} />
                     <View style={s.userInfo}>
                       <View style={s.userNameRow}>
-                        <Text style={[s.userName, { color: colors.foreground }]}>{user.name}</Text>
+                        <Text style={[s.userName, { color: colors.foreground }]} numberOfLines={1}>{user.name}</Text>
                         {user.is_banned && (
                           <View style={[s.bannedBadge, { backgroundColor: colors.muted }]}>
                             <Text style={[s.bannedText, { color: colors.foreground }]}>{t('admin.banned')}</Text>
                           </View>
                         )}
                       </View>
-                      <Text style={[s.userMeta, { color: colors.mutedForeground }]}>
+                      <Text style={[s.userMeta, { color: colors.mutedForeground }]} numberOfLines={1}>
                         {user.naapurusto} {'\u2022'} {t('admin.trustScore')}: {user.total_points ?? 0}
                       </Text>
                     </View>

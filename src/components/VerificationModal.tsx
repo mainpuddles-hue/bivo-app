@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '100%',
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
     gap: 12,
   },

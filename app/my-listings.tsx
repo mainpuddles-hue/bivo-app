@@ -219,7 +219,7 @@ function MyListingsScreenInner() {
           </View>
 
           {/* Title */}
-          <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
+          <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
             {item.title}
           </Text>
 

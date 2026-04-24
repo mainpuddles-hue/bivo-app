@@ -125,7 +125,7 @@ export const ReviewModal = memo(function ReviewModal({ visible, onClose, reviewe
           {/* Header */}
           <View style={s.header}>
             <Text style={[s.title, { color: colors.foreground }]} accessibilityRole="header">{t('profile.writeReview')}</Text>
-            <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
+            <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')} style={({ pressed }) => pressed ? { opacity: 0.5 } : undefined}>
               <X size={20} color={colors.mutedForeground} />
             </Pressable>
           </View>
@@ -163,7 +163,7 @@ export const ReviewModal = memo(function ReviewModal({ visible, onClose, reviewe
               <Pressable
                 onPress={handleSubmit}
                 disabled={loading || rating === 0}
-                style={[s.submitBtn, { backgroundColor: colors.foreground, opacity: loading || rating === 0 ? 0.6 : 1 }]}
+                style={({ pressed }) => [s.submitBtn, { backgroundColor: colors.foreground, opacity: loading || rating === 0 ? 0.6 : pressed ? 0.8 : 1 }]}
                 accessibilityRole="button"
                 accessibilityLabel={t('profile.submitReview')}
                 accessibilityState={{ disabled: loading || rating === 0 }}
