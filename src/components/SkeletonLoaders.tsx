@@ -51,7 +51,7 @@ export function MessageListSkeleton() {
     <View style={{ gap: 1 }}>
       {[0, 1, 2, 3, 4, 5].map(i => (
         <View key={i} style={[skel.messageRow, { backgroundColor: colors.card, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}>
-          <Animated.View style={[skel.avatar, { backgroundColor: colors.muted, opacity, borderRadius: 18 }]} />
+          <Animated.View style={[skel.avatar, { backgroundColor: colors.muted, opacity }]} />
           <View style={skel.messageInfo}>
             <Animated.View style={[skel.line, { width: '50%', backgroundColor: colors.muted, opacity }]} />
             <Animated.View style={[skel.line, { width: '80%', backgroundColor: colors.muted, opacity }]} />

@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   factorText: {
     fontSize: 12,
     fontFamily: fonts.body,
-    lineHeight: 14,
+    lineHeight: 16,
   },
   hints: {
     gap: 4,
