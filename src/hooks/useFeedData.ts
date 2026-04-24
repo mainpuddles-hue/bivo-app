@@ -80,6 +80,8 @@ export function useFeedData() {
   }>({ event: null, group: null, thread: null })
 
   // ── Refs ──
+  const userNeighborhoodRef = useRef(userNeighborhood)
+  userNeighborhoodRef.current = userNeighborhood
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -368,7 +370,7 @@ export function useFeedData() {
       let ranked: Post[]
       if (sortBy === 'recommended') {
         ranked = rankFeed(newPosts, {
-          userNeighborhood: userNeighborhood ?? null,
+          userNeighborhood: userNeighborhoodRef.current ?? null,
           followedIds,
           personalScores,
           boostedPostIds,
@@ -396,7 +398,7 @@ export function useFeedData() {
       if (reset) {
         if (ranked.length === 0) {
           // Show seed content for empty neighborhoods
-          const seeds = getSeedPosts(userNeighborhood ?? 'Helsinki') as Post[]
+          const seeds = getSeedPosts(userNeighborhoodRef.current ?? 'Helsinki') as Post[]
           setPosts(seeds)
         } else {
           setPosts(ranked)
@@ -428,7 +430,7 @@ export function useFeedData() {
         }
       }
     }
-  }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userNeighborhood, userLocation, preferredTypes])
+  }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userLocation, preferredTypes])
 
   // Ref to avoid stale closures in useFocusEffect and realtime callbacks
   const fetchPostsRef = useRef(fetchPosts)
@@ -491,7 +493,7 @@ export function useFeedData() {
   }, [supabase]))
 
   // ── Actions ──
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) } catch {}
     setRefreshing(true)
     refreshingRef.current = true
@@ -499,11 +501,12 @@ export function useFeedData() {
     setNewPostCount(0)
     newPostAccumRef.current = 0
     offsetRef.current = 0
-    // Refresh follows on pull-to-refresh (replaces realtime channel)
+    // Refresh follows on pull-to-refresh BEFORE fetching posts to avoid stale closure race
     if (currentUserId) {
-      Promise.resolve(supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId))
-        .then(({ data }) => { if (data) setFollowedIds(data.map((f: any) => f.followed_id)) })
-        .catch(() => {})
+      try {
+        const { data } = await supabase.from('user_follows').select('followed_id').eq('follower_id', currentUserId)
+        if (data) setFollowedIds(data.map((f: any) => f.followed_id))
+      } catch {}
     }
     fetchPosts(true) // fetchPosts handles setRefreshing(false) in its finally block
     fetchExtraContent()
@@ -515,10 +518,13 @@ export function useFeedData() {
 
   const handleFilterChange = useCallback((type: PostType | null) => {
     setActiveFilter(type)
-    setPosts([])
     offsetRef.current = 0
     setHasMore(true)
     setLoading(true)
+    // Reset new-post banner so stale counts don't persist across filter changes
+    setHasNewPosts(false)
+    setNewPostCount(0)
+    newPostAccumRef.current = 0
   }, [])
 
   const handleSortChange = useCallback((sort: FeedSortBy) => {
@@ -530,6 +536,8 @@ export function useFeedData() {
   }, [])
 
   const handleNeighborhoodSelect = useCallback(async (nh: string) => {
+    // Update ref synchronously so fetchPosts reads the fresh neighborhood
+    userNeighborhoodRef.current = nh
     setUserNeighborhood(nh)
     setShowNeighborhoodPicker(false)
     if (currentUserId) {

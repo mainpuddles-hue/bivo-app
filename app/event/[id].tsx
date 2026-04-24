@@ -61,6 +61,8 @@ function EventDetailScreenInner() {
   const isFull = event?.max_participants != null && participantCount >= event.max_participants
   const isPast = event != null && !isNaN(new Date(event.event_date).getTime()) && new Date(event.event_date) < new Date()
 
+  const mountedRef = useRef(true)
+
   const fetchEvent = useCallback(async () => {
     if (!id || !isValidUUID(id)) {
       setLoading(false)
@@ -68,6 +70,7 @@ function EventDetailScreenInner() {
     }
     try {
       const cachedId = await getCachedUserId()
+      if (!mountedRef.current) return
       if (cachedId) setUserId(cachedId)
 
       // Fetch event + participants in parallel to avoid waterfall
@@ -83,6 +86,7 @@ function EventDetailScreenInner() {
           .eq('event_id', id),
       ])
 
+      if (!mountedRef.current) return
       if (eventResult.error || !eventResult.data) {
         if (__DEV__) console.log('[event-detail] fetch error:', eventResult.error?.message)
         return
@@ -92,11 +96,15 @@ function EventDetailScreenInner() {
     } catch (err) {
       if (__DEV__) console.log('[event-detail] error:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }, [id, supabase])
 
-  useFocusEffect(useCallback(() => { fetchEvent() }, [fetchEvent]))
+  useFocusEffect(useCallback(() => {
+    mountedRef.current = true
+    fetchEvent()
+    return () => { mountedRef.current = false }
+  }, [fetchEvent]))
 
   // ── Join / Leave logic ──
   const handleJoin = useCallback(async () => {
@@ -126,6 +134,24 @@ function EventDetailScreenInner() {
         // 23505 = already joined — just refresh
         await fetchEvent()
       } else {
+        // TOCTOU guard: re-check capacity after insert to handle concurrent joins
+        if (event.max_participants && status !== 'pending') {
+          const { count: postInsertCount } = await supabase
+            .from('community_event_participants')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id)
+            .in('status', ['joined', 'approved'])
+          if ((postInsertCount ?? 0) > event.max_participants) {
+            // Over capacity — remove our participation and show "full" toast
+            await (supabase.from('community_event_participants') as any)
+              .delete()
+              .eq('event_id', event.id)
+              .eq('user_id', userId)
+            toast.show({ message: t('events.eventFull') ?? 'Tapahtuma on täynnä', type: 'error' })
+            await fetchEvent()
+            return
+          }
+        }
         // Success feedback — toast is less intrusive than Alert for expected success
         toast.show({
           message: status === 'pending' ? t('events.joinPending') : t('events.joinedSuccess'),

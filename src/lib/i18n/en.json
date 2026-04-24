@@ -81,6 +81,7 @@
     "refresh": "Refresh",
     "allLoaded": "All posts loaded",
     "morePosts": "More posts",
+    "seeAll": "See all",
     "popular": "Popular",
     "nearbyNow": "Nearby now",
     "createPost": "Create post",
@@ -149,7 +150,11 @@
     "mapView": "Map view",
     "listView": "List view",
     "postsOnMap": "posts on map",
-    "neighborsInBuilding": "{count} neighbors in your building"
+    "neighborsInBuilding": "{count} neighbors in your building",
+    "weeklyPopular": "Popular this week",
+    "weeklyPopularSub": "Events in your area",
+    "freeEvent": "Free",
+    "participants": "participants"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",

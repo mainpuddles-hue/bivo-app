@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, useWindowDimensions } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, useWindowDimensions, Keyboard } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -609,6 +609,7 @@ function PostDetailScreenInner() {
 
   const openEditModal = useCallback(() => {
     if (!post) return
+    Keyboard.dismiss()
     setEditTitle(post.title); setEditDescription(post.description ?? ''); setEditLocation(post.location ?? '')
     setEditModalVisible(true)
   }, [post])
@@ -674,6 +675,7 @@ function PostDetailScreenInner() {
   const handleReport = useCallback(() => {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post) return
+    Keyboard.dismiss()
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning) } catch {}
     setReportModalVisible(true)
   }, [userId, post, router])
@@ -1145,7 +1147,7 @@ function PostDetailScreenInner() {
           {/* Make offer button — for tarjoan items with a price, non-author */}
           {post.type === 'tarjoan' && post.service_price != null && post.service_price > 0 && !isAuthor && (
             <PressableOpacity
-              onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setOfferModalVisible(true) }}
+              onPress={() => { if (!userId) { router.push('/(auth)/login'); return } Keyboard.dismiss(); setOfferModalVisible(true) }}
               style={[styles.offerBtn, { backgroundColor: `${category?.color ?? colors.primary}15`, borderColor: category?.color ?? colors.primary }]}
               accessibilityRole="button"
               accessibilityLabel={t('offer.makeOffer')}
@@ -1225,14 +1227,14 @@ function PostDetailScreenInner() {
 
           {/* Booking / service CTA buttons */}
           {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee !== null && !isAuthor && (
-            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
+            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } Keyboard.dismiss(); setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
             </PressableOpacity>
           )}
 
           {FEATURES.PAYMENTS && post.type === 'tarjoan' && post.service_price !== null && post.service_price > 0 && !post.tags?.includes('tarjoan_item') && !isAuthor && (
-            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
+            <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } Keyboard.dismiss(); setServiceModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: category?.color ?? colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('service.buyService')}>
               <ShoppingBag size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('service.buyService')}</Text>
             </PressableOpacity>
@@ -1243,7 +1245,7 @@ function PostDetailScreenInner() {
             <PressableOpacity onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
               <Heart size={20} strokeWidth={1.8} color={isLiked ? colors.destructive : colors.foreground} fill={isLiked ? colors.destructive : 'transparent'} />
               {likeCount > 0 && (
-                <PressableOpacity onPress={() => { setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
+                <PressableOpacity onPress={() => { Keyboard.dismiss(); setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
                   <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{likeCount}</Text>
                 </PressableOpacity>
               )}

@@ -203,6 +203,12 @@ export default function CreateScreen() {
   const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const shakeAnim = useRef(new RNAnimated.Value(0)).current
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const shakeButton = useCallback(() => {
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
@@ -411,7 +417,7 @@ export default function CreateScreen() {
     const result = useCamera
       ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.6 })
       : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.6, allowsMultipleSelection: false })
-    if (!result.canceled && result.assets[0]) {
+    if (!result.canceled && result.assets[0] && mountedRef.current) {
       setImages(prev => [...prev, result.assets[0].uri])
     }
   }, [images.length, t, toast])
@@ -490,7 +496,7 @@ export default function CreateScreen() {
       xhr.setRequestHeader('x-upsert', 'true')
 
       xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
+        if (event.lengthComputable && mountedRef.current) {
           const pct = Math.round((event.loaded / event.total) * 100)
           setUploadProgress(prev => ({ ...prev, [imageIndex]: pct }))
         }
@@ -498,8 +504,10 @@ export default function CreateScreen() {
 
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          setUploadProgress(prev => ({ ...prev, [imageIndex]: 100 }))
-          setUploadComplete(prev => ({ ...prev, [imageIndex]: true }))
+          if (mountedRef.current) {
+            setUploadProgress(prev => ({ ...prev, [imageIndex]: 100 }))
+            setUploadComplete(prev => ({ ...prev, [imageIndex]: true }))
+          }
           resolve(true)
         } else {
           if (__DEV__) console.error('[create] XHR upload failed:', xhr.status, xhr.responseText)
@@ -520,9 +528,11 @@ export default function CreateScreen() {
     if (images.length === 0) return null
     const uploadedUrls: string[] = []
     let failedCount = 0
+    if (!mountedRef.current) return null
     setUploadProgress({})
     setUploadComplete({})
     for (let i = 0; i < images.length; i++) {
+      if (!mountedRef.current) break
       setUploadStatus(images.length > 1
         ? `${t('create.uploadingImages')} (${i + 1}/${images.length})`
         : t('create.uploadingImages'))
@@ -691,7 +701,7 @@ export default function CreateScreen() {
         service_price: selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) ? parseFloat(servicePrice) : null,
         event_date: selectedType === 'tapahtuma' && eventDate ? new Date(eventDate).toISOString() : null,
         expires_at: expiresAt, is_urgent: isUrgent || false, urgency_hours: isUrgent ? urgencyHours : null,
-        is_anonymous: isAnonymous || false, is_active: images.length > 0 ? false : true,
+        is_anonymous: isAnonymous || false, is_active: false,
         tags: finalTags, is_pro_listing: !!(creatorProfile as any)?.is_pro,
       }).select('id').single()
       if (error) throw error
@@ -719,10 +729,6 @@ export default function CreateScreen() {
             setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
           }
         }
-        if (post?.id) {
-        const { error: activateError } = await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id)
-        if (activateError) throw new Error(`Post activation failed: ${activateError.message}`)
-      }
       }
       if (selectedType === 'tapahtuma' && post?.id) {
         let eventDateISO = new Date(eventDate).toISOString()
@@ -753,6 +759,11 @@ export default function CreateScreen() {
           setSubmitting(false); return
         }
       }
+      // Activate post as the LAST step — after images + event are done
+      if (post?.id) {
+        const { error: activateError } = await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id)
+        if (activateError) throw new Error(`Post activation failed: ${activateError.message}`)
+      }
       if (post?.id) {
         const { data: { session: authSession } } = await supabase.auth.getSession()
         const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -775,6 +786,7 @@ export default function CreateScreen() {
       trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
       const createdPostId = post.id
       AsyncStorage.removeItem(DRAFT_KEY).catch(() => {})
+      if (!mountedRef.current) return
       setHasDraft(false)
       setTitle(''); setDescription(''); setImages([]); setLocation('')
       setDailyFee(''); setServicePrice(''); setEventDate('')
@@ -786,6 +798,7 @@ export default function CreateScreen() {
       setSuccessPostId(createdPostId); setSuccessNeighborhood(userNeighborhood); setShowSuccess(true)
       maybeRequestReview('post_created').catch(() => {})
       successTimeoutRef.current = setTimeout(() => {
+        if (!mountedRef.current) return
         successTimeoutRef.current = null; setShowSuccess(false); router.replace(`/post/${createdPostId}`)
       }, 2000)
     } catch (err: any) {
@@ -793,9 +806,9 @@ export default function CreateScreen() {
       if (createdPostIdForCleanup) {
         try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch {}
       }
-      toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
+      if (mountedRef.current) toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
-      setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({})
+      if (mountedRef.current) { setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}) }
     }
   }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages, toast])
 

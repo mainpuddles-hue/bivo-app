@@ -77,6 +77,12 @@ function ConversationScreenInner() {
   const userIdRef = useRef<string | null>(null)
   userIdRef.current = userId
 
+  const mountedRef = useRef(true)
+  useEffect(() => { return () => { mountedRef.current = false } }, [])
+
+  // Track if user modified input after a send attempt (CLICK-PATH-014)
+  const inputModifiedSinceSendRef = useRef(false)
+
   // Offer state
   const [pendingOffer, setPendingOffer] = useState<{ id: string; amount: number; message: string | null; from_user_id: string; status: string } | null>(null)
   const [offerLoading, setOfferLoading] = useState(false)
@@ -225,11 +231,24 @@ function ConversationScreenInner() {
         event: 'INSERT', schema: 'public', table: 'messages',
         filter: `conversation_id=eq.${id}`,
       }, (payload) => {
+        if (!mountedRef.current) return
         const newMsg = payload.new as Message
         const MAX_MESSAGES = 500
         setMessages(prev => {
           // Deduplicate: skip if message already exists (e.g., from reconnect replay)
           if (prev.some(m => m.id === newMsg.id)) return prev
+          // Replace optimistic message: match by sender + content + close timestamp (within 30s)
+          const optimisticIdx = prev.findIndex(m =>
+            m.id.startsWith('temp-') &&
+            m.sender_id === newMsg.sender_id &&
+            m.content === newMsg.content &&
+            Math.abs(new Date(m.created_at).getTime() - new Date(newMsg.created_at).getTime()) < 30000
+          )
+          if (optimisticIdx !== -1) {
+            const next = [...prev]
+            next[optimisticIdx] = newMsg
+            return next
+          }
           const next = [...prev, newMsg]
           return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next
         })
@@ -244,10 +263,12 @@ function ConversationScreenInner() {
         event: 'UPDATE', schema: 'public', table: 'messages',
         filter: `conversation_id=eq.${id}`,
       }, (payload) => {
+        if (!mountedRef.current) return
         const updated = payload.new as Message
         setMessages(prev => prev.map(m => m.id === updated.id ? updated : m))
       })
       .on('broadcast', { event: 'typing' }, (payload) => {
+        if (!mountedRef.current) return
         if ((payload as any).payload?.userId !== userIdRef.current) {
           setOtherTyping(true)
           if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
@@ -372,13 +393,33 @@ function ConversationScreenInner() {
     setShowQuickReplies(false)
     const content = input.trim()
     setInput('')
+    inputModifiedSinceSendRef.current = false
+
+    // Optimistic UI: add message to local state immediately (CLICK-PATH-004)
+    const optimisticId = `temp-${Date.now()}`
+    const optimisticMsg: Message = {
+      id: optimisticId,
+      conversation_id: id as string,
+      sender_id: userId,
+      content,
+      image_url: null,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    }
+    setMessages(prev => [...prev, optimisticMsg])
+
     try {
       const { error } = await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content })
       if (error) throw error
       // Non-critical: update conversation timestamp for sort order. Don't restore input if only this fails.
-      (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch(() => {})
+      (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch((err: any) => { if (__DEV__) console.warn('[messages] conversation update failed:', err?.message) })
     } catch (err) {
-      setInput(content)
+      // Remove optimistic message on failure
+      setMessages(prev => prev.filter(m => m.id !== optimisticId))
+      // Only restore input if user hasn't typed new text since send (CLICK-PATH-014)
+      if (!inputModifiedSinceSendRef.current) {
+        setInput(content)
+      }
       toast.show({ message: t('messages.sendFailed'), type: 'error' })
       if (__DEV__) console.error('[conversation] message send failed:', err)
     } finally {
@@ -618,7 +659,7 @@ function ConversationScreenInner() {
               ) : (
                 <>
                   {item.image_url ? (
-                    <Image source={{ uri: getImageUrl(item.image_url, 'medium')! }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={t('messages.imageMessageAlt')} />
+                    <Image source={{ uri: getImageUrl(item.image_url, 'medium')! }} style={s.msgImage} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={t('messages.imageMessageAlt')} onError={() => { if (__DEV__) console.warn('[messages] message image failed:', item.image_url) }} />
                   ) : null}
                   {item.content ? (
                     <Text selectable style={[s.msgText, { color: isMine ? colors.background : colors.foreground }]}>{item.content}</Text>
@@ -739,6 +780,7 @@ function ConversationScreenInner() {
     <KeyboardAvoidingView
       style={[s.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={0}
     >
       {/* Header — Monochrome 06 */}
       <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
@@ -799,7 +841,7 @@ function ConversationScreenInner() {
             {linkedPost && (
               <View style={[contextStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 {linkedPost.image_url && getImageUrl(linkedPost.image_url, 'thumbnail') && (
-                  <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={linkedPost.title} />
+                  <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={linkedPost.title} onError={() => { if (__DEV__) console.warn('[messages] linked post image failed:', linkedPost.image_url) }} />
                 )}
                 <View style={contextStyles.info}>
                   <Text style={[contextStyles.eyebrow, { color: colors.mutedForeground }]}>
@@ -981,7 +1023,7 @@ function ConversationScreenInner() {
         <TextInput
           style={[s.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
           value={input}
-          onChangeText={(text) => { setInput(text); if (text.length > 0) setShowQuickReplies(false); sendTyping() }}
+          onChangeText={(text) => { setInput(text); inputModifiedSinceSendRef.current = true; if (text.length > 0) setShowQuickReplies(false); sendTyping() }}
           placeholder={t('messages.sendPlaceholder')}
           placeholderTextColor={colors.tertiaryForeground}
           accessibilityLabel={t('messages.sendPlaceholder')}

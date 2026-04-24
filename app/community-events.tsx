@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet,
 } from 'react-native'
@@ -49,6 +49,7 @@ function CommunityEventsScreenInner() {
   const [refreshing, setRefreshing] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all')
   const [fetchError, setFetchError] = useState(false)
+  const mountedRef = useRef(true)
 
   const fetchEvents = useCallback(async () => {
     setFetchError(false)
@@ -60,6 +61,8 @@ function CommunityEventsScreenInner() {
         .order('event_date', { ascending: true })
         .limit(150)
 
+      if (!mountedRef.current) return
+
       if (error) {
         if (__DEV__) console.log('[community-events] fetch error:', error.message)
       }
@@ -67,23 +70,30 @@ function CommunityEventsScreenInner() {
       // Filter out events from blocked users
       const { getCachedUserId } = await import('@/lib/authCache')
       const cachedId = await getCachedUserId()
+      if (!mountedRef.current) return
       if (cachedId) {
         const blocked = await getBlockedUserIds(cachedId)
+        if (!mountedRef.current) return
         if (blocked.size > 0) events = events.filter(e => !blocked.has((e as any).creator_id))
       }
       setEvents(events)
     } catch (err) {
       if (__DEV__) console.log('[community-events] error:', err)
+      if (!mountedRef.current) return
       setFetchError(true)
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      if (mountedRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [supabase])
 
   useFocusEffect(
     useCallback(() => {
+      mountedRef.current = true
       fetchEvents()
+      return () => { mountedRef.current = false }
     }, [fetchEvents])
   )
 
@@ -122,19 +132,32 @@ function CommunityEventsScreenInner() {
         return
       }
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+
+      // Optimistic update — mark event as joined before the network call
+      const previousEvents = events
+      setEvents(prev => prev.map(e =>
+        e.id === eventId
+          ? { ...e, participant_count: (e.participant_count ?? 0) + 1, _optimisticJoined: true } as any
+          : e
+      ))
+
       const { error: joinError } = await (supabase.from('community_event_participants') as any)
         .upsert(
           { event_id: eventId, user_id: cachedId, status: 'joined' },
           { onConflict: 'event_id,user_id', ignoreDuplicates: true },
         )
-      if (joinError) throw joinError
-      // Refresh to update counts
+      if (joinError) {
+        // Revert optimistic update on failure
+        setEvents(previousEvents)
+        throw joinError
+      }
+      // Refresh to sync with real server state
       fetchEvents()
     } catch (err) {
       if (__DEV__) console.log('[community-events] quick join error:', err)
       toast.show({ message: t('events.joinFailed'), type: 'error' })
     }
-  }, [supabase, fetchEvents, router, t, toast])
+  }, [supabase, fetchEvents, router, t, toast, events])
 
   const renderEventCard = useCallback(({ item }: { item: CommunityEvent }) => (
     <EventCard event={item} />

@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, Alert, useWindowDimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { clearBlockedCache } from '@/lib/blockedUsers'
 import {
   MapPin, MessageCircle, UserPlus, UserMinus,
@@ -70,12 +71,14 @@ export default function PublicProfileScreen() {
   const [totalReviewCount, setTotalReviewCount] = useState(0)
   const [completedTransactions, setCompletedTransactions] = useState(0)
   const trust = useTrustLevel(userId)
+  const mountedRef = useRef(true)
 
   const loadProfile = useCallback(async () => {
     if (!userId || !isValidUUID(userId)) { setLoading(false); setRefreshing(false); return }
     try {
     const { getCachedUserId } = await import('@/lib/authCache')
     const cachedId = await getCachedUserId()
+    if (!mountedRef.current) return
     if (cachedId) setCurrentUserId(cachedId)
 
     // If viewing own profile, redirect to profile tab
@@ -86,6 +89,7 @@ export default function PublicProfileScreen() {
 
     // Fetch profile
     const { data: p } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto, bio, is_pro, is_business, total_points, business_name, business_phone, business_website, business_lat, business_lng, created_at, profile_visibility, business_hours').eq('id', userId).maybeSingle()
+    if (!mountedRef.current) return
     if (!p) { setLoading(false); setRefreshing(false); return }
     // Don't show deleted/anonymized profiles
     if ((p as any).name === '[Poistettu]' || (p as any).name === '[Deleted]') {
@@ -114,6 +118,7 @@ export default function PublicProfileScreen() {
       return
     }
 
+    if (!mountedRef.current) return
     setProfile(prof)
 
     // Parallel fetches
@@ -125,6 +130,7 @@ export default function PublicProfileScreen() {
     const postsRes = postsSettled.status === 'fulfilled' ? postsSettled.value : { count: 0 }
     const followersRes = followersSettled.status === 'fulfilled' ? followersSettled.value : { count: 0 }
     const followingRes = followingSettled.status === 'fulfilled' ? followingSettled.value : { count: 0 }
+    if (!mountedRef.current) return
     setPostCount(postsRes.count ?? 0)
     setFollowerCount(followersRes.count ?? 0)
     setFollowingCount(followingRes.count ?? 0)
@@ -145,6 +151,7 @@ export default function PublicProfileScreen() {
       const blockRes = blockSettled.status === 'fulfilled' ? blockSettled.value : { data: null }
       const convRes = convSettled.status === 'fulfilled' ? convSettled.value : { data: null }
       const existingReviewRes = existingReviewSettled.status === 'fulfilled' ? existingReviewSettled.value : { data: null }
+      if (!mountedRef.current) return
       setIsFollowing(!!followRes.data)
       setIsBlocked(!!blockRes.data)
       setHasTransaction(!!convRes.data)
@@ -158,6 +165,7 @@ export default function PublicProfileScreen() {
       .eq('reviewed_id', userId)
       .order('created_at', { ascending: false })
       .limit(200)
+    if (!mountedRef.current) return
     const revsList = (allRevs ?? []) as unknown as Review[]
     setReviews(revsList)
     setTotalReviewCount(revsList.length)
@@ -178,10 +186,12 @@ export default function PublicProfileScreen() {
       .from('conversations')
       .select('id', { count: 'exact', head: true })
       .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+    if (!mountedRef.current) return
     setCompletedTransactions(txCount ?? 0)
 
     // Badges
     const { data: bdg } = await supabase.from('user_badges').select('badge_type').eq('user_id', userId)
+    if (!mountedRef.current) return
     setBadges((bdg ?? []) as UserBadge[])
 
     // Public posts
@@ -192,19 +202,27 @@ export default function PublicProfileScreen() {
       .eq('is_active', true)
       .order('created_at', { ascending: false })
       .limit(20)
+    if (!mountedRef.current) return
     setPosts((userPosts ?? []) as unknown as Post[])
 
     } catch (err) {
       if (__DEV__) console.error('[profile] loadProfile error:', err)
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      if (mountedRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [userId, supabase, router])
 
-  useFocusEffect(useCallback(() => { loadProfile() }, [loadProfile]))
+  useFocusEffect(useCallback(() => {
+    mountedRef.current = true
+    loadProfile()
+    return () => { mountedRef.current = false }
+  }, [loadProfile]))
 
   const followingRef = useRef(false)
+  const blockingRef = useRef(false)
   const [creatingConversation, setCreatingConversation] = useState(false)
   const handleFollow = useCallback(async () => {
     if (!currentUserId) { router.push('/(auth)/login'); return }
@@ -212,13 +230,12 @@ export default function PublicProfileScreen() {
     followingRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {} // Intentional: haptics unavailable on some platforms
     const wasFollowing = isFollowing
-    const prevCount = followerCount
     try {
       if (wasFollowing) {
         setIsFollowing(false)
         setFollowerCount(c => c - 1)
         const { error } = await (supabase.from('user_follows') as any).delete().eq('follower_id', currentUserId).eq('followed_id', userId)
-        if (error) { setIsFollowing(true); setFollowerCount(prevCount) }
+        if (error) { setIsFollowing(true); setFollowerCount(c => c + 1) }
       } else {
         setIsFollowing(true)
         setFollowerCount(c => c + 1)
@@ -226,7 +243,7 @@ export default function PublicProfileScreen() {
         if (error) {
           // Duplicate key = already following
           if (error.code === '23505') { setIsFollowing(true) }
-          else { setIsFollowing(false); setFollowerCount(prevCount) }
+          else { setIsFollowing(false); setFollowerCount(c => c - 1) }
         }
         else {
           // Create notification for the followed user
@@ -240,13 +257,13 @@ export default function PublicProfileScreen() {
               link_type: 'profile',
               link_id: currentUserId,
             })
-          } catch {} // Intentional: non-critical notification
+          } catch (err: any) { if (__DEV__) console.warn('[profile] notification insert failed:', err?.message) }
         }
       }
     } finally {
       followingRef.current = false
     }
-  }, [currentUserId, isFollowing, followerCount, userId, supabase, router, t])
+  }, [currentUserId, isFollowing, userId, supabase, router, t])
 
   const handleMessage = useCallback(async () => {
     if (creatingConversation) return
@@ -296,11 +313,15 @@ export default function PublicProfileScreen() {
         {
           text: isBlocked ? t('post.unblock') ?? 'Unblock' : t('post.block'), style: 'destructive',
           onPress: async () => {
+            if (blockingRef.current) return
+            blockingRef.current = true
+            try {
             if (isBlocked) {
               setIsBlocked(false)
               try {
                 await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
                 clearBlockedCache()
+                await AsyncStorage.setItem('tackbird_blocked_changed', Date.now().toString())
                 toast.show({ message: t('profile.unblocked'), type: 'success' })
               } catch (err) { setIsBlocked(true); if (__DEV__) console.warn('[profile] unblock failed:', err); toast.show({ message: t('common.error'), type: 'error' }) }
             } else {
@@ -308,9 +329,11 @@ export default function PublicProfileScreen() {
               try {
                 await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
                 clearBlockedCache()
+                await AsyncStorage.setItem('tackbird_blocked_changed', Date.now().toString())
                 toast.show({ message: t('profile.blocked'), type: 'success' })
               } catch (err) { setIsBlocked(false); if (__DEV__) console.warn('[profile] block failed:', err); toast.show({ message: t('common.error'), type: 'error' }) }
             }
+            } finally { blockingRef.current = false }
           },
         },
       ]

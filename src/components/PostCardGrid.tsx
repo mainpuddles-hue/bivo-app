@@ -59,11 +59,23 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const [liked, setLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
   const likingRef = useRef(false)
+  const mountedRef = useRef(true)
+  const likeGraceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const likeAnim = useRef(new Animated.Value(1)).current
   const shimmerAnim = useRef(new Animated.Value(0.4)).current
 
+  // Cleanup mountedRef + grace timer on unmount
   useEffect(() => {
-    if (imgLoaded || imgError || !post.image_url) return
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (likeGraceTimerRef.current) clearTimeout(likeGraceTimerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const imgUrl = post.image_url || (post.images?.[0]?.image_url ?? null)
+    if (imgLoaded || imgError || !imgUrl) return
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(shimmerAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
@@ -72,7 +84,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     )
     loop.start()
     return () => loop.stop()
-  }, [imgLoaded, imgError, post.image_url, shimmerAnim])
+  }, [imgLoaded, imgError, post.image_url, post.images?.[0]?.image_url, shimmerAnim])
 
   // Sync state when post prop changes (e.g., feed refresh)
   useEffect(() => {
@@ -83,7 +95,9 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   }, [post.id, post.is_liked, post.like_count])
 
   const category = CATEGORIES[post.type as PostType]
-  const hasImage = !!(post.image_url && !imgError)
+  // Fallback: use post_images[0] if post.image_url is null
+  const effectiveImageUrl = post.image_url || (post.images?.[0]?.image_url ?? null)
+  const hasImage = !!(effectiveImageUrl && !imgError)
   const variant = getCardVariant(post, hasImage)
   const isAnonymous = post.is_anonymous === true
   const isExpired = !!(post.expires_at && new Date(post.expires_at).getTime() <= Date.now())
@@ -129,6 +143,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     if (post.is_seed) return
     if (likingRef.current) return
     likingRef.current = true
+    // Clear any previous grace timer so back-to-back taps don't stack
+    if (likeGraceTimerRef.current) clearTimeout(likeGraceTimerRef.current)
     try {
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       const wasLiked = liked
@@ -145,12 +161,23 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         ? await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
         : await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
       if (error) {
-        setLiked(wasLiked)
-        setLikeCount(prevCount)
-      } else if (!wasLiked) {
-        onInteraction?.(post.id, 'like')
+        if (mountedRef.current) {
+          setLiked(wasLiked)
+          setLikeCount(prevCount)
+        }
+        likingRef.current = false
+        return
       }
-    } finally { likingRef.current = false }
+      if (!wasLiked) onInteraction?.(post.id, 'like')
+    } catch {
+      likingRef.current = false
+      return
+    }
+    // Grace period: keep likingRef true for 2s so the sync useEffect
+    // won't reset optimistic state from stale server data
+    likeGraceTimerRef.current = setTimeout(() => {
+      likingRef.current = false
+    }, 2000)
   }
 
   // ── Mini avatar + meta footer (shared across variants) ──
@@ -247,14 +274,14 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
               <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted, opacity: shimmerAnim, zIndex: 1 }]} />
             )}
             <Image
-              source={{ uri: getImageUrl(post.image_url, 'medium')! }}
+              source={{ uri: getImageUrl(effectiveImageUrl, 'medium')! }}
               style={styles.image}
               contentFit="cover"
               transition={200}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
               cachePolicy="memory-disk"
-              recyclingKey={post.image_url!}
+              recyclingKey={effectiveImageUrl!}
               accessibilityLabel={post.title}
             />
             {/* Category pill — frosted glass, top-left */}

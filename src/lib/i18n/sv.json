@@ -81,6 +81,7 @@
     "refresh": "Uppdatera",
     "allLoaded": "Alla inlägg laddade",
     "morePosts": "Fler inlägg",
+    "seeAll": "Visa alla",
     "popular": "Populär",
     "nearbyNow": "Nära nu",
     "createPost": "Skapa inlägg",
@@ -149,7 +150,11 @@
     "mapView": "Kartvy",
     "listView": "Listvy",
     "postsOnMap": "annonser på kartan",
-    "neighborsInBuilding": "{count} grannar i ditt hus"
+    "neighborsInBuilding": "{count} grannar i ditt hus",
+    "weeklyPopular": "Populärt denna vecka",
+    "weeklyPopularSub": "Evenemang i ditt område",
+    "freeEvent": "Gratis",
+    "participants": "deltagare"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",

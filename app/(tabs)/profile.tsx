@@ -78,6 +78,8 @@ export default function ProfileScreen() {
   const [fetchError, setFetchError] = useState(false)
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
+  const mountedRef = useRef(true)
+  const avatarUploadingRef = useRef(false)
 
   // ── Collapsible header scroll tracking ──
   const scrollY = useRef(new Animated.Value(0)).current
@@ -98,14 +100,17 @@ export default function ProfileScreen() {
     setFetchError(false)
     try {
     const cachedId = await getCachedUserId()
+    if (!mountedRef.current) return
     if (!cachedId) { setProfileLoading(false); return }
     const user = { id: cachedId }
 
     // Profile
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+    if (!mountedRef.current) return
     if (p) {
       // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
       await clearExpiredPro(supabase, user.id, p as any)
+      if (!mountedRef.current) return
       setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '')
     }
 
@@ -132,6 +137,7 @@ export default function ProfileScreen() {
     const followersRes = followersSettled.status === 'fulfilled' ? followersSettled.value : { count: 0 }
     const followingRes = followingSettled.status === 'fulfilled' ? followingSettled.value : { count: 0 }
     const savedRes = savedSettled.status === 'fulfilled' ? savedSettled.value : { count: 0 }
+    if (!mountedRef.current) return
     setPostCount(postsRes.count ?? 0)
     setFollowerCount(followersRes.count ?? 0)
     setFollowingCount(followingRes.count ?? 0)
@@ -144,6 +150,7 @@ export default function ProfileScreen() {
         .eq('reviewed_id', user.id)
         .order('created_at', { ascending: false })
         .limit(100)
+      if (!mountedRef.current) return
       const allRevs = (revs ?? []) as any[]
       setReviews(allRevs.slice(0, 10) as unknown as Review[])
       if (allRevs.length > 0) {
@@ -153,6 +160,7 @@ export default function ProfileScreen() {
 
       // Badges
       const { data: bdg } = await supabase.from('user_badges').select('badge_type').eq('user_id', user.id)
+      if (!mountedRef.current) return
       setBadges((bdg ?? []) as UserBadge[])
 
       // Recent posts
@@ -163,6 +171,7 @@ export default function ProfileScreen() {
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(5)
+      if (!mountedRef.current) return
       setRecentPosts((posts ?? []) as unknown as Post[])
 
       // Activity feed
@@ -178,6 +187,7 @@ export default function ProfileScreen() {
         .eq('reviewer_id', user.id)
         .order('created_at', { ascending: false })
         .limit(5)
+      if (!mountedRef.current) return
       ;(givenRevs ?? []).forEach((r: any) => {
         activities.push({ id: `rev-${r.id}`, type: 'review_given', title: t('profile.activityReviewGiven'), date: r.created_at, meta: `${r.rating}/5` })
       })
@@ -186,12 +196,13 @@ export default function ProfileScreen() {
         activities.push({ id: `revr-${r.id}`, type: 'review_received', title: t('profile.activityReviewReceived'), date: r.created_at, meta: `${r.rating}/5` })
       })
       activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      if (!mountedRef.current) return
       setActivity(activities.slice(0, 15))
     } catch {
       // Network error — show whatever we have
       setFetchError(true)
     } finally {
-      setProfileLoading(false)
+      if (mountedRef.current) setProfileLoading(false)
     }
   }, [supabase, t])
 
@@ -206,15 +217,17 @@ export default function ProfileScreen() {
   )
 
   useFocusEffect(useCallback(() => {
-    let cancelled = false
-    loadProfile().then(() => { if (cancelled) return })
-    return () => { cancelled = true }
+    mountedRef.current = true
+    loadProfile()
+    return () => { mountedRef.current = false }
   }, [loadProfile]))
 
   const handleAvatarUpload = useCallback(async () => {
     if (!profile) return
+    if (avatarUploadingRef.current) return
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 })
     if (result.canceled || !result.assets[0]) return
+    avatarUploadingRef.current = true
     try {
       const uri = result.assets[0].uri
       const response = await fetch(uri)
@@ -238,6 +251,7 @@ export default function ProfileScreen() {
       setProfile(prev => prev ? { ...prev, avatar_url: avatarUrlWithCacheBust } : null)
       toast.show({ message: t('profile.avatarUpdated'), type: 'success' })
     } catch { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }) }
+    finally { avatarUploadingRef.current = false }
   }, [profile, supabase, t, toast])
 
   const handleSaveBio = useCallback(async () => {

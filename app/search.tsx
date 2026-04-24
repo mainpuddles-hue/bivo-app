@@ -395,6 +395,7 @@ function SearchScreenInner() {
   const [searched, setSearched] = useState(false)
   const [hasMore, setHasMore] = useState(false)
   const [dbResultCount, setDbResultCount] = useState(0)
+  const [searchError, setSearchError] = useState<string | null>(null)
   const [history, setHistory] = useState<string[]>([])
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
   const [activeTab, setActiveTab] = useState<'posts' | 'users' | 'events' | 'groups'>('posts')
@@ -425,6 +426,7 @@ function SearchScreenInner() {
   // Debounce + abort refs
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const mountedRef = useRef(true)
 
   const filterCount = useMemo(() => countActiveFilters(filters), [filters])
 
@@ -750,6 +752,7 @@ function SearchScreenInner() {
 
     setLoading(true)
     setSearched(true)
+    setSearchError(null)
     addToHistory(q)
     trackEvent('search_performed', { query: q })
 
@@ -916,10 +919,13 @@ function SearchScreenInner() {
       setUserResults(userResultsData)
       setEventResults((eventsRes.data ?? []) as any[])
       setGroupResults((groupsRes.data ?? []) as any[])
-    } catch {
-      // Request aborted or failed — ignore
+    } catch (err: any) {
+      // Only set error if not aborted and still mounted
+      if (!controller.signal.aborted && mountedRef.current) {
+        setSearchError(err?.message ?? 'Search failed')
+      }
     } finally {
-      if (!controller.signal.aborted) {
+      if (!controller.signal.aborted && mountedRef.current) {
         setLoading(false)
       }
     }
@@ -949,9 +955,10 @@ function SearchScreenInner() {
     }, 300)
   }, [executeSearch])
 
-  // Cleanup debounce on unmount
+  // Cleanup debounce + abort on unmount
   useEffect(() => {
     return () => {
+      mountedRef.current = false
       if (debounceRef.current) clearTimeout(debounceRef.current)
       if (abortRef.current) abortRef.current.abort()
     }
@@ -1413,6 +1420,20 @@ function SearchScreenInner() {
         </View>
       )}
 
+      {/* Error banner */}
+      {searchError && searched && !loading && (
+        <View style={[s.errorBanner, { backgroundColor: colors.destructive + '18' }]}>
+          <Text style={[s.errorText, { color: colors.destructive, fontFamily: fonts.body }]}>
+            {searchError}
+          </Text>
+          <PressableOpacity onPress={() => executeSearch()} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.retry') ?? 'Retry'}>
+            <Text style={[s.errorRetry, { color: colors.destructive, fontFamily: fonts.bodySemi }]}>
+              {t('common.retry') ?? 'Retry'}
+            </Text>
+          </PressableOpacity>
+        </View>
+      )}
+
       {/* Content */}
       {!searched ? (
         <DiscoveryView
@@ -1582,6 +1603,20 @@ export default function SearchScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
+
+  // ── Error banner ──
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  errorText: { fontSize: 13, flex: 1 },
+  errorRetry: { fontSize: 13, marginLeft: 12 },
 
   // ── Top search area ──
   header: {

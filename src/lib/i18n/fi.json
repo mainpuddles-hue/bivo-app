@@ -81,6 +81,7 @@
     "refresh": "Päivitä",
     "allLoaded": "Kaikki ilmoitukset ladattu",
     "morePosts": "Lisää ilmoituksia",
+    "seeAll": "Näytä kaikki",
     "popular": "Suosittu",
     "nearbyNow": "Lähellä nyt",
     "createPost": "Luo ilmoitus",
@@ -149,7 +150,11 @@
     "mapView": "Karttanäkymä",
     "listView": "Listanäkymä",
     "postsOnMap": "ilmoitusta kartalla",
-    "neighborsInBuilding": "{count} naapuria talossasi"
+    "neighborsInBuilding": "{count} naapuria talossasi",
+    "weeklyPopular": "Viikon suosituimmat",
+    "weeklyPopularSub": "Tapahtumat lähialueellasi",
+    "freeEvent": "Ilmainen",
+    "participants": "osallistujaa"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",

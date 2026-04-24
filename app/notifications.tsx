@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, SectionList, RefreshControl, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -171,6 +171,7 @@ function NotificationsScreenInner() {
   // Expanded groups state — tracks which grouped notifications are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [fetchError, setFetchError] = useState(false)
+  const mountedRef = useRef(true)
 
   const warmTint = useMemo(() => isDark ? 'rgba(240,238,233,0.08)' : '#F0EEE9', [isDark])
 
@@ -178,6 +179,7 @@ function NotificationsScreenInner() {
     setFetchError(false)
     try {
       const cachedId = await getCachedUserId()
+      if (!mountedRef.current) return
       if (!cachedId) { setIsLoggedIn(false); setUserId(null); setLoading(false); setRefreshing(false); return }
       setIsLoggedIn(true)
       setUserId(cachedId)
@@ -187,24 +189,34 @@ function NotificationsScreenInner() {
         .eq('user_id', cachedId)
         .order('created_at', { ascending: false })
         .limit(100)
+      if (!mountedRef.current) return
       let raw = (data ?? []) as unknown as Notification[]
       // Filter out notifications from blocked users
       if (cachedId) {
         const blocked = await getBlockedUserIds(cachedId)
+        if (!mountedRef.current) return
         if (blocked.size > 0) raw = raw.filter(n => !n.from_user_id || !blocked.has(n.from_user_id))
       }
       const prioritized = prioritizeNotifications(raw)
+      if (!mountedRef.current) return
       setNotifications(prioritized)
     } catch {
+      if (!mountedRef.current) return
       setNotifications([])
       setFetchError(true)
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      if (mountedRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [supabase])
 
-  useFocusEffect(useCallback(() => { fetchNotifications() }, [fetchNotifications]))
+  useFocusEffect(useCallback(() => {
+    mountedRef.current = true
+    fetchNotifications()
+    return () => { mountedRef.current = false }
+  }, [fetchNotifications]))
 
   // Realtime subscription for new notifications
   useEffect(() => {

@@ -221,7 +221,18 @@ export default function MessagesScreen() {
   }, [supabase])
 
   // Fetch conversations on mount and re-fetch when screen gains focus (e.g. after reading messages)
-  useFocusEffect(useCallback(() => { fetchConversations() }, [fetchConversations]))
+  // Also check if blocked users changed (flag set by profile/[userId].tsx after block/unblock)
+  useFocusEffect(useCallback(() => {
+    fetchConversations()
+    // Check if blocked list changed since last focus — force re-fetch if so
+    AsyncStorage.getItem('tackbird_blocked_changed').then((val) => {
+      if (val) {
+        AsyncStorage.removeItem('tackbird_blocked_changed')
+        // Re-fetch to filter out newly blocked (or unblocked) users
+        fetchConversations()
+      }
+    }).catch(() => {})
+  }, [fetchConversations]))
 
   // Realtime for new messages. Supabase realtime only supports a single
   // eq/neq filter on postgres_changes, so we filter by sender_id and then

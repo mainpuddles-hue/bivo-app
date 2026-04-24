@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, ViewToken, ScrollView, ActionSheetIOS, Alert, Platform } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, ScrollView, ActionSheetIOS, Alert, Platform, useWindowDimensions } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Map, LayoutGrid, Home } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Map, LayoutGrid, Home, ChevronRight } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity, AnimatedEntrance, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -23,12 +23,18 @@ import { PostCardSkeleton, FeedLoadMoreSkeleton, FadeIn } from '@/components/Ske
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { OnboardingOverlay } from '@/components/OnboardingOverlay'
-import { DiscoveryStack } from '@/components/DiscoveryStack'
+import { WeeklyPopularCarousel } from '@/components/WeeklyPopularCarousel'
 import { FeedMapView } from '@/components/FeedMapView'
 import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { PollCard, type Poll } from '@/components/PollCard'
-import type { Post, PostType } from '@/lib/types'
+import type { Post, PostType, CommunityEvent } from '@/lib/types'
+import { CATEGORIES } from '@/lib/constants'
+
+type FeedItem =
+  | { _kind: 'section'; key: string; categoryType: PostType; posts: Post[] }
+  | { _kind: 'gridRow'; key: string; posts: Post[] }
+  | { _kind: 'ad'; key: string; ad: Ad }
 
 function FeedScreenInner() {
   const { colors, isDark } = useTheme()
@@ -46,6 +52,7 @@ function FeedScreenInner() {
 
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const supabase = useSupabase()
+  const { width: screenWidth } = useWindowDimensions()
 
   // ── Onboarding overlay ──
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -114,6 +121,48 @@ function FeedScreenInner() {
     return () => { mounted = false }
   }, [supabase])
 
+  // Fetch community events for WeeklyPopularCarousel
+  const [heroCommunityEvents, setHeroCommunityEvents] = useState<CommunityEvent[]>([])
+  useEffect(() => {
+    let mounted = true
+    const now = new Date().toISOString()
+    Promise.resolve(
+      supabase
+        .from('community_events')
+        .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)')
+        .eq('is_active', true)
+        .gte('event_date', now)
+        .order('event_date', { ascending: true })
+        .limit(20)
+    ).then(({ data, error }: any) => {
+      if (!mounted) return
+      if (error) { if (__DEV__) console.warn('[feed] community events failed:', error.message); return }
+      if (!data) return
+      // Enrich with participant count
+      const eventIds = (data as any[]).map((e: any) => e.id)
+      if (eventIds.length === 0) { setHeroCommunityEvents(data); return }
+      Promise.resolve(
+        supabase
+          .from('community_event_participants')
+          .select('event_id')
+          .in('event_id', eventIds)
+          .eq('status', 'joined')
+      ).then(({ data: participants }: any) => {
+        if (!mounted) return
+        const counts: Record<string, number> = {}
+        if (participants) for (const p of participants as any[]) {
+          counts[p.event_id] = (counts[p.event_id] || 0) + 1
+        }
+        const enriched = (data as any[]).map((e: any) => ({
+          ...e,
+          participant_count: counts[e.id] || 0,
+        }))
+        setHeroCommunityEvents(enriched)
+      }).catch(() => { if (mounted) setHeroCommunityEvents(data) })
+    }).catch((err: any) => { if (__DEV__) console.warn('[feed] community events error:', err) })
+    return () => { mounted = false }
+  }, [supabase])
+
   // Fetch user's building info for community card
   const [userBuilding, setUserBuilding] = useState<{ street_address: string; member_count: number } | null>(null)
   useEffect(() => {
@@ -137,21 +186,24 @@ function FeedScreenInner() {
   const [feedPolls, setFeedPolls] = useState<Poll[]>([])
   useEffect(() => {
     if (!FEATURES.POLLS || !feed.currentUserId) return
+    let mounted = true
     const now = new Date().toISOString()
-    Promise.resolve(
-      supabase
-        .from('polls')
-        .select('id, creator_id, question, options, building_id, naapurusto, vote_count, expires_at, created_at, is_active')
-        .eq('is_active', true)
-        .or(`expires_at.is.null,expires_at.gt."${now}"`)
-        .order('created_at', { ascending: false })
-        .limit(3)
-    ).then(async ({ data, error }: any) => {
+    ;(async () => {
+      const { data, error } = await Promise.resolve(
+        supabase
+          .from('polls')
+          .select('id, creator_id, question, options, building_id, naapurusto, vote_count, expires_at, created_at, is_active')
+          .eq('is_active', true)
+          .or(`expires_at.is.null,expires_at.gt."${now}"`)
+          .order('created_at', { ascending: false })
+          .limit(3)
+      ) as any
+      if (!mounted) return
       if (error) { if (__DEV__) console.warn('[feed] polls fetch failed:', error.message); return }
       if (!data || data.length === 0) return
       const pollIds = (data as any[]).map((p: any) => p.id)
 
-      // Fetch user's votes (skip if no polls to avoid empty .in() crash)
+      // Fetch user's votes
       let voteMap: Record<string, number> = {}
       if (pollIds.length > 0) {
         const { data: votes } = await Promise.resolve(
@@ -161,6 +213,7 @@ function FeedScreenInner() {
             .eq('user_id', feed.currentUserId!)
             .in('poll_id', pollIds)
         )
+        if (!mounted) return
         if (votes) for (const v of votes as any[]) voteMap[v.poll_id] = v.option_index
       }
 
@@ -173,6 +226,7 @@ function FeedScreenInner() {
             .select('poll_id, option_index')
             .in('poll_id', pollIds)
         )
+        if (!mounted) return
         if (allVotes) {
           for (const v of allVotes as any[]) {
             if (!optionCountsMap[v.poll_id]) optionCountsMap[v.poll_id] = {}
@@ -191,14 +245,16 @@ function FeedScreenInner() {
           option_counts: opts.map((_: any, idx: number) => countsForPoll[idx] || 0),
         }
       })
-      setFeedPolls(polls)
-    }).catch((err: any) => { if (__DEV__) console.warn('[feed] polls error:', err) })
+      if (mounted) setFeedPolls(polls)
+    })().catch((err: any) => { if (__DEV__) console.warn('[feed] polls error:', err) })
+    return () => { mounted = false }
   }, [feed.currentUserId, supabase])
 
   // Fetch active ads for feed display
   const [feedAds, setFeedAds] = useState<Ad[]>([])
   useEffect(() => {
     if (!FEATURES.AD_CAMPAIGNS) return
+    let mounted = true
     const now = new Date().toISOString()
     Promise.resolve(
       supabase
@@ -210,9 +266,9 @@ function FeedScreenInner() {
         .order('created_at', { ascending: false })
         .limit(3)
     ).then(({ data, error }: any) => {
+      if (!mounted) return
       if (error) { if (__DEV__) console.warn('[feed] ads fetch failed:', error.message); return }
       if (!data || data.length === 0) return
-      // Filter by neighborhood if user has one
       const nh = feed.userNeighborhood
       const filtered = nh
         ? (data as any[]).filter((a: any) => !a.target_naapurusto || a.target_naapurusto === nh)
@@ -223,6 +279,7 @@ function FeedScreenInner() {
       }))
       setFeedAds(ads)
     }).catch((err: any) => { if (__DEV__) console.warn('[feed] ads error:', err) })
+    return () => { mounted = false }
   }, [supabase, feed.userNeighborhood])
 
   // NOTE: User profile/greeting removed — mockup 05 uses location-based header
@@ -327,64 +384,126 @@ function FeedScreenInner() {
 
   const visiblePosts = filteredPosts
 
-  // ── Track post views via viewability ──
-  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50, minimumViewTime: 1000 }).current
-  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-    for (const token of viewableItems) {
-      if (token.isViewable && token.item?.id) {
-        trackInteraction(token.item.id, 'view')
-      }
+  // ── Category sections (Wolt-style horizontal scrolling) ──
+  const categorySections = useMemo(() => {
+    const posts = visiblePosts
+    const groups: Record<string, Post[]> = {}
+    for (const post of posts) {
+      const type = post.type || 'ilmaista'
+      if (!groups[type]) groups[type] = []
+      groups[type].push(post)
     }
-  }).current
-
-  // ── Discovery stack (top 5) + remaining posts ──
-  const DISCOVERY_COUNT = 5
-  const discoveryPosts = useMemo(
-    () => visiblePosts.slice(0, DISCOVERY_COUNT),
-    [visiblePosts],
-  )
-  const remainingPosts = useMemo(() => {
-    const posts = visiblePosts.slice(DISCOVERY_COUNT)
-    if (inlineEvents.length === 0 && feedAds.length === 0) return posts
-    // Inject events at positions 6, 12, 18 and ads at positions 4, 10
-    const result: (Post | Ad)[] = []
-    let eventIdx = 0
-    let adIdx = 0
-    for (let i = 0; i < posts.length; i++) {
-      if ((i === 4 || i === 10) && adIdx < feedAds.length) {
-        result.push(feedAds[adIdx++])
-      }
-      if ((i === 6 || i === 12 || i === 18) && eventIdx < inlineEvents.length) {
-        result.push(inlineEvents[eventIdx++])
-      }
-      result.push(posts[i])
+    if (inlineEvents.length > 0) {
+      if (!groups['tapahtuma']) groups['tapahtuma'] = []
+      groups['tapahtuma'] = [...inlineEvents, ...groups['tapahtuma']]
     }
-    return result
-  }, [visiblePosts, inlineEvents, feedAds])
+    const orderedTypes: PostType[] = ['ilmaista', 'tarvitsen', 'tarjoan', 'tapahtuma', 'lainaa']
+    return orderedTypes
+      .filter(type => groups[type] && groups[type].length > 0)
+      .map(type => ({ type: type as PostType, posts: groups[type] }))
+  }, [visiblePosts, inlineEvents])
 
-  const renderPost = useCallback(({ item, index }: { item: Post | Ad; index: number }) => {
-    // Render AdCard for ad items (full width — spans both columns)
-    if ('_isAd' in item && item._isAd) {
+  const feedItems = useMemo((): FeedItem[] => {
+    if (feed.activeFilter) {
+      // Filtered: 2-column grid
+      const section = categorySections.find(s => s.type === feed.activeFilter)
+      const posts = section?.posts || []
+      const items: FeedItem[] = []
+      for (let i = 0; i < posts.length; i += 2) {
+        items.push({ _kind: 'gridRow', key: `row-${i}`, posts: posts.slice(i, i + 2) })
+      }
+      return items
+    }
+    // Unfiltered: horizontal category sections
+    const items: FeedItem[] = []
+    categorySections.forEach((section, idx) => {
+      items.push({ _kind: 'section', key: `section-${section.type}`, categoryType: section.type, posts: section.posts })
+      if (idx === 1 && feedAds.length > 0) {
+        items.push({ _kind: 'ad', key: 'ad-0', ad: feedAds[0] })
+      }
+    })
+    return items
+  }, [feed.activeFilter, categorySections, feedAds])
+
+  const renderFeedItem = useCallback(({ item }: { item: FeedItem }) => {
+    const hCardWidth = screenWidth * 0.65
+    const hGap = 12
+    const gCardWidth = (screenWidth - 32 - 10) / 2
+
+    if (item._kind === 'ad') {
       return (
-        <View style={{ width: '100%', paddingHorizontal: 12 }}>
-          <AdCard ad={item as Ad} />
+        <View style={{ paddingHorizontal: 16 }}>
+          <AdCard ad={item.ad} />
         </View>
       )
     }
+    if (item._kind === 'gridRow') {
+      return (
+        <View style={styles.gridRow}>
+          {item.posts.map((post, idx) => (
+            <View key={post.id} style={{ width: gCardWidth }}>
+              <AnimatedEntrance index={idx} stagger={60} duration={350} slideDistance={16}>
+                <PostCardGrid
+                  post={post}
+                  userId={feed.currentUserId}
+                  onInteraction={trackInteraction}
+                  index={idx}
+                  sortBy={feed.sortBy}
+                  followedIds={feed.followedIds}
+                  viewCount={viewCounts[post.id]}
+                />
+              </AnimatedEntrance>
+            </View>
+          ))}
+        </View>
+      )
+    }
+    // _kind === 'section': horizontal category row
+    const category = CATEGORIES[item.categoryType]
     return (
-      <AnimatedEntrance index={index} stagger={60} duration={350} slideDistance={16}>
-        <PostCardGrid
-          post={item as Post}
-          userId={feed.currentUserId}
-          onInteraction={trackInteraction}
-          index={index}
-          sortBy={feed.sortBy}
-          followedIds={feed.followedIds}
-          viewCount={viewCounts[(item as Post).id]}
-        />
-      </AnimatedEntrance>
+      <View style={styles.categorySection}>
+        <View style={styles.categorySectionHeader}>
+          <Text style={[styles.categorySectionTitle, { color: colors.foreground }]}>
+            {t(category.label)}
+          </Text>
+          <PressableOpacity
+            onPress={() => handleFilterChangeWithHaptics(item.categoryType)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`${t(category.label)} — ${t('feed.seeAll') ?? 'Näytä kaikki'}`}
+          >
+            <View style={styles.seeAllRow}>
+              <Text style={[styles.seeAllText, { color: colors.primary }]}>
+                {t('feed.seeAll') ?? 'Näytä kaikki'}
+              </Text>
+              <ChevronRight size={14} color={colors.primary} strokeWidth={2} />
+            </View>
+          </PressableOpacity>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: hGap }}
+          snapToInterval={hCardWidth + hGap}
+          decelerationRate="fast"
+        >
+          {item.posts.slice(0, 10).map((post, index) => (
+            <View key={post.id} style={{ width: hCardWidth }}>
+              <PostCardGrid
+                post={post}
+                userId={feed.currentUserId}
+                onInteraction={trackInteraction}
+                index={index}
+                sortBy={feed.sortBy}
+                followedIds={feed.followedIds}
+                viewCount={viewCounts[post.id]}
+              />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     )
-  }, [feed.currentUserId, trackInteraction, feed.sortBy, feed.followedIds, viewCounts])
+  }, [colors, t, feed.currentUserId, feed.sortBy, feed.followedIds, trackInteraction, viewCounts, handleFilterChangeWithHaptics, screenWidth])
 
   // ── Render ──
   return (
@@ -434,12 +553,10 @@ function FeedScreenInner() {
         </>
       ) : (
       <FlatList
-        data={remainingPosts}
-        renderItem={renderPost}
-        keyExtractor={item => ('_isAd' in item ? `ad-${item.id}` : item.id)}
-        numColumns={2}
-        columnWrapperStyle={remainingPosts.length > 0 ? styles.columnWrapper : undefined}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 10 }}
+        data={feedItems}
+        renderItem={renderFeedItem}
+        keyExtractor={item => item.key}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 8 }}
         ListHeaderComponent={
           <View>
             {/* ── Top area with safe area padding ── */}
@@ -612,19 +729,17 @@ function FeedScreenInner() {
               </View>
             )}
 
-            {/* ── 5. Discovery stack ── */}
+            {/* ── 5. Weekly popular hero ── */}
             {feed.loading && visiblePosts.length === 0 ? (
               <View style={{ paddingHorizontal: 12, gap: 16, paddingTop: 16 }}>
                 {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
               </View>
-            ) : discoveryPosts.length > 0 ? (
+            ) : (feed.cityEvents.length > 0 || heroCommunityEvents.length > 0) ? (
               <FadeIn>
-                <DiscoveryStack
-                  posts={discoveryPosts}
-                  userId={feed.currentUserId}
-                  onInteraction={trackInteraction}
-                  userNeighborhood={feed.userNeighborhood}
-                  userLocation={feed.userLocation}
+                <WeeklyPopularCarousel
+                  cityEvents={feed.cityEvents}
+                  communityEvents={heroCommunityEvents}
+                  locale={locale}
                 />
               </FadeIn>
             ) : !feed.loading ? (
@@ -641,14 +756,6 @@ function FeedScreenInner() {
               </View>
             ) : null}
 
-            {/* Spacer before remaining posts grid */}
-            {remainingPosts.length > 0 && (
-              <View style={styles.remainingHeader}>
-                <Text style={[styles.remainingSectionTitle, { color: colors.foreground }]}>
-                  {t('feed.morePosts') ?? 'More posts'}
-                </Text>
-              </View>
-            )}
           </View>
         }
         ListFooterComponent={
@@ -670,8 +777,6 @@ function FeedScreenInner() {
         onEndReachedThreshold={0.3}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
         removeClippedSubviews={true}
         initialNumToRender={8}
         maxToRenderPerBatch={10}
@@ -708,7 +813,6 @@ function FeedScreenInner() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  columnWrapper: { gap: 10, paddingHorizontal: 12 },
 
   // ── Top area ──
   topArea: {
@@ -782,18 +886,42 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
-  // Remaining posts header
-  remainingHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 12,
+  // ── Wolt-style category sections ──
+  categorySection: {
+    marginTop: 4,
   },
-  remainingSectionTitle: {
+  categorySectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  categorySectionTitle: {
     fontSize: 20,
     fontWeight: '600',
     fontFamily: fonts.heading,
     letterSpacing: -0.4,
     lineHeight: 24,
+  },
+  seeAllRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    minHeight: 44,
+  },
+  seeAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
+  },
+
+  // ── Filtered grid rows ──
+  gridRow: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 16,
   },
 
   // FAB

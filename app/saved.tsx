@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, Pressable,
   StyleSheet, Dimensions,
@@ -56,11 +56,13 @@ function SavedScreenInner() {
   const [events, setEvents] = useState<SavedEvent[]>([])
   const [unsavingId, setUnsavingId] = useState<string | null>(null)
   const [fetchError, setFetchError] = useState(false)
+  const mountedRef = useRef(true)
 
   const loadSaved = useCallback(async () => {
     setFetchError(false)
     try {
       const cachedId = await getCachedUserId()
+      if (!mountedRef.current) return
       if (!cachedId) { router.replace('/(auth)/login'); setLoading(false); setRefreshing(false); return }
       const user = { id: cachedId }
 
@@ -92,6 +94,8 @@ function SavedScreenInner() {
           }),
       ])
 
+      if (!mountedRef.current) return
+
       // Process posts
       const savedPosts = ((savedPostsRes.data ?? []) as any[])
         .map((s: any) => s.posts)
@@ -110,6 +114,7 @@ function SavedScreenInner() {
           .from('community_events')
           .select('id, title, event_date, location_name')
           .in('id', communityEventIds)
+        if (!mountedRef.current) return
         ;(communityEvents ?? []).forEach((e: any) => {
           allEvents.push({
             id: e.id,
@@ -126,6 +131,7 @@ function SavedScreenInner() {
           .from('city_events')
           .select('id, name_fi, name_en, name_sv, start_time, location_name')
           .in('id', cityEventIds)
+        if (!mountedRef.current) return
         ;(cityEvents ?? []).forEach((e: any) => {
           const name = locale === 'fi' ? e.name_fi : locale === 'sv' ? (e.name_sv || e.name_fi) : (e.name_en || e.name_fi)
           allEvents.push({
@@ -139,17 +145,25 @@ function SavedScreenInner() {
         })
       }
 
+      if (!mountedRef.current) return
       setEvents(allEvents)
     } catch (err) {
       if (__DEV__) console.warn('[saved] loadSaved failed:', err)
+      if (!mountedRef.current) return
       setFetchError(true)
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      if (mountedRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [supabase, router, locale])
 
-  useFocusEffect(useCallback(() => { loadSaved() }, [loadSaved]))
+  useFocusEffect(useCallback(() => {
+    mountedRef.current = true
+    loadSaved()
+    return () => { mountedRef.current = false }
+  }, [loadSaved]))
 
   const handleUnsavePost = useCallback(async (postId: string) => {
     if (unsavingId) return
