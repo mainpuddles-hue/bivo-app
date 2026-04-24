@@ -32,6 +32,7 @@ import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/com
 import { mutateOk } from '@/lib/supabaseMutation'
 import { syncCounter } from '@/lib/syncCounter'
 import { isValidUUID } from '@/lib/validation'
+import { useToast } from '@/components/Toast'
 import { GROUP_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 import type { GroupPost, GroupComment } from '@/components/groups/GroupPostCard'
 import type { GroupMember } from '@/components/groups/GroupMembersModal'
@@ -84,6 +85,7 @@ export default function GroupDetailScreen() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const supabase = useSupabase()
+  const toast = useToast()
 
   // State
   const [group, setGroup] = useState<GroupInfo | null>(null)
@@ -235,7 +237,7 @@ export default function GroupDetailScreen() {
         const realCount = count ?? Math.max(0, group.member_count - 1)
         setGroup(prev => prev ? { ...prev, member_count: realCount } : prev)
         ;(supabase.from('groups') as any).update({ member_count: realCount }).eq('id', id).then(() => {}).catch(() => {})
-      } catch { setIsMember(true); Alert.alert(t('common.error'), t('groups.leaveError')) }
+      } catch { setIsMember(true); toast.show({ message: t('groups.leaveError'), type: 'error' }) }
     } else {
       setIsMember(true)
       try {
@@ -247,7 +249,7 @@ export default function GroupDetailScreen() {
         const realCount = count ?? group.member_count + 1
         setGroup(prev => prev ? { ...prev, member_count: realCount } : prev)
         ;(supabase.from('groups') as any).update({ member_count: realCount }).eq('id', id).then(() => {}).catch(() => {})
-      } catch { setIsMember(false); Alert.alert(t('common.error'), t('groups.joinError')) }
+      } catch { setIsMember(false); toast.show({ message: t('groups.joinError'), type: 'error' }) }
     }
     joiningRef.current = false
   }, [id, currentUserId, group, isMember, supabase, t])
@@ -264,20 +266,20 @@ export default function GroupDetailScreen() {
       let imageUrl: string | null = null
       if (postImage) {
         const ext = (postImage.split('.').pop() || 'jpg').toLowerCase()
-        if (!ALLOWED_EXTS.includes(ext)) { Alert.alert(t('common.error'), t('create.imageTooLarge')); setSending(false); return }
+        if (!ALLOWED_EXTS.includes(ext)) { toast.show({ message: t('create.imageTooLarge'), type: 'error' }); setSending(false); return }
         const fileName = `group_${id}_${Date.now()}.${ext}`
         const response = await fetch(postImage)
         const blob = await response.blob()
-        if (blob.size > MAX_FILE_SIZE) { Alert.alert(t('common.error'), t('create.imageTooLarge')); setSending(false); return }
+        if (blob.size > MAX_FILE_SIZE) { toast.show({ message: t('create.imageTooLarge'), type: 'error' }); setSending(false); return }
         const arrayBuffer = await blob.arrayBuffer()
         const { error: uploadError } = await supabase.storage.from('group-images').upload(fileName, arrayBuffer, { contentType: `image/${ext}`, upsert: true })
-        if (uploadError) { Alert.alert(t('common.error'), t('create.imageUploadFailed') ?? 'Kuvan lataus epäonnistui'); setSending(false); return }
+        if (uploadError) { toast.show({ message: t('create.imageUploadFailed') ?? 'Kuvan lataus epäonnistui', type: 'error' }); setSending(false); return }
         const { data: urlData } = supabase.storage.from('group-images').getPublicUrl(fileName); imageUrl = urlData.publicUrl
       }
       const { error: postError } = await (supabase.from('group_posts') as any).insert({ group_id: id, user_id: currentUserId, content: postText.trim(), image_url: imageUrl, like_count: 0, comment_count: 0 })
       if (postError) throw postError
       setPostText(''); setPostImage(null); fetchPosts()
-    } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
+    } catch { toast.show({ message: t('groups.sendError'), type: 'error' }) }
     finally { setSending(false) }
   }, [id, currentUserId, postText, postImage, supabase, fetchPosts, t])
 
@@ -315,7 +317,7 @@ export default function GroupDetailScreen() {
     } catch {
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, like_count: post.like_count } : p))
       setLikedPosts(prev => { const n = new Set(prev); if (alreadyLiked) n.add(postId); else n.delete(postId); return n })
-      Alert.alert(t('common.error'), t('groups.likeError'))
+      toast.show({ message: t('groups.likeError'), type: 'error' })
     } finally { likingGroupPostRef.current = false }
   }, [currentUserId, likedPosts, supabase, t, posts])
 
@@ -435,7 +437,7 @@ export default function GroupDetailScreen() {
           (supabase.from('group_post_likes') as any).delete().eq('post_id', postId),
         ])
         const { error } = await (supabase.from('group_posts') as any).delete().eq('id', postId)
-        if (error) { Alert.alert(t('common.error'), t('groups.sendError')); return }
+        if (error) { toast.show({ message: t('groups.sendError'), type: 'error' }); return }
         setPosts(prev => prev.filter(p => p.id !== postId))
         if (expandedPostId === postId) { setExpandedPostId(null); setComments([]) }
         try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
@@ -496,7 +498,7 @@ export default function GroupDetailScreen() {
       is_public: data.is_public, is_private: !data.is_public,
     }).eq('id', id)
     if (error) {
-      Alert.alert(t('common.error'), t('groups.createError'))
+      toast.show({ message: t('groups.createError'), type: 'error' })
       setSavingEdit(false)
       return
     }
@@ -531,7 +533,7 @@ export default function GroupDetailScreen() {
           if (deleteGroupError) throw deleteGroupError
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
           router.back()
-        } catch { Alert.alert(t('common.error'), t('groups.sendError')) }
+        } catch { toast.show({ message: t('groups.sendError'), type: 'error' }) }
       }},
     ])
   }, [id, supabase, posts, t, router])

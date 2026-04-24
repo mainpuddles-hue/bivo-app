@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useCallback, useEffect } from 'react'
-import { View, Text, TextInput, ScrollView, StyleSheet, Alert, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
+import { View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator, Linking, Platform, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { X, Camera, Megaphone } from 'lucide-react-native'
@@ -16,6 +16,7 @@ import { formatPrice as formatPriceUtil } from '@/lib/format'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import type { Profile } from '@/lib/types'
 
@@ -48,6 +49,7 @@ export default function CreateAdScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [title, setTitle] = useState('')
@@ -87,7 +89,7 @@ export default function CreateAdScreen() {
       if (data) {
         const p = data as unknown as Profile
         if (!p.is_business && !p.is_pro) {
-          Alert.alert(t('common.error'), t('ads.businessRequired') ?? 'Business or Pro account required')
+          toast.show({ message: t('ads.businessRequired') ?? 'Business or Pro account required', type: 'error' })
           router.back()
           return
         }
@@ -162,7 +164,7 @@ export default function CreateAdScreen() {
 
   const handleSubmit = useCallback(async () => {
     if (!title.trim()) {
-      Alert.alert(t('common.error'), t('create.titleRequired'))
+      toast.show({ message: t('create.titleRequired'), type: 'error' })
       return
     }
     if (!profile) return
@@ -248,7 +250,7 @@ export default function CreateAdScreen() {
       // No URL in response — treat as failure and roll back
       await rollbackAd()
     } catch (err: any) {
-      Alert.alert(t('common.error'), mapErrorToFinnish(err, t))
+      toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
       setSubmitting(false)
     }

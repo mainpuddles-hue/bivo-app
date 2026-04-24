@@ -7,7 +7,6 @@ import {
   TextInput,
   ScrollView,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -191,7 +190,7 @@ function CreateEventScreenInner() {
   const pickImage = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== 'granted') {
-      Alert.alert(t('common.error'), 'Camera roll permission is needed.')
+      toast.show({ message: 'Camera roll permission is needed.', type: 'error' })
       return
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -212,11 +211,11 @@ function CreateEventScreenInner() {
   const handleSubmit = useCallback(async () => {
     // Validate required fields
     if (!title.trim()) {
-      Alert.alert(t('common.error'), t('events.titleDateRequired'))
+      toast.show({ message: t('events.titleDateRequired'), type: 'error' })
       return
     }
     if (!eventDate.trim()) {
-      Alert.alert(t('common.error'), t('events.titleDateRequired'))
+      toast.show({ message: t('events.titleDateRequired'), type: 'error' })
       return
     }
     if (!currentUserId) {
@@ -226,7 +225,7 @@ function CreateEventScreenInner() {
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/
     if (!dateRegex.test(eventDate.trim())) {
-      Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+      toast.show({ message: t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format', type: 'error' })
       return
     }
 
@@ -239,14 +238,14 @@ function CreateEventScreenInner() {
       const rawTime = eventTime.trim() || '12:00'
       const timeMatch = rawTime.match(/^(\d{1,2}):(\d{2})$/)
       if (!timeMatch) {
-        Alert.alert(t('common.error'), t('create.invalidTimeFormat') ?? 'Invalid time format (HH:MM)')
+        toast.show({ message: t('create.invalidTimeFormat') ?? 'Invalid time format (HH:MM)', type: 'error' })
         setSubmitting(false)
         return
       }
       const timeH = parseInt(timeMatch[1], 10)
       const timeM = parseInt(timeMatch[2], 10)
       if (timeH < 0 || timeH > 23 || timeM < 0 || timeM > 59) {
-        Alert.alert(t('common.error'), t('create.invalidTimeFormat') ?? 'Invalid time format (HH:MM)')
+        toast.show({ message: t('create.invalidTimeFormat') ?? 'Invalid time format (HH:MM)', type: 'error' })
         setSubmitting(false)
         return
       }
@@ -259,19 +258,19 @@ function CreateEventScreenInner() {
       // parsing that Safari/Hermes treat differently.
       const dateParts = eventDate.trim().split('-').map((s) => parseInt(s, 10))
       if (dateParts.length < 3) {
-        Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+        toast.show({ message: t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format', type: 'error' })
         setSubmitting(false)
         return
       }
       const [dateY, dateM, dateD] = dateParts
       if (!Number.isFinite(dateY) || !Number.isFinite(dateM) || !Number.isFinite(dateD)) {
-        Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+        toast.show({ message: t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format', type: 'error' })
         setSubmitting(false)
         return
       }
       const localDate = new Date(dateY, dateM - 1, dateD, timeH, timeM, 0, 0)
       if (isNaN(localDate.getTime())) {
-        Alert.alert(t('common.error'), t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format')
+        toast.show({ message: t('create.invalidDateFormat') ?? 'Use YYYY-MM-DD format', type: 'error' })
         setSubmitting(false)
         return
       }
@@ -281,7 +280,7 @@ function CreateEventScreenInner() {
       const maxP = maxParticipants.trim()
       const parsedMax = maxP ? parseInt(maxP, 10) : null
       if (parsedMax !== null && (isNaN(parsedMax) || parsedMax < 1 || parsedMax > 10000)) {
-        Alert.alert(t('common.error'), t('events.maxAttendeesRange'))
+        toast.show({ message: t('events.maxAttendeesRange'), type: 'error' })
         setSubmitting(false)
         return
       }
@@ -297,7 +296,7 @@ function CreateEventScreenInner() {
         const rawExt = (imageUri.split('.').pop() ?? 'jpg').split(/[?#]/)[0].toLowerCase()
         const fileExt = ALLOWED_EXTS.includes(rawExt) ? rawExt : 'jpg'
         if (!ALLOWED_EXTS.includes(fileExt)) {
-          Alert.alert(t('common.error'), t('create.imageTooLarge'))
+          toast.show({ message: t('create.imageTooLarge'), type: 'error' })
           setSubmitting(false)
           return
         }
@@ -307,7 +306,7 @@ function CreateEventScreenInner() {
         const response = await fetch(imageUri)
         const blob = await response.blob()
         if (blob.size > MAX_FILE_SIZE) {
-          Alert.alert(t('common.error'), t('create.imageTooLarge'))
+          toast.show({ message: t('create.imageTooLarge'), type: 'error' })
           setSubmitting(false)
           return
         }
@@ -318,7 +317,7 @@ function CreateEventScreenInner() {
           .upload(filePath, arrayBuffer, { contentType: `image/${fileExt}`, upsert: false })
 
         if (uploadError) {
-          Alert.alert(t('common.error'), t('events.imageUploadFailed') ?? 'Kuvan lataus epäonnistui')
+          toast.show({ message: t('events.imageUploadFailed') ?? 'Kuvan lataus epäonnistui', type: 'error' })
           setSubmitting(false)
           return
         }
@@ -375,7 +374,7 @@ function CreateEventScreenInner() {
       }
 
       if (error) {
-        Alert.alert(t('common.error'), t('events.createFailed'))
+        toast.show({ message: t('events.createFailed'), type: 'error' })
         setSubmitting(false)
         return
       }
@@ -391,7 +390,7 @@ function CreateEventScreenInner() {
         router.replace('/community-events' as any)
       }
     } catch {
-      Alert.alert(t('common.error'), t('events.createFailed'))
+      toast.show({ message: t('events.createFailed'), type: 'error' })
     } finally {
       setSubmitting(false)
     }

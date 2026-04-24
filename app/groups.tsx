@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
   Pressable, ActivityIndicator, TextInput, Modal, Switch,
-  Platform, Alert, Animated, Dimensions, KeyboardAvoidingView,
+  Platform, Animated, Dimensions, KeyboardAvoidingView,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -19,6 +19,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { useToast } from '@/components/Toast'
 import { NEIGHBORHOODS, GROUP_CATEGORY_COLORS as CATEGORY_COLORS } from '@/lib/constants'
 
 // ── Group categories ──
@@ -76,6 +77,7 @@ function GroupsScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   // State
   const [myGroups, setMyGroups] = useState<Group[]>([])
@@ -235,15 +237,15 @@ function GroupsScreenInner() {
       setJoinedIds((prev) => { const n = new Set(prev); n.delete(group.id); return n })
       setSuggestedGroups((prev) => [group, ...prev])
       setMyGroups((prev) => prev.filter((g) => g.id !== group.id))
-      Alert.alert(t('common.error'), t('groups.joinError'))
+      toast.show({ message: t('groups.joinError'), type: 'error' })
     } finally { joiningGroupRef.current = false }
-  }, [currentUserId, supabase, t])
+  }, [currentUserId, supabase, t, toast])
 
   // Create group
   const handleCreate = useCallback(async () => {
     if (!currentUserId) return
     if (!newName.trim()) {
-      Alert.alert(t('common.error'), t('groups.nameRequired'))
+      toast.show({ message: t('groups.nameRequired'), type: 'error' })
       return
     }
 
@@ -294,11 +296,11 @@ function GroupsScreenInner() {
       // Refresh
       fetchGroups()
     } catch {
-      Alert.alert(t('common.error'), t('groups.createError'))
+      toast.show({ message: t('groups.createError'), type: 'error' })
     } finally {
       setCreating(false)
     }
-  }, [currentUserId, supabase, newName, newDescription, newCategory, newNeighborhood, newIsPublic, t, fetchGroups])
+  }, [currentUserId, supabase, newName, newDescription, newCategory, newNeighborhood, newIsPublic, t, toast, fetchGroups])
 
   // Filter by search
   const filteredMyGroups = useMemo(() => {

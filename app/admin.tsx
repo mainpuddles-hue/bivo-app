@@ -15,6 +15,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useToast } from '@/components/Toast'
 import { formatTimeAgo } from '@/lib/format'
 
 type Tab = 'flags' | 'users' | 'stats'
@@ -55,6 +56,7 @@ function AdminScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('flags')
@@ -165,18 +167,18 @@ function AdminScreenInner() {
       (supabase.from('content_flags') as any).update({ reviewed: true }).eq('id', flagId),
     ])
     if ((postRes as any).error || (flagRes as any).error) {
-      Alert.alert(t('common.error'))
+      toast.show({ message: t('common.error'), type: 'error' })
       return
     }
     setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
-    Alert.alert(t('common.success'), t('admin.hidePost'))
-  }, [supabase, t])
+    toast.show({ message: t('admin.hidePost'), type: 'success' })
+  }, [supabase, t, toast])
 
   const allowPost = useCallback(async (flagId: string) => {
     const { error } = await (supabase.from('content_flags') as any).update({ reviewed: true }).eq('id', flagId)
-    if (error) { Alert.alert(t('common.error')); return }
+    if (error) { toast.show({ message: t('common.error'), type: 'error' }); return }
     setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
-  }, [supabase, t])
+  }, [supabase, t, toast])
 
   const toggleBan = useCallback(async (userId: string, currentlyBanned: boolean) => {
     const action = currentlyBanned ? t('admin.unbanUser') : t('admin.banUser')
@@ -187,7 +189,7 @@ function AdminScreenInner() {
         style: 'destructive',
         onPress: async () => {
           const { error } = await (supabase.from('profiles') as any).update({ is_banned: !currentlyBanned }).eq('id', userId)
-          if (error) { Alert.alert(t('common.error')); return }
+          if (error) { toast.show({ message: t('common.error'), type: 'error' }); return }
           setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_banned: !currentlyBanned } : u))
         },
       },

@@ -26,6 +26,7 @@ import { ForumPostCard } from '@/components/forum/ForumPostCard'
 import { ForumThreadView } from '@/components/forum/ForumThreadView'
 import { ForumCreateModal } from '@/components/forum/ForumCreateModal'
 import { ReportModal } from '@/components/ReportModal'
+import { useToast } from '@/components/Toast'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import type { ForumPost, ForumReply, ForumCategory } from '@/components/forum/ForumPostCard'
 
@@ -82,6 +83,7 @@ function ForumScreenInner() {
   const router = useRouter()
   const { thread } = useLocalSearchParams<{ thread?: string }>()
   const supabase = useSupabase()
+  const toast = useToast()
 
   // State
   const [posts, setPosts] = useState<ForumPost[]>([])
@@ -254,9 +256,9 @@ function ForumScreenInner() {
       setPosts(prev => prev.map(p => p.id === post.id ? { ...p, upvote_count: p.upvote_count - delta } : p))
       if (selectedPost?.id === post.id) setSelectedPost(prev => prev ? { ...prev, upvote_count: prev.upvote_count - delta } : prev)
       setVotedPosts(prev => { const next = new Set(prev); if (alreadyVoted) next.add(post.id); else next.delete(post.id); return next })
-      Alert.alert(t('common.error'), t('forum.voteError'))
+      toast.show({ message: t('forum.voteError'), type: 'error' })
     } finally { votingPostRef.current = false }
-  }, [currentUserId, supabase, votedPosts, selectedPost, t])
+  }, [currentUserId, supabase, votedPosts, selectedPost, t, toast])
 
   // ── Upvote reply ──
   const handleUpvoteReply = useCallback(async (reply: ForumReply) => {
@@ -287,7 +289,7 @@ function ForumScreenInner() {
       // snapping back to reply.upvote_count (stale closure value).
       setReplies(prev => prev.map(r => r.id === reply.id ? { ...r, upvote_count: r.upvote_count - delta } : r))
       setVotedReplies(prev => { const next = new Set(prev); if (alreadyVoted) next.add(reply.id); else next.delete(reply.id); return next })
-      Alert.alert(t('common.error'), t('forum.voteError'))
+      toast.show({ message: t('forum.voteError'), type: 'error' })
     } finally { votingReplyRef.current = false }
   }, [currentUserId, supabase, votedReplies, t])
 
@@ -370,7 +372,7 @@ function ForumScreenInner() {
       }
       setReplyText('')
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-    } catch { Alert.alert(t('common.error'), t('forum.replyError')) }
+    } catch { toast.show({ message: t('forum.replyError'), type: 'error' }) }
     finally { setSendingReply(false) }
   }, [currentUserId, selectedPost, replyText, supabase, t])
 
@@ -391,7 +393,7 @@ function ForumScreenInner() {
           setPosts(prev => prev.filter(p => p.id !== postId))
           if (selectedPost?.id === postId) setSelectedPost(null)
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-        } catch { Alert.alert(t('common.error'), t('post.deleteFailed')) }
+        } catch { toast.show({ message: t('post.deleteFailed'), type: 'error' }) }
       }},
     ])
   }, [supabase, t, selectedPost, currentUserId])
@@ -424,7 +426,7 @@ function ForumScreenInner() {
               }
               setReplies(prev => prev.filter(r => r.id !== reply.id))
               try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-            } catch { Alert.alert(t('common.error'), t('forum.deleteReply')) }
+            } catch { toast.show({ message: t('forum.deleteReply'), type: 'error' }) }
           },
         },
       ],
@@ -447,17 +449,17 @@ function ForumScreenInner() {
       if (selectedPost?.id === editingPost.id) setSelectedPost(updated)
       setEditingPost(null)
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-    } catch { Alert.alert(t('common.error'), t('forum.publishError')) }
+    } catch { toast.show({ message: t('forum.publishError'), type: 'error' }) }
     finally { setSavingEdit(false) }
-  }, [editingPost, editTitle, editContent, supabase, selectedPost, t])
+  }, [editingPost, editTitle, editContent, supabase, selectedPost, t, toast])
 
   // ── Create post ──
   const handleCreatePost = useCallback(async (title: string, content: string, category: ForumCategory) => {
-    if (!title.trim()) { Alert.alert(t('common.error'), t('forum.titleRequired')); return }
-    if (!content.trim()) { Alert.alert(t('common.error'), t('forum.contentRequired')); return }
+    if (!title.trim()) { toast.show({ message: t('forum.titleRequired'), type: 'error' }); return }
+    if (!content.trim()) { toast.show({ message: t('forum.contentRequired'), type: 'error' }); return }
     if (!currentUserId) return
     if (!await checkRateLimit('forum_post')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('forum_post', t))
+      toast.show({ message: getRateLimitMessage('forum_post', t), type: 'error' })
       return
     }
     setPublishing(true)
@@ -471,7 +473,7 @@ function ForumScreenInner() {
       }
       setNewTitle(''); setNewContent(''); setNewCategory(null); setShowCreateModal(false)
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {} // Intentional: haptics unavailable on some platforms
-    } catch { Alert.alert(t('common.error'), t('forum.publishError')) }
+    } catch { toast.show({ message: t('forum.publishError'), type: 'error' }) }
     finally { setPublishing(false) }
   }, [currentUserId, userNeighborhood, supabase, t])
 
