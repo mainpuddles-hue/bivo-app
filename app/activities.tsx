@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { useState, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
-  Pressable, Modal, TextInput, Alert, KeyboardAvoidingView,
+  Pressable, Modal, TextInput, KeyboardAvoidingView,
   Platform, Animated, ActivityIndicator,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -23,6 +23,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { useShimmer } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { useToast } from '@/components/Toast'
 
 // ── Types ──
 
@@ -183,6 +184,7 @@ function ActivitiesScreenInner() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   // ── State ──
   const [activities, setActivities] = useState<Activity[]>([])
@@ -299,7 +301,7 @@ function ActivitiesScreenInner() {
       } else {
         // Join — check if full
         if (act.max_members && (act.member_count ?? 0) >= act.max_members) {
-          Alert.alert(t('activity.activityFull'))
+          toast.show({ message: t('activity.activityFull'), type: 'error' })
           return
         }
         const { error } = await (supabase.from('activity_members') as any).insert({
@@ -322,7 +324,7 @@ function ActivitiesScreenInner() {
       }
     } catch (err) {
       if (__DEV__) console.log('[activities] toggleMembership error:', err)
-      Alert.alert(t('common.error'), act.is_member ? t('activity.leaveFailed') : t('activity.joinFailed'))
+      toast.show({ message: act.is_member ? t('activity.leaveFailed') : t('activity.joinFailed'), type: 'error' })
     } finally { togglingRef.current = false }
   }, [userId, activities, supabase, router, t])
 
@@ -332,15 +334,15 @@ function ActivitiesScreenInner() {
 
     // Validation
     if (!createTitle.trim()) {
-      Alert.alert(t('activity.titleRequired'))
+      toast.show({ message: t('activity.titleRequired'), type: 'error' })
       return
     }
     if (!createCategory) {
-      Alert.alert(t('activity.categoryRequired'))
+      toast.show({ message: t('activity.categoryRequired'), type: 'error' })
       return
     }
     if (!createScheduleType) {
-      Alert.alert(t('activities.scheduleRequired'))
+      toast.show({ message: t('activities.scheduleRequired'), type: 'error' })
       return
     }
 
@@ -376,13 +378,13 @@ function ActivitiesScreenInner() {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       }
 
-      Alert.alert(t('activity.created'))
+      toast.show({ message: t('activity.created'), type: 'success' })
       setShowCreateModal(false)
       resetForm()
       await fetchActivities()
     } catch (err) {
       if (__DEV__) console.log('[activities] create error:', err)
-      Alert.alert(t('common.error'), t('activity.createFailed'))
+      toast.show({ message: t('activity.createFailed'), type: 'error' })
     } finally {
       setCreating(false)
     }

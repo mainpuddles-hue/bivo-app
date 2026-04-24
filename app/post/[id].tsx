@@ -336,7 +336,7 @@ function PostDetailScreenInner() {
     if (messagingRef.current) return
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post) return
-    if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
+    if (post.user_id === userId) { toast.show({ message: t('post.cannotMessageSelf'), type: 'error' }); return }
     if (!isValidUUID(userId) || !isValidUUID(post.user_id)) return
     messagingRef.current = true
     try {
@@ -345,7 +345,7 @@ function PostDetailScreenInner() {
         .from('conversations').select('id')
         .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
         .maybeSingle()
-      if (findError) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+      if (findError) { toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return }
       if (existing) {
         router.push(`/messages/${(existing as any).id}`)
       } else {
@@ -358,10 +358,10 @@ function PostDetailScreenInner() {
             .or(`and(user1_id.eq.${userId},user2_id.eq.${post.user_id}),and(user1_id.eq.${post.user_id},user2_id.eq.${userId})`)
             .maybeSingle()
           if (existingConv) { router.push(`/messages/${(existingConv as any).id}`); return }
-          Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return
+          toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return
         }
-        if (insertError) { Alert.alert(t('common.error'), insertError?.message || t('messages.conversationCreateFailed')); return }
-        if (!newConv) { Alert.alert(t('common.error'), t('messages.conversationCreateFailed')); return }
+        if (insertError) { toast.show({ message: insertError?.message || t('messages.conversationCreateFailed'), type: 'error' }); return }
+        if (!newConv) { toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return }
         router.push(`/messages/${newConv.id}`)
       }
       // Speed badge check for urgent posts
@@ -379,16 +379,16 @@ function PostDetailScreenInner() {
         })
       }
     } catch (e: any) {
-      Alert.alert(t('common.error'), t('messages.conversationCreateFailed'))
+      toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' })
     } finally {
       messagingRef.current = false
     }
-  }, [userId, post, id, supabase, router, t])
+  }, [userId, post, id, supabase, router, t, toast])
 
   const handleSendComment = useCallback(async () => {
     if (!userId || !commentText.trim() || sendingComment) return
     if (!await checkRateLimit('comment')) {
-      Alert.alert(t('common.error'), getRateLimitMessage('comment', t))
+      toast.show({ message: getRateLimitMessage('comment', t), type: 'error' })
       return
     }
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -458,7 +458,7 @@ function PostDetailScreenInner() {
       // Restore comment text so the user doesn't lose their input
       setCommentText(content)
       if (parentId) setReplyToComment(replyToComment)
-      Alert.alert(t('common.error'), t('engagement.commentFailed'))
+      toast.show({ message: t('engagement.commentFailed'), type: 'error' })
       if (__DEV__) console.error('[post] comment insert failed:', err)
     } finally {
       setSendingComment(false)
@@ -501,7 +501,7 @@ function PostDetailScreenInner() {
             const { error } = await (supabase.from('posts') as any).update({ is_active: false }).eq('id', post.id)
             if (error) {
               try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
-              Alert.alert(t('common.error'), t('post.deleteFailed'))
+              toast.show({ message: t('post.deleteFailed'), type: 'error' })
               return
             }
             try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
@@ -527,12 +527,12 @@ function PostDetailScreenInner() {
               router.back()
             }, 10000)
           } catch {
-            Alert.alert(t('common.error'), t('post.deleteFailed'))
+            toast.show({ message: t('post.deleteFailed'), type: 'error' })
           }
         },
       },
     ])
-  }, [post, supabase, t, router, undoTimeoutRef])
+  }, [post, supabase, t, toast, router, undoTimeoutRef])
 
   const handleUndoDelete = useCallback(async () => {
     if (!post) return
@@ -541,15 +541,15 @@ function PostDetailScreenInner() {
     try {
       const { error } = await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id)
       if (error) {
-        Alert.alert(t('common.error'), t('post.updateFailed'))
+        toast.show({ message: t('post.updateFailed'), type: 'error' })
       } else {
         setPost(prev => prev ? { ...prev, is_active: true } : prev)
         try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       }
     } catch {
-      Alert.alert(t('common.error'), t('post.updateFailed'))
+      toast.show({ message: t('post.updateFailed'), type: 'error' })
     }
-  }, [post, supabase, t, undoTimeoutRef])
+  }, [post, supabase, t, toast, undoTimeoutRef])
 
   const handleMarkClosed = useCallback(async () => {
     if (!post) return
@@ -560,8 +560,8 @@ function PostDetailScreenInner() {
         text: t('common.confirm'),
         onPress: async () => {
           const { error } = await (supabase.from('posts') as any).update({ is_active: false }).eq('id', post.id)
-          if (error) { Alert.alert(t('common.error'), t('post.updateFailed')) }
-          else { setPost(prev => prev ? { ...prev, is_active: false } : prev); Alert.alert(t('post.markedClosed')) }
+          if (error) { toast.show({ message: t('post.updateFailed'), type: 'error' }) }
+          else { setPost(prev => prev ? { ...prev, is_active: false } : prev); toast.show({ message: t('post.markedClosed'), type: 'success' }) }
         },
       },
     ])
@@ -570,9 +570,9 @@ function PostDetailScreenInner() {
   const handleReopen = useCallback(async () => {
     if (!post) return
     const { error } = await (supabase.from('posts') as any).update({ is_active: true }).eq('id', post.id)
-    if (error) { Alert.alert(t('common.error'), t('post.updateFailed')) }
+    if (error) { toast.show({ message: t('post.updateFailed'), type: 'error' }) }
     else { setPost(prev => prev ? { ...prev, is_active: true } : prev) }
-  }, [post, supabase, t])
+  }, [post, supabase, t, toast])
 
   const handleStatusChange = useCallback(() => {
     if (!post) return
@@ -585,7 +585,7 @@ function PostDetailScreenInner() {
     const applyStatus = async (newStatus: PostStatus) => {
       try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
       const { error } = await (supabase.from('posts') as any).update({ status: newStatus }).eq('id', post.id)
-      if (error) { Alert.alert(t('common.error'), t('post.statusUpdateFailed')) }
+      if (error) { toast.show({ message: t('post.statusUpdateFailed'), type: 'error' }) }
       else { setPost(prev => prev ? { ...prev, status: newStatus } : prev); toast.show({ message: t('post.statusUpdated'), type: 'success' }) }
     }
     if (Platform.OS === 'ios') {
@@ -617,14 +617,14 @@ function PostDetailScreenInner() {
         .eq('id', post.id)
       if (error) throw error
       setPost(prev => prev ? { ...prev, title: editTitle.trim(), description: editDescription.trim(), location: editLocation.trim() || null } : prev)
-      setEditModalVisible(false); Alert.alert(t('post.updated'))
+      setEditModalVisible(false); toast.show({ message: t('post.updated'), type: 'success' })
     } catch (err) {
-      Alert.alert(t('common.error'), t('post.updateFailed'))
+      toast.show({ message: t('post.updateFailed'), type: 'error' })
       if (__DEV__) console.warn('[PostDetail] edit save failed:', err)
     } finally {
       setSaving(false)
     }
-  }, [post, editTitle, editDescription, editLocation, saving, supabase, t])
+  }, [post, editTitle, editDescription, editLocation, saving, supabase, t, toast])
 
   const handleMorePress = useCallback(() => {
     if (!post || !isAuthor) return
@@ -778,11 +778,11 @@ function PostDetailScreenInner() {
   const handlePayAndBook = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post || sendingBooking || paymentLoading) return
-    if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
-    if (bookingDays <= 0 || !bookingStartDate || !bookingEndDate) { Alert.alert(t('common.error'), t('rental.endDateAfterStart')); return }
+    if (post.user_id === userId) { toast.show({ message: t('post.cannotMessageSelf'), type: 'error' }); return }
+    if (bookingDays <= 0 || !bookingStartDate || !bookingEndDate) { toast.show({ message: t('rental.endDateAfterStart'), type: 'error' }); return }
     // Trust tier enforcement on buyer side
     if (trust.permissions.maxDailyFee !== null && post.daily_fee && post.daily_fee > trust.permissions.maxDailyFee) {
-      Alert.alert(t('common.error'), t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }))
+      toast.show({ message: t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }), type: 'error' })
       return
     }
     setSendingBooking(true)
@@ -791,7 +791,7 @@ function PostDetailScreenInner() {
       const { data: booking, error: bookingError } = await (supabase.from('rental_bookings') as any)
         .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee, service_fee: serviceFee, total_amount: bookingTotal, deposit_amount: depositAmount, deposit_status: 'authorized', status: 'pending' })
         .select('id').single()
-      if (bookingError || !booking) { Alert.alert(t('common.error'), t('rental.bookingFailed')); setSendingBooking(false); return }
+      if (bookingError || !booking) { toast.show({ message: t('rental.bookingFailed'), type: 'error' }); setSendingBooking(false); return }
       createdBookingId = booking.id
       const amountCents = Math.round(bookingTotal * 100)
       const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
@@ -816,10 +816,10 @@ function PostDetailScreenInner() {
         const { error: rollbackErr } = await (supabase.from('rental_bookings') as any).delete().eq('id', createdBookingId)
         if (rollbackErr && __DEV__) console.error('[post] booking rollback failed — zombie booking may block future reservations:', rollbackErr.message)
       }
-      Alert.alert(t('common.error'), t('rental.bookingFailed'))
+      toast.show({ message: t('rental.bookingFailed'), type: 'error' })
     }
     finally { setSendingBooking(false) }
-  }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, createPayment, trust])
+  }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, toast, createPayment, trust])
 
   // Service pricing
   const svcFee = useMemo(() => {
@@ -831,10 +831,10 @@ function PostDetailScreenInner() {
   const handlePayForService = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
     if (!post || sendingService || paymentLoading) return
-    if (post.user_id === userId) { Alert.alert(t('common.error'), t('post.cannotMessageSelf')); return }
+    if (post.user_id === userId) { toast.show({ message: t('post.cannotMessageSelf'), type: 'error' }); return }
     // Trust tier enforcement on buyer side
     if (trust.permissions.maxServicePrice !== null && post.service_price && post.service_price > trust.permissions.maxServicePrice) {
-      Alert.alert(t('common.error'), t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }))
+      toast.show({ message: t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }), type: 'error' })
       return
     }
     setSendingService(true)
@@ -853,7 +853,7 @@ function PostDetailScreenInner() {
           status: 'pending',
         })
         .select('id').single()
-      if (bookingError || !booking) { Alert.alert(t('common.error'), t('service.bookingFailed')); setSendingService(false); return }
+      if (bookingError || !booking) { toast.show({ message: t('service.bookingFailed'), type: 'error' }); setSendingService(false); return }
       createdBookingId = booking.id
 
       // 2. Stripe Checkout
@@ -888,11 +888,11 @@ function PostDetailScreenInner() {
       if (createdBookingId) {
         await (supabase.from('service_bookings') as any).delete().eq('id', createdBookingId).catch(() => {})
       }
-      Alert.alert(t('common.error'), t('service.bookingFailed'))
+      toast.show({ message: t('service.bookingFailed'), type: 'error' })
     } finally {
       setSendingService(false)
     }
-  }, [userId, post, sendingService, paymentLoading, svcFee, svcTotal, serviceNotes, id, supabase, router, t, createPayment, trust])
+  }, [userId, post, sendingService, paymentLoading, svcFee, svcTotal, serviceNotes, id, supabase, router, t, toast, createPayment, trust])
 
   const renderCommentItem = (c: PostComment, isReply: boolean) => (
     <View key={c.id} style={[styles.commentRow, isReply && styles.replyRow, { borderBottomColor: colors.border }]}>
