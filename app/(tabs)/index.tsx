@@ -656,8 +656,8 @@ function FeedScreenInner() {
               <View style={styles.allLoadedWrap}>
                 <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
                 <View style={styles.allLoadedContent}>
-                  <CheckCircle size={14} color={`${colors.mutedForeground}60`} />
-                  <Text style={[styles.allLoadedText, { color: `${colors.mutedForeground}80` }]}>{t('feed.allCaughtUp')}</Text>
+                  <CheckCircle size={14} color={colors.tertiaryForeground} />
+                  <Text style={[styles.allLoadedText, { color: colors.mutedForeground }]}>{t('feed.allCaughtUp')}</Text>
                 </View>
               </View>
             )}

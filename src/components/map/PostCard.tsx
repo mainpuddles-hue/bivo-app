@@ -4,6 +4,7 @@ import { PressableOpacity } from '@/components/ui'
 import { MapPin } from 'lucide-react-native'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
+import { categoryColorsDark } from '@/lib/theme'
 import { formatTimeAgo } from '@/lib/format'
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType } from '@/lib/types'
@@ -25,7 +26,11 @@ export function PostCard({ item, colors, locale, t, onPress }: PostCardProps) {
   const avatarUrl = (postData as any).user?.avatar_url ?? null
   const postType = postData.type
   const cat = postType ? CATEGORIES[postType as PostType] : null
-  const catColor = cat ? cat.color : item.color
+  // Use brighter category colors in dark mode for WCAG AA contrast
+  const isDarkBg = colors.background === '#0E1012'
+  const catColor = cat
+    ? (isDarkBg ? (categoryColorsDark[postType as string] ?? cat.color) : cat.color)
+    : item.color
 
   return (
     <PressableOpacity

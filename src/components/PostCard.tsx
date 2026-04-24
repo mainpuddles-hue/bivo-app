@@ -13,6 +13,7 @@ import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
+import { categoryColorsDark } from '@/lib/theme'
 import { CATEGORY_ICON_MAP as ICON_MAP } from '@/lib/categoryIcons'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo, formatPrice } from '@/lib/format'
@@ -319,14 +320,17 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           </View>
           {/* Category badge — top right */}
           <View style={styles.topRowRight}>
-            {category && (
-              <View style={[styles.categoryBadge, { backgroundColor: `${category.color}30` }]}>
-                {CategoryIcon && <CategoryIcon size={14} color={category.color} strokeWidth={2.2} />}
-                <Text style={[styles.categoryBadgeText, { color: category.color }]}>
-                  {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
-                </Text>
-              </View>
-            )}
+            {category && (() => {
+              const catColor = isDark ? (categoryColorsDark[post.type] ?? category.color) : category.color
+              return (
+                <View style={[styles.categoryBadge, { backgroundColor: `${catColor}30` }]}>
+                  {CategoryIcon && <CategoryIcon size={14} color={catColor} strokeWidth={2.2} />}
+                  <Text style={[styles.categoryBadgeText, { color: catColor }]}>
+                    {(() => { const label = t(category.label); return label.charAt(0) + label.slice(1).toLowerCase() })()}
+                  </Text>
+                </View>
+              )
+            })()}
           </View>
         </View>
 
@@ -400,28 +404,28 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
           <View style={styles.metaRow}>
             {post.daily_fee != null && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? CATEGORIES.lainaa.bgDark : CATEGORIES.lainaa.bgLight }]}>
-                <Text style={[styles.priceText, { color: CATEGORIES.lainaa.color }]}>
+                <Text style={[styles.priceText, { color: isDark ? categoryColorsDark.lainaa : CATEGORIES.lainaa.color }]}>
                   {t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })}
                 </Text>
               </View>
             )}
             {post.service_price != null && post.service_price > 0 && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? CATEGORIES.tarjoan.bgDark : CATEGORIES.tarjoan.bgLight }]}>
-                <Text style={[styles.priceText, { color: CATEGORIES.tarjoan.color }]}>
+                <Text style={[styles.priceText, { color: isDark ? categoryColorsDark.tarjoan : CATEGORIES.tarjoan.color }]}>
                   {formatPrice(post.service_price, locale)}
                 </Text>
               </View>
             )}
             {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price == null || post.service_price === 0) && (
               <View style={[styles.priceBadge, { backgroundColor: isDark ? CATEGORIES.ilmaista.bgDark : CATEGORIES.ilmaista.bgLight }]}>
-                <Text style={[styles.priceText, { color: CATEGORIES.ilmaista.color }]}>
+                <Text style={[styles.priceText, { color: isDark ? categoryColorsDark.ilmaista : CATEGORIES.ilmaista.color }]}>
                   {t('create.freeItem')}
                 </Text>
               </View>
             )}
             {post.type === 'tarjoan' && post.tags?.some(tag => tag.startsWith('condition_')) && (
               <View style={[styles.conditionBadge, { backgroundColor: isDark ? CATEGORIES.tarjoan.bgDark : CATEGORIES.tarjoan.bgLight }]}>
-                <Text style={[styles.conditionBadgeText, { color: CATEGORIES.tarjoan.color }]}>
+                <Text style={[styles.conditionBadgeText, { color: isDark ? categoryColorsDark.tarjoan : CATEGORIES.tarjoan.color }]}>
                   {(() => {
                     const condTag = post.tags?.find(tag => tag.startsWith('condition_'))
                     if (!condTag) return ''
@@ -552,7 +556,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {saved ? (
               <BookmarkCheck size={16} color={colors.foreground} fill={colors.foreground} />
             ) : (
-              <Bookmark size={16} color={colors.mutedForeground} style={styles.iconDimmed} />
+              <Bookmark size={16} color={colors.mutedForeground} />
             )}
           </Pressable>
 

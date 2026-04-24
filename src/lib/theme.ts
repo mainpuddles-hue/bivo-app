@@ -37,10 +37,10 @@ export const colors = {
     foreground: '#F5F6F7',         // near-white text
     card: '#17191C',               // dark surface
     cardElevated: '#1C1E21',       // slightly elevated
-    border: '#26292D',             // dark hairline
+    border: '#2E3136',             // dark hairline — 1.45:1 vs card (visible separator)
     muted: '#202326',              // dark wash
-    mutedForeground: '#8B8F94',    // dark meta
-    tertiaryForeground: '#656A6F', // dark placeholder — WCAG 3.09:1+ on card
+    mutedForeground: '#8B8F94',    // dark meta — WCAG AA 5.4:1 on card
+    tertiaryForeground: '#7D838A', // dark placeholder — WCAG AA 4.6:1 on card
     destructive: '#FF453A',        // iOS system red dark
     pro: '#FBBF24',
     success: '#34D399',
@@ -91,6 +91,15 @@ export const categoryAccents: Record<string, string> = {
   ilmaista:  '#3B7DD8',
   lainaa:    '#A97A1E',
   tapahtuma: '#2B8A62',
+}
+
+// Brighter category colors for dark mode — WCAG AA 4.5:1+ on dark card (#17191C)
+export const categoryColorsDark: Record<string, string> = {
+  tarvitsen: '#D4734F',  // 5.23:1 on #17191C
+  tarjoan:   '#9B7DD4',  // 5.27:1 on #17191C
+  ilmaista:  '#5B9BF0',  // 5.93:1 on #17191C
+  lainaa:    '#C99A3E',  // 6.45:1 on #17191C
+  tapahtuma: '#3AAE7A',  // 6.30:1 on #17191C
 }
 
 // --- Shadows: ink-tinted light, black dark ---
