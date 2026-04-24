@@ -305,10 +305,10 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: 16 },
 
   /* Total */
-  totalSection: { paddingVertical: 4, paddingHorizontal: 4, marginBottom: 22 },
+  totalSection: { paddingVertical: 4, paddingHorizontal: 4, marginBottom: 24 },
   totalLabel: {
     fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi,
-    letterSpacing: 1, marginBottom: 6,
+    letterSpacing: 1, marginBottom: 8,
   },
   totalValue: {
     fontSize: 48, fontWeight: '600', fontFamily: fonts.heading,
@@ -317,23 +317,23 @@ const s = StyleSheet.create({
   totalMeta: { fontSize: 12, fontFamily: fonts.body, marginTop: 4 },
 
   /* Chart */
-  chartCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 18 },
+  chartCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 16 },
   chartHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'baseline', marginBottom: 14,
+    alignItems: 'baseline', marginBottom: 12,
   },
   chartTitle: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   chartBars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, height: 100 },
-  chartBarCol: { flex: 1, alignItems: 'center', gap: 5 },
+  chartBarCol: { flex: 1, alignItems: 'center', gap: 4 },
   chartBarValueWrap: { height: 16, justifyContent: 'flex-end' },
-  chartBarValue: { fontSize: 9.5, fontWeight: '700', fontFamily: fonts.bodySemi },
+  chartBarValue: { fontSize: 11, fontWeight: '700', fontFamily: fonts.bodySemi },
   chartBar: { width: '100%', borderRadius: 3, minHeight: 4 },
-  chartBarLabel: { fontSize: 9, fontWeight: '600', fontFamily: fonts.bodySemi },
+  chartBarLabel: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   /* Next payout */
   nextPayoutCard: {
     flexDirection: 'row', alignItems: 'center',
-    borderRadius: 16, padding: 14, paddingHorizontal: 16,
+    borderRadius: 16, padding: 12, paddingHorizontal: 16,
     marginBottom: 20,
   },
   nextPayoutInfo: { flex: 1 },
@@ -342,7 +342,7 @@ const s = StyleSheet.create({
     fontWeight: '600', fontFamily: fonts.bodySemi, marginBottom: 4,
   },
   nextPayoutValue: {
-    fontSize: 18, fontWeight: '600', fontFamily: fonts.heading,
+    fontSize: 17, fontWeight: '600', fontFamily: fonts.heading,
     letterSpacing: -0.4,
   },
 
@@ -357,15 +357,15 @@ const s = StyleSheet.create({
   txnCard: { borderRadius: 14, borderWidth: 1 },
   txnRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 12, paddingHorizontal: 14,
+    padding: 12, paddingHorizontal: 12,
   },
   txnImage: { width: 38, height: 38, borderRadius: 9 },
   txnImagePlaceholder: { width: 38, height: 38, borderRadius: 9 },
   txnInfo: { flex: 1 },
   txnTitle: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.1 },
-  txnDate: { fontSize: 11, fontFamily: fonts.body, marginTop: 1 },
+  txnDate: { fontSize: 11, fontFamily: fonts.body, marginTop: 4 },
   txnAmount: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
-  txnDivider: { height: 1, marginLeft: 14 },
+  txnDivider: { height: 1, marginLeft: 12 },
 })
 
 export default function PayoutsScreen() {

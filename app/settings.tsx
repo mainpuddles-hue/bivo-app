@@ -1363,12 +1363,12 @@ const s = StyleSheet.create({
   // ── Profile card ──
   profileCardWrapper: {
     paddingHorizontal: 16,
-    paddingBottom: 18,
+    paddingBottom: 16,
   },
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
     borderRadius: 18,
     borderWidth: 1,
     padding: 16,
@@ -1412,7 +1412,7 @@ const s = StyleSheet.create({
   profileSubtitle: {
     fontSize: 12,
     fontFamily: fonts.body,
-    marginTop: 2,
+    marginTop: 4,
   },
   profileVerifiedRow: {
     flexDirection: 'row',
@@ -1456,7 +1456,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 16,
   },
   rowIconCircle: {
@@ -1478,7 +1478,7 @@ const s = StyleSheet.create({
   rowMeta: {
     fontSize: 11,
     fontFamily: fonts.body,
-    marginTop: 2,
+    marginTop: 4,
   },
   rowValue: {
     fontSize: 13,
@@ -1523,7 +1523,7 @@ const s = StyleSheet.create({
   input: {
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     fontSize: 14,
     lineHeight: 20,
     borderWidth: StyleSheet.hairlineWidth,
@@ -1536,7 +1536,7 @@ const s = StyleSheet.create({
   },
   changePwBtn: {
     borderRadius: 999,
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: 'center',
     minHeight: 48,
   },
@@ -1564,7 +1564,7 @@ const s = StyleSheet.create({
   referralSubmitBtn: {
     borderRadius: 999,
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1610,7 +1610,7 @@ const s = StyleSheet.create({
   versionText: {
     fontSize: 11,
     textAlign: 'center',
-    paddingTop: 18,
+    paddingTop: 16,
     paddingBottom: 8,
     fontFamily: fonts.body,
   },
@@ -1636,7 +1636,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   deleteTitle: {
-    fontSize: 18,
+    fontSize: 17,
     lineHeight: 24,
     fontWeight: '700',
     fontFamily: fonts.headingSemi,

@@ -1037,7 +1037,7 @@ const s = StyleSheet.create({
   },
   headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.bodySemi },
   headerSub: { fontSize: 11, lineHeight: 16, fontFamily: fonts.body },
-  onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
+  onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   onlineDot: { width: 6, height: 6, borderRadius: 999 },
   onlineText: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14 },
   // ── Messages ────────────────────────────────────────────────
@@ -1051,11 +1051,11 @@ const s = StyleSheet.create({
     fontSize: 11, fontWeight: '500', letterSpacing: 0.9,
     fontFamily: fonts.bodyMedium, textTransform: 'uppercase',
   },
-  msgRow: { flexDirection: 'row', gap: 8, marginVertical: 3 },
+  msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
-  msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
-  bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
+  msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 4 },
+  bubble: { maxWidth: '100%', paddingHorizontal: 12, paddingVertical: 8 },
   msgImage: { width: 200, height: 150, borderRadius: 14, marginBottom: 4 },
   msgText: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
@@ -1065,7 +1065,7 @@ const s = StyleSheet.create({
   reactionsRowMine: { justifyContent: 'flex-end' },
   reactionsRowTheirs: { justifyContent: 'flex-start' },
   reactionBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 2,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, borderWidth: 1,
   },
   reactionEmoji: { fontSize: 14, lineHeight: 20 },
@@ -1114,7 +1114,7 @@ const s = StyleSheet.create({
   // ── Composer — Monochrome 06 (circle add 40px + pill input 42px + circle send 40px) ──
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
-    paddingHorizontal: 14, paddingTop: 10, borderTopWidth: 0,
+    paddingHorizontal: 16, paddingTop: 8, borderTopWidth: 0,
   },
   composerCircle: {
     width: 40, height: 40, borderRadius: 999,
@@ -1122,7 +1122,7 @@ const s = StyleSheet.create({
     borderWidth: 1, flexShrink: 0,
   },
   textInput: {
-    flex: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10,
+    flex: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8,
     fontSize: 14, maxHeight: 120, minHeight: 42, fontFamily: fonts.body,
     borderWidth: 1,
   },
@@ -1131,7 +1131,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingTop: 60, gap: 8 },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingTop: 48, gap: 8 },
   emptyText: { textAlign: 'center', fontSize: 15, lineHeight: 22, fontFamily: fonts.bodySemi, fontWeight: '600' as const },
   emptyHint: { textAlign: 'center', fontSize: 13, lineHeight: 18, fontFamily: fonts.body, maxWidth: 220 },
   // ── Quick replies — Monochrome pills (borderRadius 999, surface bg, 1px border) ──
@@ -1140,7 +1140,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8,
   },
   quickReplyChip: {
-    paddingHorizontal: 14, paddingVertical: 7,
+    paddingHorizontal: 12, paddingVertical: 8,
     borderRadius: 999, borderWidth: 1,
   },
   quickReplyText: { fontSize: 13, fontWeight: '500', lineHeight: 18, fontFamily: fonts.bodyMedium },
@@ -1157,12 +1157,12 @@ const s = StyleSheet.create({
 const contextStyles = StyleSheet.create({
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginVertical: 8, padding: 10,
+    marginHorizontal: 16, marginVertical: 8, padding: 12,
     borderRadius: 20, borderWidth: 1,
   },
   image: { width: 46, height: 46, borderRadius: 12 },
-  info: { flex: 1, minWidth: 0, gap: 2 },
-  eyebrow: { fontSize: 10, fontWeight: '500', letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodyMedium, lineHeight: 14 },
+  info: { flex: 1, minWidth: 0, gap: 4 },
+  eyebrow: { fontSize: 11, fontWeight: '500', letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodyMedium, lineHeight: 14 },
   title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   showLink: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
 })
@@ -1172,7 +1172,7 @@ const offerStyles = StyleSheet.create({
     marginHorizontal: 16, marginTop: 4, marginBottom: 8, padding: 12,
     borderRadius: 16, borderWidth: 1, gap: 8,
   },
-  bannerTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  bannerTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bannerAmount: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   bannerMsg: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   bannerActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
