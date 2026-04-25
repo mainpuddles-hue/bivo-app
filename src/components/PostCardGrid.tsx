@@ -145,10 +145,10 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     likingRef.current = true
     // Clear any previous grace timer so back-to-back taps don't stack
     if (likeGraceTimerRef.current) clearTimeout(likeGraceTimerRef.current)
+    const wasLiked = liked
+    const prevCount = likeCount
     try {
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-      const wasLiked = liked
-      const prevCount = likeCount
       setLiked(!wasLiked)
       setLikeCount(wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1)
       if (!wasLiked && !reduceMotion) {
@@ -170,6 +170,10 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
       }
       if (!wasLiked) onInteraction?.(post.id, 'like')
     } catch {
+      if (mountedRef.current) {
+        setLiked(wasLiked)
+        setLikeCount(prevCount)
+      }
       likingRef.current = false
       return
     }

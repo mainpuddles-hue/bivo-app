@@ -72,7 +72,9 @@ export function OnboardingOverlay({ visible, onDone }: Props) {
         await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', userId)
       }
       await AsyncStorage.setItem('tackbird_user_neighborhood', nh)
-    } catch {}
+    } catch (err) {
+      if (__DEV__) console.warn('[onboarding] saveNeighborhood failed:', err)
+    }
   }, [supabase])
 
   const finishOnboarding = useCallback(() => {

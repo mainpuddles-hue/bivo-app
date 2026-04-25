@@ -156,8 +156,9 @@ function ExploreScreenInner() {
       const communityEventsPromise = (async () => {
         try {
           const { data, error } = await (supabase
-            .from('events')
+            .from('community_events')
             .select('id, title, event_date, location_name') as any)
+            .eq('is_active', true)
             .gte('event_date', now)
             .order('event_date', { ascending: true })
             .limit(10)

@@ -472,10 +472,12 @@ function SavedScreenInner() {
                       {event.title}
                     </Text>
                     <Text style={[s.eventDate, { color: colors.mutedForeground }]}>
-                      {new Date(event.event_date).toLocaleDateString(
-                        locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB',
-                        { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
-                      )}
+                      {event.event_date
+                        ? new Date(event.event_date).toLocaleDateString(
+                            locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB',
+                            { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' },
+                          )
+                        : '—'}
                     </Text>
                     {event.location && (
                       <View style={s.eventLocationRow}>

@@ -570,7 +570,7 @@ function PostDetailScreenInner() {
         },
       },
     ])
-  }, [post, supabase, t])
+  }, [post, supabase, t, toast])
 
   const handleReopen = useCallback(async () => {
     if (!post) return
