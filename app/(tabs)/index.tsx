@@ -729,7 +729,7 @@ function FeedScreenInner() {
               </View>
             )}
 
-            {/* ── 5. Weekly popular hero ── */}
+            {/* ── 5. Hero — 3-tier fallback: events → popular posts → cold start CTA ── */}
             {feed.loading && visiblePosts.length === 0 ? (
               <View style={{ paddingHorizontal: 12, gap: 16, paddingTop: 16 }}>
                 {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
@@ -741,6 +741,41 @@ function FeedScreenInner() {
                   communityEvents={heroCommunityEvents}
                   locale={locale}
                 />
+              </FadeIn>
+            ) : visiblePosts.length > 0 ? (
+              <FadeIn>
+                <View style={styles.categorySection}>
+                  <View style={styles.categorySectionHeader}>
+                    <Text style={[styles.categorySectionTitle, { color: colors.foreground }]}>
+                      {t('feed.popularThisWeek') ?? 'Suositut'}
+                    </Text>
+                  </View>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+                    snapToInterval={screenWidth * 0.65 + 12}
+                    decelerationRate="fast"
+                  >
+                    {visiblePosts
+                      .slice()
+                      .sort((a, b) => (b.like_count ?? 0) - (a.like_count ?? 0))
+                      .slice(0, 6)
+                      .map((post, index) => (
+                        <View key={post.id} style={{ width: screenWidth * 0.65 }}>
+                          <PostCardGrid
+                            post={post}
+                            userId={feed.currentUserId}
+                            onInteraction={trackInteraction}
+                            index={index}
+                            sortBy={feed.sortBy}
+                            followedIds={feed.followedIds}
+                            viewCount={viewCounts[post.id]}
+                          />
+                        </View>
+                      ))}
+                  </ScrollView>
+                </View>
               </FadeIn>
             ) : !feed.loading ? (
               <View style={styles.coldStart}>
